@@ -1,11 +1,9 @@
-import { IconBrandGoogleFilled, IconX } from '@tabler/icons-react';
+import { IconBrandGoogleFilled } from '@tabler/icons-react';
 import { useCallback, useRef } from 'react';
 import { useUnmount } from 'react-use';
 
 import Nango from '@nangohq/frontend';
 
-import LinkWithIcon from '../../components/LinkWithIcon';
-import { Button } from '../../components/ui/button/Button';
 import { apiConnectSessions } from '../../hooks/useConnect';
 import { apiDeleteConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -14,6 +12,8 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Button } from '@/components-v2/ui/button';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';
@@ -109,30 +109,39 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
 
     if (connection) {
         return (
-            <div className="text-text-secondary text-sm">
-                <Button variant="primary" onClick={onClickDisconnect}>
-                    <IconX className="w-4 h-4 mr-2" />
+            <div className="flex flex-col gap-7">
+                <div className="flex flex-col gap-1.5">
+                    <h3 className="text-brand-500 text-sm font-semibold">Google Calendar connection authorized!</h3>
+                    <p className="text-text-tertiary text-sm">
+                        A connection was created with the connection id:{' '}
+                        <StyledLink to={`/${env}/connections/${integration?.unique_key}/${connection.connection_id}`}>{connection.connection_id}</StyledLink>
+                    </p>
+                </div>
+                <Button variant="tertiary" size="lg" onClick={onClickDisconnect} className="w-fit">
+                    <IconBrandGoogleFilled className="size-5 mr-2" />
                     Disconnect from Google Calendar
                 </Button>
-                <p className="mt-5 text-text-primary text-sm flex flex-row gap-1">
-                    A connection was created with the connection id:{' '}
-                    <LinkWithIcon to={`/${env}/connections/${integration?.unique_key}/${connection.connection_id}`}>{connection.connection_id}</LinkWithIcon>
-                </p>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col gap-5">
-            <p className="text-text-secondary text-sm">Connect your account just like your users would in your app.</p>
-            <Button variant="primary" className="w-fit" onClick={onClickConnect}>
-                <IconBrandGoogleFilled className="w-4 h-4 mr-2" />
+        <div className="flex flex-col gap-7">
+            <div className="flex flex-col gap-1.5">
+                <h3 className="text-text-primary text-sm font-semibold">Experience the user&apos;s auth flow</h3>
+                <p className="text-text-tertiary text-sm">
+                    Connect your account just like your users would in your app. <br />
+                    This will create a connection for your{' '}
+                    <StyledLink icon={true} type="external" to={`/${env}/integrations/${integration?.unique_key}`}>
+                        Google Calendar integration
+                    </StyledLink>
+                    .
+                </p>
+            </div>
+            <Button variant="primary" size="lg" onClick={onClickConnect} className="w-fit">
+                <IconBrandGoogleFilled className="size-5 mr-2" />
                 Connect to Google Calendar
             </Button>
-            <p className="text-text-secondary text-sm">
-                This will create a connection for your{' '}
-                <LinkWithIcon to={`/${env}/integrations/${integration?.unique_key}`}>Google Calendar integration</LinkWithIcon>, which we have set up for you.
-            </p>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import { IconExternalLink, IconLink } from '@tabler/icons-react';
+import { ExternalLink, LinkIcon } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,19 +18,19 @@ export const StyledLink: React.FC<StyledLinkProps> = ({ to, children, type = 'in
         return (
             <a
                 href={to}
-                className={cn(`text-text-primary text-sm underline inline-flex items-center cursor-pointer`, className)}
+                className={cn(`w-fit text-text-primary text-sm underline inline-flex items-center cursor-pointer`, className)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClick}
             >
-                {children} {icon && <IconExternalLink className="w-4 h-4 ml-1" />}
+                {children} {icon && <ExternalLink className="w-3.5 h-3.5 ml-1 text-icon-tertiary" />}
             </a>
         );
     }
 
     return (
-        <Link to={to} className={cn(`text-text-primary text-sm underline inline-flex items-center cursor-pointer`, className)} onClick={onClick}>
-            {children} {icon && <IconLink className="w-4 h-4 ml-1" />}
+        <Link to={to} className={cn(`w-fit text-text-primary text-sm underline inline-flex items-center cursor-pointer`, className)} onClick={onClick}>
+            {children} {icon && <LinkIcon className="w-3.5 h-3.5 ml-1 text-icon-tertiary" />}
         </Link>
     );
 };

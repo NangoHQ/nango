@@ -1,14 +1,15 @@
-import { IconBrandNodejs, IconLoader, IconPlayerPlay, IconTerminal2 } from '@tabler/icons-react';
+import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
+import { CodeXml, Loader } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { CodeBlock } from '../../components/CodeBlock';
-import LinkWithIcon from '../../components/LinkWithIcon';
-import { Button } from '../../components/ui/button/Button';
+import { CodeBlock } from '../../components-v2/CodeBlock';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
 import { cn } from '../../utils/utils';
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Button } from '@/components-v2/ui/button';
 
 interface CalendarEvent {
     summary: string;
@@ -81,10 +82,11 @@ interface SecondStepProps {
     connectionId?: string;
     providerConfigKey?: string;
     onExecuted?: () => void;
+    active: boolean;
     completed: boolean;
 }
 
-export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerConfigKey, onExecuted, completed }) => {
+export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerConfigKey, onExecuted, active, completed }) => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
@@ -162,49 +164,63 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     };
 
     return (
-        <div className="flex flex-col gap-5">
-            <p className="text-text-secondary text-sm">Nango will handle API credentials for you. All you need is the connection id.</p>
-            <CodeBlock
-                snippets={[
-                    {
-                        displayLanguage: 'Node Client',
-                        icon: <IconBrandNodejs className="w-4 h-4" />,
-                        language: 'typescript',
-                        code: nodeClientCode
-                    },
-                    {
-                        displayLanguage: 'cURL',
-                        icon: <IconTerminal2 className="w-4 h-4" />,
-                        language: 'bash',
-                        code: curlCode
-                    }
-                ]}
-            />
-            <div className={cn('flex flex-row items-center', completed ? 'justify-between' : 'justify-end')}>
-                {completed && (
-                    <div className="flex flex-col">
-                        <LinkWithIcon to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
-                            Explore the logs from this demo
-                        </LinkWithIcon>
-                        <LinkWithIcon to="https://calendar.google.com/calendar/r/day" type="external">
-                            Open Google Calendar to see the event
-                        </LinkWithIcon>
-                    </div>
-                )}
-                <Button variant="primary" onClick={onExecute} disabled={isExecuting}>
-                    {isExecuting ? (
-                        <>
-                            <IconLoader className="w-4 h-4 animate-spin" />
-                            Running...
-                        </>
-                    ) : (
-                        <>
-                            <IconPlayerPlay className="w-4 h-4" />
-                            Run
-                        </>
-                    )}
-                </Button>
+        <div className="flex flex-col gap-5 w-full min-w-0">
+            <div className="flex flex-col gap-1.5">
+                <h3 className="text-text-primary text-sm font-semibold">Use Nango as a proxy to make requests to Google Calendar</h3>
+                <p className="text-text-tertiary text-sm">
+                    Nango will handle API credentials for you. <br />
+                    All you need is the connection id.
+                </p>
             </div>
+            {active && (
+                <>
+                    <div className="w-full min-w-0">
+                        <CodeBlock
+                            title="index.ts"
+                            snippets={[
+                                {
+                                    displayLanguage: 'Node Client',
+                                    icon: <IconBrandNodejs className="w-4 h-4" />,
+                                    language: 'typescript',
+                                    code: nodeClientCode
+                                },
+                                {
+                                    displayLanguage: 'cURL',
+                                    icon: <IconTerminal2 className="w-4 h-4" />,
+                                    language: 'bash',
+                                    code: curlCode
+                                }
+                            ]}
+                            className="w-full"
+                        />
+                    </div>
+                    <div className={cn('flex flex-col gap-5')}>
+                        <Button variant="primary" size="lg" onClick={onExecute} disabled={isExecuting}>
+                            {isExecuting ? (
+                                <>
+                                    <Loader className="size-5 animate-spin" />
+                                    Running...
+                                </>
+                            ) : (
+                                <>
+                                    <CodeXml className="size-5" />
+                                    {completed ? 'Run again' : 'Run'}
+                                </>
+                            )}
+                        </Button>
+                        {completed && (
+                            <>
+                                <StyledLink to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`} icon>
+                                    Explore the logs from this demo
+                                </StyledLink>
+                                <StyledLink to="https://calendar.google.com/calendar/r/day" type="external" icon>
+                                    Open Google Calendar to see the event
+                                </StyledLink>
+                            </>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };
