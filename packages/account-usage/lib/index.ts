@@ -1,4 +1,4 @@
-import { getDefaultKVStoreOptions, getKVStore } from '@nangohq/kvstore';
+import { getKVStore } from '@nangohq/kvstore';
 
 import { DbAccountUsageStore } from './accountUsageStore/dbAccountUsageStore.js';
 import { HybridAccountUsageStore } from './accountUsageStore/hybridAccountUsageStore.js';
@@ -20,7 +20,7 @@ let usageTracker: AccountUsageTracker | undefined;
  * Intended for simple local account usage tracking, not for billing.
  */
 async function createAccountUsageTracker(): Promise<AccountUsageTracker> {
-    const kvStore = await getKVStore('default', getDefaultKVStoreOptions());
+    const kvStore = await getKVStore('default');
     const kvUsageStore = new KvAccountUsageStore(kvStore);
     const persistentUsageStore = new DbAccountUsageStore();
     const usageStore = new HybridAccountUsageStore(kvUsageStore, persistentUsageStore);

@@ -5,7 +5,7 @@ import { IORedisKVStore } from './IORedisStore.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
-import { getIORedis, getNodeRedis } from './utils.js';
+import { getDefaultKVStoreOptions, getIORedis, getNodeRedis } from './utils.js';
 
 import type { KVStore, KVStoreOptions, RedisClient } from './KVStore.js';
 
@@ -14,7 +14,8 @@ export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { KVStore, KVStoreRedis } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
-export { getDefaultKVStoreOptions } from './utils.js';
+
+const defaultOptions = getDefaultKVStoreOptions();
 
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
@@ -91,37 +92,37 @@ async function createKVStore(name: string, options: KVStoreOptions): Promise<KVS
 }
 
 const kvstorePromises = new Map<string, Promise<KVStore>>();
-export async function getKVStore(name: string, options: KVStoreOptions): Promise<KVStore> {
+export async function getKVStore(name: string, options?: KVStoreOptions): Promise<KVStore> {
     if (kvstorePromises.has(name)) {
         return await kvstorePromises.get(name)!;
     }
 
-    const kvstorePromise = createKVStore(name, options);
+    const kvstorePromise = createKVStore(name, { ...defaultOptions, ...options });
     kvstorePromises.set(name, kvstorePromise);
     return await kvstorePromise;
 }
 
 let featureFlags: Promise<FeatureFlags> | undefined;
-export async function getFeatureFlagsClient(options: KVStoreOptions): Promise<FeatureFlags> {
+export async function getFeatureFlagsClient(options?: KVStoreOptions): Promise<FeatureFlags> {
     if (featureFlags) {
         return await featureFlags;
     }
 
     featureFlags = (async () => {
-        const store = await getKVStore('default', options);
+        const store = await getKVStore('default', { ...defaultOptions, ...options });
         return new FeatureFlags(store);
     })();
     return await featureFlags;
 }
 
 let locking: Promise<Locking> | undefined;
-export async function getLocking(options: KVStoreOptions): Promise<Locking> {
+export async function getLocking(options?: KVStoreOptions): Promise<Locking> {
     if (locking) {
         return await locking;
     }
 
     locking = (async () => {
-        const store = await getKVStore('default', options);
+        const store = await getKVStore('default', { ...defaultOptions, ...options });
         return new Locking(store);
     })();
     return await locking;
