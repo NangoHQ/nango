@@ -4,7 +4,6 @@ sidebarTitle: 'Gmail'
 description: 'Access the Gmail API in 2 minutes 💨'
 ---
 
-import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
 import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
 
 import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
@@ -27,7 +26,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gmail. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Gmail API">
-        Let's make your first request to the Gmail API to fetch your profile information. This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Gmail API (fetch the profile of the currently signed-in user). This request will return basic details about the authenticated user, such as their email address and message/thread counts. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
@@ -70,7 +69,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GMail accounts.
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Gmail accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -90,7 +89,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -105,11 +104,11 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
         2. Click **Get started**.
         3. Fill in the **App Information** form.
           - **App Name**: The name of the app asking for consent.
-          - **User support email**: For users to contact you with questions about their consent
+          - **User support email**: For users to contact you with questions about their consent.
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -127,7 +126,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-       Most Gmail scopes are marked "restricted" by Google.
+       Most Gmail scopes are marked "sensitive" or "restricted" by Google. You need to pass a Google review to go live.
 
        You can develop your integration in test mode, but you need to pass a security review to go live.
 
@@ -143,8 +142,8 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
   ## Common Scopes
   | Scope | Description |
   | ----- | ----------- |
-  | profile | Access to user's basic profile information |
-  | email | Access to user's email address |
+  | `profile` | Access to user's basic profile information |
+  | `email` | Access to user's email address |
   | `https://mail.google.com/` | Read, compose, send, and permanently delete all emails from Gmail |
   | `https://www.googleapis.com/auth/gmail.readonly` | View email messages and settings |
   | `https://www.googleapis.com/auth/gmail.send` | Send email on the user's behalf |
@@ -152,7 +151,20 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
 
   </Tab>
   <Tab title="🔗 Useful links">
-     <UsefulLinks />
+    ## Useful links
+    | Topic | Links | 
+    | - | - | 
+    | General | [Google Cloud Console](https://console.cloud.google.com/) |
+    | | [Google Cloud Documentation](https://cloud.google.com/docs) |
+    | Developer | [OAuth 2.0 Documentation](https://developers.google.com/identity/protocols/oauth2) |
+    | | [Using OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server) |
+    | | [OAuth 2.0 Scopes for Google APIs](https://developers.google.com/identity/protocols/oauth2/scopes) |
+    | | [API Library](https://console.cloud.google.com/apis/library) |
+    | | [OAuth Consent Screen Configuration](https://console.cloud.google.com/apis/credentials/consent) |
+    | | [Credentials Management](https://console.cloud.google.com/apis/credentials) |
+    | | [App Verification Requirements](https://support.google.com/cloud/answer/9110914) |
+    | | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
+    | | [Gmail API](https://developers.google.com/workspace/gmail/api/reference/rest) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-mail.mdx)</Note>
   </Tab>

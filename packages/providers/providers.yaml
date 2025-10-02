@@ -1482,7 +1482,8 @@ bamboohr-basic:
             type: string
             title: API key
             description: The API Key of your BambooHR account
-            pattern: '^[a-zA-Z0-9]+$'
+            pattern: '^[a-f0-9]{40}$'
+            example: 59d783083fb25565aba21744e6bba90de8634de0
             secret: true
             doc_section: '#step-2-finding-your-api-key'
         password:
@@ -5825,15 +5826,17 @@ greenhouse:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse/connect
     connection_config:
         resource:
             type: string
             title: Greenhouse API Domain
-            description: The Greenhouse API Domain you want to connect to
+            description: The Greenhouse API product domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: harvest
+            example: api
             suffix: .greenhouse.io
             prefix: https://
+            doc_section: '#step-1-finding-your-greenhouse-api-domain'
 
 greenhouse-basic:
     display_name: Greenhouse (Basic Auth)
@@ -5860,7 +5863,7 @@ greenhouse-basic:
         resource:
             type: string
             title: Greenhouse API Domain
-            description: The Greenhouse API Domain you want to connect to
+            description: The Greenhouse API product domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
             example: harvest
             suffix: .greenhouse.io
@@ -5874,7 +5877,7 @@ greenhouse-basic:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-2-finding-your-greenhouse-api-key'
+            doc_section: '#step-2-generating-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -5909,7 +5912,7 @@ greenhouse-harvest:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-your-greenhouse-api-key'
+            doc_section: '#step-1-generating-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -5926,6 +5929,12 @@ greenhouse-job-board:
         - ats
     proxy:
         base_url: https://boards-api.greenhouse.io
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/boards/${connectionConfig.boardToken}
     docs: https://docs.nango.dev/integrations/all/greenhouse-job-board
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-job-board/connect
     credentials:
@@ -5935,7 +5944,7 @@ greenhouse-job-board:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-your-greenhouse-api-key'
+            doc_section: '#step-2-generating-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -5944,6 +5953,13 @@ greenhouse-job-board:
             # Greenhouse is using basic auth with an api key
             default_value: ''
             hidden: true
+    connection_config:
+        boardToken:
+            type: string
+            title: Board Token
+            description: The Job Board URL token to your Greenhouse account
+            order: 1
+            doc_section: '#step-1-finding-your-board-token'
 
 greenhouse-assessment:
     display_name: Greenhouse (Assessment API)
@@ -5969,7 +5985,7 @@ greenhouse-assessment:
             prefix: https://
             format: hostname
             order: 1
-            doc_section: '#step-1-obtaining-your-base-url'
+            doc_section: '#step-1-obtaining-your-assessment-base-url'
     credentials:
         username:
             type: string
@@ -6004,25 +6020,25 @@ greenhouse-onboarding:
     categories:
         - ats
     proxy:
-        base_url: https://onboarding-api.greenhouse.io/graphql
+        base_url: https://onboarding-api.greenhouse.io
         verification:
             headers:
                 content-type: application/json
             endpoints:
-                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - /graphql?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
             title: Access Key
             description: The Access Key to your Greenhouse Onboarding account
             pattern: '^[a-zA-Z0-9-]+$'
-            doc_section: '#step-1-generating-your-access-and-secret-key'
+            doc_section: '#step-1-generating-your-access-and-secret-keys'
         password:
             type: string
             title: Secret Key
             description: The Secret Key to your Greenhouse Onboarding account
             pattern: '^[a-zA-Z0-9-]+$'
-            doc_section: '#step-1-generating-your-access-and-secret-key'
+            doc_section: '#step-1-generating-your-access-and-secret-keys'
     docs: https://docs.nango.dev/integrations/all/greenhouse-onboarding
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-onboarding/connect
 
@@ -7890,6 +7906,14 @@ microsoft:
                 - 'retry-after'
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
+
+microsoft-excel:
+    display_name: Microsoft Excel
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft
+    docs: https://docs.nango.dev/integrations/all/microsoft-excel
 
 microsoft-oauth2-cc:
     display_name: Microsoft (Client Credentials)
@@ -13629,6 +13653,40 @@ zoominfo:
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
     docs_connect: https://docs.nango.dev/integrations/all/zoominfo/connect
+
+snipe-it:
+    display_name: Snipe-IT
+    categories:
+        - productivity
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api/
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    credentials_verification_script: snipeItCredentialsVerification
+    docs: https://docs.nango.dev/integrations/all/snipe-it
+    docs_connect: https://docs.nango.dev/integrations/all/snipe-it/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Snipe-IT API token
+            doc_section: '#step-1-create-an-api-token'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+    connection_config:
+        hostname:
+            type: string
+            title: Domain
+            format: hostname
+            description: Your Snipe-IT hostname (e.g., yourcompany)
+            example: yourcompany
+            suffix: .snipe-it.io
+            prefix: https://
+            doc_section: '#step-2-finding-your-domain'
+            order: 1
 
 zuora:
     display_name: Zuora

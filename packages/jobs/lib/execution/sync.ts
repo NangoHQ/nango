@@ -28,7 +28,7 @@ import {
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, getFrequencyMs, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
@@ -185,8 +185,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         if (task.debug) {
             void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
-
-        metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
 
         const res = await startScriptFn({
             taskId: task.id,
@@ -358,7 +356,7 @@ export async function handleSyncSuccess({
             let deleted = 0;
 
             if (result && result[model]) {
-                const modelResult = result[model] as SyncResult;
+                const modelResult = result[model];
                 added = modelResult.added;
                 updated = modelResult.updated;
                 deleted = modelResult.deleted;
@@ -485,9 +483,6 @@ export async function handleSyncSuccess({
             internalIntegrationId: nangoProps.syncConfig.nango_config_id,
             endUser: nangoProps.endUser
         });
-
-        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
-        metrics.increment(metrics.Types.SYNC_SUCCESS);
 
         const sync = await getSyncById(nangoProps.syncId);
         const frequency = sync?.frequency || nangoProps.syncConfig.runs;
@@ -895,9 +890,6 @@ async function onFailure({
             active: true
         });
     }
-
-    metrics.increment(metrics.Types.SYNC_FAILURE);
-    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 
     if (team) {
         void pubsub.publisher.publish({

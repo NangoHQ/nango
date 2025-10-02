@@ -4,7 +4,6 @@ sidebarTitle: 'Google Calendar'
 description: 'Access the Google Calendar API in 2 minutes 💨'
 ---
 
-import UsefulLinks from "/snippets/google-shared/google-shared-useful-links.mdx"
 import ApiGotchas from "/snippets/google-shared/google-shared-gotchas.mdx"
 
 import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
@@ -89,7 +88,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
         1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
         2. Click on the project dropdown at the top left of the page.
         3. Click **New Project**.
-        4. Enter a **Project Name** for your project
+        4. Enter a **Project Name** for your project.
         5. Under **Location**, select the appropriate organization or folder where this project should belong.
         <Note>If you're not part of an organization, it will default to No organization</Note>
         6. Click **Create** and wait for the project to be created.
@@ -97,18 +96,16 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
       </Step>
       <Step title="Enable the APIs you need">
         1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
-        2. Search for **Google Calendar API** and select the ones you wish to integrate with, such as **Google Calendar API**, **CalDAV API**, etc., then click **Enable** for each.
+        2. Search for **Google Calendar API** and select the APIs you wish to integrate with, such as **Google Calendar API**, **CalDAV API**, etc., then click **Enable** for each.
       </Step>
       <Step title="Configure the OAuth consent screen">
         1. Go to **APIs & Services** > **OAuth consent screen** in the Google Cloud Console.
         2. Click **Get started**.
-        3. Fill in the **App Information** form.
-          - **App Name**: The name of the app asking for consent.
-          - **User support email**: For users to contact you with questions about their consent
+        3. Fill in all the required fields in the **App Information** form.
         4. Click **Next**. Select the appropriate Audience:
            - **External**: For applications available to any Google user
            - **Internal**: For applications restricted to users within your Google Workspace organization
-        5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+        5. Click **Next**. Fill in the **Contact Information**; these are the email addresses that Google will use to notify you about any changes to your project.
         6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
         7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
         8. Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
@@ -126,7 +123,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
       </Step>
       <Step title="Verify your app">
-        Most Google Calendar scopes are marked "sensitive" by Google. You need to pass a Google review to go live.
+        Most Google Calendar scopes are marked "sensitive" or "restricted" by Google. You need to pass a Google review to go live.
 
        [Follow our guide](/integrations/google-security-review) to prepare and pass as quickly as possible.
       </Step>
@@ -140,9 +137,9 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
 
   | Scope | Description |
   | ----- | ----------- |
-  | openid | Access to basic profile information |
-  | profile | Access to user's basic profile information |
-  | email | Access to user's email address |
+  | `openid` | Access to basic profile information |
+  | `profile` | Access to user's basic profile information |
+  | `email` | Access to user's email address |
   | `https://www.googleapis.com/auth/calendar` | See, edit, share, and permanently delete all the calendars you can access using Google Calendar |
   | `https://www.googleapis.com/auth/calendar.events` | View and edit events on all your calendars |
   | `https://www.googleapis.com/auth/calendar.events.readonly` | View events on all your calendars |
@@ -150,7 +147,20 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
 
   </Tab>
   <Tab title="🔗 Useful links">
-    <UsefulLinks />
+    ## Useful links
+    | Topic | Links | 
+    | - | - | 
+    | General | [Google Cloud Console](https://console.cloud.google.com/) |
+    | | [Google Cloud Documentation](https://cloud.google.com/docs) |
+    | Developer | [OAuth 2.0 Documentation](https://developers.google.com/identity/protocols/oauth2) |
+    | | [Using OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/oauth2/web-server) |
+    | | [OAuth 2.0 Scopes for Google APIs](https://developers.google.com/identity/protocols/oauth2/scopes) |
+    | | [API Library](https://console.cloud.google.com/apis/library) |
+    | | [OAuth Consent Screen Configuration](https://console.cloud.google.com/apis/credentials/consent) |
+    | | [Credentials Management](https://console.cloud.google.com/apis/credentials) |
+    | | [App Verification Requirements](https://support.google.com/cloud/answer/9110914) |
+    | | [OAuth Token Expiration](https://developers.google.com/identity/protocols/oauth2#expiration) |
+    | | [Google Calendar API](https://developers.google.com/workspace/calendar/api/v3/reference) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google-calendar.mdx)</Note>
   </Tab>

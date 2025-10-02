@@ -1,53 +1,117 @@
 ---
-title: Greenhouse
-sidebarTitle: Greenhouse
+title: 'Greenhouse (OAuth)'
+sidebarTitle: 'Greenhouse (OAuth)'
+description: 'Access the Greenhouse API with OAuth Authentication in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/greenhouse/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/greenhouse/PreBuiltUseCases.mdx"
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+<StatusWidget service="greenhouse" />
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Greenhouse (OAuth)_. Nango doesn't provide a test OAuth app for Greenhouse (OAuth) yet, so you'll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth Client ID, Client Secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Greenhouse">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Greenhouse. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Greenhouse API">
+        Let's make your first request to the Greenhouse API. If you have `api` as your **Greenhouse API Domain**, this will fetch the profile of the currently signed-in user. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/v1/partner/current_user" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
 
-## Setup guide
+            <Tab title="Node">
 
-_No setup guide yet._
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse.mdx)</Note>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
+            const res = await nango.get({
+              endpoint: '/v1/partner/current_user',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
-## Useful links
-Greenhouse offers both `Basic` and `OAuth` as authentication and Nango implements both.
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
 
--   [How to register an Application](https://developers.greenhouse.io/candidate-ingestion.html#authentication)
--   [OAuth-related docs](https://developers.greenhouse.io/candidate-ingestion.html#introduction)
--   [List of OAuth scopes](https://developers.greenhouse.io/candidate-ingestion.html#oauth-scopes)
--   [API](https://developers.greenhouse.io)
--   [Harvest API authentication](https://developers.greenhouse.io/harvest.html#authentication)
+        </Tabs>
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse.mdx)</Note>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## API gotchas
+      </Step>
+    </Steps>
 
-- For `Basic` auth pass Greenhouse API token as username and the password should be blank.
-- If you need to use the proxy, it is important to provide the resource that you will be calling in the config (as green house has many forms for API resource). Please see [here](https://developers.greenhouse.io/) for different types of resources. Once confirmed, you have to add `resource` as a config.
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Greenhouse accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Submit application information to Greenhouse">
+        Contact Greenhouse to register your OAuth application. You'll need to provide:
+        - **Application Name**: The name of your application as it will appear in Greenhouse.
+        - **Application URL**: The URL of your application.
+        - **Callback URL**: Use `https://api.nango.dev/oauth/callback`
+        - **Logo Image**: A 128x128 pixel image that Greenhouse will include in their permissions modal.
+      </Step>
+      <Step title="Receive OAuth credentials from Greenhouse">
+        After submitting your application information, Greenhouse will provide:
+        - **Consumer Key**: Uniquely identifies your application.
+        - **Consumer Secret**: Acts as proof of your application's identity (will be encrypted when emailed).
 
-<Card title="Connect to Greenhouse (basic auth)" icon="link" href="/integrations/all/greenhouse-basic/connect" horizontal>
-  Guide to connect to Greenhouse (basic auth) using Nango Connect.
-</Card>
+        <Note>The consumer secret is confidential and will be encrypted by Greenhouse for security. They'll provide decryption instructions.</Note>
+        After decrypting the consumer secret, copy both the **Consumer Key** (which serves as the Client ID) and **Consumer Secret** (which serves as the Client Secret) as you'll need them when configuring your integration in Nango.
+      </Step>
+       <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+     ## Common Scopes
+
+    | Scope | Description |
+    | ----- | ----------- |
+    | `candidates.create` | Create new candidates or prospects |
+    | `candidates.view` | View candidates imported via this partner |
+    | `jobs.view` | View my jobs |
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Greenhouse (OAuth) using Connect UI](/integrations/all/greenhouse/connect) |
+    | General | [Greenhouse Website](https://www.greenhouse.io/) |
+    | | [Greenhouse Dashboard](https://app.greenhouse.io/) |
+    | Developer | [OAuth-related docs](https://developers.greenhouse.io/candidate-ingestion.html#authentication) |
+    | | [Ingestion API Docs](https://developers.greenhouse.io/candidate-ingestion.html#introduction) |
+    | | [List of OAuth scopes](https://developers.greenhouse.io/candidate-ingestion.html#oauth-scopes) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+     _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
