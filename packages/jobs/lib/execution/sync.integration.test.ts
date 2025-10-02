@@ -10,8 +10,8 @@ import { envs } from '../env.js';
 
 import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { ReturnedRecord, UnencryptedRecordData } from '@nangohq/records';
-import type { Job as SyncJob, Sync, SyncResult } from '@nangohq/shared';
-import type { ConnectionJobs, DBSyncConfig } from '@nangohq/types';
+import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { ConnectionJobs, DBSyncConfig, SyncResult } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 

@@ -13,10 +13,10 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    changes:
+    should-run:
         runs-on: ubuntu-latest
         outputs:
-            docs_only: ${{ steps.filter.outputs.docs_only }}
+            should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
             - uses: actions/checkout@v4
             - uses: dorny/paths-filter@v3
@@ -25,31 +25,52 @@ jobs:
                   filters: |
                       docs_only:
                           - 'docs-v2/**'
+            - name: Determine if should skip
+              id: check
+              run: |
+                  # Run on PRs only if not docs only
+                  # Always run on merge queue
+                  # Always run on direct pushes to master (not merge queue bot)
+                  IS_PR="${{ github.event_name == 'pull_request' }}"
+                  IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
+                  IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
+                  IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only }}"
+
+                  SHOULD_SKIP="true"
+                  # Always run on merge queue and direct push to master
+                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  # Run on PR only if not docs only
+                  elif [[ "$IS_PR" == "true" && "$IS_DOCS_ONLY" != "true" ]]; then
+                      SHOULD_SKIP="false"
+                  fi
+
+                  echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     tests:
-        needs: changes
+        needs: should-run
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               uses: actions/checkout@v4
               with:
                   fetch-depth: '0'
 
             - name: Use Node.js
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               uses: actions/setup-node@v4
               with:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
             - run: npm ci
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run ts-build
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run test:unit -- --exclude packages/cli/
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run test:integration
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'

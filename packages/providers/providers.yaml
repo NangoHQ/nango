@@ -1482,7 +1482,8 @@ bamboohr-basic:
             type: string
             title: API key
             description: The API Key of your BambooHR account
-            pattern: '^[a-zA-Z0-9]+$'
+            pattern: '^[a-f0-9]{40}$'
+            example: 59d783083fb25565aba21744e6bba90de8634de0
             secret: true
             doc_section: '#step-2-finding-your-api-key'
         password:
