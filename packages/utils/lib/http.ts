@@ -75,6 +75,9 @@ export function redactHeaders({
 
     for (const key of Object.keys(safeHeaders)) {
         for (const value of valuesToFilter) {
+            if (value === '') {
+                continue;
+            }
             if (safeHeaders[key]?.includes(value)) {
                 safeHeaders[key] = 'REDACTED';
             }
@@ -85,7 +88,13 @@ export function redactHeaders({
 }
 
 export function redactURL({ url, valuesToFilter }: { url: string; valuesToFilter: string[] }) {
+    if (valuesToFilter.length === 0) {
+        return url;
+    }
     return valuesToFilter.reduce((curr, value) => {
+        if (value === '') {
+            return curr;
+        }
         return curr.replace(value, 'REDACTED');
     }, url);
 }
