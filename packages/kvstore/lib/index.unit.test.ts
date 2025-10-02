@@ -21,7 +21,7 @@ describe('getKVStore', () => {
         delete process.env['NANGO_REDIS_AUTH'];
 
         // Clear the cached kvstorePromise
-        await destroyAll();
+        await destroyAll(true);
     });
 
     afterEach(() => {

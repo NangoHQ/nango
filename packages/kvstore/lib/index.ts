@@ -47,15 +47,18 @@ async function getRedisKVStore(url: string, connect: boolean = true): Promise<KV
     return new RedisKVStore(redis);
 }
 
-export async function destroyAll() {
+export async function destroyAll(hard: boolean = false) {
     for (const name of kvstorePromises.keys()) {
-        await destroy(name);
+        await destroy(name, hard);
     }
 }
 
-export async function destroy(name: string) {
+export async function destroy(name: string, hard: boolean = false) {
     if (kvstorePromises.has(name)) {
         await (await kvstorePromises.get(name)!).destroy();
+        if (hard) {
+            kvstorePromises.delete(name);
+        }
     }
 }
 
