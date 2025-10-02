@@ -21,6 +21,9 @@ jobs:
                   filters: |
                       docs_only:
                           - 'docs-v2/**'
+                      non_docs:
+                          - '**'
+                          - '!docs-v2/**'
             - name: Determine if should skip
               id: check
               run: |
@@ -30,7 +33,7 @@ jobs:
                   IS_PR="${{ github.event_name == 'pull_request' }}"
                   IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
                   IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
-                  IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only }}"
+                  IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only == 'true' && steps.filter.outputs.non_docs != 'true' }}"
 
                   SHOULD_SKIP="true"
                   # Always run on merge queue and direct push to master
