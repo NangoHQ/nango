@@ -13,10 +13,10 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    changes:
+    should-run:
         runs-on: ubuntu-latest
         outputs:
-            docs_only: ${{ steps.filter.outputs.docs_only }}
+            should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
             - uses: actions/checkout@v4
             - uses: dorny/paths-filter@v3
@@ -25,26 +25,47 @@ jobs:
                   filters: |
                       docs_only:
                           - 'docs-v2/**'
+            - name: Determine if should skip
+              id: check
+              run: |
+                  # Run on PRs only if not docs only
+                  # Always run on merge queue
+                  # Always run on direct pushes to master (not merge queue bot)
+                  IS_PR="${{ github.event_name == 'pull_request' }}"
+                  IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
+                  IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
+                  IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only }}"
+
+                  SHOULD_SKIP="true"
+                  # Always run on merge queue and direct push to master
+                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  # Run on PR only if not docs only
+                  elif [[ "$IS_PR" == "true" && "$IS_DOCS_ONLY" != "true" ]]; then
+                      SHOULD_SKIP="false"
+                  fi
+
+                  echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     docker_check_job:
-        needs: changes
+        needs: shoud-run
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.shoud-run.outputs.should_skip != 'true'
               uses: actions/checkout@v4
 
             - name: Build the docker-compose stack
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.shoud-run.outputs.should_skip != 'true'
               run: docker compose up -d
 
             - name: Sleep
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.shoud-run.outputs.should_skip != 'true'
               uses: jakejarvis/wait-action@master
               with:
                   time: '30s'
 
             - name: Verify containers
-              if: needs.changes.outputs.docs_only != 'true'
+              if: needs.shoud-run.outputs.should_skip != 'true'
               run: |
                   CONTAINER_NAME=nango-server
                   SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
