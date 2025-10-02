@@ -14,9 +14,17 @@ import type { Orchestrator, RecordsServiceInterface } from '../../clients/orches
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { ReportedSyncJobStatus, SyncCommand, SyncWithConnectionId } from '../../models/Sync.js';
+import type { SyncCommand, SyncWithConnectionId } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import type { CLIDeployFlowConfig, ConnectionInternal, DBConnection, DBConnectionDecrypted, DBEnvironment, SyncDeploymentResult } from '@nangohq/types';
+import type {
+    CLIDeployFlowConfig,
+    ConnectionInternal,
+    DBConnection,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    ReportedSyncJobStatus,
+    SyncDeploymentResult
+} from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
