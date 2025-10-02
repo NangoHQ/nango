@@ -71,10 +71,11 @@ async function processN({
     const processor = new OrchestratorProcessor({
         handler,
         orchestratorClient,
-        groupKeyPattern: groupKey,
+        groupKeyPattern: `${groupKey}*`, // using wildcard like the real processor
         maxConcurrency: n
     });
     processor.start();
+    await setTimeout(100);
 
     for (let i = 0; i < n; i++) {
         await immediateTask({ groupKey });
@@ -82,11 +83,11 @@ async function processN({
 
     let processed = false;
     const start = Date.now();
-    const timeout = 3_000;
+    const timeout = 1_000;
     while (!processed) {
         await setTimeout(100);
         const tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
-        processed = tasks.every(waitUntil);
+        processed = tasks.length == n && tasks.every(waitUntil);
         if (!processed && Date.now() - start > timeout) {
             throw new Error(`Timeout: expected ${n} tasks to be processed, but tasks are still in states: ${tasks.map((task) => task.state).join(', ')}`);
         }
