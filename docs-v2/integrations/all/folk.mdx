@@ -1,0 +1,84 @@
+---
+title: 'Folk'
+sidebarTitle: 'Folk'
+description: 'Access the Folk API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Folk_.
+      </Step>
+      <Step title="Authorize Folk">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Folk API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Folk API">
+        Let's make your first request to the Folk API (fetch the current workspace user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/v1/users/me" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" 
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/v1/users/me',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Folk accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Folk using Connect UI](/integrations/all/folk/connect) |
+    | General | [Folk Website](https://www.folk.app/) |
+    | | [Folk Dashboard](https://app.folk.app/) |
+    | Developer | [Generate an API Key in your Folk account](https://app.folk.app/apps/contacts/network/settings/api-keys) |
+    | | [Folk API docs](https://developer.folk.app/api-reference/overview) |
+    | | [API Authentication](https://developer.folk.app/api-reference/authentication) |
+    | | [API Rate limiting](https://developer.folk.app/api-reference/rate-limits) |
+    | | [API Versioning](https://developer.folk.app/api-reference/versioning) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/folk.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+  - Folk’s API uses [versioning](https://developer.folk.app/api-reference/versioning) to ensure backward compatibility. By default, every request is made to the latest version of the API.However, you can specify the API version you want to use through the `X-API-Version` header.
+
+  <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/folk.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

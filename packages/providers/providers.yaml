@@ -4692,6 +4692,33 @@ float:
             description: The details of your app
             automated: true
 
+folk:
+    display_name: Folk
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.folk.app
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/folk
+    docs_connect: https://docs.nango.dev/integrations/all/folk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Folk account
+            example: 'FOLKLrHVSoYB6TaAF39aNGtEpEi3oxuo'
+            pattern: '^FOLK[a-zA-Z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 fortnox:
     display_name: Fortnox
     categories:
