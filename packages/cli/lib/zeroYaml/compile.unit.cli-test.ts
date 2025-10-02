@@ -45,7 +45,7 @@ describe('edge cases', () => {
     it('should catch invalid setMergingStrategy', async () => {
         const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/setMergingStrategy.error.js'), projectRootPath: fixturesPath });
         if (result.isErr()) {
-            expect(result.error).toMatchSnapshot();
+            expect(result.error.message.replaceAll('\\', '/')).toMatchSnapshot();
         } else {
             throw new Error('should be an error');
         }
@@ -62,14 +62,8 @@ describe('edge cases', () => {
     it('should catch multiple exports', async () => {
         const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/multipleExports.js'), projectRootPath: fixturesPath });
         assert(result.isErr(), 'Should be an error');
+        assert(result.error instanceof CompileError, 'Should be an error');
 
-        expect(result.error).toEqual(
-            new CompileError(
-                'nango_named_export_not_allowed',
-                25,
-                "Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent are permitted.",
-                './zero/cases/multipleExports.ts'
-            )
-        );
+        expect(result.error.toText().replaceAll('\\', '/')).toMatchSnapshot();
     });
 });

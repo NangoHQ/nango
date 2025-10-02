@@ -84,7 +84,7 @@ export const BackendSettings: React.FC = () => {
                 </div>
                 <h3 className="uppercase text-sm">Backend Settings</h3>
             </Link>
-            <div className="px-8 flex flex-col gap-10 w-3/5">
+            <div className="px-8 flex flex-col gap-10 w-1/2">
                 <fieldset className="flex flex-col gap-2.5">
                     <label htmlFor="secretKey" className="font-semibold mb-2">
                         Secret Key

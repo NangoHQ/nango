@@ -1,10 +1,6 @@
 import tracer from 'dd-trace';
 
 export enum Types {
-    ACTION_EXECUTION = 'nango.jobs.actionExecution',
-    ACTION_SUCCESS = 'nango.orch.action.success',
-    ACTION_FAILURE = 'nango.orch.action.failure',
-    ACTION_TRACK_RUNTIME = 'action_track_runtime',
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
@@ -31,11 +27,6 @@ export enum Types {
     PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
     PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES = 'nango.persist.records.modified.sizeInBytes',
 
-    ON_EVENT_SCRIPT_EXECUTION = 'nango.jobs.onEventScriptExecution',
-    ON_EVENT_SCRIPT_RUNTIME = 'nango.jobs.onEventScriptRuntime',
-    ON_EVENT_SCRIPT_SUCCESS = 'nango.orch.onEventScript.success',
-    ON_EVENT_SCRIPT_FAILURE = 'nango.orch.onEventScript.failure',
-
     POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
     POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
     PRE_CONNECTION_DELETION_SUCCESS = 'nango.preConnectionDeletion.success',
@@ -59,15 +50,8 @@ export enum Types {
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
-    SYNC_EXECUTION = 'nango.jobs.syncExecution',
-    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
-    SYNC_SUCCESS = 'nango.orch.sync.success',
-    SYNC_FAILURE = 'nango.orch.sync.failure',
+    FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
-    WEBHOOK_EXECUTION = 'nango.jobs.webhookExecution',
-    WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
-    WEBHOOK_SUCCESS = 'nango.orch.webhook.success',
-    WEBHOOK_FAILURE = 'nango.orch.webhook.failure',
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
@@ -105,7 +89,9 @@ export enum Types {
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 
-    DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes'
+    DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
+
+    ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 
 import { AuthorizationSettings } from './Authorization';
 import { BackendSettings } from './Backend';
+import { ConnectUISettings } from './ConnectUISettings';
 import { DeleteButton } from './DeleteButton';
 import { ExportSettings } from './Export';
 import { MainSettings } from './Main';
 import { NotificationSettings } from './Notification';
 import { VariablesSettings } from './Variables';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/Accordion';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
@@ -74,7 +74,7 @@ export const EnvironmentSettings: React.FC = () => {
 
     if (!environmentAndAccount || !team) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings} className="p-6">
+            <DashboardLayout className="p-6">
                 <Helmet>
                     <title>Environment Settings - Nango</title>
                 </Helmet>
@@ -92,7 +92,7 @@ export const EnvironmentSettings: React.FC = () => {
 
     const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings} className="p-6">
+        <DashboardLayout fullWidth className="p-6">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
@@ -112,6 +112,7 @@ export const EnvironmentSettings: React.FC = () => {
             <div className="flex flex-col gap-20 h-fit" key={env}>
                 <MainSettings />
                 <BackendSettings />
+                <ConnectUISettings />
                 <NotificationSettings />
                 <VariablesSettings />
                 <ExportSettings />

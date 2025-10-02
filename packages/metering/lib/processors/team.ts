@@ -6,10 +6,10 @@ import { Err, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
-import type { TeamEvent, Transport } from '@nangohq/pubsub';
+import type { TeamUpdatedEvent, Transport } from '@nangohq/pubsub';
 import type { Result } from '@nangohq/utils';
 
-export class Team {
+export class TeamProcessor {
     private subscriber: Subscriber;
 
     constructor(transport: Transport) {
@@ -34,7 +34,7 @@ export class Team {
     }
 }
 
-async function process(event: TeamEvent): Promise<Result<void>> {
+async function process(event: TeamUpdatedEvent): Promise<Result<void>> {
     try {
         switch (event.type) {
             case 'team.updated': {

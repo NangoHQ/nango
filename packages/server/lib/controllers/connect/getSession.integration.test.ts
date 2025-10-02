@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { connectUISettingsService, seeders } from '@nangohq/shared';
+import { connectUISettingsService, seeders, updatePlan } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -86,14 +86,16 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.defaultConnectUISettings
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
             }
         });
         expect(res.res.status).toBe(200);
     });
 
-    it('should get a session with custom connect UI settings', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+    it('should get a session with custom connect UI settings when both customization flags are enabled', async () => {
+        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        // Enable both features so custom settings can be preserved
+        await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create custom connect UI settings
@@ -132,6 +134,51 @@ describe(`GET ${endpoint}`, () => {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: customConnectUISettings
+            }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should get a session with default connect UI settings when both customization flags are disabled', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        // Create custom connect UI settings
+        const customConnectUISettings: ConnectUISettings = {
+            showWatermark: true,
+            defaultTheme: 'system',
+            theme: {
+                light: {
+                    primary: '#ffffff'
+                },
+                dark: {
+                    primary: '#000000'
+                }
+            }
+        };
+        await connectUISettingsService.upsertConnectUISettings(db.knex, env.id, customConnectUISettings);
+
+        // Create session
+        const endUserId = 'knownId';
+        const resCreate = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: env.secret_key,
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
+        });
+        isSuccess(resCreate.json);
+
+        // Get session
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: resCreate.json.data.token
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
+                allowed_integrations: ['github'],
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
             }
         });
         expect(res.res.status).toBe(200);

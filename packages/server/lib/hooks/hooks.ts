@@ -21,9 +21,11 @@ import { postConnectionCreation } from './connection/on/post-connection-creation
 import postConnection from './connection/post-connection.js';
 
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
-import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
+import type { Config } from '@nangohq/shared';
 import type {
+    ApiKeyCredentials,
     ApplicationConstructedProxyConfiguration,
+    BasicApiCredentials,
     ConnectionConfig,
     DBConnectionDecrypted,
     DBEnvironment,
@@ -126,7 +128,7 @@ export const connectionCreated = async (
     logContextGetter: LogContextGetter,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
-    const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
+    const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
 
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, providerConfig.provider, logContextGetter);
@@ -146,7 +148,7 @@ export const connectionCreated = async (
         auth_mode,
         endUser,
         success: true,
-        operation: 'creation',
+        operation,
         providerConfig,
         account
     });

@@ -9,8 +9,8 @@ import oauthController from '../controllers/oauth.controller.js';
 
 import type { InternalNango } from './internal-nango.js';
 import type { SentryOauthWebhookResponse, WebhookHandler } from './types.js';
-import type { Config, OAuthSession } from '@nangohq/shared';
-import type { ConnectionConfig, ProviderOAuth2 } from '@nangohq/types';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionConfig, OAuthSession, ProviderOAuth2 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.SentryOauth');
@@ -111,7 +111,10 @@ async function handleCreateWebhook(nango: InternalNango, body: SentryOauthWebhoo
             environmentId: nango.environment.id,
             webSocketClientId: undefined,
             activityLogId: activityLogId,
-            codeVerifier: ''
+            codeVerifier: null,
+            requestTokenSecret: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
         };
 
         try {

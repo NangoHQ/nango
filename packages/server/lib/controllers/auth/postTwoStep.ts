@@ -150,7 +150,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             success,
             error,
             response: credentials
-        } = await connectionService.getTwoStepCredentials(provider as ProviderTwoStep, bodyData, connectionConfig);
+        } = await connectionService.getTwoStepCredentials(providerConfigKey, provider as ProviderTwoStep, bodyData, connectionConfig);
 
         if (!success || !credentials) {
             void logCtx.error('Error during TwoStep credentials creation', { error, provider: config.provider });
@@ -202,7 +202,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             }
 
             const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             res.status(400).send({
                 error: {

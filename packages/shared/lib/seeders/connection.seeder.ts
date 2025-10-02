@@ -3,8 +3,7 @@ import db from '@nangohq/database';
 import connectionService from '../services/connection.service.js';
 import { linkConnection } from '../services/endUser.service.js';
 
-import type { AuthCredentials } from '../models/Auth.js';
-import type { ConnectionConfig, DBConnection, DBConnectionDecrypted, DBEnvironment, EndUser } from '@nangohq/types';
+import type { AllAuthCredentials, ConnectionConfig, DBConnection, DBConnectionDecrypted, DBEnvironment, EndUser } from '@nangohq/types';
 
 export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[]> => {
     const connectionIds = [];
@@ -14,7 +13,7 @@ export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[
         const result = await connectionService.upsertConnection({
             connectionId: `conn-${name}`,
             providerConfigKey: `provider-${name}`,
-            parsedRawCredentials: {} as AuthCredentials,
+            parsedRawCredentials: {} as AllAuthCredentials,
             connectionConfig: {},
             environmentId: env.id
         });
@@ -43,7 +42,7 @@ export const createConnectionSeed = async ({
     provider: string;
     endUser?: EndUser;
     connectionId?: string;
-    rawCredentials?: AuthCredentials;
+    rawCredentials?: AllAuthCredentials;
     connectionConfig?: ConnectionConfig;
 } & Partial<
     Omit<DBConnectionDecrypted, 'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id'>
@@ -52,7 +51,7 @@ export const createConnectionSeed = async ({
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
-        parsedRawCredentials: rawCredentials || ({} as AuthCredentials),
+        parsedRawCredentials: rawCredentials || ({} as AllAuthCredentials),
         connectionConfig: connectionConfig || {},
         environmentId: env.id,
         ...rest

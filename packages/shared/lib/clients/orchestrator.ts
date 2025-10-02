@@ -3,7 +3,7 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, errorToObject, getFrequencyMs, metrics, stringifyError } from '@nangohq/utils';
+import { Err, Ok, errorToObject, getFrequencyMs, stringifyError } from '@nangohq/utils';
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
@@ -146,7 +146,6 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
-        const startTime = Date.now();
         try {
             let parsedInput: JsonValue = null;
             try {
@@ -228,12 +227,6 @@ export class Orchestrator {
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
-            // only track duration when action is executed inline
-            if (!async) {
-                const endTime = Date.now();
-                const totalRunTime = (endTime - startTime) / 1000;
-                metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
-            }
             span.finish();
         }
     }
@@ -400,7 +393,6 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
-        const startTime = Date.now();
         try {
             const groupKey = 'on-event:environment:${connection.environment_id}';
             const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
@@ -443,7 +435,6 @@ export class Orchestrator {
                 integration: connection.provider_config_key
             });
 
-            metrics.increment(metrics.Types.ON_EVENT_SCRIPT_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -473,13 +464,9 @@ export class Orchestrator {
                 }
             });
 
-            metrics.increment(metrics.Types.ON_EVENT_SCRIPT_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
-            const endTime = Date.now();
-            const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -740,12 +727,14 @@ export class Orchestrator {
                 return Err(frequencyMs.error);
             }
 
-            const groupKey = `sync`;
             const schedule = await this.client.recurring({
                 name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: frequencyMs.value,
-                group: { key: groupKey, maxConcurrency: 0 },
+                group: {
+                    key: `sync:environment:${nangoConnection.environment_id}`,
+                    maxConcurrency: 0
+                },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour
