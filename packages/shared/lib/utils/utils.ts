@@ -443,10 +443,33 @@ export function getConnectionMetadata(
 }
 
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
-    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    let cleanTemplate = template;
+
+    if (cleanTemplate.includes('${') && cleanTemplate.includes('||')) {
+        const splitTemplate = cleanTemplate.split(/\s*\|\|\s*/);
+
+        const keyMatch = cleanTemplate.match(/\$\{connectionConfig\.(\w+)\}/);
+        const index = keyMatch && keyMatch[1] && config[keyMatch[1]] ? 0 : 1;
+        cleanTemplate = splitTemplate[index]?.trim() || '';
+    }
+
+    cleanTemplate = cleanTemplate.replace(/connectionConfig\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
     const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
-    return new URL(interpolatedUrl);
+    let finalUrl: URL;
+
+    try {
+        finalUrl = new URL(interpolatedUrl);
+    } catch {
+        try {
+            finalUrl = new URL(decodeURIComponent(interpolatedUrl));
+        } catch {
+            // placeholder URL value if interpolation fails (e.g., token_url not yet available, waiting for redirect_uri_metadata)
+            finalUrl = new URL('https://placeholder.invalid');
+        }
+    }
+
+    return finalUrl;
 }
 
 export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {

@@ -13404,13 +13404,15 @@ zoho:
     categories:
         - accounting
     auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
-    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
+    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth || https://accounts.zoho.com/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token
     authorization_params:
         prompt: consent
         access_type: offline
+    redirect_uri_metadata:
+        - accounts-server
     proxy:
-        base_url: https://www.zohoapis.${connectionConfig.extension}
+        base_url: https://www.zohoapis.${connectionConfig.extension} || ${connectionConfig.accounts-server}
         paginate:
             type: offset
             response_path: data
@@ -13425,6 +13427,7 @@ zoho:
             pattern: '^[a-z.]+$'
             prefix: https://accounts.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-books:
@@ -13440,6 +13443,7 @@ zoho-books:
             pattern: '^[a-z.]+$'
             prefix: https://books.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-crm:
@@ -13455,6 +13459,7 @@ zoho-crm:
             pattern: '^[a-z.]+$'
             prefix: https://crm.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-calendar:
@@ -13474,6 +13479,7 @@ zoho-calendar:
             pattern: '^[a-z.]+$'
             prefix: https://calendar.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-desk:
@@ -13494,6 +13500,7 @@ zoho-desk:
             pattern: '^[a-z.]+$'
             prefix: https://desk.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-inventory:
@@ -13511,6 +13518,7 @@ zoho-inventory:
             pattern: '^[a-z.]+$'
             prefix: https://inventory.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-invoice:
@@ -13528,6 +13536,7 @@ zoho-invoice:
             pattern: '^[a-z.]+$'
             prefix: https://invoice.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-mail:
@@ -13548,6 +13557,7 @@ zoho-mail:
             pattern: '^[a-z.]+$'
             prefix: https://mail.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-bigin:
@@ -13563,6 +13573,7 @@ zoho-bigin:
             pattern: '^[a-z.]+$'
             prefix: https://bigin.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-people:
@@ -13582,6 +13593,7 @@ zoho-people:
             pattern: '^[a-z.]+$'
             prefix: https://people.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoom:

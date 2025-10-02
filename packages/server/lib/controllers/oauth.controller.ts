@@ -536,13 +536,11 @@ class OAuthController {
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
-        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
         try {
             const passedInterpolationCheck = await this.passesInterpolationParamsCheck({
                 provider,
                 connectionConfig,
-                tokenUrl,
                 logCtx,
                 channel,
                 providerConfigKey,
@@ -1213,6 +1211,7 @@ class OAuthController {
         const channel = session.webSocketClientId;
 
         let connectionConfig: Record<string, any> = {
+            ...callbackMetadata,
             ...webhookMetadata,
             ...session.connectionConfig
         };
@@ -1740,7 +1739,7 @@ class OAuthController {
     }: {
         provider: ProviderOAuth2 | ProviderMcpOAUTH2;
         connectionConfig: Record<string, string>;
-        tokenUrl: string;
+        tokenUrl?: string;
         logCtx: LogContext;
         channel: string | undefined;
         providerConfigKey: string;
@@ -1757,7 +1756,7 @@ class OAuthController {
             return false;
         }
 
-        if (missesInterpolationParam(tokenUrl, connectionConfig)) {
+        if (tokenUrl && missesInterpolationParam(tokenUrl, connectionConfig)) {
             const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
             void logCtx.error(error.message, { connectionConfig });
             await logCtx.failed();
