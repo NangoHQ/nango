@@ -4,6 +4,10 @@ sidebarTitle: 'Box'
 description: 'Access the Box API in 2 minutes 💨'
 ---
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="box" />
+
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -68,20 +72,20 @@ description: 'Access the Box API in 2 minutes 💨'
     </Step>
 
     <Step title="Create a new application">
-        1. Go to the [Box Developer Console](https://app.box.com/developers/console).  
-        2. Click **Create Platform App**.  
-        3. Select **Custom App** as your **Platform App** from the list of application types.  
-        4. Enter the basic application details and choose **User Authentication (OAuth 2.0)** as your app's **Authentication Method**.  
+        1. Go to the [Box Developer Console](https://app.box.com/developers/console).
+        2. Click **Create Platform App**.
+        3. Select **Custom App** as your **Platform App** from the list of application types.
+        4. Enter the basic application details and choose **User Authentication (OAuth 2.0)** as your app's **Authentication Method**.
         5. In your app's **Configuration** tab, add `https://api.nango.dev/oauth/callback` as your **Redirect URI**, then click **Save Changes**.
         6. Scroll down to the **Application Scopes** section and select the scopes you need.
     </Step>
 
     <Step title="Obtain OAuth credentials">
-        1. In the same **Configuration** tab, under the **OAuth 2.0 Credentials** section, copy your **Client ID** and **Client Secret**, you’ll need these when configuring your integration in Nango.  
+        1. In the same **Configuration** tab, under the **OAuth 2.0 Credentials** section, copy your **Client ID** and **Client Secret**, you’ll need these when configuring your integration in Nango.
     </Step>
 
     <Step title="Start building your integration">
-        Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.  
+        Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.
     </Step>
     </Steps>
 

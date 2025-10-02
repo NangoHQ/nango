@@ -4,6 +4,10 @@ sidebarTitle: 'Greenhouse (OAuth)'
 description: 'Access the Greenhouse API with OAuth Authentication in 2 minutes ðŸ’¨'
 ---
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="greenhouse" />
+
 <Tabs>
   <Tab title="ðŸš€ Quickstart">
     <Steps>
@@ -71,7 +75,7 @@ description: 'Access the Greenhouse API with OAuth Authentication in 2 minutes ð
         After submitting your application information, Greenhouse will provide:
         - **Consumer Key**: Uniquely identifies your application.
         - **Consumer Secret**: Acts as proof of your application's identity (will be encrypted when emailed).
-        
+
         <Note>The consumer secret is confidential and will be encrypted by Greenhouse for security. They'll provide decryption instructions.</Note>
         After decrypting the consumer secret, copy both the **Consumer Key** (which serves as the Client ID) and **Consumer Secret** (which serves as the Client Secret) as you'll need them when configuring your integration in Nango.
       </Step>
@@ -90,8 +94,8 @@ description: 'Access the Greenhouse API with OAuth Authentication in 2 minutes ð
 
   </Tab>
   <Tab title="ðŸ”— Useful links">
-    | Topic | Links | 
-    | - | - | 
+    | Topic | Links |
+    | - | - |
     | Authorization | [Guide to connect to Greenhouse (OAuth) using Connect UI](/integrations/all/greenhouse/connect) |
     | General | [Greenhouse Website](https://www.greenhouse.io/) |
     | | [Greenhouse Dashboard](https://app.greenhouse.io/) |
