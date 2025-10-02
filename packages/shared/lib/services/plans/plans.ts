@@ -2,7 +2,10 @@ import ms from 'ms';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import type { DBPlan } from '@nangohq/types';
+import { freePlan, plansList } from './definitions.js';
+import { productTracking } from '../../utils/productTracking.js';
+
+import type { DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -115,4 +118,52 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .select<DBPlan[]>('*')
         .where('plans.trial_end_at', '<=', db.raw('NOW()'))
         .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
+}
+
+export async function handlePlanChanged(
+    db: Knex,
+    team: DBTeam,
+    { newPlanCode, orbCustomerId, orbSubscriptionId }: { newPlanCode: string; orbCustomerId?: string | undefined; orbSubscriptionId: string }
+): Promise<Result<boolean>> {
+    const newPlan = plansList.find((p) => p.orbId === newPlanCode);
+    if (!newPlan) {
+        return Err('Received a plan not linked to the plansList');
+    }
+
+    const currentPlan = await getPlan(db, { accountId: team.id });
+    if (currentPlan.isErr()) {
+        return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
+    }
+
+    // Plan hasn't changed
+    if (currentPlan.value.name === newPlan.code) {
+        return Ok(true);
+    }
+
+    // Only update subscription date from free to paid (undefined = no update)
+    const isCurrentFree = currentPlan.value.name === freePlan.code;
+    const isNewPaid = newPlan.code !== freePlan.code;
+
+    const updated = await updatePlanByTeam(db, {
+        account_id: team.id,
+        name: newPlan.code as unknown as DBPlan['name'],
+        orb_subscription_id: orbSubscriptionId,
+        orb_future_plan: null,
+        orb_future_plan_at: null,
+        ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
+        ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
+        ...newPlan.flags
+    });
+
+    if (updated.isErr()) {
+        return Err(new Error('Failed to updated plan', { cause: updated.error }));
+    }
+
+    productTracking.track({
+        name: 'account:billing:plan_changed',
+        team,
+        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, orbCustomerId: currentPlan.value.orb_customer_id }
+    });
+
+    return Ok(true);
 }

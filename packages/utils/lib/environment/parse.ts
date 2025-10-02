@@ -32,7 +32,7 @@ export const ENVS = z.object({
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
     // Crons
-    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(5),
+    CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
@@ -191,6 +191,9 @@ export const ENVS = z.object({
     FLAG_USAGE_ENABLED: z.stringbool().optional().default(false),
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
+    ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
+    ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
+    ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
     BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(2000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
@@ -226,9 +229,8 @@ export const ENVS = z.object({
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
 
-    // Koala
-    PUBLIC_KOALA_API_URL: z.url().optional(),
-    PUBLIC_KOALA_CDN_URL: z.url().optional(),
+    // API Down Watch
+    API_DOWN_WATCH_PUBLIC_KEY: z.string().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
@@ -277,6 +279,9 @@ export const ENVS = z.object({
 
     // Redis
     NANGO_REDIS_URL: z.url().optional(),
+    NANGO_REDIS_HOST: z.string().optional(),
+    NANGO_REDIS_PORT: z.coerce.number().optional().default(6379),
+    NANGO_REDIS_AUTH: z.string().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),

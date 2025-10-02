@@ -13,21 +13,38 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    changes:
+        runs-on: ubuntu-latest
+        outputs:
+            docs_only: ${{ steps.filter.outputs.docs_only }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      docs_only:
+                          - 'docs-v2/**'
     docker_check_job:
+        needs: changes
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
+              if: needs.changes.outputs.docs_only != 'true'
               uses: actions/checkout@v4
 
             - name: Build the docker-compose stack
+              if: needs.changes.outputs.docs_only != 'true'
               run: docker compose up -d
 
             - name: Sleep
+              if: needs.changes.outputs.docs_only != 'true'
               uses: jakejarvis/wait-action@master
               with:
                   time: '30s'
 
             - name: Verify containers
+              if: needs.changes.outputs.docs_only != 'true'
               run: |
                   CONTAINER_NAME=nango-server
                   SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)

@@ -3,7 +3,7 @@ import type { DBTeam } from '../team/db.js';
 import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
-    ingest: (events: BillingEvent[]) => Promise<void>;
+    ingest: (events: BillingEvent[]) => Promise<Result<void>>;
     upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
     updateCustomer: (customerId: string, name: string) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
@@ -71,6 +71,16 @@ export type MarBillingEvent = BillingEventBase<
     }
 >;
 
+export type RecordsBillingEvent = BillingEventBase<
+    'records',
+    {
+        frequencyMs: number;
+        telemetry: {
+            sizeBytes: number;
+        };
+    }
+>;
+
 export type ActionsBillingEvent = BillingEventBase<
     'billable_actions',
     {
@@ -90,7 +100,7 @@ export type FunctionExecutionsBillingEvent = BillingEventBase<
             successes: number;
             failures: number;
             durationMs: number;
-            memoryGb: number;
+            compute: number;
             customLogs: number;
             proxyCalls: number;
         };
@@ -118,18 +128,28 @@ export type WebhookForwardBillingEvent = BillingEventBase<
         environmentId: number;
         providerConfigKey: string;
         provider: string;
+        telemetry: {
+            successes: number;
+            failures: number;
+        };
     }
 >;
 
 export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
 
-export type ActiveConnectionsBillingEvent = BillingEventBase<'billable_active_connections'>;
+export type ConnectionsBillingEventV2 = BillingEventBase<
+    'billable_connections_v2',
+    {
+        frequencyMs: number;
+    }
+>;
 
 export type BillingEvent =
     | MarBillingEvent
+    | RecordsBillingEvent
     | ActionsBillingEvent
     | ProxyBillingEvent
     | WebhookForwardBillingEvent
     | FunctionExecutionsBillingEvent
     | ConnectionsBillingEvent
-    | ActiveConnectionsBillingEvent;
+    | ConnectionsBillingEventV2;

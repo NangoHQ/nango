@@ -19,15 +19,17 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                 case 'proxy':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'webhook_forwards':
-                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'function_executions':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry']);
                 case 'monthly_active_records':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
-                case 'billable_active_connections':
-                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
+                case 'records':
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'telemetry', 'frequencyMs']); // frequencyMs is used as the billing metric interval so we don't group by it
                 case 'billable_connections':
                     return omitProperties(event, ['idempotencyKey', 'timestamp', 'count']);
+                case 'billable_connections_v2':
+                    return omitProperties(event, ['idempotencyKey', 'timestamp', 'count', 'frequencyMs']); // frequencyMs is used as the billing metric interval so we don't group by it
                 default:
                     ((_: never) => {
                         throw new Error(`Unhandled event type`);
@@ -88,7 +90,8 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                     }
                 };
             }
-            case 'webhook_forwards':
+            case 'webhook_forwards': {
+                const _a = a as typeof b; // To satisfy ts compiler that b has the same type as a
                 return {
                     type: b.type,
                     properties: {
@@ -98,9 +101,14 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         environmentId: b.properties.environmentId,
                         provider: b.properties.provider,
                         providerConfigKey: b.properties.providerConfigKey,
-                        count: a.properties.count + b.properties.count
+                        count: a.properties.count + b.properties.count,
+                        telemetry: {
+                            successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
+                            failures: _a.properties.telemetry.failures + b.properties.telemetry.failures
+                        }
                     }
                 };
+            }
             case 'monthly_active_records':
                 return {
                     type: b.type,
@@ -116,6 +124,22 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         count: a.properties.count + b.properties.count
                     }
                 };
+            case 'records': {
+                const _a = a as typeof b; // To satisfy ts compiler that b has the same type as a
+                return {
+                    type: b.type,
+                    properties: {
+                        timestamp: b.properties.timestamp,
+                        idempotencyKey: b.properties.idempotencyKey,
+                        accountId: b.properties.accountId,
+                        telemetry: {
+                            sizeBytes: _a.properties.telemetry.sizeBytes + b.properties.telemetry.sizeBytes
+                        },
+                        frequencyMs: b.properties.frequencyMs,
+                        count: a.properties.count + b.properties.count
+                    }
+                };
+            }
             case 'function_executions': {
                 const _a = a as typeof b; // To satisfy ts compiler that b has the same type as a
                 return {
@@ -132,17 +156,27 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                             successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
                             failures: _a.properties.telemetry.failures + b.properties.telemetry.failures,
                             durationMs: _a.properties.telemetry.durationMs + b.properties.telemetry.durationMs,
-                            memoryGb: _a.properties.telemetry.memoryGb + b.properties.telemetry.memoryGb,
+                            compute: _a.properties.telemetry.compute + b.properties.telemetry.compute,
                             customLogs: _a.properties.telemetry.customLogs + b.properties.telemetry.customLogs,
                             proxyCalls: _a.properties.telemetry.proxyCalls + b.properties.telemetry.proxyCalls
                         }
                     }
                 };
             }
+            case 'billable_connections_v2': {
+                return {
+                    type: b.type,
+                    properties: {
+                        timestamp: b.properties.timestamp,
+                        idempotencyKey: b.properties.idempotencyKey,
+                        accountId: b.properties.accountId,
+                        count: a.properties.count + b.properties.count,
+                        frequencyMs: b.properties.frequencyMs
+                    }
+                };
+            }
             case 'billable_connections':
                 return b; // billable connections are already aggregated
-            case 'billable_active_connections':
-                return b; // billable active connections are already aggregated
             default:
                 ((_: never) => {
                     throw new Error(`Unhandled event type`);

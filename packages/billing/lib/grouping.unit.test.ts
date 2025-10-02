@@ -47,7 +47,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 6,
-                    timestamp: new Date()
+                    timestamp: new Date(),
+                    telemetry: {
+                        successes: 6,
+                        failures: 0
+                    }
                 }
             },
             {
@@ -60,7 +64,7 @@ describe('BillingEventGrouping', () => {
                         successes: 2,
                         failures: 0,
                         durationMs: 150,
-                        memoryGb: 1,
+                        compute: 230,
                         customLogs: 7,
                         proxyCalls: 3
                     },
@@ -79,7 +83,7 @@ describe('BillingEventGrouping', () => {
                         customLogs: 10,
                         proxyCalls: 3,
                         durationMs: 200,
-                        memoryGb: 1,
+                        compute: 200,
                         successes: 6,
                         failures: 1
                     },
@@ -101,18 +105,31 @@ describe('BillingEventGrouping', () => {
                 }
             },
             {
+                type: 'records',
+                properties: {
+                    accountId: 1,
+                    count: 100,
+                    timestamp: new Date(),
+                    frequencyMs: 60_000,
+                    telemetry: {
+                        sizeBytes: 2048
+                    }
+                }
+            },
+            {
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 10,
+                    timestamp: new Date(),
+                    frequencyMs: 86_400_000
+                }
+            },
+            {
                 type: 'billable_connections',
                 properties: {
                     accountId: 1,
                     count: 11,
-                    timestamp: new Date()
-                }
-            },
-            {
-                type: 'billable_active_connections',
-                properties: {
-                    accountId: 1,
-                    count: 12,
                     timestamp: new Date()
                 }
             }
@@ -125,32 +142,13 @@ describe('BillingEventGrouping', () => {
             'function_executions|accountId:1|connectionId:2|type:action',
             'function_executions|accountId:1|connectionId:2|frequencyMs:100|type:sync',
             'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
-            'billable_connections|accountId:1',
-            'billable_active_connections|accountId:1'
+            'records|accountId:1',
+            'billable_connections_v2|accountId:1',
+            'billable_connections|accountId:1'
         ]);
     });
 
     describe('aggregate', () => {
-        it('should aggregate billable_active_connections', () => {
-            const a: BillingEvent = {
-                type: 'billable_active_connections',
-                properties: {
-                    accountId: 1,
-                    count: 5,
-                    timestamp: new Date('2024-01-01T00:00:00Z')
-                }
-            };
-            const b: BillingEvent = {
-                type: 'billable_active_connections',
-                properties: {
-                    accountId: 1,
-                    count: 7,
-                    timestamp: new Date('2024-01-02T00:00:00Z')
-                }
-            };
-            const aggregated = grouping.aggregate(a, b);
-            expect(aggregated).toEqual(b);
-        });
         it('should aggregate billable_connections', () => {
             const a: BillingEvent = {
                 type: 'billable_connections',
@@ -264,7 +262,7 @@ describe('BillingEventGrouping', () => {
                         successes: 6,
                         failures: 1,
                         durationMs: 200,
-                        memoryGb: 1,
+                        compute: 100,
                         customLogs: 10,
                         proxyCalls: 3
                     },
@@ -283,7 +281,7 @@ describe('BillingEventGrouping', () => {
                         successes: 7,
                         failures: 2,
                         durationMs: 100,
-                        memoryGb: 0.5,
+                        compute: 50,
                         customLogs: 5,
                         proxyCalls: 1
                     },
@@ -305,7 +303,7 @@ describe('BillingEventGrouping', () => {
                         customLogs: 15,
                         failures: 3,
                         durationMs: 300,
-                        memoryGb: 1.5,
+                        compute: 150,
                         proxyCalls: 4,
                         successes: 13
                     }
@@ -372,7 +370,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 6,
-                    timestamp: new Date('2024-01-01T00:00:00Z')
+                    timestamp: new Date('2024-01-01T00:00:00Z'),
+                    telemetry: {
+                        successes: 6,
+                        failures: 0
+                    }
                 }
             };
             const b: BillingEvent = {
@@ -383,7 +385,11 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 15,
-                    timestamp: new Date('2024-01-02T00:00:00Z')
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    telemetry: {
+                        successes: 15,
+                        failures: 0
+                    }
                 }
             };
             const aggregated = grouping.aggregate(a, b);
@@ -395,7 +401,80 @@ describe('BillingEventGrouping', () => {
                     provider: 'provider1',
                     providerConfigKey: 'providerConfigKey1',
                     count: 21,
-                    timestamp: new Date('2024-01-02T00:00:00Z')
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    telemetry: {
+                        successes: 21,
+                        failures: 0
+                    }
+                }
+            });
+        });
+        it('should aggregate records', () => {
+            const a: BillingEvent = {
+                type: 'records',
+                properties: {
+                    accountId: 1,
+                    count: 6,
+                    timestamp: new Date('2024-01-01T00:00:00Z'),
+                    frequencyMs: 60_000,
+                    telemetry: {
+                        sizeBytes: 2048
+                    }
+                }
+            };
+            const b: BillingEvent = {
+                type: 'records',
+                properties: {
+                    accountId: 1,
+                    count: 30,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000,
+                    telemetry: {
+                        sizeBytes: 4096
+                    }
+                }
+            };
+            const aggregated = grouping.aggregate(a, b);
+            expect(aggregated).toMatchObject({
+                type: 'records',
+                properties: {
+                    accountId: 1,
+                    count: 36,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000,
+                    telemetry: {
+                        sizeBytes: 6144
+                    }
+                }
+            });
+        });
+        it('should aggregate billable_connections_v2', () => {
+            const a: BillingEvent = {
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 7,
+                    timestamp: new Date('2024-01-01T00:00:00Z'),
+                    frequencyMs: 60_000
+                }
+            };
+            const b: BillingEvent = {
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 40,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000
+                }
+            };
+            const aggregated = grouping.aggregate(a, b);
+            expect(aggregated).toMatchObject({
+                type: 'billable_connections_v2',
+                properties: {
+                    accountId: 1,
+                    count: 47,
+                    timestamp: new Date('2024-01-02T00:00:00Z'),
+                    frequencyMs: 60_000
                 }
             });
         });
