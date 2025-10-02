@@ -44,7 +44,9 @@ async function getRedisKVStore(url: string, connect: boolean = true): Promise<KV
     });
     if (connect) {
         try {
-            await redis.connect();
+            await redis.connect().then(() => {
+                // do nothing
+            });
         } catch (err: any) {
             console.error(`Redis (kvstore) error: ${err}`);
         }
