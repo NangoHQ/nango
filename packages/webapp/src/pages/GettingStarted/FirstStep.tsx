@@ -14,9 +14,21 @@ import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';
+
+const truncateMiddle = (str: string, maxLength: number = 20): string => {
+    if (str.length <= maxLength) {
+        return str;
+    }
+
+    const startLength = Math.ceil((maxLength - 3) / 2);
+    const endLength = Math.floor((maxLength - 3) / 2);
+
+    return `${str.slice(0, startLength)}...${str.slice(-endLength)}`;
+};
 
 interface FirstStepProps {
     connection: GettingStartedOutput['connection'] | null;
@@ -114,7 +126,14 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                     <h3 className="text-brand-500 text-sm font-semibold">Google Calendar connection authorized!</h3>
                     <p className="text-text-tertiary text-sm">
                         A connection was created with the connection id:{' '}
-                        <StyledLink to={`/${env}/connections/${integration?.unique_key}/${connection.connection_id}`}>{connection.connection_id}</StyledLink>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <StyledLink to={`/${env}/connections/${integration?.unique_key}/${connection.connection_id}`} icon>
+                                    {truncateMiddle(connection.connection_id)}
+                                </StyledLink>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">{connection.connection_id}</TooltipContent>
+                        </Tooltip>
                     </p>
                 </div>
                 <Button variant="tertiary" size="lg" onClick={onClickDisconnect} className="w-fit">
