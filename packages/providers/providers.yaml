@@ -11394,7 +11394,7 @@ snowflake-jwt:
             alg: RS256
             typ: JWT
         payload:
-            iss: ${credentials.accountIdentifier}.${credentials.userName}.${credentials.fingerprint}
+            iss: ${credentials.accountIdentifier}.${credentials.userName}.${fingerprint(${credentials.privateKey})}
             sub: ${credentials.accountIdentifier}.${credentials.userName}
     proxy:
         headers:
@@ -11441,14 +11441,6 @@ snowflake-jwt:
             pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
             secret: true
             doc_section: '#step-4-generating-your-private-key'
-        fingerprint:
-            type: string
-            title: Fingerprint
-            description: SHA-256 fingerprint of the public key uploaded to your Snowflake user
-            example: SHA256:Zc9FB6P5bGsYa4WWCMsr3+PxUWr2F2HUdK/2XG5JQjg=
-            pattern: '^SHA256:[A-Za-z0-9+/]{43}[A-Za-z0-9+/=]$'
-            secret: true
-            doc_section: '#step-5-finding-your-fingerprint'
 
 splitwise:
     display_name: Splitwise

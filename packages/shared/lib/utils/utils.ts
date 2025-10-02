@@ -1,3 +1,4 @@
+import crypto, { createPrivateKey, createPublicKey } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -205,6 +206,11 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
     str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
         const resolvedInner = interpolateString(inner, replacers);
         return Buffer.from(resolvedInner).toString('base64');
+    });
+
+    str = str.replace(/\${fingerprint\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateString(inner, replacers);
+        return getFingerprint(resolvedInner);
     });
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
@@ -476,4 +482,18 @@ export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): str
     }
 
     return `-----BEGIN ${type}-----\n${chunked.join('\n')}\n-----END ${type}-----\n`;
+}
+
+function getFingerprint(privateKeyPEM: string): string {
+    const privateKeyObj = createPrivateKey({
+        key: formatPem(privateKeyPEM, 'PRIVATE KEY'),
+        format: 'pem'
+    });
+
+    const publicKeyObj = createPublicKey(privateKeyObj);
+    const publicKeyDER = publicKeyObj.export({ type: 'spki', format: 'der' });
+
+    const hash = crypto.createHash('sha256').update(publicKeyDER).digest('base64');
+
+    return `SHA256:${hash}`;
 }
