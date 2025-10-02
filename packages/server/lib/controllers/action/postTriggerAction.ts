@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorManager, getSyncConfigRaw, productTracking } from '@nangohq/shared';
-import { getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
+import { actionAllowListCustomers, getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
@@ -28,7 +28,7 @@ const schemaBody = z.object({
 });
 
 const accountUsageTracker = await getAccountUsageTracker();
-const actionPayloadAllowList = isCloud ? [662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254] : [];
+const actionPayloadAllowList = isCloud ? actionAllowListCustomers : [];
 
 export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(async (req, res) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
@@ -149,15 +149,6 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                                 environmentId: environment.id
                             }
                         );
-                    }
-
-                    if (!actionPayloadAllowList.includes(account.id)) {
-                        void logCtx.error('Action payload is larger than 2 MB and will be blocked in the near future. Please use the proxy', {
-                            payloadSize,
-                            actionName: action_name,
-                            connectionId: connection.id,
-                            environmentId: environment.id
-                        });
                     }
                 }
 
