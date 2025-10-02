@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 
-import { getKVStore } from '@nangohq/kvstore';
+import { getDefaultKVStoreOptions, getKVStore } from '@nangohq/kvstore';
 import { getRedisUrl } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
@@ -28,8 +28,8 @@ export class Redis {
     }
 
     public async connect() {
-        this.pub = await getKVStore('publisher', this.url);
-        this.sub = await getKVStore('subscriber', this.url);
+        this.pub = await getKVStore('publisher', { ...getDefaultKVStoreOptions(), url: this.url });
+        this.sub = await getKVStore('subscriber', { ...getDefaultKVStoreOptions(), url: this.url });
     }
 
     public async publish(channel: string, message: string) {

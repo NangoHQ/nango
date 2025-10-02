@@ -16,7 +16,7 @@
     "dependencies": {
         "@nangohq/utils": "file:../utils",
         "redis": "4.6.13",
-        "ioredis": "^5.8.0"
+        "ioredis": "5.8.0"
     },
     "devDependencies": {
         "vitest": "3.2.4"

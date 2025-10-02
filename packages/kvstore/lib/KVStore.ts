@@ -2,6 +2,15 @@ import type { MaybePromise } from '@nangohq/types';
 import type { Redis } from 'ioredis';
 import type { RedisClientType } from 'redis';
 
+export type KVStoreClientLibrary = 'node-redis' | 'ioredis';
+export interface KVStoreOptions {
+    clientLibrary?: KVStoreClientLibrary;
+    url?: string;
+    host?: string;
+    port?: string;
+    auth?: string;
+    connect?: boolean;
+}
 export type RedisClient = RedisClientType | Redis;
 
 export interface KVStore {

@@ -7,42 +7,45 @@ import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
 import { getIORedis, getNodeRedis } from './utils.js';
 
-import type { KVStore, RedisClient } from './KVStore.js';
+import type { KVStore, KVStoreOptions, RedisClient } from './KVStore.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { KVStore, KVStoreRedis } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
+export { getDefaultKVStoreOptions } from './utils.js';
 
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
 const redisClients = new Map<string, RedisClient>();
-export function getRedis(name: string, url: string): RedisClient {
+export function getRedis(name: string, options: KVStoreOptions): RedisClient {
     if (redisClients.has(name)) {
         return redisClients.get(name)!;
     }
-    const clientLibrary = process.env['NANGO_REDIS_CLIENT_LIBRARY'] || 'node-redis';
+    const clientLibrary = options.clientLibrary || 'node-redis';
     switch (clientLibrary) {
         case 'node-redis':
-            redisClients.set(name, getNodeRedis(url));
+            redisClients.set(name, getNodeRedis(options.url!));
             break;
         case 'ioredis':
-            redisClients.set(name, getIORedis(url));
+            redisClients.set(name, getIORedis(options.url!));
             break;
+        default:
+            throw new Error(`Invalid Redis client library: ${clientLibrary}`);
     }
     return redisClients.get(name)!;
 }
 
-async function getRedisKVStore(name: string, url: string, connect: boolean = true): Promise<KVStore> {
-    const redis = getRedis(name, url);
+async function getRedisKVStore(name: string, options: KVStoreOptions): Promise<KVStore> {
+    const redis = getRedis(name, options);
     redis.on('error', (err) => {
         console.error(`Redis (kvstore) error: ${err}`);
     });
     redis.on('connect', () => {
         console.log('Redis (kvstore) connected');
     });
-    if (connect) {
+    if (options.connect) {
         await redis.connect().then(() => {});
     }
     if (redis instanceof Redis) return new IORedisKVStore(redis);
@@ -70,16 +73,16 @@ export async function destroy(name: string, hard: boolean = false) {
     }
 }
 
-async function createKVStore(name: string, url: string | undefined, connect: boolean = true): Promise<KVStore> {
-    if (url) {
-        const store = await getRedisKVStore(name, url, connect);
+async function createKVStore(name: string, options: KVStoreOptions): Promise<KVStore> {
+    if (options.url) {
+        const store = await getRedisKVStore(name, options);
         return store;
     } else {
-        const endpoint = process.env['NANGO_REDIS_HOST'];
-        const port = process.env['NANGO_REDIS_PORT'] || 6379;
-        const auth = process.env['NANGO_REDIS_AUTH'];
+        const endpoint = options.host;
+        const port = options.port || 6379;
+        const auth = options.auth;
         if (endpoint && port && auth) {
-            const store = await getRedisKVStore(name, `rediss://:${auth}@${endpoint}:${port}`, connect);
+            const store = await getRedisKVStore(name, { url: `rediss://:${auth}@${endpoint}:${port}`, connect: options.connect! });
             return store;
         }
     }
@@ -88,37 +91,37 @@ async function createKVStore(name: string, url: string | undefined, connect: boo
 }
 
 const kvstorePromises = new Map<string, Promise<KVStore>>();
-export async function getKVStore(name: string, url: string | undefined = process.env['NANGO_REDIS_URL'], connect: boolean = true): Promise<KVStore> {
+export async function getKVStore(name: string, options: KVStoreOptions): Promise<KVStore> {
     if (kvstorePromises.has(name)) {
         return await kvstorePromises.get(name)!;
     }
 
-    const kvstorePromise = createKVStore(name, url, connect);
+    const kvstorePromise = createKVStore(name, options);
     kvstorePromises.set(name, kvstorePromise);
     return await kvstorePromise;
 }
 
 let featureFlags: Promise<FeatureFlags> | undefined;
-export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
+export async function getFeatureFlagsClient(options: KVStoreOptions): Promise<FeatureFlags> {
     if (featureFlags) {
         return await featureFlags;
     }
 
     featureFlags = (async () => {
-        const store = await getKVStore('feature-flags');
+        const store = await getKVStore('default', options);
         return new FeatureFlags(store);
     })();
     return await featureFlags;
 }
 
 let locking: Promise<Locking> | undefined;
-export async function getLocking(): Promise<Locking> {
+export async function getLocking(options: KVStoreOptions): Promise<Locking> {
     if (locking) {
         return await locking;
     }
 
     locking = (async () => {
-        const store = await getKVStore('locking');
+        const store = await getKVStore('default', options);
         return new Locking(store);
     })();
     return await locking;

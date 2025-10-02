@@ -7,7 +7,7 @@ import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import { DbAccountUsageStore } from '@nangohq/account-usage';
-import { getKVStore } from '@nangohq/kvstore';
+import { getDefaultKVStoreOptions, getKVStore } from '@nangohq/kvstore';
 import { flagHasPlan, getLogger, metrics, report, startOfMonth } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -44,7 +44,7 @@ export function persistAccountUsageCron(): void {
 async function exec(): Promise<void> {
     logger.info(`Starting`);
 
-    const kvStore = await getKVStore('account-usage');
+    const kvStore = await getKVStore('default', getDefaultKVStoreOptions());
     const dbStore = new DbAccountUsageStore();
 
     const summary = {

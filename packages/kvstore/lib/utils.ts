@@ -1,7 +1,21 @@
 import { Redis } from 'ioredis';
 import { createClient } from 'redis';
 
+import type { KVStoreClientLibrary, KVStoreOptions } from './KVStore.js';
 import type { RedisClientType } from 'redis';
+
+export function getDefaultKVStoreOptions(): KVStoreOptions {
+    const options: KVStoreOptions = {
+        clientLibrary: (process.env['NANGO_REDIS_CLIENT_LIBRARY'] as KVStoreClientLibrary) || 'node-redis'
+    };
+
+    if (process.env['NANGO_REDIS_URL']) options.url = process.env['NANGO_REDIS_URL'];
+    if (process.env['NANGO_REDIS_HOST']) options.host = process.env['NANGO_REDIS_HOST'];
+    if (process.env['NANGO_REDIS_PORT']) options.port = process.env['NANGO_REDIS_PORT'];
+    if (process.env['NANGO_REDIS_AUTH']) options.auth = process.env['NANGO_REDIS_AUTH'];
+
+    return options;
+}
 
 export function getNodeRedis(url: string): RedisClientType {
     const isExternal = url.startsWith('rediss://');
