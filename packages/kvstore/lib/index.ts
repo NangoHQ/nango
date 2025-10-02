@@ -53,6 +53,9 @@ export async function destroyAll(hard: boolean = false) {
     for (const name of kvstorePromises.keys()) {
         await destroy(name, hard);
     }
+    for (const name of redisClients.keys()) {
+        await destroy(name, hard);
+    }
 }
 
 export async function destroy(name: string, hard: boolean = false) {
@@ -60,6 +63,9 @@ export async function destroy(name: string, hard: boolean = false) {
         await (await kvstorePromises.get(name)!).destroy();
         if (hard) {
             kvstorePromises.delete(name);
+            if (redisClients.has(name)) {
+                redisClients.delete(name);
+            }
         }
     }
 }
