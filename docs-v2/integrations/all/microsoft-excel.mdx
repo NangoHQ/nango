@@ -1,7 +1,7 @@
 ---
-title: 'Outlook'
-sidebarTitle: 'Outlook'
-description: 'Access the Outlook API in 2 minutes 💨'
+title: 'Microsoft Excel'
+sidebarTitle: 'Microsoft Excel'
+description: 'Access the Microsoft Excel API in 2 minutes 💨'
 ---
 
 import APIGotchas from "/snippets/microsoft-shared/api-gotchas.mdx"
@@ -11,18 +11,18 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Outlook_. Nango doesn't provide a test OAuth app for Outlook yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft Excel_.  Nango doesn't provide a test OAuth app for Microsoft Excel yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
       </Step>
-      <Step title="Authorize Outlook">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Outlook. Later, you'll let your users do the same directly from your app.
+      <Step title="Authorize Microsoft Excel">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Microsoft Excel. Later, you'll let your users do the same directly from your app.
       </Step>
-      <Step title="Call the Outlook API">
-        Let's make your first request to the Outlook (Microsoft Graph) API (fetch the profile of the currently signed-in user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+      <Step title="Call the Microsoft Excel API">
+        Let's make your first request to the Microsoft Excel (Microsoft Graph) API (fetch worksheets from a specific workbook). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and a workbook file ID:
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/v1.0/me" \
+                curl "https://api.nango.dev/proxy/v1.0/me/drive/items/{fileId}/workbook/worksheets" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -40,7 +40,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
             const res = await nango.get({
-                endpoint: '/v1.0/me',
+                endpoint: '/v1.0/me/drive/items/{fileId}/workbook/worksheets',
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
@@ -53,13 +53,17 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
+        <Note>
+         The `{fileId}` in the URL is the unique identifier for the Excel file in OneDrive/SharePoint. You can obtain this ID by first making a Nango [proxy](https://docs.nango.dev/reference/api/proxy/get) call to `/v1.0/me/drive/root/children` to list files and retrieve their IDs. Then, use the ID of the desired workbook to access its worksheets.
+         </Note>
+
       </Step>
     </Steps>
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Outlook accounts.
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Microsoft Excel accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">
@@ -92,7 +96,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
       <Step title="Add API permissions">
         1. In the left sidebar, select **API permissions**.
         2. Click **Add a permission**.
-        3. Select **Microsoft Graph** to integrate with **Outlook**.
+        3. Select **Microsoft Graph** to integrate with **Microsoft Excel**.
         4. Select the required permissions from the **Delegated permissions section**.
         5. Select the specific permissions your app requires. Please refer to the table below for some of the [commonly used scopes](#common-scopes).
         6. Click **Add permissions**.
@@ -101,7 +105,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
       <Step title="Create a client secret">
         1. In the left sidebar, select **Certificates & secrets**.
         2. Under **Client secrets**, click **New client secret**.
-        3. Enter a description for the secret and select an expiration period (6 months, 12 months, 24 months, or custom). Please select a date further in the future to avoid interruptions. Note that the **Custom** date can only be set to a maximum of 1 year from the current date. If the secret expires, you will need to regenerate a new one and update your integration within Nango.
+        3. Enter a description for the secret and select an expiration period (6 months, 12 months, 24 months, or custom). Please select a date further in the future to avoid interruptions, note that the **Custom** date can only be set to a maximum of 1 year from the current date. If the secret expires, you will need to regenerate a new one and update your integration within Nango.
         4. Click **Add**.
         5. **Important**: Copy the secret value immediately and store it securely. You won't be able to see it again after you leave this page.
       </Step>
@@ -121,36 +125,31 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
     </Steps>
 
     ## Common Scopes
-    | Scope                              | Description                                                                 |
-    | ---------------------------------- | --------------------------------------------------------------------------- |
-    | `Mail.Read`                        | Read the signed-in user's email messages                                    |
-    | `Mail.ReadWrite`                   | Read and write the user's mail                                              |
-    | `Mail.Send`                        | Send mail as the signed-in user                                             |
-    | `Mail.ReadWrite.Shared`           | Read and write mail shared with the user                                    |
-    | `Calendars.Read`                  | Read the user's calendar events                                             |
-    | `Calendars.ReadWrite`             | Read and write the user's calendar events                                   |
-    | `Calendars.Read.Shared`           | Read shared calendars that the user has access to                           |
-    | `Calendars.ReadWrite.Shared`      | Read and write shared calendars that the user has access to                 |
-    | `Contacts.Read`                   | Read the user's contacts                                                    |
-    | `Contacts.ReadWrite`              | Read and write the user's contacts                                          |
-    | `offline_access`                  | Access to refresh tokens for offline access                                 |
-    | `User.Read.All`                   | Read user profiles in the organization                                      |
+
+    | Scope                     | Description                                                 |
+    | ------------------------- | ----------------------------------------------------------- |
+    | `offline_access`          | Access to refresh tokens for offline access                 |
+    | `Files.Read`              | Read user files and files shared with user                  |
+    | `Files.ReadWrite`         | Read and write user files and files shared with user        |
+    | `Files.Read.All`          | Read all files that user can access                         |
+    | `Files.ReadWrite.All`     | Read and write all files that user can access               |
 
   </Tab>
   <Tab title="🔗 Useful links">
     <UsefulLinks />
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outlook.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-excel.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-   - You can find permissions required for each API call in their corresponding API methods section, i.e, to list messages from Outlook, you can have a look at [List Messages permissions](https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0&tabs=http#permissions).
+    - You can find permissions required for each API call in their corresponding API methods section, i.e, to list worksheet collections, you can have a look at [List worksheetCollection API permissions](https://learn.microsoft.com/en-us/graph/api/worksheet-list?view=graph-rest-1.0&tabs=http#permissions).
 
     <APIGotchas />
 
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outlook.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-excel.mdx)</Note>
   </Tab>
 </Tabs>
 
 <Info>
     Questions? Join us in the [Slack community](https://nango.dev/slack).
 </Info>
+

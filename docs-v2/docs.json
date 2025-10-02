@@ -572,6 +572,7 @@
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
               "integrations/all/microsoft-entra-id",
+              "integrations/all/microsoft-excel",
               "integrations/all/microsoft-power-bi",
               "integrations/all/microsoft-teams",
               "integrations/all/microsoft-tenant-specific",
