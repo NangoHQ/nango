@@ -60,7 +60,7 @@ class SyncController {
     }
 
     private async addRecordCount(syncs: (Sync & { models: string[] })[], connectionId: number, environmentId: number) {
-        const byModel = await recordsService.getRecordCountsByModel({ connectionId, environmentId });
+        const byModel = await recordsService.getRecordStatsByModel({ connectionId, environmentId });
         if (byModel.isOk()) {
             return syncs.map((sync) => ({
                 ...sync,

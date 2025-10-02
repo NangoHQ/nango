@@ -35,23 +35,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
 
     if (byGroup.length <= 0 && v1Flow.length <= 0) {
         return (
-            <EmptyState
-                title="No available endpoints"
-                help={
-                    <>
-                        There is no{' '}
-                        <a
-                            className="text-text-blue hover:text-text-light-blue"
-                            href="https://docs.nango.dev/guides/pre-built-integrations/overview"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            integration template
-                        </a>{' '}
-                        available for this API yet.
-                    </>
-                }
-            >
+            <EmptyState title="No available endpoints" help={<>There is no reference implementation available for this API yet.</>}>
                 <div className="mt-10">
                     <HelpFooter />
                 </div>
@@ -176,7 +160,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
             <div className="text-text-light-gray flex gap-2 items-center">
                 <QuestionMarkCircledIcon />
                 Can&apos;t find the endpoint you need?{' '}
-                <a href="https://docs.nango.dev/guides/custom-integrations/overview" className="underline">
+                <a href="https://docs.nango.dev/guides/platform/functions" className="underline">
                     Add your own
                 </a>
             </div>

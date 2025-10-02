@@ -259,14 +259,12 @@ export async function transitionState(
     return Ok(DbTask.from(updated[0]));
 }
 
-export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
+export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { groupKeyPattern: string; limit: number }): Promise<Result<Task[]>> {
     try {
-        const groupKeyPattern = groupKey.replace(/\*/g, '%');
-
         const tasks = await db.transaction(async (trx) => {
             // Acquire a lock to prevent concurrent dequeueing of the same group
             // in order to ensure max concurrency is respected
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_dequeue_${groupKey}"`, [stringToHash(groupKey)]);
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_dequeue_${groupKeyPattern}"`, [stringToHash(groupKeyPattern)]);
             return (
                 trx
                     // 1. select created tasks that are ready to be started alongside their group
@@ -276,19 +274,17 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
                         qb.select('id', 'group_key', 'created_at', 'group_max_concurrency')
                             .from(TASKS_TABLE)
                             .where('state', 'CREATED')
-                            .whereLike('group_key', groupKeyPattern)
+                            .whereLike('group_key', groupKeyPattern.replace(/\*/g, '%'))
                             .where('starts_after', '<=', db.fn.now())
                             .forUpdate()
                             .skipLocked();
                     })
-                    // 2. count the number of running tasks for each group
+                    // 2. count the number of running tasks
                     .with('running', (qb) => {
                         qb.select(db.raw('count(id) as running_count'), 'group_key')
                             .from(TASKS_TABLE)
                             .where('state', 'STARTED')
-                            .whereIn('group_key', function () {
-                                this.distinct('group_key').from('candidates');
-                            })
+                            .whereLike('group_key', groupKeyPattern)
                             .groupBy('group_key');
                     })
                     // 3. rank the candidate tasks by created_at for each group
@@ -335,7 +331,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
         }
         return Ok(tasks.map(DbTask.from));
     } catch (err) {
-        return Err(new Error(`Error dequeuing tasks for group key '${groupKey}': ${stringifyError(err)}`));
+        return Err(new Error(`Error dequeuing tasks for group key '${groupKeyPattern}': ${stringifyError(err)}`));
     }
 }
 

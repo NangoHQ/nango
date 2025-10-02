@@ -84,6 +84,7 @@ export type PostPublicConnection = Endpoint<{
             | Omit<BasicApiCredentials, 'raw'>
             | Omit<TbaCredentials, 'raw'>
             | { type: 'APP'; app_id: string; installation_id: string }
+            | { type: 'CUSTOM'; app_id: string; installation_id: string }
             | { type: 'NONE' };
         end_user?: EndUserInput | undefined;
     };

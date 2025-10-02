@@ -16,17 +16,18 @@ import {
     getSyncConfigRaw,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -119,12 +120,10 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncJobId: syncJob.id,
             debug: false,
             runnerFlags: await getRunnerFlags(),
-            startedAt: new Date(),
             endUser,
+            startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
-
-        metrics.increment(metrics.Types.WEBHOOK_EXECUTION, 1, { accountId: team.id });
 
         const res = await startScript({
             taskId: task.id,
@@ -164,14 +163,21 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             runTime: 0,
             error,
             syncConfig,
-            endUser,
-            startedAt: new Date()
+            endUser
         });
         return Err(error);
     }
 }
 
-export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
+export async function handleWebhookSuccess({
+    taskId,
+    nangoProps,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
 
     const content = `The webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
@@ -264,13 +270,35 @@ export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: str
         }
     }
 
-    await logCtx.success();
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.function_executions',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: team.id,
+                connectionId: nangoProps.nangoConnectionId,
+                type: 'webhook',
+                success: true,
+                telemetryBag
+            }
+        }
+    });
 
-    metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
+    await logCtx.success();
 }
 
-export async function handleWebhookError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleWebhookError({
+    taskId,
+    nangoProps,
+    error,
+    telemetryBag
+}: {
+    taskId: string;
+    nangoProps: NangoProps;
+    error: NangoError;
+    telemetryBag: TelemetryBag;
+}): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
@@ -312,7 +340,7 @@ export async function handleWebhookError({ taskId, nangoProps, error }: { taskId
         error,
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
-        startedAt: nangoProps.startedAt
+        telemetryBag
     });
 }
 
@@ -332,7 +360,7 @@ async function onFailure({
     runTime,
     error,
     endUser,
-    startedAt
+    telemetryBag
 }: {
     connection: ConnectionJobs;
     team: DBTeam | undefined;
@@ -349,7 +377,7 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
-    startedAt: Date;
+    telemetryBag?: TelemetryBag | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -420,12 +448,23 @@ async function onFailure({
             internalIntegrationId: syncConfig?.nango_config_id || null,
             endUser
         });
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.function_executions',
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: team.id,
+                    connectionId: connection.id,
+                    type: 'webhook',
+                    success: false,
+                    telemetryBag
+                }
+            }
+        });
     }
 
     void logCtx?.error(error.message, { error });
     await logCtx?.enrichOperation({ error });
     await logCtx?.failed();
-
-    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

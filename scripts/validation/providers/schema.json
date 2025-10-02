@@ -47,7 +47,8 @@
                         "JWT",
                         "BILL",
                         "TWO_STEP",
-                        "SIGNATURE"
+                        "SIGNATURE",
+                        "MCP_OAUTH2"
                     ]
                 },
                 "authorization_method": {
@@ -139,6 +140,7 @@
                             "knowledge-base",
                             "legal",
                             "marketing",
+                            "mcp",
                             "other",
                             "payment",
                             "popular",
@@ -182,6 +184,9 @@
                     "type": "string"
                 },
                 "pre_connection_deletion_script": {
+                    "type": "string"
+                },
+                "pre_connection_creation_script": {
                     "type": "string"
                 },
                 "proxy": {
@@ -375,6 +380,9 @@
                         }
                     }
                 },
+                "registration_url": {
+                    "type": "string"
+                },
                 "request_params": {
                     "type": "object",
                     "patternProperties": {
@@ -494,6 +502,12 @@
                     "enum": ["milliseconds"]
                 },
                 "token_response_metadata": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "refresh_token_response_metadata": {
                     "type": "array",
                     "items": {
                         "type": "string"

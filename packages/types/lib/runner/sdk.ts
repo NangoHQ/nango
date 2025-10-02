@@ -49,4 +49,6 @@ export interface UserLogParameters {
 export interface TelemetryBag extends Record<string, number> {
     customLogs: number;
     proxyCalls: number;
+    durationMs: number;
+    memoryGb: number;
 }

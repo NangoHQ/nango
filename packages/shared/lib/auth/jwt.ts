@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import { Err, Ok, axiosInstance as axios } from '@nangohq/utils';
 
 import { AuthCredentialsError } from '../utils/error.js';
-import { interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
+import { formatPem, interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
 
-import type { JwtCredentials, ProviderJwt } from '@nangohq/types';
+import type { JwtCredentials, ProviderJwt, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
@@ -17,10 +17,17 @@ export function createCredentials({
     dynamicCredentials
 }: {
     config: string;
-    provider: ProviderJwt;
+    provider: ProviderJwt | ProviderTwoStep;
     dynamicCredentials: Record<string, any>;
 }): Result<JwtCredentials, AuthCredentialsError> {
     try {
+        if (!provider.token) {
+            return Err(new AuthCredentialsError('missing_toke_body'));
+        }
+
+        if (!provider.signature) {
+            return Err(new AuthCredentialsError('missing_signature_type'));
+        }
         //Check if the provider is 'ghost-admin' and if privateKey is a string
         if (config.includes('ghost-admin') && typeof dynamicCredentials['privateKey'] === 'string') {
             const privateKeyString = dynamicCredentials['privateKey'];
@@ -66,7 +73,7 @@ export function createCredentials({
         const signingKey = stripCredential(provider.token.signing_key);
         const interpolatedSigningKey = typeof signingKey === 'string' ? interpolateString(signingKey, dynamicCredentials) : signingKey;
 
-        const pKey = provider.signature.protocol === 'RSA' ? formatPrivateKey(interpolatedSigningKey) : Buffer.from(interpolatedSigningKey, 'hex');
+        const pKey = provider.signature.protocol === 'RSA' ? formatPem(interpolatedSigningKey, 'PRIVATE KEY') : Buffer.from(interpolatedSigningKey, 'hex');
         const token = signJWT({
             payload,
             secretOrPrivateKey: pKey,
@@ -177,8 +184,4 @@ function signJWT({
     } catch (err) {
         throw new AuthCredentialsError('failed_to_sign', { cause: err });
     }
-}
-
-function formatPrivateKey(key: string): string {
-    return key.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
 }

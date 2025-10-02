@@ -7,6 +7,10 @@ import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/stripe-express/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/stripe-express/PreBuiltUseCases.mdx"
 
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="stripe" />
+
 <Overview />
 
 **Note**
@@ -40,7 +44,7 @@ import PreBuiltUseCases from "/snippets/generated/stripe-express/PreBuiltUseCase
 
   <Step title="Configure OAuth for Express">
     Navigate to [Connect OAuth settings](https://dashboard.stripe.com/settings/connect/onboarding-options/oauth):
-    - Add your **Redirect URI(s)**:  
+    - Add your **Redirect URI(s)**:
       `https://api.nango.dev/oauth/callback`
     - Copy your **Client ID** for integration
   </Step>

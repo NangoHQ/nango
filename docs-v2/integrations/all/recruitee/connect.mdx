@@ -1,0 +1,42 @@
+---
+title: Recruitee - How do I link my account?
+sidebarTitle: Recruitee
+---
+
+# Overview
+
+To authenticate with Recruitee, you need:
+1. **Personal API Token** - A personal API token that grants Nango permission to interact with Recruitee's ATS API.
+2. **Company ID** - Your Recruitee company unique identifier.
+3. **Company Name** - Your Recruitee company name.
+
+This guide will walk you through generating a personal API token within Recruitee.
+
+
+### Prerequisites:
+
+- You must have a Recruitee account with appropriate permissions to generate Personal API Tokens.
+
+#### Step 1: Finding Your Company ID and Company Name
+1. Log in to your [Recruitee dashboard](https://app.recruitee.com/).
+2. Navigate to [Personal API tokens settings](https://app.recruitee.com/#/settings/api_tokens).
+3. You can locate both of these from this page.
+<img src="/integrations/all/recruitee/company_id.png"/>
+
+#### Step 2: Generating Your Personal API Token
+1. From the same [Personal API tokens settings page](https://app.recruitee.com/#/settings/api_tokens), click **+ New token** in the top-right corner.
+<img src="/integrations/all/recruitee/personal_access_token.png"/>
+2. Enter a label for your token (e.g. "Nango Integration").
+3. Click **Save** to generate your **Personal API Token**.
+
+<Tip> The Personal API Token permissions are based on your user role in Recruitee.</Tip>
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Personal API Token**, **Company ID** and **Company Name**:
+1. Open the form where you need to authenticate with Recruitee.
+2. Enter your **Personal API Token**, **Company ID** and **Company Name** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/recruitee/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Recruitee.

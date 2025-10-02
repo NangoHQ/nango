@@ -22,6 +22,7 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/aut
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { ConnectionConfig, PostPublicAppStoreAuthorization, ProviderAppleAppStore } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
@@ -87,6 +88,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     }
 
     let logCtx: LogContext | undefined;
+    let config: ProviderConfig | null = null;
     try {
         logCtx =
             isConnectSession && connectSession.operationId
@@ -107,7 +109,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
             }
         }
 
-        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+        config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
             void logCtx.error('Unknown provider config');
             await logCtx.failed();
@@ -197,7 +199,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
             }
 
             const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             res.status(400).send({
                 error: {
@@ -230,7 +232,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -262,7 +264,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'APP_STORE' });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'APP_STORE', ...(config ? { provider: config.provider } : {}) });
 
         next(err);
     }

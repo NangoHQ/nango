@@ -10,7 +10,6 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
@@ -617,7 +616,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+        <DashboardLayout>
             <Helmet>
                 <title>Create Connection - Nango</title>
             </Helmet>
@@ -1250,7 +1249,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
                                 <a
-                                    href="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui"
+                                    href="https://docs.nango.dev/implementation-guides/api-auth/implement-api-auth"
                                     className="text-text-blue"
                                     target="_blank"
                                     rel="noreferrer"

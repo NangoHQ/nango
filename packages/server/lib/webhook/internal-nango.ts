@@ -2,11 +2,12 @@ import get from 'lodash-es/get.js';
 
 import { connectionService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
 
+import { envs } from '../env.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
-import type { DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam } from '@nangohq/types';
+import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam } from '@nangohq/types';
 
 export class InternalNango {
     readonly team: DBTeam;
@@ -41,15 +42,15 @@ export class InternalNango {
     }: {
         body: Record<string, any>;
         webhookType: string;
-        connectionIdentifier: string;
+        connectionIdentifier?: string;
         propName?: string;
     }): Promise<{ connectionIds: string[] }> {
-        if (!get(body, connectionIdentifier)) {
+        let connections: DBConnectionDecrypted[] | null | ConnectionInternal[] = null;
+        if (!connectionIdentifier || connectionIdentifier === '') {
+            connections = await connectionService.getConnectionsByEnvironmentAndConfig(this.environment.id, this.integration.unique_key);
+        } else if (!get(body, connectionIdentifier)) {
             return { connectionIds: [] };
-        }
-
-        let connections: DBConnectionDecrypted[] | null = null;
-        if (propName === 'connectionId') {
+        } else if (propName === 'connectionId') {
             const { success, response: connection } = await connectionService.getConnection(
                 get(body, connectionIdentifier),
                 this.integration.unique_key,
@@ -112,6 +113,7 @@ export class InternalNango {
                             webhookName: webhook,
                             syncConfig,
                             input: body,
+                            maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
                             logContextGetter: this.logContextGetter
                         });
                     }

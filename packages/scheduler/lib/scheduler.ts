@@ -243,8 +243,8 @@ export class Scheduler {
      * @example
      * const dequeued = await scheduler.dequeue({ groupKey: 'test', limit: 1 });
      */
-    public async dequeue({ groupKey, limit }: { groupKey: string; limit: number }): Promise<Result<Task[]>> {
-        const dequeued = await tasks.dequeue(this.db, { groupKey, limit });
+    public async dequeue({ groupKeyPattern, limit }: { groupKeyPattern: string; limit: number }): Promise<Result<Task[]>> {
+        const dequeued = await tasks.dequeue(this.db, { groupKeyPattern, limit });
         if (dequeued.isOk()) {
             dequeued.value.forEach((task) => this.onCallbacks[task.state](task));
         }

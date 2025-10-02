@@ -53,6 +53,7 @@ export const connectionCredential = z.union([
 ]);
 
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
+export const publicKeySchema = z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----');
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
     [
@@ -97,8 +98,8 @@ export const sharedCredentialsSchema = z
     .strict();
 
 export const connectionCredentialsOauth2Schema = z.strictObject({
-    access_token: z.string().min(1).max(2048),
-    refresh_token: z.string().min(1).max(2048).optional(),
+    access_token: z.string().min(1).max(4096),
+    refresh_token: z.string().min(1).max(4096).optional(),
     expires_at: z.coerce.date().optional(),
     config_override: z
         .strictObject({

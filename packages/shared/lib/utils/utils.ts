@@ -54,7 +54,18 @@ export function getServerBaseUrl() {
 }
 
 export function getRedisUrl() {
-    return process.env['NANGO_REDIS_URL'] || undefined;
+    const url = process.env['NANGO_REDIS_URL'];
+    if (url) {
+        return url;
+    } else {
+        const endpoint = process.env['NANGO_REDIS_HOST'];
+        const port = process.env['NANGO_REDIS_PORT'] || 6379;
+        const auth = process.env['NANGO_REDIS_AUTH'];
+        if (endpoint && port && auth) {
+            return `rediss://:${auth}@${endpoint}:${port}`;
+        }
+        return undefined;
+    }
 }
 
 export function getOrchestratorUrl() {
@@ -202,6 +213,9 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
         }
         if (b.startsWith('base64(')) {
             return a;
+        }
+        if (b in replacers && replacers[b] != null) {
+            return `${replacers[b]}`;
         }
         const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
@@ -435,12 +449,14 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     return new URL(interpolatedUrl);
 }
 
-export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY'): string {
     if (!pem || typeof pem !== 'string') {
         throw new Error('Invalid PEM input: must be a non-empty string');
     }
 
-    const normalized = pem
+    const withRealNewlines = pem.includes('\\n') ? pem.replace(/\\n/g, '\n') : pem;
+
+    const normalized = withRealNewlines
         .replace(/\r\n/g, '\n')
         .replace(/^\s+|\s+$/g, '')
         .replace(/-----(BEGIN|END) [^-]+-----/g, '')

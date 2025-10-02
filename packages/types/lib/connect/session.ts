@@ -2,9 +2,6 @@ import type { InternalEndUser } from '../endUser/index.js';
 
 export interface ConnectSession {
     readonly id: number;
-    /**
-     * @deprecated use endUser instead
-     */
     readonly endUserId: number | null;
     readonly accountId: number;
     readonly environmentId: number;

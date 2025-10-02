@@ -10,7 +10,6 @@ import { AvatarOrganization } from '../../components/AvatarCustom';
 import { CopyText } from '../../components/CopyText';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { MultiSelect } from '../../components/MultiSelect';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
@@ -186,12 +185,12 @@ export const ConnectionList: React.FC = () => {
     const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError !== 'all';
 
     if (error) {
-        return <ErrorPageComponent title="Connections" error={error} page={LeftNavBarItems.Connections} />;
+        return <ErrorPageComponent title="Connections" error={error} />;
     }
 
     if (!connections || !readyToDisplay) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Connections - Nango</title>
                 </Helmet>
@@ -207,7 +206,7 @@ export const ConnectionList: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+        <DashboardLayout>
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
@@ -348,10 +347,7 @@ export const ConnectionList: React.FC = () => {
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
                     <div className="text-gray-400">
                         Connections can be created by using{' '}
-                        <Link
-                            to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app"
-                            className="text-blue-500"
-                        >
+                        <Link to="https://docs.nango.dev/implementation-guides/api-auth/implement-api-auth" className="text-blue-500">
                             Nango Connect
                         </Link>
                         , or manually here.

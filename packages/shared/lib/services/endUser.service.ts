@@ -43,9 +43,9 @@ export const EndUserMapper = {
             displayName: dbEndUser.display_name || null,
             organization: dbEndUser.organization_id
                 ? {
-                    organizationId: dbEndUser.organization_id,
-                    displayName: dbEndUser.organization_display_name || null
-                }
+                      organizationId: dbEndUser.organization_id,
+                      displayName: dbEndUser.organization_display_name || null
+                  }
                 : null,
             tags: dbEndUser.tags || null,
             createdAt: dbEndUser.created_at,
@@ -60,9 +60,9 @@ export const EndUserMapper = {
             tags: endUser.tags || null,
             organization: organization
                 ? {
-                    organizationId: organization.id,
-                    displayName: organization.display_name || null
-                }
+                      organizationId: organization.id,
+                      displayName: organization.display_name || null
+                  }
                 : null
         };
     }
@@ -263,7 +263,7 @@ async function getAndUpdateIfModifiedEndUser(
         ...endUser,
         id: previousEndUser.id,
         accountId: account.id,
-        environmentId: environment.id,
+        environmentId: environment.id
     });
     if (updatedEndUser.isErr()) {
         return updatedEndUser;
@@ -281,23 +281,20 @@ export async function syncEndUserToConnection(
         environment
     }: { connectSession: ConnectSession; connection: DBConnection; account: DBTeam; environment: DBEnvironment }
 ): Promise<Result<boolean, EndUserError>> {
-    if (connectSession.endUserId) {
-        // TODO: remove this once after we deployed end_user column
-        await linkConnection(db, { endUserId: connectSession.endUserId, connection });
-        return Ok(true);
-    } else if (connectSession.endUser) {
-        const upsertRes = await upsertEndUser(db, {
-            account,
-            environment,
-            connection,
-            endUser: connectSession.endUser
-        });
-        if (upsertRes.isErr()) {
-            return Err(upsertRes.error);
-        }
-
-        await linkConnection(db, { endUserId: upsertRes.value.id, connection });
-        return Ok(true);
+    if (!connectSession.endUser) {
+        return Ok(false);
     }
-    return Ok(false);
+
+    const upsertRes = await upsertEndUser(db, {
+        account,
+        environment,
+        connection,
+        endUser: connectSession.endUser
+    });
+    if (upsertRes.isErr()) {
+        return Err(upsertRes.error);
+    }
+
+    await linkConnection(db, { endUserId: upsertRes.value.id, connection });
+    return Ok(true);
 }

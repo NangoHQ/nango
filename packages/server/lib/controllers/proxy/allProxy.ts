@@ -19,6 +19,7 @@ import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
+import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { featureFlags } from '../../utils/utils.js';
 
@@ -205,14 +206,33 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             }
         });
 
+        let success = false;
         try {
             const responseStream = (await proxy.request()).unwrap();
             await handleResponse({ res, responseStream, logCtx });
+            success = true;
         } catch (err) {
             handleErrorResponse({ res, error: err, requestConfig: proxy.axiosConfig, logCtx });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }
+
+        void pubsub.publisher.publish({
+            subject: 'usage',
+            type: 'usage.proxy',
+            idempotencyKey: logCtx.id,
+            payload: {
+                value: 1,
+                properties: {
+                    accountId: account.id,
+                    connectionId: connection.id,
+                    environmentId: connection.environment_id,
+                    provider: integration.provider,
+                    providerConfigKey,
+                    success
+                }
+            }
+        });
     } catch (err) {
         errorManager.report(err, {
             source: ErrorSourceEnum.PLATFORM,

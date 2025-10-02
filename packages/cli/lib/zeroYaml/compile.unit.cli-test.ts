@@ -3,9 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 
 import { bundleFile, compileAll } from './compile.js';
+import { CompileError } from './utils.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 
 const exec = promisify(execCb);
@@ -44,7 +45,7 @@ describe('edge cases', () => {
     it('should catch invalid setMergingStrategy', async () => {
         const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/setMergingStrategy.error.js'), projectRootPath: fixturesPath });
         if (result.isErr()) {
-            expect(result.error).toMatchSnapshot();
+            expect(result.error.message.replaceAll('\\', '/')).toMatchSnapshot();
         } else {
             throw new Error('should be an error');
         }
@@ -56,5 +57,13 @@ describe('edge cases', () => {
             throw result.error;
         }
         expect(result.isOk()).toBe(true);
+    });
+
+    it('should catch multiple exports', async () => {
+        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/multipleExports.js'), projectRootPath: fixturesPath });
+        assert(result.isErr(), 'Should be an error');
+        assert(result.error instanceof CompileError, 'Should be an error');
+
+        expect(result.error.toText().replaceAll('\\', '/')).toMatchSnapshot();
     });
 });
