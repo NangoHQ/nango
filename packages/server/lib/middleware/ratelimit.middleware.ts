@@ -1,12 +1,13 @@
 import path from 'node:path';
 
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
-import { createClient } from 'redis';
 
+import { getKVStore } from '@nangohq/kvstore';
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
+import type { KVStoreRedis } from '@nangohq/kvstore';
 import type { DBPlan } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';
@@ -43,25 +44,26 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
     const url = getRedisUrl();
     let limiter: RateLimiterAbstract;
     if (url) {
-        const isExternal = url.startsWith('rediss://');
-        const socket = isExternal
-            ? {
-                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-                  connectTimeout: 10_000,
-                  tls: true,
-                  servername: new URL(url).hostname,
-                  keepAlive: 60_000
-              }
-            : {};
-        const redisClient = await createClient({
-            url: url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        }).connect();
-        redisClient.on('error', (err) => {
-            logger.error(`Redis (rate-limiter) error: ${err}`);
-        });
+        // const isExternal = url.startsWith('rediss://');
+        // const socket = isExternal
+        //     ? {
+        //           reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
+        //           connectTimeout: 10_000,
+        //           tls: true,
+        //           servername: new URL(url).hostname,
+        //           keepAlive: 60_000
+        //       }
+        //     : {};
+        // const redisClient = await createClient({
+        //     url: url,
+        //     disableOfflineQueue: true,
+        //     pingInterval: 30_000,
+        //     socket
+        // }).connect();
+        // redisClient.on('error', (err) => {
+        //     logger.error(`Redis (rate-limiter) error: ${err}`);
+        // });
+        const redisClient = ((await getKVStore()) as KVStoreRedis).getClient();
         limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
     } else {
         limiter = new RateLimiterMemory(opts);

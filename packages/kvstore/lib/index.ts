@@ -1,54 +1,50 @@
-import { createClient } from 'redis';
+import { Redis } from 'ioredis';
 
 import { FeatureFlags } from './FeatureFlags.js';
+import { IORedisKVStore } from './IORedisStore.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
+import { getIORedis, getNodeRedis } from './utils.js';
 
-import type { KVStore } from './KVStore.js';
-import type { RedisClientType } from 'redis';
+import type { KVStore, RedisClient } from './KVStore.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
-export type { KVStore } from './KVStore.js';
+export type { KVStore, KVStoreRedis } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
 
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
-
-let redis: RedisClientType | undefined;
-async function getRedis(url: string): Promise<RedisClientType> {
+let redis: RedisClient;
+export function getRedis(url: string): RedisClient {
     if (redis) {
         return redis;
     }
-    const isExternal = url.startsWith('rediss://');
-    const socket = isExternal
-        ? {
-              reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-              connectTimeout: 10_000,
-              tls: true,
-              servername: new URL(url).hostname,
-              keepAlive: 60_000
-          }
-        : {};
+    const clientLibrary = process.env['NANGO_REDIS_CLIENT_LIBRARY'] || 'node-redis';
+    switch (clientLibrary) {
+        case 'node-redis':
+            redis = getNodeRedis(url);
+            break;
+        case 'ioredis':
+            redis = getIORedis(url);
+            break;
+    }
+    return redis;
+}
 
-    redis = createClient({
-        url: url,
-        disableOfflineQueue: true,
-        pingInterval: 30_000,
-        socket
-    });
+async function getRedisKVStore(url: string, connect: boolean = true): Promise<KVStore> {
+    const redis = getRedis(url);
     redis.on('error', (err) => {
-        // TODO: report error
         console.error(`Redis (kvstore) error: ${err}`);
     });
-
-    await redis.connect().then(() => {
-        // do nothing
+    redis.on('connect', () => {
+        console.log('Redis (kvstore) connected');
     });
-
-    return redis;
+    if (redis instanceof Redis) return new IORedisKVStore(redis);
+    if (connect) await redis.connect();
+    return new RedisKVStore(redis);
 }
 
 export async function destroy() {
@@ -61,17 +57,16 @@ export async function destroy() {
     }
 }
 
-async function createKVStore(): Promise<KVStore> {
-    const url = process.env['NANGO_REDIS_URL'];
+async function createKVStore(url: string | undefined, connect: boolean = true): Promise<KVStore> {
     if (url) {
-        const store = new RedisKVStore(await getRedis(url));
+        const store = await getRedisKVStore(url, connect);
         return store;
     } else {
         const endpoint = process.env['NANGO_REDIS_HOST'];
         const port = process.env['NANGO_REDIS_PORT'] || 6379;
         const auth = process.env['NANGO_REDIS_AUTH'];
         if (endpoint && port && auth) {
-            const store = new RedisKVStore(await getRedis(`rediss://:${auth}@${endpoint}:${port}`));
+            const store = await getRedisKVStore(`rediss://:${auth}@${endpoint}:${port}`, connect);
             return store;
         }
     }
@@ -80,12 +75,12 @@ async function createKVStore(): Promise<KVStore> {
 }
 
 let kvstorePromise: Promise<KVStore> | undefined;
-export async function getKVStore(): Promise<KVStore> {
+export async function getKVStore(url: string | undefined = process.env['NANGO_REDIS_URL'], connect: boolean = true): Promise<KVStore> {
     if (kvstorePromise) {
         return await kvstorePromise;
     }
 
-    kvstorePromise = createKVStore();
+    kvstorePromise = createKVStore(url, connect);
     return await kvstorePromise;
 }
 

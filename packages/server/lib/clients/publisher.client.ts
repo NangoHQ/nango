@@ -1,15 +1,15 @@
-import { createClient } from 'redis';
 import * as uuid from 'uuid';
 
+import { getKVStore } from '@nangohq/kvstore';
 import { getRedisUrl } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { authHtml } from '../utils/html.js';
 
 import type { WSErr } from '../utils/web-socket-error.js';
+import type { KVStore } from '@nangohq/kvstore';
 import type { WebSocketConnectionAck, WebSocketConnectionError, WebSocketConnectionResponseSuccess } from '@nangohq/types';
 import type { Response } from 'express';
-import type { RedisClientType } from 'redis';
 import type { WebSocket } from 'ws';
 
 const logger = getLogger('Server.Publisher');
@@ -20,67 +20,30 @@ export class Redis {
     // Two redis clients are needed because the same client cannot be used for both publishing and subscribing
     // more at https://redis.io/commands/subscribe/
     private url: string;
-    private pub: RedisClientType;
-    private sub: RedisClientType;
+    private pub: KVStore | undefined;
+    private sub: KVStore | undefined;
 
     constructor(url: string) {
         this.url = url;
-
-        const isExternal = url.startsWith('rediss://');
-        const socket = isExternal
-            ? {
-                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-                  connectTimeout: 10_000,
-                  tls: true,
-                  servername: new URL(url).hostname,
-                  keepAlive: 60_000
-              }
-            : {};
-
-        this.pub = createClient({
-            url: this.url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        });
-        this.pub.on('error', (err: Error) => {
-            logger.error(`Redis (publisher) error`, err);
-        });
-        this.pub.on('connect', () => {
-            logger.info(`Redis (publisher) connected`);
-        });
-
-        this.sub = createClient({
-            url: this.url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        });
-        this.sub.on('error', (err: Error) => {
-            logger.error(`Redis (subscriber) error`, err);
-        });
-        this.sub.on('connect', () => {
-            logger.info(`Redis Subscriber connected`);
-        });
     }
 
     public async connect() {
-        await this.pub.connect();
-        await this.sub.connect();
+        this.pub = await getKVStore(this.url);
+        this.sub = await getKVStore(this.url);
     }
 
     public async publish(channel: string, message: string) {
-        await this.pub.publish(channel, message);
+        await this.pub?.publish(channel, message);
     }
 
     public async subscribe(channel: string, onMessage: (message: string, channel: string) => void) {
-        await this.sub.subscribe(channel, (message, channel) => {
+        await this.sub?.subscribe(channel, (message, channel) => {
             onMessage(message, channel);
         });
     }
 
     public async unsubscribe(channel: string) {
-        await this.sub.unsubscribe(channel);
+        await this.sub?.unsubscribe(channel);
     }
 }
 
