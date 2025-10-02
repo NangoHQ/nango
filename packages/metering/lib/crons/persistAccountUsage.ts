@@ -44,7 +44,7 @@ export function persistAccountUsageCron(): void {
 async function exec(): Promise<void> {
     logger.info(`Starting`);
 
-    const kvStore = await getKVStore();
+    const kvStore = await getKVStore('account-usage');
     const dbStore = new DbAccountUsageStore();
 
     const summary = {
