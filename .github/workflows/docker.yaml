@@ -47,25 +47,25 @@ jobs:
 
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     docker_check_job:
-        needs: shoud-run
+        needs: should-run
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              if: needs.shoud-run.outputs.should_skip != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               uses: actions/checkout@v4
 
             - name: Build the docker-compose stack
-              if: needs.shoud-run.outputs.should_skip != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               run: docker compose up -d
 
             - name: Sleep
-              if: needs.shoud-run.outputs.should_skip != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               uses: jakejarvis/wait-action@master
               with:
                   time: '30s'
 
             - name: Verify containers
-              if: needs.shoud-run.outputs.should_skip != 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   CONTAINER_NAME=nango-server
                   SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
