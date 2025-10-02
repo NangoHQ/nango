@@ -46,7 +46,7 @@ jobs:
         needs: should-run
         runs-on: ubuntu-latest
         env:
-            CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' && github.event_name != 'merge_group' }}"
+            CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}"
             SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
         steps:
@@ -85,6 +85,6 @@ jobs:
                   docker push nangohq/nango:${{ env.SHA }}
 
             - name: (self-hosted) Build and push
-              if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
+              if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   ./scripts/build_docker_self_hosted.sh ${{ env.SHA }} ${{ env.CAN_PUSH }}

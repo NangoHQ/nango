@@ -110,7 +110,7 @@ jobs:
                   npx zx ./scripts/publish.mjs --version=0.0.1-$GIT_HASH --skip-cli
 
             - name: Publish the cli privately under the correct scope
-              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'merge_group'
+              if: needs.should-run.outputs.should_skip != 'true'
               working-directory: packages/cli
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -132,14 +132,14 @@ jobs:
             packages: write
         steps:
             - uses: actions/setup-node@v4
-              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'merge_group'
+              if: needs.should-run.outputs.should_skip != 'true'
               with:
                   node-version: '20.18.1'
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
             - name: Install the cli from the github package registry
-              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'merge_group'
+              if: needs.should-run.outputs.should_skip != 'true'
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
