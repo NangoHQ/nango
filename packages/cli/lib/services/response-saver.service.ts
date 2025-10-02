@@ -17,6 +17,7 @@ const FILTER_HEADERS = [
     'connection-id',
     'provider-config-key',
     'nango-is-sync',
+    'nango-is-script',
     'nango-is-dry-run',
     'nango-activity-log-id',
     'content-length',
