@@ -2,7 +2,7 @@ import './tracer.js';
 
 import db from '@nangohq/database';
 import { generateImage } from '@nangohq/fleet';
-import { destroy as destroyKvstore } from '@nangohq/kvstore';
+import { destroyAll as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';

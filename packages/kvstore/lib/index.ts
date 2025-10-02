@@ -47,13 +47,15 @@ async function getRedisKVStore(url: string, connect: boolean = true): Promise<KV
     return new RedisKVStore(redis);
 }
 
-export async function destroy() {
-    if (kvstorePromise) {
-        await (await kvstorePromise).destroy();
-        kvstorePromise = undefined;
+export async function destroyAll() {
+    for (const name of kvstorePromises.keys()) {
+        await destroy(name);
     }
-    if (redis) {
-        await redis.disconnect();
+}
+
+export async function destroy(name: string) {
+    if (kvstorePromises.has(name)) {
+        await (await kvstorePromises.get(name)!).destroy();
     }
 }
 
@@ -74,13 +76,14 @@ async function createKVStore(url: string | undefined, connect: boolean = true): 
     return new InMemoryKVStore();
 }
 
-let kvstorePromise: Promise<KVStore> | undefined;
-export async function getKVStore(url: string | undefined = process.env['NANGO_REDIS_URL'], connect: boolean = true): Promise<KVStore> {
-    if (kvstorePromise) {
-        return await kvstorePromise;
+const kvstorePromises = new Map<string, Promise<KVStore>>();
+export async function getKVStore(name: string, url: string | undefined = process.env['NANGO_REDIS_URL'], connect: boolean = true): Promise<KVStore> {
+    if (kvstorePromises.has(name)) {
+        return await kvstorePromises.get(name)!;
     }
 
-    kvstorePromise = createKVStore(url, connect);
+    const kvstorePromise = createKVStore(url, connect);
+    kvstorePromises.set(name, kvstorePromise);
     return await kvstorePromise;
 }
 
@@ -91,7 +94,7 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
     }
 
     featureFlags = (async () => {
-        const store = await getKVStore();
+        const store = await getKVStore('feature-flags');
         return new FeatureFlags(store);
     })();
     return await featureFlags;
@@ -104,7 +107,7 @@ export async function getLocking(): Promise<Locking> {
     }
 
     locking = (async () => {
-        const store = await getKVStore();
+        const store = await getKVStore('locking');
         return new Locking(store);
     })();
     return await locking;

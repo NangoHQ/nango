@@ -28,8 +28,8 @@ export class Redis {
     }
 
     public async connect() {
-        this.pub = await getKVStore(this.url);
-        this.sub = await getKVStore(this.url);
+        this.pub = await getKVStore('publisher', this.url);
+        this.sub = await getKVStore('subscriber', this.url);
     }
 
     public async publish(channel: string, message: string) {

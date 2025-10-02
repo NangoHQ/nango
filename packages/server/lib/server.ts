@@ -10,7 +10,7 @@ import { WebSocketServer } from 'ws';
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
-import { destroy as destroyKvstore } from '@nangohq/kvstore';
+import { destroyAll as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
 import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
