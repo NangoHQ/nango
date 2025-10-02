@@ -151,7 +151,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 <p className="text-text-tertiary text-sm">
                     Connect your account just like your users would in your app. <br />
                     This will create a connection for your{' '}
-                    <StyledLink icon={true} type="external" to={`/${env}/integrations/${integration?.unique_key}`}>
+                    <StyledLink to={`/${env}/integrations/${integration?.unique_key}`} icon>
                         Google Calendar integration
                     </StyledLink>
                     .
