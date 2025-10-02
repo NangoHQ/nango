@@ -1,10 +1,10 @@
 import { OtlpSpan } from '@nangohq/logs';
-import { metrics } from '@nangohq/utils';
+import { Err, Ok, metrics } from '@nangohq/utils';
 
 import { deliver, shouldSend } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody } from '@nangohq/types';
+import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
 
 export const forwardWebhook = async ({
     integration,
@@ -24,15 +24,15 @@ export const forwardWebhook = async ({
     payload: Record<string, any> | null;
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
-}): Promise<void> => {
+}): Promise<Result<{ forwarded: number }>> => {
     if (!webhookSettings) {
-        return;
+        return Ok({ forwarded: 0 });
     }
     if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
-        return;
+        return Ok({ forwarded: 0 });
     }
     if (!integration.forward_webhooks) {
-        return;
+        return Ok({ forwarded: 0 });
     }
 
     const logCtx = await logContextGetter.create(
@@ -67,18 +67,19 @@ export const forwardWebhook = async ({
             incomingHeaders: webhookOriginalHeaders
         });
 
-        if (result.isOk()) {
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
-            await logCtx.success();
-        } else {
+        if (result.isErr()) {
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED, 1, { accountId: account.id });
             await logCtx.failed();
+            return Err(result.error);
         }
 
-        return;
+        metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
+        await logCtx.success();
+        return Ok({ forwarded: 1 });
     }
 
     let success = true;
+    let forwarded = 0;
     for (const connectionId of connectionIds) {
         const result = await deliver({
             webhooks,
@@ -94,6 +95,7 @@ export const forwardWebhook = async ({
 
         if (result.isOk()) {
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
+            forwarded += 1;
         } else {
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED, 1, { accountId: account.id });
             success = false;
@@ -105,4 +107,5 @@ export const forwardWebhook = async ({
     } else {
         await logCtx.failed();
     }
+    return Ok({ forwarded });
 };

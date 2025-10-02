@@ -1,12 +1,12 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, getPlanBy, plansList, productTracking, updatePlan, updatePlanByTeam } from '@nangohq/shared';
+import { accountService, getPlanBy, handlePlanChanged, updatePlan } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { DBPlan, PostStripeWebhooks, Result } from '@nangohq/types';
+import type { PostStripeWebhooks, Result } from '@nangohq/types';
 import type Stripe from 'stripe';
 
 const logger = getLogger('Server.Stripe');
@@ -43,10 +43,18 @@ export const postStripeWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, r
     }
 
     logger.info('Received', event.type);
-    const handled = await handleWebhook(event, stripe);
-    if (handled.isErr()) {
-        report(handled.error, { body: req.body });
-        res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+    try {
+        const handled = await handleWebhook(event, stripe);
+
+        if (handled.isErr()) {
+            report(handled.error, { body: req.body });
+            res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
+            return;
+        }
+    } catch (err) {
+        report(new Error('[stripe] error handling webhook', { cause: err }));
+        // On purpose, we don't want to fail the webhook on unexpected errors
+        res.status(200).send({ success: true });
         return;
     }
 
@@ -73,6 +81,16 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             const updated = await updatePlan(db.knex, { id: plan.id, stripe_payment_id: data.payment_method as string });
             if (updated.isErr()) {
                 return Err(updated.error);
+            }
+
+            // We added a new card, so we need to set it as the default payment method
+            if (plan.stripe_payment_id) {
+                await stripe.customers.update(data.customer, {
+                    invoice_settings: {
+                        default_payment_method: data.payment_method as string
+                    }
+                });
+                await stripe.paymentMethods.detach(plan.stripe_payment_id);
             }
 
             return Ok(undefined);
@@ -168,29 +186,15 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 }
 
                 const planExternalId = resApply.value.planExternalId;
-                const exists = plansList.find((p) => p.orbId === planExternalId);
-                if (!exists) {
-                    return Err('Received a plan not linked to the plansList');
-                }
 
-                const updated = await updatePlanByTeam(trx, {
-                    account_id: team.id,
-                    name: planExternalId as unknown as DBPlan['name'],
-                    orb_subscription_id: resApply.value.id,
-                    orb_future_plan: null,
-                    orb_future_plan_at: null,
-                    ...exists.flags
-                });
-                if (updated.isErr()) {
-                    return Err('Failed to updated plan');
-                }
-
-                productTracking.track({
-                    name: 'account:billing:plan_changed',
-                    team,
-                    eventProperties: { previousPlan: plan.name, newPlan: planExternalId, orbCustomerId: plan.orb_customer_id }
+                const res = await handlePlanChanged(trx, team, {
+                    newPlanCode: planExternalId,
+                    orbSubscriptionId: resApply.value.id
                 });
 
+                if (res.isErr()) {
+                    return Err(res.error);
+                }
                 logger.info(`Plan updated for account ${team.id} to ${planExternalId}`);
 
                 return Ok(undefined);

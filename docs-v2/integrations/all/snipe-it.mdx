@@ -1,0 +1,55 @@
+---
+title: Snipe-IT
+sidebarTitle: Snipe-IT
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/snipe-it/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/snipe-it/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-hosted or cloud instance. |
+| Paid test account | ✅ Not required | Free demo available at [demo.snipe-it.io](https://demo.snipe-it.io).  | 
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/snipe-it.mdx)</Note>
+
+
+## Useful links
+
+-   [Snipe-IT API Overview](https://snipe-it.readme.io/reference/api-overview)
+-   [Snipe-IT API Authentication](https://snipe-it.readme.io/reference/authentication)
+-   [Snipe-IT API Documentation](https://snipe-it.readme.io/reference)
+-   [Snipe-IT API Throttling](https://snipe-it.readme.io/reference/api-throttling)
+-   [Demo Instance](https://demo.snipe-it.io) (username: `admin`, password: `password`)
+ 
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/snipe-it.mdx)</Note>
+
+## API gotchas
+
+- Snipe-IT uses API_KEY auth mode with `Authorization: Bearer API_TOKEN` in the request header to access various endpoints.
+- The API follows a unique philosophy of returning 200 OK status codes even for errors - check the response payload for actual error status.
+- All API endpoints are prefixed with `/api/v1/`.
+- Results are automatically escaped to prevent XSS attacks.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/snipe-it.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Snipe-IT" icon="link" href="/integrations/all/snipe-it/connect" horizontal>
+  Guide to connect to Snipe-IT using Connect UI
+</Card>

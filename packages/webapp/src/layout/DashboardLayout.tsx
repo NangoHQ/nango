@@ -1,39 +1,28 @@
-import { forwardRef } from 'react';
+import React from 'react';
 
-import { DebugMode } from '../components/DebugMode';
-import LeftNavBar from '../components/LeftNavBar';
-import TopNavBar from '../components/TopNavBar';
-import { cn } from '../utils/utils';
+import { AppSidebar } from '../components-v2/AppSidebar';
+import { AppHeader } from '@/components-v2/AppHeader';
+import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
+import { cn } from '@/utils/utils';
 
-import type { LeftNavBarItems } from '../components/LeftNavBar';
-import type { ClassValue } from 'clsx';
-
-interface DashboardLayoutI {
-    children: React.ReactNode;
-    selectedItem: LeftNavBarItems;
+interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     fullWidth?: boolean;
-    className?: ClassValue;
 }
 
-const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function DashboardLayout({ children, selectedItem, fullWidth = false, className }, ref) {
+const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(({ children, className, fullWidth = false, ...props }, ref) => {
     return (
-        <div className="h-full min-h-screen flex bg-pure-black">
-            <div className="absolute w-screen z-20">
-                <DebugMode />
-            </div>
-            <div className="w-[250px] h-screen z-10 grow-0">
-                <LeftNavBar selectedItem={selectedItem} />
-            </div>
-            <div className="grow relative h-screen flex flex-col">
-                <div className="h-[57px] w-full">
-                    <TopNavBar />
+        <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset className="max-h-screen overflow-hidden">
+                <AppHeader />
+                <div ref={ref} className={cn('w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface')} {...props}>
+                    <div className={cn('grow h-auto mx-auto', fullWidth ? 'w-full p-8' : 'w-[976px] py-8', className)}>{children}</div>
                 </div>
-                <div className="h-full overflow-auto" ref={ref}>
-                    <div className={cn('grow h-auto mx-auto', fullWidth ? 'w-full' : 'w-[976px] py-8', className)}>{children}</div>
-                </div>
-            </div>
-        </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 });
+
+DashboardLayout.displayName = 'DashboardLayout';
 
 export default DashboardLayout;

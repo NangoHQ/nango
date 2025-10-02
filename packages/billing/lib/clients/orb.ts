@@ -1,10 +1,11 @@
 import Orb from 'orb-billing';
+import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingIngestEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
+import type { BillingClient, BillingCustomer, BillingEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -12,20 +13,40 @@ export class OrbClient implements BillingClient {
     constructor() {
         this.orbSDK = new Orb({
             apiKey: envs.ORB_API_KEY || 'empty',
-            maxRetries: 3
+            maxRetries: envs.ORB_MAX_RETRIES
         });
     }
 
-    async ingest(events: BillingIngestEvent[]) {
+    async ingest(events: BillingEvent[]): Promise<Result<void>> {
         // Orb limit the number of events per batch to 500
         const batchSize = 500;
-
         for (let i = 0; i < events.length; i += batchSize) {
             const batch = events.slice(i, i + batchSize);
-            await this.orbSDK.events.ingest({
-                events: batch.map(toOrbEvent)
-            });
+            try {
+                const initialDelayMs = envs.ORB_RETRY_INITIAL_DELAY_MS;
+                await retry(
+                    () => {
+                        return this.orbSDK.events.ingest({
+                            events: batch.map(toOrbEvent)
+                        });
+                    },
+                    {
+                        maxAttempts: envs.ORB_RETRY_MAX_ATTEMPTS,
+                        delayMs: (attempt) => initialDelayMs * 2 ** attempt + Math.random() * initialDelayMs, // exponential backoff with jitter
+                        retryOnError: (e) => {
+                            // retry only on 429
+                            if (e instanceof Orb.APIError) {
+                                return e.status === 429;
+                            }
+                            return false;
+                        }
+                    }
+                );
+            } catch (err) {
+                return Err(new Error('failed_to_ingest_events', { cause: err }));
+            }
         }
+        return Ok(undefined);
     }
 
     async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
@@ -266,12 +287,27 @@ export class OrbClient implements BillingClient {
     }
 }
 
-function toOrbEvent(event: BillingIngestEvent): Orb.Events.EventIngestParams.Event {
+function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
+    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
+
+    // orb doesn't accept nested properties, we need to flatten them with dot notation
+    const properties: Record<string, string | number | boolean> = {};
+    for (const [topLevelKey, value] of Object.entries(rest)) {
+        if (!value) continue;
+        if (typeof value === 'object') {
+            for (const [k, v] of Object.entries(value)) {
+                properties[`${topLevelKey}.${k}`] = v;
+            }
+        } else {
+            properties[topLevelKey] = value;
+        }
+    }
+
     return {
         event_name: event.type,
-        idempotency_key: event.idempotencyKey,
-        external_customer_id: event.accountId.toString(),
-        timestamp: event.timestamp.toISOString(),
-        properties: event.properties
+        idempotency_key: idempotencyKey || uuidv7(),
+        external_customer_id: accountId.toString(),
+        timestamp: timestamp.toISOString(),
+        properties
     };
 }

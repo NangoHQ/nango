@@ -170,6 +170,9 @@ class Kubernetes {
                 selector: { matchLabels: { app: name } },
                 template: {
                     metadata: {
+                        annotations: {
+                            [`ad.datadoghq.com/runner.logs`]: `[{"source":"nango","service":"${name}"}]`
+                        },
                         labels: { app: name }
                     },
                     spec: {
@@ -463,7 +466,7 @@ class Kubernetes {
         return {
             requests: {
                 cpu: '500m',
-                memory: '1023Mi'
+                memory: '512Mi'
             },
             limits: {
                 cpu: '500m',

@@ -1,12 +1,12 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, getPlan, plansList, productTracking, updatePlanByTeam } from '@nangohq/shared';
+import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { DBPlan, PostOrbWebhooks, Result } from '@nangohq/types';
+import type { PostOrbWebhooks, Result } from '@nangohq/types';
 
 const logger = getLogger('Server.Orb');
 
@@ -81,12 +81,6 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
         case 'subscription.started':
         case 'subscription.plan_changed': {
             return await db.knex.transaction(async (trx) => {
-                const planExternalId = body.subscription.plan.external_plan_id;
-                const exists = plansList.find((p) => p.orbId === planExternalId);
-                if (!exists) {
-                    return Err('Received a plan not linked to the plansList');
-                }
-
                 const teamId = body.subscription.customer.external_customer_id;
                 if (!teamId) {
                     return Err('Received a customer without external id');
@@ -98,34 +92,15 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 }
 
                 logger.info(`Sub started for team "${team.id}"`);
-                const plan = await getPlan(trx, { accountId: team.id });
-                if (plan.isErr()) {
-                    return Err(plan.error);
-                }
-
-                if (plan.value.name === exists.flags.name) {
-                    logger.info('skip plan update, it is the same plan');
-                    return Ok(undefined);
-                }
-
-                const updated = await updatePlanByTeam(trx, {
-                    account_id: team.id,
-                    name: planExternalId as unknown as DBPlan['name'],
-                    orb_customer_id: body.subscription.customer.id,
-                    orb_subscription_id: body.subscription.id,
-                    orb_future_plan: null,
-                    orb_future_plan_at: null,
-                    ...exists.flags
+                const res = await handlePlanChanged(trx, team, {
+                    newPlanCode: body.subscription.plan.external_plan_id,
+                    orbCustomerId: body.subscription.customer.id,
+                    orbSubscriptionId: body.subscription.id
                 });
-                if (updated.isErr()) {
-                    return Err('Failed to updated plan');
-                }
 
-                productTracking.track({
-                    name: 'account:billing:plan_changed',
-                    team,
-                    eventProperties: { previousPlan: plan.value.name, newPlan: planExternalId, orbCustomerId: plan.value.orb_customer_id }
-                });
+                if (res.isErr()) {
+                    return Err(res.error);
+                }
 
                 return Ok(undefined);
             });

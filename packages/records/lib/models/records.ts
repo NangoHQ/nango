@@ -88,7 +88,7 @@ export async function getRecordStatsByModel({
     }
 }
 
-export async function metrics(): Promise<Result<{ environmentId: number; count: number; sizeInBytes: number }[]>> {
+export async function metrics(): Promise<Result<{ environmentId: number; count: number; sizeBytes: number }[]>> {
     try {
         const res = await db
             .from(RECORD_COUNTS_TABLE)
@@ -96,7 +96,7 @@ export async function metrics(): Promise<Result<{ environmentId: number; count: 
                 { environment_id: number; count: number; size_bytes: number }[]
             >('environment_id', db.raw('SUM(count) as count'), db.raw('SUM(size_bytes) as size_bytes'))
             .groupBy('environment_id')
-            .having(db.raw('sum(size_bytes) > 10000000 OR sum(count) > 1000000')); // only return if > 10MB or > 1M records to avoid sending too many metrics
+            .having(db.raw('sum(size_bytes) > 0 OR sum(count) > 0')); // only return entries with records
 
         if (!res) {
             return Err(new Error(`Failed to count records`));
@@ -104,7 +104,7 @@ export async function metrics(): Promise<Result<{ environmentId: number; count: 
         const metrics = res.map((r) => ({
             environmentId: r.environment_id,
             count: Number(r.count),
-            sizeInBytes: Number(r.size_bytes)
+            sizeBytes: Number(r.size_bytes)
         }));
         return Ok(metrics);
     } catch {
