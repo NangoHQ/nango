@@ -25,7 +25,7 @@ export function getNodeRedis(url: string): RedisClientType {
         // TODO: report error
         console.error(`Redis (kvstore) error: ${err}`);
     });
-    return redis;
+    return redis as RedisClientType;
 }
 
 export function getIORedis(url: string): Redis {
