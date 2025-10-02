@@ -95,4 +95,6 @@ async function backfill() {
     }
 }
 
-backfill();
+void backfill().then(() => {
+    void db.destroy();
+});
