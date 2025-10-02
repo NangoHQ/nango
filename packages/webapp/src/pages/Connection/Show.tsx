@@ -13,7 +13,6 @@ import { EndUserProfile } from './components/EndUserProfile';
 import { AvatarOrganization } from '../../components/AvatarCustom';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { Info } from '../../components/Info';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -123,7 +122,7 @@ export const ConnectionShow: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
@@ -149,7 +148,7 @@ export const ConnectionShow: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.Connections} />;
+        return <ErrorPageComponent title="Connection" error={error || errorSyncs} />;
     }
 
     if (!connection) {
@@ -157,7 +156,7 @@ export const ConnectionShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+        <DashboardLayout>
             <Helmet>
                 <title>{connection.endUser?.email || connection.connection.connection_id} - Connection - Nango</title>
             </Helmet>
@@ -168,7 +167,7 @@ export const ConnectionShow: React.FC = () => {
                             <Link to={`/${env}/integrations/${connection.connection.provider_config_key}`}>
                                 <div className="shrink-0">
                                     <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
-                                        {connection.provider && <IntegrationLogo provider={connection.provider} height={16} width={16} />}
+                                        {connection.provider && <IntegrationLogo provider={connection.provider} height={12} width={12} />}
                                     </div>
                                 </div>
                             </Link>

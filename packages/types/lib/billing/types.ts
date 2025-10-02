@@ -3,7 +3,7 @@ import type { DBTeam } from '../team/db.js';
 import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
-    ingest: (events: BillingEvent[]) => Promise<void>;
+    ingest: (events: BillingEvent[]) => Promise<Result<void>>;
     upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
     updateCustomer: (customerId: string, name: string) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
@@ -74,7 +74,6 @@ export type MarBillingEvent = BillingEventBase<
 export type RecordsBillingEvent = BillingEventBase<
     'records',
     {
-        environmentId: number;
         frequencyMs: number;
         telemetry: {
             sizeBytes: number;

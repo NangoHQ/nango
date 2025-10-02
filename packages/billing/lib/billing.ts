@@ -21,7 +21,7 @@ export class Billing {
                       logger.info(`Sending ${events.length} billing events`);
                       const res = await this.ingest(events);
                       if (res.isErr()) {
-                          logger.error(`failed to send billing events: ${res.error}`);
+                          logger.error(res.error.message);
                           throw res.error;
                       }
                   },
@@ -105,13 +105,10 @@ export class Billing {
 
     // Note: Events are sent immediately
     private async ingest(events: BillingEvent[]): Promise<Result<void>> {
-        try {
-            await this.client.ingest(events);
-            return Ok(undefined);
-        } catch (err: unknown) {
-            const e = new Error(`Failed to send billing event`, { cause: err });
-            report(e);
-            return Err(e);
+        const res = await this.client.ingest(events);
+        if (res.isErr()) {
+            report(res.error);
         }
+        return res;
     }
 }
