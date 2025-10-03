@@ -89,7 +89,7 @@ export async function destroy(name: string, hard: boolean = false) {
 }
 
 async function createKVStore(options: KVStoreOptions): Promise<KVStore> {
-    if (options.url || (options.host && options.port && options.auth)) {
+    if (options.url || (options.host && options.auth)) {
         const store = await getRedisKVStore(options);
         return store;
     }
