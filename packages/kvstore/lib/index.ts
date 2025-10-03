@@ -36,10 +36,10 @@ function getRedis(options: KVStoreOptions): RedisClient {
     const clientLibrary = options.clientLibrary || 'node-redis';
     switch (clientLibrary) {
         case 'node-redis':
-            redisClients.set(name, getNodeRedis(options.url!));
+            redisClients.set(name, getNodeRedis(options));
             break;
         case 'ioredis':
-            redisClients.set(name, getIORedis(options.url!));
+            redisClients.set(name, getIORedis(options));
             break;
         default:
             throw new Error(`Invalid Redis client library: ${clientLibrary}`);

@@ -11,6 +11,9 @@ export interface KVStoreOptions {
     port?: string;
     auth?: string;
     connect?: boolean;
+    pingInterval?: number;
+    connectTimeout?: number;
+    keepAlive?: number;
 }
 export type RedisClient = RedisClientType | Redis;
 
