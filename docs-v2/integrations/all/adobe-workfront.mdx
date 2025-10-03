@@ -1,0 +1,113 @@
+---
+title: 'Adobe Workfront'
+sidebarTitle: 'Adobe Workfront'
+description: 'Access the Adobe Workfront API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Adobe Workfront_. Nango doesn't provide a test OAuth app for Adobe Workfront yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Adobe Workfront">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Adobe Workfront. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Adobe Workfront API">
+        Let's make your first request to the Adobe Workfront API (fetch a specific project using its projectId). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v15.0/project/{projectId}" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v15.0/project/{projectId}',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Adobe Workfront accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Access Adobe Workfront OAuth2 Setup">
+        1. Click the **Main Menu** icon in the upper-right corner of Adobe Workfront, or (if available), click the **Main Menu** icon in the upper-left corner.
+        2. Click **Setup**.
+        3. In the left navigation panel, click **System**.
+        4. Select **OAuth2 Applications**.
+      </Step>
+      <Step title="Create app integration">
+        1. Click **Create app integration**.
+        2. The **New OAuth2 application** dialog displays.
+        3. In the **New OAuth2 application** box, select **Web Application**.
+        4. Enter a name for the new OAuth2 application then click **Create**.
+      </Step>
+      <Step title="Configure OAuth2 application">
+        Fill in all the required fields for the new app, for the following fields 
+        - **Redirect URLs**: Enter `https://api.nango.dev/oauth/callback`
+        - **Refresh token rotation**: Enable this option to issue a new refresh token whenever the refresh token is used.
+        - **Absolute refresh token expiration**: Select "No expiration" for this field.
+      </Step>
+      <Step title="Save and obtain credentials">
+        1. Click **Save**.
+        2. Copy both the **Client ID** and **Client Secret** as you'll need them when configuring your integration in Nango.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Adobe Workfront using Connect UI](/integrations/all/adobe-workfront/connect) |
+    | General | [Adobe Workfront](https://business.adobe.com/products/workfront.html) |
+    | Developer | [Adobe Workfront API Documentation](https://experienceleague.adobe.com/en/docs/workfront/using/adobe-workfront-api/workfront-api) |
+    | | [OAuth2 Applications Setup](https://experienceleague.adobe.com/en/docs/workfront/using/administration-and-setup/configure-integrations/create-oauth-application#create-an-oauth2-application-using-user-credentials-authorization-code-flow) |
+    | | [OAuth2 authentication docs](https://experienceleague.adobe.com/en/docs/workfront/using/adobe-workfront-api/api-notes/oauth-app-code-token-flow) |
+    | | [Domain format for Adobe Workfront API calls](https://experienceleague.adobe.com/en/docs/workfront/using/adobe-workfront-api/tips-troubleshooting-apis/locate-domain-for-api) |
+    | | [API versioning](https://experienceleague.adobe.com/en/docs/workfront/using/adobe-workfront-api/api-notes/api-version-support-schedule) |
+    | | [Adobe Workfront Fusion Documentation](https://experienceleague.adobe.com/docs/workfront/using/adobe-workfront-fusion/workfront-fusion-2.html) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe-workfront.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+
+    - Adobe Workfront uses different [API versions](https://experienceleague.adobe.com/en/docs/workfront/using/adobe-workfront-api/api-notes/api-version-support-schedule) (v15.0, v16.0, etc.). Make sure you're using the correct version for your needs.
+    - You can leave the scopes field empty when configuring in Nango as it's not needed.
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe-workfront.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

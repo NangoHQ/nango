@@ -271,6 +271,7 @@
               "integrations/all/addepar-basic",
               "integrations/all/adobe",
               "integrations/all/adobe-umapi",
+              "integrations/all/adobe-workfront",
               "integrations/all/adp",
               "integrations/all/adp-lyric",
               "integrations/all/adp-run",
