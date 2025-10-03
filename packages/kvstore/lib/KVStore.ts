@@ -4,6 +4,7 @@ import type { RedisClientType } from 'redis';
 
 export type KVStoreClientLibrary = 'node-redis' | 'ioredis';
 export interface KVStoreOptions {
+    name?: string;
     clientLibrary?: KVStoreClientLibrary;
     url?: string;
     host?: string;

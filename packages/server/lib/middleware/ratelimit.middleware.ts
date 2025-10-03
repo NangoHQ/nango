@@ -44,7 +44,7 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
     const url = getRedisUrl();
     let limiter: RateLimiterAbstract;
     if (url) {
-        const redisClient = ((await getKVStore('default', { url })) as KVStoreRedis).getClient();
+        const redisClient = ((await getKVStore({ url })) as KVStoreRedis).getClient();
         limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
     } else {
         limiter = new RateLimiterMemory(opts);

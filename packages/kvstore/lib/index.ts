@@ -20,7 +20,8 @@ const defaultOptions = getDefaultKVStoreOptions();
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
 const redisClients = new Map<string, RedisClient>();
-function getRedis(name: string, options: KVStoreOptions): RedisClient {
+function getRedis(options: KVStoreOptions): RedisClient {
+    const name = options.name || 'default';
     if (redisClients.has(name)) {
         return redisClients.get(name)!;
     }
@@ -38,8 +39,8 @@ function getRedis(name: string, options: KVStoreOptions): RedisClient {
     return redisClients.get(name)!;
 }
 
-async function getRedisKVStore(name: string, options: KVStoreOptions): Promise<KVStore> {
-    const redis = getRedis(name, options);
+async function getRedisKVStore(options: KVStoreOptions): Promise<KVStore> {
+    const redis = getRedis(options);
     redis.on('error', (err) => {
         console.error(`Redis (kvstore) error: ${err}`);
     });
@@ -74,16 +75,16 @@ export async function destroy(name: string, hard: boolean = false) {
     }
 }
 
-async function createKVStore(name: string, options: KVStoreOptions): Promise<KVStore> {
+async function createKVStore(options: KVStoreOptions): Promise<KVStore> {
     if (options.url) {
-        const store = await getRedisKVStore(name, options);
+        const store = await getRedisKVStore(options);
         return store;
     } else {
         const endpoint = options.host;
         const port = options.port || 6379;
         const auth = options.auth;
         if (endpoint && port && auth) {
-            const store = await getRedisKVStore(name, { url: `rediss://:${auth}@${endpoint}:${port}`, connect: options.connect! });
+            const store = await getRedisKVStore({ url: `rediss://:${auth}@${endpoint}:${port}`, connect: options.connect! });
             return store;
         }
     }
@@ -92,12 +93,13 @@ async function createKVStore(name: string, options: KVStoreOptions): Promise<KVS
 }
 
 const kvstorePromises = new Map<string, Promise<KVStore>>();
-export async function getKVStore(name: string = 'default', options?: KVStoreOptions): Promise<KVStore> {
+export async function getKVStore(options?: KVStoreOptions): Promise<KVStore> {
+    const name = options?.name || 'default';
     if (kvstorePromises.has(name)) {
         return await kvstorePromises.get(name)!;
     }
 
-    const kvstorePromise = createKVStore(name, { ...defaultOptions, ...options });
+    const kvstorePromise = createKVStore({ ...defaultOptions, ...options });
     kvstorePromises.set(name, kvstorePromise);
     return await kvstorePromise;
 }
@@ -109,7 +111,7 @@ export async function getFeatureFlagsClient(options?: KVStoreOptions): Promise<F
     }
 
     featureFlags = (async () => {
-        const store = await getKVStore('default', { ...defaultOptions, ...options });
+        const store = await getKVStore({ ...defaultOptions, ...options });
         return new FeatureFlags(store);
     })();
     return await featureFlags;
@@ -122,7 +124,7 @@ export async function getLocking(options?: KVStoreOptions): Promise<Locking> {
     }
 
     locking = (async () => {
-        const store = await getKVStore('default', { ...defaultOptions, ...options });
+        const store = await getKVStore({ ...defaultOptions, ...options });
         return new Locking(store);
     })();
     return await locking;
