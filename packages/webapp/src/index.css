@@ -358,6 +358,8 @@
     :root,
     :host {
         @variant dark {
+            color-scheme: dark;
+
             /* Functional */
             --color-bg-surface: var(--color-gray-1000);
             --color-bg-elevated: var(--color-gray-900);
