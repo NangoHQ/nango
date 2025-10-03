@@ -284,13 +284,13 @@ class DeployService {
                     console.log(chalk.green(`Successfully removed the syncs/actions.`));
                 } else {
                     const nameAndVersions = results.map((result) => `${result.sync_name || result.name}@v${result.version}`);
-                    console.log(chalk.green(`Successfully deployed the scripts: ${nameAndVersions.join(', ')}!`));
+                    console.log(chalk.green(`Successfully deployed the functions: ${nameAndVersions.join(', ')}!`));
                 }
             })
             .catch((err: unknown) => {
                 const errorMessage =
                     err instanceof AxiosError ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
-                console.log(chalk.red(`Error deploying the scripts with the following error: ${errorMessage}`));
+                console.log(chalk.red(`Error deploying the functions with the following error: ${errorMessage}`));
                 process.exit(1);
             });
     }
@@ -426,7 +426,7 @@ class DeployService {
                     for (const scriptName of onEventScripts[event]) {
                         const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
                         if (!files) {
-                            console.log(chalk.red(`No script files found for "${scriptName}"`));
+                            console.log(chalk.red(`No function files found for "${scriptName}"`));
                             return null;
                         }
                         scripts.push({ name: scriptName, fileBody: files, event });
@@ -465,7 +465,7 @@ class DeployService {
                         return null;
                     }
                     if (debug) {
-                        printDebug(`Scripts files found for ${sync.name}`);
+                        printDebug(`Function files found for ${sync.name}`);
                     }
 
                     const body: CLIDeployFlowConfig = {
@@ -510,7 +510,7 @@ class DeployService {
                         return null;
                     }
                     if (debug) {
-                        printDebug(`Scripts files found for "${action.name}"`);
+                        printDebug(`Function files found for "${action.name}"`);
                     }
 
                     const body: CLIDeployFlowConfig = {
@@ -539,7 +539,7 @@ class DeployService {
                 for (const script of scripts) {
                     const { name } = script;
 
-                    printDebug(`on-events script found for ${providerConfigKey} with name ${name}`);
+                    printDebug(`on-events function found for ${providerConfigKey} with name ${name}`);
                 }
             }
         }

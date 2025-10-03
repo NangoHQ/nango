@@ -24,7 +24,6 @@ const sync = createSync({
     frequency: 'every hour',
     autoStart: true,
     syncType: 'full',
-    trackDeletes: true,
 
     metadata: z.void(),
     models: {
@@ -65,6 +64,8 @@ const sync = createSync({
                 }
             }
         }
+
+        await nango.deleteRecordsFromPreviousExecutions('GithubIssue');
     },
 
     // Webhook handler

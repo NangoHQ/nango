@@ -103,7 +103,7 @@ class VerificationService {
         const missingFiles = flows.filter((scriptName) => !tsFileNames.includes(scriptName));
 
         if (missingFiles.length > 0) {
-            console.log(chalk.red(`The following scripts are missing a corresponding .ts file: ${missingFiles.join(', ')}`));
+            console.log(chalk.red(`The following functions are missing a corresponding .ts file: ${missingFiles.join(', ')}`));
             throw new Error('Script missing .ts files');
         }
 

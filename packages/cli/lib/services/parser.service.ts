@@ -218,7 +218,7 @@ class ParserService {
                         const lineNumber = declaration.loc?.start.line || 'unknown';
                         console.log(
                             chalk.red(
-                                `The default exported function fetchData at "${filePath}:${lineNumber}" must not return a value. Sync scripts should not return but rather use batchSave to save data.`
+                                `The default exported function fetchData at "${filePath}:${lineNumber}" must not return a value. Sync functions should not return but rather use batchSave to save data.`
                             )
                         );
                         noReturnUsed = false;
