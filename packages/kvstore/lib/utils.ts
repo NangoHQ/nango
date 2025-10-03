@@ -57,7 +57,8 @@ export function getIORedis(options: KVStoreOptions): Redis {
 
     const redis = new Redis(url, {
         lazyConnect: true, // connect when you actually need it
-        connectTimeout: 5_000,
+        connectTimeout: options.connectTimeout || 5_000,
+        keepAlive: options.keepAlive || 60_000,
         maxRetriesPerRequest: 3, // bound per-command retries
         enableReadyCheck: true,
         enableAutoPipelining: true, // batches multiple commands per tick
