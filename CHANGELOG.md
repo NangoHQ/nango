@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.1] - 2025-10-03
+
+### Added
+
+- *(server)* Allow free self-hosted to toggle watermark (#4750) by @kaposke
+
+### Changed
+
+- Migrate instantly  docs (#4776) by @hassan254-prog
+
+### Fixed
+
+- *(ci)* Disabling windows tests + wrong docs only condition (#4799) by @TBonnin
+- *(action-output)* Throw if > 2MB (#4784) by @khaliqgant
+- *(docs)* Sample app instruction improvements (#4797) by @khaliqgant
+- *(account)* Increment account created metric (#4807) by @rossmcewan
+- *(functions)* Fix track deletes and scripts -> functions (#4805) by @khaliqgant
+- *(account)* Change dimension attribute name (#4809) by @rossmcewan
+- ConnectUI origin check to use baseURL.origin (#4792) by @kishenpateldotwork
+- Disable console in sandboxed code (#4803) by @TBonnin
+- *(kvstore)* Use kvstore across the board and allow use of ioredis (#4796) by @rossmcewan
+- *(connect-ui)* Overflow-auto to fix scrollbar (#4810) by @kaposke
+
 ## [v0.69.0] - 2025-10-02
 
 ### Added
@@ -5032,6 +5055,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.1]: https://github.com/NangoHQ/nango/compare/v0.69.0..v0.69.1
 [v0.69.0]: https://github.com/NangoHQ/nango/compare/v0.68.0..v0.69.0
 [v0.68.0]: https://github.com/NangoHQ/nango/compare/v0.67.8..v0.68.0
 [v0.67.8]: https://github.com/NangoHQ/nango/compare/v0.67.7..v0.67.8
