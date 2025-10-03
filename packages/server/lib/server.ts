@@ -14,7 +14,7 @@ import { destroyAll as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
 import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
-import { NANGO_VERSION, getLogger, initSentry, once, report, requestLoggerMiddleware } from '@nangohq/utils';
+import { NANGO_VERSION, getLogger, initSentry, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
@@ -50,11 +50,6 @@ const app = express();
 app.set('query parser', 'extended');
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
-
-// Log all requests
-if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
-    app.use(requestLoggerMiddleware({ logger }));
-}
 
 // Load all routes
 app.use('/', router);
