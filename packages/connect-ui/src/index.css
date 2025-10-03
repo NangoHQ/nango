@@ -107,8 +107,6 @@
     :root,
     :host {
         @variant dark {
-            color-scheme: dark;
-
             --color-primary: var(--color-brand-500);
             --color-on-primary: var(--color-gray-50);
             --color-surface: var(--color-gray-1000);
