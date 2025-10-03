@@ -6,6 +6,7 @@ import type { RedisClientType } from 'redis';
 
 export function getDefaultKVStoreOptions(): KVStoreOptions {
     const options: KVStoreOptions = {
+        name: 'default',
         clientLibrary: (process.env['NANGO_REDIS_CLIENT_LIBRARY'] as KVStoreClientLibrary) || 'node-redis'
     };
 
