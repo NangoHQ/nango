@@ -20,7 +20,7 @@ const defaultOptions = getDefaultKVStoreOptions();
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
 const redisClients = new Map<string, RedisClient>();
-export function getRedis(name: string, options: KVStoreOptions): RedisClient {
+function getRedis(name: string, options: KVStoreOptions): RedisClient {
     if (redisClients.has(name)) {
         return redisClients.get(name)!;
     }
@@ -92,7 +92,7 @@ async function createKVStore(name: string, options: KVStoreOptions): Promise<KVS
 }
 
 const kvstorePromises = new Map<string, Promise<KVStore>>();
-export async function getKVStore(name: string, options?: KVStoreOptions): Promise<KVStore> {
+export async function getKVStore(name: string = 'default', options?: KVStoreOptions): Promise<KVStore> {
     if (kvstorePromises.has(name)) {
         return await kvstorePromises.get(name)!;
     }

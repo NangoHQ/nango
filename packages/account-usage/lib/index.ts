@@ -20,7 +20,7 @@ let usageTracker: AccountUsageTracker | undefined;
  * Intended for simple local account usage tracking, not for billing.
  */
 async function createAccountUsageTracker(): Promise<AccountUsageTracker> {
-    const kvStore = await getKVStore('default');
+    const kvStore = await getKVStore();
     const kvUsageStore = new KvAccountUsageStore(kvStore);
     const persistentUsageStore = new DbAccountUsageStore();
     const usageStore = new HybridAccountUsageStore(kvUsageStore, persistentUsageStore);
