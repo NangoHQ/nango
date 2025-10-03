@@ -7,12 +7,12 @@ import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
 import { getDefaultKVStoreOptions, getIORedis, getNodeRedis } from './utils.js';
 
-import type { KVStore, KVStoreOptions, KVStoreRedis, RedisClient } from './KVStore.js';
+import type { KVStore, KVStoreOptions, RedisClient } from './KVStore.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
-export type { KVStore, KVStoreRedis } from './KVStore.js';
+export type { KVStore } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
 
 const defaultOptions = getDefaultKVStoreOptions();
@@ -40,10 +40,6 @@ function getRedis(options: KVStoreOptions): RedisClient {
 }
 
 export async function getRedisClient(options: KVStoreOptions): Promise<RedisClient> {
-    return ((await getKVStore(options)) as KVStoreRedis).getClient();
-}
-
-async function getRedisKVStore(options: KVStoreOptions): Promise<KVStore> {
     const redis = getRedis(options);
     redis.on('error', (err) => {
         console.error(`Redis (kvstore) error: ${err}`);
@@ -54,6 +50,11 @@ async function getRedisKVStore(options: KVStoreOptions): Promise<KVStore> {
     if (options.connect) {
         await redis.connect().then(() => {});
     }
+    return redis;
+}
+
+async function getRedisKVStore(options: KVStoreOptions): Promise<KVStore> {
+    const redis = await getRedisClient(options);
     if (redis instanceof Redis) return new IORedisKVStore(redis);
     return new RedisKVStore(redis);
 }
