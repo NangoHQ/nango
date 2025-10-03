@@ -144,7 +144,7 @@ class AccountService {
                 report(res.error);
             }
         }
-        metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { account_id: result[0].id });
+        metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
         return result[0];
     }
 
