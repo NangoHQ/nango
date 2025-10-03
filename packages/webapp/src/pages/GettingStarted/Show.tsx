@@ -36,18 +36,23 @@ export const GettingStarted: React.FC = () => {
         currentStep = -1;
     }
 
+    if (currentStep == 2) {
+        // Last step is completed automatically
+        currentStep = 3;
+    }
+
     return (
-        <DashboardLayout fullWidth className="flex flex-row p-0 max-h-full">
+        <DashboardLayout className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>
-            <div className="flex-1 flex flex-col p-11 gap-10 overflow-y-auto">
-                <header className="flex flex-col gap-3.5">
-                    <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting Started</h2>
-                    <p className="text-text-secondary text-sm">Try connecting Nango with Google Calendar to see how integrations work.</p>
-                </header>
+            <header className="flex flex-col gap-3.5">
+                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting Started</h2>
+                <p className="text-text-secondary text-sm">Try connecting Nango with Google Calendar to see how integrations work.</p>
+            </header>
+            <div className="flex flex-row gap-10">
                 <VerticalSteps
-                    className="w-full max-w-[800px]"
+                    className="w-full max-w-[628px]"
                     currentStep={currentStep}
                     steps={[
                         {
@@ -117,41 +122,41 @@ export const GettingStarted: React.FC = () => {
                             : [])
                     ]}
                 />
-            </div>
-            <div className="w-[352px] flex flex-col gap-2.5 bg-nav-gradient-50 justify-self-end p-6.5 pt-11">
-                <h4 className="text-s leading-5 text-text-secondary uppercase">DISCOVER THE NANGO PLATFORM</h4>
+                <div className="w-[300px] flex flex-col gap-2.5">
+                    <h4 className="text-s leading-5 text-text-secondary uppercase">DISCOVER THE NANGO PLATFORM</h4>
 
-                <div className="flex flex-col gap-5">
-                    <DocCard
-                        to="https://docs.nango.dev/getting-started/quickstart/embed-in-your-app"
-                        icon={CodeXml}
-                        title="Embed in your app"
-                        description="Let your users authorize 3rd-party APIs seamlessly."
-                    />
-                    <DocCard
-                        to="https://docs.nango.dev/guides/use-cases/proxy"
-                        icon={Waypoints}
-                        title="Proxy"
-                        description="Run authenticated API requests to external APIs."
-                    />
-                    <DocCard
-                        to="https://docs.nango.dev/guides/use-cases/syncs"
-                        icon={RefreshCcw}
-                        title="Syncs"
-                        description="Continously sync data from external APIs."
-                    />
-                    <DocCard
-                        to="https://docs.nango.dev/guides/use-cases/webhooks"
-                        icon={Webhook}
-                        title="Webhooks"
-                        description="Listen to webhooks from external APIs."
-                    />
-                    <DocCard
-                        to="https://nango.dev/slack"
-                        icon={SlackIcon}
-                        title="Join the Slack community"
-                        description="Seek help from the Nango team and the community."
-                    />
+                    <div className="flex flex-col gap-5">
+                        <DocCard
+                            to="https://docs.nango.dev/getting-started/quickstart/embed-in-your-app"
+                            icon={CodeXml}
+                            title="Embed in your app"
+                            description="Let your users authorize 3rd-party APIs seamlessly."
+                        />
+                        <DocCard
+                            to="https://docs.nango.dev/guides/use-cases/proxy"
+                            icon={Waypoints}
+                            title="Proxy"
+                            description="Run authenticated API requests to external APIs."
+                        />
+                        <DocCard
+                            to="https://docs.nango.dev/guides/use-cases/syncs"
+                            icon={RefreshCcw}
+                            title="Syncs"
+                            description="Continously sync data from external APIs."
+                        />
+                        <DocCard
+                            to="https://docs.nango.dev/guides/use-cases/webhooks"
+                            icon={Webhook}
+                            title="Webhooks"
+                            description="Listen to webhooks from external APIs."
+                        />
+                        <DocCard
+                            to="https://nango.dev/slack"
+                            icon={SlackIcon}
+                            title="Join the Slack community"
+                            description="Seek help from the Nango team and the community."
+                        />
+                    </div>
                 </div>
             </div>
         </DashboardLayout>
@@ -161,13 +166,13 @@ export const GettingStarted: React.FC = () => {
 const DocCard = ({ to, icon, title, description }: { to: string; icon: React.ElementType; title: string; description: string }) => {
     const IconComponent = icon;
     return (
-        <Link to={to} className="inline-flex gap-2 px-4 py-6 border border-border-muted rounded">
+        <Link to={to} className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-bg-elevated transition-all">
             <IconComponent className="shrink-0 size-4.5 text-icon-primary" />
             <div className="flex flex-col gap-1">
-                <h5 className="text-sm font-semibold leading-5 text-text-primary">{title}</h5>
-                <p className="text-sm leading-5 text-text-disabled">{description}</p>
+                <h5 className="text-sm font-medium leading-5 text-text-primary">{title}</h5>
+                <p className="text-sm leading-5 text-text-tertiary group-hover:text-text-secondary transition-all">{description}</p>
             </div>
-            <ExternalLink className="shrink-0 size-3.5 text-icon-disabled ml-auto" />
+            <ExternalLink className="shrink-0 size-3.5 text-icon-tertiary ml-auto group-hover:text-icon-primary transition-all" />
         </Link>
     );
 };

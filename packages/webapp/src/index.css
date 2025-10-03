@@ -432,10 +432,6 @@
     background: linear-gradient(141deg, var(--color-bg-elevated) 0%, var(--color-bg-surface) 100%);
 }
 
-@utility bg-nav-gradient-50 {
-    background: linear-gradient(141deg, rgba(from var(--color-bg-elevated) r g b / 0.5) 0%, rgba(from var(--color-bg-surface) r g b / 0.5) 100%);
-}
-
 @utility focus-default {
     @variant focus-visible {
         outline: 1px solid var(--color-focus-ring);

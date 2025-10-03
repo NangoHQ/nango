@@ -176,7 +176,6 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 <>
                     <div className="w-full min-w-0">
                         <CodeBlock
-                            title="index.ts"
                             snippets={[
                                 {
                                     displayLanguage: 'Node Client',

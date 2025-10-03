@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tool
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';
 
-const truncateMiddle = (str: string, maxLength: number = 20): string => {
+const truncateMiddle = (str: string, maxLength: number = 15): string => {
     if (str.length <= maxLength) {
         return str;
     }
@@ -158,7 +158,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 </p>
             </div>
             <Button variant="primary" size="lg" onClick={onClickConnect} className="w-fit">
-                <IconBrandGoogleFilled className="size-5 mr-2" />
+                <IconBrandGoogleFilled className="size-5" />
                 Connect to Google Calendar
             </Button>
         </div>
