@@ -25,15 +25,13 @@ function getRedis(options: KVStoreOptions): RedisClient {
     if (redisClients.has(name)) {
         return redisClients.get(name)!;
     }
-    if (!options.url && options.host && options.auth) {
+    if (options.host && options.auth) {
         const endpoint = options.host;
         const port = options.port || 6379;
         const auth = options.auth;
         if (endpoint && port && auth) {
             options.url = `rediss://:${auth}@${endpoint}:${port}`;
         }
-    } else {
-        throw new Error('Invalid Redis options');
     }
     const clientLibrary = options.clientLibrary || 'node-redis';
     switch (clientLibrary) {
