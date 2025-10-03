@@ -7,9 +7,8 @@ import { Encryption, getLogger } from '@nangohq/utils';
 import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
 
-import type { DBConfig } from '../models/Generic.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
+import type { DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 

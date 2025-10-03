@@ -2,8 +2,7 @@ import db, { dbNamespace, schema } from '@nangohq/database';
 
 import configService from '../../config.service.js';
 
-import type { HTTP_METHOD } from '../../../models/Generic.js';
-import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint } from '@nangohq/types';
+import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint, HTTP_METHOD } from '@nangohq/types';
 
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';

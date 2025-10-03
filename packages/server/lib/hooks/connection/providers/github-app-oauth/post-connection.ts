@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import type { InternalNango as Nango } from '../../internal-nango.js';
-import type { OAuth2Credentials } from '@nangohq/shared';
+import type { OAuth2Credentials } from '@nangohq/types';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();

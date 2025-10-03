@@ -14,6 +14,7 @@ export interface DBPlan extends Timestamps {
     orb_subscription_id: string | null;
     orb_future_plan: string | null;
     orb_future_plan_at: Date | null;
+    orb_subscribed_at: Date | null;
 
     // Trial
     // Remove all values when you upgrade a customer

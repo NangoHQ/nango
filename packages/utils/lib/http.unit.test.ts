@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { redactHeaders } from './http.js';
+import { redactHeaders, redactURL } from './http.js';
 
 describe('redactHeaders', () => {
     it('should not do anything if empty', () => {
@@ -38,5 +38,30 @@ describe('redactHeaders', () => {
             authorization: 'REDACTED',
             'x-not-filtered': 'hello'
         });
+    });
+
+    it('should not try to redact empty secret', () => {
+        expect(
+            redactHeaders({
+                headers: { test: 'test' },
+                valuesToFilter: ['']
+            })
+        ).toStrictEqual({
+            test: 'test'
+        });
+    });
+});
+
+describe('redactURL', () => {
+    it('should redact the url', () => {
+        expect(redactURL({ url: 'https://example.com/test?apiKey=foobar', valuesToFilter: ['foobar'] })).toBe('https://example.com/test?apiKey=REDACTED');
+    });
+
+    it('should not redact the url if no values to filter', () => {
+        expect(redactURL({ url: 'https://example.com/test', valuesToFilter: [] })).toBe('https://example.com/test');
+    });
+
+    it('should not try to redact empty secret', () => {
+        expect(redactURL({ url: 'https://example.com/test', valuesToFilter: [''] })).toBe('https://example.com/test');
     });
 });

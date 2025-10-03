@@ -111,7 +111,7 @@ export async function deploy({
     console.log('');
     // Actual deploy
     const total = pkg.flowConfigs.length + (pkg.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0);
-    const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${total} scripts` }).start();
+    const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${total} functions` }).start();
     try {
         const deployRes = await postDeploy({
             body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }
@@ -167,7 +167,7 @@ async function createPackage({
                 for (const scriptName of onEventScripts[event]) {
                     const files = await loadScriptFiles({ scriptName, providerConfigKey, fullPath, type: 'on-events' });
                     if (!files) {
-                        return Err(new Error(`No script files found for "${scriptName}"`));
+                        return Err(new Error(`No function files found for "${scriptName}"`));
                     }
                     scripts.push({ name: scriptName, fileBody: files, event });
                 }
@@ -258,7 +258,7 @@ async function createPackage({
     }
 
     if (postData.length <= 0) {
-        return Err(new Error('No scripts to deploy'));
+        return Err(new Error('No functions to deploy'));
     }
 
     const jsonSchema = loadSchemaJson({ fullPath });
@@ -411,7 +411,7 @@ async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Resul
 
         const nameAndVersions = json.map((result) => `${result.name}@v${result.version}`);
         return Ok(
-            `Successfully deployed the scripts: \r\n${nameAndVersions
+            `Successfully deployed the functions: \r\n${nameAndVersions
                 .map((row) => {
                     return `- ${row}`;
                 })
@@ -419,7 +419,7 @@ async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Resul
         );
     } catch (err) {
         const errorMessage = getFetchError(err);
-        return Err(new Error(`Error deploying the scripts:\n${errorMessage}`));
+        return Err(new Error(`Error deploying the functions:\n${errorMessage}`));
     }
 }
 

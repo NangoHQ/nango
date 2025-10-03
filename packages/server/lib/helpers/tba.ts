@@ -3,8 +3,7 @@ import axios from 'axios';
 import { interpolateStringFromObject } from '@nangohq/shared';
 import { SIGNATURE_METHOD, generateBaseString, generateSignature, getTbaMetaParams, percentEncode } from '@nangohq/utils';
 
-import type { OAuthSession } from '@nangohq/shared';
-import type { IntegrationConfig as ProviderConfig, Provider } from '@nangohq/types';
+import type { IntegrationConfig as ProviderConfig, OAuthSession, Provider } from '@nangohq/types';
 
 export async function makeAccessTokenRequest({
     provider,
