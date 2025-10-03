@@ -1,11 +1,12 @@
 import { Prism } from '@mantine/prism';
-import { IconLoader2, IconPlayerPlay } from '@tabler/icons-react';
+import { Loader, Play } from 'lucide-react';
 import { useState } from 'react';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
+import { CopyButton } from './CopyButton';
+import { Tag } from '../components/ui/label/Tag';
 import { cn } from '../utils/utils';
-import { CopyButton } from './ui/button/CopyButton';
-import { Tag } from './ui/label/Tag';
+import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
@@ -42,8 +43,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
     };
 
     return (
-        <div {...props} className={cn('border border-grayscale-7 rounded-md', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-4 bg-grayscale-3 rounded-t-md">
+        <div {...props} className={cn('border border-border-muted rounded', props.className)}>
+            <header className="flex justify-between items-center py-1.5 px-3 bg-bg-subtle rounded-t">
                 <span className="text-text-tertiary text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {snippets.length > 1 ? (
@@ -51,13 +52,13 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
                             defaultValue={snippets[0].language}
                             onValueChange={(language) => setSelectedSnippetIndex(snippets.findIndex((s) => s.language === language) ?? 0)}
                         >
-                            <SelectTrigger className="text-text-primary bg-grayscale-2 text-sm px-4 py-1 h-auto">
+                            <SelectTrigger size="sm">
                                 <SelectValue placeholder="Language" />
                             </SelectTrigger>
                             <SelectContent>
                                 {snippets.map(({ language, displayLanguage, icon }) => (
                                     <SelectItem key={language} value={language}>
-                                        <div className="text-s flex flex-row items-center gap-2">
+                                        <div className="flex flex-row items-center gap-1">
                                             {icon}
                                             {displayLanguage}
                                         </div>
@@ -69,30 +70,28 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
                         <Tag variant="neutral">{snippets[0].language}</Tag>
                     )}
                     {onExecute && (
-                        <button
-                            onClick={onClickExecute}
-                            disabled={isExecuting}
-                            className="flex flex-row items-center gap-2 px-4 py-1 rounded-sm text-text-secondary text-sm hover:bg-grayscale-5 transition-transform"
-                        >
+                        <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
-                                    <IconLoader2 className="w-4 h-4 animate-spin text-text-secondary" />
+                                    <Loader className="w-4 h-4 animate-spin text-text-secondary" />
                                     Running...
                                 </>
                             ) : (
                                 <>
-                                    <IconPlayerPlay className="w-4 h-4 text-success-4" />
+                                    <Play className="w-4 h-4 text-brand-500" />
                                     Run
                                 </>
                             )}
-                        </button>
+                        </Button>
                     )}
                     <CopyButton text={snippets[selectedSnippetIndex].code} />
                 </div>
             </header>
-            <Prism language={snippets[selectedSnippetIndex].language} colorScheme="dark" noCopy={true}>
-                {snippets[selectedSnippetIndex].code}
-            </Prism>
+            <div className="overflow-x-auto">
+                <Prism className="w-full min-w-0" language={snippets[selectedSnippetIndex].language} colorScheme="dark" noCopy={true}>
+                    {snippets[selectedSnippetIndex].code}
+                </Prism>
+            </div>
         </div>
     );
 };
