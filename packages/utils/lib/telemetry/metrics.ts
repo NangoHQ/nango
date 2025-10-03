@@ -1,6 +1,8 @@
 import tracer from 'dd-trace';
 
 export enum Types {
+    ACCOUNT_CREATED = 'nango.account.created',
+
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',

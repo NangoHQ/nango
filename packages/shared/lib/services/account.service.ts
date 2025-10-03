@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { flagHasPlan, report } from '@nangohq/utils';
+import { flagHasPlan, metrics, report } from '@nangohq/utils';
 
 import environmentService from './environment.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -144,7 +144,7 @@ class AccountService {
                 report(res.error);
             }
         }
-
+        metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { account_id: result[0].id });
         return result[0];
     }
 
