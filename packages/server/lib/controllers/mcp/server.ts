@@ -92,7 +92,7 @@ function callToolRequestHandler(
     providerConfig: Config
 ): (request: CallToolRequest) => Promise<CallToolResult> {
     return async (request: CallToolRequest) => {
-        metrics.increment(metrics.Types.ACTION_CALLED_BY_MCP_SERVER, 1, { account_id: account.id });
+        metrics.increment(metrics.Types.ACTION_CALLED_BY_MCP_SERVER, 1, { accountId: account.id });
 
         const active = tracer.scope().active();
         const span = tracer.startSpan('server.mcp.triggerAction', {
