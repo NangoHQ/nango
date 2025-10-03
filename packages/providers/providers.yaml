@@ -13429,6 +13429,11 @@ zoho:
             example: com
             optional: true
             suffix: /
+        accounts-server:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 zoho-books:
     display_name: Zoho Books
