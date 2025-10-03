@@ -1,14 +1,14 @@
 import type { KVStoreRedis, RedisClient } from './KVStore.js';
-import type { RedisClientType } from 'redis';
+import type { Redis } from 'ioredis';
 
-export class RedisKVStore implements KVStoreRedis {
-    private client: RedisClientType;
+export class IORedisKVStore implements KVStoreRedis {
+    private client: Redis;
 
     public getClient(): RedisClient {
         return this.client;
     }
 
-    constructor(client: RedisClientType) {
+    constructor(client: Redis) {
         this.client = client;
     }
 
@@ -21,18 +21,23 @@ export class RedisKVStore implements KVStoreRedis {
     }
 
     public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlInMs?: number }): Promise<void> {
-        const options: any = {};
-        if (opts) {
-            if (opts.ttlInMs && opts.ttlInMs > 0) {
-                options['PX'] = opts.ttlInMs;
-            }
-            if (opts.canOverride === false) {
-                options['NX'] = true;
-            }
+        const nx = opts?.canOverride === false;
+        const ttl = opts?.ttlInMs && opts.ttlInMs > 0 ? opts.ttlInMs : undefined;
+
+        let res: 'OK' | null;
+
+        if (ttl && nx) {
+            res = await this.client.set(key, value, 'PX', ttl, 'NX');
+        } else if (ttl) {
+            res = await this.client.set(key, value, 'PX', ttl);
+        } else if (nx) {
+            res = await this.client.set(key, value, 'NX');
+        } else {
+            res = await this.client.set(key, value);
         }
-        const res = await this.client.set(key, value, options);
+
         if (res !== 'OK') {
-            throw new Error(`Failed to set key: ${key}, value: ${value}, ${JSON.stringify(options)}`);
+            throw new Error(`SET failed for "${key}" (result=${res})`);
         }
     }
 
@@ -46,19 +51,30 @@ export class RedisKVStore implements KVStoreRedis {
 
     public async incr(key: string, opts?: { ttlInMs?: number; delta?: number }): Promise<number> {
         const multi = this.client.multi();
-        multi.incrBy(key, opts?.delta || 1);
+        multi.incrby(key, opts?.delta || 1);
         if (opts?.ttlInMs) {
-            multi.pExpire(key, opts.ttlInMs);
+            multi.pexpire(key, opts.ttlInMs);
         }
-        const [count] = await multi.exec();
-        return count as number;
+        const results = await multi.exec();
+        if (!results || results.length === 0) {
+            throw new Error('Transaction failed');
+        }
+        const [count] = results;
+        if (!count || count.length < 2) {
+            throw new Error('Transaction result invalid');
+        }
+        return count[1] as number;
     }
 
     public async *scan(pattern: string): AsyncGenerator<string> {
-        for await (const key of this.client.scanIterator({
-            MATCH: pattern
-        })) {
-            yield key;
+        const stream = this.client.scanStream({
+            match: pattern
+        });
+
+        for await (const keys of stream) {
+            for (const key of keys) {
+                yield key;
+            }
         }
     }
 
@@ -67,7 +83,8 @@ export class RedisKVStore implements KVStoreRedis {
     }
 
     public async subscribe(channel: string, onMessage: (message: string, channel: string) => void): Promise<void> {
-        await this.client.subscribe(channel, (message, receivedChannel) => {
+        await this.client.subscribe(channel);
+        this.client.on('message', (receivedChannel, message) => {
             if (receivedChannel === channel) {
                 onMessage(message, receivedChannel);
             }

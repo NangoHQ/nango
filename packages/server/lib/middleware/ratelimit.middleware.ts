@@ -1,8 +1,8 @@
 import path from 'node:path';
 
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
-import { createClient } from 'redis';
 
+import { getRedisClient } from '@nangohq/kvstore';
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
@@ -43,25 +43,7 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
     const url = getRedisUrl();
     let limiter: RateLimiterAbstract;
     if (url) {
-        const isExternal = url.startsWith('rediss://');
-        const socket = isExternal
-            ? {
-                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-                  connectTimeout: 10_000,
-                  tls: true,
-                  servername: new URL(url).hostname,
-                  keepAlive: 60_000
-              }
-            : {};
-        const redisClient = await createClient({
-            url: url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        }).connect();
-        redisClient.on('error', (err) => {
-            logger.error(`Redis (rate-limiter) error: ${err}`);
-        });
+        const redisClient = await getRedisClient({ url });
         limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
     } else {
         limiter = new RateLimiterMemory(opts);
