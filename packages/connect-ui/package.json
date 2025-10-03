@@ -10,7 +10,7 @@
         "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}"
     },
     "dependencies": {
-        "serve": "14.2.4"
+        "serve": "^14.2.5"
     },
     "devDependencies": {
         "@hookform/resolvers": "5.1.1",
