@@ -7,7 +7,7 @@ import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
 import { getDefaultKVStoreOptions, getIORedis, getNodeRedis } from './utils.js';
 
-import type { KVStore, KVStoreOptions, RedisClient } from './KVStore.js';
+import type { KVStore, KVStoreOptions, KVStoreRedis, RedisClient } from './KVStore.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
@@ -37,6 +37,10 @@ function getRedis(options: KVStoreOptions): RedisClient {
             throw new Error(`Invalid Redis client library: ${clientLibrary}`);
     }
     return redisClients.get(name)!;
+}
+
+export async function getRedisClient(options: KVStoreOptions): Promise<RedisClient> {
+    return ((await getKVStore(options)) as KVStoreRedis).getClient();
 }
 
 async function getRedisKVStore(options: KVStoreOptions): Promise<KVStore> {

@@ -2,12 +2,11 @@ import path from 'node:path';
 
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
-import { getKVStore } from '@nangohq/kvstore';
+import { getRedisClient } from '@nangohq/kvstore';
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { KVStoreRedis } from '@nangohq/kvstore';
 import type { DBPlan } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';
@@ -44,7 +43,7 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
     const url = getRedisUrl();
     let limiter: RateLimiterAbstract;
     if (url) {
-        const redisClient = ((await getKVStore({ url })) as KVStoreRedis).getClient();
+        const redisClient = await getRedisClient({ url });
         limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
     } else {
         limiter = new RateLimiterMemory(opts);
