@@ -25,14 +25,6 @@ function getRedis(options: KVStoreOptions): RedisClient {
     if (redisClients.has(name)) {
         return redisClients.get(name)!;
     }
-    if (options.host && options.auth) {
-        const endpoint = options.host;
-        const port = options.port || 6379;
-        const auth = options.auth;
-        if (endpoint && port && auth) {
-            options.url = `rediss://:${auth}@${endpoint}:${port}`;
-        }
-    }
     const clientLibrary = options.clientLibrary || 'node-redis';
     switch (clientLibrary) {
         case 'node-redis':
@@ -48,7 +40,7 @@ function getRedis(options: KVStoreOptions): RedisClient {
 }
 
 export async function getRedisClient(options: KVStoreOptions): Promise<RedisClient> {
-    const redis = getRedis({ ...defaultOptions, ...options });
+    const redis = getRedis(options);
     redis.on('error', (err) => {
         console.error(`Redis (kvstore) error: ${err}`);
     });
@@ -89,9 +81,17 @@ export async function destroy(name: string, hard: boolean = false) {
 }
 
 async function createKVStore(options: KVStoreOptions): Promise<KVStore> {
-    if (options.url || (options.host && options.auth)) {
+    if (options.url) {
         const store = await getRedisKVStore(options);
         return store;
+    } else {
+        const endpoint = options.host;
+        const port = options.port || 6379;
+        const auth = options.auth;
+        if (endpoint && port && auth) {
+            const store = await getRedisKVStore({ url: `rediss://:${auth}@${endpoint}:${port}`, connect: options.connect! });
+            return store;
+        }
     }
 
     return new InMemoryKVStore();
@@ -104,7 +104,7 @@ export async function getKVStore(options?: KVStoreOptions): Promise<KVStore> {
         return await kvstorePromises.get(name)!;
     }
 
-    const kvstorePromise = createKVStore(options || defaultOptions);
+    const kvstorePromise = createKVStore({ ...defaultOptions, ...options });
     kvstorePromises.set(name, kvstorePromise);
     return await kvstorePromise;
 }
