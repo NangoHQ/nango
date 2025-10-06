@@ -1,0 +1,124 @@
+---
+title: 'Ironclad'
+sidebarTitle: 'Ironclad'
+description: 'Access the Ironclad API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Ironclad_. Nango doesn't provide a test OAuth app for Ironclad yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Ironclad">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Ironclad. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Ironclad API">
+        Let's make your first request to the Ironclad API (fetch a list of all workflows). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/public/api/v1/workflows?pageSize=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/public/api/v1/workflows',
+                params: {
+                  pageSize: 10
+                },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+        <Note>
+        The Ironclad API uses different base URLs depending on your environment. Nango automatically handles the correct base URL based on your environment configuration.
+        </Note>
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Ironclad accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create an Ironclad account">
+        If you don't already have one, request a demo to sign up for an [Ironclad account](https://ironcladapp.com/request-demo).
+      </Step>
+      <Step title="Access Ironclad Company Settings">
+        Navigate to your Ironclad instance and click on your user profile dropdown at the top right-hand corner, then select **Company Settings**.
+      </Step>
+      <Step title="Navigate to API Settings">
+        1. Select the **API** tab on the left sidebar.
+      <Note>The **API** tab will only be visible if you have the API add-on enabled for your instance.</Note>
+      </Step>
+      <Step title="Create a new OAuth application">
+        1. Click on the **Create new app** button.
+        2. A popup will appear - enter the required information and click **"Create app"**.
+        3. After creating the app, the **Client ID** and **Client Secret** will be generated. Save these as you will need them when configuring your integration in Nango.
+      </Step>
+      <Step title="Configure OAuth application details">
+        1. After closing the modal, fill out all the necessary information, for:
+        - **Grant Types**: Select **Authorization Code**.
+        - **Redirect URIs**: Enter `https://api.nango.dev/oauth/callback` as the allowed redirect URI.
+        2. Click **Save Changes**.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart) to complete your integration setup.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Ironclad using Connect UI](/integrations/all/ironclad/connect) |
+    | General | [Ironclad Website](https://ironcladapp.com/) |
+    | Developer | [OAuth 2.0 Implementation Guide](https://docs.ironcladapp.com/api/oauth/) |
+    | | [How to register an OAuth Client](https://developer.ironcladapp.com/reference/register-oauth-client) |
+    | | [Authorization Code Grant Guide](https://developer.ironcladapp.com/reference/authorization-code-grant) |
+    | | [Base URLs](https://developer.ironcladapp.com/reference/authentication-api#base-url) |
+    | | [API Reference](https://developer.ironcladapp.com/reference/getting-started-api) |
+    | | [Webhooks Documentation](https://developer.ironcladapp.com/reference/webhooks) |
+    | | [Rate Limits](https://developer.ironcladapp.com/reference/clm-api-rate-limits) |
+
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ironclad.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Ironclad operates across multiple environments, each with its own base URL:
+      - **Production (NA)**: `https://na1.ironcladapp.com`
+      - **Production (EU)**: `https://eu1.ironcladapp.com`  
+      - **Demo**: `https://demo.ironcladapp.com`
+    - Every Ironclad API endpoint requires specific resource scopes (e.g., `public.workflows.createdWorkflows`). Check the API documentation for each endpoint to identify the necessary scopes.
+    - Each Ironclad environment operates independently. OAuth applications created on one environment cannot be used on other environments and must be recreated separately for each environment you need to access.
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ironclad.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
