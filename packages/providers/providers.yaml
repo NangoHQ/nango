@@ -6507,7 +6507,7 @@ intuit:
 ironclad:
     display_name: Ironclad
     categories:
-        - dev-tools
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
