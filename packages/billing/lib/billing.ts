@@ -18,7 +18,6 @@ export class Billing {
         this.batcher = flagHasUsage
             ? new Batcher({
                   process: async (events) => {
-                      logger.info(`Sending ${events.length} billing events`);
                       const res = await this.ingest(events);
                       if (res.isErr()) {
                           logger.error(res.error.message);

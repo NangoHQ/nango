@@ -1,12 +1,8 @@
-import type { KVStoreRedis, RedisClient } from './KVStore.js';
+import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';
 
-export class RedisKVStore implements KVStoreRedis {
+export class RedisKVStore implements KVStore {
     private client: RedisClientType;
-
-    public getClient(): RedisClient {
-        return this.client;
-    }
 
     constructor(client: RedisClientType) {
         this.client = client;
@@ -60,21 +56,5 @@ export class RedisKVStore implements KVStoreRedis {
         })) {
             yield key;
         }
-    }
-
-    public async publish(channel: string, message: string): Promise<void> {
-        await this.client.publish(channel, message);
-    }
-
-    public async subscribe(channel: string, onMessage: (message: string, channel: string) => void): Promise<void> {
-        await this.client.subscribe(channel, (message, receivedChannel) => {
-            if (receivedChannel === channel) {
-                onMessage(message, receivedChannel);
-            }
-        });
-    }
-
-    public async unsubscribe(channel: string): Promise<void> {
-        await this.client.unsubscribe(channel);
     }
 }

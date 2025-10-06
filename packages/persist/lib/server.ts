@@ -1,8 +1,7 @@
 import express from 'express';
 
-import { createRoute, requestLoggerMiddleware } from '@nangohq/utils';
+import { createRoute } from '@nangohq/utils';
 
-import { logger } from './logger.js';
 import { authMiddleware } from './middleware/auth.middleware.js';
 import { recordsPath } from './records.js';
 import { route as getCursorRoute, routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
@@ -26,11 +25,6 @@ const maxSizeJsonRecords = '100mb';
 export const server = express();
 
 server.set('query parser', 'extended');
-
-// Log all requests
-if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
-    server.use(requestLoggerMiddleware({ logger }));
-}
 
 server.use('/environment/:environmentId/*splat', authMiddleware);
 server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));

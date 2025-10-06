@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { createRoute, getLogger, requestLoggerMiddleware } from '@nangohq/utils';
+import { createRoute } from '@nangohq/utils';
 
 import { serverRequestSizeLimit } from './constants.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
@@ -21,17 +21,10 @@ import type { ApiError } from '@nangohq/types';
 import type { Express, NextFunction, Request, Response } from 'express';
 import type EventEmitter from 'node:events';
 
-const logger = getLogger('Orchestrator.server');
-
 export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Express => {
     const server = express();
 
     server.use(express.json({ limit: serverRequestSizeLimit }));
-
-    // Log all requests
-    if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
-        server.use(requestLoggerMiddleware({ logger }));
-    }
 
     //TODO: add auth middleware
 
