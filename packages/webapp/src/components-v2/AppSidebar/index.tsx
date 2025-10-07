@@ -39,7 +39,7 @@ export const AppSidebar: React.FC = () => {
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
-            title: 'Getting Started',
+            title: 'Getting started',
             url: `/${env}/getting-started`,
             icon: Sparkle,
             onClose: async () => {
@@ -56,7 +56,7 @@ export const AppSidebar: React.FC = () => {
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
             { title: 'Logs', url: `/${env}/logs`, icon: Logs },
             { title: 'Metrics', url: `/${env}`, icon: AreaChart },
-            { title: 'Environment Settings', url: `/${env}/environment-settings`, icon: Settings2 }
+            { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Settings2 }
         ].filter((item) => item !== null);
     }, [env, meta, mutateMeta, showGettingStarted]);
 

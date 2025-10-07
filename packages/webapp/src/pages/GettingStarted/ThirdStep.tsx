@@ -28,7 +28,7 @@ export const ThirdStep = ({ onSetupIntegrationClicked }: ThirdStepProps) => {
             </div>
 
             <ButtonLink to={`/${env}/integrations/create`} onClick={onSetupIntegrationClicked} variant="primary" size="lg">
-                Set up integration
+                Set up your own integrations
             </ButtonLink>
         </div>
     );

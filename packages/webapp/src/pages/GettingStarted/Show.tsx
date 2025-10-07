@@ -47,12 +47,12 @@ export const GettingStarted: React.FC = () => {
                 <title>Getting Started - Nango</title>
             </Helmet>
             <header className="flex flex-col gap-3.5">
-                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting Started</h2>
+                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting started</h2>
                 <p className="text-text-secondary text-sm">Try connecting Nango with Google Calendar to see how integrations work.</p>
             </header>
             <div className="flex flex-row gap-10">
                 <VerticalSteps
-                    className="w-full max-w-[628px]"
+                    className="w-full"
                     currentStep={currentStep}
                     steps={[
                         {
@@ -122,7 +122,7 @@ export const GettingStarted: React.FC = () => {
                             : [])
                     ]}
                 />
-                <div className="w-[300px] flex flex-col gap-2.5">
+                <div className="shrink-0 w-[300px] flex flex-col gap-2.5">
                     <h4 className="text-s leading-5 text-text-secondary uppercase">DISCOVER THE NANGO PLATFORM</h4>
 
                     <div className="flex flex-col gap-5">
