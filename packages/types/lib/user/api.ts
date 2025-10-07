@@ -11,7 +11,7 @@ export type GetUser = Endpoint<{
 export type InternalGetUsers = Endpoint<{
     Method: 'GET';
     Path: `/internal/users`;
-    Query: { accountId: number };
+    Querystring: { accountId: number };
     Success: {
         data: ApiUser[];
     };
