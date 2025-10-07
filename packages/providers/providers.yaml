@@ -232,6 +232,34 @@ adobe-umapi:
             description: ''
             automated: true
 
+adobe-workfront:
+    display_name: Adobe Workfront
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/integrations/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/integrations/oauth2/api/v1/token
+    authorization_method: header
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}/attask/api
+    docs: https://docs.nango.dev/integrations/all/adobe-workfront
+    docs_connect: https://docs.nango.dev/integrations/all/adobe-workfront/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            prefix: https://
+            pattern: '^[a-zA-Z0-9-]+\.my\.workfront(\.adobe)?\.com$'
+            description: The hostname of your Adobe Workfront account
+            example: acme.my.workfront.com
+
 adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
