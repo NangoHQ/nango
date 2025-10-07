@@ -292,10 +292,23 @@ export async function exec({
                     );
                 } else {
                     const tmp = errorToObject(err);
+                    const stacktrace = tmp.stack
+                        ? tmp.stack
+                              .split('\n')
+                              .filter((s, i) => i === 0 || s.includes(filename))
+                              .map((s) => s.trim())
+                              .slice(0, 5) // max 5 lines
+                        : [];
+
                     return Err(
                         new ExecutionError({
                             type: 'script_network_error',
-                            payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                            payload: truncateJson({
+                                name: tmp.name || 'Error',
+                                code: tmp.code,
+                                message: tmp.message,
+                                ...(stacktrace.length > 0 ? { stacktrace } : {})
+                            }),
                             status: 500,
                             telemetryBag: nango.telemetryBag
                         })
@@ -305,12 +318,26 @@ export async function exec({
                 const tmp = errorToObject(err);
                 span.setTag('error', tmp);
 
+                const stacktrace = tmp.stack
+                    ? tmp.stack
+                          .split('\n')
+                          .filter((s, i) => i === 0 || s.includes(filename))
+                          .map((s) => s.trim())
+                          .slice(0, 5) // max 5 lines
+                    : [];
+
                 return Err(
                     new ExecutionError({
                         type: 'script_internal_error',
-                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                        payload: truncateJson({
+                            name: tmp.name || 'Error',
+                            code: tmp.code,
+                            message: tmp.message,
+                            ...(stacktrace.length > 0 ? { stacktrace } : {})
+                        }),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.telemetryBag,
+                        ...(stacktrace.length > 0 ? { stacktrace } : {})
                     })
                 );
             } else {
