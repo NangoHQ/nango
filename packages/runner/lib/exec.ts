@@ -27,6 +27,17 @@ interface ScriptExports {
     default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 
+function formatStackTrace(stack: string | undefined, filename: string): string[] {
+    if (!stack) {
+        return [];
+    }
+    return stack
+        .split('\n')
+        .filter((s, i) => i === 0 || s.includes(filename))
+        .map((s) => s.trim())
+        .slice(0, 5); // max 5 lines
+}
+
 export async function exec({
     nangoProps,
     code,
@@ -292,13 +303,7 @@ export async function exec({
                     );
                 } else {
                     const tmp = errorToObject(err);
-                    const stacktrace = tmp.stack
-                        ? tmp.stack
-                              .split('\n')
-                              .filter((s, i) => i === 0 || s.includes(filename))
-                              .map((s) => s.trim())
-                              .slice(0, 5) // max 5 lines
-                        : [];
+                    const stacktrace = formatStackTrace(tmp.stack, filename);
 
                     return Err(
                         new ExecutionError({
@@ -318,13 +323,7 @@ export async function exec({
                 const tmp = errorToObject(err);
                 span.setTag('error', tmp);
 
-                const stacktrace = tmp.stack
-                    ? tmp.stack
-                          .split('\n')
-                          .filter((s, i) => i === 0 || s.includes(filename))
-                          .map((s) => s.trim())
-                          .slice(0, 5) // max 5 lines
-                    : [];
+                const stacktrace = formatStackTrace(tmp.stack, filename);
 
                 return Err(
                     new ExecutionError({
@@ -343,13 +342,7 @@ export async function exec({
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
 
-                const stacktrace = tmp.stack
-                    ? tmp.stack
-                          .split('\n')
-                          .filter((s, i) => i === 0 || s.includes(filename))
-                          .map((s) => s.trim())
-                          .slice(0, 5) // max 5 lines
-                    : [];
+                const stacktrace = formatStackTrace(tmp.stack, filename);
 
                 return Err(
                     new ExecutionError({
