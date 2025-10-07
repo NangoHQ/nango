@@ -406,6 +406,9 @@ class OAuthController {
                 if (defaults?.authorization_params) {
                     connectionConfig['authorization_params'] = defaults.authorization_params;
                 }
+                if (defaults?.connectionConfig) {
+                    Object.assign(connectionConfig, defaults.connectionConfig);
+                }
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {

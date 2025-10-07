@@ -27,11 +27,11 @@ export class LogContextStateless {
     logToConsole: boolean;
     transport: LogTransportAbstract;
 
-    constructor(data: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor(data: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options: Options = { dryRun: false, logToConsole: false }) {
         this.id = data.id;
         this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
-        this.logToConsole = options.logToConsole ?? true;
+        this.logToConsole = options.logToConsole ?? false;
         this.transport = options.transport ?? new ESTransport();
     }
 
@@ -138,7 +138,7 @@ export class LogContext extends LogContextStateless {
     createdAt: string;
     span?: OtlpSpan;
 
-    constructor({ id, createdAt, accountId }: { id: string; createdAt: string; accountId: number }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor({ id, createdAt, accountId }: { id: string; createdAt: string; accountId: number }, options: Options = { dryRun: false, logToConsole: false }) {
         super({ id, accountId }, options);
         this.createdAt = createdAt;
     }
@@ -222,7 +222,7 @@ export class LogContext extends LogContextStateless {
 export class LogContextOrigin extends LogContext {
     operation: OperationRow;
 
-    constructor({ operation }: { operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor({ operation }: { operation: OperationRow }, options: Options = { dryRun: false, logToConsole: false }) {
         super({ id: operation.id, createdAt: operation.createdAt, accountId: operation.accountId }, options);
         this.operation = operation;
     }

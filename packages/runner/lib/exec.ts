@@ -72,7 +72,13 @@ export async function exec({
                 filename
             });
             const sandbox: vm.Context = {
-                console,
+                // disable console in the sandboxed code
+                console: new Proxy(
+                    {},
+                    {
+                        get: () => () => {} // Returns no-op function for any console method
+                    }
+                ),
                 require: (moduleName: string) => {
                     switch (moduleName) {
                         case 'url':
