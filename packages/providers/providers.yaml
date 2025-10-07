@@ -8635,6 +8635,7 @@ one-drive:
         - knowledge-base
         - storage
     alias: microsoft
+    post_connection_script: onedrivePostConnection
     docs: https://docs.nango.dev/integrations/all/one-drive
 
 one-note:
@@ -10993,6 +10994,7 @@ sharepoint-online:
         - storage
         - communication
     alias: microsoft
+    post_connection_script: onedrivePostConnection
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
 
 sharepoint-online-oauth2-cc:
