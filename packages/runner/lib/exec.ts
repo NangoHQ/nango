@@ -336,8 +336,7 @@ export async function exec({
                             ...(stacktrace.length > 0 ? { stacktrace } : {})
                         }),
                         status: 500,
-                        telemetryBag: nango.telemetryBag,
-                        ...(stacktrace.length > 0 ? { stacktrace } : {})
+                        telemetryBag: nango.telemetryBag
                     })
                 );
             } else {
