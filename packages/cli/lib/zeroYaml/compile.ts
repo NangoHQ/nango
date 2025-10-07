@@ -309,11 +309,11 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
         return Err(bundleResult.error);
     }
 
-    if (bundleResult.value.includes('console.log')) {
+    if (bundleResult.value.match(/\bconsole\.\w+/)) {
         const relPath = path.relative(projectRootPath, entryPoint).replace('.js', '.ts');
         console.warn(
             chalk.yellow(
-                `\nWarning: Script '${relPath}' contains console.log statements. These logs will not appear in the Nango dashboard. Use await nango.log() instead to see logs in the dashboard.`
+                `\nWarning: Script '${relPath}' contains console statements (console.log, console.warn, etc.). These logs will not appear in the Nango dashboard. Use await nango.log() instead to see logs in the dashboard.`
             )
         );
     }
