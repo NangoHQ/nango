@@ -27,7 +27,6 @@ export class BillingProcessor {
             consumerGroup: 'billing',
             subject: 'usage',
             callback: async (event) => {
-                logger.info(`Processing billing event`, { event });
                 const result = await process(event);
                 if (result.isErr()) {
                     report(new Error(`Failed to process billing event: ${result.error}`), { event });

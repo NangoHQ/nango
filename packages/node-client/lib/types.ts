@@ -41,6 +41,7 @@ import type {
     RecordLastAction,
     RecordMetadata,
     StandardNangoConfig,
+    SyncResult,
     TbaCredentials,
     TwoStepCredentials,
     UnauthCredentials,
@@ -95,7 +96,7 @@ export type {
     PostPublicConnectSessionsReconnect
 };
 
-export type { NangoSyncConfig, StandardNangoConfig };
+export type { NangoSyncConfig, StandardNangoConfig, SyncResult };
 
 export interface NangoProps {
     host?: string;
@@ -203,10 +204,4 @@ export interface NangoSyncModel {
     name: string;
     description?: string;
     fields: NangoSyncModelField[];
-}
-
-export interface SyncResult {
-    added: number;
-    updated: number;
-    deleted: number;
 }

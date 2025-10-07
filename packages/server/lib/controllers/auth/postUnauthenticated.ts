@@ -156,7 +156,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             }
 
             const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
+            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             res.status(400).send({
                 error: {

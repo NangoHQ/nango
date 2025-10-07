@@ -1,65 +1,84 @@
 ---
-title: Atlassian Cloud Admin
-sidebarTitle: Atlassian Cloud Admin
+title: 'Atlassian Cloud Admin'
+sidebarTitle: 'Atlassian Cloud Admin'
+description: 'Access the Atlassian Cloud Admin API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/atlassian-admin/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/atlassian-admin/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Atlassian Cloud Admin_.
+      </Step>
+      <Step title="Authorize Atlassian">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Atlassian Admin credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Atlassian Cloud Admin API">
+        Let's make your first request to the Atlassian Cloud Admin API (fetch a list of organizations). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/admin/v1/orgs" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Accept: application/json"
+                ```
+            </Tab>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for an [Atlassian developer account](https://developer.atlassian.com/). |
-| Paid test account | ✅ Not required | Free Atlassian Cloud instance can be used for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | |
-| Security audit | ✅ Not required | |
+            <Tab title="Node">
 
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-## Setup guide
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-_No setup guide yet._
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const res = await nango.get({
+              endpoint: '/admin/v1/orgs',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
+            console.log(JSON.stringify(res.data.data, 2, null));
+            ```
+            </Tab>
 
-## Useful links
+        </Tabs>
 
-| Topic| Link                                                                                                                                    |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| General   | [Atlassian Website](https://atlassian.com/)                                                                                 |
-|Developer | [Authentication Reference](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#auth)                                          |
-|               | [How to Generate an Admin API Key](https://support.atlassian.com/organization-administration/docs/manage-an-organization-with-the-admin-apis/) |
-|               | [Atlassian Admin API Key Scopes](https://developer.atlassian.com/cloud/admin/scopes/#available-scopes)                                   |
-|               | [REST API Documentation](https://developer.atlassian.com/cloud/admin/rest-apis/)                                               |
-|               | [API Rate Limits](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#rate%20limits)                                          |
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
+      </Step>
+    </Steps>
 
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian-admin.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Atlassian Cloud Admin accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | Authorization | [Guide to connect to Atlassian Cloud Admin using Connect UI](/integrations/all/atlassian-admin/connect) |
+    | General | [Atlassian Website](https://atlassian.com/) |
+    | Developer | [Authentication Reference](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#auth) |
+    | | [How to Generate an Admin API Key](https://support.atlassian.com/organization-administration/docs/manage-an-organization-with-the-admin-apis/) |
+    | | [Atlassian Admin API Key Scopes](https://developer.atlassian.com/cloud/admin/scopes/#available-scopes) |
+    | | [REST API Documentation](https://developer.atlassian.com/cloud/admin/rest-apis/) |
+    | | [API Rate Limits](https://developer.atlassian.com/cloud/admin/organization/rest/intro/#rate%20limits) |
 
-## Common Scopes
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian-admin.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+      _None yet, add yours!_
 
-| Scope                        | Description       |
-| ----------------------------------- | -------------------------------------------------------------------------- |
-| `read:atlassian-admin-user`         | Read user information                                                      |
-| `read:atlassian-admin-work`         | Read Atlassian Admin work items (issues, projects, etc.)                   |
-| `write:atlassian-admin-work`        | Create and update Atlassian Admin work items                               |
-| `read:classification-levels:admin`  | Get all classification levels and specific level by org ID                 |
-| `write:classification-levels:admin` | Create, edit, publish, archive, restore, and reorder classification levels |
-| `read:tokens:admin`                 | Retrieve API keys and tokens in the organization                           |
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian-admin.mdx)</Note>
+  </Tab>
+</Tabs>
 
-## API gotchas
-
-_None yet, add yours!_
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian-admin.mdx)</Note>
-
-<Card title="Connect to atlassian-admin" icon="link" href="/integrations/all/atlassian-admin/connect" horizontal>
-  Guide to connect to Atlassian Cloud Admin using Nango Connect.
-</Card>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

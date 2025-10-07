@@ -4,6 +4,74 @@ sidebarTitle: 'Product Updates'
 description: "Product updates and improvements."
 ---
 
+<Update label="September 2025">
+
+<AccordionGroup>
+    <Accordion title="28 new APIs in September" icon="webhook">
+        - [Addepar (OAuth)](/integrations/all/addepar)
+        - [Addepar (Basic Auth)](/integrations/all/addepar-basic)
+        - [ADP Lyric](/integrations/all/adp-lyric)
+        - [ADP Workforce Now](/integrations/all/adp-workforce-now)
+        - [Bullhorn](/integrations/all/bullhorn)
+        - [Clerk](/integrations/all/clerk)
+        - [Cursor](/integrations/all/cursor)
+        - [DataCandy](/integrations/all/datacandy)
+        - [Fillout (API Key)](/integrations/all/fillout-api-key)
+        - [Fillout (Oauth)](/integrations/all/fillout)
+        - [Google Workspace Admin](/integrations/all/google-workspace-admin)
+        - [Google Service Account](/integrations/all/google-service-account)
+        - [Hover](/integrations/all/hover)
+        - [Jobber](/integrations/all/jobber)
+        - [Kintone](/integrations/all/kintone)
+        - [Kintone User API](/integrations/all/kintone-user-api)
+        - [Pax8](/integrations/all/pax8)
+        - [Recruitee](/integrations/all/recruitee)
+        - [Sellsy](/integrations/all/sellsy)
+        - [Sellsy (Client Credentials)](/integrations/all/sellsy-oauth2-cc)
+        - [Skio](/integrations/all/skio)
+        - [Snapchat (Ads API)](/integrations/all/snapchat)
+        - [Tailscale (OAuth)](/integrations/all/tailscale)
+        - [Tailscale (API Key)](/integrations/all/tailscale-api-key)
+        - [Webex](/integrations/all/webex)
+    </Accordion>
+</AccordionGroup>
+
+---
+
+## Connect UI settings
+
+<Frame>
+    <img src="/images/changelog/connect-ui-settings.png" alt="Connect UI settings" />
+</Frame>
+
+Customize the Connect UI, which your users see when they authorize integrations.
+
+We've added a dark mode and the ability to change the primary color to fit your brand. You can also toggle the light/dark mode based on the user's system preference.
+
+Access the Connect UI settings in your [Environment settings](https://app.nango.dev/dev/environment-settings). We will continue adding customization options over time.
+
+---
+
+## Improved deletion detection when syncing data
+
+For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/syncs/deletion-detection#detecting-deletes-in-full-refresh-syncs)).
+
+Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
+
+Please note that you should only use this function if you are performing a full sync. If you are syncing data incrementally, you can periodicaly resync the whole dataset to benefit from deletion detection.
+
+---
+
+## Custom credentials verification 
+
+We added the ability to customize the credentials verification script, which is called when a new connection is created. For this, use the new `validate-connection` hook ([docs](/implementation-guides/platform/implement-event-handler)).  
+
+This lets you verify your customers’ API credentials by testing them against specific endpoints that correspond to particular API scopes.
+
+---
+
+</Update>
+
 <Update label="August 2025">
 
 <AccordionGroup>

@@ -2,7 +2,6 @@ import { Helmet } from 'react-helmet';
 
 import { AddTeamMember } from './components/AddTeamMember';
 import { Admin } from './components/Admin';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -18,7 +17,7 @@ export const TeamSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Team Settings - Nango</title>
                 </Helmet>
@@ -32,11 +31,11 @@ export const TeamSettings: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Team Settings" error={error} page={LeftNavBarItems.TeamSettings} />;
+        return <ErrorPageComponent title="Team Settings" error={error} />;
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
+        <DashboardLayout>
             <Helmet>
                 <title>Team Settings - Nango</title>
             </Helmet>

@@ -16,7 +16,7 @@ import {
     getSyncConfigRaw,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient } from '../clients.js';
@@ -120,12 +120,10 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncJobId: syncJob.id,
             debug: false,
             runnerFlags: await getRunnerFlags(),
-            startedAt: new Date(),
             endUser,
+            startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
-
-        metrics.increment(metrics.Types.WEBHOOK_EXECUTION, 1, { accountId: team.id });
 
         const res = await startScript({
             taskId: task.id,
@@ -165,8 +163,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             runTime: 0,
             error,
             syncConfig,
-            endUser,
-            startedAt: new Date()
+            endUser
         });
         return Err(error);
     }
@@ -289,9 +286,6 @@ export async function handleWebhookSuccess({
     });
 
     await logCtx.success();
-
-    metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
 }
 
 export async function handleWebhookError({
@@ -346,7 +340,6 @@ export async function handleWebhookError({
         error,
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
-        startedAt: nangoProps.startedAt,
         telemetryBag
     });
 }
@@ -367,7 +360,6 @@ async function onFailure({
     runTime,
     error,
     endUser,
-    startedAt,
     telemetryBag
 }: {
     connection: ConnectionJobs;
@@ -385,7 +377,6 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
-    startedAt: Date;
     telemetryBag?: TelemetryBag | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
@@ -476,7 +467,4 @@ async function onFailure({
     void logCtx?.error(error.message, { error });
     await logCtx?.enrichOperation({ error });
     await logCtx?.failed();
-
-    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

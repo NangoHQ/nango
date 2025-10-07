@@ -1,5 +1,4 @@
-import type { TimestampsAndDeleted } from './Generic.js';
-import type { ScriptTypeLiteral, Timestamps } from '@nangohq/types';
+import type { ScriptTypeLiteral, SyncResultByModel, Timestamps, TimestampsAndDeleted } from '@nangohq/types';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -17,14 +16,6 @@ export enum SyncJobsType {
     ACTION = 'ACTION'
 }
 
-export interface SyncResult {
-    added: number;
-    updated: number;
-    deleted: number;
-}
-
-export type SyncResultByModel = Record<string, SyncResult>;
-
 export type SyncWithConnectionId = Sync & { connection_id: string };
 
 export interface Sync extends TimestampsAndDeleted {
@@ -38,7 +29,6 @@ export interface Sync extends TimestampsAndDeleted {
         nanos?: number;
     };
     frequency: string | null;
-    last_fetched_at: Date | null;
     sync_config_id: number;
 }
 
@@ -56,22 +46,6 @@ export interface Job extends Timestamps {
     log_id?: string | null;
     result?: SyncResultByModel;
     sync_config_id?: number;
-}
-
-export interface ReportedSyncJobStatus {
-    id?: string;
-    type: SyncJobsType | 'INITIAL';
-    name?: string;
-    variant?: string;
-    connection_id?: string;
-    status: SyncStatus;
-    latestResult?: SyncResultByModel | undefined;
-    jobStatus?: SyncStatus;
-    frequency: string | null;
-    finishedAt: Date | undefined;
-    nextScheduledSyncAt: Date | null;
-    latestExecutionStatus: SyncStatus | undefined;
-    recordCount: Record<string, number>;
 }
 
 export enum SyncCommand {

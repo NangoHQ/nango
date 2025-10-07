@@ -21,8 +21,8 @@ import {
 import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
-import type { AuthCredentials, Job as SyncJob, Sync } from '@nangohq/shared';
-import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { AllAuthCredentials, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
@@ -501,7 +501,7 @@ const initDb = async () => {
     const connectionRes = await connectionService.upsertConnection({
         connectionId: `conn-test`,
         providerConfigKey: `provider-test`,
-        parsedRawCredentials: {} as AuthCredentials,
+        parsedRawCredentials: {} as AllAuthCredentials,
         connectionConfig: {},
         environmentId: env.id
     });

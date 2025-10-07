@@ -13,28 +13,69 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    should-run:
+        runs-on: ubuntu-latest
+        outputs:
+            should_skip: ${{ steps.check.outputs.should_skip }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      docs:
+                          - 'docs-v2/**'
+                          - 'packages/providers/providers.yaml'
+            - name: Determine if should skip
+              id: check
+              run: |
+                  # Run on PRs only if docs changed
+                  # Always run on merge queue
+                  # Always run on direct pushes to master (not merge queue bot)
+                  IS_PR="${{ github.event_name == 'pull_request' }}"
+                  IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
+                  IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
+                  HAS_DOCS_CHANGES="${{ steps.filter.outputs.docs }}"
+
+                  SHOULD_SKIP="true"
+                  # Always run on merge queue and direct push to master
+                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  # Run on PR only if docs changed
+                  elif [[ "$IS_PR" == "true" && "$HAS_DOCS_CHANGES" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  fi
+
+                  echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     yaml_validation_job:
+        needs: should-run
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
+              if: needs.should-run.outputs.should_skip != 'true'
               uses: actions/checkout@v4
               with:
                   fetch-depth: '0'
 
             - uses: actions/setup-node@v4
+              if: needs.should-run.outputs.should_skip != 'true'
               with:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
             - run: npm ci
+              if: needs.should-run.outputs.should_skip != 'true'
             - name: Validate YAML
+              if: needs.should-run.outputs.should_skip != 'true'
               run: npm run test:providers
 
             - name: Validate OpenAPI
+              if: needs.should-run.outputs.should_skip != 'true'
               run: npm run test:openapi
 
             - name: Ensure there are no broken mintlify links
+              if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   npm install -g mintlify
                   cd docs-v2

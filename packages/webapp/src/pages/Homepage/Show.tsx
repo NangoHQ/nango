@@ -2,7 +2,6 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import { InsightChart } from './components/InsightChart';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { useMeta } from '../../hooks/useMeta';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -18,7 +17,7 @@ export const Homepage: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Homepage - Nango</title>
                 </Helmet>
@@ -43,7 +42,7 @@ export const Homepage: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
+        <DashboardLayout>
             <Helmet>
                 <title>Homepage - Nango</title>
             </Helmet>

@@ -13,7 +13,6 @@ import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { OAuth2Credentials } from '@nangohq/shared';
 import type {
     ApiKeyCredentials,
     BasicApiCredentials,
@@ -21,6 +20,7 @@ import type {
     ConnectionUpsertResponse,
     OAuth1Credentials,
     OAuth2ClientCredentials,
+    OAuth2Credentials,
     ProviderGithubApp,
     ProviderOAuth2,
     TbaCredentials

@@ -17,6 +17,7 @@ const FILTER_HEADERS = [
     'connection-id',
     'provider-config-key',
     'nango-is-sync',
+    'nango-is-script',
     'nango-is-dry-run',
     'nango-activity-log-id',
     'content-length',
@@ -83,7 +84,7 @@ export function onAxiosRequestFulfilled({
     }
     const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
 
-    if (response.request.path.includes(`/connection/${connectionId}?provider_config_key=${providerConfigKey}`)) {
+    if (response.request.path.includes(`/connections/${connectionId}`)) {
         const connection = response.data as GetPublicConnection['Success'];
 
         // getConnection could be getMetadata as well which would be cached

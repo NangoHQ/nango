@@ -6,8 +6,8 @@ import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/util
 import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
-import type { AuthorizationTokenResponse, Config as ProviderConfig, RefreshTokenResponse } from '../models/index.js';
-import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
+import type { Config as ProviderConfig } from '../models/index.js';
+import type { AuthorizationTokenResponse, DBConnectionDecrypted, ProviderOAuth2, RefreshTokenResponse } from '@nangohq/types';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
