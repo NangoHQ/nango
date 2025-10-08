@@ -1,15 +1,16 @@
 import { IconCheck } from '@tabler/icons-react';
+import { Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { mutate } from 'swr';
 
 import { StripeForm } from './PaymentMethod';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '../../../../components/ui/Dialog';
-import { Button } from '../../../../components/ui/button/Button';
 import { apiGetCurrentPlan, apiPostPlanChange } from '../../../../hooks/usePlan';
 import { useToast } from '../../../../hooks/useToast';
 import { queryClient, useStore } from '../../../../store';
 import { stripePromise } from '../../../../utils/stripe';
 import { cn } from '../../../../utils/utils';
+import { Button } from '@/components-v2/ui/button';
 
 import type { PlanDefinitionList } from '../types';
 import type { GetEnvironment, PlanDefinition } from '@nangohq/types';
@@ -24,7 +25,7 @@ export const PlanCard: React.FC<{
 
     const env = useStore((state) => state.env);
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const [longWait, setLongWait] = useState(false);
     const refInterval = useRef<NodeJS.Timeout>();
 
@@ -144,6 +145,64 @@ export const PlanCard: React.FC<{
     }
 
     return (
+        <div className={cn('w-56 flex flex-col rounded border border-border-disabled', def.active && 'bg-bg-elevated border-border-muted')}>
+            <header className={cn(' p-5 flex flex-col gap-3 border-b border-border-disabled', def.active && 'border-b-border-muted')}>
+                <div className="flex justify-between items-center text-text-primary">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-md font-semibold">{def.plan.title}</span>
+                        {def.active && <div className="size-1.5 bg-icon-brand rounded-full" />}
+                    </div>
+                    {plan.basePrice !== undefined && (
+                        <div className="text-s">
+                            <span className="font-semibold">{`$${def.plan.basePrice}`}</span>
+                            <span className="text-s">/mo</span>
+                        </div>
+                    )}
+                </div>
+                <div className="text-text-secondary text-s leading-5 font-medium">{plan.description}</div>
+            </header>
+            <main className="p-5 flex flex-col gap-4 justify-between h-full">
+                <div className="flex flex-col gap-3 text-s leading-5 font-medium">
+                    {plan.display?.featuresHeading && <span className="text-text-secondary">{plan.display.featuresHeading}</span>}
+                    {plan.display?.features.map((feature) => {
+                        return (
+                            <div key={feature.title} className="flex items-center gap-2 text-text-primary">
+                                <Check className={cn('text-text-secondary size-4', def.active && 'text-text-brand')} />
+                                {feature.title}
+                            </div>
+                        );
+                    })}
+                </div>
+                {plan.display?.sub && <p className="text-text-tertiary text-s leading-5">{plan.display.sub}</p>}
+
+                {def.active && (
+                    <Button disabled variant={'secondary'} className="w-full">
+                        Current plan
+                    </Button>
+                )}
+                {!def.active && def.isUpgrade && activePlan.canChange && (
+                    <Button variant={'primary'} onClick={onClick} className="w-full">
+                        {def.plan.cta ? def.plan.cta : 'Upgrade plan'}
+                    </Button>
+                )}
+                {!def.active && def.isDowngrade && activePlan.canChange && (
+                    <>
+                        {currentPlan?.orb_future_plan && currentPlan?.orb_future_plan === def.plan.orbId ? (
+                            <div className="text-xs text-grayscale-500">Downgrade planned at the end of the month</div>
+                        ) : (
+                            activePlan.prevPlan && (
+                                <Button variant={'primary'} onClick={onClick} className="w-full">
+                                    Downgrade
+                                </Button>
+                            )
+                        )}
+                    </>
+                )}
+            </main>
+        </div>
+    );
+
+    return (
         <Dialog open={open} onOpenChange={setOpen}>
             <div className={cn('flex flex-col justify-between text-white rounded-lg border border-grayscale-5', def.active && 'bg-grayscale-3')}>
                 <div>
@@ -162,7 +221,7 @@ export const PlanCard: React.FC<{
                         <div className="text-sm text-grayscale-10 mt-4">{def.plan.description}</div>
                     </header>
                     <main className={cn('flex flex-col gap-3 py-5 px-5 text-s', def.active && 'bg-grayscale-3')}>
-                        {plan.display?.featuresHeading && <div className="">{plan.display.featuresHeading}</div>}
+                        {plan.display?.featuresHeading && <div className="">{plan.display?.featuresHeading}</div>}
                         {plan.display?.features.map((feature) => {
                             return (
                                 <div key={feature.title}>
@@ -174,7 +233,7 @@ export const PlanCard: React.FC<{
                                 </div>
                             );
                         })}
-                        {plan.display?.sub && <div className="border-t border-t-grayscale-600 pt-4 text-gray-400">{plan.display.sub}</div>}
+                        {plan.display?.sub && <div className="border-t border-t-grayscale-600 pt-4 text-gray-400">{plan.display?.sub}</div>}
                     </main>
                 </div>
                 <footer className=" py-5 px-5 ">
@@ -234,11 +293,11 @@ export const PlanCard: React.FC<{
                             <Button variant={'secondary'}>Cancel</Button>
                         </DialogClose>
                         {def.isDowngrade ? (
-                            <Button variant={'primary'} onClick={onDowngrade} isLoading={loading}>
+                            <Button variant={'primary'} onClick={onDowngrade}>
                                 Downgrade
                             </Button>
                         ) : (
-                            <Button variant={'primary'} onClick={onUpgrade} isLoading={loading}>
+                            <Button variant={'primary'} onClick={onUpgrade}>
                                 Upgrade
                             </Button>
                         )}
