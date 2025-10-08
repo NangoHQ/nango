@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events';
-
 import type { KVStore } from './KVStore.js';
 import type { MaybePromise } from '@nangohq/types';
 
@@ -13,11 +11,9 @@ const KVSTORE_INTERVAL_CLEANUP = 10000;
 export class InMemoryKVStore implements KVStore {
     private store: Map<string, Value>;
     private interval: NodeJS.Timeout;
-    private eventEmitter: EventEmitter;
 
     constructor() {
         this.store = new Map();
-        this.eventEmitter = new EventEmitter();
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
@@ -25,7 +21,6 @@ export class InMemoryKVStore implements KVStore {
         if (this.interval) {
             clearInterval(this.interval);
         }
-        this.eventEmitter.removeAllListeners();
         this.store.clear();
     }
 
@@ -103,20 +98,5 @@ export class InMemoryKVStore implements KVStore {
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(key);
-    }
-
-    public publish(channel: string, message: string): Promise<void> {
-        this.eventEmitter.emit(`channel:${channel}`, message, channel);
-        return Promise.resolve();
-    }
-
-    public subscribe(channel: string, onMessage: (message: string, channel: string) => void): Promise<void> {
-        this.eventEmitter.on(`channel:${channel}`, onMessage);
-        return Promise.resolve();
-    }
-
-    public unsubscribe(channel: string): Promise<void> {
-        this.eventEmitter.removeAllListeners(`channel:${channel}`);
-        return Promise.resolve();
     }
 }
