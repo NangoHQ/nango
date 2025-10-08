@@ -105,7 +105,6 @@ export const GettingStarted: React.FC = () => {
                                             toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
                                         }
                                     }}
-                                    active={currentStep >= 1}
                                     completed={currentStep >= 2}
                                 />
                             )

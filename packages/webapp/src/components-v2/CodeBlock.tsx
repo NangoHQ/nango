@@ -17,6 +17,7 @@ export interface Snippet {
     displayLanguage: string;
     icon: React.ReactNode;
     code: string;
+    highlightedLines?: number[];
 }
 
 export type CodeBlockProps = {
@@ -24,6 +25,10 @@ export type CodeBlockProps = {
     snippets: Snippet[];
     onExecute?: () => MaybePromise<void>;
 } & HTMLAttributes<HTMLDivElement>;
+
+const highlight = {
+    color: ''
+};
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute, ...props }) => {
     const [selectedSnippetIndex, setSelectedSnippetIndex] = useState(0);
@@ -88,7 +93,13 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, snippets, onExecute
                 </div>
             </header>
             <div className="overflow-x-auto">
-                <Prism className="w-full min-w-0" language={snippets[selectedSnippetIndex].language} colorScheme="dark" noCopy={true}>
+                <Prism
+                    className="w-full min-w-0"
+                    language={snippets[selectedSnippetIndex].language}
+                    colorScheme="dark"
+                    noCopy={true}
+                    highlightLines={Object.fromEntries(snippets[selectedSnippetIndex].highlightedLines?.map((line) => [line, highlight]) ?? [])}
+                >
                     {snippets[selectedSnippetIndex].code}
                 </Prism>
             </div>

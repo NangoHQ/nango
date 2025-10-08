@@ -7,9 +7,10 @@ import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
-import { cn } from '../../utils/utils';
+import { cn, truncateMiddle } from '../../utils/utils';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 
 interface CalendarEvent {
     summary: string;
@@ -82,17 +83,17 @@ interface SecondStepProps {
     connectionId?: string;
     providerConfigKey?: string;
     onExecuted?: () => void;
-    active: boolean;
     completed: boolean;
 }
 
-export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerConfigKey, onExecuted, active, completed }) => {
+export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerConfigKey, onExecuted, completed }) => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
 
     const [isExecuting, setIsExecuting] = useState(false);
+    const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
     const calendarEvent: CalendarEvent = useMemo(() => {
         const next15Minutes = dateNext15Minutes();
@@ -167,12 +168,30 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
         <div className="flex flex-col gap-5 w-full min-w-0">
             <div className="flex flex-col gap-1.5">
                 <h3 className="text-text-primary text-sm font-semibold">Use Nango as a proxy to make requests to Google Calendar</h3>
-                <p className="text-text-tertiary text-sm">
-                    Nango will handle API credentials for you. <br />
-                    All you need is the connection id.
-                </p>
+                {!connectionId && (
+                    <p className="text-text-tertiary text-sm">
+                        Nango will handle API credentials for you. <br />
+                        All you need is the connection id.
+                    </p>
+                )}
+                {connectionId && (
+                    <div>
+                        <p className="text-text-tertiary text-sm">
+                            A connection was created with the connection id:{' '}
+                            <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+                                <TooltipTrigger>
+                                    <StyledLink to={`/${env}/connections/${providerConfigKey}/${connectionId}`} icon>
+                                        {truncateMiddle(connectionId, 30)}
+                                    </StyledLink>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">{connectionId}</TooltipContent>
+                            </Tooltip>
+                        </p>
+                        <p className="text-text-tertiary text-sm">You can use it to make requests to Google Calendar.</p>
+                    </div>
+                )}
             </div>
-            {active && (
+            {connectionId && (
                 <>
                     <div className="w-full min-w-0">
                         <CodeBlock
@@ -181,7 +200,8 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                                     displayLanguage: 'Node Client',
                                     icon: <IconBrandNodejs className="w-4 h-4" />,
                                     language: 'typescript',
-                                    code: nodeClientCode
+                                    code: nodeClientCode,
+                                    highlightedLines: isTooltipOpen ? [7] : undefined
                                 },
                                 {
                                     displayLanguage: 'cURL',
