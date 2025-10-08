@@ -166,7 +166,7 @@ export const GettingStarted: React.FC = () => {
 const DocCard = ({ to, icon, title, description }: { to: string; icon: React.ElementType; title: string; description: string }) => {
     const IconComponent = icon;
     return (
-        <Link to={to} className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-bg-elevated transition-all">
+        <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-bg-elevated transition-all">
             <IconComponent className="shrink-0 size-4.5 text-icon-primary" />
             <div className="flex flex-col gap-1">
                 <h5 className="text-sm font-medium leading-5 text-text-primary">{title}</h5>
