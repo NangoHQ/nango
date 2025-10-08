@@ -11,7 +11,7 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
-import { Err, Ok, errorToObject, truncateJson } from '@nangohq/utils';
+import { Err, Ok, actionAllowListCustomers, errorToObject, isCloud, isEnterprise, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
 import { Locks } from './sdk/locks.js';
@@ -20,9 +20,22 @@ import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js'
 import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
+const actionPayloadAllowSet = isCloud ? new Set(actionAllowListCustomers) : new Set();
+
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
     default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
+}
+
+function formatStackTrace(stack: string | undefined, filename: string): string[] {
+    if (!stack) {
+        return [];
+    }
+    return stack
+        .split('\n')
+        .filter((s, i) => i === 0 || s.includes(filename))
+        .map((s) => s.trim())
+        .slice(0, 5); // max 5 lines
 }
 
 export async function exec({
@@ -70,7 +83,13 @@ export async function exec({
                 filename
             });
             const sandbox: vm.Context = {
-                console,
+                // disable console in the sandboxed code
+                console: new Proxy(
+                    {},
+                    {
+                        get: () => () => {} // Returns no-op function for any console method
+                    }
+                ),
                 require: (moduleName: string) => {
                     switch (moduleName) {
                         case 'url':
@@ -153,6 +172,20 @@ export async function exec({
                     output = await payload.exec(nango as any, codeParams);
                 } else {
                     output = await def(nango, inputParams);
+                }
+
+                if (output) {
+                    const stringifiedOutput = JSON.stringify(output);
+                    const outputSizeInBytes = Buffer.byteLength(stringifiedOutput, 'utf8');
+                    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+
+                    if (!isEnterprise && nangoProps.team?.id !== undefined && !actionPayloadAllowSet.has(nangoProps.team.id)) {
+                        if (outputSizeInBytes > maxSizeInBytes) {
+                            throw new Error(
+                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://docs.nango.dev/changelog/dev-updates#action-payload-output-limit`
+                            );
+                        }
+                    }
                 }
 
                 return Ok({ output, telemetryBag: nango.telemetryBag });
@@ -270,10 +303,17 @@ export async function exec({
                     );
                 } else {
                     const tmp = errorToObject(err);
+                    const stacktrace = formatStackTrace(tmp.stack, filename);
+
                     return Err(
                         new ExecutionError({
                             type: 'script_network_error',
-                            payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                            payload: truncateJson({
+                                name: tmp.name || 'Error',
+                                code: tmp.code,
+                                message: tmp.message,
+                                ...(stacktrace.length > 0 ? { stacktrace } : {})
+                            }),
                             status: 500,
                             telemetryBag: nango.telemetryBag
                         })
@@ -283,10 +323,17 @@ export async function exec({
                 const tmp = errorToObject(err);
                 span.setTag('error', tmp);
 
+                const stacktrace = formatStackTrace(tmp.stack, filename);
+
                 return Err(
                     new ExecutionError({
                         type: 'script_internal_error',
-                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                        payload: truncateJson({
+                            name: tmp.name || 'Error',
+                            code: tmp.code,
+                            message: tmp.message,
+                            ...(stacktrace.length > 0 ? { stacktrace } : {})
+                        }),
                         status: 500,
                         telemetryBag: nango.telemetryBag
                     })
@@ -295,13 +342,7 @@ export async function exec({
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
 
-                const stacktrace = tmp.stack
-                    ? tmp.stack
-                          .split('\n')
-                          .filter((s, i) => i === 0 || s.includes(filename))
-                          .map((s) => s.trim())
-                          .slice(0, 5) // max 5 lines
-                    : [];
+                const stacktrace = formatStackTrace(tmp.stack, filename);
 
                 return Err(
                     new ExecutionError({

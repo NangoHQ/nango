@@ -232,6 +232,34 @@ adobe-umapi:
             description: ''
             automated: true
 
+adobe-workfront:
+    display_name: Adobe Workfront
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/integrations/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/integrations/oauth2/api/v1/token
+    authorization_method: header
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}/attask/api
+    docs: https://docs.nango.dev/integrations/all/adobe-workfront
+    docs_connect: https://docs.nango.dev/integrations/all/adobe-workfront/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            prefix: https://
+            pattern: '^[a-zA-Z0-9-]+\.my\.workfront(\.adobe)?\.com$'
+            description: The hostname of your Adobe Workfront account
+            example: acme.my.workfront.com
+
 adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
@@ -4692,6 +4720,33 @@ float:
             title: App Details
             description: The details of your app
             automated: true
+
+folk:
+    display_name: Folk
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.folk.app
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/folk
+    docs_connect: https://docs.nango.dev/integrations/all/folk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Folk account
+            example: 'FOLKLrHVSoYB6TaAF39aNGtEpEi3oxuo'
+            pattern: '^FOLK[a-zA-Z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 fortnox:
     display_name: Fortnox
@@ -11426,7 +11481,7 @@ snowflake-jwt:
             alg: RS256
             typ: JWT
         payload:
-            iss: ${credentials.accountIdentifier}.${credentials.userName}.${credentials.fingerprint}
+            iss: ${credentials.accountIdentifier}.${credentials.userName}.${fingerprint(${credentials.privateKey})}
             sub: ${credentials.accountIdentifier}.${credentials.userName}
     proxy:
         headers:
@@ -11473,14 +11528,6 @@ snowflake-jwt:
             pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
             secret: true
             doc_section: '#step-4-generating-your-private-key'
-        fingerprint:
-            type: string
-            title: Fingerprint
-            description: SHA-256 fingerprint of the public key uploaded to your Snowflake user
-            example: SHA256:Zc9FB6P5bGsYa4WWCMsr3+PxUWr2F2HUdK/2XG5JQjg=
-            pattern: '^SHA256:[A-Za-z0-9+/]{43}[A-Za-z0-9+/=]$'
-            secret: true
-            doc_section: '#step-5-finding-your-fingerprint'
 
 splitwise:
     display_name: Splitwise

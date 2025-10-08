@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { logContextGetter } from '@nangohq/logs';
+import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -67,14 +67,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
-        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
-            input: task.input,
-            action: task.actionName,
-            connection: task.connection.connection_id,
-            integration: task.connection.provider_config_key
-        });
-
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -87,7 +79,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             environmentName: environment.name,
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
-            activityLogId: logCtx.id,
+            activityLogId: task.activityLogId,
             secretKey: environment.secret_key,
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
@@ -98,6 +90,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
+
+        const logCtx = getLogCtx(nangoProps);
+        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
+            input: task.input,
+            action: task.actionName,
+            connection: task.connection.connection_id,
+            integration: task.connection.provider_config_key
+        });
 
         const res = await startScript({
             taskId: task.id,
@@ -145,7 +145,7 @@ export async function handleActionSuccess({
     output: JsonValue;
     telemetryBag: TelemetryBag;
 }): Promise<void> {
-    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+    const logCtx = getLogCtx(nangoProps);
     const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
         account: undefined
@@ -281,7 +281,7 @@ export async function handleActionError({
         return;
     }
 
-    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: account.id });
+    const logCtx = getLogCtx(nangoProps);
 
     void logCtx?.error(`Action '${nangoProps.syncConfig.sync_name}' failed${formatAttempts(task)}`, {
         error,
@@ -452,4 +452,26 @@ async function sendWebhookIfNeeded({
             logCtx
         });
     }
+}
+
+function getLogCtx(nangoProps: NangoProps): LogContext {
+    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+    // Origin log context is created in server.
+    // Attaching a span here so it is correctly ended when the logCtx operation ends and shows up in exported traces.
+    logCtx.attachSpan(
+        new OtlpSpan(
+            getFormattedOperation(
+                { operation: { type: 'action', action: 'run' } },
+                {
+                    account: nangoProps.team,
+                    environment: { id: nangoProps.environmentId, name: nangoProps.environmentName },
+                    integration: { id: nangoProps.syncConfig.nango_config_id, name: nangoProps.providerConfigKey, provider: nangoProps.provider },
+                    connection: { id: nangoProps.nangoConnectionId, name: nangoProps.connectionId },
+                    syncConfig: { id: nangoProps.syncConfig.id, name: nangoProps.syncConfig.sync_name }
+                }
+            ),
+            nangoProps.startedAt
+        )
+    );
+    return logCtx;
 }

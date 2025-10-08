@@ -2016,9 +2016,15 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - error
                                 properties:
                                     error:
                                         type: object
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
                                         properties:
                                             message:
                                                 type: string
@@ -2042,21 +2048,21 @@ paths:
                                                     body:
                                                         type: object
                                                         additionalProperties: true
-                                        required:
-                                            - message
-                                            - code
-                                            - payload
-                                    required:
-                                        - error
                 '500':
                     description: Action error
                     content:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - error
                                 properties:
                                     error:
                                         type: object
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
                                         properties:
                                             message:
                                                 type: string
@@ -2064,12 +2070,6 @@ paths:
                                                 type: string
                                             payload:
                                                 type: object
-                                        required:
-                                            - message
-                                            - code
-                                            - payload
-                                    required:
-                                        - error
 
     /environment-variables:
         get:
