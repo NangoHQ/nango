@@ -9,9 +9,8 @@ sidebarTitle: Snowflake (JWT)
 To authenticate with Snowflake (JWT), you need:
 1. **Subdomain** - The subdomain for your Snowflake account, typically part of the account URL (e.g., `xy12345` in `xy12345.snowflakecomputing.com`).
 2. **Account Identifier** - The unique identifier for your Snowflake account.
-2. **User Name** - The Snowflake username used to authenticate with the account.
-3. **Private Key** - The private RSA key in PEM format used to sign your JWT for authentication. It corresponds to the public key registered in Snowflake.
-4. **Fingerprint** - The SHA-256 fingerprint of the public key used to authenticate with Snowflake, generated after uploading the public key to your account.
+3. **User Name** - The Snowflake username used to authenticate with the account.
+4. **Private Key** - The private RSA key in PEM format used to sign your JWT for authentication. It corresponds to the public key registered in Snowflake.
 
 This guide will walk you through obtaining and generating these credentials within Snowflake.
 
@@ -54,7 +53,7 @@ openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
 ```
 cat rsa_key.p8
 ```
-#### Step 5: Finding your Fingerprint
+#### Step 5: Uploading your Public Key
 1. From your Snowflake account, navigate to **Projects** > **Worksheets** then click on the **+** button from the top right corner. 
 <img src="/integrations/all/snowflake-jwt/projects.png" />
 2. Run the following SQL command to assign the **Public Key** to your user:
@@ -62,17 +61,10 @@ cat rsa_key.p8
 ALTER USER <your_username> SET RSA_PUBLIC_KEY = '<public_key_contents>';
 ```
 <Note>`public_key_contents` refers to the public key generated in the previous step. You can use `cat rsa_key.pub` to view contents.</Note>
-3. After assigning the public key, run the **DESCRIBE USER** command to check if the public key fingerprint has been set:
-```
-DESCRIBE USER <your_username>;
-```
-4. Look for the **RSA_PUBLIC_KEY_FP** property in the output. It should show the **Fingerprint** of the **Public Key** you just assigned. The **Fingerprint** is typically in `SHA-256` format (e.g., `SHA256:<fingerprint>`).
-<img src="/integrations/all/snowflake-jwt/public_key.png" />
 
-
-Once you have your **Subdomain**, **Account Identifier**, **User Name**, **Private Key** and **Fingerprint**:
+Once you have your **Subdomain**, **Account Identifier**, **User Name** and **Private Key**:
 1. Open the form where you need to authenticate with Snowflake (JWT).
-2. Enter your  **Subdomain**, **Account Identifier**, **User Name**, **Private Key** and **Fingerprint** in their designated fields.
+2. Enter your  **Subdomain**, **Account Identifier**, **User Name** and **Private Key** in their designated fields.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/snowflake-jwt/form.png" style={{maxWidth: "450px" }}/>

@@ -47,7 +47,7 @@ if (!isCloud && !isEnterprise) {
     formatters = [
         winston.format.printf((info) => {
             const splat = info[SPLAT] && info[SPLAT].length > 0 ? JSON.stringify(info[SPLAT]) : '';
-            return `${info.message} ${splat}`;
+            return `${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
         })
     ];
 }
