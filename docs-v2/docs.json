@@ -732,6 +732,7 @@
               "integrations/all/supabase",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
+              
               "integrations/all/tapclicks",
               "integrations/all/teamtailor",
               "integrations/all/teamwork",
