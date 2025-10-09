@@ -105,5 +105,14 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 ## API gotchas
 -   You can find permissions required for each API call in their corresponding API methods section, i.e, to retrieve a list available drives from OneDrive, you can have a look at [List available drives permissions](https://learn.microsoft.com/en-us/graph/api/drive-list?view=graph-rest-1.0&tabs=http#permissions).
 <APIGotchas />
+#### SharePoint and Graph tokens
+Each connection now issues **two tokens:**
+1. **Main Token (Graph Token):**
+   Used for standard Microsoft Graph API operations, such as making proxy calls to the Graph API at `https://graph.microsoft.com`.
+
+2. **SharePoint Token (`sharepointAccessToken`):**
+   Available under `connection_config` and required when interacting with SharePoint-specific components, such as the latest **File Picker (v8.0)**.
+
+<Note> To obtain the `sharepointAccessToken`, your integration **must include and request the `Sites.Read.All` scope** during authorization. Without this scope, the SharePoint token will **not** be issued — only the Graph token will be available for your connection. </Note>
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/one-drive.mdx)</Note>
