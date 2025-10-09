@@ -43,7 +43,7 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
         // Used by legacy connection create
         // TODO: remove this when we remove CreateLegacy.tsx
         if (provider) {
-            if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
+            if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM' && provider.auth_mode !== 'MCP_DYNAMIC') {
                 formatted.meta['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
             }
 

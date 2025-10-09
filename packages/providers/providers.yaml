@@ -7773,6 +7773,21 @@ mailchimp:
             example: us6
             automated: true
 
+mcp-dynamic:
+    display_name: MCP Server (Dynamic)
+    categories:
+        - mcp
+    auth_mode: MCP_DYNAMIC
+    alias: mcp-dynamic
+    connection_config:
+        mcp_server_url:
+            type: string
+            title: MCP Server URL
+            description: The base URL of your MCP server
+            example: https://mcp.notion.com/mcp
+            pattern: '^https?://[a-zA-Z0-9.-]+(?:\:[0-9]+)?(?:/.*)?$'
+    docs: https://docs.nango.dev/integrations/all/mcp-dynamic
+
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
     display_name: Manatal

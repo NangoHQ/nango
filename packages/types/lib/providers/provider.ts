@@ -139,6 +139,10 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     registration_url?: string;
 }
 
+export interface ProviderMcpDynamic extends Omit<BaseProvider, 'body_format'> {
+    auth_mode: 'MCP_DYNAMIC';
+}
+
 export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
@@ -237,7 +241,8 @@ export type Provider =
     | ProviderGithubApp
     | ProviderAppleAppStore
     | ProviderCustom
-    | ProviderMcpOAUTH2;
+    | ProviderMcpOAUTH2
+    | ProviderMcpDynamic;
 
-export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
+export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpDynamic; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

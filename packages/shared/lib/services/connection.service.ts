@@ -12,6 +12,7 @@ import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
+import { refreshCredentials as refreshMcpDynamicCredentials } from '../clients/mcpDynamic.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import {
@@ -1505,6 +1506,10 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if (provider.auth_mode === 'MCP_DYNAMIC') {
+            const { success, error, response: creds } = await refreshMcpDynamicCredentials({ connection, logCtx });
+
+            return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         } else {
             const {
                 success,

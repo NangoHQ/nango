@@ -58,6 +58,14 @@ const validationBody = z
                         authType: z.enum(['MCP_OAUTH2']),
                         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
                     })
+                    .strict(),
+                z
+                    .object({
+                        authType: z.enum(['MCP_DYNAMIC']),
+                        clientName: z.string().min(1).max(255).optional(),
+                        clientUri: z.url().max(255).optional(),
+                        clientLogoUri: z.url().max(255).optional()
+                    })
                     .strict()
             ],
             { error: () => ({ message: 'invalid credentials object' }) }
@@ -155,6 +163,16 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.custom = { app_id: body.appId, private_key: Buffer.from(body.privateKey).toString('base64') };
         } else if (body.authType === 'MCP_OAUTH2') {
             integration.oauth_scopes = body.scopes || '';
+        } else if (body.authType === 'MCP_DYNAMIC') {
+            const { clientName, clientUri, clientLogoUri } = body;
+            if (clientName || clientUri || clientLogoUri) {
+                integration.custom = {
+                    ...integration.custom,
+                    ...(clientName && { oauth_client_name: clientName }),
+                    ...(clientUri && { oauth_client_uri: clientUri }),
+                    ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
+                };
+            }
         }
     }
 

@@ -16,6 +16,7 @@ export interface AuthModes {
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
     MCP_OAUTH2: 'MCP_OAUTH2';
+    MCP_DYNAMIC: 'MCP_DYNAMIC';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
