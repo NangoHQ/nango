@@ -115,4 +115,6 @@ Each connection now issues **two tokens:**
 
 <Note> To obtain the `sharepointAccessToken`, your integration **must include and request the `Sites.Read.All` scope** during authorization. Without this scope, the SharePoint token will **not** be issued — only the Graph token will be available for your connection. </Note>
 
+- The `sharepointAccessToken` is only available for new connections. If it’s missing from your `connection_config`, please reauthorize your connection to obtain and include the token.
+
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/one-drive.mdx)</Note>
