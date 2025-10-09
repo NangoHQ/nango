@@ -738,6 +738,8 @@
               "integrations/all/teamwork",
               "integrations/all/terraform",
               "integrations/all/thrivecart-api-key",
+
+              
               "integrations/all/thrivecart-oauth",
               "integrations/all/ticktick",
               "integrations/all/tiktok-accounts",
