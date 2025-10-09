@@ -16,6 +16,7 @@ security:
 paths:
     /providers:
         get:
+            summary: List all providers
             description: Returns a list of all available providers
             responses:
                 '200':
@@ -37,6 +38,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
     /providers/{provider}:
         get:
+            summary: Get a provider
             description: Returns a specific provider
             parameters:
                 - name: provider
@@ -65,6 +67,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
     /integrations:
         get:
+            summary: List integrations
             description: Returns a list of integrations
             responses:
                 '200':
@@ -88,6 +91,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
         post:
+            summary: Create an integration
             description: Create an integration
             requestBody:
                 required: true
@@ -131,6 +135,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
     /integrations/{uniqueKey}:
         get:
+            summary: Get an integration
             description: Returns a specific integration
             parameters:
                 - name: uniqueKey
@@ -166,6 +171,7 @@ paths:
                 '404':
                     $ref: '#/components/responses/NotFound'
         patch:
+            summary: Edit an integration
             description: Edit an integration
             parameters:
                 - name: uniqueKey
@@ -208,6 +214,7 @@ paths:
                 '404':
                     $ref: '#/components/responses/NotFound'
         delete:
+            summary: Delete an integration
             description: Deletes a specific integration.
             parameters:
                 - name: uniqueKey
@@ -237,6 +244,7 @@ paths:
 
     /connection:
         get:
+            summary: List connections (deprecated)
             description: Returns a list of connections without credentials. This endpoint is deprecated, use the /connections endpoint instead.
             parameters:
                 - name: connectionId
@@ -299,9 +307,10 @@ paths:
                                                     type: string
                                                     description: Connection creation date.
                                                 metadata:
-                                                    type: object
+                                                    anyOf:
+                                                        - type: object
+                                                        - type: 'null'
                                                     description: Custom metadata attached to the connection
-                                                    nullable: true
                                                 errors:
                                                     type: array
                                                     items:
@@ -311,10 +320,12 @@ paths:
                                                         - Connection credentials are invalid (type=auth)
                                                         - Last sync for the connection has failed (type=sync)
                                                 end_user:
-                                                    nullable: true
-                                                    $ref: '#/components/schemas/ConnectionEndUser'
+                                                    anyOf:
+                                                        - $ref: '#/components/schemas/ConnectionEndUser'
+                                                        - type: 'null'
 
         post:
+            summary: Add a connection (deprecated)
             description: Adds a connection for which you already have credentials. This endpoint is deprecated, use the /connections endpoint instead.
             requestBody:
                 required: true
@@ -389,6 +400,7 @@ paths:
 
     /connection/{connectionId}:
         get:
+            summary: Get a connection (deprecated)
             description: Returns a specific connection with credentials. This endpoint is deprecated, use the /connections/{connectionId} endpoint instead.
             parameters:
                 - name: connectionId
@@ -455,6 +467,7 @@ paths:
                                     message:
                                         type: string
         delete:
+            summary: Delete a connection (deprecated)
             description: Deletes a specific connection. This endpoint is deprecated, use the /connections/{connectionId} endpoint instead.
             parameters:
                 - name: connectionId
@@ -499,6 +512,7 @@ paths:
                                         type: string
     /connection/metadata:
         post:
+            summary: Set connection metadata (deprecated)
             description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string. This endpoint is deprecated, use the /connections/metadata endpoint instead.
             requestBody:
                 required: true
@@ -560,6 +574,7 @@ paths:
                                     message:
                                         type: string
         patch:
+            summary: Edit connection metadata (deprecated)
             description: Edit custom metadata for the connection or connections (only overrides specified properties, not the entire metadata). If updating multiple connections pass in an array of connection ids instead of a string. This endpoint is deprecated, use the /connections/metadata endpoint instead.
             requestBody:
                 required: true
@@ -616,6 +631,7 @@ paths:
 
     /connection/{connectionId}/metadata:
         post:
+            summary: Set connection metadata (deprecated)
             description: Set custom metadata for the connection.
             deprecated: true
             parameters:
@@ -645,6 +661,7 @@ paths:
                     $ref: '#/components/responses/BadRequest'
 
         patch:
+            summary: Edit connection metadata (deprecated)
             description: Edit custom metadata for the connection (only overrides specified properties, not the entire metadata).
             deprecated: true
             parameters:
@@ -678,6 +695,7 @@ paths:
 
     /connections:
         get:
+            summary: List connections
             description: Returns a list of connections without credentials
             parameters:
                 - name: connectionId
@@ -740,9 +758,10 @@ paths:
                                                     type: string
                                                     description: Connection creation date.
                                                 metadata:
-                                                    type: object
+                                                    anyOf:
+                                                        - type: object
+                                                        - type: 'null'
                                                     description: Custom metadata attached to the connection
-                                                    nullable: true
                                                 errors:
                                                     type: array
                                                     items:
@@ -752,12 +771,14 @@ paths:
                                                         - Connection credentials are invalid (type=auth)
                                                         - Last sync for the connection has failed (type=sync)
                                                 end_user:
-                                                    nullable: true
-                                                    $ref: '#/components/schemas/ConnectionEndUser'
+                                                    anyOf:
+                                                        - $ref: '#/components/schemas/ConnectionEndUser'
+                                                        - type: 'null'
                 '400':
                     $ref: '#/components/responses/BadRequest'
 
         post:
+            summary: Add a connection
             description: Adds a connection for which you already have credentials.
             requestBody:
                 required: true
@@ -821,6 +842,7 @@ paths:
 
     /connections/{connectionId}:
         get:
+            summary: Get a connection
             description: Returns a specific connection with credentials
             parameters:
                 - name: connectionId
@@ -879,6 +901,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
         patch:
+            summary: Edit a connection
             description: Edit a connection
             parameters:
                 - name: connectionId
@@ -919,6 +942,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
         delete:
+            summary: Delete a connection
             description: Deletes a specific connection
             parameters:
                 - name: connectionId
@@ -950,6 +974,7 @@ paths:
 
     /connections/metadata:
         post:
+            summary: Set connection metadata
             description: Set custom metadata for the connection or connections. If updating multiple connections pass in an array of connection ids instead of a string.
             requestBody:
                 required: true
@@ -1011,6 +1036,7 @@ paths:
                                     message:
                                         type: string
         patch:
+            summary: Edit connection metadata
             description: Edit custom metadata for the connection or connections (only overrides specified properties, not the entire metadata). If updating multiple connections pass in an array of connection ids instead of a string.
             requestBody:
                 required: true
@@ -1074,6 +1100,7 @@ paths:
 
     /scripts/config:
         get:
+            summary: Get scripts configuration
             description: Return the configuration for all integration functions.
             parameters:
                 - name: format
@@ -1234,6 +1261,7 @@ paths:
 
     /records:
         get:
+            summary: Get synced records
             description: Returns data synced with Nango Sync
             parameters:
                 - name: model
@@ -1284,7 +1312,7 @@ paths:
                       type: array
                       items:
                           type: string
-                      max: 100
+                      maxItems: 100
                 - name: variant
                   in: query
                   required: false
@@ -1325,10 +1353,11 @@ paths:
                                                     type: object
                                                     properties:
                                                         deleted_at:
-                                                            type: string
-                                                            nullable: true
+                                                            anyOf:
+                                                                - type: string
+                                                                  format: date-time
+                                                                - type: 'null'
                                                             description: The timestamp at which Nango detected the record as deleted
-                                                            format: date-time
                                                         last_action:
                                                             type: string
                                                             description: The last action seen on this record
@@ -1358,6 +1387,7 @@ paths:
 
     /sync/trigger:
         post:
+            summary: Trigger a sync
             description: Triggers an additional, one-off execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
             requestBody:
                 content:
@@ -1433,6 +1463,7 @@ paths:
 
     /sync/start:
         post:
+            summary: Start a sync
             description: Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified. Upon starting the schedule, the sync will execute immediately and then continue to run at the specified frequency. If the schedule was already started, this will have no effect.
             requestBody:
                 content:
@@ -1494,6 +1525,7 @@ paths:
                                         type: string
     /sync/pause:
         post:
+            summary: Pause a sync
             description: Pauses the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified.
             requestBody:
                 content:
@@ -1556,6 +1588,7 @@ paths:
 
     /sync/status:
         get:
+            summary: Get sync status
             description: Get the status of specified sync(s) (for a given connection or all applicable connections if no connection is specified)
             parameters:
                 - name: provider_config_key
@@ -1631,6 +1664,7 @@ paths:
 
     /sync/{name}/variant/{variant}:
         post:
+            summary: Create sync variant
             description: Creates a new sync variant for a specific connection
             parameters:
                 - name: name
@@ -1729,6 +1763,7 @@ paths:
                                             message:
                                                 type: string
         delete:
+            summary: Delete sync variant
             description: Deletes a sync variant for a specific connection
             parameters:
                 - name: name
@@ -1822,6 +1857,7 @@ paths:
 
     /action/{actionId}:
         get:
+            summary: Get action result
             description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/actions/use-an-action#checking-the-action-result) for more details.
             parameters:
                 - name: actionId
@@ -1875,6 +1911,7 @@ paths:
 
     /sync/update-connection-frequency:
         put:
+            summary: Update sync frequency
             description: Override a sync's default frequency for a specific connection, or revert to the default frequency.
             requestBody:
                 required: true
@@ -1901,8 +1938,9 @@ paths:
                                     type: string
                                     description: The variant of the sync you want to update
                                 frequency:
-                                    type: string
-                                    nullable: true
+                                    anyOf:
+                                        - type: string
+                                        - type: 'null'
                                     description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency. Uses the https://github.com/vercel/ms notations. Min frequency: 5 minutes."
             responses:
                 '200':
@@ -1926,6 +1964,7 @@ paths:
                                         type: string
     /action/trigger:
         post:
+            summary: Trigger an action
             description: Triggers an action for a connection
             parameters:
                 - name: Connection-Id
@@ -2073,6 +2112,7 @@ paths:
 
     /environment-variables:
         get:
+            summary: Get environment variables
             description: Retrieve the environment variables as added in the Nango dashboard
             responses:
                 '200':
@@ -2095,6 +2135,7 @@ paths:
 
     /proxy/{anyPath}:
         get:
+            summary: Proxy GET request
             description: Make a GET request with the Proxy.
             parameters:
                 - name: anyPath
@@ -2148,6 +2189,7 @@ paths:
                 '200':
                     description: The response exactly as returned by the external API
         post:
+            summary: Proxy POST request
             description: Make a POST request with the Proxy.
             parameters:
                 - name: anyPath
@@ -2199,6 +2241,7 @@ paths:
                 '200':
                     description: The response exactly as returned by the external API
         put:
+            summary: Proxy PUT request
             description: Make a PUT request with the Proxy.
             parameters:
                 - name: anyPath
@@ -2250,6 +2293,7 @@ paths:
                 '200':
                     description: The response exactly as returned by the external API
         patch:
+            summary: Proxy PATCH request
             description: Make a PATCH request with the Proxy.
             parameters:
                 - name: anyPath
@@ -2301,6 +2345,7 @@ paths:
                 '200':
                     description: The response exactly as returned by the external API
         delete:
+            summary: Proxy DELETE request
             description: Make a DELETE request with the Proxy.
             parameters:
                 - name: anyPath
@@ -2350,6 +2395,7 @@ paths:
                     description: The response exactly as returned by the external API
     /connect/sessions:
         post:
+            summary: Create connect session
             description: Create a new connect session
             requestBody:
                 required: true
@@ -2375,6 +2421,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
     /connect/sessions/reconnect:
         post:
+            summary: Reconnect with connect session
             description: |
                 Create a new connect session to reconnect to a specific integration. The token is used like a standard connect session.
                 Only connections created with a connect session are compatible with this endpoint.
@@ -2403,6 +2450,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
     /connect/session:
         get:
+            summary: Get connect session
             description: Retrieve a connect session
             responses:
                 '200':
@@ -2423,6 +2471,7 @@ paths:
                 '404':
                     $ref: '#/components/responses/NotFound'
         delete:
+            summary: Delete connect session
             description: Delete a connect session
             responses:
                 '204':
@@ -2793,12 +2842,14 @@ components:
                   additionalProperties: false
                   properties:
                       webhook_url:
-                          type: string
+                          anyOf:
+                              - type: string
+                              - type: 'null'
                           description: Configure your integration webhooks to point to this URL
-                          nullable: true
                       credentials:
-                          nullable: true
-                          $ref: '#/components/schemas/IntegrationCredentials'
+                          anyOf:
+                              - $ref: '#/components/schemas/IntegrationCredentials'
+                              - type: 'null'
 
         ConnectSessionInput:
             type: object
@@ -3257,27 +3308,31 @@ components:
                     type: string
                     description: Uniquely identifies the end user.
                 email:
-                    nullable: true
-                    type: string
+                    anyOf:
+                        - type: string
+                        - type: 'null'
                 display_name:
-                    nullable: true
-                    type: string
+                    anyOf:
+                        - type: string
+                        - type: 'null'
                 tags:
                     type: object
                     additionalProperties: true
                     description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
                 organization:
-                    type: object
-                    nullable: true
-                    required:
-                        - id
-                    properties:
-                        id:
-                            type: string
-                            description: Uniquely identifies the organization the end user belongs to
-                        display_name:
-                            type: string
-                            nullable: true
+                    anyOf:
+                        - type: object
+                          required:
+                              - id
+                          properties:
+                              id:
+                                  type: string
+                                  description: Uniquely identifies the organization the end user belongs to
+                              display_name:
+                                  anyOf:
+                                      - type: string
+                                      - type: 'null'
+                        - type: 'null'
         EndUser:
             type: object
             required:
@@ -3338,8 +3393,9 @@ components:
                     items:
                         $ref: '#/components/schemas/ConnectionError'
                 end_user:
-                    nullable: true
-                    $ref: '#/components/schemas/ConnectionEndUser'
+                    anyOf:
+                        - $ref: '#/components/schemas/ConnectionEndUser'
+                        - type: 'null'
                 metadata:
                     type: object
                     additionalProperties: true
@@ -3424,13 +3480,15 @@ components:
                           type: string
                           minLength: 1
                       scopes:
-                          type: string
-                          pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
-                          nullable: true
+                          anyOf:
+                              - type: string
+                                pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
+                              - type: 'null'
                       webhook_secret:
-                          type: string
-                          maxLength: 255
-                          nullable: true
+                          anyOf:
+                              - type: string
+                                maxLength: 255
+                              - type: 'null'
                 - type: object
                   required:
                       - type
