@@ -5,10 +5,10 @@ import { Link } from 'react-router-dom';
 
 import { PaymentMethods } from './components/PaymentMethod';
 import { PlanCard } from './components/PlanCard';
+import { UsageTable } from './components/UsageTable';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { Info } from '../../../components/Info';
 import { Skeleton } from '../../../components/ui/Skeleton';
-import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useApiGetBillingUsage, useApiGetPlans } from '../../../hooks/usePlan';
@@ -16,11 +16,81 @@ import { useStripePaymentMethods } from '../../../hooks/useStripe';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
+import { ButtonLink } from '@/components-v2/ui/button';
 
 import type { PlanDefinitionList } from './types';
-import type { GetBillingUsage, PlanDefinition } from '@nangohq/types';
+import type { PlanDefinition } from '@nangohq/types';
 
 export const TeamBilling: React.FC = () => {
+    const env = useStore((state) => state.env);
+
+    const { data: usage, isLoading: usageIsLoading } = useApiGetBillingUsage(env);
+
+    const { plan: currentPlan } = useEnvironment(env);
+    const { data: plansList } = useApiGetPlans(env);
+
+    const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
+        if (!currentPlan || !plansList) {
+            return null;
+        }
+
+        const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
+
+        const list: PlanDefinitionList[] = [];
+        for (const plan of plansList.data) {
+            if (plan.hidden) {
+                continue;
+            }
+            const same = plan.code === currentPlan.name;
+
+            list.push({
+                plan,
+                active: same,
+                isDowngrade: curr.prevPlan?.includes(plan.code) || false,
+                isUpgrade: curr.nextPlan?.includes(plan.code) || false
+            });
+        }
+        return { list, activePlan: curr };
+    }, [currentPlan, plansList]);
+
+    if (!currentPlan) {
+        return null;
+    }
+
+    return (
+        <DashboardLayout fullWidth className="">
+            <Helmet>
+                <title>Billing - Nango</title>
+            </Helmet>
+            <Navigation defaultValue="usage" className="max-w-full">
+                <NavigationList>
+                    <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
+                    <NavigationTrigger value={'plans'}>Plans</NavigationTrigger>
+                    <NavigationTrigger value={'payment-and-invoices'}>Payment & Invoices</NavigationTrigger>
+                </NavigationList>
+                <NavigationContent value={'usage'} className="w-full flex flex-col gap-6">
+                    <UsageTable data={usage} isLoading={usageIsLoading} />
+                    {usage?.data.customer.portalUrl && (
+                        <ButtonLink to={usage.data.customer.portalUrl} target="_blank">
+                            View usage details
+                        </ButtonLink>
+                    )}
+                </NavigationContent>
+                <NavigationContent value={'plans'} className="w-full overflow-x-auto">
+                    <div className="flex gap-6 pb-4 min-w-0">
+                        {plans?.list.map((def) => {
+                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={false} activePlan={plans.activePlan} currentPlan={currentPlan} />;
+                        })}
+                    </div>
+                </NavigationContent>
+                <NavigationContent value={'payment-and-invoices'}>Payment & Invoices page</NavigationContent>
+            </Navigation>
+        </DashboardLayout>
+    );
+};
+
+export const TeamBillingOld: React.FC = () => {
     const env = useStore((state) => state.env);
 
     const { error, plan: currentPlan, loading } = useEnvironment(env);
@@ -186,49 +256,5 @@ export const TeamBilling: React.FC = () => {
                 </div>
             </div>
         </DashboardLayout>
-    );
-};
-
-const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined; isLoading: boolean }> = ({ data, isLoading }) => {
-    const currentMonth = useMemo(() => {
-        return new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date());
-    }, []);
-    const previousMonth = useMemo(() => {
-        const prev = new Date();
-        prev.setMonth(prev.getMonth() - 1);
-        return new Intl.DateTimeFormat('en-US', { month: 'long' }).format(prev);
-    }, []);
-
-    if (isLoading || !data) {
-        return (
-            <div className="flex flex-col gap-2">
-                <Skeleton className="w-1/2" />
-                <Skeleton className="w-1/2" />
-                <Skeleton className="w-1/2" />
-            </div>
-        );
-    }
-
-    return (
-        <Table.Table>
-            <Table.Header>
-                <Table.Row>
-                    <Table.Head className="w-1/2"></Table.Head>
-                    <Table.Head className="text-center">Current ({currentMonth})</Table.Head>
-                    <Table.Head className="text-center">Previous ({previousMonth})</Table.Head>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>
-                {data.data.current.map((row) => {
-                    return (
-                        <Table.Row key={row.id}>
-                            <Table.Cell>{row.name}</Table.Cell>
-                            <Table.Cell className="text-center">{row.quantity}</Table.Cell>
-                            <Table.Cell className="text-center">{data.data.previous.find((prev) => prev.id === row.id)?.quantity}</Table.Cell>
-                        </Table.Row>
-                    );
-                })}
-            </Table.Body>
-        </Table.Table>
     );
 };

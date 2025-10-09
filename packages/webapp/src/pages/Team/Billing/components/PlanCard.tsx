@@ -145,8 +145,8 @@ export const PlanCard: React.FC<{
     }
 
     return (
-        <div className={cn('w-56 flex flex-col rounded border border-border-disabled', def.active && 'bg-bg-elevated border-border-muted')}>
-            <header className={cn(' p-5 flex flex-col gap-3 border-b border-border-disabled', def.active && 'border-b-border-muted')}>
+        <div className={cn('w-56 flex flex-col rounded border border-border-disabled flex-shrink-0', def.active && 'bg-bg-elevated border-border-muted')}>
+            <header className={cn('p-5 flex flex-col gap-3 border-b border-border-disabled', def.active && 'border-b-border-muted')}>
                 <div className="flex justify-between items-center text-text-primary">
                     <div className="flex items-center gap-1.5">
                         <span className="text-md font-semibold">{def.plan.title}</span>
