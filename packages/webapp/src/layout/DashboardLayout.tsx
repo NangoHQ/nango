@@ -15,8 +15,12 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
             <AppSidebar />
             <SidebarInset className="max-h-screen overflow-hidden">
                 <AppHeader />
-                <div ref={ref} className={cn('w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface')} {...props}>
-                    <div className={cn('grow h-auto mx-auto', fullWidth ? 'w-full p-8' : 'w-[976px] py-8', className)}>{children}</div>
+                <div
+                    ref={ref}
+                    className={cn('w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface', fullWidth ? 'p-0' : 'p-8')}
+                    {...props}
+                >
+                    <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-8' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
                 </div>
             </SidebarInset>
         </SidebarProvider>

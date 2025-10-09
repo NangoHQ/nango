@@ -6,6 +6,7 @@ import { getSharedCredentialsProviders } from './controllers/sharedCredentials/g
 import { getSharedCredentialsProvider } from './controllers/sharedCredentials/id/getSharedCredential.js';
 import { patchSharedCredentialsProvider } from './controllers/sharedCredentials/id/patchSharedCredential.js';
 import { postSharedCredentialsProvider } from './controllers/sharedCredentials/postSharedCredential.js';
+import { getUsersProvider } from './controllers/users/getUsersProvider.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
@@ -25,3 +26,5 @@ internalApi.route('/shared-credentials').get(interalApiAuth, getSharedCredential
 internalApi.route('/shared-credentials/:id').get(interalApiAuth, getSharedCredentialsProvider);
 internalApi.route('/shared-credentials').post(interalApiAuth, postSharedCredentialsProvider);
 internalApi.route('/shared-credentials/:id').patch(interalApiAuth, patchSharedCredentialsProvider);
+
+internalApi.route('/users').get(interalApiAuth, getUsersProvider);
