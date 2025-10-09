@@ -72,21 +72,21 @@ async function handleCreateWebhook(nango: InternalNango, body: SentryOauthWebhoo
     );
 
     if (!connections || connections.length === 0) {
-        logger.error('No connections found for actor', String(get(body, 'actor.id')));
+        logger.info('No connections found for actor', String(get(body, 'actor.id')));
         return Ok(undefined);
     } else {
         const [connection] = connections;
-
-        // if there is no matching connection found, exit
-        if (!connection) {
-            logger.error('no connection found');
-            return Err(new NangoError('webhook_no_connection'));
-        }
 
         const provider = getProvider(nango.integration.provider);
         if (!provider) {
             logger.error('unknown provider');
             return Err(new NangoError('webhook_unknown_provider'));
+        }
+
+        // if there is no matching connection found, exit
+        if (!connection || !connection.connection_config['pendingLog']) {
+            logger.error('no connection found');
+            return Err(new NangoError('webhook_no_connection'));
         }
 
         const activityLogId = connection.connection_config['pendingLog'];
