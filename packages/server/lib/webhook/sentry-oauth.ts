@@ -72,7 +72,7 @@ async function handleCreateWebhook(nango: InternalNango, body: SentryOauthWebhoo
     );
 
     if (!connections || connections.length === 0) {
-        logger.info('No connections found for actor', String(get(body, 'actor.id')));
+        logger.error('No connections found for actor', String(get(body, 'actor.id')));
         return Ok(undefined);
     } else {
         const [connection] = connections;
