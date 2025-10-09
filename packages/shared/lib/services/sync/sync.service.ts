@@ -75,7 +75,6 @@ export const createSync = async ({
         variant,
         frequency: null,
         last_sync_date: null,
-        last_fetched_at: null,
         sync_config_id: syncConfig.id
     };
 
@@ -553,10 +552,6 @@ export const getAndReconcileDifferences = async ({
         deletedModels
     };
 };
-
-export async function trackFetch(nango_connection_id: number): Promise<void> {
-    await db.knex.from<Sync>(`_nango_syncs`).where({ nango_connection_id, deleted: false }).update({ last_fetched_at: new Date() });
-}
 
 export async function hardDeleteSync(id: string) {
     await db.knex.from<Sync>('_nango_syncs').where({ id }).delete();

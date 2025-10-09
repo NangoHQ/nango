@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { records } from '@nangohq/records';
-import { connectionService, trackFetch } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
@@ -81,8 +81,6 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
         return;
     }
-
-    await trackFetch(connection.id);
 
     res.send({
         next_cursor: result.value.next_cursor || null,

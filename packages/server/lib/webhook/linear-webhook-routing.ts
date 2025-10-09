@@ -31,15 +31,12 @@ const route: WebhookHandler<LinearBody> = async (nango, headers, body, rawBody) 
         return Err(new NangoError('webhook_missing_signature'));
     }
 
-    logger.info('received', { configId: nango.integration.id });
-
     if (!validate(nango.integration, signature, rawBody)) {
         logger.error('invalid signature', { configId: nango.integration.id });
         return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const parsedBody = body;
-    logger.info(`valid ${parsedBody.type}`, { configId: nango.integration.id });
 
     const response = await nango.executeScriptForWebhooks({
         body: parsedBody,

@@ -34,8 +34,6 @@ const route: WebhookHandler<CheckrBody> = async (nango, headers, body, rawBody) 
         return Err(new NangoError('webhook_missing_signature'));
     }
 
-    logger.info('received', { configId: nango.integration.id });
-
     if (!validate(nango.integration, signature, rawBody)) {
         logger.error('invalid signature', { configId: nango.integration.id });
         // TODO the verification should use the API key
@@ -43,7 +41,6 @@ const route: WebhookHandler<CheckrBody> = async (nango, headers, body, rawBody) 
     }
 
     const parsedBody = body;
-    logger.info(`valid ${parsedBody.type}`, { configId: nango.integration.id });
 
     const response = await nango.executeScriptForWebhooks({
         body: parsedBody,

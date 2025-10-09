@@ -46,8 +46,6 @@ const route: WebhookHandler<XeroWebhookBody> = async (nango, headers, body, rawB
         return Err(new NangoError('webhook_missing_signature'));
     }
 
-    logger.info('Received Xero webhook', { configId: nango.integration.id });
-
     const isValidSignature = validate(nango.integration, signature, rawBody);
     if (!isValidSignature) {
         logger.error('Invalid signature', { configId: nango.integration.id });
@@ -55,11 +53,9 @@ const route: WebhookHandler<XeroWebhookBody> = async (nango, headers, body, rawB
     }
 
     const parsedBody = body;
-    logger.info('Valid webhook received', { configId: nango.integration.id });
 
     // For empty events, just return success
     if (parsedBody.events.length === 0) {
-        logger.info('Empty events array, returning success', { configId: nango.integration.id });
         return Ok({ content: { status: 'success' }, statusCode: 200 });
     }
 

@@ -30,8 +30,6 @@ class ErrorManager {
      * TODO: reuse information in res.locals when possible
      */
     public report(err: unknown, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }): void {
-        logger.error('Exception caught', errorToObject(err));
-
         if (err instanceof Error) {
             // Log to datadog manually
             // https://github.com/DataDog/dd-trace-js/issues/1944

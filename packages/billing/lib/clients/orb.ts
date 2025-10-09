@@ -1,7 +1,7 @@
 import Orb from 'orb-billing';
 import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok, retry } from '@nangohq/utils';
+import { Err, Ok, metrics, retry } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
@@ -42,7 +42,9 @@ export class OrbClient implements BillingClient {
                         }
                     }
                 );
+                metrics.increment(metrics.Types.ORB_BILLING_EVENTS_INGESTED, batch.length, { success: 'true' });
             } catch (err) {
+                metrics.increment(metrics.Types.ORB_BILLING_EVENTS_INGESTED, batch.length, { success: 'false' });
                 return Err(new Error('failed_to_ingest_events', { cause: err }));
             }
         }

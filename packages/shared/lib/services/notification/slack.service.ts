@@ -344,8 +344,6 @@ export class SlackService {
                 };
             }
 
-            logger.info(`Notifying connection:${nangoConnection.id} type:${type} name:${name}`);
-
             if (!isOpen) {
                 const created = await this.createNotification(nangoConnection, name, type, trx);
 
@@ -446,8 +444,6 @@ export class SlackService {
             if (index === -1) {
                 return;
             }
-
-            logger.info(`Resolving ${nangoConnection.id} type:${type} name:${name}`);
 
             connection_list.splice(index, 1);
 

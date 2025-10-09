@@ -93,7 +93,9 @@ export enum Types {
 
     DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
 
-    ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action'
+    ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
+
+    ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

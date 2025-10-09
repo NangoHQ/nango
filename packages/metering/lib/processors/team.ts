@@ -23,7 +23,6 @@ export class TeamProcessor {
             consumerGroup: 'team',
             subject: 'team',
             callback: async (event) => {
-                logger.info(`Processing team event`, { event });
                 const result = await process(event);
                 if (result.isErr()) {
                     report(new Error(`Failed to process billing event: ${result.error}`), { event });

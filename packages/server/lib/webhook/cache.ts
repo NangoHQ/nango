@@ -1,9 +1,5 @@
 import axios from 'axios';
 
-import { getLogger } from '@nangohq/utils';
-
-const logger = getLogger('Webhook.GoogleJWKSCache');
-
 interface JWKSResponse {
     keys: Record<string, string>[];
 }
@@ -21,7 +17,6 @@ export async function getGoogleJWKS(): Promise<JWKSResponse['keys']> {
     const now = Date.now();
 
     if (jwksCache && jwksCache.expiresAt > now) {
-        logger.debug('Using cached Google JWKS');
         return jwksCache.keys;
     }
 
@@ -35,8 +30,6 @@ export async function getGoogleJWKS(): Promise<JWKSResponse['keys']> {
         keys: response.data.keys,
         expiresAt
     };
-
-    logger.debug(`Cached Google JWKS until ${new Date(expiresAt).toISOString()}`);
 
     return response.data.keys;
 }

@@ -560,9 +560,6 @@ export async function update({
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
 
                 const oldRecords = await getRecordsToUpdate({ records: chunk, connectionId, model, trx });
-                if (oldRecords.length === 0) {
-                    logger.warning('Did not find any record to update', { connectionId, model });
-                }
 
                 const recordsToUpdate: FormattedRecord[] = [];
                 for (const oldRecord of oldRecords) {

@@ -30,3 +30,4 @@ export { default as snowflakePostConnection } from './providers/snowflake/post-c
 export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';
+export { default as onedrivePostConnection } from './providers/one-drive/post-connection.js';
