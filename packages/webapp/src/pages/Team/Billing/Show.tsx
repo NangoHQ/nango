@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { PaymentMethods } from './components/PaymentMethod';
 import { PlanCard } from './components/PlanCard';
+import { PlansTable } from './components/PlansTable';
 import { UsageTable } from './components/UsageTable';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { Info } from '../../../components/Info';
@@ -27,42 +28,12 @@ export const TeamBilling: React.FC = () => {
 
     const { data: usage, isLoading: usageIsLoading } = useApiGetBillingUsage(env);
 
-    const { plan: currentPlan } = useEnvironment(env);
-    const { data: plansList } = useApiGetPlans(env);
-
-    const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
-        if (!currentPlan || !plansList) {
-            return null;
-        }
-
-        const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
-
-        const list: PlanDefinitionList[] = [];
-        for (const plan of plansList.data) {
-            if (plan.hidden) {
-                continue;
-            }
-            const same = plan.code === currentPlan.name;
-
-            list.push({
-                plan,
-                active: same,
-                isDowngrade: curr.prevPlan?.includes(plan.code) || false,
-                isUpgrade: curr.nextPlan?.includes(plan.code) || false
-            });
-        }
-        return { list, activePlan: curr };
-    }, [currentPlan, plansList]);
-
-    if (!currentPlan) {
-        return null;
-    }
-
     return (
-        <DashboardLayout fullWidth className="">
+        <DashboardLayout className="flex flex-col gap-8">
             <Helmet>
                 <title>Billing - Nango</title>
             </Helmet>
+            <h2 className="text-text-primary text-2xl font-bold">Billing & Usage</h2>
             <Navigation defaultValue="usage" className="max-w-full">
                 <NavigationList>
                     <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
@@ -78,11 +49,7 @@ export const TeamBilling: React.FC = () => {
                     )}
                 </NavigationContent>
                 <NavigationContent value={'plans'} className="w-full overflow-x-auto">
-                    <div className="flex gap-6 pb-4 min-w-0">
-                        {plans?.list.map((def) => {
-                            return <PlanCard key={def.plan.code} def={def} hasPaymentMethod={false} activePlan={plans.activePlan} currentPlan={currentPlan} />;
-                        })}
-                    </div>
+                    <PlansTable />
                 </NavigationContent>
                 <NavigationContent value={'payment-and-invoices'}>Payment & Invoices page</NavigationContent>
             </Navigation>
