@@ -12,7 +12,7 @@ import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
-import { refreshCredentials as refreshMcpDynamicCredentials } from '../clients/mcpDynamic.client.js';
+import { refreshMcpDynamicCredentials } from '../clients/mcpDynamic.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import {

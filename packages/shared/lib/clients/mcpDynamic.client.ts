@@ -26,7 +26,7 @@ function discoverScopes(resourceMetadata?: OAuthProtectedResourceMetadata, metad
  */
 export async function discoverMcpMetadata(
     mcpServerUrl: string,
-    logCtx?: LogContext | LogContextStateless
+    logCtx: LogContext
 ): Promise<{ success: boolean; metadata?: OAuthMetadata; resourceMetadata?: OAuthProtectedResourceMetadata; scopes?: string; error?: string }> {
     try {
         // RFC9728 - Protected Resource Metadata Discovery
@@ -39,8 +39,9 @@ export async function discoverMcpMetadata(
             if (resourceMetadata?.authorization_servers?.length && resourceMetadata.authorization_servers[0]) {
                 authServerUrl = new URL(resourceMetadata.authorization_servers[0]);
             }
-        } catch (err) {
-            await logCtx?.warn?.('Resource metadata discovery failed', { error: String(err) });
+        } catch {
+            // RFC9728 resource metadata discovery is optional - if it fails,
+            // we continue with the original MCP server URL as the authorization server
         }
 
         // RFC8414 - Authorization Server Metadata Discovery
@@ -49,7 +50,7 @@ export async function discoverMcpMetadata(
             throw new Error('Failed to discover OAuth authorization server metadata');
         }
 
-        await logCtx?.info?.('MCP metadata discovery successful', {
+        void logCtx.info('MCP metadata discovery successful', {
             tokenEndpoint: metadata.token_endpoint,
             authEndpoint: metadata.authorization_endpoint
         });
@@ -64,7 +65,7 @@ export async function discoverMcpMetadata(
         };
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
-        await logCtx?.error?.('MCP metadata discovery failed', { error: errorMessage });
+        void logCtx.error('MCP metadata discovery failed', { error: errorMessage });
         return { success: false, error: errorMessage };
     }
 }
@@ -72,7 +73,7 @@ export async function discoverMcpMetadata(
 /**
  * Refresh MCP_DYNAMIC credentials using stored connectionConfig
  */
-export async function refreshCredentials({
+export async function refreshMcpDynamicCredentials({
     connection,
     logCtx
 }: {
@@ -90,17 +91,10 @@ export async function refreshCredentials({
     const mcpServerUrl = connectionConfig['mcp_server_url'] as string;
 
     if (!metadataStr || !clientInfoStr || !mcpServerUrl) {
-        await logCtx.error('MCP_DYNAMIC connection missing OAuth metadata - legacy connections not supported', {
-            hasMetadata: !!metadataStr,
-            hasClientInfo: !!clientInfoStr,
-            hasMcpServerUrl: !!mcpServerUrl,
-            connectionConfigKeys: Object.keys(connectionConfig)
-        });
         return {
             success: false,
-            error: new NangoError('legacy_mcp_connection_not_supported', {
-                message:
-                    'This MCP_DYNAMIC connection uses legacy format and is no longer supported. Please recreate the connection using the current SDK-based flow.'
+            error: new NangoError('missing_oauth_metadata', {
+                message: 'MCP_DYNAMIC connection is missing required OAuth metadata. Please check the connection configuration.'
             }),
             response: null
         };
@@ -112,7 +106,7 @@ export async function refreshCredentials({
         metadata = OAuthMetadataSchema.parse(JSON.parse(metadataStr));
         clientInformation = OAuthClientInformationSchema.parse(JSON.parse(clientInfoStr));
     } catch (err) {
-        await logCtx.error('Failed to parse/validate MCP_DYNAMIC metadata', { error: String(err) });
+        void logCtx.error('Failed to parse/validate MCP_DYNAMIC metadata', { error: String(err) });
         return {
             success: false,
             error: new NangoError('invalid_oauth_metadata', { error: String(err) }),
@@ -162,10 +156,8 @@ export async function refreshCredentials({
         rawNewAccessToken = await oldAccessToken.refresh({
             ...(resourceUrl && { resource: resourceUrl })
         });
-        await logCtx.info('MCP_DYNAMIC refresh successful');
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
-        await logCtx.error('MCP_DYNAMIC refresh failed', { error: errorMessage });
         return {
             success: false,
             error: new NangoError('refresh_token_external_error', { error: errorMessage }),
