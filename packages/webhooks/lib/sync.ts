@@ -119,7 +119,7 @@ export const sendSync = async ({
         finalBody = {
             ...bodyBase,
             success: false,
-            error: error,
+            error,
             startedAt: dayjs(now).toDate().toISOString(),
             failedAt: new Date().toISOString()
         };

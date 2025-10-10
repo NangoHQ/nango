@@ -840,7 +840,8 @@ async function onFailure({
                         success: false,
                         error: {
                             type: 'script_error',
-                            description: error.message
+                            description: error.message,
+                            error
                         },
                         now: lastSyncDate,
                         operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL

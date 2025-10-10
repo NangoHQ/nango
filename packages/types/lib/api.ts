@@ -103,6 +103,7 @@ export interface Endpoint<T extends EndpointDefinition> {
 export interface ErrorPayload {
     type: string;
     description: string;
+    error?: Error;
 }
 
 export interface ApiTimestamps {
