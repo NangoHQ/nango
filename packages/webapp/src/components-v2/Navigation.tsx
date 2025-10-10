@@ -5,13 +5,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/utils/utils';
 
 export const NavigationList: React.FC<React.ComponentProps<typeof TabsPrimitive.List>> = (props) => {
-    return <TabsPrimitive.List className="w-[180px] h-fit shrink-0 p-3 rounded-md bg-bg-elevated border border-border-disabled" {...props} />;
+    return <TabsPrimitive.List className="w-46 h-fit shrink-0" {...props} />;
 };
 
 export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {
     return (
         <TabsPrimitive.Trigger
-            className="w-full px-2 py-2.5 cursor-pointer text-text-secondary text-sm text-start rounded border border-transparent hover:bg-bg-surface hover:border-border-disabled data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary data-[state=active]:border-border-disabled"
+            className="w-full p-2.5 cursor-pointer text-text-secondary text-sm font-medium text-start rounded hover:bg-bg-elevated data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary"
             {...props}
         />
     );
