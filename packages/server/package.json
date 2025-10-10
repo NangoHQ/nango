@@ -19,7 +19,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@modelcontextprotocol/sdk": "1.15.1",
+        "@modelcontextprotocol/sdk": "^1.19.1",
         "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",

@@ -1,0 +1,39 @@
+---
+title: MCP Dynamic
+sidebarTitle: MCP Dynamic
+---
+
+## Access requirements
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| MCP-compatible server | ✅ | Server must support OAuth 2.0 with dynamic discovery (RFC 8414, RFC 9728). |
+| OAuth endpoints | ✅ | Server must expose `/.well-known/oauth-authorization-server` endpoint. |
+| PKCE support | ✅ | Required for secure public client authentication. |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-dynamic.mdx)</Note>
+
+## Useful links
+
+- [Model Context Protocol Specification](https://spec.modelcontextprotocol.io/)
+- [MCP GitHub Repository](https://github.com/modelcontextprotocol)
+- [RFC 8414: OAuth 2.0 Authorization Server Metadata](https://tools.ietf.org/html/rfc8414)
+- [RFC 9728: OAuth 2.0 Protected Resource Metadata Discovery](https://tools.ietf.org/html/rfc9728)
+- [MCP Server Examples](https://github.com/modelcontextprotocol/servers)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-dynamic.mdx)</Note>
+
+## API gotchas
+
+- **Dynamic Discovery**: MCP Dynamic automatically discovers OAuth endpoints from the MCP server's `/.well-known/oauth-authorization-server` endpoint.
+- **No Pre-configuration**: No need to pre-configure OAuth client credentials. Clients are registered dynamically during the authorization flow.
+- **PKCE Required**: All MCP Dynamic flows use PKCE for security. Client secrets are not used.
+- **Server URL Format**: Always provide the full MCP server URL (e.g., `https://api.example.com/mcp`, not `api.example.com`).
+- **Automatic Scopes**: OAuth scopes are automatically discovered from MCP server metadata.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-dynamic.mdx)</Note>

@@ -55,6 +55,8 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
     } else if (provider.auth_mode === 'MCP_OAUTH2') {
         const client_id = await mcpClient.registerClientId({ provider, environment, team: account });
         integration = await configService.createEmptyProviderConfigWithCreds(body.provider, environment.id, provider, client_id, '');
+    } else if (provider.auth_mode === 'MCP_DYNAMIC') {
+        integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
     } else {
         integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
     }
