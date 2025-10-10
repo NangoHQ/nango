@@ -1,10 +1,9 @@
 import type { KVStore } from './KVStore.js';
-import type { MaybePromise } from '@nangohq/types';
 
 interface Value {
     value: string;
     timestamp: number;
-    ttlInMs: number;
+    ttlMs: number;
 }
 const KVSTORE_INTERVAL_CLEANUP = 10000;
 
@@ -17,11 +16,12 @@ export class InMemoryKVStore implements KVStore {
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
-    destroy(): MaybePromise<void> {
+    async destroy(): Promise<void> {
         if (this.interval) {
             clearInterval(this.interval);
         }
         this.store.clear();
+        return Promise.resolve();
     }
 
     public async get(key: string): Promise<string | null> {
@@ -36,14 +36,14 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(res.value);
     }
 
-    public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlInMs?: number }): Promise<void> {
+    public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlMs?: number }): Promise<void> {
         const res = this.store.get(key);
         const isExpired = res && this.isExpired(res);
         if (isExpired || opts?.canOverride || res === undefined) {
-            this.store.set(key, { value: value, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
+            this.store.set(key, { value: value, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
             return Promise.resolve();
         }
-        return Promise.reject(new Error('Key already exists'));
+        return Promise.reject(new Error('set_key_already_exists'));
     }
 
     public async delete(key: string): Promise<void> {
@@ -56,7 +56,7 @@ export class InMemoryKVStore implements KVStore {
     }
 
     private isExpired(value: Value): boolean {
-        if (value.ttlInMs > 0 && value.timestamp + value.ttlInMs < Date.now()) {
+        if (value.ttlMs > 0 && value.timestamp + value.ttlMs < Date.now()) {
             return true;
         }
         return false;
@@ -71,13 +71,13 @@ export class InMemoryKVStore implements KVStore {
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
-    public incr(key: string, opts?: { ttlInMs?: number; delta?: number }) {
+    public async incr(key: string, opts?: { ttlMs?: number; delta?: number }): Promise<number> {
         const res = this.store.get(key);
 
-        const nextVal = res ? String(parseInt(res.value, 10) + (opts?.delta || 1)) : '1';
-        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
+        const nextVal = res && !this.isExpired(res) ? String(parseInt(res.value, 10) + (opts?.delta || 1)) : '1';
+        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
 
-        return Number(nextVal);
+        return Promise.resolve(Number(nextVal));
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -98,5 +98,78 @@ export class InMemoryKVStore implements KVStore {
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(key);
+    }
+
+    public async hSetAll(key: string, value: Record<string, string>, options?: { canOverride?: boolean; ttlMs?: number }): Promise<void> {
+        const existing = this.store.get(key);
+        const isExpired = existing && this.isExpired(existing);
+        if (isExpired || options?.canOverride || !existing) {
+            const val = JSON.stringify(value);
+            this.store.set(key, { value: val, timestamp: Date.now(), ttlMs: options?.ttlMs || 0 });
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('hSetAll_key_already_exists'));
+    }
+
+    public async hSet(key: string, field: string, value: string, options: { canOverride?: boolean }): Promise<void> {
+        const res = this.store.get(key);
+        let all: Record<string, string> = {};
+        if (res && !this.isExpired(res)) {
+            all = this.safeParseJson(res.value);
+        }
+        if (!options.canOverride && all[field] !== undefined) {
+            return Promise.reject(new Error('hSet_field_already_exists'));
+        }
+        all[field] = value;
+        const val = JSON.stringify(all);
+        this.store.set(key, { value: val, timestamp: Date.now(), ttlMs: res?.ttlMs || 0 });
+        return Promise.resolve();
+    }
+
+    public async hGetAll(key: string): Promise<Record<string, string> | null> {
+        const res = this.store.get(key);
+        if (!res) {
+            return null;
+        }
+        if (this.isExpired(res)) {
+            this.store.delete(key);
+            return null;
+        }
+        return Promise.resolve(this.safeParseJson(res.value) || null);
+    }
+
+    public async hGet(key: string, field: string): Promise<string | null> {
+        const res = this.store.get(key);
+        if (!res) {
+            return null;
+        }
+        if (this.isExpired(res)) {
+            this.store.delete(key);
+            return null;
+        }
+        const all = this.safeParseJson(res.value);
+        return Promise.resolve(all[field] || null);
+    }
+
+    public async hIncrBy(key: string, field: string, delta: number): Promise<number> {
+        const res = this.store.get(key);
+        let all: Record<string, string> = {};
+        if (res && !this.isExpired(res)) {
+            all = this.safeParseJson(res.value);
+        }
+        const current = parseInt(all[field] || '0', 10);
+        const next = current + delta;
+        all[field] = String(next);
+        const value = JSON.stringify(all);
+        this.store.set(key, { value, timestamp: Date.now(), ttlMs: res?.ttlMs || 0 });
+        return Promise.resolve(next);
+    }
+
+    private safeParseJson(s: string): Record<string, string> {
+        try {
+            return JSON.parse(s) as Record<string, string>;
+        } catch {
+            return {};
+        }
     }
 }
