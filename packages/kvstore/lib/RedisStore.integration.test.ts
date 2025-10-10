@@ -1,15 +1,31 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { InMemoryKVStore } from './InMemoryStore.js';
+import { RedisKVStore } from './RedisStore.js';
+import { getRedis } from './index.js';
 
-describe('InMemoryKVStore', () => {
-    let store: InMemoryKVStore;
-    beforeEach(() => {
-        store = new InMemoryKVStore();
+class FlushableRedisStore extends RedisKVStore {
+    public async flushAll(): Promise<void> {
+        await this.client.flushAll();
+    }
+}
+
+describe('RedisKVStore', () => {
+    let store: FlushableRedisStore;
+
+    beforeAll(async () => {
+        const url = process.env['NANGO_REDIS_URL'];
+        if (!url) {
+            throw new Error('NANGO_REDIS_URL environment variable is not set.');
+        }
+        store = new FlushableRedisStore(await getRedis(url));
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await store.destroy();
+    });
+
+    beforeEach(async () => {
+        await store.flushAll();
     });
 
     it('should set and get a value', async () => {
