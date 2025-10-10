@@ -17,7 +17,7 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { StyledLink } from '@/components-v2/StyledLink';
 
 import type { PlanDefinitionList } from './types';
 import type { PlanDefinition } from '@nangohq/types';
@@ -72,9 +72,9 @@ export const TeamBilling: React.FC = () => {
                 <NavigationContent value={'usage'} className="w-full flex flex-col gap-6">
                     <UsageTable data={usage} isLoading={usageIsLoading} />
                     {usage?.data.customer.portalUrl && (
-                        <ButtonLink to={usage.data.customer.portalUrl} target="_blank">
+                        <StyledLink icon to={usage.data.customer.portalUrl} type="external">
                             View usage details
-                        </ButtonLink>
+                        </StyledLink>
                     )}
                 </NavigationContent>
                 <NavigationContent value={'plans'} className="w-full overflow-x-auto">

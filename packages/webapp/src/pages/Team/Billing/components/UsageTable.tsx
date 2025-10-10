@@ -58,7 +58,7 @@ export const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined
                 {mergedUsage.map((item) => {
                     return (
                         <TableRow key={item.id}>
-                            <TableCell className="font-semibold">{item.name}</TableCell>
+                            <TableCell className="font-semibold pl-6">{item.name}</TableCell>
                             <TableCell className="text-center text-text-secondary">{item.previous}</TableCell>
                             <TableCell className="text-center text-text-secondary">{item.current}</TableCell>
                         </TableRow>
