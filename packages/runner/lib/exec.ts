@@ -35,7 +35,7 @@ function formatStackTrace(stack: string | undefined, filename: string): string[]
         .split('\n')
         .filter((s, i) => i === 0 || s.includes(filename))
         .map((s) => s.trim())
-        .slice(0, 5); // max 5 lines
+        .slice(0, 10);
 }
 
 export async function exec({
