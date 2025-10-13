@@ -159,7 +159,7 @@ function callToolRequestHandler(
             span.setTag('nango.error', actionResponse.error);
             await logCtx.failed();
 
-            throw actionResponse.error;
+            throw new Error(JSON.stringify(actionResponse.error));
         }
     };
 }
