@@ -9374,6 +9374,74 @@ pingboard:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard
 
+pingone:
+    display_name: PingOne
+    categories:
+        - design
+    auth_mode: OAUTH2
+    authorization_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environment}/as/authorize
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environment}/as/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.pingone.${connectionConfig.tld}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/pingidentity
+    docs_connect: https://docs.nango.dev/integrations/all/pingidentity/connect
+    connection_config:
+        tld:
+            type: string
+            title: Top Level Domain
+            description: The top level domain for your PingIdentity account
+            example: com
+            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+        environment:
+            type: string
+            title: Environment ID
+            order: 1
+            description: The environment ID for your PingIdentity account
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+            format: uuid
+
+pingone-cc:
+    display_name: PingOne (Client Credentials)
+    categories:
+        - design
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environment}/as/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.pingone.${connectionConfig.tld}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/pingidentity-cc
+    docs_connect: https://docs.nango.dev/integrations/all/pingidentity-cc/connect
+    connection_config:
+        tld:
+            type: string
+            title: Top Level Domain
+            description: The top level domain for your PingIdentity account
+            example: com
+            order: 2
+            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+        environment:
+            type: string
+            title: Environment ID
+            order: 1
+            description: The environment ID for your PingIdentity account
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+            format: uuid
+
 pinterest:
     display_name: Pinterest
     categories:

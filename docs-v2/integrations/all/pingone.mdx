@@ -1,0 +1,133 @@
+---
+title: 'PingOne'
+sidebarTitle: 'PingOne'
+description: 'Access the PingOne API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _PingOne_.  Nango doesn't provide a test OAuth app for PingOne yet. You'll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize PingOne">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to PingOne. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the PingOne API">
+        Let's make your first request to the PingOne API (fetch a list of all environments). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/environments?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v1/environments',
+                providerConfigKey: '<INTEGRATION-ID>',
+                params: {
+                  limit: 10
+                },
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their PingOne accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Sign in to the PingOne admin console">
+        If you don't have a PingOne account, you can sign up for a [free trial](https://www.pingidentity.com/en/try-ping.html).
+        
+        Once your account is ready, sign in to your PingOne admin console.
+      </Step>
+      
+      <Step title="Add an OIDC Web App">
+        1. In the admin console, select **Applications** → **Applications**.
+        2. Click the **+** icon next to Applications to add a new app.
+        3. In the **Application Name** field, enter a name for your application.
+        4. Select **OIDC Web App** as the **Application Type**.
+        5. Click **Save**.
+      </Step>
+      
+      <Step title="Configure the OIDC Web App">
+        1. Click on the **Configuration** tab, then click on the pencil icon to edit configuration settings.
+        2. Check the **Refresh Token** checkbox, then add `https://api.nango.dev/oauth/callback` as your **Redirect URIs**.
+        3. From the **Token Endpoint Authentication Method** dropdown, select **Client Secret Post**.
+        4. Click the **Save** button.
+        5. Navigate to the **Resources** tab, then click the pencil icon. Select the scopes your app needs from the list. You can refer to the [PingOne scopes documentation](https://apidocs.pingidentity.com/pingone/main/v1/api/#pingone-self-management-scopes) for details.
+        6. Click **Save** to apply your changes.
+      </Step>
+      
+      <Step title="Obtain OAuth credentials">
+        1. Click the toggle at the upper right to enable the application.
+        2. Navigate to the **Overview** tab and copy your **Client ID** and **Client Secret** as you will need them when configuring your integration in Nango.
+      </Step>
+
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart) to start using your PingOne integration.
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+
+    | Scope | Description |
+    | ----- | ----------- |
+    | `p1:read:user` | Allows an application to retrieve user profile information and attributes. |
+    | `p1:update:user` | Allows updating user identity attributes, such as name, email, or custom fields. |
+    | `p1:read:userPassword` | Allows reading the password state (e.g., expired, needs reset) for a user. |
+    | `p1:reset:userPassword` | Allows resetting the user’s password. |
+    | `p1:read:device` | Allows retrieving the user’s registered MFA devices. |
+    | `p1:update:userMfaEnabled` | Allows enabling or disabling multi-factor authentication (MFA) for a user. |
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | ----- | ----- |
+    | Authorization | [Guide to connect to PingOne using Connect UI](/integrations/all/pingone/connect) |
+    | General | [PingOne Website](https://www.pingidentity.com/) |
+    | | [How to access your instance Admin console home page](https://docs.pingidentity.com/pingone/getting_started_with_pingone/p1_access_admin_console.html?_gl=1*1izhtt*_gcl_au*MzY3MzQ2ODA0LjE3NTgwNDY2NDg.*_ga*MTM4OTI2Mjk1NS4xNzU4MDQ2NjQ4*_ga_V94KKVLZPT*czE3NjAzNjE0NzAkbzQkZzEkdDE3NjAzNjI4ODAkajM0JGwwJGg3NzQ1MDEyNjI.) |
+    | Developer | [PingOne API Documentation](https://apidocs.pingidentity.com/pingone/platform/v1/api/#top) |
+    | | [OAuth 2.0 Authorization code grant type Guide](https://apidocs.pingidentity.com/pingone/main/v1/api/#authorization-code-grant-type) |
+    | | [Access services through scopes](https://apidocs.pingidentity.com/pingone/main/v1/api/#access-services-through-scopes-and-roles) |
+    | | [Application Management](https://apidocs.pingidentity.com/pingone/platform/v1/api/#application-management) |
+    | | [Working with PingOne APIs](https://apidocs.pingidentity.com/pingone/platform/v1/api/#working-with-pingone-apis) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pingone.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pingone.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
