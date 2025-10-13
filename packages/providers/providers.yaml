@@ -9204,6 +9204,35 @@ pennylane:
         - scopes
     docs: https://docs.nango.dev/integrations/all/pennylane
 
+pennylane-company-api:
+    display_name: Pennylane (Company API)
+    categories:
+        - accounting
+        - banking
+        - invoicing
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://app.pennylane.com
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /api/external/v2/me
+    docs: https://docs.nango.dev/integrations/all/pennylane-company-api
+    docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The company API token for your Pennylane account
+            pattern: '^[A-Za-z0-9_-]{43}$'
+            example: aZ9b4Lp3QhN7vXyK1sTcO0WfR8jMdEuD5GrIi2-H6PnU
+            doc_section: '#step-1-generating-your-company-api-token'
+
 peopledatalabs:
     display_name: People Data Labs
     categories:
