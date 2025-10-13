@@ -40,6 +40,13 @@ export class RedisKVStore implements KVStore {
         await this.client.del(key);
     }
 
+    public async expires(key: string, ttlMs: number): Promise<void> {
+        const res = await this.client.pExpire(key, ttlMs);
+        if (!res) {
+            throw new Error(`expires_failed`);
+        }
+    }
+
     public async incr(key: string, opts?: { ttlMs?: number; delta?: number }): Promise<number> {
         const multi = this.client.multi();
         multi.incrBy(key, opts?.delta || 1);

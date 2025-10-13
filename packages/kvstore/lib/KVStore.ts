@@ -4,6 +4,7 @@ export interface KVStore {
     get(key: string): Promise<string | null>;
     delete(key: string): Promise<void>;
     exists(key: string): Promise<boolean>;
+    expires(key: string, ttlMs: number): Promise<void>;
     incr(key: string, opts?: { ttlMs?: number; delta?: number }): Promise<number>;
     scan(pattern: string): AsyncGenerator<string>;
     hSetAll(key: string, value: Record<string, string>, options?: { canOverride?: boolean; ttlMs?: number }): Promise<void>;

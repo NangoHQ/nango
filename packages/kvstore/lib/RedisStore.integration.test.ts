@@ -89,6 +89,14 @@ describe('RedisKVStore', () => {
         await store.set('key', 'value');
         await expect(store.exists('key')).resolves.toEqual(true);
     });
+    it('should allow setting expiration on a key', async () => {
+        await store.set('key', 'value', { canOverride: true });
+        await store.expires('key', 10);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        const value = await store.get('key');
+        expect(value).toBeNull();
+    });
+
     it('should increment a key', async () => {
         await expect(store.incr('key')).resolves.toEqual(1);
         await expect(store.incr('key')).resolves.toEqual(2);
