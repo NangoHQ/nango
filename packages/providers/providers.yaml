@@ -9377,10 +9377,10 @@ pingboard:
 pingone:
     display_name: PingOne
     categories:
-        - design
+        - dev-tools
     auth_mode: OAUTH2
-    authorization_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environment}/as/authorize
-    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environment}/as/token
+    authorization_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/authorize
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
     scope_separator: ' '
     authorization_params:
         response_type: code
@@ -9393,29 +9393,31 @@ pingone:
         retry:
             after:
                 - 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/pingidentity
-    docs_connect: https://docs.nango.dev/integrations/all/pingidentity/connect
+    docs: https://docs.nango.dev/integrations/all/pingone
+    docs_connect: https://docs.nango.dev/integrations/all/pingone/connect
     connection_config:
         tld:
             type: string
             title: Top Level Domain
-            description: The top level domain for your PingIdentity account
+            description: The top level domain for your PingOne account
             example: com
             pattern: '^(com|ca|eu|com\.au|sg|asia)$'
-        environment:
+            doc_section: '#step-2-finding-your-top-level-domain'
+        environmentId:
             type: string
             title: Environment ID
             order: 1
-            description: The environment ID for your PingIdentity account
+            description: The environment ID for your PingOne account
             example: f2aba07d-270c-42ba-8811-01af5f63d458
             format: uuid
+            doc_section: '#step-1-finding-your-environment-id'
 
 pingone-cc:
     display_name: PingOne (Client Credentials)
     categories:
-        - design
+        - dev-tools
     auth_mode: OAUTH2_CC
-    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environment}/as/token
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
@@ -9424,23 +9426,25 @@ pingone-cc:
         retry:
             after:
                 - 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/pingidentity-cc
-    docs_connect: https://docs.nango.dev/integrations/all/pingidentity-cc/connect
+    docs: https://docs.nango.dev/integrations/all/pingone-cc
+    docs_connect: https://docs.nango.dev/integrations/all/pingone-cc/connect
     connection_config:
         tld:
             type: string
             title: Top Level Domain
-            description: The top level domain for your PingIdentity account
+            description: The top level domain for your PingOne account
             example: com
             order: 2
             pattern: '^(com|ca|eu|com\.au|sg|asia)$'
-        environment:
+            doc_section: '#step-3-finding-your-top-level-domain'
+        environmentId:
             type: string
             title: Environment ID
             order: 1
-            description: The environment ID for your PingIdentity account
+            description: The environment ID for your PingOne account
             example: f2aba07d-270c-42ba-8811-01af5f63d458
             format: uuid
+            doc_section: '#step-2-finding-your-environment-id'
 
 pinterest:
     display_name: Pinterest
