@@ -841,7 +841,8 @@ async function onFailure({
                         error: {
                             type: 'script_error',
                             description: error.message,
-                            error
+                            ...('payload' in error && error.payload ? { payload: error.payload } : {}),
+                            ...(error.additional_properties ? { additional_properties: error.additional_properties } : {})
                         },
                         now: lastSyncDate,
                         operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL

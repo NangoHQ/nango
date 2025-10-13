@@ -1,3 +1,5 @@
+import type { RunnerOutputError } from './runner/index.js';
+
 export interface ApiError<TCode extends string, TErrors = Error[] | ValidationError[] | undefined, TPayload = unknown> {
     error: {
         code: TCode;
@@ -103,7 +105,8 @@ export interface Endpoint<T extends EndpointDefinition> {
 export interface ErrorPayload {
     type: string;
     description: string;
-    error?: Error;
+    payload?: RunnerOutputError['payload'];
+    additional_properties?: RunnerOutputError['additional_properties'];
 }
 
 export interface ApiTimestamps {
