@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 import get from 'lodash-es/get.js';
 
-import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+import { isEnterprise, localhostUrl } from '@nangohq/utils';
 
 import type { DBConnection, Provider } from '@nangohq/types';
 
@@ -161,12 +161,11 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isStaging) {
-        return stagingHost;
-    } else if (isEnterprise) {
+    if (isEnterprise) {
         return process.env['NANGO_SERVER_URL'] as string;
-    } else if (isProd) {
-        return cloudHost;
+    }
+    if (process.env['SERVER_SERVICE_URL']) {
+        return process.env['SERVER_SERVICE_URL'];
     }
     return getServerBaseUrl();
 }
