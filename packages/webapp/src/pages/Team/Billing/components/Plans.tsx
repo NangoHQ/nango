@@ -1,6 +1,7 @@
 import { Info } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
@@ -87,6 +88,9 @@ export const Plans: React.FC = () => {
                     })}
                 </TableBody>
             </Table>
+            <StyledLink to="https://nango.dev/pricing" icon type="external">
+                View full pricing
+            </StyledLink>
         </div>
     );
 };
