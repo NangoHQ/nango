@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { PaymentMethods } from './components/PaymentMethod';
 import { PlanCard } from './components/PlanCard';
-import { PlansTable } from './components/PlansTable';
+import { Plans } from './components/Plans';
 import { UsageTable } from './components/UsageTable';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { Info } from '../../../components/Info';
@@ -49,7 +49,7 @@ export const TeamBilling: React.FC = () => {
                     )}
                 </NavigationContent>
                 <NavigationContent value={'plans'} className="w-full overflow-x-auto">
-                    <PlansTable />
+                    <Plans />
                 </NavigationContent>
                 <NavigationContent value={'payment-and-invoices'}>Payment & Invoices page</NavigationContent>
             </Navigation>

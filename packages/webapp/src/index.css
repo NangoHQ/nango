@@ -333,6 +333,12 @@
     --color-focus-ring: var(--color-brand-500);
 
     /* Feedback */
+    --color-feedback-success-fg: var(--color-green-700);
+    --color-feedback-success-bg: var(--color-green-100);
+    --color-feedback-warning-fg: var(--color-yellow-700);
+    --color-feedback-warning-bg: var(--color-yellow-500);
+    --color-feedback-info-fg: var(--color-brand-700);
+    --color-feedback-info-bg: var(--color-brand-100);
     --color-feedback-error-fg: var(--color-red-700);
     --color-feedback-error-bg: var(--color-red-100);
     --color-feedback-error-border: var(--color-red-300);
@@ -399,6 +405,12 @@
             --color-focus-ring: var(--color-brand-500);
 
             /* Feedback */
+            --color-feedback-success-fg: var(--color-green-500);
+            --color-feedback-success-bg: var(--color-green-900);
+            --color-feedback-warning-fg: var(--color-yellow-300);
+            --color-feedback-warning-bg: var(--color-yellow-900);
+            --color-feedback-info-fg: var(--color-brand-500);
+            --color-feedback-info-bg: var(--color-brand-900);
             --color-feedback-error-fg: var(--color-red-500);
             --color-feedback-error-bg: var(--color-red-900);
             --color-feedback-error-border: var(--color-red-500);
