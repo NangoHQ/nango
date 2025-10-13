@@ -1,3 +1,4 @@
+import { getRedis } from '@nangohq/kvstore';
 import { Err, Ok } from '@nangohq/utils';
 
 import { UsageCache } from './cache.js';
@@ -5,7 +6,6 @@ import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
 import type { UsageMetric } from './metrics.js';
-import type { KVStore } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
 
 export interface UsageStatus {
@@ -15,10 +15,21 @@ export interface UsageStatus {
 }
 
 interface IUsage {
+    get(params: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>>;
 }
 
 export class UsageNoOps implements IUsage {
+    public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
+        return Promise.resolve(
+            Ok({
+                accountId,
+                metric,
+                current: 0
+            })
+        );
+    }
+
     public async incr({ accountId, metric, delta = 1 }: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>> {
         return Promise.resolve(
             Ok({
@@ -33,8 +44,22 @@ export class UsageNoOps implements IUsage {
 export class Usage implements IUsage {
     private cache: UsageCache;
 
-    constructor(store: KVStore) {
-        this.cache = new UsageCache(store);
+    constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
+        this.cache = new UsageCache(redis);
+    }
+
+    public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
+        const now = new Date();
+        const { cacheKey } = Usage.getCacheEntryProps({ accountId, metric, now });
+        const entry = await this.cache.get(cacheKey);
+        if (entry.isErr()) {
+            return Err(entry.error);
+        }
+        return Ok({
+            accountId,
+            metric,
+            current: entry.value?.count || 0
+        });
     }
 
     public async incr({ accountId, metric, delta = 1 }: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>> {
@@ -75,4 +100,12 @@ export class Usage implements IUsage {
         logger.debug(`Revalidating usage for accountId=${accountId} metric=${metric}. Not implemented yet`);
         return Promise.resolve();
     }
+}
+
+export async function getUsage(redisUrl: string | undefined): Promise<IUsage> {
+    if (redisUrl) {
+        const redis = await getRedis(redisUrl);
+        return new Usage(redis);
+    }
+    return new UsageNoOps();
 }

@@ -18,8 +18,9 @@
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "^5.52.0",
-        "he": "^1.2.0"
+        "dd-trace": "5.52.0",
+        "he": "1.2.0",
+        "zod": "4.0.5"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",

@@ -55,14 +55,6 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(this.store.has(key));
     }
 
-    public async expires(key: string, ttlMs: number): Promise<void> {
-        const res = this.store.get(key);
-        if (res) {
-            this.store.set(key, { value: res.value, timestamp: res.timestamp, ttlMs: ttlMs });
-        }
-        return Promise.resolve();
-    }
-
     private isExpired(value: Value): boolean {
         if (value.ttlMs > 0 && value.timestamp + value.ttlMs < Date.now()) {
             return true;
@@ -106,78 +98,5 @@ export class InMemoryKVStore implements KVStore {
 
         const regex = new RegExp(`^${regexPattern}$`);
         return regex.test(key);
-    }
-
-    public async hSetAll(key: string, value: Record<string, string>, options?: { canOverride?: boolean; ttlMs?: number }): Promise<void> {
-        const existing = this.store.get(key);
-        const isExpired = existing && this.isExpired(existing);
-        if (isExpired || options?.canOverride || !existing) {
-            const val = JSON.stringify(value);
-            this.store.set(key, { value: val, timestamp: Date.now(), ttlMs: options?.ttlMs || 0 });
-            return Promise.resolve();
-        }
-        return Promise.reject(new Error('hSetAll_key_already_exists'));
-    }
-
-    public async hSet(key: string, field: string, value: string, options: { canOverride?: boolean }): Promise<void> {
-        const res = this.store.get(key);
-        let all: Record<string, string> = {};
-        if (res && !this.isExpired(res)) {
-            all = this.safeParseJson(res.value);
-        }
-        if (!options.canOverride && all[field] !== undefined) {
-            return Promise.reject(new Error('hSet_field_already_exists'));
-        }
-        all[field] = value;
-        const val = JSON.stringify(all);
-        this.store.set(key, { value: val, timestamp: Date.now(), ttlMs: res?.ttlMs || 0 });
-        return Promise.resolve();
-    }
-
-    public async hGetAll(key: string): Promise<Record<string, string> | null> {
-        const res = this.store.get(key);
-        if (!res) {
-            return null;
-        }
-        if (this.isExpired(res)) {
-            this.store.delete(key);
-            return null;
-        }
-        return Promise.resolve(this.safeParseJson(res.value) || null);
-    }
-
-    public async hGet(key: string, field: string): Promise<string | null> {
-        const res = this.store.get(key);
-        if (!res) {
-            return null;
-        }
-        if (this.isExpired(res)) {
-            this.store.delete(key);
-            return null;
-        }
-        const all = this.safeParseJson(res.value);
-        return Promise.resolve(all[field] || null);
-    }
-
-    public async hIncrBy(key: string, field: string, delta: number): Promise<number> {
-        const res = this.store.get(key);
-        let all: Record<string, string> = {};
-        if (res && !this.isExpired(res)) {
-            all = this.safeParseJson(res.value);
-        }
-        const current = parseInt(all[field] || '0', 10);
-        const next = current + delta;
-        all[field] = String(next);
-        const value = JSON.stringify(all);
-        this.store.set(key, { value, timestamp: Date.now(), ttlMs: res?.ttlMs || 0 });
-        return Promise.resolve(next);
-    }
-
-    private safeParseJson(s: string): Record<string, string> {
-        try {
-            return JSON.parse(s) as Record<string, string>;
-        } catch {
-            return {};
-        }
     }
 }

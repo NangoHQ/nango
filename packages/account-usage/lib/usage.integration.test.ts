@@ -1,29 +1,28 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getKVStore } from '@nangohq/kvstore';
+import { getRedis } from '@nangohq/kvstore';
 
 import { Usage } from './usage.js';
 
-import type { KVStore } from '@nangohq/kvstore';
-
 describe('Usage', () => {
-    let store: KVStore;
+    let redis: Awaited<ReturnType<typeof getRedis>>;
     let usage: Usage;
 
     beforeAll(async () => {
-        store = await getKVStore();
-        usage = new Usage(store);
+        const redisUrl = process.env['NANGO_REDIS_URL'];
+        if (!redisUrl) {
+            throw new Error('NANGO_REDIS_URL environment variable is not set.');
+        }
+        redis = await getRedis(redisUrl);
+        usage = new Usage(redis);
     });
 
     afterAll(async () => {
-        await store.destroy();
+        await redis.disconnect();
     });
 
     beforeEach(async () => {
-        // Clear all usage data before each test
-        for await (const key of store.scan('usage:*')) {
-            await store.delete(key);
-        }
+        await redis.flushAll(); // Clear all usage data before each test
         vi.useFakeTimers({ shouldAdvanceTime: true });
     });
 
@@ -31,6 +30,32 @@ describe('Usage', () => {
         vi.clearAllTimers();
         vi.resetAllMocks();
         vi.useRealTimers();
+    });
+
+    describe('get', () => {
+        it('should return 0 for a non-existent-yet metric', async () => {
+            const res = (await usage.get({ accountId: 1, metric: 'connections' })).unwrap();
+            expect(res).toEqual({ accountId: 1, metric: 'connections', current: 0 });
+        });
+        it('should return an error if entry is invalid', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+            // Manually set an invalid entry in Redis
+            await redis.set(`usage:${accountId}:${metric}`, 'invalid-json');
+
+            const res = await usage.get({ accountId, metric });
+            expect(res.isErr()).toBe(true);
+            if (res.isErr()) {
+                expect(res.error.message).toBe('cache_get_error');
+            }
+        });
+        it('should return the current value for an existing metric', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+            await usage.incr({ accountId, metric, delta: 5 });
+            const res = (await usage.get({ accountId, metric })).unwrap();
+            expect(res).toEqual({ accountId, metric, current: 5 });
+        });
     });
 
     it('should incr metric', async () => {
