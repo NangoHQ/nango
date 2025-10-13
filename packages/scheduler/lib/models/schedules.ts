@@ -213,27 +213,37 @@ export async function setLastScheduledTask(db: knex.Knex, updates: { id: string;
             return Ok([]);
         }
 
-        const bindings = updates.flatMap((u) => [u.id, u.taskId, u.taskState]);
-        const values = updates.map(() => '(?, ?::uuid, ?::task_states)').join(', ');
+        const BATCH_SIZE = 1000;
+        const results: DbSchedule[] = [];
 
-        const updated = await db.raw(
-            `UPDATE ${SCHEDULES_TABLE}
-            SET
-                last_scheduled_task_id = v.task_id,
-                last_scheduled_task_state = v.task_state,
-                updated_at = NOW()
-            FROM (VALUES ${values}) AS v(id, task_id, task_state)
-            WHERE ${SCHEDULES_TABLE}.id = v.id::uuid
-            RETURNING ${SCHEDULES_TABLE}.*`,
-            bindings
-        );
+        await db.transaction(async (trx) => {
+            for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+                const batch = updates.slice(i, i + BATCH_SIZE);
+                const bindings = batch.flatMap((u) => [u.id, u.taskId, u.taskState]);
+                const values = batch.map(() => '(?::uuid, ?::uuid, ?::task_states)').join(', ');
 
-        const result = updated.rows || updated;
+                const updated = await trx.raw(
+                    `UPDATE ${SCHEDULES_TABLE}
+                    SET
+                        last_scheduled_task_id = v.task_id,
+                        last_scheduled_task_state = v.task_state,
+                        updated_at = NOW()
+                    FROM (VALUES ${values}) AS v(id, task_id, task_state)
+                    WHERE ${SCHEDULES_TABLE}.id = v.id::uuid
+                    RETURNING ${SCHEDULES_TABLE}.*`,
+                    bindings
+                );
 
-        if (result.length === 0) {
+                const batchResult = updated.rows || updated;
+                results.push(...batchResult);
+            }
+        });
+
+        if (results.length === 0) {
             return Err(new Error(`Error: no schedules updated for tasks ${updates.map((u) => u.taskId).join(', ')}`));
         }
-        return Ok(result.map(DbSchedule.from));
+
+        return Ok(results.map(DbSchedule.from));
     } catch (err) {
         return Err(new Error(`Error setting last scheduled task ${JSON.stringify(updates)}: ${stringifyError(err)}`));
     }
