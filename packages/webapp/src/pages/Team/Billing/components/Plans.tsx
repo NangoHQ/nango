@@ -2,7 +2,7 @@ import { Info } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
-import { Button } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetPlans } from '@/hooks/usePlan';
@@ -63,11 +63,11 @@ export const Plans: React.FC = () => {
     }, [futurePlan, plans?.activePlan.title]);
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
             {futurePlanMessage && (
                 <Alert variant="info">
                     <Info />
-                    <AlertDescription>futurePlanMessage</AlertDescription>
+                    <AlertDescription>{futurePlanMessage}</AlertDescription>
                 </Alert>
             )}
             <Table>
@@ -93,36 +93,52 @@ export const Plans: React.FC = () => {
 
 const PlanRow: React.FC<{ planDefinition: PlanDefinitionList }> = ({ planDefinition }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
+
+    const ButtonComponent = useMemo(() => {
+        if (active) {
+            return (
+                <Button disabled variant="secondary" className="w-27">
+                    Current plan
+                </Button>
+            );
+        }
+        if (isFuture) {
+            return (
+                <Button disabled variant="secondary" className="w-27">
+                    Scheduled
+                </Button>
+            );
+        }
+        if (isUpgrade && plan.canChange) {
+            return (
+                <Button variant="primary" className="w-27">
+                    Upgrade
+                </Button>
+            );
+        }
+        if (isDowngrade && plan.canChange) {
+            return (
+                <Button variant="destructive" className="w-27">
+                    Downgrade
+                </Button>
+            );
+        }
+        return (
+            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/support" target="_blank">
+                Contact us
+            </ButtonLink>
+        );
+    }, [active, isFuture, isUpgrade, plan.canChange, isDowngrade]);
+
     return (
         <TableRow>
-            <TableCell>
-                <div className="inline-flex items-center gap-1">
+            <TableCell className="w-1/3">
+                <div className="inline-flex items-center gap-1 py-3">
                     {plan.title} {active && <Dot />}
                 </div>
             </TableCell>
-            <TableCell className="text-center">{plan.basePrice ? `From $${plan.basePrice}/month` : '—'}</TableCell>
-            <TableCell className="text-right">
-                {active && (
-                    <Button disabled variant="secondary" className="w-27">
-                        Current plan
-                    </Button>
-                )}
-                {isFuture && (
-                    <Button disabled variant="secondary" className="w-27">
-                        Scheduled
-                    </Button>
-                )}
-                {isUpgrade && !isFuture && (
-                    <Button variant="primary" className="w-27">
-                        Upgrade
-                    </Button>
-                )}
-                {isDowngrade && !isFuture && (
-                    <Button variant="destructive" className="w-27">
-                        Downgrade
-                    </Button>
-                )}
-            </TableCell>
+            <TableCell className="text-left py-3">{plan.basePrice ? `From $${plan.basePrice}/month` : '—'}</TableCell>
+            <TableCell className="text-right py-3">{ButtonComponent}</TableCell>
         </TableRow>
     );
 };
