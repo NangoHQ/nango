@@ -61,7 +61,7 @@ export const EnvironmentDropdown: React.FC = () => {
                             <LogoInverted className="h-6 w-6 text-text-primary" />
                             <div className="flex flex-col items-start">
                                 <span className="text-s leading-3 text-text-secondary">Environment</span>
-                                <span className="text-sm leading-4 text-text-primary font-semibold capitalize truncate max-w-28">{env}</span>
+                                <span className="text-sm leading-4 text-text-primary font-semibold truncate max-w-28">{env}</span>
                             </div>
                         </div>
                         <ChevronsUpDown className="w-4.5 h-4.5 text-text-primary" />
@@ -79,7 +79,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                         className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
                                         data-active={env === environment.name}
                                     />
-                                    <span className="capitalize">{environment.name}</span>
+                                    <span>{environment.name}</span>
                                 </DropdownMenuItem>
                             ))}
                         </div>
