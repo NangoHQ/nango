@@ -138,7 +138,7 @@ export class BillingProcessor {
                     }
                     const incrLogs = await this.usageTracker.incr({
                         accountId: event.payload.properties.accountId,
-                        metric: 'logs',
+                        metric: 'function_logs',
                         delta: customLogs
                     });
                     if (incrLogs.isErr()) {
