@@ -1,6 +1,7 @@
 import { Info } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { Dot } from './Dot.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
@@ -145,8 +146,4 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList }> = ({ planDefinit
             <TableCell className="text-right py-3">{ButtonComponent}</TableCell>
         </TableRow>
     );
-};
-
-export const Dot: React.FC = () => {
-    return <div className="size-1.5 rounded-full bg-icon-brand"></div>;
 };

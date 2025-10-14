@@ -18,7 +18,7 @@ export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimiti
 };
 
 export const NavigationContent: React.FC<React.ComponentProps<typeof TabsPrimitive.Content>> = (props) => {
-    return <TabsPrimitive.Content {...props} />;
+    return <TabsPrimitive.Content {...props} className="flex-1" />;
 };
 
 export const Navigation: React.FC<React.ComponentProps<typeof TabsPrimitive.Root>> = ({ defaultValue, className, ...rest }) => {

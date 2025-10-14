@@ -3,8 +3,9 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
+import { Payment } from './components/Payment';
 import { PaymentMethods } from './components/PaymentMethod';
-import { PlanCard } from './components/PlanCard';
+// import { PlanCard } from './components/PlanCard';
 import { Plans } from './components/Plans';
 import { UsageTable } from './components/UsageTable';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
@@ -13,7 +14,6 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { Button } from '../../../components/ui/button/Button';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useApiGetBillingUsage, useApiGetPlans } from '../../../hooks/usePlan';
-import { useStripePaymentMethods } from '../../../hooks/useStripe';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
@@ -51,7 +51,9 @@ export const TeamBilling: React.FC = () => {
                 <NavigationContent value={'plans'} className="w-full overflow-x-auto">
                     <Plans />
                 </NavigationContent>
-                <NavigationContent value={'payment-and-invoices'}>Payment & Invoices page</NavigationContent>
+                <NavigationContent value={'payment-and-invoices'}>
+                    <Payment />
+                </NavigationContent>
             </Navigation>
         </DashboardLayout>
     );
@@ -63,7 +65,7 @@ export const TeamBillingOld: React.FC = () => {
     const { error, plan: currentPlan, loading } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
     const { data: usage, error: usageError, isLoading: usageIsLoading } = useApiGetBillingUsage(env);
-    const { data: paymentMethods } = useStripePaymentMethods(env);
+    // const { data: paymentMethods } = useStripePaymentMethods(env);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
@@ -89,12 +91,12 @@ export const TeamBillingOld: React.FC = () => {
         return { list, activePlan: curr };
     }, [currentPlan, plansList]);
 
-    const hasPaymentMethod = useMemo<boolean>(() => {
-        if (!paymentMethods || !paymentMethods.data || paymentMethods.data.length <= 0) {
-            return false;
-        }
-        return true;
-    }, [paymentMethods]);
+    // const hasPaymentMethod = useMemo<boolean>(() => {
+    //     if (!paymentMethods || !paymentMethods.data || paymentMethods.data.length <= 0) {
+    //         return false;
+    //     }
+    //     return true;
+    // }, [paymentMethods]);
 
     const futurePlan = useMemo(() => {
         if (!currentPlan?.orb_future_plan) {
@@ -182,7 +184,7 @@ export const TeamBillingOld: React.FC = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-4 gap-4 mt-6">
-                            {plans?.list.map((def) => {
+                            {/* {plans?.list.map((def) => {
                                 return (
                                     <PlanCard
                                         key={def.plan.code}
@@ -192,7 +194,7 @@ export const TeamBillingOld: React.FC = () => {
                                         currentPlan={currentPlan}
                                     />
                                 );
-                            })}
+                            })} */}
                         </div>
                     )}
 
