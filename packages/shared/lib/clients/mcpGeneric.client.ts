@@ -91,6 +91,7 @@ export async function discoverMcpMetadata(
             resourceMetadata = await discoverOAuthProtectedResourceMetadata(mcpServerUrl);
 
             if (resourceMetadata?.authorization_servers?.length && resourceMetadata.authorization_servers[0]) {
+                validateMcpServerUrl(resourceMetadata.authorization_servers[0]);
                 authServerUrl = new URL(resourceMetadata.authorization_servers[0]);
             }
         } catch {
