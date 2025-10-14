@@ -39,7 +39,7 @@ function validateMcpServerUrl(url: string): void {
     }
 
     // Block IP addresses (both IPv4 and IPv6)
-    const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+    const ipv4Pattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     const ipv6Pattern = /^([0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}$/i;
     if (ipv4Pattern.test(hostname) || ipv6Pattern.test(hostname)) {
         throw new Error('MCP server URL cannot be an IP address, must be a domain name');
