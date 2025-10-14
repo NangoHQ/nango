@@ -412,8 +412,18 @@ describe('Persist API', () => {
                 { id: '3', name: 'new3' }
             ]);
 
-            // increment the job id to simulate a new sync run
-            seed.syncJob.id += 1;
+            // create another sync job to simulate a new run
+            const newSyncJob = await createSyncJob({
+                sync_id: seed.sync.id,
+                type: SyncJobsType.FULL,
+                status: SyncStatus.RUNNING,
+                job_id: `another-job`,
+                nangoConnection: seed.connection
+            });
+            if (!newSyncJob) {
+                throw new Error('Sync job not created');
+            }
+
             await insertRecords(seed, model, [
                 { id: '3', name: 'new3' },
                 { id: '4', name: 'new4' },
@@ -421,7 +431,7 @@ describe('Persist API', () => {
             ]);
 
             const response = await fetch(
-                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/outdated`,
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
                 {
                     method: 'DELETE',
                     body: JSON.stringify({
