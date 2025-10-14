@@ -9441,10 +9441,9 @@ pipedrive:
     connection_config:
         api_domain:
             type: string
-            title: API URL
-            description: The API URL of your Pipedrive account
-            format: uri
-            pattern: '^https?://.*$'
+            title: ''
+            description: ''
+            automated: true
 
 pipedream:
     display_name: Pipedream (API Key)
