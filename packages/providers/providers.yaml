@@ -7774,7 +7774,7 @@ mailchimp:
             automated: true
 
 mcp-generic:
-    display_name: MCP Server OAUth2 (Generic)
+    display_name: MCP Server OAuth2 (Generic)
     categories:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC

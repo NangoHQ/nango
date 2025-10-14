@@ -17,7 +17,7 @@ import type { AccessToken } from 'simple-oauth2';
  * - Cannot be IP addresses (must be domain names)
  * @throws {Error} if validation fails
  */
-function validateMcpServerUrl(url: string): void {
+function validateUrl(url: string): void {
     let parsed: URL;
     try {
         parsed = new URL(url);
@@ -43,16 +43,6 @@ function validateMcpServerUrl(url: string): void {
     const ipv6Pattern = /^([0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}$/i;
     if (ipv4Pattern.test(hostname) || ipv6Pattern.test(hostname)) {
         throw new Error('MCP server URL cannot be an IP address, must be a domain name');
-    }
-
-    // Block private IP ranges (10.x.x.x, 172.16-31.x.x, 192.168.x.x)
-    if (ipv4Pattern.test(hostname)) {
-        const octets = hostname.split('.').map(Number);
-        const octet0 = octets[0];
-        const octet1 = octets[1];
-        if (octet0 === 10 || (octet0 === 172 && octet1 !== undefined && octet1 >= 16 && octet1 <= 31) || (octet0 === 192 && octet1 === 168)) {
-            throw new Error('MCP server URL cannot be a private IP address');
-        }
     }
 
     // Block link-local addresses
@@ -81,7 +71,7 @@ export async function discoverMcpMetadata(
 ): Promise<{ success: boolean; metadata?: OAuthMetadata; resourceMetadata?: OAuthProtectedResourceMetadata; scopes?: string; error?: string }> {
     try {
         // Validate MCP server URL for security
-        validateMcpServerUrl(mcpServerUrl);
+        validateUrl(mcpServerUrl);
 
         // RFC9728 - Protected Resource Metadata Discovery
         let resourceMetadata: OAuthProtectedResourceMetadata | null = null;
@@ -91,7 +81,7 @@ export async function discoverMcpMetadata(
             resourceMetadata = await discoverOAuthProtectedResourceMetadata(mcpServerUrl);
 
             if (resourceMetadata?.authorization_servers?.length && resourceMetadata.authorization_servers[0]) {
-                validateMcpServerUrl(resourceMetadata.authorization_servers[0]);
+                validateUrl(resourceMetadata.authorization_servers[0]);
                 authServerUrl = new URL(resourceMetadata.authorization_servers[0]);
             }
         } catch {
@@ -121,7 +111,7 @@ export async function discoverMcpMetadata(
         for (const endpoint of endpointsToValidate) {
             if (endpoint.url) {
                 try {
-                    validateMcpServerUrl(endpoint.url);
+                    validateUrl(endpoint.url);
                 } catch (err) {
                     const errorMsg = `Discovered ${endpoint.name} failed security validation: ${err instanceof Error ? err.message : String(err)}`;
                     void logCtx.error(errorMsg, { endpoint: endpoint.name, url: endpoint.url });
@@ -197,7 +187,7 @@ export async function refreshMcpGenericCredentials({
     // Validate stored token endpoint for security
     if (metadata.token_endpoint) {
         try {
-            validateMcpServerUrl(metadata.token_endpoint);
+            validateUrl(metadata.token_endpoint);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             void logCtx.error('Stored token_endpoint failed security validation', {
