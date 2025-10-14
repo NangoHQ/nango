@@ -130,7 +130,7 @@ export class BillingProcessor {
                     }
                     const incrCompute = await this.usageTracker.incr({
                         accountId: event.payload.properties.accountId,
-                        metric: 'function_compute_ms',
+                        metric: 'function_compute_gbms',
                         delta: compute
                     });
                     if (incrCompute.isErr()) {
