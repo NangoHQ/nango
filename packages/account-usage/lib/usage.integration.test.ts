@@ -41,7 +41,7 @@ describe('Usage', () => {
             const accountId = 1;
             const metric = 'connections';
             // Manually set an invalid entry in Redis
-            await redis.set(`usage:${accountId}:${metric}`, 'invalid-json');
+            await redis.set(`usageV2:${accountId}:${metric}`, 'invalid-json');
 
             const res = await usageTracker.get({ accountId, metric });
             expect(res.isErr()).toBe(true);
