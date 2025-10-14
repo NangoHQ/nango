@@ -25,7 +25,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         function_executions_max: 1000,
         function_compute_gbms_max: 50000,
         external_webhooks_max: 1000,
-        functions_logs_max: 10000,
+        function_logs_max: 10000,
         monthly_actions_max: 10000,
         monthly_active_records_max: 5000,
         has_sync_variants: false,

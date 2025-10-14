@@ -20,7 +20,7 @@ export const freePlan: PlanDefinition = {
         function_executions_max: 100_000,
         function_compute_gbms_max: 50_000_000,
         external_webhooks_max: 100_000,
-        functions_logs_max: 100_000,
+        function_logs_max: 100_000,
         name: 'free',
         sync_frequency_secs_min: 3600,
         auto_idle: true,

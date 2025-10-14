@@ -67,7 +67,7 @@ export interface DBPlan extends Timestamps {
      * Set to null to remove limit
      * @default null
      */
-    functions_logs_max: number | null;
+    function_logs_max: number | null;
 
     /**
      * Limit the number of environments that can be created
