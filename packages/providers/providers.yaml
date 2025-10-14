@@ -379,6 +379,30 @@ affinity:
             # Affinity is using basic auth with an api key
             doc_section: '#step-1-finding-your-api-key'
 
+aimfox:
+    display_name: Aimfox
+    categories:
+        - surveys
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.aimfox.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/campaigns
+    docs: https://docs.nango.dev/integrations/all/aimfox
+    docs_connect: https://docs.nango.dev/integrations/all/aimfox/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Aimfox account
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-1-generating-your-api-key'
+
 aircall:
     display_name: Aircall (OAuth)
     categories:
@@ -3120,6 +3144,7 @@ confluence-data-center:
             title: Domain
             description: The domain of your Confluence Data Center instance
             prefix: https://
+            pattern: '^[a-zA-Z0-9.-]+(:\d+)?$'
             example: confluence.company.com
             doc_section: '#step-1-finding-your-domain'
 
@@ -6744,7 +6769,7 @@ jira-data-center:
             type: string
             title: Domain
             description: The domain of your Jira Data Center account
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:\d+)?$'
             prefix: https://
             example: foobar.atlassian.net
 
