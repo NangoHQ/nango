@@ -20,8 +20,8 @@ export default tseslint.config(
             'packages/server/nango-integrations/',
             'packages/node-client/tests',
             'packages/cli/fixtures/',
-            'docs-v2/script.js',
-            'docs-v2/snippets/api-down-watch/status-widget.jsx',
+            'docs/script.js',
+            'docs/snippets/api-down-watch/status-widget.jsx',
             'packages/runner-sdk/models.d.ts'
         ]
     },
