@@ -1,13 +1,19 @@
 ---
-title: 'API Auth with a custom UI'
-sidebarTitle: 'Customize Connect UI'
-description: 'Guide to letting your users authorize an external API from your application, with your own UI.'
+title: "API Auth with a custom UI"
+sidebarTitle: "Customize Connect UI"
+description: "Guide to letting your users authorize an external API from your application, with your own UI."
 ---
 
+The easiest way to let your users authorize an external API is with Nango’s pre-built **Connect UI**. Depending on your [plan](https://www.nango.dev/pricing), you can also customize your brand color and remove the _Secured by Nango_ watermark.
+
+If you prefer full control, you can use Nango headlessly and **build your own authentication UI from scratch**.\
+This guide walks you through the steps to do that.
+
 <Info>
-Pre-requisites:
-- complete the [Configure an integration](/implementation-guides/api-auth/configure-integration) guide
-- generate a [Connect session token](/implementation-guides/api-auth/implement-api-auth#1-generate-a-session-token-backend)
+  Pre-requisites:
+
+  - complete the [Configure an integration](/implementation-guides/api-auth/configure-integration) guide
+  - generate a [Connect session token](/implementation-guides/api-auth/implement-api-auth#1-generate-a-session-token-backend)
 </Info>
 
 ## Integrate the frontend SDK
@@ -23,66 +29,57 @@ const nango = new Nango({ connectSessionToken: '<CONNECT-SESSION-TOKEN>' });
 Initiate the authorization flow ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
 
 <Tabs>
+  <Tab title="OAuth">
+    For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
 
-<Tab title="OAuth">
+    ```js
+    nango
+        .auth('<INTEGRATION-ID>')
+        .then((result) => {
+            // Show success UI.
+        })
+        .catch((error) => {
+            // Show failure UI.
+        });
+    ```
+  </Tab>
+  <Tab title="API Key">
+    For API keys, the `nango.auth()` method is used to store the end-user's API key (that you have previously collected from them).
 
-For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
+    ```js
+    nango
+        .auth('<INTEGRATION-ID>', {
+            credentials: {
+                apiKey: '<END-USER-API-KEY>'
+            }
+        })
+        .then((result) => {
+            // Show success UI.
+        })
+        .catch((error) => {
+            // Show failure UI.
+        });
+    ```
+  </Tab>
+  <Tab title="Basic Auth">
+    For Basic Auth, the `nango.auth()` method is used to store the end-user's username & password (that you have previously collected from them).
 
-```js
-nango
-    .auth('<INTEGRATION-ID>')
-    .then((result) => {
-        // Show success UI.
-    })
-    .catch((error) => {
-        // Show failure UI.
-    });
-```
-
-</Tab>
-
-<Tab title="API Key">
-
-For API keys, the `nango.auth()` method is used to store the end-user's API key (that you have previously collected from them).
-
-```js
-nango
-    .auth('<INTEGRATION-ID>', {
-        credentials: {
-            apiKey: '<END-USER-API-KEY>'
-        }
-    })
-    .then((result) => {
-        // Show success UI.
-    })
-    .catch((error) => {
-        // Show failure UI.
-    });
-```
-
-</Tab>
-
-<Tab title="Basic Auth">
-
-For Basic Auth, the `nango.auth()` method is used to store the end-user's username & password (that you have previously collected from them).
-
-```js
-nango
-    .auth('<INTEGRATION-ID>', {
-        credentials: {
-            username: '<END-USER-API-KEY>',
-            password: '<END-USER-PASSWORD>'
-        }
-    })
-    .then((result) => {
-        // Show success UI.
-    })
-    .catch((error) => {
-        // Show failure UI.
-    });
-```
-</Tab>
-
+    ```js
+    nango
+        .auth('<INTEGRATION-ID>', {
+            credentials: {
+                username: '<END-USER-API-KEY>',
+                password: '<END-USER-PASSWORD>'
+            }
+        })
+        .then((result) => {
+            // Show success UI.
+        })
+        .catch((error) => {
+            // Show failure UI.
+        });
+    ```
+  </Tab>
 </Tabs>
 
 ## Handle APIs requiring connection-specific configuration for authorization
@@ -114,8 +111,9 @@ nango.auth('zendesk', {
 This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)) and API ([reference](/reference/api/connection/get)), or see it in connection details in the Nango UI.
 
 # Next
+
 Once the authorization succeeds, [_save the connection ID_](/implementation-guides/api-auth/implement-api-auth#3-listen-for-webhooks-%26-save-the-connection-id-backend).
 
 <Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
