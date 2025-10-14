@@ -314,6 +314,22 @@ export async function handleSyncSuccess({
                 deletedKeys = res.value;
                 void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
+            if (deletedKeys.length > 0) {
+                void pubsub.publisher.publish({
+                    subject: 'usage',
+                    type: 'usage.records',
+                    payload: {
+                        value: -deletedKeys.length,
+                        properties: {
+                            accountId: nangoProps.team.id,
+                            environmentId: nangoProps.environmentId,
+                            connectionId: nangoProps.nangoConnectionId,
+                            syncId: nangoProps.syncId,
+                            model
+                        }
+                    }
+                });
+            }
 
             const updatedResults: Record<string, SyncResult> = {
                 [model]: {

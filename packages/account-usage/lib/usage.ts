@@ -1,4 +1,3 @@
-import { getRedis } from '@nangohq/kvstore';
 import { Err, Ok } from '@nangohq/utils';
 
 import { UsageCache } from './cache.js';
@@ -6,6 +5,7 @@ import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
 import type { UsageMetric } from './metrics.js';
+import type { getRedis } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
 
 export interface UsageStatus {
@@ -14,7 +14,7 @@ export interface UsageStatus {
     current: number;
 }
 
-interface Usage {
+export interface Usage {
     get(params: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>>;
 }
@@ -100,12 +100,4 @@ export class UsageTracker implements Usage {
         logger.debug(`Revalidating usage for accountId=${accountId} metric=${metric}. Not implemented yet`);
         return Promise.resolve();
     }
-}
-
-export async function getUsageTracker(redisUrl: string | undefined): Promise<Usage> {
-    if (redisUrl) {
-        const redis = await getRedis(redisUrl);
-        return new UsageTracker(redis);
-    }
-    return new UsageTrackerNoOps();
 }
