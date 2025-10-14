@@ -27,7 +27,7 @@ _No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/dayforce.mdx)</Note>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/dayforce.mdx)</Note>
 
 
 ## Useful links
@@ -37,13 +37,13 @@ _No setup guide yet._
 -   [Token-Based Authentication](https://help.dayforce.com/r/documents/Dayforce-RESTful-Web-Services-Developer-Guide/Token-Based-Authentication)
 -   [How to Determine the best URL to use](https://help.dayforce.com/r/documents/Dayforce-RESTful-Web-Services-Developer-Guide/Determine-Which-URL-to-Use)
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/dayforce.mdx)</Note>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/dayforce.mdx)</Note>
 
 ## API gotchas
 
 - **HTTP Redirects**: Dayforce issues an HTTP redirect for every request to route it to the appropriate service. For high-volume integrations, you can avoid repeated redirects by making a REST request to `/{companyId}/V1/ClientMetadata`. Use the `companyId` from your connection configuration to retrieve the `ServiceUri`, and make subsequent API calls directly to that URI.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/dayforce.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/dayforce.mdx)</Note>
 
 <Card title="Connect to Dayforce" icon="link" href="/integrations/all/dayforce/connect" horizontal>
   Guide to connect to Dayforce using Nango Connect.

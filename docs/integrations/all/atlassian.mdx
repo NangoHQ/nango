@@ -123,13 +123,13 @@ description: 'Access the Atlassian API in 2 minutes 💨'
     | | [Confluence Cloud Rest API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#using) |
     | | [Distributing OAuth 2.0 (3LO) Apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps) |
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/atlassian.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
     - Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
     - When using the proxy for Atlassian, it is important to know that Jira apps will use `/jira/{cloudid}/{api}` for Jira apps and `/confluence/{cloudid}/{api}` for Confluence apps.
 
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/atlassian.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/atlassian.mdx)</Note>
   </Tab>
 </Tabs>
 

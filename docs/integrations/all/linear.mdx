@@ -106,7 +106,7 @@ description: 'Access the Linear API in 2 minutes 💨'
 | | [API rate limits](https://linear.app/developers/rate-limiting) |
 | | [Webhooks](https://linear.app/developers/webhooks) |
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/linear.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
   -  Linear is moving to short-lived OAuth2 access tokens with refresh tokens starting `Oct 1, 2025`. Existing OAuth2 apps must be updated to support refresh tokens, you can enable this by toggling the **Refresh Token** option in the OAuth settings. Connections created before enabling this will still have the 10-year expiry; only new connections after enabling will include refresh tokens in the response.
@@ -117,7 +117,7 @@ description: 'Access the Linear API in 2 minutes 💨'
   -  Linear's GraphQL API requires that you specify exactly which fields you want to retrieve in your queries.
   -  Linear supports webhooks for real-time updates, which can be more [efficient](https://linear.app/developers/rate-limiting#avoid-polling) than polling for changes.
   -  The `admin` scope should only be requested if absolutely necessary, as it provides full access to admin-level endpoints.
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/linear.mdx)</Note>
   </Tab>
 </Tabs>
 
