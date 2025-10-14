@@ -14,12 +14,12 @@ export interface UsageStatus {
     current: number;
 }
 
-interface IUsage {
+interface Usage {
     get(params: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>>;
 }
 
-export class UsageNoOps implements IUsage {
+export class UsageTrackerNoOps implements Usage {
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
         return Promise.resolve(
             Ok({
@@ -41,7 +41,7 @@ export class UsageNoOps implements IUsage {
     }
 }
 
-export class Usage implements IUsage {
+export class UsageTracker implements Usage {
     private cache: UsageCache;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
@@ -50,7 +50,7 @@ export class Usage implements IUsage {
 
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
         const now = new Date();
-        const { cacheKey } = Usage.getCacheEntryProps({ accountId, metric, now });
+        const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.get(cacheKey);
         if (entry.isErr()) {
             return Err(entry.error);
@@ -64,7 +64,7 @@ export class Usage implements IUsage {
 
     public async incr({ accountId, metric, delta = 1 }: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>> {
         const now = new Date();
-        const { cacheKey, ttlMs } = Usage.getCacheEntryProps({ accountId, metric, now });
+        const { cacheKey, ttlMs } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.incr(cacheKey, { delta, ttlMs });
         if (entry.isErr()) {
             return Err(entry.error);
@@ -72,7 +72,7 @@ export class Usage implements IUsage {
 
         // revalidate if the entry is stale or expired
         if (entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime()) {
-            void Usage.revalidate({ accountId, metric });
+            void UsageTracker.revalidate({ accountId, metric });
         }
 
         return Ok({
@@ -83,7 +83,7 @@ export class Usage implements IUsage {
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
-        const cacheKey = `usage:${accountId}:${metric}`;
+        const cacheKey = `usageV2:${accountId}:${metric}`;
         if (usageMetrics[metric].reset === 'monthly') {
             // monthly metrics have a YYYY-MM suffix
             const yyyymm = now.toISOString().slice(0, 7);
@@ -102,10 +102,10 @@ export class Usage implements IUsage {
     }
 }
 
-export async function getUsage(redisUrl: string | undefined): Promise<IUsage> {
+export async function getUsageTracker(redisUrl: string | undefined): Promise<Usage> {
     if (redisUrl) {
         const redis = await getRedis(redisUrl);
-        return new Usage(redis);
+        return new UsageTracker(redis);
     }
-    return new UsageNoOps();
+    return new UsageTrackerNoOps();
 }
