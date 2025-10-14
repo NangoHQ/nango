@@ -1,6 +1,6 @@
 ---
-title: MCP Dynamic
-sidebarTitle: MCP Dynamic
+title: MCP Generic
+sidebarTitle: MCP Generic
 ---
 
 ## Access requirements
@@ -16,7 +16,7 @@ _No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-dynamic.mdx)</Note>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-generic.mdx)</Note>
 
 ## Useful links
 
@@ -26,14 +26,14 @@ _No setup guide yet._
 - [RFC 9728: OAuth 2.0 Protected Resource Metadata Discovery](https://tools.ietf.org/html/rfc9728)
 - [MCP Server Examples](https://github.com/modelcontextprotocol/servers)
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-dynamic.mdx)</Note>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-generic.mdx)</Note>
 
 ## API gotchas
 
-- **Dynamic Discovery**: MCP Dynamic automatically discovers OAuth endpoints from the MCP server's `/.well-known/oauth-authorization-server` endpoint.
+- **Dynamic Discovery**: MCP Generic automatically discovers OAuth endpoints from the MCP server's `/.well-known/oauth-authorization-server` endpoint.
 - **No Pre-configuration**: No need to pre-configure OAuth client credentials. Clients are registered dynamically during the authorization flow.
-- **PKCE Required**: All MCP Dynamic flows use PKCE for security. Client secrets are not used.
+- **PKCE Required**: All MCP Generic flows use PKCE for security. Client secrets are not used.
 - **Server URL Format**: Always provide the full MCP server URL (e.g., `https://api.example.com/mcp`, not `api.example.com`).
 - **Automatic Scopes**: OAuth scopes are automatically discovered from MCP server metadata.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-dynamic.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-generic.mdx)</Note>

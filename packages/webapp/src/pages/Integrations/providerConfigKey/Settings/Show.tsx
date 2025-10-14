@@ -2,7 +2,7 @@ import { SettingsApp } from './components/App';
 import { SettingsCustom } from './components/Custom';
 import { SettingsDefault } from './components/Default';
 import { SettingsGeneral } from './components/General';
-import { SettingsMcpDynamic } from './components/McpDynamic';
+import { SettingsMcpGeneric } from './components/McpGeneric';
 import { SettingsMcpOAuth } from './components/McpOAuth';
 import { SettingsOAuth } from './components/OAuth';
 import { useEnvironment } from '../../../../hooks/useEnvironment';
@@ -35,8 +35,8 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
             return <SettingsDefault data={data} environment={environment} />;
         case 'MCP_OAUTH2':
             return <SettingsMcpOAuth data={data} environment={environment} />;
-        case 'MCP_DYNAMIC':
-            return <SettingsMcpDynamic data={data} environment={environment} />;
+        case 'MCP_OAUTH2_GENERIC':
+            return <SettingsMcpGeneric data={data} environment={environment} />;
 
         default:
             return <div>Unsupported</div>;

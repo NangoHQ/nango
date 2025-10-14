@@ -163,7 +163,7 @@ export type PatchIntegration = Endpoint<{
               scopes?: string | undefined;
           }
         | {
-              authType: Extract<AuthModeType, 'MCP_DYNAMIC'>;
+              authType: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
               clientName?: string | undefined;
               clientUri?: string | undefined;
               clientLogoUri?: string | undefined;

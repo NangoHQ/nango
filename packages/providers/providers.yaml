@@ -7773,12 +7773,11 @@ mailchimp:
             example: us6
             automated: true
 
-mcp-dynamic:
-    display_name: MCP Server (Dynamic)
+mcp-generic:
+    display_name: MCP Server OAUth2 (Generic)
     categories:
         - mcp
-    auth_mode: MCP_DYNAMIC
-    alias: mcp-dynamic
+    auth_mode: MCP_OAUTH2_GENERIC
     connection_config:
         mcp_server_url:
             type: string
@@ -7786,7 +7785,7 @@ mcp-dynamic:
             description: The base URL of your MCP server
             example: https://mcp.notion.com/mcp
             pattern: '^https?://[a-zA-Z0-9.-]+(?:\:[0-9]+)?(?:/.*)?$'
-    docs: https://docs.nango.dev/integrations/all/mcp-dynamic
+    docs: https://docs.nango.dev/integrations/all/mcp-generic
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:

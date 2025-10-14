@@ -61,7 +61,7 @@ const validationBody = z
                     .strict(),
                 z
                     .object({
-                        authType: z.enum(['MCP_DYNAMIC']),
+                        authType: z.enum(['MCP_OAUTH2_GENERIC']),
                         clientName: z.string().min(1).max(255).optional(),
                         clientUri: z.url().max(255).optional(),
                         clientLogoUri: z.url().max(255).optional()
@@ -163,7 +163,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.custom = { app_id: body.appId, private_key: Buffer.from(body.privateKey).toString('base64') };
         } else if (body.authType === 'MCP_OAUTH2') {
             integration.oauth_scopes = body.scopes || '';
-        } else if (body.authType === 'MCP_DYNAMIC') {
+        } else if (body.authType === 'MCP_OAUTH2_GENERIC') {
             const { clientName, clientUri, clientLogoUri } = body;
             if (clientName || clientUri || clientLogoUri) {
                 integration.custom = {

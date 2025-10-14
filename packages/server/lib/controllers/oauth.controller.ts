@@ -26,7 +26,7 @@ import {
     providerClientManager,
     syncEndUserToConnection
 } from '@nangohq/shared';
-import { discoverMcpMetadata } from '@nangohq/shared/lib/clients/mcpDynamic.client.js';
+import { discoverMcpMetadata } from '@nangohq/shared/lib/clients/mcpGeneric.client.js';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
@@ -62,8 +62,8 @@ import type {
     Provider,
     ProviderCustom,
     ProviderGithubApp,
-    ProviderMcpDynamic,
     ProviderMcpOAUTH2,
+    ProviderMcpOAuth2Generic,
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -245,7 +245,7 @@ class OAuthController {
 
             if (
                 provider.auth_mode !== 'APP' &&
-                provider.auth_mode !== 'MCP_DYNAMIC' &&
+                provider.auth_mode !== 'MCP_OAUTH2_GENERIC' &&
                 (config.oauth_client_id == null || config.oauth_client_secret == null)
             ) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
@@ -275,8 +275,8 @@ class OAuthController {
             } else if (provider.auth_mode === 'MCP_OAUTH2') {
                 await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
-            } else if (provider.auth_mode === 'MCP_DYNAMIC') {
-                await this.mcpDynamicRequest({ provider: provider as ProviderMcpDynamic, config, session, res, connectionConfig, callbackUrl, logCtx });
+            } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
+                await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -840,7 +840,7 @@ class OAuthController {
         }
     }
 
-    private async mcpDynamicRequest({
+    private async mcpGenericRequest({
         config,
         session,
         res,
@@ -848,7 +848,7 @@ class OAuthController {
         callbackUrl,
         logCtx
     }: {
-        provider: ProviderMcpDynamic;
+        provider: ProviderMcpOAuth2Generic;
         config: ProviderConfig;
         session: OAuthSession;
         res: Response;
@@ -1067,8 +1067,8 @@ class OAuthController {
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
                 return;
-            } else if (session.authMode === 'MCP_DYNAMIC') {
-                await this.mcpDynamicCallback(provider as ProviderMcpDynamic, config, session, req, res, environment, account, logCtx);
+            } else if (session.authMode === 'MCP_OAUTH2_GENERIC') {
+                await this.mcpGenericCallback(provider as ProviderMcpOAuth2Generic, config, session, req, res, environment, account, logCtx);
                 return;
             } else if (session.authMode === 'OAUTH1') {
                 await this.oauth1Callback(provider, config, session, req, res, environment, account, logCtx);
@@ -1857,8 +1857,8 @@ class OAuthController {
             });
     }
 
-    private async mcpDynamicCallback(
-        provider: ProviderMcpDynamic,
+    private async mcpGenericCallback(
+        provider: ProviderMcpOAuth2Generic,
         config: ProviderConfig,
         session: OAuthSession,
         req: Request,
@@ -1943,7 +1943,7 @@ class OAuthController {
             await logCtx.success();
 
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
-                auth_mode: 'MCP_DYNAMIC',
+                auth_mode: 'MCP_OAUTH2_GENERIC',
                 provider: config.provider
             });
 
@@ -1986,7 +1986,7 @@ class OAuthController {
             );
 
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
-                auth_mode: 'MCP_DYNAMIC',
+                auth_mode: 'MCP_OAUTH2_GENERIC',
                 provider: config.provider
             });
 
