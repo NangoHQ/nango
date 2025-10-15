@@ -14,12 +14,12 @@ export interface UsageStatus {
     current: number;
 }
 
-export interface Usage {
+export interface IUsageTracker {
     get(params: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>>;
 }
 
-export class UsageTrackerNoOps implements Usage {
+export class UsageTrackerNoOps implements IUsageTracker {
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
         return Promise.resolve(
             Ok({
@@ -41,7 +41,7 @@ export class UsageTrackerNoOps implements Usage {
     }
 }
 
-export class UsageTracker implements Usage {
+export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {

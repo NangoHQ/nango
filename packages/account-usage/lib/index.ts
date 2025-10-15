@@ -6,7 +6,7 @@ import { KvAccountUsageStore } from './accountUsageStore/kvAccountUsageStore.js'
 import { AccountUsageTracker } from './accountUsageTracker.js';
 import { UsageTracker, UsageTrackerNoOps } from './usage.js';
 
-import type { Usage } from './usage.js';
+import type { IUsageTracker } from './usage.js';
 
 export { AccountUsageTracker } from './accountUsageTracker.js';
 export type { AccountUsageStore } from './accountUsageStore/accountUsageStore.js';
@@ -39,9 +39,9 @@ export async function getAccountUsageTracker(): Promise<AccountUsageTracker> {
     return usageTracker;
 }
 
-export type { Usage } from './usage.js';
+export type { IUsageTracker as Usage } from './usage.js';
 
-export async function getUsageTracker(redisUrl: string | undefined): Promise<Usage> {
+export async function getUsageTracker(redisUrl: string | undefined): Promise<IUsageTracker> {
     if (redisUrl) {
         const redis = await getRedis(redisUrl);
         return new UsageTracker(redis);
