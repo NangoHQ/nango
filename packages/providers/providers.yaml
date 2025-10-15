@@ -6563,15 +6563,25 @@ intercom:
         - surveys
         - ticketing
     auth_mode: OAUTH2
-    authorization_url: https://app.intercom.io/oauth
-    token_url: https://api.intercom.io/auth/eagle/token
+    authorization_url: https://app.${connectionConfig.region}.intercom.com || https://app.intercom.com/oauth
+    token_url: https://api.${connectionConfig.region}.intercom.io/auth/eagle/token || https://api.intercom.io/auth/eagle/token
     proxy:
-        base_url: https://api.intercom.io
+        base_url: https://api.${connectionConfig.region}.intercom.io || https://api.intercom.io
         retry:
             at:
                 - 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
+    docs_connect: https://docs.nango.dev/integrations/all/intercom/connect
     pre_connection_deletion_script: intercomPreConnectionDeletion
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The API region for your Intercom workspace.
+            pattern: '^(eu|au)$'
+            example: eu
+            optional: true
+            doc_section: '#step-1-finding-your-region'
 
 intuit:
     display_name: Intuit

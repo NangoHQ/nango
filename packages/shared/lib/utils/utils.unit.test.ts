@@ -364,3 +364,52 @@ describe('getRedisUrl', () => {
         expect(result).toBe('rediss://:password@localhost:6379');
     });
 });
+
+describe('makeUrl', () => {
+    it('should interpolate a basic URL template with config', () => {
+        const template = 'https://api.example.com/${connectionConfig.subdomain}';
+        const config = { subdomain: 'myapp' };
+        const result = utils.makeUrl(template, config);
+        expect(result.href).toBe('https://api.example.com/myapp');
+    });
+
+    it('should handle regional URLs with fallbacks', () => {
+        const template = 'https://api.${connectionConfig.region}.intercom.com || https://api.intercom.com';
+        const config = { region: 'eu' };
+        const result = utils.makeUrl(template, config);
+        expect(result.href).toBe('https://api.eu.intercom.com/');
+    });
+
+    it('should use fallback URL when region is not provided', () => {
+        const template = 'https://api.${connectionConfig.region}.intercom.com || https://api.intercom.com';
+        const config = {};
+        const result = utils.makeUrl(template, config);
+        expect(result.href).toBe('https://api.intercom.com/');
+    });
+
+    it('should use fallback URL when region is empty string', () => {
+        const template = 'https://api.${connectionConfig.region}.intercom.com || https://api.intercom.com';
+        const config = { region: '' };
+        const result = utils.makeUrl(template, config);
+        expect(result.href).toBe('https://api.intercom.com/');
+    });
+
+    it('should handle interpolation if it should happen more than ones', () => {
+        const template = 'https://api.example.com/${connectionConfig.workspace}/${connectionConfig.version}';
+        const config = { workspace: 'myworkspace', version: 'v2' };
+        const result = utils.makeUrl(template, config);
+        expect(result.href).toBe('https://api.example.com/myworkspace/v2');
+    });
+
+    it('should throw error when template has unresolved placeholders', () => {
+        const template = 'https://api.example.com/${connectionConfig.subdomain}';
+        const config = {};
+        expect(() => utils.makeUrl(template, config)).toThrow('Failed to interpolate URL template');
+    });
+
+    it('should throw error when interpolated URL is invalid', () => {
+        const template = '${connectionConfig.invalidUrl}';
+        const config = { invalidUrl: 'not-a-valid-url' };
+        expect(() => utils.makeUrl(template, config)).toThrow('Invalid URL after interpolation');
+    });
+});
