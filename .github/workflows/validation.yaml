@@ -24,7 +24,7 @@ jobs:
               with:
                   filters: |
                       docs:
-                          - 'docs-v2/**'
+                          - 'docs/**'
                           - 'packages/providers/providers.yaml'
             - name: Determine if should skip
               id: check
@@ -78,7 +78,7 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   npm install -g mintlify
-                  cd docs-v2
+                  cd docs
                   if ! mintlify broken-links | grep -q "no broken links found"; then
                     echo "Broken links found in documentation"
                     exit 1
