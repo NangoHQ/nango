@@ -7,6 +7,7 @@ import { Payment } from './components/Payment';
 import { PaymentMethods } from './components/PaymentMethod';
 // import { PlanCard } from './components/PlanCard';
 import { Plans } from './components/Plans';
+import { Usage } from './components/Usage';
 import { UsageTable } from './components/UsageTable';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { Info } from '../../../components/Info';
@@ -18,16 +19,11 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 import { formatDateToInternationalFormat } from '../../../utils/utils';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { StyledLink } from '@/components-v2/StyledLink';
 
 import type { PlanDefinitionList } from './types';
 import type { PlanDefinition } from '@nangohq/types';
 
 export const TeamBilling: React.FC = () => {
-    const env = useStore((state) => state.env);
-
-    const { data: usage, isLoading: usageIsLoading } = useApiGetBillingUsage(env);
-
     return (
         <DashboardLayout className="flex flex-col gap-8">
             <Helmet>
@@ -41,12 +37,7 @@ export const TeamBilling: React.FC = () => {
                     <NavigationTrigger value={'payment-and-invoices'}>Payment & Invoices</NavigationTrigger>
                 </NavigationList>
                 <NavigationContent value={'usage'} className="w-full flex flex-col gap-6">
-                    <UsageTable data={usage} isLoading={usageIsLoading} />
-                    {usage?.data.customer.portalUrl && (
-                        <StyledLink icon to={usage.data.customer.portalUrl} type="external">
-                            View usage details
-                        </StyledLink>
-                    )}
+                    <Usage />
                 </NavigationContent>
                 <NavigationContent value={'plans'} className="w-full overflow-x-auto">
                     <Plans />

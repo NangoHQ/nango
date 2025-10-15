@@ -38,9 +38,10 @@ export const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined
     if (isLoading || !data) {
         return (
             <div className="flex flex-col gap-2">
-                <Skeleton className="w-1/2" />
-                <Skeleton className="w-1/2" />
-                <Skeleton className="w-1/2" />
+                <Skeleton className="w-full h-10" />
+                <Skeleton className="w-full h-10" />
+                <Skeleton className="w-full h-10" />
+                <Skeleton className="w-full h-10" />
             </div>
         );
     }
