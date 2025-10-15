@@ -24,10 +24,10 @@ jobs:
               with:
                   filters: |
                       docs_only:
-                          - 'docs-v2/**'
+                          - 'docs/**'
                       non_docs:
                           - '**'
-                          - '!docs-v2/**'
+                          - '!docs/**'
             - name: Determine if should skip
               id: check
               run: |

@@ -141,17 +141,46 @@ program
     });
 
 program
-    .command('generate')
-    .description('Generate a new Nango integration')
+    .command('compile')
+    .description(
+        'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
+    )
     .action(async function (this: Command) {
         const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.error(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
             return;
         }
 
-        generate({ fullPath: process.cwd(), debug });
+        if (precheck.isZeroYaml) {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
+            const res = await compileAll({ fullPath, debug });
+            if (res.isErr()) {
+                process.exitCode = 1;
+            }
+            return;
+        }
+
+        const match = verificationService.filesMatchConfig({ fullPath });
+        if (!match) {
+            process.exitCode = 1;
+            return;
+        }
+
+        const { success } = await compileAllFiles({ fullPath, debug });
+        if (!success) {
+            console.error(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+            process.exitCode = 1;
+        }
     });
 
 program
@@ -411,74 +440,53 @@ program
         }
     });
 
-// Hidden commands //
-
 program
-    .command('deploy:local', { hidden: true })
-    .alias('dl')
-    .description('Deploy a Nango integration to local')
-    .arguments('environment')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
-    .action(async function (this: Command, environment: string) {
-        const options = this.opts<DeployOptions>();
+    .command('generate:tests')
+    .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
+    .description('Generate tests for integration scripts and config files')
+    .action(async function (this: Command) {
+        const { debug, integration: integrationId, autoConfirm } = this.opts();
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+
+        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Test generation skipped - detected nango yaml project`));
+            return;
+        }
+
+        const ok = await generateTests({
+            absolutePath,
+            integrationId,
+            debug: Boolean(debug),
+            autoConfirm: Boolean(autoConfirm)
+        });
+
+        if (ok) {
+            console.log(chalk.green(`Tests have been generated successfully!`));
+        } else {
+            console.log(chalk.red(`Failed to generate tests`));
+        }
+    });
+
+// Hidden commands //
+program
+    .command('generate', { hidden: true })
+    .description('Generate a new Nango integration')
+    .action(async function (this: Command) {
+        const { debug } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug: options.debug });
+        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
 
-        await deployService.prep({ fullPath, options: { ...options, env: 'local' }, environment, debug: options.debug });
+        generate({ fullPath: process.cwd(), debug });
     });
-
 program
     .command('cli-location', { hidden: true })
     .alias('cli')
     .action(() => {
         getNangoRootPath(true);
-    });
-
-program
-    .command('compile', { hidden: true })
-    .description('Compile the integration files to JavaScript')
-    .action(async function (this: Command) {
-        const { debug } = this.opts<GlobalOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isNango) {
-            console.error(chalk.red(`Not inside a Nango folder`));
-            process.exitCode = 1;
-            return;
-        }
-
-        if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
-            if (resCheck.isErr()) {
-                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-                process.exitCode = 1;
-                return;
-            }
-
-            const res = await compileAll({ fullPath, debug });
-            if (res.isErr()) {
-                process.exitCode = 1;
-            }
-            return;
-        }
-
-        const match = verificationService.filesMatchConfig({ fullPath });
-        if (!match) {
-            process.exitCode = 1;
-            return;
-        }
-
-        const { success } = await compileAllFiles({ fullPath, debug });
-        if (!success) {
-            console.error(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
-            process.exitCode = 1;
-        }
     });
 
 program
@@ -521,34 +529,6 @@ program
         }
 
         await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
-    });
-
-program
-    .command('generate:tests')
-    .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
-    .description('Generate tests for integration scripts and config files')
-    .action(async function (this: Command) {
-        const { debug, integration: integrationId, autoConfirm } = this.opts();
-        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
-
-        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
-        if (!precheck.isZeroYaml) {
-            console.log(chalk.yellow(`Test generation skipped - detected nango yaml project`));
-            return;
-        }
-
-        const ok = await generateTests({
-            absolutePath,
-            integrationId,
-            debug: Boolean(debug),
-            autoConfirm: Boolean(autoConfirm)
-        });
-
-        if (ok) {
-            console.log(chalk.green(`Tests have been generated successfully!`));
-        } else {
-            console.log(chalk.red(`Failed to generate tests`));
-        }
     });
 
 program.parse();

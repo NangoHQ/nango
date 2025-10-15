@@ -21,13 +21,13 @@ export class KvAccountUsageStore implements AccountUsageStore {
 
     async setUsage({ accountId, metric, value, month }: SetUsageParams): Promise<number> {
         const key = this.getKey(accountId, metric, month);
-        await this.kvStore.set(key, value.toString(), { ttlInMs: MONTH_IN_MS });
+        await this.kvStore.set(key, value.toString(), { ttlMs: MONTH_IN_MS });
         return value;
     }
 
     async incrementUsage({ accountId, metric, delta, month }: IncrementUsageParams): Promise<number> {
         const key = this.getKey(accountId, metric, month);
-        return this.kvStore.incr(key, { delta: delta ?? 1, ttlInMs: MONTH_IN_MS });
+        return this.kvStore.incr(key, { delta: delta ?? 1, ttlMs: MONTH_IN_MS });
     }
 
     private getKey(accountId: number, metric: AccountUsageIncrementableMetric, month?: Date): string {
