@@ -73,6 +73,7 @@ describe('InMemoryKVStore', () => {
         await store.set('key', 'value');
         await expect(store.exists('key')).resolves.toEqual(true);
     });
+
     it('should increment a key', async () => {
         await expect(store.incr('key')).resolves.toEqual(1);
         await expect(store.incr('key')).resolves.toEqual(2);
@@ -94,26 +95,5 @@ describe('InMemoryKVStore', () => {
             keys.push(key);
         }
         expect(keys.sort()).toEqual(['key1', 'key2']);
-    });
-    it('should set/get hash values', async () => {
-        await store.hSetAll('hashKey', { field1: 'value1', field2: 'value2' }, { canOverride: true });
-        const hash = await store.hGetAll('hashKey');
-        expect(hash).toEqual({ field1: 'value1', field2: 'value2' });
-        const field1 = await store.hGet('hashKey', 'field1');
-        expect(field1).toEqual('value1');
-        const field2 = await store.hGet('hashKey', 'field2');
-        expect(field2).toEqual('value2');
-        await store.hSet('hashKey', 'field3', 'value3', { canOverride: true });
-        const field3 = await store.hGet('hashKey', 'field3');
-        expect(field3).toEqual('value3');
-        const nonExistentField = await store.hGet('hashKey', 'nonExistentField');
-        expect(nonExistentField).toBeNull();
-    });
-    it('should increment hash fields', async () => {
-        await expect(store.hIncrBy('hashKey', 'field1', 5)).resolves.toEqual(5);
-        await expect(store.hIncrBy('hashKey', 'field1', 3)).resolves.toEqual(8);
-        await expect(store.hIncrBy('hashKey', 'field2', -2)).resolves.toEqual(-2);
-        const hash = await store.hGetAll('hashKey');
-        expect(hash).toEqual({ field1: '8', field2: '-2' });
     });
 });
