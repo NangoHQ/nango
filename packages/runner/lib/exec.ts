@@ -27,6 +27,17 @@ interface ScriptExports {
     default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 
+function formatStackTrace(stack: string | undefined, filename: string): string[] {
+    if (!stack) {
+        return [];
+    }
+    return stack
+        .split('\n')
+        .filter((s, i) => i === 0 || s.includes(filename))
+        .map((s) => s.trim())
+        .slice(0, 10);
+}
+
 export async function exec({
     nangoProps,
     code,
@@ -292,10 +303,17 @@ export async function exec({
                     );
                 } else {
                     const tmp = errorToObject(err);
+                    const stacktrace = formatStackTrace(tmp.stack, filename);
+
                     return Err(
                         new ExecutionError({
                             type: 'script_network_error',
-                            payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                            payload: truncateJson({
+                                name: tmp.name || 'Error',
+                                code: tmp.code,
+                                message: tmp.message,
+                                ...(stacktrace.length > 0 ? { stacktrace } : {})
+                            }),
                             status: 500,
                             telemetryBag: nango.telemetryBag
                         })
@@ -305,10 +323,17 @@ export async function exec({
                 const tmp = errorToObject(err);
                 span.setTag('error', tmp);
 
+                const stacktrace = formatStackTrace(tmp.stack, filename);
+
                 return Err(
                     new ExecutionError({
                         type: 'script_internal_error',
-                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                        payload: truncateJson({
+                            name: tmp.name || 'Error',
+                            code: tmp.code,
+                            message: tmp.message,
+                            ...(stacktrace.length > 0 ? { stacktrace } : {})
+                        }),
                         status: 500,
                         telemetryBag: nango.telemetryBag
                     })
@@ -317,13 +342,7 @@ export async function exec({
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
 
-                const stacktrace = tmp.stack
-                    ? tmp.stack
-                          .split('\n')
-                          .filter((s, i) => i === 0 || s.includes(filename))
-                          .map((s) => s.trim())
-                          .slice(0, 5) // max 5 lines
-                    : [];
+                const stacktrace = formatStackTrace(tmp.stack, filename);
 
                 return Err(
                     new ExecutionError({

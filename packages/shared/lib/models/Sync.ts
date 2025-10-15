@@ -29,7 +29,6 @@ export interface Sync extends TimestampsAndDeleted {
         nanos?: number;
     };
     frequency: string | null;
-    last_fetched_at: Date | null;
     sync_config_id: number;
 }
 

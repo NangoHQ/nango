@@ -8,6 +8,15 @@ export type GetUser = Endpoint<{
     };
 }>;
 
+export type InternalGetUsers = Endpoint<{
+    Method: 'GET';
+    Path: `/internal/users`;
+    Querystring: { accountId: number };
+    Success: {
+        data: ApiUser[];
+    };
+}>;
+
 export type PatchUser = Endpoint<{
     Method: 'PATCH';
     Path: `/api/v1/user`;

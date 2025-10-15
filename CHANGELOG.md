@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.3] - 2025-10-10
+
+### Added
+
+- *(integrations)* Add support for adobe workfront (#4806) by @hassan254-prog
+- *(integrations)* Generate fingerprint instead of requiring one to be supplied for snowflake(JWT) (#4793) by @hassan254-prog
+- *(stack-trace-for-functions)* Output stack trace (#4821) by @khaliqgant
+- *(ux)* Warn about console.log in functions (#4822) by @khaliqgant
+- Add dd metrics for orb billing event ingestion (#4826) by @TBonnin
+- *(webapp)* Redesign Getting Started  (#4802) by @kaposke
+- *(internal)* Add api to retrieve users by account id (#4828) by @rossmcewan
+- *(integrations)* Allow `sharepoint-online-v2` and `one-drive` to store sharepoint access tokens in connectionConfig (#4823) by @hassan254-prog
+- *(docs)* Add note about .nango directory (#4834) by @khaliqgant
+
+### Changed
+
+- More logging cleaning (#4824) by @TBonnin
+- Update version in manifest by @actions-user
+
+### Fixed
+
+- Remove update of sync last_fetched_at. it is not being used (#4820) by @TBonnin
+- Remove color-scheme declaration (#4816) by @kaposke
+- *(npm-audit)* Audit fixes (#4808) by @khaliqgant
+- *(docs)* Spec issues (#4825) by @khaliqgant
+- Otlp export of actions (#4827) by @TBonnin
+- *(managed-release)* Bitnami has deprecated support for many public … (#4831) by @rossmcewan
+- *(docs)* Add tighter validation (#4830) by @khaliqgant
+
+## [v0.69.2] - 2025-10-06
+
+### Added
+
+- *(integrations)* Add support for folk (#4801) by @hassan254-prog
+
+### Changed
+
+- Clean logs (#4812) by @TBonnin
+
+### Fixed
+
+- *(kvstore)* Set defaults on getRedisClient (#4811) by @rossmcewan
+- Modify task processor tests to use wildcard groupKeyPattern (#4800) by @TBonnin
+- Reverting recent redis change (#4815) by @TBonnin
+- *(connect-ui)* Pass oauth2-cc connection config defaults (#4813) by @hassan254-prog
+- *(cli-tests)* Update path with changed api (#4817) by @khaliqgant
+
 ## [v0.69.1] - 2025-10-03
 
 ### Added
@@ -5055,6 +5102,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
+[v0.69.2]: https://github.com/NangoHQ/nango/compare/v0.69.1..v0.69.2
 [v0.69.1]: https://github.com/NangoHQ/nango/compare/v0.69.0..v0.69.1
 [v0.69.0]: https://github.com/NangoHQ/nango/compare/v0.68.0..v0.69.0
 [v0.68.0]: https://github.com/NangoHQ/nango/compare/v0.67.8..v0.68.0

@@ -71,7 +71,8 @@ describe('Exec', () => {
         expect(res.error.toJSON()).toEqual({
             payload: {
                 message: 'foobar',
-                name: 'Error'
+                name: 'Error',
+                stacktrace: ['Error: foobar', 'at fn (undefined-provider-config-key.cjs:3:19)']
             },
             status: 500,
             type: 'script_internal_error',

@@ -3,6 +3,7 @@
     "type": "module",
     "devDependencies": {
         "@apidevtools/swagger-cli": "4.0.4",
+        "@redocly/cli": "2.3.1",
         "ajv": "8.17.1",
         "chalk": "5.4.1",
         "figures": "6.1.0",

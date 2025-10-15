@@ -74,7 +74,6 @@ async function exec(): Promise<void> {
                 continue;
             }
 
-            logger.info(`Persisting ${metric} usage for accountId: ${accountId} (${yearMonth})`);
             await dbStore.setUsage({ accountId: Number(accountId), metric: metric as AccountUsageIncrementableMetric, value: Number(usage), month: monthDate });
             summary.persisted++;
 

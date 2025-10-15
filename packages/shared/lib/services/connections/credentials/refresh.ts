@@ -441,6 +441,11 @@ export async function refreshCredentialsIfNeeded({
             }
         }
 
+        if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'sharepointAccessToken' in newCredentials.raw) {
+            connectionToRefresh['connection_config']['sharepointAccessToken'] = newCredentials.raw['sharepointAccessToken'];
+            delete newCredentials.raw['sharepointAccessToken'];
+        }
+
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
             last_fetched_at: new Date(),
@@ -494,6 +499,17 @@ export async function shouldRefreshCredentials({
                 const exp = new Date(decodedValue['exp'] * 1000);
                 if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
                     return { should: true, reason: 'expired_jwt_token' };
+                }
+            }
+        }
+    }
+
+    if (providerConfig.provider === 'one-drive' || providerConfig.provider === 'sharepoint-online') {
+        if (connection.connection_config['sharepointAccessToken']) {
+            if (connection.connection_config['sharepointAccessToken']['expires_at']) {
+                const exp = new Date(connection.connection_config['sharepointAccessToken']['expires_at']);
+                if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+                    return { should: true, reason: 'expired_sharepoint_access_token' };
                 }
             }
         }

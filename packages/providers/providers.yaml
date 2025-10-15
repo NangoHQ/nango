@@ -232,6 +232,34 @@ adobe-umapi:
             description: ''
             automated: true
 
+adobe-workfront:
+    display_name: Adobe Workfront
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/integrations/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/integrations/oauth2/api/v1/token
+    authorization_method: header
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}/attask/api
+    docs: https://docs.nango.dev/integrations/all/adobe-workfront
+    docs_connect: https://docs.nango.dev/integrations/all/adobe-workfront/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            prefix: https://
+            pattern: '^[a-zA-Z0-9-]+\.my\.workfront(\.adobe)?\.com$'
+            description: The hostname of your Adobe Workfront account
+            example: acme.my.workfront.com
+
 adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
@@ -350,6 +378,30 @@ affinity:
             # https://api-docs.affinity.co/#introduction
             # Affinity is using basic auth with an api key
             doc_section: '#step-1-finding-your-api-key'
+
+aimfox:
+    display_name: Aimfox
+    categories:
+        - surveys
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.aimfox.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/campaigns
+    docs: https://docs.nango.dev/integrations/all/aimfox
+    docs_connect: https://docs.nango.dev/integrations/all/aimfox/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Aimfox account
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-1-generating-your-api-key'
 
 aircall:
     display_name: Aircall (OAuth)
@@ -3092,6 +3144,7 @@ confluence-data-center:
             title: Domain
             description: The domain of your Confluence Data Center instance
             prefix: https://
+            pattern: '^[a-zA-Z0-9.-]+(:\d+)?$'
             example: confluence.company.com
             doc_section: '#step-1-finding-your-domain'
 
@@ -4692,6 +4745,33 @@ float:
             title: App Details
             description: The details of your app
             automated: true
+
+folk:
+    display_name: Folk
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.folk.app
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/folk
+    docs_connect: https://docs.nango.dev/integrations/all/folk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Folk account
+            example: 'FOLKLrHVSoYB6TaAF39aNGtEpEi3oxuo'
+            pattern: '^FOLK[a-zA-Z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 fortnox:
     display_name: Fortnox
@@ -6689,7 +6769,7 @@ jira-data-center:
             type: string
             title: Domain
             description: The domain of your Jira Data Center account
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:\d+)?$'
             prefix: https://
             example: foobar.atlassian.net
 
@@ -8635,6 +8715,7 @@ one-drive:
         - knowledge-base
         - storage
     alias: microsoft
+    post_connection_script: onedrivePostConnection
     docs: https://docs.nango.dev/integrations/all/one-drive
 
 one-note:
@@ -9360,10 +9441,9 @@ pipedrive:
     connection_config:
         api_domain:
             type: string
-            title: API URL
-            description: The API URL of your Pipedrive account
-            format: uri
-            pattern: '^https?://.*$'
+            title: ''
+            description: ''
+            automated: true
 
 pipedream:
     display_name: Pipedream (API Key)
@@ -10993,6 +11073,7 @@ sharepoint-online:
         - storage
         - communication
     alias: microsoft
+    post_connection_script: onedrivePostConnection
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
 
 sharepoint-online-oauth2-cc:
@@ -11426,7 +11507,7 @@ snowflake-jwt:
             alg: RS256
             typ: JWT
         payload:
-            iss: ${credentials.accountIdentifier}.${credentials.userName}.${credentials.fingerprint}
+            iss: ${credentials.accountIdentifier}.${credentials.userName}.${fingerprint(${credentials.privateKey})}
             sub: ${credentials.accountIdentifier}.${credentials.userName}
     proxy:
         headers:
@@ -11473,14 +11554,6 @@ snowflake-jwt:
             pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
             secret: true
             doc_section: '#step-4-generating-your-private-key'
-        fingerprint:
-            type: string
-            title: Fingerprint
-            description: SHA-256 fingerprint of the public key uploaded to your Snowflake user
-            example: SHA256:Zc9FB6P5bGsYa4WWCMsr3+PxUWr2F2HUdK/2XG5JQjg=
-            pattern: '^SHA256:[A-Za-z0-9+/]{43}[A-Za-z0-9+/=]$'
-            secret: true
-            doc_section: '#step-5-finding-your-fingerprint'
 
 splitwise:
     display_name: Splitwise

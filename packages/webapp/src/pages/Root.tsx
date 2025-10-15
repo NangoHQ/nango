@@ -11,6 +11,7 @@ export const Root: React.FC = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const env = useStore((state) => state.env);
     const { meta } = useMeta();
+    const hasDev = meta?.environments.some((e) => e.name === 'dev');
 
     useEffect(() => {
         if (!meta) {
@@ -18,6 +19,11 @@ export const Root: React.FC = () => {
         }
 
         if (env === 'dev' && showGettingStarted && !meta.gettingStartedClosed) {
+            if (!hasDev) {
+                const randomEnv = meta.environments[0]?.name;
+                navigate(`/${randomEnv}`, { replace: true });
+                return;
+            }
             navigate('/dev/getting-started');
             return;
         }

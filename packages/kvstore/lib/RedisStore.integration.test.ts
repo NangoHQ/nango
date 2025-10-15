@@ -1,0 +1,115 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+import { RedisKVStore } from './RedisStore.js';
+import { getRedis } from './index.js';
+
+class FlushableRedisStore extends RedisKVStore {
+    public async flushAll(): Promise<void> {
+        await this.client.flushAll();
+    }
+}
+
+describe('RedisKVStore', () => {
+    let store: FlushableRedisStore;
+
+    beforeAll(async () => {
+        const url = process.env['NANGO_REDIS_URL'];
+        if (!url) {
+            throw new Error('NANGO_REDIS_URL environment variable is not set.');
+        }
+        store = new FlushableRedisStore(await getRedis(url));
+    });
+
+    afterAll(async () => {
+        await store.destroy();
+    });
+
+    beforeEach(async () => {
+        await store.flushAll();
+    });
+
+    it('should set and get a value', async () => {
+        await store.set('key', 'value');
+        const value = await store.get('key');
+        expect(value).toEqual('value');
+    });
+
+    it('should return null for a non-existent key', async () => {
+        const value = await store.get('do-not-exist');
+        expect(value).toBeNull();
+    });
+
+    it('should allow overriding a key', async () => {
+        await store.set('key', 'value');
+        await store.set('key', 'value2', { canOverride: true });
+        const value = await store.get('key');
+        expect(value).toEqual('value2');
+    });
+
+    it('should not allow overriding a key', async () => {
+        await store.set('key', 'value');
+        await expect(store.set('key', 'value2', { canOverride: false })).rejects.toEqual(new Error('set_key_already_exists'));
+    });
+
+    it('should return null for a key that has expired', async () => {
+        const ttlMs = 100;
+        await store.set('key', 'value', { canOverride: true, ttlMs });
+        await new Promise((resolve) => setTimeout(resolve, ttlMs * 2));
+        const value = await store.get('key');
+        expect(value).toBeNull();
+    });
+
+    it('should not return null for a key that has not expired', async () => {
+        const ttlMs = 200;
+        await store.set('key', 'value', { canOverride: true, ttlMs });
+        await new Promise((resolve) => setTimeout(resolve, ttlMs / 2));
+        const value = await store.get('key');
+        expect(value).toEqual('value');
+    });
+
+    it('should allow setting an expired key', async () => {
+        await store.set('key', 'value', { canOverride: false, ttlMs: 10 });
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        await expect(store.set('key', 'value', { canOverride: false })).resolves.not.toThrow();
+    });
+
+    it('should allow setting a key with a TTL of 0', async () => {
+        await store.set('key', 'value', { canOverride: true, ttlMs: 0 });
+        const value = await store.get('key');
+        expect(value).toEqual('value');
+    });
+
+    it('should allow deleting a key', async () => {
+        await store.delete('key');
+        const value = await store.get('key');
+        expect(value).toBeNull();
+    });
+    it('should allow checking if a key exists', async () => {
+        await expect(store.exists('key')).resolves.toEqual(false);
+        await store.set('key', 'value');
+        await expect(store.exists('key')).resolves.toEqual(true);
+    });
+
+    it('should increment a key', async () => {
+        await expect(store.incr('key')).resolves.toEqual(1);
+        await expect(store.incr('key')).resolves.toEqual(2);
+        await expect(store.incr('key', { delta: 3 })).resolves.toEqual(5);
+        await expect(store.incr('key', { delta: -5 })).resolves.toEqual(0);
+    });
+    it('should increment a key with TTL', async () => {
+        const ttlMs = 100;
+        await expect(store.incr('key', { ttlMs })).resolves.toEqual(1);
+        await new Promise((resolve) => setTimeout(resolve, ttlMs * 2));
+        await expect(store.incr('key', { ttlMs })).resolves.toEqual(1);
+    });
+    it('should scan keys', async () => {
+        await store.set('key1', 'value1');
+        await store.set('key2', 'value2');
+        await store.set('another-key', 'value3');
+        const keys = [];
+        for await (const key of store.scan('key*')) {
+            keys.push(key);
+        }
+        expect(keys.sort()).toEqual(['key1', 'key2']);
+    });
+});
