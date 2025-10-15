@@ -124,13 +124,13 @@ description: 'Access the OneDrive Personal API in 2 minutes 💨'
   <Tab title="🚨 API gotchas">
     - Make sure you request the `offline_access` scope to get a refresh token and keep access with your integration.
     - OneDrive Personal uses `https://api.onedrive.com` as its base URL for API calls.
-    - If you need a user to reauthenticate or accept updated scopes, you can force a prompt using the `authorization_params`. Use `prompt=login` to force the user to enter their credentials (bypassing single-sign on) or `prompt=consent` to trigger the OAuth consent dialog after sign-in, which asks the user to grant permissions to the app. For more details, see [Microsoft's OAuth 2.0 authorization documentation](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
+    - If you need a user to reauthenticate or accept updated scopes, you can force a prompt using the `authorization_params`. Use `prompt=login` to force the user to enter their credentials (bypassing single sign-on) or `prompt=consent` to trigger the OAuth consent dialog after sign-in, which asks the user to grant permissions to the app. For more details, see [Microsoft's OAuth 2.0 authorization documentation](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
 
     ```typescript
     const { data } = await nango.createConnectSession({
       [...],
       integrations_config_defaults: {
-        "one-drive": {
+        "one-drive-personal": {
           authorization_params: {
             "prompt": "consent" // or "login" depending on your needs
           }
