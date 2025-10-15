@@ -1,0 +1,148 @@
+---
+title: 'OneDrive Personal'
+sidebarTitle: 'OneDrive Personal'
+description: 'Access the OneDrive Personal API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _OneDrive Personal_. Nango doesn't provide a test OAuth app for OneDrive Personal yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize OneDrive">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to your OneDrive Personal account. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the OneDrive API">
+        Let's make your first request to the OneDrive API (get drive information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v1.0/drive" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v1.0/drive',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their OneDrive accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Microsoft account and Azure account">
+        If you don't already have them, sign up for a [Microsoft account](https://account.microsoft.com/account) and an [Azure account](https://azure.microsoft.com/free).
+      </Step>
+      <Step title="Register an application in Microsoft Entra ID">
+        1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as at least an Application Developer.
+        2. If you have access to multiple tenants, use the Settings icon in the top menu to switch to the tenant in which you want to register the application.
+        3. From the search bar at the top of the Azure portal, search for **App registrations** and select it. Then choose **New registration**. Or from your left navigation tab, navigate to **Applications** > **App registrations** then choose **New registration**.
+        4. Enter a meaningful name for your application, for example "Nango Integration".
+        5. Under **Supported account types**, select the appropriate option based on your needs:
+           - **Personal Microsoft accounts only** - For apps that only need to access OneDrive Personal accounts.
+           - **Accounts in any organizational directory and personal Microsoft accounts** - For multitenant apps that support both organizational and personal Microsoft accounts.
+        6. Leave the **Redirect URI** section blank for now; we'll configure it in a later step.
+        7. Click **Register** to complete the app registration.
+      </Step>
+      <Step title="Note your application (client) ID">
+        After registration, you'll be taken to the application's Overview page. Record the **Application (client) ID**, which uniquely identifies your application and is used in your application's code as part of validating security tokens.
+      </Step>
+      <Step title="Add a redirect URI">
+        1. In the left sidebar, select **Authentication**.
+        2. Under **Platform configurations**, select **Add a platform**.
+        3. Select **Web** as the platform type.
+        4. Enter `https://api.nango.dev/oauth/callback` as the Redirect URI.
+        5. Under **Implicit grant and hybrid flows**, check the boxes for **Access tokens** and **ID tokens** if your application needs them.
+        6. Under **Advanced settings**, set **Allow public client flows** to **No** for web applications.
+        7. Click **Configure** to save your changes.
+      </Step>
+      <Step title="Create a client secret">
+        1. In the left sidebar, select **Certificates & secrets**.
+        2. Under **Client secrets**, click **New client secret**.
+        3. Enter a description for the secret and select an expiration period (6 months, 12 months, 24 months, or custom).
+        4. Click **Add**.
+        5. **Important**: Copy the secret value immediately and store it securely. You won't be able to see it again after you leave this page.
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+
+    | Scope | Description |
+    | ----- | ----------- |
+    | `OneDrive.Read` | Read the signed-in user's OneDrive files |
+    | `OneDrive.ReadWrite` | Read and write the signed-in user's OneDrive files |
+    | `OneDrive.AppFolder` | Read and write files in the application's special OneDrive folder |
+    | `offline_access` | Access to refresh tokens for offline access |
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links | 
+    | - | - | 
+    | General | [Microsoft Entra Admin Center](https://entra.microsoft.com) |
+    | | [Azure Portal](https://portal.azure.com) |
+    | Developer | [Microsoft identity platform documentation](https://learn.microsoft.com/en-us/entra/identity-platform/) |
+    | | [How to register an Application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) |
+    | | [OAuth 2.0 Authorization Code Flow](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow) |
+    | | [OneDrive API for Consumer accounts](https://learn.microsoft.com/en-us/onedrive/developer/rest-api/concepts/direct-endpoint-differences?view=odsp-graph-online#onedrive-personal-accounts) |
+    | | [OneDrive Permissions](https://learn.microsoft.com/en-us/onedrive/developer/rest-api/concepts/direct-endpoint-differences?view=odsp-graph-online#permissions) |
+    | | [OneDrive Consumer Configuration for the File Picker](https://learn.microsoft.com/en-us/onedrive/developer/controls/file-pickers/?view=odsp-graph-online#onedrive-consumer-configuration) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/one-drive-personal.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Make sure you request the `offline_access` scope to get a refresh token and keep access with your integration.
+    - OneDrive Personal uses `https://api.onedrive.com` as its base URL for API calls.
+    - If you need a user to reauthenticate or accept updated scopes, you can force a prompt using the `authorization_params`. Use `prompt=login` to force the user to enter their credentials (bypassing single-sign on) or `prompt=consent` to trigger the OAuth consent dialog after sign-in, which asks the user to grant permissions to the app. For more details, see [Microsoft's OAuth 2.0 authorization documentation](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#request-an-authorization-code).
+
+    ```typescript
+    const { data } = await nango.createConnectSession({
+      [...],
+      integrations_config_defaults: {
+        "one-drive": {
+          authorization_params: {
+            "prompt": "consent" // or "login" depending on your needs
+          }
+        }
+      }
+    });
+    ```
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/one-drive-personal.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

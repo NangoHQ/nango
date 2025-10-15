@@ -8710,13 +8710,39 @@ okta-preview:
             prefix: https://
 
 one-drive:
-    display_name: One Drive
+    display_name: OneDrive for Business
     categories:
         - knowledge-base
         - storage
     alias: microsoft
     post_connection_script: onedrivePostConnection
     docs: https://docs.nango.dev/integrations/all/one-drive
+
+one-drive-personal:
+    display_name: OneDrive Personal
+    categories:
+        - knowledge-base
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/consumers/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.onedrive.com
+        retry:
+            after:
+                - 'retry-after'
+        decompress: true
+    docs: https://docs.nango.dev/integrations/all/one-drive-personal
 
 one-note:
     display_name: One Note

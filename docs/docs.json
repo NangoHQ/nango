@@ -603,6 +603,7 @@
               "integrations/all/okta",
               "integrations/all/okta-preview",
               "integrations/all/one-drive",
+              "integrations/all/one-drive-personal",
               "integrations/all/one-note",
               "integrations/all/openai",
               "integrations/all/openai-admin",
