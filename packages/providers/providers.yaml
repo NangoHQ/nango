@@ -8546,12 +8546,6 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
-    connection_config:
-        workspace_id:
-            type: string
-            title: ''
-            description: ''
-            automated: true
 
 notion-mcp:
     display_name: Notion (MCP)
