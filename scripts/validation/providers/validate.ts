@@ -68,7 +68,7 @@ console.log('✅ JSON schema valid');
 
 // Check if files exist
 console.log('Checking values...');
-const docsPath = path.join(__dirname, '../../../docs-v2/integrations/all');
+const docsPath = path.join(__dirname, '../../../docs/integrations/all');
 const svgPath = path.join(__dirname, '../../../packages/webapp/public/images/template-logos');
 
 // store a global flag so we don't stop at first error
@@ -97,7 +97,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     let hasValidConnect = false;
     const headers = new Set<string>();
 
-    // Check if provider exists in docs-v2/integrations/all folder
+    // Check if provider exists in docs/integrations/all folder
     const providerFolder = path.join(docsPath, providerKey);
     const providerExistsInDocs = fs.existsSync(providerFolder);
 
