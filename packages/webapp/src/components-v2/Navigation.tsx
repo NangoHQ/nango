@@ -5,20 +5,20 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/utils/utils';
 
 export const NavigationList: React.FC<React.ComponentProps<typeof TabsPrimitive.List>> = (props) => {
-    return <TabsPrimitive.List className="w-46 h-fit shrink-0" {...props} />;
+    return <TabsPrimitive.List className="w-46 h-fit shrink-0 p-2 bg-bg-elevated rounded" {...props} />;
 };
 
 export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {
     return (
         <TabsPrimitive.Trigger
-            className="w-full p-2.5 cursor-pointer text-text-secondary text-sm font-medium text-start rounded hover:bg-bg-elevated data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary"
+            className="w-full p-2.5 cursor-pointer text-text-secondary text-sm font-medium text-start rounded hover:bg-bg-surface data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default"
             {...props}
         />
     );
 };
 
 export const NavigationContent: React.FC<React.ComponentProps<typeof TabsPrimitive.Content>> = (props) => {
-    return <TabsPrimitive.Content {...props} className="flex-1" />;
+    return <TabsPrimitive.Content {...props} className={cn('focus:outline-none', props.className)} />;
 };
 
 export const Navigation: React.FC<React.ComponentProps<typeof TabsPrimitive.Root>> = ({ defaultValue, className, ...rest }) => {

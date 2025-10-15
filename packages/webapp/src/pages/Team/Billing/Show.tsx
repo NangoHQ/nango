@@ -51,7 +51,7 @@ export const TeamBilling: React.FC = () => {
                 <NavigationContent value={'plans'} className="w-full overflow-x-auto">
                     <Plans />
                 </NavigationContent>
-                <NavigationContent value={'payment-and-invoices'}>
+                <NavigationContent value={'payment-and-invoices'} className="w-full">
                     <Payment />
                 </NavigationContent>
             </Navigation>

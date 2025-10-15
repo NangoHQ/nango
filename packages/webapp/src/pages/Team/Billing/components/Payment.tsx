@@ -25,7 +25,7 @@ export const Payment: React.FC = () => {
     }, [paymentMethods]);
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex-1 flex flex-col gap-8">
             {isPaymentMethodsLoading ? (
                 <Skeleton className="w-full h-22.5" />
             ) : (
@@ -37,12 +37,14 @@ export const Payment: React.FC = () => {
                         <div className="flex flex-col">
                             <div className="inline-flex gap-1.5 items-center">
                                 <span className="text-text-primary text-sm leading-5 font-semibold">Credit Card</span>
-                                <Dot />
+                                <Dot variant={paymentMethod ? 'brand' : 'error'} />
                             </div>
-                            <span className="text-text-tertiary text-s leading-5 font-medium">Card ending in {paymentMethod?.last4}</span>
+                            <span className="text-text-tertiary text-s leading-5 font-medium">
+                                {paymentMethod ? `Card ending in ${paymentMethod?.last4}` : 'No card added'}
+                            </span>
                         </div>
                     </div>
-                    <PaymentFormDialog />
+                    <PaymentFormDialog replace={!!paymentMethod} />
                 </div>
             )}
 
@@ -59,7 +61,7 @@ export const Payment: React.FC = () => {
     );
 };
 
-const PaymentFormDialog: React.FC = () => {
+const PaymentFormDialog: React.FC<{ replace?: boolean }> = ({ replace }) => {
     const env = useStore((state) => state.env);
 
     const [open, setOpen] = useState(false);
@@ -86,13 +88,13 @@ const PaymentFormDialog: React.FC = () => {
     return (
         <Dialog open={open} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
-                <Button size={'sm'} className="w-27">
-                    Update
+                <Button size={'sm'} className="min-w-27">
+                    {replace ? 'Update' : 'Add payment method'}
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add payment method</DialogTitle>
+                    <DialogTitle>{replace ? 'Update' : 'Add'} payment method</DialogTitle>
                 </DialogHeader>
                 {clientSecret ? (
                     <Elements

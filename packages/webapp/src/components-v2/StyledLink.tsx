@@ -19,7 +19,7 @@ export const StyledLink: React.FC<StyledLinkProps> = ({ to, children, type = 'in
         return (
             <a
                 href={to}
-                className={cn(`w-fit text-text-primary text-sm underline inline-flex items-center cursor-pointer`, className)}
+                className={cn(`w-fit text-text-primary text-sm underline inline-flex items-center cursor-pointer focus-default`, className)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={onClick}
@@ -33,7 +33,7 @@ export const StyledLink: React.FC<StyledLinkProps> = ({ to, children, type = 'in
     return (
         <Link
             to={to}
-            className={cn(`w-fit text-text-primary text-sm underline inline-flex items-center cursor-pointer`, className)}
+            className={cn(`w-fit text-text-primary text-sm underline inline-flex items-center cursor-pointer focus-default`, className)}
             onClick={onClick}
             title={title}
         >
