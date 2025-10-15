@@ -1,10 +1,11 @@
 import { Info, Loader } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { mutate } from 'swr';
 
 import { Dot } from './Dot.js';
+import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { DialogClose, DialogContent, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
-import { DialogHeader, DialogTitle } from '@/components/ui/Dialog.js';
+import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
@@ -12,20 +13,24 @@ import { Dialog } from '@/components-v2/ui/dialog.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { apiGetCurrentPlan, apiPostPlanChange, useApiGetPlans } from '@/hooks/usePlan';
+import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
 
 import type { PlanDefinitionList } from '../types.js';
-import type { PlanDefinition } from '@nangohq/types';
+import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
     const env = useStore((state) => state.env);
 
     const { plan: currentPlan } = useEnvironment(env);
     const { data: plansList } = useApiGetPlans(env);
+    const { data: paymentMethods } = useStripePaymentMethods(env);
 
-    const [selectedPlan, setSelectedPlan] = useState<null | PlanDefinitionList>(null);
+    const paymentMethod = useMemo(() => {
+        return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
+    }, [paymentMethods]);
 
     const futurePlan = useMemo(() => {
         if (!currentPlan?.orb_future_plan) {
@@ -93,21 +98,34 @@ export const Plans: React.FC = () => {
                         />
                     )}
                     {plans?.list.map((plan) => {
-                        return <PlanRow key={plan.plan.code} planDefinition={plan} onClick={() => setSelectedPlan(plan)} />;
+                        return <PlanRow key={plan.plan.code} planDefinition={plan} activePlan={plans?.activePlan} paymentMethod={paymentMethod} />;
                     })}
                 </TableBody>
             </Table>
             <StyledLink to="https://nango.dev/pricing" icon type="external">
                 View full pricing
             </StyledLink>
-
-            <PlanDialog activePlan={plans?.activePlan} selectedPlan={selectedPlan} onClose={() => setSelectedPlan(null)} />
         </div>
     );
 };
 
-const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; onClick?: () => void }> = ({ planDefinition, onClick }) => {
+const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanDefinition; paymentMethod?: StripePaymentMethod | null }> = ({
+    planDefinition,
+    activePlan,
+    paymentMethod
+}) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
+
+    const [paymentMethodDialogOpen, setPaymentMethodDialogOpen] = useState(false);
+    const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);
+
+    const onUpgradeClicked = useCallback(() => {
+        if (!paymentMethod) {
+            setPaymentMethodDialogOpen(true);
+        } else {
+            setPlanChangeDialogOpen(true);
+        }
+    }, [paymentMethod]);
 
     const ButtonComponent = useMemo(() => {
         if (active) {
@@ -127,17 +145,32 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; onClick?: () => vo
 
         if (isUpgrade && plan.canChange) {
             return (
-                <Button onClick={onClick} variant="primary" className="w-27">
-                    Upgrade
-                </Button>
+                <>
+                    <Button onClick={onUpgradeClicked} variant="primary" className="w-27">
+                        Upgrade
+                    </Button>
+                    <PaymentMethodDialog
+                        open={paymentMethodDialogOpen}
+                        onOpenChange={setPaymentMethodDialogOpen}
+                        onSuccess={() => setPlanChangeDialogOpen(true)}
+                    />
+                    <PlanChangeDialog
+                        open={planChangeDialogOpen}
+                        onOpenChange={setPlanChangeDialogOpen}
+                        selectedPlan={planDefinition}
+                        activePlan={activePlan}
+                    />
+                </>
             );
         }
 
         if (isDowngrade && plan.canChange) {
             return (
-                <Button onClick={onClick} variant="destructive" className="w-27">
-                    Downgrade
-                </Button>
+                <PlanChangeDialog selectedPlan={planDefinition} activePlan={activePlan}>
+                    <Button variant="destructive" className="w-27">
+                        Downgrade
+                    </Button>
+                </PlanChangeDialog>
             );
         }
 
@@ -146,7 +179,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; onClick?: () => vo
                 Contact us
             </ButtonLink>
         );
-    }, [isUpgrade, plan.canChange, isDowngrade, active, isFuture, onClick]);
+    }, [active, isFuture, isUpgrade, plan.canChange, isDowngrade, onUpgradeClicked, paymentMethodDialogOpen, planChangeDialogOpen, planDefinition, activePlan]);
 
     return (
         <TableRow>
@@ -161,13 +194,28 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; onClick?: () => vo
     );
 };
 
-const PlanDialog: React.FC<{
+const PlanChangeDialog: React.FC<{
     activePlan?: PlanDefinition | null;
-    selectedPlan?: PlanDefinitionList | null;
-    onClose: () => void;
-}> = ({ activePlan, selectedPlan, onClose }) => {
+    selectedPlan: PlanDefinitionList;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    children?: React.ReactNode;
+}> = ({ activePlan, selectedPlan, open: openProp, onOpenChange, children }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+
+    const [internalOpen, setInternalOpen] = useState(false);
+    const isControlled = openProp !== undefined;
+    const open = isControlled ? openProp : internalOpen;
+    const setOpen = useCallback(
+        (value: boolean) => {
+            if (!isControlled) {
+                setInternalOpen(value);
+            }
+            onOpenChange?.(value);
+        },
+        [isControlled, onOpenChange]
+    );
 
     const [loading, setLoading] = useState(false);
     const [longWait, setLongWait] = useState(false);
@@ -223,7 +271,6 @@ const PlanDialog: React.FC<{
 
             setLongWait(false);
             setLoading(false);
-            onClose();
 
             toast({ title: `Upgraded successfully to ${selectedPlan.plan.title}`, variant: 'success' });
         }, 500);
@@ -262,7 +309,6 @@ const PlanDialog: React.FC<{
 
             setLongWait(false);
             setLoading(false);
-            onClose();
 
             toast({ title: `Downgraded successfully to ${selectedPlan.plan.title}`, variant: 'success' });
         }, 500);
@@ -276,42 +322,41 @@ const PlanDialog: React.FC<{
     }, [selectedPlan]);
 
     return (
-        <Dialog open={selectedPlan !== null} onOpenChange={(open) => !open && onClose()}>
-            {selectedPlan && (
-                <DialogContent className="text-text-secondary text-sm">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Confirm {selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to {selectedPlan.plan.title} plan
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-1">
-                        {selectedPlan.isUpgrade && (
-                            <p>
-                                The {selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based
-                                charges. When you upgrade, you&apos;ll be charged a prorated base fee for the current month.
-                            </p>
-                        )}
-                        {selectedPlan.isDowngrade && (
-                            <p>
-                                Your {activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won’t renew. Any
-                                remaining usage will be billed after the month ends.
-                            </p>
-                        )}
-                        {longWait && (
-                            <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
-                        )}
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
-                        </DialogClose>
-                        <Button variant="primary" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
-                            {loading && <Loader className="size-4 animate-spin" />}
-                            {selectedPlan.isUpgrade ? 'Upgrade' : 'Downgrade'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            )}
+        <Dialog open={open} onOpenChange={setOpen}>
+            {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+            <DialogContent className="text-text-secondary text-sm">
+                <DialogHeader>
+                    <DialogTitle>
+                        Confirm {selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to {selectedPlan.plan.title} plan
+                    </DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-1">
+                    {selectedPlan.isUpgrade && (
+                        <p>
+                            The {selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges.
+                            When you upgrade, you&apos;ll be charged a prorated base fee for the current month.
+                        </p>
+                    )}
+                    {selectedPlan.isDowngrade && (
+                        <p>
+                            Your {activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won’t renew. Any
+                            remaining usage will be billed after the month ends.
+                        </p>
+                    )}
+                    {longWait && (
+                        <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
+                    )}
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button variant="primary" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
+                        {loading && <Loader className="size-4 animate-spin" />}
+                        {selectedPlan.isUpgrade ? 'Upgrade' : 'Downgrade'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
     );
 };
