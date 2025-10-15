@@ -199,6 +199,9 @@ export const ENVS = z.object({
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
 
+    // Usage
+    USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),

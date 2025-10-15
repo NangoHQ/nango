@@ -20,19 +20,20 @@ import {
     getById as getSyncById,
     getEndUserByConnectionId,
     getLastSyncDate,
-    getPlan,
     getSyncConfigRaw,
     getSyncJobByRunId,
     productTracking,
+    safeGetPlan,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { logger } from '../logger.js';
+import { capping } from '../utils/capping.js';
 import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
@@ -42,7 +43,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBPlan, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -81,15 +82,9 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
-
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
-            plan = planRes.isOk() ? planRes.value : null;
-        }
-
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
         tagTraceUser({ ...accountAndEnv, plan });
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
@@ -141,6 +136,21 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'records');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            throw new Error(message);
+        }
+        // Function logs capping is just informational - it does not block syncs from running
+        // nango.log() will still work, but logs won't be persisted
+        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        if (cappingFunctionLogsStatus.isCapped) {
+            const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
+            void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
+
         void logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
             syncVariant: task.syncVariant,
@@ -175,7 +185,10 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig,
             debug: task.debug || false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: {
+                ...(await getRunnerFlags()),
+                functionLogs: !cappingFunctionLogsStatus.isCapped
+            },
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,

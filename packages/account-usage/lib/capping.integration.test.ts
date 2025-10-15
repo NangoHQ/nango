@@ -48,9 +48,6 @@ describe('Usage', () => {
             await usageTracker.incr({ accountId: 1, metric: 'connections', delta: 3 }); // Below the limit
             const status = await capping.getStatus(plan, 'connections');
             expect(status.isCapped).toBe(false);
-            expect(status.metrics['connections']?.isCapped).toBe(false);
-            expect(status.metrics['connections']?.current).toBe(3);
-            expect(status.metrics['connections']?.limit).toBe(5);
             expect(status.message).toBeUndefined();
         });
         it('should not cap if limit is not defined', async () => {
@@ -58,9 +55,6 @@ describe('Usage', () => {
             await usageTracker.incr({ accountId: 1, metric: 'connections', delta: 3 });
             const status = await capping.getStatus(plan, 'connections');
             expect(status.isCapped).toBe(false);
-            expect(status.metrics['connections']?.isCapped).toBe(false);
-            expect(status.metrics['connections']?.current).toBe(3);
-            expect(status.metrics['connections']?.limit).toBeUndefined();
             expect(status.message).toBeUndefined();
         });
         it('should cap if limit exceeded', async () => {
@@ -82,9 +76,6 @@ describe('Usage', () => {
             expect(status.metrics['connections']?.isCapped).toBe(true);
             expect(status.metrics['connections']?.current).toBe(99);
             expect(status.metrics['connections']?.limit).toBe(5);
-            expect(status.metrics['function_executions']?.isCapped).toBe(false);
-            expect(status.metrics['function_executions']?.current).toBe(2);
-            expect(status.metrics['function_executions']?.limit).toBe(5);
             expect(status.message).toContain('You have reached the maximum number of connections');
         });
         it('should not cap if none of the limits is exceeded', async () => {
@@ -93,12 +84,6 @@ describe('Usage', () => {
             await usageTracker.incr({ accountId: 1, metric: 'function_executions', delta: 2 });
             const status = await capping.getStatus(plan, 'connections', 'function_executions');
             expect(status.isCapped).toBe(false);
-            expect(status.metrics['connections']?.isCapped).toBe(false);
-            expect(status.metrics['connections']?.current).toBe(3);
-            expect(status.metrics['connections']?.limit).toBe(5);
-            expect(status.metrics['function_executions']?.isCapped).toBe(false);
-            expect(status.metrics['function_executions']?.current).toBe(2);
-            expect(status.metrics['function_executions']?.limit).toBe(5);
             expect(status.message).toBeUndefined();
         });
     });

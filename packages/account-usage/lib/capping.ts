@@ -26,7 +26,7 @@ export class Capping {
     public async getStatus(plan: DBPlan | null, ...metrics: UsageMetric[]): Promise<CappingStatus> {
         const status: CappingStatus = { isCapped: false, metrics: {} };
 
-        if (!plan) {
+        if (!plan || !this.options?.enabled) {
             return status;
         }
 
@@ -43,11 +43,10 @@ export class Capping {
                 const current = usage.value.current;
                 const isCapped = current >= limit;
 
-                if (this.options?.enabled && isCapped) {
+                if (isCapped) {
                     status.isCapped = true;
+                    status.metrics[metric] = { limit, current, isCapped };
                 }
-
-                status.metrics[metric] = { limit, current, isCapped };
             })
         );
 
@@ -61,6 +60,8 @@ export class Capping {
         if (messages.length > 0) {
             status.message = messages.join(' ') + ' Please upgrade your plan to remove the limits.';
         }
+
+        // TODO: DD metric
 
         return status;
     }
