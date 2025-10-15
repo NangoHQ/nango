@@ -158,7 +158,8 @@ function callToolRequestHandler(
         } else {
             span.setTag('nango.error', actionResponse.error);
             await logCtx.failed();
-            throw new Error(actionResponse.error.message);
+
+            throw new Error(JSON.stringify(actionResponse.error));
         }
     };
 }
