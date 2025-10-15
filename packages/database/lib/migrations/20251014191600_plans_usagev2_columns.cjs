@@ -8,7 +8,7 @@ exports.up = async function (knex) {
         ALTER TABLE plans
         ADD COLUMN IF NOT EXISTS proxy_max INTEGER,
         ADD COLUMN IF NOT EXISTS function_executions_max INTEGER,
-        ADD COLUMN IF NOT EXISTS function_compute_gmbs_max INTEGER,
+        ADD COLUMN IF NOT EXISTS function_compute_gbms_max INTEGER,
         ADD COLUMN IF NOT EXISTS records_max INTEGER,
         ADD COLUMN IF NOT EXISTS external_webhooks_max INTEGER,
         ADD COLUMN IF NOT EXISTS function_logs_max INTEGER
@@ -20,7 +20,7 @@ exports.up = async function (knex) {
         SET
             proxy_max = 100000,
             function_executions_max = 100000,
-            function_compute_gmbs_max = 50000000,
+            function_compute_gbms_max = 50000000,
             records_max = 100000,
             external_webhooks_max = 100000,
             function_logs_max = 100000
