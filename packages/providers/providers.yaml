@@ -7810,7 +7810,7 @@ mcp-generic:
             description: The base URL of your MCP server
             example: https://mcp.notion.com/mcp
             pattern: '^https://[a-zA-Z0-9.-]+(?:\:[0-9]+)?(?:/.*)?$'
-    docs: https://docs.nango.dev/integrations/all/mcp-generic
+    docs: https://nango.dev/docs/integrations/all/mcp-generic
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
