@@ -8528,6 +8528,10 @@ notion:
         owner: user
     authorization_method: header
     body_format: json
+    webhook_routing_script: notionWebhookRouting
+    webhook_user_defined_secret: true
+    token_response_metadata:
+        - workspace_id
     proxy:
         retry:
             after:
@@ -8542,6 +8546,12 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://docs.nango.dev/integrations/all/notion
+    connection_config:
+        workspace_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 notion-mcp:
     display_name: Notion (MCP)
