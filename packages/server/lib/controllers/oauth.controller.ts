@@ -15,6 +15,7 @@ import {
     environmentService,
     errorManager,
     extractValueByPath,
+    genericMcpClient,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -26,7 +27,6 @@ import {
     providerClientManager,
     syncEndUserToConnection
 } from '@nangohq/shared';
-import { discoverMcpMetadata } from '@nangohq/shared/lib/clients/mcpGeneric.client.js';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
@@ -870,7 +870,7 @@ class OAuthController {
                 return;
             }
 
-            const discoveryResult = await discoverMcpMetadata(mcpServerUrl, logCtx);
+            const discoveryResult = await genericMcpClient.discoverMcpMetadata(mcpServerUrl, logCtx);
             if (!discoveryResult.success || !discoveryResult.metadata) {
                 const error = WSErrBuilder.UnknownError(discoveryResult.error || 'Failed to discover MCP metadata');
                 void logCtx.error(error.message);
