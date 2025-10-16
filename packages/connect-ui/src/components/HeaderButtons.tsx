@@ -23,11 +23,11 @@ export const HeaderButtons: React.FC<HeaderButtonsProps> = ({
     const { t } = useI18n();
 
     return (
-        <header {...props} className={cn('flex justify-end', onClickBack && 'justify-between', props.className)}>
+        <header {...props} className={cn('flex justify-end', backLink && 'justify-between', props.className)}>
             {backLink && (
                 <Link to={backLink} onClick={onClickBack}>
                     <Button size={'icon'} title={t('common.back')} variant={'transparent'}>
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('common.back')}
+                        <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
                     </Button>
                 </Link>
             )}
