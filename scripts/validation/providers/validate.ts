@@ -209,7 +209,8 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
                 }
             }
         }
-    } else if (provider.connection_config && !provider.alias) {
+    } else if (provider.connection_config && !provider.alias && provider.auth_mode !== 'MCP_OAUTH2_GENERIC') {
+        // MCP_OAUTH2_GENERIC uses connection_config programmatically for dynamic discovery, not via YAML interpolation
         console.error(chalk.red('error'), chalk.blue(providerKey), `"connection_config" is defined but not required`);
         error = true;
     }

@@ -569,6 +569,7 @@
               "integrations/all/malwarebytes",
               "integrations/all/manatal",
               "integrations/all/marketo",
+              "integrations/all/mcp-generic",
               "integrations/all/medallia",
               "integrations/all/metabase",
               "integrations/all/microsoft",
