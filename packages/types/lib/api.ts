@@ -106,6 +106,9 @@ export interface ErrorPayload {
     type: string;
     description: string;
     payload?: RunnerOutputError['payload'];
+}
+
+export interface SyncErrorPayload extends ErrorPayload {
     additional_properties?: RunnerOutputError['additional_properties'];
 }
 
