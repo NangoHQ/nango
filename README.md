@@ -12,7 +12,7 @@ Easily integrate your SaaS product & AI agent with 500+ APIs.
 
 <p align="center">
     <br />
-    <a href="https://docs.nango.dev/" rel="dofollow"><strong>Explore the docs »</strong></a>
+    <a href="https://nango.dev/docs/" rel="dofollow"><strong>Explore the docs »</strong></a>
     <br />
 
   <br/>
@@ -27,16 +27,16 @@ Easily integrate your SaaS product & AI agent with 500+ APIs.
 
 Nango is a complete infrastructure for engineers to build **product integrations**.[<sup>1</sup>](#what-are-product-integrations)
 
-- **[API Auth](https://docs.nango.dev/guides/use-cases/api-auth)** for [500+ APIs](https://www.nango.dev/api-integrations)
+- **[API Auth](https://nango.dev/docs/guides/use-cases/api-auth)** for [500+ APIs](https://www.nango.dev/api-integrations)
     - **Embedded, white-label auth UI**: With appropriate input forms and guidance.
     - **Secure credential management**: Retrieval, storage, and refreshing of API credentials.
     - **Credential monitoring**: Notifies via webhooks when credentials become invalid.
-- **[Request proxying](https://docs.nango.dev/guides/use-cases/proxy)**: Injects credentials into API requests seamlessly.
-- **[Data Syncing](https://docs.nango.dev/guides/use-cases/syncs)**: Continuously synchronize data from APIs to your application.
-- **[Actions](https://docs.nango.dev/guides/use-cases/actions)**: Encapsulate use cases into reusable actions.
-- **[Webhooks](https://docs.nango.dev/guides/use-cases/webhooks)**: Listen to webhooks from APIs with a universal interface.
-- **[MCP Server](https://docs.nango.dev/guides/use-cases/mcp-server)**: Expose your integrations as an MCP server for tool calling.
-- **[Observability](https://docs.nango.dev/guides/platform/logs)**: Tailored monitoring for integrations.
+- **[Request proxying](https://nango.dev/docs/guides/use-cases/proxy)**: Injects credentials into API requests seamlessly.
+- **[Data Syncing](https://nango.dev/docs/guides/use-cases/syncs)**: Continuously synchronize data from APIs to your application.
+- **[Actions](https://nango.dev/docs/guides/use-cases/actions)**: Encapsulate use cases into reusable actions.
+- **[Webhooks](https://nango.dev/docs/guides/use-cases/webhooks)**: Listen to webhooks from APIs with a universal interface.
+- **[MCP Server](https://nango.dev/docs/guides/use-cases/mcp-server)**: Expose your integrations as an MCP server for tool calling.
+- **[Observability](https://nango.dev/docs/guides/platform/logs)**: Tailored monitoring for integrations.
 - **Management dashboard & APIs**: Control and oversee all connected accounts.
 
 ## Benefits
@@ -57,25 +57,25 @@ Our goal with Nango is to provide a better way to do this:
 - Nango provides the infrastructure to build reliable, scalable integrations fast: API auth, syncing framework, webhook handling, observability, etc.
 - You focus on what makes your integration great for your customers: Seamless product mappings, excellent UX, and deep integration with your existing product.
 
-[Read more about our approach](https://docs.nango.dev/getting-started/intro-to-nango#our-approach-to-integrations).
+[Read more about our approach](https://nango.dev/docs/getting-started/intro-to-nango#our-approach-to-integrations).
 
 ## Getting started
 
 Access any API in minutes, and fully embed the flow within your app in an hour.
 
-Follow the [quickstart](https://docs.nango.dev/getting-started/quickstart) and [explore the docs](https://docs.nango.dev).
+Follow the [quickstart](https://nango.dev/docs/getting-started/quickstart) and [explore the docs](https://nango.dev/docs).
 
 ## Open-source vs. paid
 
 Nango is offered under the [Elastic license](https://github.com/NangoHQ/nango/blob/master/LICENSE).
 
-You can [self-host it for free](https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview) with a limited feature set.
+You can [self-host it for free](https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview) with a limited feature set.
 
 Our cloud and Enterprise self-hosted version let you access all features, according to your [plan](https://www.nango.dev/pricing).
 
 ## Contributors
 
-Anybody can [contribute support for a new API](https://docs.nango.dev/implementation-guides/platform/contribute-new-api).
+Anybody can [contribute support for a new API](https://nango.dev/docs/implementation-guides/platform/contribute-new-api).
 
 Thank you for continuously making Nango better ❤️
 

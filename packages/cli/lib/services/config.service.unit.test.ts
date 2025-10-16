@@ -69,7 +69,7 @@ describe('validate', () => {
         const res = validateYaml(yaml.load(``));
         expect(res).toStrictEqual([
             {
-                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://docs.nango.dev/reference/integration-configuration'
+                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://nango.dev/docs/reference/integration-configuration'
             }
         ]);
     });
