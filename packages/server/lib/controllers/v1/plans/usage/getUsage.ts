@@ -39,7 +39,7 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
                 limit: plan.records_max
             },
             proxy: {
-                label: 'Proxy requests',
+                label: 'Proxy Requests',
                 usage: usage.value.proxy.current,
                 limit: plan.proxy_max
             },
@@ -49,14 +49,14 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
                 limit: plan.function_executions_max
             },
             functionCompute: {
-                label: 'Compute (GB/s)',
+                label: 'Compute (GB/ms)',
                 usage: usage.value.function_compute_gbms.current,
                 limit: plan.function_compute_gbms_max
             },
-            externalWebhooks: {
-                label: 'External Webhooks',
-                usage: usage.value.external_webhooks.current,
-                limit: plan.external_webhooks_max
+            webhookForwards: {
+                label: 'Webhook Forwards',
+                usage: usage.value.webhook_forwards.current,
+                limit: plan.webhook_forwards_max
             },
             functionLogs: {
                 label: 'Function Logs',
