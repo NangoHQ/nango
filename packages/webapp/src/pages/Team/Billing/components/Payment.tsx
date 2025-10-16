@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { Dot } from './Dot';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
@@ -13,7 +14,7 @@ import { useStore } from '@/store';
 export const Payment: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: usage, isLoading: isUsageLoading } = useApiGetBillingUsage(env);
-    const { data: paymentMethods, isLoading: isPaymentMethodsLoading } = useStripePaymentMethods(env);
+    const { data: paymentMethods, isLoading: isPaymentMethodsLoading, error: paymentMethodsError } = useStripePaymentMethods(env);
 
     const paymentMethod = useMemo(() => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
@@ -23,6 +24,8 @@ export const Payment: React.FC = () => {
         <div className="flex-1 flex flex-col gap-8">
             {isPaymentMethodsLoading ? (
                 <Skeleton className="w-full h-22.5" />
+            ) : paymentMethodsError ? (
+                <CriticalErrorAlert message="Error loading payment method" />
             ) : (
                 <div className="w-full inline-flex items-center justify-between px-5 py-6 rounded border border-border-muted">
                     <div className="inline-flex gap-3 items-center">
