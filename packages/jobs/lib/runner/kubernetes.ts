@@ -172,7 +172,7 @@ class Kubernetes {
                     metadata: {
                         annotations: {
                             [`ad.datadoghq.com/runner.logs`]: `[{"source":"nango","service":"${name}"}]`,
-                            ['karpenter.sh/do-not-disrupt']: 'true'
+                            ['karpenter.sh/do-not-disrupt']: `${envs.RUNNER_DO_NOT_DISRUPT}`
                         },
                         labels: { app: name }
                     },
