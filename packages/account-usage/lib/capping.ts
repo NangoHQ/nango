@@ -78,8 +78,8 @@ export class Capping {
                 return plan.function_executions_max;
             case 'function_compute_gbms':
                 return plan.function_compute_gbms_max;
-            case 'external_webhooks':
-                return plan.external_webhooks_max;
+            case 'webhook_forwards':
+                return plan.webhook_forwards_max;
             case 'function_logs':
                 return plan.function_logs_max;
         }
@@ -97,8 +97,8 @@ export class Capping {
                 return 'You have reached the maximum number of function executions for your plan.';
             case 'function_compute_gbms':
                 return 'You have reached the maximum compute time of your functions for your plan.';
-            case 'external_webhooks':
-                return 'You have reached the maximum number of external webhooks for your plan.';
+            case 'webhook_forwards':
+                return 'You have reached the maximum number of webhook forwards for your plan.';
             case 'function_logs':
                 return 'You have reached the maximum number of function logs for your plan.';
         }

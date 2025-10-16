@@ -57,11 +57,11 @@ export interface DBPlan extends Timestamps {
      */
     function_compute_gbms_max: number | null;
 
-    /** Limit the number of external webhooks that can be triggered in a month
+    /** Limit the number of webhook forwards that can happen in a month
      * Set to null to remove limit
      * @default null
      */
-    external_webhooks_max: number | null;
+    webhook_forwards_max: number | null;
 
     /** Limit the number of log entries in functions that can be created in a month
      * Set to null to remove limit
