@@ -10029,7 +10029,7 @@ recruitee:
             title: Company Name
             description: The Company name for your Recruitee account
             example: acme
-            order: 2
+            optional: true
             doc_section: '#step-1-finding-your-company-id-and-company-name'
     credentials:
         apiKey:
@@ -10039,6 +10039,7 @@ recruitee:
             example: 'OTlHOGlWNUFJRkErekoxd1lXMGd6dz09'
             pattern: '^[A-Za-z0-9+/]+={0,2}$'
             doc_section: '#step-2-generating-your-personal-api-token'
+            order: 2
 
 recruiterflow:
     display_name: Recruiterflow
