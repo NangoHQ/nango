@@ -19,7 +19,7 @@ export interface CappingStatus {
 
 export class Capping {
     constructor(
-        private readonly usageTracker: IUsageTracker,
+        public readonly usageTracker: IUsageTracker,
         private options?: { enabled?: boolean }
     ) {}
 
