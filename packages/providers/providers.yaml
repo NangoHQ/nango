@@ -10039,7 +10039,6 @@ recruitee:
             example: 'OTlHOGlWNUFJRkErekoxd1lXMGd6dz09'
             pattern: '^[A-Za-z0-9+/]+={0,2}$'
             doc_section: '#step-2-generating-your-personal-api-token'
-            order: 2
 
 recruiterflow:
     display_name: Recruiterflow
