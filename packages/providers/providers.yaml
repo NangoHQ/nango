@@ -13806,7 +13806,7 @@ statista:
         - analytics
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.statista.ai/v1/statistics?q=*
+        base_url: https://api.statista.ai/v1
         headers:
             x-api-key: ${apiKey}
             content-type: application/json
@@ -13816,8 +13816,8 @@ statista:
         verification:
             method: GET
             endpoints:
-                - /mcp
-    docs: https://docs.nango.dev/integrations/all/statista
+                - /statistics?q=*
+    docs: https://statista.mintlify.app/start/introduction
     credentials:
         apiKey:
             type: string
