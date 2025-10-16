@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { getRedis } from '@nangohq/kvstore';
 
@@ -26,13 +26,6 @@ describe('Usage', () => {
 
     beforeEach(async () => {
         await redis.flushAll(); // Clear all usage data before each test
-        vi.useFakeTimers({ shouldAdvanceTime: true });
-    });
-
-    afterEach(() => {
-        vi.clearAllTimers();
-        vi.resetAllMocks();
-        vi.useRealTimers();
     });
 
     describe('Capping', () => {
