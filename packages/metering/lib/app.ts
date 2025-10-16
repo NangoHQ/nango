@@ -1,6 +1,7 @@
 import './tracer.js';
 import * as cron from 'node-cron';
 
+import { getUsageTracker } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { initSentry, once, report } from '@nangohq/utils';
@@ -34,8 +35,11 @@ try {
         process.exit(1);
     }
 
+    // Usage
+    const usageTracker = await getUsageTracker(envs.NANGO_REDIS_URL);
+
     // Billing processor
-    const billingProc = new BillingProcessor(pubsubTransport);
+    const billingProc = new BillingProcessor(pubsubTransport, usageTracker);
     billingProc.start();
 
     // Team processor
