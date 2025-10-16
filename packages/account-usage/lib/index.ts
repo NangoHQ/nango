@@ -4,6 +4,7 @@ import { DbAccountUsageStore } from './accountUsageStore/dbAccountUsageStore.js'
 import { HybridAccountUsageStore } from './accountUsageStore/hybridAccountUsageStore.js';
 import { KvAccountUsageStore } from './accountUsageStore/kvAccountUsageStore.js';
 import { AccountUsageTracker } from './accountUsageTracker.js';
+import { Capping } from './capping.js';
 import { UsageTracker, UsageTrackerNoOps } from './usage.js';
 
 import type { IUsageTracker } from './usage.js';
@@ -40,6 +41,7 @@ export async function getAccountUsageTracker(): Promise<AccountUsageTracker> {
 }
 
 export type { IUsageTracker as Usage } from './usage.js';
+export type { Capping } from './capping.js';
 
 export async function getUsageTracker(redisUrl: string | undefined): Promise<IUsageTracker> {
     if (redisUrl) {
@@ -47,4 +49,9 @@ export async function getUsageTracker(redisUrl: string | undefined): Promise<IUs
         return new UsageTracker(redis);
     }
     return new UsageTrackerNoOps();
+}
+
+export async function getCapping(redisUrl: string | undefined, options: { enabled: boolean }): Promise<Capping> {
+    const usageTracker = await getUsageTracker(redisUrl);
+    return new Capping(usageTracker, options);
 }

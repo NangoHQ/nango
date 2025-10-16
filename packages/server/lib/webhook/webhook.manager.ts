@@ -7,6 +7,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
 import { pubsub } from '../pubsub.js';
+import { capping } from '../utils/capping.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -95,8 +96,9 @@ export async function routeWebhook({
 
     const res = result.value;
 
-    // Only forward webhook if there was no error
-    if (res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
+    // Only forward webhook if there is no capping and the response was successful
+    const cappingStatus = await capping.getStatus(plan || null, 'external_webhooks');
+    if (!cappingStatus.isCapped && res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
         const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 

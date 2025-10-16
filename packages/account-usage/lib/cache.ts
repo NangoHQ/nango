@@ -16,7 +16,7 @@ type UsageCacheEntry = z.infer<typeof UsageCacheEntrySchema>;
 type Redis = Awaited<ReturnType<typeof getRedis>>;
 
 export class UsageCache {
-    constructor(private store: Redis) {}
+    constructor(private readonly store: Redis) {}
 
     public async get(key: string): Promise<Result<UsageCacheEntry | null>> {
         try {
