@@ -47,7 +47,7 @@ export const Layout: React.FC = () => {
 
     return (
         <div
-            className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center p-14 ${isAuthLink ? (isDarkTheme ? 'bg-black' : 'bg-gray-100') : 'bg-subltle/80'}`}
+            className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center p-14 ${isAuthLink ? (isDarkTheme ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80'}`}
         >
             <div ref={ref} className="flex flex-col w-[500px] h-[700px] rounded-md bg-elevated p-px overflow-hidden">
                 <div className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto">

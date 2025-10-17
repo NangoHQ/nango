@@ -80,7 +80,7 @@ export const Home: React.FC = () => {
         if (isPreview) setIsPreview(isPreview);
         if (theme && isValidTheme(theme)) setTheme(theme);
         setAuthLink(window.self === window.top);
-    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview, theme]);
+    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setAuthLink, setIsEmbedded, setIsPreview, theme]);
 
     useEffect(() => {
         if (data) {
