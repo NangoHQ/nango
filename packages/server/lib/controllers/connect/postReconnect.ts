@@ -142,8 +142,8 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        const redirect_url = new URL(`${connectUrl}?session_token=${token}`).toString();
-        return { status: 201, response: { data: { token, redirect_url, expires_at: privateKey.expiresAt!.toISOString() } } };
+        const auth_url = new URL(`${connectUrl}?session_token=${token}`).toString();
+        return { status: 201, response: { data: { token, auth_url, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 
     res.status(status).send(response);

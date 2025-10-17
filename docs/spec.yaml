@@ -2935,7 +2935,7 @@ components:
                 token:
                     type: string
                     description: The connect session token
-                redirect_url:
+                auth_url:
                     type: string
                     description: The URL to directly connect the user to the integration. This can be used as a magic link.
                 expires_at:
