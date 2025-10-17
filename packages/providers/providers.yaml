@@ -6584,6 +6584,35 @@ intuit:
         base_url: https://quickbooks.api.intuit.com
     docs: https://nango.dev/docs/integrations/all/intuit
 
+ironclad:
+    display_name: Ironclad
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ironcladapp.com
+    docs: https://docs.nango.dev/integrations/all/ironclad
+    docs_connect: https://docs.nango.dev/integrations/all/ironclad/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Ironclad Environment Subdomain
+            example: na1
+            prefix: https://
+            suffix: .ironcladapp.com
+            pattern: '^(na1|demo|eu1)$'
+            doc_section: '#step-1-finding-your-subdomain'
+
 jamf:
     display_name: Jamf Pro (Client Credentials)
     categories:
