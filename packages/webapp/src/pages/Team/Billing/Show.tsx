@@ -10,9 +10,9 @@ export const TeamBilling: React.FC = () => {
     return (
         <DashboardLayout className="flex flex-col gap-8">
             <Helmet>
-                <title>Billing - Nango</title>
+                <title>Billing & usage - Nango</title>
             </Helmet>
-            <h2 className="text-text-primary text-2xl font-bold">Billing & Usage</h2>
+            <h2 className="text-text-primary text-2xl font-bold">Billing & usage</h2>
             <Navigation defaultValue="usage" className="max-w-full">
                 <NavigationList>
                     <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
