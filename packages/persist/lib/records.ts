@@ -160,6 +160,15 @@ export async function persistRecords({
             });
         }
 
+        const delta = summary.addedKeys.length - (summary.deletedKeys?.length || 0);
+        if (delta !== 0) {
+            void pubsub.publisher.publish({
+                subject: 'usage',
+                type: 'usage.records',
+                payload: { value: delta, properties: { accountId, environmentId, connectionId, syncId, model } }
+            });
+        }
+
         // Datadog metrics
         let recordsSizeInBytes = 0;
         let modifiedRecordsSizeInBytes = 0;

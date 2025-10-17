@@ -32,6 +32,44 @@ export interface DBPlan extends Timestamps {
     connections_max: number | null;
 
     /**
+     * Limit the number of total non-deleted records
+     * Set to null to remove limit
+     * @default null
+     */
+    records_max: number | null;
+
+    /**
+     * Limit the number of total proxy requests that can be made in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    proxy_max: number | null;
+
+    /** Limit the number of function executions that can be triggered in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_executions_max: number | null;
+
+    /** Limit the amount of compute time (in gb/ms) that can be used by functions in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_compute_gbms_max: number | null;
+
+    /** Limit the number of external webhooks that can be triggered in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    external_webhooks_max: number | null;
+
+    /** Limit the number of log entries in functions that can be created in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_logs_max: number | null;
+
+    /**
      * Limit the number of environments that can be created
      * @default 2
      */

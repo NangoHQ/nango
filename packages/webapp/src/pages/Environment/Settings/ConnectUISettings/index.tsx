@@ -112,7 +112,7 @@ export const ConnectUISettings = () => {
                                             tooltipContent={
                                                 <p>
                                                     You can override the theme per session from the{' '}
-                                                    <LinkWithIcon to="https://docs.nango.dev/reference/sdks/frontend#param-theme-override" type="external">
+                                                    <LinkWithIcon to="https://nango.dev/docs/reference/sdks/frontend#param-theme-override" type="external">
                                                         Frontend SDK
                                                     </LinkWithIcon>
                                                 </p>

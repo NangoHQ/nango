@@ -315,10 +315,18 @@
     --color-text-primary: var(--color-gray-900);
     --color-text-secondary: var(--color-gray-750);
     --color-text-tertiary: var(--color-gray-600);
+    --color-text-disabled: var(--color-gray-500);
 
     --color-border-default: var(--color-gray-300);
     --color-border-muted: var(--color-gray-200);
     --color-border-strong: var(--color-gray-300);
+    --color-border-brand: var(--color-brand-500);
+
+    --color-icon-primary: var(--color-gray-900);
+    --color-icon-secondary: var(--color-gray-750);
+    --color-icon-tertiary: var(--color-gray-600);
+    --color-icon-disabled: var(--color-gray-500);
+    --color-icon-brand: var(--color-brand-500);
 
     --color-focus-ring: var(--color-brand-500);
 
@@ -358,8 +366,6 @@
     :root,
     :host {
         @variant dark {
-            color-scheme: dark;
-
             /* Functional */
             --color-bg-surface: var(--color-gray-1000);
             --color-bg-elevated: var(--color-gray-900);
@@ -373,10 +379,18 @@
             --color-text-primary: var(--color-gray-50);
             --color-text-secondary: var(--color-gray-300);
             --color-text-tertiary: var(--color-gray-500);
+            --color-text-disabled: var(--color-gray-600);
 
             --color-border-default: var(--color-gray-700);
             --color-border-muted: var(--color-gray-800);
             --color-border-strong: var(--color-gray-500);
+            --color-border-brand: var(--color-brand-500);
+
+            --color-icon-primary: var(--color-gray-50);
+            --color-icon-secondary: var(--color-gray-300);
+            --color-icon-tertiary: var(--color-gray-500);
+            --color-icon-disabled: var(--color-gray-600);
+            --color-icon-brand: var(--color-brand-500);
 
             --color-focus-ring: var(--color-brand-500);
 
@@ -480,4 +494,5 @@
 
 .mantine-Prism-code {
     font-family: 'Roboto Mono';
+    background-color: var(--color-bg-surface) !important;
 }

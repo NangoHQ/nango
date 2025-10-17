@@ -149,7 +149,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                         </Table.Table>
                         <Info variant={'warning'} className="mt-4">
                             Your nango.yaml is outdated, you can upgrade by following{' '}
-                            <Link to="https://docs.nango.dev/guides/customize/migrate-integration-configuration" className="underline">
+                            <Link to="https://nango.dev/docs/guides/customize/migrate-integration-configuration" className="underline">
                                 this procedure
                             </Link>
                         </Info>
@@ -160,7 +160,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
             <div className="text-text-light-gray flex gap-2 items-center">
                 <QuestionMarkCircledIcon />
                 Can&apos;t find the endpoint you need?{' '}
-                <a href="https://docs.nango.dev/guides/platform/functions" className="underline">
+                <a href="https://nango.dev/docs/guides/platform/functions" className="underline">
                     Add your own
                 </a>
             </div>

@@ -1,5 +1,7 @@
 import * as crypto from 'node:crypto';
 
+import { exchangeAuthorization, registerClient, startAuthorization } from '@modelcontextprotocol/sdk/client/auth.js';
+import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/sdk/shared/auth.js';
 import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
@@ -13,6 +15,7 @@ import {
     environmentService,
     errorManager,
     extractValueByPath,
+    genericMcpClient,
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
@@ -28,6 +31,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
+import { validateConnection } from '../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -45,6 +49,7 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import type { RequestLocals } from '../utils/express.js';
+import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
 import type {
@@ -59,6 +64,7 @@ import type {
     ProviderCustom,
     ProviderGithubApp,
     ProviderMcpOAUTH2,
+    ProviderMcpOAuth2Generic,
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -238,7 +244,11 @@ class OAuthController {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
-            if (provider.auth_mode !== 'APP' && (config.oauth_client_id == null || config.oauth_client_secret == null)) {
+            if (
+                provider.auth_mode !== 'APP' &&
+                provider.auth_mode !== 'MCP_OAUTH2_GENERIC' &&
+                (config.oauth_client_id == null || config.oauth_client_secret == null)
+            ) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 void logCtx.error(error.message);
                 await logCtx.failed();
@@ -265,6 +275,9 @@ class OAuthController {
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2') {
                 await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
+                return;
+            } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
+                await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -406,6 +419,9 @@ class OAuthController {
                 if (defaults?.authorization_params) {
                     connectionConfig['authorization_params'] = defaults.authorization_params;
                 }
+                if (defaults?.connectionConfig) {
+                    Object.assign(connectionConfig, defaults.connectionConfig);
+                }
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -449,10 +465,41 @@ class OAuthController {
                 connectionConfig,
                 environmentId: environment.id
             });
+
             if (!updatedConnection) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
                 void logCtx.error('Failed to create connection');
                 await logCtx.failed();
+                return;
+            }
+
+            const customValidationResponse = await validateConnection({
+                connection: updatedConnection.connection,
+                config,
+                account,
+                logCtx
+            });
+
+            if (customValidationResponse.isErr()) {
+                void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+                await logCtx.failed();
+
+                if (updatedConnection.operation === 'creation') {
+                    // since this is a new invalid connection, delete it with no trace of it
+                    await connectionService.hardDelete(updatedConnection.connection.id);
+                }
+
+                const payload = customValidationResponse.error?.payload;
+                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
+
+                if (res) {
+                    res.status(400).send({
+                        error: {
+                            code: 'connection_validation_failed',
+                            message
+                        }
+                    });
+                }
                 return;
             }
 
@@ -825,6 +872,111 @@ class OAuthController {
         }
     }
 
+    private async mcpGenericRequest({
+        config,
+        session,
+        res,
+        connectionConfig,
+        callbackUrl,
+        logCtx
+    }: {
+        provider: ProviderMcpOAuth2Generic;
+        config: ProviderConfig;
+        session: OAuthSession;
+        res: Response;
+        connectionConfig: Record<string, string>;
+        callbackUrl: string;
+        logCtx: LogContext;
+    }) {
+        const channel = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+
+        try {
+            const mcpServerUrl = connectionConfig['mcp_server_url'];
+            if (!mcpServerUrl) {
+                const error = WSErrBuilder.InvalidConnectionConfig('mcp_server_url', JSON.stringify(connectionConfig));
+                void logCtx.error(error.message);
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
+            }
+
+            const discoveryResult = await genericMcpClient.discoverMcpMetadata(mcpServerUrl, logCtx);
+            if (!discoveryResult.success || !discoveryResult.metadata) {
+                const error = WSErrBuilder.UnknownError(discoveryResult.error || 'Failed to discover MCP metadata');
+                void logCtx.error(error.message);
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
+            }
+
+            const { metadata, resourceMetadata, scopes } = discoveryResult;
+
+            const clientMetadata: OAuthClientMetadata = {
+                redirect_uris: [callbackUrl],
+                token_endpoint_auth_method: 'none',
+                grant_types: ['authorization_code', 'refresh_token'],
+                response_types: ['code'],
+                client_name: config.custom?.['oauth_client_name'] || 'Nango Dynamic MCP Client',
+                client_uri: config.custom?.['oauth_client_uri'] || 'https://nango.dev',
+                ...(config.custom?.['oauth_client_logo_uri'] && { logo_uri: config.custom['oauth_client_logo_uri'] }),
+                scope: scopes || ''
+            };
+
+            let clientInformation: OAuthClientInformation;
+            if (metadata.registration_endpoint) {
+                clientInformation = await registerClient(mcpServerUrl, {
+                    metadata,
+                    clientMetadata
+                });
+            } else {
+                clientInformation = {
+                    client_id: 'nango-client',
+                    ...clientMetadata
+                };
+            }
+
+            const resource = resourceMetadata?.resource ? new URL(resourceMetadata.resource) : undefined;
+
+            const authResult = await startAuthorization(mcpServerUrl, {
+                metadata,
+                clientInformation,
+                redirectUrl: callbackUrl,
+                state: session.id,
+                scope: scopes || '',
+                ...(resource && { resource })
+            });
+
+            session.connectionConfig = {
+                ...(session.connectionConfig || {}),
+                oauth_metadata: JSON.stringify(metadata),
+                oauth_client_info: JSON.stringify(clientInformation),
+                oauth_resource_url: resource?.href || '',
+                oauth_code_verifier: authResult.codeVerifier,
+                mcp_server_url: mcpServerUrl
+            };
+
+            await oAuthSessionService.create(session);
+
+            void logCtx.info('Redirecting to authorization URL', {
+                authorizationUrl: authResult.authorizationUrl.href,
+                providerConfigKey,
+                connectionId,
+                scopes: scopes || ''
+            });
+
+            res.redirect(authResult.authorizationUrl.href);
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
+
+            void logCtx.error('Unknown error', { connectionConfig });
+            await logCtx.failed();
+
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+        }
+    }
+
     // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
@@ -946,6 +1098,9 @@ class OAuthController {
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
+                return;
+            } else if (session.authMode === 'MCP_OAUTH2_GENERIC') {
+                await this.mcpGenericCallback(provider as ProviderMcpOAuth2Generic, config, session, req, res, environment, account, logCtx);
                 return;
             } else if (session.authMode === 'OAUTH1') {
                 await this.oauth1Callback(provider, config, session, req, res, environment, account, logCtx);
@@ -1398,11 +1553,37 @@ class OAuthController {
                 connectionConfig,
                 environmentId: session.environmentId
             });
+
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
                 await logCtx.failed();
                 if (res) {
                     await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                }
+                return;
+            }
+
+            const customValidationResponse = await validateConnection({
+                connection: updatedConnection.connection,
+                config,
+                account,
+                logCtx
+            });
+
+            if (customValidationResponse.isErr()) {
+                void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+                await logCtx.failed();
+
+                if (updatedConnection.operation === 'creation') {
+                    // since this is a new invalid connection, delete it with no trace of it
+                    await connectionService.hardDelete(updatedConnection.connection.id);
+                }
+
+                const payload = customValidationResponse.error?.payload;
+                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
+
+                if (res) {
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
                 }
                 return;
             }
@@ -1634,10 +1815,36 @@ class OAuthController {
                     connectionConfig,
                     environmentId: environment.id
                 });
+
                 if (!updatedConnection) {
                     void logCtx.error('Failed to create connection');
                     await logCtx.failed();
                     return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                }
+
+                const customValidationResponse = await validateConnection({
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    logCtx
+                });
+
+                if (customValidationResponse.isErr()) {
+                    void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+                    await logCtx.failed();
+
+                    if (updatedConnection.operation === 'creation') {
+                        // since this is a new invalid connection, delete it with no trace of it
+                        await connectionService.hardDelete(updatedConnection.connection.id);
+                    }
+
+                    const payload = customValidationResponse.error?.payload;
+                    const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
+
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
+                    }
+                    return;
                 }
 
                 let connectSession: ConnectSessionAndEndUser | undefined;
@@ -1732,6 +1939,143 @@ class OAuthController {
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
+    }
+
+    private async mcpGenericCallback(
+        provider: ProviderMcpOAuth2Generic,
+        config: ProviderConfig,
+        session: OAuthSession,
+        req: Request,
+        res: Response,
+        environment: DBEnvironment,
+        account: DBTeam,
+        logCtx: LogContext
+    ) {
+        const authorizationCode = req.query['code'] as string | undefined;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const channel = session.webSocketClientId;
+
+        if (!authorizationCode) {
+            const error = WSErrBuilder.InvalidCallbackOAuth2();
+            void logCtx.error(error.message);
+            await logCtx.failed();
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+        }
+
+        const metadataStr = session.connectionConfig['oauth_metadata'];
+        const clientInfoStr = session.connectionConfig['oauth_client_info'];
+        const resourceUrl = session.connectionConfig['oauth_resource_url'];
+        const codeVerifier = session.connectionConfig['oauth_code_verifier'];
+        const mcpServerUrl = session.connectionConfig['mcp_server_url'];
+
+        if (!metadataStr || !clientInfoStr || !codeVerifier || !mcpServerUrl) {
+            const error = WSErrBuilder.InvalidConnectionConfig('oauth_session_data', JSON.stringify(session.connectionConfig));
+            void logCtx.error(error.message);
+            await logCtx.failed();
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+        }
+
+        try {
+            const metadata = OAuthMetadataSchema.parse(JSON.parse(metadataStr));
+            const clientInformation = OAuthClientInformationSchema.parse(JSON.parse(clientInfoStr));
+            const resource = resourceUrl ? new URL(resourceUrl) : undefined;
+
+            const redirectUri = await environmentService.getOauthCallbackUrl(session.environmentId);
+
+            const tokens: OAuthTokens = await exchangeAuthorization(mcpServerUrl, {
+                metadata,
+                clientInformation,
+                authorizationCode,
+                codeVerifier,
+                redirectUri,
+                ...(resource && { resource })
+            });
+
+            const parsedRawCredentials: OAuth2Credentials = {
+                type: 'OAUTH2',
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token || undefined,
+                expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
+                raw: tokens
+            };
+
+            const [updatedConnection] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey,
+                parsedRawCredentials,
+                connectionConfig: session.connectionConfig,
+                environmentId: session.environmentId
+            });
+
+            if (updatedConnection) {
+                void connectionCreatedHook(
+                    {
+                        connection: updatedConnection.connection,
+                        environment,
+                        account,
+                        auth_mode: provider.auth_mode,
+                        operation: updatedConnection.operation || 'unknown',
+                        endUser: undefined
+                    },
+                    account,
+                    config,
+                    logContextGetter
+                );
+            }
+
+            await logCtx.success();
+
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                auth_mode: 'MCP_OAUTH2_GENERIC',
+                provider: config.provider
+            });
+
+            await publisher.notifySuccess({
+                res,
+                wsClientId: channel,
+                providerConfigKey,
+                connectionId
+            });
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
+
+            errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
+                environmentId: session.environmentId,
+                metadata: {
+                    providerConfigKey: session.providerConfigKey,
+                    connectionId: session.connectionId
+                }
+            });
+
+            void logCtx.error('Unknown error', { error: err });
+            await logCtx.failed();
+
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
+                    auth_mode: provider.auth_mode,
+                    error: {
+                        type: 'unknown',
+                        description: prettyError
+                    },
+                    operation: 'unknown'
+                },
+                account,
+                config
+            );
+
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+                auth_mode: 'MCP_OAUTH2_GENERIC',
+                provider: config.provider
+            });
+
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+        }
     }
 
     private async passesInterpolationParamsCheck({

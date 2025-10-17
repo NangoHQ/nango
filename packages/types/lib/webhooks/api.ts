@@ -1,5 +1,5 @@
 import type { AsyncActionResponse } from '../action/api.js';
-import type { ErrorPayload } from '../api.js';
+import type { ErrorPayload, SyncErrorPayload } from '../api.js';
 import type { AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { SyncResult } from '../sync/index.js';
 
@@ -36,7 +36,7 @@ export interface NangoSyncWebhookBodySuccess extends NangoSyncWebhookBodyBase {
 
 export interface NangoSyncWebhookBodyError extends NangoSyncWebhookBodyBase {
     success: false;
-    error: ErrorPayload;
+    error: SyncErrorPayload;
     startedAt: string;
     failedAt: string;
 }

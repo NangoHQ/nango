@@ -21,8 +21,8 @@ const prettyAuthModes: Record<string, string> = {
 
 const flowsPath = 'packages/shared/flows.zero.json';
 const providersPath = 'packages/providers/providers.yaml';
-const docsPath = 'docs-v2/integrations/all';
-const snippetsPath = 'docs-v2/snippets/generated';
+const docsPath = 'docs/integrations/all';
+const snippetsPath = 'docs/snippets/generated';
 
 const flowsString = await fs.readFile(flowsPath, 'utf-8');
 const flows = JSON.parse(flowsString);
@@ -190,7 +190,7 @@ function useCasesSnippet(useCases: any) {
                 .join('\n')}
         </AccordionGroup>
 
-        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/platform/functions) independently.</Tip>
+        <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())
@@ -202,7 +202,7 @@ function emptyUseCases() {
 
         _No pre-built integration yet (time to contribute: &lt;48h)_
 
-        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/platform/functions) independently.</Tip>
+        <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())

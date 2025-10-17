@@ -1,4 +1,4 @@
-import { Err, Ok, flagHasUsage, report } from '@nangohq/utils';
+import { Err, Ok, flagHasUsage } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
 import { envs } from './envs.js';
@@ -18,7 +18,6 @@ export class Billing {
         this.batcher = flagHasUsage
             ? new Batcher({
                   process: async (events) => {
-                      logger.info(`Sending ${events.length} billing events`);
                       const res = await this.ingest(events);
                       if (res.isErr()) {
                           logger.error(res.error.message);
@@ -105,10 +104,6 @@ export class Billing {
 
     // Note: Events are sent immediately
     private async ingest(events: BillingEvent[]): Promise<Result<void>> {
-        const res = await this.client.ingest(events);
-        if (res.isErr()) {
-            report(res.error);
-        }
-        return res;
+        return this.client.ingest(events);
     }
 }

@@ -24,7 +24,8 @@ class EnvironmentService {
             const result = await db.knex
                 .select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name')
                 .from<DBEnvironment>(TABLE)
-                .where({ account_id, deleted: false });
+                .where({ account_id, deleted: false })
+                .orderBy('name', 'asc');
 
             if (result == null || result.length == 0) {
                 return [];
