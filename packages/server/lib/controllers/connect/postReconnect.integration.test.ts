@@ -74,6 +74,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: {
                 expires_at: expect.toBeIsoDate(),
+                redirect_url: expect.any(String),
                 token: expect.any(String)
             }
         });
@@ -163,6 +164,7 @@ describe(`POST ${endpoint}`, () => {
             expect(res.json).toStrictEqual<typeof res.json>({
                 data: {
                     expires_at: expect.toBeIsoDate(),
+                    redirect_url: expect.any(String),
                     token: expect.any(String)
                 }
             });
@@ -218,6 +220,7 @@ describe(`POST ${endpoint}`, () => {
             expect(res.json).toStrictEqual<typeof res.json>({
                 data: {
                     expires_at: expect.toBeIsoDate(),
+                    redirect_url: expect.any(String),
                     token: expect.any(String)
                 }
             });
@@ -245,6 +248,7 @@ describe(`POST ${endpoint}`, () => {
             expect(res.json).toStrictEqual<typeof res.json>({
                 data: {
                     expires_at: expect.toBeIsoDate(),
+                    redirect_url: expect.any(String),
                     token: expect.any(String)
                 }
             });

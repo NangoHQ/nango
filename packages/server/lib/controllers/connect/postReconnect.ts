@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { EndUserMapper, configService, connectionService, getEndUser } from '@nangohq/shared';
-import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { connectUrl, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { bodySchema as originalBodySchema, checkIntegrationsExist } from './postSessions.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -142,7 +142,8 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        return { status: 201, response: { data: { token, expires_at: privateKey.expiresAt!.toISOString() } } };
+        const redirect_url = new URL(`${connectUrl}?session_token=${token}`).toString();
+        return { status: 201, response: { data: { token, redirect_url, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 
     res.status(status).send(response);
