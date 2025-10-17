@@ -7,7 +7,7 @@ Nango is a platform for building and managing API integrations. You'll be workin
 - **Actions**: One-time operations that interact with external APIs
 - **Providers**: External services (like GitHub, Slack, HubSpot, etc.)
 
-Official Nango documentation is available at https://docs.nango.dev
+Official Nango documentation is available at https://nango.dev/docs
 
 ## Development Environment
 

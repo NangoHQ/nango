@@ -10,13 +10,15 @@ import {
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncConfigRaw
+    getSyncConfigRaw,
+    safeGetPlan
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
+import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -42,7 +44,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
         account = accountAndEnv.account;
         environment = accountAndEnv.environment;
-        tagTraceUser(accountAndEnv);
+        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
+        tagTraceUser({ ...accountAndEnv, plan });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -67,6 +70,42 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
+        const now = new Date();
+        const logCtx = getLogCtx({
+            team: account,
+            activityLogId: task.activityLogId,
+            environmentId: task.connection.environment_id,
+            environmentName: environment.name,
+            syncConfig: syncConfig,
+            providerConfigKey: task.connection.provider_config_key,
+            provider: providerConfig.provider,
+            nangoConnectionId: task.connection.id,
+            connectionId: task.connection.connection_id,
+            startedAt: now
+        });
+
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            throw new Error(message);
+        }
+        // Function logs capping is just informational - it does not block syncs from running
+        // nango.log() will still work, but logs won't be persisted
+        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        if (cappingFunctionLogsStatus.isCapped) {
+            const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
+            void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
+
+        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
+            input: task.input,
+            action: task.actionName,
+            connection: task.connection.connection_id,
+            integration: task.connection.provider_config_key
+        });
+
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -85,19 +124,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
-            startedAt: new Date(),
+            runnerFlags: {
+                ...(await getRunnerFlags()),
+                functionLogs: !cappingFunctionLogsStatus.isCapped
+            },
+            startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
-
-        const logCtx = getLogCtx(nangoProps);
-        void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
-            input: task.input,
-            action: task.actionName,
-            connection: task.connection.connection_id,
-            integration: task.connection.provider_config_key
-        });
 
         const res = await startScript({
             taskId: task.id,
@@ -454,8 +488,22 @@ async function sendWebhookIfNeeded({
     }
 }
 
-function getLogCtx(nangoProps: NangoProps): LogContext {
-    const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
+function getLogCtx(
+    opts: Pick<
+        NangoProps,
+        | 'team'
+        | 'activityLogId'
+        | 'environmentId'
+        | 'environmentName'
+        | 'syncConfig'
+        | 'providerConfigKey'
+        | 'provider'
+        | 'nangoConnectionId'
+        | 'connectionId'
+        | 'startedAt'
+    >
+): LogContext {
+    const logCtx = logContextGetter.get({ id: opts.activityLogId, accountId: opts.team.id });
     // Origin log context is created in server.
     // Attaching a span here so it is correctly ended when the logCtx operation ends and shows up in exported traces.
     logCtx.attachSpan(
@@ -463,14 +511,14 @@ function getLogCtx(nangoProps: NangoProps): LogContext {
             getFormattedOperation(
                 { operation: { type: 'action', action: 'run' } },
                 {
-                    account: nangoProps.team,
-                    environment: { id: nangoProps.environmentId, name: nangoProps.environmentName },
-                    integration: { id: nangoProps.syncConfig.nango_config_id, name: nangoProps.providerConfigKey, provider: nangoProps.provider },
-                    connection: { id: nangoProps.nangoConnectionId, name: nangoProps.connectionId },
-                    syncConfig: { id: nangoProps.syncConfig.id, name: nangoProps.syncConfig.sync_name }
+                    account: opts.team,
+                    environment: { id: opts.environmentId, name: opts.environmentName },
+                    integration: { id: opts.syncConfig.nango_config_id, name: opts.providerConfigKey, provider: opts.provider },
+                    connection: { id: opts.nangoConnectionId, name: opts.connectionId },
+                    syncConfig: { id: opts.syncConfig.id, name: opts.syncConfig.sync_name }
                 }
             ),
-            nangoProps.startedAt
+            opts.startedAt
         )
     );
     return logCtx;

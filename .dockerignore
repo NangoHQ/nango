@@ -11,7 +11,7 @@ npm-debug.log
 docker-compose.yaml
 **/nango-data
 dev/
-docs-v2/
+docs/
 **/tsconfig.tsbuildinfo
 integration-templates
 **/tests/
