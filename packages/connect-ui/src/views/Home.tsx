@@ -16,7 +16,7 @@ import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangoh
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, setApiURL, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview } = useGlobal();
+    const { sessionToken, setApiURL, setAuthLink, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview } = useGlobal();
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
@@ -79,6 +79,7 @@ export const Home: React.FC = () => {
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
         if (isPreview) setIsPreview(isPreview);
         if (theme && isValidTheme(theme)) setTheme(theme);
+        setAuthLink(window.self === window.top);
     }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview, theme]);
 
     useEffect(() => {
