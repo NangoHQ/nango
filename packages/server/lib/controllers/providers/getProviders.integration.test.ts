@@ -61,7 +61,7 @@ describe(`GET ${route}`, () => {
             data: [
                 {
                     display_name: 'HubSpot',
-                    docs: 'https://docs.nango.dev/integrations/all/hubspot',
+                    docs: 'https://nango.dev/docs/integrations/all/hubspot',
                     name: 'hubspot',
                     auth_mode: 'OAUTH2'
                 }
