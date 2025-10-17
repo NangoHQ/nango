@@ -7695,6 +7695,24 @@ loops-so:
             pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
 
+loop-returns:
+    display_name: Loop Returns
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-authorization: ${apiKey}
+        base_url: https://api.loopreturns.com/api
+    docs: https://docs.nango.dev/integrations/all/loop-returns
+    docs_connect: https://docs.nango.dev/integrations/all/loop-returns/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Loop Returns account
+            doc_section: '#step-1-generating-your-api-key'
+
 lucid-scim:
     display_name: Lucid (SCIM)
     categories:

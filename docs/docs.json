@@ -563,6 +563,7 @@
               "integrations/all/listmonk",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
+              "integrations/all/loop-returns",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
               "integrations/all/mailchimp",
