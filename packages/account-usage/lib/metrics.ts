@@ -6,7 +6,7 @@ export const metricFlags: Record<AccountUsageMetric, string> = {
     connections: 'connections_max'
 };
 
-export type UsageMetric = 'proxy' | 'connections' | 'function_executions' | 'function_compute_ms' | 'records' | 'external_webhooks' | 'logs';
+export type UsageMetric = 'proxy' | 'connections' | 'function_executions' | 'function_compute_gbms' | 'records' | 'webhook_forwards' | 'function_logs';
 export interface UsageMetricProperties {
     reset: 'monthly' | 'never';
 }
@@ -15,8 +15,8 @@ export const usageMetrics: Record<UsageMetric, UsageMetricProperties> = {
     proxy: { reset: 'monthly' },
     connections: { reset: 'never' },
     function_executions: { reset: 'monthly' },
-    function_compute_ms: { reset: 'monthly' },
+    function_compute_gbms: { reset: 'monthly' }, // Gigabyte/ms
     records: { reset: 'never' },
-    external_webhooks: { reset: 'monthly' },
-    logs: { reset: 'monthly' }
+    webhook_forwards: { reset: 'monthly' },
+    function_logs: { reset: 'monthly' }
 };
