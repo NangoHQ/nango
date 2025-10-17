@@ -2,7 +2,10 @@ import z from 'zod';
 
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { records } from '@nangohq/records';
+import { updateSyncJobResult } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
+
+import { pubsub } from '../../../../../../../../../pubsub.js';
 
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
 import type { ApiError, DeleteOutdatedRecordsSuccess, Endpoint } from '@nangohq/types';
@@ -52,15 +55,40 @@ const validate = validateRequest<DeleteOutdatedRecords>({
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
-    const { account } = res.locals;
+    const { account, environment } = res.locals;
+    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     const result = await records.deleteOutdatedRecords({
         connectionId: nangoConnectionId,
         syncId,
         generation: syncJobId,
         model
     });
-    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     if (result.isOk()) {
+        const deleted = result.value.length;
+        const syncJobResultUpdate = {
+            [model]: {
+                added: 0,
+                updated: 0,
+                deleted
+            }
+        };
+        await updateSyncJobResult(syncJobId, syncJobResultUpdate, model);
+        if (deleted > 0) {
+            void pubsub.publisher.publish({
+                subject: 'usage',
+                type: 'usage.records',
+                payload: {
+                    value: -deleted,
+                    properties: {
+                        accountId: account.id,
+                        environmentId: environment.id,
+                        connectionId: nangoConnectionId,
+                        syncId,
+                        model
+                    }
+                }
+            });
+        }
         void logCtx.info(`Deleted ${result.value.length} outdated records for model ${model}`, { deletedKeys: result.value });
         res.status(200).json({ deletedKeys: result.value });
     } else {

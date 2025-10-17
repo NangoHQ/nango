@@ -126,25 +126,25 @@ export const GettingStarted: React.FC = () => {
 
                     <div className="flex flex-col gap-5">
                         <DocCard
-                            to="https://docs.nango.dev/getting-started/quickstart/embed-in-your-app"
+                            to="https://nango.dev/docs/getting-started/quickstart/embed-in-your-app"
                             icon={CodeXml}
                             title="Embed in your app"
                             description="Let your users authorize 3rd-party APIs seamlessly."
                         />
                         <DocCard
-                            to="https://docs.nango.dev/guides/use-cases/proxy"
+                            to="https://nango.dev/docs/guides/use-cases/proxy"
                             icon={Waypoints}
                             title="Proxy"
                             description="Run authenticated API requests to external APIs."
                         />
                         <DocCard
-                            to="https://docs.nango.dev/guides/use-cases/syncs"
+                            to="https://nango.dev/docs/guides/use-cases/syncs"
                             icon={RefreshCcw}
                             title="Syncs"
                             description="Continously sync data from external APIs."
                         />
                         <DocCard
-                            to="https://docs.nango.dev/guides/use-cases/webhooks"
+                            to="https://nango.dev/docs/guides/use-cases/webhooks"
                             icon={Webhook}
                             title="Webhooks"
                             description="Listen to webhooks from external APIs."

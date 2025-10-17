@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { accountService, connectionService, environmentService, productTracking } from '@nangohq/shared';
-import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
+import { Err, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
@@ -42,29 +42,6 @@ async function process(event: UsageEvent): Promise<Result<void>> {
                     });
                 }
                 // No action for tracking connections
-                return Ok(undefined);
-            }
-            case 'usage.function_executions': {
-                const { type, accountId, success, telemetryBag, frequencyMs } = event.payload.properties;
-                const durationMs = telemetryBag?.durationMs || 0;
-                // Bucket frequency into:
-                // - ultra (<5 mins)
-                // - fast (>=5 mins, <1h)
-                // - medium (>= 1h, <12h)
-                // - slow (>= 12h)
-                let frequencyBucket = 'none';
-                if (frequencyMs) {
-                    if (frequencyMs < 5 * 60 * 1000) {
-                        frequencyBucket = 'ultra';
-                    } else if (frequencyMs < 60 * 60 * 1000) {
-                        frequencyBucket = 'fast';
-                    } else if (frequencyMs < 12 * 60 * 60 * 1000) {
-                        frequencyBucket = 'medium';
-                    } else {
-                        frequencyBucket = 'slow';
-                    }
-                }
-                metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, { type, success: String(success), accountId, frequencyBucket });
                 return Ok(undefined);
             }
             default:
