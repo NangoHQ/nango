@@ -14,9 +14,11 @@ interface State {
     apiURL: string;
     detectClosedAuthWindow: boolean;
     isEmbedded: boolean;
+    isAuthLink: boolean;
     isPreview: boolean;
     showWatermark: boolean;
     setApiURL: (value: string) => void;
+    setAuthLink: (value: boolean) => void;
     setDetectClosedAuthWindow: (value: boolean) => void;
     setIsEmbedded: (value: boolean) => void;
     setIsPreview: (value: boolean) => void;
@@ -40,10 +42,12 @@ export const useGlobal = create<State>((set) => ({
     nango: null,
     apiURL: 'https://api.nango.dev',
     isEmbedded: false,
+    isAuthLink: false,
     detectClosedAuthWindow: false,
     isPreview: false,
     showWatermark: false,
     setApiURL: (value) => set({ apiURL: value }),
+    setAuthLink: (value) => set({ isAuthLink: value }),
     setIsEmbedded: (value) => set({ isEmbedded: value }),
     setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
     setIsPreview: (value) => set({ isPreview: value }),

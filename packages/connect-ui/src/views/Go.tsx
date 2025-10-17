@@ -91,7 +91,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { isPreview, provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
+    const { isPreview, provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty, isAuthLink } = useGlobal();
     const nango = useNango();
     const { t } = useI18n();
 
@@ -310,7 +310,7 @@ export const Go: React.FC = () => {
     if (result) {
         return (
             <>
-                <HeaderButtons />
+                <HeaderButtons isAuthLink={isAuthLink} />
                 <main className="flex-1 flex flex-col justify-center gap-10 px-4">
                     <div className="flex flex-col gap-7 items-center">
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
@@ -320,11 +320,16 @@ export const Go: React.FC = () => {
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-text-primary">{t('go.success')}</h2>
-                        <p className="text-center text-text-secondary">{t('go.successMessage', { provider: provider.display_name })}</p>
+                        <p className="text-center text-text-secondary">
+                            {t('go.successMessage', { provider: provider.display_name })}
+                            {isAuthLink ? ` ${t('go.closeTab')}` : ''}
+                        </p>
                     </div>
-                    <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
-                        {t('common.finish')}
-                    </Button>
+                    {!isAuthLink && (
+                        <Button className="w-full" loading={loading} size={'lg'} onClick={() => triggerClose('click:finish')}>
+                            {t('common.finish')}
+                        </Button>
+                    )}
                 </main>
             </>
         );
@@ -333,7 +338,7 @@ export const Go: React.FC = () => {
     if (connectionFailed) {
         return (
             <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
-                <HeaderButtons />
+                <HeaderButtons isAuthLink={isAuthLink} />
                 <main className="flex-1 flex flex-col justify-center items-center gap-10 px-4">
                     <div className="flex flex-col gap-7 items-center">
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
@@ -376,6 +381,7 @@ export const Go: React.FC = () => {
         <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
             <HeaderButtons
                 backLink={!isSingleIntegration ? '/integrations' : undefined}
+                isAuthLink={isAuthLink}
                 onClickBack={() => {
                     setIsDirty(false);
                 }}

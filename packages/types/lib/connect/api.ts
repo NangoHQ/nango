@@ -49,6 +49,7 @@ export type PostConnectSessions = Endpoint<{
     Success: {
         data: {
             token: string;
+            connect_link: string;
             expires_at: string;
         };
     };
@@ -68,6 +69,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
     Success: {
         data: {
             token: string;
+            connect_link: string;
             expires_at: string;
         };
     };

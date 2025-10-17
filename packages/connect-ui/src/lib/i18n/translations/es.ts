@@ -32,6 +32,7 @@ const es: Translation = {
         popupWarning: 'Se abrirá una ventana emergente, asegúrate de que tu navegador no bloquee las ventanas emergentes',
         popupBlocked: 'Ventana emergente de autenticación bloqueada por tu navegador, por favor permite las ventanas emergentes',
         popupClosed: 'La ventana emergente de autenticación se cerró antes del final del proceso, por favor inténtalo de nuevo',
+        closeTab: 'Ahora puedes cerrar esta pestaña.',
         invalidCredentials: '{provider} no validó tus credenciales. Por favor verifica los valores e inténtalo de nuevo.',
         resourceCapped: 'Has alcanzado el número máximo de conexiones permitidas. Por favor contacta al administrador.',
         invalidPreconfigured: 'Un campo preconfigurado establecido por el administrador es inválido, por favor contacta al soporte'
