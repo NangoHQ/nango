@@ -101,6 +101,13 @@ export function InvalidConnectionConfig(url: string, params: string): WSErr {
     };
 }
 
+export function FailedCredentialsCheck(errorMessage: string): WSErr {
+    return {
+        type: 'connection_validation_failed',
+        message: `Error while validating credentials: ${errorMessage}`
+    };
+}
+
 export function UnknownError(errorMessage?: string): WSErr {
     return {
         type: 'unknown_err',

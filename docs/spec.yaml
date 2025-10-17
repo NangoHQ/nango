@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2025-02-13
 openapi: 3.1.0
 externalDocs:
-    url: https://docs.nango.dev/reference/overview
+    url: https://nango.dev/docs/reference/overview
 info:
     title: 'Nango API'
     description: 'Nango API specs used to authorize & sync data with external APIs.'
