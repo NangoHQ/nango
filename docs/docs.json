@@ -738,6 +738,7 @@
               "integrations/all/tableau",
               "integrations/all/tapclicks",
               "integrations/all/teamtailor",
+              "integrations/all/teamleader",
               "integrations/all/teamwork",
               "integrations/all/terraform",
               "integrations/all/thrivecart-api-key",
