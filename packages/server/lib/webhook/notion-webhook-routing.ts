@@ -36,8 +36,6 @@ const route: WebhookHandler<NotionWebhook | NotionWebhookVerification> = async (
             logger.error('invalid signature', { configId: nango.integration.id });
             return Err(new NangoError('webhook_invalid_signature'));
         }
-    } else {
-        logger.info('no verification token configured, skipping signature validation', { configId: nango.integration.id });
     }
 
     const response = await nango.executeScriptForWebhooks({
