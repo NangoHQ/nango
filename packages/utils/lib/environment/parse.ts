@@ -120,6 +120,7 @@ export const ENVS = z.object({
         .regex(/^[a-zA-Z0-9_-]+$/)
         .optional()
         .default('nango_runners'),
+    RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
