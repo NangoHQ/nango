@@ -8604,6 +8604,10 @@ notion:
         owner: user
     authorization_method: header
     body_format: json
+    webhook_routing_script: notionWebhookRouting
+    webhook_user_defined_secret: true
+    token_response_metadata:
+        - workspace_id
     proxy:
         retry:
             after:
@@ -12115,6 +12119,28 @@ teamtailor:
             type: string
             title: API Key
             description: The API key for your Teamtailor account
+
+teamleader:
+    display_name: Teamleader Focus
+    categories:
+        - invoicing
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://focus.teamleader.eu/oauth2/authorize
+    token_url: https://focus.teamleader.eu/oauth2/access_token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        base_url: https://api.focus.teamleader.eu
+    docs: https://nango.dev/docs/integrations/all/teamleader
 
 teamwork:
     display_name: Teamwork

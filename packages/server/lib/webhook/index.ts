@@ -17,5 +17,6 @@ export { default as gmailWebhookRouting } from './gmail-webhook-routing.js';
 export { default as filloutWebhookRouting } from './fillout-webhook-routing.js';
 export { default as jobdivaWebhookRouting } from './jobdiva-webhook-routing.js';
 export { default as highlevelWebhookRouting } from './highlevel-webhook-routing.js';
+export { default as notionWebhookRouting } from './notion-webhook-routing.js';
 export { default as affinityWebhookRouting } from './affinity-webhook-routing.js';
 export type * from './types.js';

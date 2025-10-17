@@ -159,6 +159,33 @@ export interface HighLevelWebhookResponse {
     altType?: string;
 }
 
+export interface NotionWebhook {
+    id: string;
+    timestamp: string;
+    workspace_id: string;
+    subscription_id: string;
+    integration_id: string;
+    type: string;
+    authors: {
+        id: string;
+        type: 'person' | 'bot' | 'agent';
+    }[];
+    accessible_by?: {
+        id: string;
+        type: 'person' | 'bot';
+    }[]; // only for public integrations
+    attempt_number: number;
+    entity: {
+        id: string;
+        type: 'page' | 'block' | 'database';
+    };
+    data: Record<string, any>;
+}
+
+export interface NotionWebhookVerification {
+    verification_token: string;
+}
+
 type AffinityEventType =
     | 'list.created'
     | 'list.updated'
