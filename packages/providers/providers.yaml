@@ -6716,7 +6716,7 @@ jira:
     proxy:
         base_url: https://api.atlassian.com
         connection_config:
-            baseUrl: ${connectionConfig.subdomain}
+            subdomain: ${connectionConfig.subdomain}
         paginate:
             type: link
             link_rel_in_response_header: next
