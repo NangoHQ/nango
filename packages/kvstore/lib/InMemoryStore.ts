@@ -1,10 +1,9 @@
 import type { KVStore } from './KVStore.js';
-import type { MaybePromise } from '@nangohq/types';
 
 interface Value {
     value: string;
     timestamp: number;
-    ttlInMs: number;
+    ttlMs: number;
 }
 const KVSTORE_INTERVAL_CLEANUP = 10000;
 
@@ -17,11 +16,12 @@ export class InMemoryKVStore implements KVStore {
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
-    destroy(): MaybePromise<void> {
+    async destroy(): Promise<void> {
         if (this.interval) {
             clearInterval(this.interval);
         }
         this.store.clear();
+        return Promise.resolve();
     }
 
     public async get(key: string): Promise<string | null> {
@@ -36,14 +36,14 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(res.value);
     }
 
-    public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlInMs?: number }): Promise<void> {
+    public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlMs?: number }): Promise<void> {
         const res = this.store.get(key);
         const isExpired = res && this.isExpired(res);
         if (isExpired || opts?.canOverride || res === undefined) {
-            this.store.set(key, { value: value, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
+            this.store.set(key, { value: value, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
             return Promise.resolve();
         }
-        return Promise.reject(new Error('Key already exists'));
+        return Promise.reject(new Error('set_key_already_exists'));
     }
 
     public async delete(key: string): Promise<void> {
@@ -56,7 +56,7 @@ export class InMemoryKVStore implements KVStore {
     }
 
     private isExpired(value: Value): boolean {
-        if (value.ttlInMs > 0 && value.timestamp + value.ttlInMs < Date.now()) {
+        if (value.ttlMs > 0 && value.timestamp + value.ttlMs < Date.now()) {
             return true;
         }
         return false;
@@ -71,13 +71,13 @@ export class InMemoryKVStore implements KVStore {
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
-    public incr(key: string, opts?: { ttlInMs?: number; delta?: number }) {
+    public async incr(key: string, opts?: { ttlMs?: number; delta?: number }): Promise<number> {
         const res = this.store.get(key);
 
-        const nextVal = res ? String(parseInt(res.value, 10) + (opts?.delta || 1)) : '1';
-        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlInMs: opts?.ttlInMs || 0 });
+        const nextVal = res && !this.isExpired(res) ? String(parseInt(res.value, 10) + (opts?.delta || 1)) : '1';
+        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
 
-        return Number(nextVal);
+        return Promise.resolve(Number(nextVal));
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await

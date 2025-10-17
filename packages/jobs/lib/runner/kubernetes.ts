@@ -171,7 +171,8 @@ class Kubernetes {
                 template: {
                     metadata: {
                         annotations: {
-                            [`ad.datadoghq.com/runner.logs`]: `[{"source":"nango","service":"${name}"}]`
+                            [`ad.datadoghq.com/runner.logs`]: `[{"source":"nango","service":"${name}"}]`,
+                            ['karpenter.sh/do-not-disrupt']: `${envs.RUNNER_DO_NOT_DISRUPT}`
                         },
                         labels: { app: name }
                     },

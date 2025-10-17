@@ -132,7 +132,7 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
-            body: { end_user: { id: endUserId, email: 'a@b.com' }, overrides: { random: { docs_connect: 'https://docs.nango.dev' } } }
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, overrides: { random: { docs_connect: 'https://nango.dev/docs' } } }
         });
         isError(res.json);
         expect(res.json).toStrictEqual({

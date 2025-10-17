@@ -29,16 +29,31 @@ function getDaysUntilNextMonth() {
 }
 
 /**
- * Formats multiples of 1000 to k
- * @example 1000 -> 1k
- * @example 2000 -> 2k
+ * Formats multiples of 1000 to K or M
+ * @example 1000 -> 1K
+ * @example 2000 -> 2K
  * @example 2025 -> 2025
+ * @example 1000000 -> 1M
+ * @example 1234000 -> 1234K
  */
 function formatLimit(limit: number) {
+    if (limit >= 1_000_000 && limit % 1_000_000 === 0) {
+        return `${(limit / 1_000_000).toFixed(0)}M`;
+    }
     if (limit >= 1000 && limit % 1000 === 0) {
-        return `${(limit / 1000).toFixed(0)}k`;
+        return `${(limit / 1000).toFixed(0)}K`;
     }
     return limit;
+}
+
+function formatUsage(usage: number) {
+    if (usage >= 1_000_000) {
+        return `${(usage / 1_000_000).toFixed(0)}M`;
+    }
+    if (usage >= 1000) {
+        return `${(usage / 1000).toFixed(0)}K`;
+    }
+    return usage;
 }
 
 export default function UsageCard() {
@@ -81,7 +96,7 @@ export default function UsageCard() {
                                     )}
                                 </div>
                                 <div>
-                                    <span className={cn('text-s font-bold', getColorForUsage(usage.usage, usage.limit))}>{usage.usage}</span>
+                                    <span className={cn('text-s font-bold', getColorForUsage(usage.usage, usage.limit))}>{formatUsage(usage.usage)}</span>
                                     {usage.limit && <span className="text-text-tertiary text-s">/{formatLimit(usage.limit)}</span>}
                                 </div>
                             </div>

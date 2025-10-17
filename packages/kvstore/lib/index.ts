@@ -18,7 +18,7 @@ export { type Lock, Locking } from './Locking.js';
 // Not my best code
 
 let redis: RedisClientType | undefined;
-async function getRedis(url: string): Promise<RedisClientType> {
+export async function getRedis(url: string): Promise<RedisClientType> {
     if (redis) {
         return redis;
     }
