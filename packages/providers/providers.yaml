@@ -8571,6 +8571,10 @@ notion:
         owner: user
     authorization_method: header
     body_format: json
+    webhook_routing_script: notionWebhookRouting
+    webhook_user_defined_secret: true
+    token_response_metadata:
+        - workspace_id
     proxy:
         retry:
             after:
