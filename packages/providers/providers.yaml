@@ -365,8 +365,8 @@ affinity:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
     webhook_routing_script: affinityWebhookRouting
-    docs: https://docs.nango.dev/integrations/all/affinity
-    docs_connect: https://docs.nango.dev/integrations/all/affinity/connect
+    docs: https://nango.dev/docs/integrations/all/affinity
+    docs_connect: https://nango.dev/docs/integrations/all/affinity/connect
     credentials:
         username:
             type: string
@@ -401,8 +401,8 @@ affinity-v2:
             at:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
-    docs: https://docs.nango.dev/integrations/all/affinity-v2
-    docs_connect: https://docs.nango.dev/integrations/all/affinity-v2/connect
+    docs: https://nango.dev/docs/integrations/all/affinity-v2
+    docs_connect: https://nango.dev/docs/integrations/all/affinity-v2/connect
     credentials:
         apiKey:
             type: string
@@ -6633,8 +6633,8 @@ ironclad:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.ironcladapp.com
-    docs: https://docs.nango.dev/integrations/all/ironclad
-    docs_connect: https://docs.nango.dev/integrations/all/ironclad/connect
+    docs: https://nango.dev/docs/integrations/all/ironclad
+    docs_connect: https://nango.dev/docs/integrations/all/ironclad/connect
     connection_config:
         subdomain:
             type: string
@@ -8818,7 +8818,7 @@ one-drive-personal:
             after:
                 - 'retry-after'
         decompress: true
-    docs: https://docs.nango.dev/integrations/all/one-drive-personal
+    docs: https://nango.dev/docs/integrations/all/one-drive-personal
 
 one-note:
     display_name: One Note
