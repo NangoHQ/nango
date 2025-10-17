@@ -1,0 +1,168 @@
+---
+title: 'Configuration Based Sync'
+sidebarTitle: 'Configuration Based Sync'
+description: 'How to implement configuration-based syncs using metadata to customize sync behavior'
+---
+
+A configuration-based sync allows customization of the sync behavior through metadata provided in the sync configuration. This pattern is useful when you need to:
+- Configure specific fields to sync
+- Set custom endpoints or parameters
+- Define filtering rules
+
+## Key Characteristics
+
+- Uses metadata in sync configuration for customization
+- Allows runtime customization of sync behavior
+- Supports flexible data mapping
+- Can handle provider-specific requirements
+
+## Implementation Notes
+
+This pattern leverages metadata to define a dynamic schema that drives the sync. The implementation typically consists of two parts:
+
+1. An action to fetch available fields using the provider's introspection endpoint
+2. A sync that uses the configured fields to fetch data
+
+### Example: Dynamic Field Sync
+
+```typescript
+import { createSync } from 'nango';
+import { z } from 'zod';
+
+const DynamicFieldMetadata = z.object({
+    configurations: z.array(z.object({
+        model: z.string(),
+        fields: z.array(z.object({
+            id: z.string(),
+            name: z.string(),
+            type: z.string()
+        }))
+    }))
+});
+
+const OutputData = z.object({
+    id: z.string(),
+    model: z.string(),
+    data: z.record(z.any())
+});
+
+const sync = createSync({
+    description: 'Fetch all fields of a dynamic model',
+    version: '1.0.0',
+    frequency: 'every hour',
+    autoStart: false,
+    syncType: 'full',
+
+    endpoints: [
+        {
+            method: 'GET',
+            path: '/dynamic',
+            group: 'Dynamic Data'
+        }
+    ],
+
+    models: {
+        OutputData: OutputData
+    },
+
+    metadata: DynamicFieldMetadata,
+
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata<z.infer<typeof DynamicFieldMetadata>>();
+
+        // Process each model configuration
+        for (const config of metadata.configurations) {
+            const { model, fields } = config;
+
+            // Construct SOQL query with field selection
+            const fieldNames = fields.map(f => f.name).join(',');
+            const soqlQuery = `SELECT ${fieldNames} FROM ${model}`;
+
+            // Query Salesforce API using SOQL
+            const response = await nango.get({
+                endpoint: `/services/data/v59.0/query`,
+                params: {
+                    q: soqlQuery
+                }
+            });
+
+            // Map response to OutputData format and save
+            const mappedData = response.data.records.map(record => ({
+                id: record.Id,
+                model: model,
+                data: fields.reduce((acc, field) => {
+                    acc[field.name] = record[field.name];
+                    return acc;
+                }, {} as Record<string, any>)
+            }));
+
+            // Save the batch of records
+            await nango.batchSave(mappedData, 'OutputData');
+        }
+
+        await nango.deleteRecordsFromPreviousExecutions('OutputData');
+    }
+});
+```
+
+### Example: Field Introspection Action
+
+```typescript
+import { createAction } from 'nango';
+import { z } from 'zod';
+
+const Entity = z.object({
+    name: z.string()
+});
+
+const GetSchemaResponse = z.object({
+    fields: z.array(z.object({
+        name: z.string(),
+        type: z.string()
+    }))
+});
+
+const action = createAction({
+    description: 'Get available fields for an entity',
+    version: '1.0.0',
+
+    endpoint: {
+        method: 'GET',
+        path: '/schema',
+        group: 'Schema'
+    },
+
+    input: Entity,
+    output: GetSchemaResponse,
+
+    exec: async (nango, input) => {
+        const entity = input.name;
+
+        // Query the API's introspection endpoint
+        const response = await nango.get({
+            endpoint: `/services/data/v51.0/sobjects/${entity}/describe`,
+        });
+
+        // Process and return field schema
+        return {
+            fields: response.data.fields.map(field => ({
+                name: field.name,
+                type: field.type
+            }))
+        };
+    }
+});
+```
+
+## Key Implementation Aspects
+
+- Uses metadata to drive the API queries
+- Dynamically constructs field selections
+- Supports multiple models from the third party API in a single sync
+- Maps responses to a consistent output format
+- Requires complementary action for field introspection
+- Supports flexible schema configuration through Zod models
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

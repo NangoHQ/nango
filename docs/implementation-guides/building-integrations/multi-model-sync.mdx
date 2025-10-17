@@ -1,0 +1,117 @@
+---
+title: 'Multi-Model Sync'
+sidebarTitle: 'Multi-Model Sync'
+description: 'How to implement syncs that fetch and save multiple related entity types in a single run'
+---
+
+A multi-model sync is a pattern where a single sync fetches and saves multiple types of entities (models) in one run. This is useful when the entities are related or have dependencies, and you want to ensure their data is consistent and available together. By syncing multiple models at once, you can resolve dependencies between entities more easily, avoid partial data issues, and ensure that downstream consumers always see a complete, consistent set of related records.
+
+## Why Use a Multi-Model Sync?
+
+- Ensures related entities are always in sync and available together
+- Helps resolve dependencies between models (e.g., messages and their replies)
+- Reduces the risk of partial or inconsistent data
+- Can improve performance by reducing the number of sync jobs
+
+## Key Characteristics
+
+- The sync outputs multiple models (e.g., Message, MessageReply, MessageReaction)
+- Each model may be fetched from a different endpoint or API call
+- All models are saved in the same sync run, ensuring consistency
+
+## Example Use Case: Slack Messages Sync
+
+Suppose you want to sync Slack messages, thread replies, and reactions for all channels. These entities are related: replies depend on messages, and reactions can belong to either. By syncing them together, you ensure that all dependencies are resolved in a single run.
+
+### Simplified Sync Configuration
+
+```typescript
+import { createSync } from 'nango';
+import { z } from 'zod';
+
+const SlackMessage = z.object({
+    id: z.string(),
+    text: z.string(),
+    channel_id: z.string(),
+    timestamp: z.string()
+});
+
+const SlackMessageReply = z.object({
+    id: z.string(),
+    parent_message_id: z.string(),
+    text: z.string(),
+    timestamp: z.string()
+});
+
+const SlackMessageReaction = z.object({
+    id: z.string(),
+    message_id: z.string(),
+    emoji: z.string(),
+    count: z.number()
+});
+
+const sync = createSync({
+    description: 'Syncs messages, replies, and reactions for all channels',
+    version: '1.0.0',
+    frequency: 'every hour',
+    autoStart: true,
+    syncType: 'incremental',
+
+    endpoints: [
+        {
+            method: 'GET',
+            path: '/messages',
+            group: 'Messages'
+        },
+        {
+            method: 'GET',
+            path: '/messages-reply',
+            group: 'Messages'
+        },
+        {
+            method: 'GET',
+            path: '/messages-reaction',
+            group: 'Messages'
+        }
+    ],
+
+    models: {
+        SlackMessage: SlackMessage,
+        SlackMessageReply: SlackMessageReply,
+        SlackMessageReaction: SlackMessageReaction
+    },
+
+    metadata: z.object({}),
+
+    exec: async (nango) => {
+        // Fetch messages
+        for (const message of await fetchMessages()) {
+            await nango.batchSave([message], 'SlackMessage');
+            // Fetch and save replies for each message
+            for (const reply of await fetchReplies(message)) {
+                await nango.batchSave([reply], 'SlackMessageReply');
+            }
+            // Fetch and save reactions for each message
+            for (const reaction of await fetchReactions(message)) {
+                await nango.batchSave([reaction], 'SlackMessageReaction');
+            }
+        }
+    }
+});
+```
+
+## Best Practices
+
+1. Use a multi-model sync when entities are tightly coupled or have dependencies
+2. Keep the sync logic clear and modular for each model
+3. Batch save each model type separately for clarity and performance
+4. Document the relationships between models in your integration
+
+## Common Pitfalls
+
+1. Not handling dependencies between models, leading to missing or inconsistent data
+2. Overcomplicating the sync logic—keep each model's fetch and save logic simple and focused
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
