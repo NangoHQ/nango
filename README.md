@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/nangohq-nango-badge.png)](https://mseep.ai/app/nangohq-nango)
+
 <div align="center">
 
 <img src="/assets/nango-logo.png?raw=true" width="350">
