@@ -1038,8 +1038,8 @@ export class Nango {
     public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
         return (
             crypto
-                .createHash('sha256')
-                .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
+                .createHmac('sha256', this.secretKey)
+                .update(JSON.stringify(jsonPayload))
                 .digest('hex') === signatureInHeader
         );
     }
