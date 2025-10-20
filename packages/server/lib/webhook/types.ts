@@ -158,3 +158,67 @@ export interface HighLevelWebhookResponse {
     altId?: string;
     altType?: string;
 }
+
+export interface NotionWebhook {
+    id: string;
+    timestamp: string;
+    workspace_id: string;
+    subscription_id: string;
+    integration_id: string;
+    type: string;
+    authors: {
+        id: string;
+        type: 'person' | 'bot' | 'agent';
+    }[];
+    accessible_by?: {
+        id: string;
+        type: 'person' | 'bot';
+    }[]; // only for public integrations
+    attempt_number: number;
+    entity: {
+        id: string;
+        type: 'page' | 'block' | 'database';
+    };
+    data: Record<string, any>;
+}
+
+export interface NotionWebhookVerification {
+    verification_token: string;
+}
+
+type AffinityEventType =
+    | 'list.created'
+    | 'list.updated'
+    | 'list.deleted'
+    | 'list_entry.created'
+    | 'list_entry.deleted'
+    | 'note.created'
+    | 'note.updated'
+    | 'note.deleted'
+    | 'field.created'
+    | 'field.updated'
+    | 'field.deleted'
+    | 'field_value.created'
+    | 'field_value.updated'
+    | 'field_value.deleted'
+    | 'person.created'
+    | 'person.updated'
+    | 'person.deleted'
+    | 'organization.created'
+    | 'organization.updated'
+    | 'organization.deleted'
+    | 'organization.merged'
+    | 'opportunity.created'
+    | 'opportunity.updated'
+    | 'opportunity.deleted'
+    | 'file.created'
+    | 'file.deleted'
+    | 'reminder.created'
+    | 'reminder.updated'
+    | 'reminder.deleted';
+
+export interface affinityWebhookResponse {
+    type: AffinityEventType;
+    body: object;
+    sent_at: number;
+}

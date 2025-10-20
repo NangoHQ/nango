@@ -144,16 +144,6 @@ export class BillingProcessor {
                     if (incrLogs.isErr()) {
                         logger.error(`Failed to increment logs for account ${event.payload.properties.accountId}: ${incrLogs.error}`);
                     }
-                    if (type === 'webhook') {
-                        const incrWebhook = await this.usageTracker.incr({
-                            accountId: event.payload.properties.accountId,
-                            metric: 'external_webhooks',
-                            delta: event.payload.value
-                        });
-                        if (incrWebhook.isErr()) {
-                            logger.error(`Failed to increment external_webhooks for account ${event.payload.properties.accountId}: ${incrWebhook.error}`);
-                        }
-                    }
 
                     // Billing
                     billing.add([
@@ -229,6 +219,14 @@ export class BillingProcessor {
                 }
                 case 'usage.webhook_forward': {
                     const { success, ...rest } = event.payload.properties;
+                    const incrWebhook = await this.usageTracker.incr({
+                        accountId: event.payload.properties.accountId,
+                        metric: 'webhook_forwards',
+                        delta: event.payload.value
+                    });
+                    if (incrWebhook.isErr()) {
+                        logger.error(`Failed to increment webhook_forwards for account ${event.payload.properties.accountId}: ${incrWebhook.error}`);
+                    }
                     // Billing
                     billing.add([
                         {
