@@ -6570,8 +6570,8 @@ intercom:
         retry:
             at:
                 - 'x-ratelimit-reset'
-    docs: https://docs.nango.dev/integrations/all/intercom
-    docs_connect: https://docs.nango.dev/integrations/all/intercom/connect
+    docs: https://nango.dev/docs/integrations/all/intercom
+    docs_connect: https://nango.dev/docs/integrations/all/intercom/connect
     pre_connection_deletion_script: intercomPreConnectionDeletion
     connection_config:
         region:
