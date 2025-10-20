@@ -280,6 +280,7 @@
               "integrations/all/adyen",
               "integrations/all/affinity",
               "integrations/all/aimfox",
+              "integrations/all/aimfox-oauth",
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "integrations/all/airtable",
