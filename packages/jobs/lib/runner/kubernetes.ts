@@ -178,12 +178,13 @@ class Kubernetes {
                     },
                     spec: {
                         nodeSelector: {
-                            'nango.dev/used-by': 'runner'
+                            'nango.dev/lifecycle': 'no-disrupt'
                         },
                         tolerations: [
                             {
-                                key: 'nango.dev/no-disrupt',
-                                operator: 'Exists',
+                                key: 'nango.dev/lifecycle',
+                                operator: 'Equal',
+                                value: 'no-disrupt',
                                 effect: 'NoSchedule'
                             }
                         ],
