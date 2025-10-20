@@ -45,7 +45,7 @@ export const StyledLink: React.FC<StyledLinkProps> = ({ to, children, type = 'in
     if (type === 'external') {
         return (
             <a href={to} className={linkClasses} target="_blank" rel="noopener noreferrer" onClick={onClick} title={title}>
-                {children} {icon && <ExternalLink className="w-3.5 h-3.5 ml-1" />}
+                {children} {icon && <ExternalLink className="size-3.5 ml-1" />}
             </a>
         );
     }
