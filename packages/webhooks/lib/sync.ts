@@ -12,10 +12,10 @@ import type {
     DBExternalWebhook,
     DBSyncConfig,
     DBTeam,
-    ErrorPayload,
     IntegrationConfig,
     NangoSyncWebhookBody,
     NangoSyncWebhookBodyBase,
+    SyncErrorPayload,
     SyncOperationType,
     SyncResult
 } from '@nangohq/types';
@@ -48,10 +48,10 @@ export const sendSync = async ({
     model: string;
     now: Date | undefined;
     operation: SyncOperationType;
-    error?: ErrorPayload;
+    error?: SyncErrorPayload;
     responseResults?: SyncResult;
     success: boolean;
-} & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<Result<void>> => {
+} & ({ success: true; responseResults: SyncResult } | { success: false; error: SyncErrorPayload })): Promise<Result<void>> => {
     if (!webhookSettings) {
         return Ok(undefined);
     }
@@ -119,7 +119,7 @@ export const sendSync = async ({
         finalBody = {
             ...bodyBase,
             success: false,
-            error: error,
+            error,
             startedAt: dayjs(now).toDate().toISOString(),
             failedAt: new Date().toISOString()
         };

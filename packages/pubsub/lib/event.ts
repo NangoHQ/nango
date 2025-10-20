@@ -44,6 +44,19 @@ interface UsageEventBase<TType extends string, TPayload extends Serializable> ex
     };
 }
 
+export type UsageRecordsEvent = UsageEventBase<
+    'usage.records',
+    {
+        value: number;
+        properties: {
+            environmentId: number;
+            connectionId: number;
+            syncId: string;
+            model: string;
+        };
+    }
+>;
+
 export type UsageMarEvent = UsageEventBase<
     'usage.monthly_active_records',
     {
@@ -135,5 +148,5 @@ export type UsageWebhookForwardEvent = UsageEventBase<
 
 type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
 export type UsageEvent = EnforceUsageEventBase<
-    UsageMarEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
+    UsageMarEvent | UsageRecordsEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
 >;

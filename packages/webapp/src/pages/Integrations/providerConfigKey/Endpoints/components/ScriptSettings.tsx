@@ -117,7 +117,7 @@ export const ScriptSettings: React.FC<{
                     <div className="max-w-96">
                         Nango endpoints are powered by integration functions. Some of the following configurations can only be changed by modifying this
                         underlying function. If the source is a reference implementation, you will need to extend it to change certain configurations (
-                        <Link to="https://docs.nango.dev/implementation-guides/building-integrations/extend-reference-implementation" className="underline">
+                        <Link to="https://nango.dev/docs/implementation-guides/building-integrations/extend-reference-implementation" className="underline">
                             guide
                         </Link>
                         ).
