@@ -177,6 +177,16 @@ class Kubernetes {
                         labels: { app: name }
                     },
                     spec: {
+                        nodeSelector: {
+                            'nango.dev/used-by': 'runner'
+                        },
+                        tolerations: [
+                            {
+                                key: 'nango.dev/no-disrupt',
+                                operator: 'Exists',
+                                effect: 'NoSchedule'
+                            }
+                        ],
                         containers: [
                             {
                                 name: 'runner',
