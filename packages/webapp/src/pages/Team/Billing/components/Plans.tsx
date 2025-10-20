@@ -319,6 +319,12 @@ const PlanChangeDialog: React.FC<{
             clearInterval(refInterval.current);
             setLongWait(false);
         }
+
+        return () => {
+            if (refInterval.current) {
+                clearInterval(refInterval.current);
+            }
+        };
     }, [selectedPlan]);
 
     return (
