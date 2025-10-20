@@ -40,7 +40,7 @@ export default function UsageCard() {
     return (
         <Link
             to={`/${env}/team/billing#usage`}
-            className="group flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border border-border-muted cursor-pointer hover:bg-bg-elevated hover:border-border-default"
+            className="group/usage-card flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border border-border-muted cursor-pointer hover:bg-bg-elevated hover:border-border-default"
         >
             {isLoading ? (
                 <>
@@ -64,7 +64,7 @@ export default function UsageCard() {
 
 function getStylesForUsage(usage: number, limit: number | null) {
     if (!limit) {
-        return 'text-text-primary bg-bg-subtle group-hover:bg-bg-surface';
+        return 'text-text-primary bg-bg-subtle group-hover/usage-card:bg-bg-surface';
     }
     if (usage >= limit) {
         return 'text-feedback-error-fg bg-feedback-error-bg';
@@ -72,7 +72,7 @@ function getStylesForUsage(usage: number, limit: number | null) {
     if (usage >= limit * 0.8) {
         return 'text-feedback-warning-fg bg-feedback-warning-bg';
     }
-    return 'text-text-primary bg-bg-subtle group-hover:bg-bg-surface';
+    return 'text-text-primary bg-bg-subtle group-hover/usage-card:bg-bg-surface';
 }
 
 interface UsageBadgeProps {
