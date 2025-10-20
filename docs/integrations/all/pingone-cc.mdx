@@ -1,0 +1,89 @@
+---
+title: 'PingOne (Client Credentials)'
+sidebarTitle: 'PingOne (Client Credentials)'
+description: 'Access the PingOne API with Client Credentials in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _PingOne (Client Credentials)_.
+      </Step>
+      <Step title="Authorize PingOne">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> Enter your PingOne credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the PingOne API">
+        Let's make your first request to the PingOne API (fetch a list of environments). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/environments?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              // https://apidocs.pingidentity.com/pingone/platform/v1/api/#get-read-all-environments
+              endpoint: '/v1/environments',
+              providerConfigKey: '<INTEGRATION-ID>',
+              params: {
+                limit: 10
+              },
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their PingOne accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | ----- | ----- |
+    | Authorization | [Guide to connect to PingOne (Client Credentials) using Connect UI](/integrations/all/pingone-cc/connect) |
+    | General | [PingIdentity Website](https://www.pingidentity.com/) |
+    | | [How to access your instance Admin console home page](https://docs.pingidentity.com/pingone/getting_started_with_pingone/p1_access_admin_console.html?_gl=1*1izhtt*_gcl_au*MzY3MzQ2ODA0LjE3NTgwNDY2NDg.*_ga*MTM4OTI2Mjk1NS4xNzU4MDQ2NjQ4*_ga_V94KKVLZPT*czE3NjAzNjE0NzAkbzQkZzEkdDE3NjAzNjI4ODAkajM0JGwwJGg3NzQ1MDEyNjI.) |
+    | Developer | [PingOne API Documentation](https://apidocs.pingidentity.com/pingone/platform/v1/api/#top) |
+    | | [Application Management](https://apidocs.pingidentity.com/pingone/platform/v1/api/#application-management) |
+    | | [How to create an Admin Worker app](https://apidocs.pingidentity.com/pingone/getting-started/v1/api/#task-1-create-an-admin-worker-app-connection) |
+    | | [OAuth 2.0 Client Credentials grant type guide](https://apidocs.pingidentity.com/pingone/getting-started/v1/api/#post-step-1-get-a-pingone-access-token) |
+    | | [Working with PingOne APIs](https://apidocs.pingidentity.com/pingone/platform/v1/api/#working-with-pingone-apis) |
+    | | [API Rate Limiting](https://apidocs.pingidentity.com/pingone/platform/v1/api/#rate-limiting) |
+    
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pingone-cc.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - PingOne (Client Credentials) does not support [self-management scopes](https://apidocs.pingidentity.com/pingone/main/v1/api/#access-services-through-scopes-and-roles), all actions are performed as the Worker app with the roles selected when setting up the Worker app.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pingone-cc.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
