@@ -10,9 +10,16 @@ interface HeaderButtonsProps extends React.HTMLAttributes<HTMLDivElement> {
     onClickClose?: () => void;
     backLink?: string;
     onClickBack?: () => void;
+    isAuthLink?: boolean;
 }
 
-export const HeaderButtons: React.FC<HeaderButtonsProps> = ({ onClickClose = () => triggerClose('click:close'), backLink, onClickBack, ...props }) => {
+export const HeaderButtons: React.FC<HeaderButtonsProps> = ({
+    onClickClose = () => triggerClose('click:close'),
+    backLink,
+    onClickBack,
+    isAuthLink,
+    ...props
+}) => {
     const { t } = useI18n();
 
     return (
@@ -24,9 +31,11 @@ export const HeaderButtons: React.FC<HeaderButtonsProps> = ({ onClickClose = () 
                     </Button>
                 </Link>
             )}
-            <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={onClickClose}>
-                <X className="w-4 h-4" />
-            </Button>
+            {!isAuthLink && (
+                <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={onClickClose}>
+                    <X className="w-4 h-4" />
+                </Button>
+            )}
         </header>
     );
 };

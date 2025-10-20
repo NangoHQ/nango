@@ -2935,6 +2935,9 @@ components:
                 token:
                     type: string
                     description: The connect session token
+                connect_link:
+                    type: string
+                    description: The URL to directly connect the user to the integration. This can be used as a magic link.
                 expires_at:
                     type: string
                     description: When the token expires
