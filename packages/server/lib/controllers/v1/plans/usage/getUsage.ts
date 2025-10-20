@@ -33,35 +33,35 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
                 usage: usage.value.connections.current,
                 limit: plan.connections_max
             },
-            records: {
-                label: 'Records',
-                usage: usage.value.records.current,
-                limit: plan.records_max
-            },
             proxy: {
-                label: 'Proxy Requests',
+                label: 'Proxy requests',
                 usage: usage.value.proxy.current,
                 limit: plan.proxy_max
             },
-            functionExecutions: {
-                label: 'Function Executions',
-                usage: usage.value.function_executions.current,
-                limit: plan.function_executions_max
-            },
             functionCompute: {
-                label: 'Compute (GB/ms)',
+                label: 'Function time (ms)',
                 usage: usage.value.function_compute_gbms.current,
                 limit: plan.function_compute_gbms_max
             },
-            webhookForwards: {
-                label: 'Webhook Forwards',
-                usage: usage.value.webhook_forwards.current,
-                limit: plan.webhook_forwards_max
+            functionExecutions: {
+                label: 'Function runs',
+                usage: usage.value.function_executions.current,
+                limit: plan.function_executions_max
             },
             functionLogs: {
-                label: 'Function Logs',
+                label: 'Function logs',
                 usage: usage.value.function_logs.current,
                 limit: plan.function_logs_max
+            },
+            records: {
+                label: 'Sync records',
+                usage: usage.value.records.current,
+                limit: plan.records_max
+            },
+            webhookForwards: {
+                label: 'Webhook forwarding',
+                usage: usage.value.webhook_forwards.current,
+                limit: plan.webhook_forwards_max
             }
         };
 
