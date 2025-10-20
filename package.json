@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.69.3",
+    "version": "0.69.4",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -46,6 +46,7 @@
         "test:cli": "vitest --config ./vite.cli.config.ts",
         "test:cli:update-snapshots": "vitest --config ./vite.cli.config.ts --update",
         "test:openapi": "npx @apidevtools/swagger-cli validate docs/spec.yaml && npx @redocly/cli lint docs/spec.yaml",
+        "run:runner": "cd ./packages/runner && npm run dev",
         "test:providers": "npx tsx scripts/validation/providers/validate.ts",
         "docs": "tsx scripts/docs-gen-snippets.ts && cd ./docs && npx mintlify dev --port 3033",
         "docs:generate": "tsx scripts/docs-gen-snippets.ts",
