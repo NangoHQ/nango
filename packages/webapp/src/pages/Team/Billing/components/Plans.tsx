@@ -4,7 +4,7 @@ import { mutate } from 'swr';
 
 import { Dot } from './Dot.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
 import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
@@ -327,6 +327,13 @@ const PlanChangeDialog: React.FC<{
         };
     }, [selectedPlan]);
 
+    const description = useMemo(() => {
+        if (selectedPlan.isUpgrade) {
+            return `The ${selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges. When you upgrade, you'll be charged a prorated base fee for the current month.`;
+        }
+        return `Your ${activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won't renew. Any remaining usage will be billed after the month ends.`;
+    }, [selectedPlan, activePlan]);
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             {children && <DialogTrigger asChild>{children}</DialogTrigger>}
@@ -335,20 +342,10 @@ const PlanChangeDialog: React.FC<{
                     <DialogTitle>
                         Confirm {selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to {selectedPlan.plan.title} plan
                     </DialogTitle>
+                    <DialogDescription className="sr-only">{description}</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-1">
-                    {selectedPlan.isUpgrade && (
-                        <p>
-                            The {selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges.
-                            When you upgrade, you&apos;ll be charged a prorated base fee for the current month.
-                        </p>
-                    )}
-                    {selectedPlan.isDowngrade && (
-                        <p>
-                            Your {activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won’t renew. Any
-                            remaining usage will be billed after the month ends.
-                        </p>
-                    )}
+                    <p>{description}</p>
                     {longWait && (
                         <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
                     )}

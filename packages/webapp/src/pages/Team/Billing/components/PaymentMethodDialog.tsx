@@ -3,7 +3,7 @@ import { Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components-v2/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
@@ -61,6 +61,7 @@ export const PaymentMethodDialog: React.FC<{
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{replace ? 'Update' : 'Add'} payment method</DialogTitle>
+                    <DialogDescription className="sr-only">{replace ? 'Update your payment method' : 'Add a new payment method'}</DialogDescription>
                 </DialogHeader>
                 {clientSecret ? (
                     <Elements
