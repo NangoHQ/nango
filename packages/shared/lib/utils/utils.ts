@@ -448,33 +448,23 @@ export function getConnectionMetadata(
 }
 
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
-    let cleanTemplate = template;
-
-    if (cleanTemplate.includes('${') && cleanTemplate.includes('||')) {
-        const splitTemplate = cleanTemplate.split(/\s*\|\|\s*/);
-
-        const keyMatch = cleanTemplate.match(/\$\{connectionConfig\.(\w+)\}/);
-        const index = keyMatch && keyMatch[1] && config[keyMatch[1]] ? 0 : 1;
-        cleanTemplate = splitTemplate[index]?.trim() || '';
-    }
-
-    cleanTemplate = cleanTemplate.replace(/connectionConfig\./g, '');
+    const cleanTemplate = template.replace(/connectionConfig\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
-    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
-    let finalUrl: URL;
+    const interpolatedUrl = interpolateStringFromObject(cleanTemplate, removeEmptyValues(encodedParams));
+
+    if (interpolatedUrl.includes('${')) {
+        throw new Error(`Failed to interpolate URL template: ${template}. Missing config parameters.`);
+    }
 
     try {
-        finalUrl = new URL(interpolatedUrl);
+        return new URL(interpolatedUrl);
     } catch {
         try {
-            finalUrl = new URL(decodeURIComponent(interpolatedUrl));
+            return new URL(decodeURIComponent(interpolatedUrl));
         } catch {
-            // placeholder URL value if interpolation fails (e.g., token_url not yet available, waiting for redirect_uri_metadata)
-            finalUrl = new URL('https://placeholder.invalid');
+            throw new Error(`Invalid URL after interpolation: ${interpolatedUrl}. Template: ${template}`);
         }
     }
-
-    return finalUrl;
 }
 
 export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY'): string {
@@ -518,4 +508,14 @@ function getFingerprint(privateKeyPEM: string): string {
     const hash = crypto.createHash('sha256').update(publicKeyDER).digest('base64');
 
     return `SHA256:${hash}`;
+}
+
+function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (value !== '' && value !== undefined && value !== null) {
+            cleaned[key] = typeof value === 'object' && !Array.isArray(value) ? removeEmptyValues(value) : value;
+        }
+    }
+    return cleaned;
 }

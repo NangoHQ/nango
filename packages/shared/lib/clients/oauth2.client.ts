@@ -36,7 +36,15 @@ export function getSimpleOAuth2ClientConfig(
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
     const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['OAUTH2'] as string);
-    const tokenUrl = makeUrl(templateTokenUrl, connectionConfig, provider.token_url_skip_encode);
+
+    let tokenUrl: URL;
+    try {
+        tokenUrl = makeUrl(templateTokenUrl, connectionConfig, provider.token_url_skip_encode);
+    } catch {
+        // fallback to placeholder URL if interpolation fails
+        // this can happen when token_url is not yet available (e.g., waiting for redirect_uri_metadata)
+        tokenUrl = new URL('https://placeholder.invalid');
+    }
 
     const headers = { 'User-Agent': 'Nango' };
 
