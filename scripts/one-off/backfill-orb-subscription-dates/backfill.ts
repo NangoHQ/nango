@@ -50,22 +50,29 @@ async function fetchOrbSubscriptionSchedule(subscriptionId: string): Promise<Orb
     return (await response.json()).data as OrbSubscriptionScheduleItem[];
 }
 
-function getFirstPaidPlanDate(subscriptionSchedules: OrbSubscriptionScheduleItem[]): Date {
-    // Find all schedule items where the plan is not 'free'
-    const paidItems = subscriptionSchedules.filter((item) => item.plan?.external_plan_id !== 'free');
+function getLastUpgradeDate(subscriptionSchedules: OrbSubscriptionScheduleItem[]): Date | undefined {
+    // Sort all schedule items by start_date
+    const sortedSchedules = [...subscriptionSchedules].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
 
-    if (paidItems.length === 0) {
-        return undefined;
-    }
+    // look for the most recent free-to-paid transition anywhere in the schedule
+    let lastUpgradeDate: Date | undefined;
+    for (let i = 0; i < sortedSchedules.length - 1; i++) {
+        const currentItem = sortedSchedules[i];
+        const nextItem = sortedSchedules[i + 1];
 
-    // Find the paid item with the earliest start_date
-    let earliest = paidItems[0];
-    for (const item of paidItems) {
-        if (new Date(item.start_date) < new Date(earliest.start_date)) {
-            earliest = item;
+        // Check if current is free and next is paid
+        if (currentItem.plan?.external_plan_id === 'free' && nextItem.plan?.external_plan_id !== 'free') {
+            lastUpgradeDate = new Date(nextItem.start_date);
         }
     }
-    return new Date(earliest.start_date);
+
+    if (lastUpgradeDate) {
+        return lastUpgradeDate;
+    }
+
+    // No free -> paid transition found, return the first non-free plan
+    const firstNonFreePlan = sortedSchedules.find((item) => item.plan?.external_plan_id !== 'free');
+    return firstNonFreePlan ? new Date(firstNonFreePlan.start_date) : undefined;
 }
 
 async function backfill() {
@@ -82,23 +89,23 @@ async function backfill() {
     for (const plan of plans) {
         try {
             const subscriptionSchedules = await fetchOrbSubscriptionSchedule(plan.orb_subscription_id);
-            const firstPaidPlanDate = getFirstPaidPlanDate(subscriptionSchedules);
+            const lastUpgradeDate = getLastUpgradeDate(subscriptionSchedules);
 
-            if (firstPaidPlanDate) {
+            if (lastUpgradeDate) {
                 if (!DRY_RUN) {
-                    await db('nango.plans').where('id', plan.id).update({ orb_subscribed_at: firstPaidPlanDate });
+                    // await db('nango.plans').where('id', plan.id).update({ orb_subscribed_at: lastUpgradeDate });
                 }
 
                 const action = DRY_RUN ? 'Would update' : 'Successfully updated';
-                console.log(`✅ ${action} plan ${plan.id} (account_id: ${plan.account_id}) with start_date: ${firstPaidPlanDate.toISOString()}`);
+                console.log(`✅ ${action} plan ${plan.id} (account_id: ${plan.account_id}) with start_date: ${lastUpgradeDate.toISOString()}`);
                 successCount++;
             } else {
                 failures.push({
                     id: plan.id,
                     account_id: plan.account_id,
-                    error: 'No start_date found in subscription data'
+                    error: 'No upgrade date found in subscription data'
                 });
-                console.log(`❌ Failed to update plan ${plan.id} (account_id: ${plan.account_id}): No start_date found`);
+                console.log(`❌ Failed to update plan ${plan.id} (account_id: ${plan.account_id}): No upgrade date found`);
             }
         } catch (err) {
             failures.push({
