@@ -350,7 +350,7 @@ adyen:
             prefix: https://
 
 affinity:
-    display_name: Affinity
+    display_name: Affinity (v1)
     categories:
         - crm
     auth_mode: BASIC
@@ -358,10 +358,13 @@ affinity:
         base_url: https://api.affinity.co
         verification:
             method: GET
-            headers:
-                content-type: application/json
             endpoints:
-                - /lists
+                - /auth/whoami
+        retry:
+            at:
+                - 'x-ratelimit-limit-user'
+                - 'x-ratelimit-limit-org-reset'
+    webhook_routing_script: affinityWebhookRouting
     docs: https://nango.dev/docs/integrations/all/affinity
     docs_connect: https://nango.dev/docs/integrations/all/affinity/connect
     credentials:
@@ -375,9 +378,39 @@ affinity:
             type: string
             title: API Key
             description: Your Affinity API Key
+            pattern: '^[A-Za-z0-9_-]+$'
+            example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             # https://api-docs.affinity.co/#introduction
-            # Affinity is using basic auth with an api key
-            doc_section: '#step-1-finding-your-api-key'
+            # Affinity v1 uses basic auth with an api key
+            doc_section: '#step-1-generating-your-api-key'
+
+affinity-v2:
+    display_name: Affinity (v2)
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.affinity.co
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/auth/whoami
+        retry:
+            at:
+                - 'x-ratelimit-limit-user'
+                - 'x-ratelimit-limit-org-reset'
+    docs: https://nango.dev/docs/integrations/all/affinity-v2
+    docs_connect: https://nango.dev/docs/integrations/all/affinity-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Affinity account
+            pattern: '^[A-Za-z0-9_-]+$'
+            example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
+            doc_section: '#step-1-generating-your-api-key'
 
 aimfox:
     display_name: Aimfox
@@ -6716,7 +6749,7 @@ jira:
     proxy:
         base_url: https://api.atlassian.com
         connection_config:
-            baseUrl: ${connectionConfig.subdomain}
+            subdomain: ${connectionConfig.subdomain}
         paginate:
             type: link
             link_rel_in_response_header: next
@@ -7661,6 +7694,24 @@ loops-so:
             description: The API key for your Loops.so account
             pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
+
+loop-returns:
+    display_name: Loop Returns
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-authorization: ${apiKey}
+        base_url: https://api.loopreturns.com/api
+    docs: https://docs.nango.dev/integrations/all/loop-returns
+    docs_connect: https://docs.nango.dev/integrations/all/loop-returns/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Loop Returns account
+            doc_section: '#step-1-generating-your-api-key'
 
 lucid-scim:
     display_name: Lucid (SCIM)
@@ -9471,6 +9522,78 @@ pingboard:
     token_params:
         grant_type: client_credentials
     docs: https://nango.dev/docs/integrations/all/pingboard
+
+pingone:
+    display_name: PingOne
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/authorize
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.pingone.${connectionConfig.tld}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/pingone
+    docs_connect: https://docs.nango.dev/integrations/all/pingone/connect
+    connection_config:
+        tld:
+            type: string
+            title: Top Level Domain
+            description: The top level domain for your PingOne account
+            example: com
+            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            doc_section: '#step-2-finding-your-top-level-domain'
+        environmentId:
+            type: string
+            title: Environment ID
+            order: 1
+            description: The environment ID for your PingOne account
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+            format: uuid
+            doc_section: '#step-1-finding-your-environment-id'
+
+pingone-cc:
+    display_name: PingOne (Client Credentials)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.pingone.${connectionConfig.tld}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/pingone-cc
+    docs_connect: https://docs.nango.dev/integrations/all/pingone-cc/connect
+    connection_config:
+        tld:
+            type: string
+            title: Top Level Domain
+            description: The top level domain for your PingOne account
+            example: com
+            order: 2
+            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            doc_section: '#step-3-finding-your-top-level-domain'
+        environmentId:
+            type: string
+            title: Environment ID
+            order: 1
+            description: The environment ID for your PingOne account
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+            format: uuid
+            doc_section: '#step-2-finding-your-environment-id'
 
 pinterest:
     display_name: Pinterest
