@@ -93,7 +93,10 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
 
     if ('custom' in body && body.custom !== undefined && body.custom !== null && Object.keys(body.custom).length > 0) {
         const custom: Record<string, string> = body.custom as Record<string, string>;
-        integration.custom = custom;
+        integration.custom = {
+            ...integration.custom,
+            ...custom
+        };
     }
 
     // Credentials
