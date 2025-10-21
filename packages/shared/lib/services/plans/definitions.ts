@@ -12,7 +12,7 @@ export const freeV2Plan: PlanDefinition = {
     description: 'For hobby and testing.',
     isPaid: false,
     prevPlan: null,
-    nextPlan: ['starter-v6', 'growth-v4'],
+    nextPlan: ['starter-v2', 'growth-v2'],
     canChange: true,
     basePrice: 0,
     flags: {
@@ -40,15 +40,15 @@ export const freeV2Plan: PlanDefinition = {
     }
 };
 
-export const starterV6Plan: PlanDefinition = {
-    code: 'starter-v6',
+export const starterV2Plan: PlanDefinition = {
+    code: 'starter-v2',
     orbId: 'starter',
     orbVersion: 6,
     isPaid: true,
     title: 'Starter',
     description: 'For small teams.',
     prevPlan: ['free-v2'],
-    nextPlan: ['growth-v4'],
+    nextPlan: ['growth-v2'],
     canChange: true,
     basePrice: 50,
     flags: {
@@ -56,7 +56,7 @@ export const starterV6Plan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: false,
-        name: 'starter-v5',
+        name: 'starter-v2',
         sync_frequency_secs_min: 3600,
         connections_max: null,
         records_max: null,
@@ -81,14 +81,14 @@ export const starterV6Plan: PlanDefinition = {
     }
 };
 
-export const growthV4Plan: PlanDefinition = {
-    code: 'growth-v4',
+export const growthV2Plan: PlanDefinition = {
+    code: 'growth-v2',
     orbId: 'growth',
     orbVersion: 4,
     isPaid: true,
     title: 'Growth',
     description: 'For growing teams.',
-    prevPlan: ['free-v2', 'starter-v6'],
+    prevPlan: ['free-v2', 'starter-v2'],
     nextPlan: null,
     canChange: true,
     basePrice: 500,
@@ -97,7 +97,7 @@ export const growthV4Plan: PlanDefinition = {
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
-        name: 'growth-v3',
+        name: 'growth-v2',
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -207,8 +207,8 @@ export const freeV1Plan: PlanDefinition = {
     }
 };
 
-export const starterV5Plan: PlanDefinition = {
-    code: 'starter-v5',
+export const starterV1Plan: PlanDefinition = {
+    code: 'starter-v1',
     orbId: 'starter',
     orbVersion: [1, 2, 3, 4, 5],
     title: 'Starter (Legacy)',
@@ -224,7 +224,7 @@ export const starterV5Plan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: false,
-        name: 'starter-v5',
+        name: 'starter-v1',
         sync_frequency_secs_min: 3600,
         connections_max: null,
         records_max: null,
@@ -249,8 +249,8 @@ export const starterV5Plan: PlanDefinition = {
     }
 };
 
-export const growthV3Plan: PlanDefinition = {
-    code: 'growth-v3',
+export const growthV1Plan: PlanDefinition = {
+    code: 'growth-v1',
     orbId: 'growth',
     orbVersion: [1, 2, 3],
     title: 'Growth (Legacy)',
@@ -266,7 +266,7 @@ export const growthV3Plan: PlanDefinition = {
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
-        name: 'growth-v3',
+        name: 'growth-v1',
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -412,16 +412,16 @@ export const growthLegacyPlan: PlanDefinition = {
 export const plansList: PlanDefinition[] = [
     // Latest plans
     freeV2Plan,
-    starterV6Plan,
-    growthV4Plan,
+    starterV2Plan,
+    growthV2Plan,
 
     // Enterprise plan - Custom needs
     enterprisePlan,
 
     // Legacy Orb plans
     freeV1Plan,
-    starterV5Plan,
-    growthV3Plan,
+    starterV1Plan,
+    growthV1Plan,
 
     // Legacy non-Orb plans
     starterLegacyPlan,
