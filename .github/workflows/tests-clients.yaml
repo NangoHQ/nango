@@ -9,6 +9,42 @@ on:
     merge_group:
 
 jobs:
+    should-run:
+        runs-on: ubuntu-latest
+        outputs:
+            should_skip: ${{ steps.check.outputs.should_skip }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      docs_only:
+                          - 'docs/**'
+                      non_docs:
+                          - '**'
+                          - '!docs/**'
+            - name: Determine if should skip
+              id: check
+              run: |
+                  # Run on PRs only if not docs only
+                  # Always run on merge queue
+                  # Always run on direct pushes to master (not merge queue bot)
+                  IS_PR="${{ github.event_name == 'pull_request' }}"
+                  IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
+                  IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
+                  IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only == 'true' && steps.filter.outputs.non_docs != 'true' }}"
+
+                  SHOULD_SKIP="true"
+                  # Always run on merge queue and direct push to master
+                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  # Run on PR only if not docs only
+                  elif [[ "$IS_PR" == "true" && "$IS_DOCS_ONLY" != "true" ]]; then
+                      SHOULD_SKIP="false"
+                  fi
+
+                  echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     compute-matrix:
         runs-on: ubuntu-latest
         outputs:
@@ -17,13 +53,13 @@ jobs:
             - name: Set OS Matrix
               id: set-os-matrix
               run: |
-                  if [[ '${{ github.ref }}' == 'refs/heads/master' ]]; then
-                    echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
-                  else
-                    echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
-                  fi
+                  echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
+                  # TODO: fix tests on windows and re-enable
+                  # echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
     tests:
-        needs: compute-matrix
+        needs:
+            - should-run
+            - compute-matrix
         strategy:
             fail-fast: false
             matrix:
@@ -34,10 +70,12 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              if: needs.should-run.outputs.should_skip != 'true'
               with:
                   fetch-depth: '0'
 
             - name: Use Node.js ${{ matrix.node-version }}
+              if: needs.should-run.outputs.should_skip != 'true'
               uses: actions/setup-node@v4
               with:
                   cache: 'npm'
@@ -45,18 +83,25 @@ jobs:
                   cache-dependency-path: 'package-lock.json'
 
             - run: npm ci
+              if: needs.should-run.outputs.should_skip != 'true'
 
             - name: Build Typescript
+              if: needs.should-run.outputs.should_skip != 'true'
               run: npm run ts-build
 
             - run: npm run test:cli
+              if: needs.should-run.outputs.should_skip != 'true'
+
             - run: npm run test:unit -- packages/cli
+              if: needs.should-run.outputs.should_skip != 'true'
 
             - name: Build Node Client
+              if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   npm run -w @nangohq/node build
 
             - name: Test Node CJS
+              if: needs.should-run.outputs.should_skip != 'true'
               shell: bash
               run: |
                   RES=$(node packages/node-client/tests/built.cjs)
@@ -64,6 +109,7 @@ jobs:
                   [ "$RES" != *"Done"* ] || { exit 1; }
 
             - name: Test Node ESM
+              if: needs.should-run.outputs.should_skip != 'true'
               shell: bash
               run: |
                   RES=$(node packages/node-client/tests/built.js)

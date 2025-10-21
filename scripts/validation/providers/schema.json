@@ -48,7 +48,8 @@
                         "BILL",
                         "TWO_STEP",
                         "SIGNATURE",
-                        "MCP_OAUTH2"
+                        "MCP_OAUTH2",
+                        "MCP_OAUTH2_GENERIC"
                     ]
                 },
                 "authorization_method": {

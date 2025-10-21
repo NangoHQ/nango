@@ -2,7 +2,7 @@ import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';
 
 export class RedisKVStore implements KVStore {
-    private client: RedisClientType;
+    protected client: RedisClientType;
 
     constructor(client: RedisClientType) {
         this.client = client;
@@ -16,11 +16,11 @@ export class RedisKVStore implements KVStore {
         return this.client.get(key);
     }
 
-    public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlInMs?: number }): Promise<void> {
+    public async set(key: string, value: string, opts?: { canOverride?: boolean; ttlMs?: number }): Promise<void> {
         const options: any = {};
         if (opts) {
-            if (opts.ttlInMs && opts.ttlInMs > 0) {
-                options['PX'] = opts.ttlInMs;
+            if (opts.ttlMs && opts.ttlMs > 0) {
+                options['PX'] = opts.ttlMs;
             }
             if (opts.canOverride === false) {
                 options['NX'] = true;
@@ -28,7 +28,7 @@ export class RedisKVStore implements KVStore {
         }
         const res = await this.client.set(key, value, options);
         if (res !== 'OK') {
-            throw new Error(`Failed to set key: ${key}, value: ${value}, ${JSON.stringify(options)}`);
+            throw new Error(`set_key_already_exists`);
         }
     }
 
@@ -40,11 +40,11 @@ export class RedisKVStore implements KVStore {
         await this.client.del(key);
     }
 
-    public async incr(key: string, opts?: { ttlInMs?: number; delta?: number }): Promise<number> {
+    public async incr(key: string, opts?: { ttlMs?: number; delta?: number }): Promise<number> {
         const multi = this.client.multi();
         multi.incrBy(key, opts?.delta || 1);
-        if (opts?.ttlInMs) {
-            multi.pExpire(key, opts.ttlInMs);
+        if (opts?.ttlMs) {
+            multi.pExpire(key, opts.ttlMs);
         }
         const [count] = await multi.exec();
         return count as number;

@@ -2,6 +2,236 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.4] - 2025-10-16
+
+### Added
+
+- *(kvstore)* Add more commands (#4838) by @TBonnin
+- *(integrations)* Add support for aimfox (#4842) by @hassan254-prog
+- Usage/cache logic to store usage metric (#4846) by @TBonnin
+- *(mcp-generic)* Nango mcp generic (#4852) by @khaliqgant
+- *(integrations)* Add support for onedrive personal (#4858) by @hassan254-prog
+- *(validation)* Add validation script to other types (#4859) by @khaliqgant
+- Add usage max columns to plans table (#4857) by @TBonnin
+
+### Changed
+
+- Rename docs-v2 to docs (#4855) by @rguldener
+- Track usageV2 (#4856) by @TBonnin
+- Update version in manifest by @actions-user
+- Update links to docs everywhere (#4862) by @rguldener
+- *(webapp)* Upgrade react (#4868) by @kaposke
+- Add capping logic for usage v2 (#4863) by @TBonnin
+- Usage widget in dashboard to support usagev2 metrics (#4870) by @TBonnin
+
+### Fixed
+
+- Api url configuration via env var (#4833) by @TBonnin
+- Batch schedules.setLastScheduledTask db query (#4841) by @TBonnin
+- *(webhook)* Fix return statement for sentry-oauth (#4836) by @hassan254-prog
+- *(webapp-envs)* Small env fixes (#4844) by @khaliqgant
+- *(mcp-action)* Throw the entire object to get the stack trace included (#4840) by @khaliqgant
+- Update sync job result on deleteRecordsFromPreviousExecutions (#4847) by @TBonnin
+- *(deploy)* Remove render deployment steps (#4850) by @rossmcewan
+- *(providers)* Allow for host:port baseurl pattern for jira data center (#4851) by @hassan254-prog
+- *(providers)* Use `automated: true` for pipedrive api_domain (#4853) by @hassan254-prog
+- *(docker-build)* Fix import (#4865) by @khaliqgant
+- *(providers)* Use a different endpoint for verification endpoint within recruitee (#4866) by @hassan254-prog
+- *(webhook-errors)* Expose more granular errors on errors from functions (#4843) by @khaliqgant
+- Revert "chore(webapp): upgrade react" (#4869) by @kaposke
+
+## [v0.69.3] - 2025-10-10
+
+### Added
+
+- *(integrations)* Add support for adobe workfront (#4806) by @hassan254-prog
+- *(integrations)* Generate fingerprint instead of requiring one to be supplied for snowflake(JWT) (#4793) by @hassan254-prog
+- *(stack-trace-for-functions)* Output stack trace (#4821) by @khaliqgant
+- *(ux)* Warn about console.log in functions (#4822) by @khaliqgant
+- Add dd metrics for orb billing event ingestion (#4826) by @TBonnin
+- *(webapp)* Redesign Getting Started  (#4802) by @kaposke
+- *(internal)* Add api to retrieve users by account id (#4828) by @rossmcewan
+- *(integrations)* Allow `sharepoint-online-v2` and `one-drive` to store sharepoint access tokens in connectionConfig (#4823) by @hassan254-prog
+- *(docs)* Add note about .nango directory (#4834) by @khaliqgant
+
+### Changed
+
+- More logging cleaning (#4824) by @TBonnin
+- Update version in manifest by @actions-user
+
+### Fixed
+
+- Remove update of sync last_fetched_at. it is not being used (#4820) by @TBonnin
+- Remove color-scheme declaration (#4816) by @kaposke
+- *(npm-audit)* Audit fixes (#4808) by @khaliqgant
+- *(docs)* Spec issues (#4825) by @khaliqgant
+- Otlp export of actions (#4827) by @TBonnin
+- *(managed-release)* Bitnami has deprecated support for many public … (#4831) by @rossmcewan
+- *(docs)* Add tighter validation (#4830) by @khaliqgant
+
+## [v0.69.2] - 2025-10-06
+
+### Added
+
+- *(integrations)* Add support for folk (#4801) by @hassan254-prog
+
+### Changed
+
+- Clean logs (#4812) by @TBonnin
+
+### Fixed
+
+- *(kvstore)* Set defaults on getRedisClient (#4811) by @rossmcewan
+- Modify task processor tests to use wildcard groupKeyPattern (#4800) by @TBonnin
+- Reverting recent redis change (#4815) by @TBonnin
+- *(connect-ui)* Pass oauth2-cc connection config defaults (#4813) by @hassan254-prog
+- *(cli-tests)* Update path with changed api (#4817) by @khaliqgant
+
+## [v0.69.1] - 2025-10-03
+
+### Added
+
+- *(server)* Allow free self-hosted to toggle watermark (#4750) by @kaposke
+
+### Changed
+
+- Migrate instantly  docs (#4776) by @hassan254-prog
+
+### Fixed
+
+- *(ci)* Disabling windows tests + wrong docs only condition (#4799) by @TBonnin
+- *(action-output)* Throw if > 2MB (#4784) by @khaliqgant
+- *(docs)* Sample app instruction improvements (#4797) by @khaliqgant
+- *(account)* Increment account created metric (#4807) by @rossmcewan
+- *(functions)* Fix track deletes and scripts -> functions (#4805) by @khaliqgant
+- *(account)* Change dimension attribute name (#4809) by @rossmcewan
+- ConnectUI origin check to use baseURL.origin (#4792) by @kishenpateldotwork
+- Disable console in sandboxed code (#4803) by @TBonnin
+- *(kvstore)* Use kvstore across the board and allow use of ioredis (#4796) by @rossmcewan
+- *(connect-ui)* Overflow-auto to fix scrollbar (#4810) by @kaposke
+
+## [v0.69.0] - 2025-10-02
+
+### Added
+
+- *(integrations)* Add support for kintone (#4641) by @hassan254-prog
+- Add frequency to usage.function_execution metering event (#4685) by @TBonnin
+- Migration to backfill connect-ui settings and flags (#4696) by @kaposke
+- *(credentials)* Keep credentials until they are hard deleted at 30 days (#4692) by @khaliqgant
+- *(server)* Add usage.proxy events (#4694) by @TBonnin
+- *(integrations)* Add Webex integration documentation and logo (#4649) by @hilmia
+- *(integrations)* Add support for google service account (#4657) by @hassan254-prog
+- *(integrations)* Add support for bullhorn (#4656) by @hassan254-prog
+- *(webhooks)* Add support for fillout webhooks (#4713) by @hassan254-prog
+- Add ConnectUI settings to environment settings page (#4708) by @kaposke
+- *(webapp)* Add Connect UI customization to feature list (#4719) by @kaposke
+- *(mcp-usage)* Add mcp usage metric (#4714) by @khaliqgant
+- *(billing)* Allow billing batcher to group/aggregate similar events (#4718) by @TBonnin
+- Ingest proxy billing events (#4720) by @TBonnin
+- Add webhook_forwards event and ingest it as a billing event (#4721) by @TBonnin
+- *(integrations)* Add support for addepar (#4690) by @hassan254-prog
+- *(integrations)* Add support for snapchat ads api (#4682) by @hassan254-prog
+- *(integrations)* Add support for sellsy (#4686) by @hassan254-prog
+- *(integrations)* Add support for datacandy (#4705) by @frank184
+- *(integrations)* Add support for cursor (#4716) by @hassan254-prog
+- *(proxy)* Allow multiple query parameters to be defined for the proxy in provider configs (#4729) by @hassan254-prog
+- *(integrations)* Add support for jobber (#4681) by @hassan254-prog
+- *(api-status)* API status indicator via apidownwatch.com (#4709) by @khaliqgant
+- More billing events (#4743) by @TBonnin
+- *(integrations)* Add support for recruitee (#4737) by @hassan254-prog
+- *(integrations)* Add support for adp workforce now (#4736) by @hassan254-prog
+- *(integrations)* Add support for adp lyric (#4751) by @hassan254-prog
+- *(integrations)* Add support for trailscale (#4754) by @hassan254-prog
+- *(generate-tests)* Generate tests from the cli (#4137) by @hassan254-prog
+- *(deploy)* Add deploy to development environment (#4762) by @rossmcewan
+- *(kubernetes)* Add datadog logging annotation to runner pods (#4770) by @rossmcewan
+- *(webapp)* Sidebar and layout redesign (#4744) by @kaposke
+- Don't run all gh actions on docs update (#4748) by @TBonnin
+- *(webhooks)* Add support for highlevel (#4759) by @hassan254-prog
+- *(kvstore)* Add more options to config for kvstore to prevent socke… (#4780) by @rossmcewan
+- Add subscription date to plan table (#4778) by @kaposke
+- Retry on orb 429s + limit usage cron to once per cron interval (#4779) by @TBonnin
+- *(webhooks)* Add support for jobdiva (#4760) by @hassan254-prog
+- Add changelog entry for September 2025 (#4769) by @bastienbeurier
+- *(integrations)* Add snipe-it (#4418) by @gonzalde97
+- *(integrations)* Add support for excel (#4761) by @hassan254-prog
+- *(api-status)* Add more status widgets (#4795) by @khaliqgant
+- *(webapp)* Log version and commit hash to console (#4790) by @kaposke
+
+### Changed
+
+- Add content for missing section in API Auth (#4693) by @rguldener
+- Add new APIs to changelog (#4700) by @bastienbeurier
+- *(metrics)* Remove some account breakdown, add for auth type (#4724) by @bodinsamuel
+- Migrate from public key (#4723) by @bodinsamuel
+- Update Readme & other fixes (#4738) by @rguldener
+- Mark free self-hosted as whitelabel (#4746) by @rguldener
+- *(billing)* Billable_connections_v2 and records event tweak (#4756) by @TBonnin
+- Remove active connections billing event (#4758) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3d4aac976b6a8366420a7d9197dcbe0a002ea425 by Khaliq by @github-actions[bot]
+- Fix link in changelog (#4783) by @rguldener
+- Function executions metrics (#4777) by @TBonnin
+- Outlook documentation migration (#4697) by @hassan254-prog
+- Migrate google docs (#4698) by @hassan254-prog
+- Migrate asana docs (#4734) by @hassan254-prog
+- Migrate clickup docs (#4740) by @hassan254-prog
+- Migrate box docs (#4741) by @hassan254-prog
+- Migrate docs for greenhouse (#4771) by @hassan254-prog
+- Migrate atlassian docs (#4775) by @hassan254-prog
+- Migrate bamboohr basic docs (#4735) by @hassan254-prog
+- Skip github workflows on master (if not direct push)  (#4798) by @TBonnin
+- Script to backfill subscription dates from orb (#4789) by @kaposke
+
+### Fixed
+
+- *(webapp)* Wait for ConnectUI preview to be ready to receive events (#4687) by @kaposke
+- *(connect)* Document tags, always send tags in webhooks (#4689) by @bodinsamuel
+- *(jobs)* Only start processors if max concurrency > 0 (#4691) by @rossmcewan
+- *(jobs)* Configurable job processors (#4695) by @rossmcewan
+- *(cli)* Support optional and undefined for nango.yaml (#4699) by @bodinsamuel
+- *(debug)* Logging to capture the error (#4701) by @khaliqgant
+- *(fleet)* Race condition when node being created (#4704) by @TBonnin
+- *(integrations)* Fix smartsheet refresh token params (#4702) by @hassan254-prog
+- *(slack)* Handle Slack returning 200 when posting message (#4706) by @TBonnin
+- *(plain)* Fix verification url and endpoints (#4710) by @omar-inkeep
+- *(providers)* Fix snowflake username validation (#4715) by @hassan254-prog
+- ConnectUI self hosted permissions (#4707) by @kaposke
+- *(billing)* Track executions duration (#4688) by @bodinsamuel
+- *(webhook)* Correctly send auth override webhook (#4711) by @bodinsamuel
+- *(runner)* Telemetry is optional until full deploy (#4725) by @bodinsamuel
+- *(jobs)* Accept undefined telemetry durationMs and memoryGb (#4727) by @TBonnin
+- *(billing)* Replace card, prevent double downgrade (#4717) by @bodinsamuel
+- *(webapp)* Env settings scroll (#4726) by @kaposke
+- Sync max concurrency per environment (#4722) by @TBonnin
+- *(docs)* Fix docs on on-event scripts (#4731) by @khaliqgant
+- *(orch)* Simplify dequeue query (#4739) by @TBonnin
+- Rename groupPrefix to groupPrefixPattern (#4730) by @TBonnin
+- Cleanup after dequeue groupKeyPattern param rename (#4732) by @TBonnin
+- Set default frequency of usage export cron to 60mins (#4733) by @TBonnin
+- *(hooks)* Remove slack pre_connection_deletion script (#4745) by @khaliqgant
+- *(docs)* Docs clean and add apidownwatch status (#4747) by @khaliqgant
+- *(deploy)* Remove connect ui deploy to render (#4752) by @rossmcewan
+- *(endUsers)* Duplicate all relationships (#4712) by @bodinsamuel
+- *(connect-ui)* Show display name in success screen (#4749) by @kaposke
+- Allow redis url to be passed in as separate components (#4755) by @rossmcewan
+- *(tests)* Fix tests (#4763) by @khaliqgant
+- *(kubernetes)* Smallest pod request size fix (#4768) by @rossmcewan
+- *(kubernetes)* Annotation name must match container not pod (#4772) by @rossmcewan
+- *(server)* Apply permission overrides to CUI settings in connect-session (#4764) by @kaposke
+- *(mcp)* Don't ignore actions with `type: null` inputs (#4757) by @kaposke
+- *(connect-ui)* Potential scrollbar for some users (#4765) by @kaposke
+- Clean up auth types (#4773) by @bodinsamuel
+- Clean up proxy types (#4774) by @bodinsamuel
+- *(billing)* Aggregate records billing events per account (#4786) by @TBonnin
+- *(redis)* Attempt at fixing redis connectivity issues (#4788) by @rossmcewan
+- *(metering)* Logging error in exportUsage cron by @TBonnin
+- Correct check for windows (#4787) by @bodinsamuel
+- *(ci)* Do not push image and publish package from merge queue (#4791) by @TBonnin
+- *(custom-verification-script)* Grab the custom message correctly (#4785) by @khaliqgant
+- *(response-saver-tests)* Strip header (#4794) by @khaliqgant
+- Cleanup more types (#4781) by @bodinsamuel
+- *(http)* Handle empty string in redact (#4782) by @bodinsamuel
+
 ## [v0.68.0] - 2025-09-18
 
 ### Added
@@ -4910,6 +5140,11 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
+[v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
+[v0.69.2]: https://github.com/NangoHQ/nango/compare/v0.69.1..v0.69.2
+[v0.69.1]: https://github.com/NangoHQ/nango/compare/v0.69.0..v0.69.1
+[v0.69.0]: https://github.com/NangoHQ/nango/compare/v0.68.0..v0.69.0
 [v0.68.0]: https://github.com/NangoHQ/nango/compare/v0.67.8..v0.68.0
 [v0.67.8]: https://github.com/NangoHQ/nango/compare/v0.67.7..v0.67.8
 [v0.67.7]: https://github.com/NangoHQ/nango/compare/v0.67.6..v0.67.7

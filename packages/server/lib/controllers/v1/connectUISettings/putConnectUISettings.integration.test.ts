@@ -83,7 +83,7 @@ describe(`PUT ${route}`, () => {
         });
 
         // Verify the settings were actually created in the database
-        const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
+        const dbSettings = await connectUISettingsService.getRawConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
         expect(dbSettings.value).toStrictEqual(newSettings);
     });
@@ -127,7 +127,7 @@ describe(`PUT ${route}`, () => {
         });
 
         // Verify the settings were actually updated in the database
-        const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
+        const dbSettings = await connectUISettingsService.getRawConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
         expect(dbSettings.value).toStrictEqual(updatedSettings);
     });
@@ -248,7 +248,7 @@ describe(`PUT ${route}`, () => {
         expect(res.json.data.showWatermark).toBe(false); // Should preserve custom value
 
         // Verify the settings were stored in database with theme overridden
-        const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
+        const dbSettings = await connectUISettingsService.getRawConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
         expect(dbSettings.value?.theme).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings().theme);
         expect(dbSettings.value?.showWatermark).toBe(false);
@@ -280,7 +280,7 @@ describe(`PUT ${route}`, () => {
         expect(res.json.data.theme).toStrictEqual(testSettings.theme); // Should preserve custom theme
 
         // Verify the settings were stored in database with showWatermark overridden
-        const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
+        const dbSettings = await connectUISettingsService.getRawConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
         expect(dbSettings.value?.showWatermark).toBe(connectUISettingsService.getDefaultConnectUISettings().showWatermark);
         expect(dbSettings.value?.theme).toStrictEqual(testSettings.theme);
@@ -308,7 +308,7 @@ describe(`PUT ${route}`, () => {
         expect(res.json.data).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings());
 
         // Verify the settings were stored in database with both features overridden
-        const dbSettings = await connectUISettingsService.getConnectUISettings(db.knex, env.id);
+        const dbSettings = await connectUISettingsService.getRawConnectUISettings(db.knex, env.id);
         assert(dbSettings.isOk());
         expect(dbSettings.value).toStrictEqual(connectUISettingsService.getDefaultConnectUISettings());
     });

@@ -26,20 +26,41 @@ export class Redis {
     constructor(url: string) {
         this.url = url;
 
-        this.pub = createClient({ url: this.url });
+        const isExternal = url.startsWith('rediss://');
+        const socket = isExternal
+            ? {
+                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
+                  connectTimeout: 10_000,
+                  tls: true,
+                  servername: new URL(url).hostname,
+                  keepAlive: 60_000
+              }
+            : {};
+
+        this.pub = createClient({
+            url: this.url,
+            disableOfflineQueue: true,
+            pingInterval: 30_000,
+            socket
+        });
         this.pub.on('error', (err: Error) => {
             logger.error(`Redis (publisher) error`, err);
         });
         this.pub.on('connect', () => {
-            logger.info(`Redis (publisher) connected to ${this.url}`);
+            logger.info(`Redis (publisher) connected`);
         });
 
-        this.sub = createClient({ url: this.url });
+        this.sub = createClient({
+            url: this.url,
+            disableOfflineQueue: true,
+            pingInterval: 30_000,
+            socket
+        });
         this.sub.on('error', (err: Error) => {
             logger.error(`Redis (subscriber) error`, err);
         });
         this.sub.on('connect', () => {
-            logger.info(`Redis Subscriber connected to ${this.url}`);
+            logger.info(`Redis Subscriber connected`);
         });
     }
 

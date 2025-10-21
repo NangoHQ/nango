@@ -110,7 +110,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
         connectUIContainer.current.appendChild(iframe);
     }, [env, environmentAndAccount, trySendSessionToken, sessionToken]);
 
-    return <div ref={connectUIContainer} className={cn('overflow-hidden h-full w-full', className)} />;
+    return <div ref={connectUIContainer} className={cn('rounded-md overflow-hidden h-full w-full', className)} />;
 });
 
 ConnectUIPreview.displayName = 'ConnectUIPreview';

@@ -120,6 +120,7 @@ export const ENVS = z.object({
         .regex(/^[a-zA-Z0-9_-]+$/)
         .optional()
         .default('nango_runners'),
+    RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
@@ -191,10 +192,16 @@ export const ENVS = z.object({
     FLAG_USAGE_ENABLED: z.stringbool().optional().default(false),
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
+    ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
+    ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
+    ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
     BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(2000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
+
+    // Usage
+    USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS
@@ -253,7 +260,7 @@ export const ENVS = z.object({
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z
         .string({
-            error: 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
+            error: 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
         })
         .optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),

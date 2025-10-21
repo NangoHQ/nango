@@ -20,19 +20,20 @@ import {
     getById as getSyncById,
     getEndUserByConnectionId,
     getLastSyncDate,
-    getPlan,
     getSyncConfigRaw,
     getSyncJobByRunId,
     productTracking,
+    safeGetPlan,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan, getFrequencyMs, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { logger } from '../logger.js';
+import { capping } from '../utils/capping.js';
 import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
@@ -42,7 +43,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBPlan, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -81,15 +82,9 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
-
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
-            plan = planRes.isOk() ? planRes.value : null;
-        }
-
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
         tagTraceUser({ ...accountAndEnv, plan });
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
@@ -141,6 +136,21 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'records');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            throw new Error(message);
+        }
+        // Function logs capping is just informational - it does not block syncs from running
+        // nango.log() will still work, but logs won't be persisted
+        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        if (cappingFunctionLogsStatus.isCapped) {
+            const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
+            void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
+
         void logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
             syncVariant: task.syncVariant,
@@ -175,7 +185,10 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig,
             debug: task.debug || false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: {
+                ...(await getRunnerFlags()),
+                functionLogs: !cappingFunctionLogsStatus.isCapped
+            },
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
@@ -185,8 +198,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         if (task.debug) {
             void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
-
-        metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
 
         const res = await startScriptFn({
             taskId: task.id,
@@ -316,6 +327,22 @@ export async function handleSyncSuccess({
                 deletedKeys = res.value;
                 void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
+            if (deletedKeys.length > 0) {
+                void pubsub.publisher.publish({
+                    subject: 'usage',
+                    type: 'usage.records',
+                    payload: {
+                        value: -deletedKeys.length,
+                        properties: {
+                            accountId: nangoProps.team.id,
+                            environmentId: nangoProps.environmentId,
+                            connectionId: nangoProps.nangoConnectionId,
+                            syncId: nangoProps.syncId,
+                            model
+                        }
+                    }
+                });
+            }
 
             const updatedResults: Record<string, SyncResult> = {
                 [model]: {
@@ -358,7 +385,7 @@ export async function handleSyncSuccess({
             let deleted = 0;
 
             if (result && result[model]) {
-                const modelResult = result[model] as SyncResult;
+                const modelResult = result[model];
                 added = modelResult.added;
                 updated = modelResult.updated;
                 deleted = modelResult.deleted;
@@ -485,9 +512,6 @@ export async function handleSyncSuccess({
             internalIntegrationId: nangoProps.syncConfig.nango_config_id,
             endUser: nangoProps.endUser
         });
-
-        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
-        metrics.increment(metrics.Types.SYNC_SUCCESS);
 
         const sync = await getSyncById(nangoProps.syncId);
         const frequency = sync?.frequency || nangoProps.syncConfig.runs;
@@ -845,7 +869,9 @@ async function onFailure({
                         success: false,
                         error: {
                             type: 'script_error',
-                            description: error.message
+                            description: error.message,
+                            ...('payload' in error && error.payload ? { payload: error.payload } : {}),
+                            ...(error.additional_properties ? { additional_properties: error.additional_properties } : {})
                         },
                         now: lastSyncDate,
                         operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
@@ -895,9 +921,6 @@ async function onFailure({
             active: true
         });
     }
-
-    metrics.increment(metrics.Types.SYNC_FAILURE);
-    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 
     if (team) {
         void pubsub.publisher.publish({

@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
-import { createRoute, getLogger, requestLoggerMiddleware } from '@nangohq/utils';
+import { createRoute } from '@nangohq/utils';
 
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postIdleHandler } from './routes/runners/postIdle.js';
@@ -12,16 +12,9 @@ import { routeHandler as postHeartbeatHandler } from './routes/tasks/taskId/post
 import type { ResDefaultErrors } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-const logger = getLogger('Jobs.server');
-
 export const server = express();
 
 server.use(express.json({ limit: serverRequestSizeLimit }));
-
-// Log all requests
-if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
-    server.use(requestLoggerMiddleware({ logger }));
-}
 
 createRoute(server, getHealthHandler);
 createRoute(server, postIdleHandler);

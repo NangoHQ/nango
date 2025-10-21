@@ -1,9 +1,10 @@
+import crypto, { createPrivateKey, createPublicKey } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 import get from 'lodash-es/get.js';
 
-import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+import { isEnterprise, localhostUrl } from '@nangohq/utils';
 
 import type { DBConnection, Provider } from '@nangohq/types';
 
@@ -160,12 +161,11 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isStaging) {
-        return stagingHost;
-    } else if (isEnterprise) {
+    if (isEnterprise) {
         return process.env['NANGO_SERVER_URL'] as string;
-    } else if (isProd) {
-        return cloudHost;
+    }
+    if (process.env['SERVER_SERVICE_URL']) {
+        return process.env['SERVER_SERVICE_URL'];
     }
     return getServerBaseUrl();
 }
@@ -205,6 +205,11 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
     str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
         const resolvedInner = interpolateString(inner, replacers);
         return Buffer.from(resolvedInner).toString('base64');
+    });
+
+    str = str.replace(/\${fingerprint\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateString(inner, replacers);
+        return getFingerprint(resolvedInner);
     });
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
@@ -472,7 +477,7 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     return finalUrl;
 }
 
-export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): string {
+export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY'): string {
     if (!pem || typeof pem !== 'string') {
         throw new Error('Invalid PEM input: must be a non-empty string');
     }
@@ -499,4 +504,18 @@ export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY'): str
     }
 
     return `-----BEGIN ${type}-----\n${chunked.join('\n')}\n-----END ${type}-----\n`;
+}
+
+function getFingerprint(privateKeyPEM: string): string {
+    const privateKeyObj = createPrivateKey({
+        key: formatPem(privateKeyPEM, 'PRIVATE KEY'),
+        format: 'pem'
+    });
+
+    const publicKeyObj = createPublicKey(privateKeyObj);
+    const publicKeyDER = publicKeyObj.export({ type: 'spki', format: 'der' });
+
+    const hash = crypto.createHash('sha256').update(publicKeyDER).digest('base64');
+
+    return `SHA256:${hash}`;
 }

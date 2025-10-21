@@ -5,7 +5,6 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { Button } from '../../components/ui/button/Button';
@@ -88,7 +87,7 @@ export default function Create() {
 
     const showDocs = (e: React.MouseEvent<SVGSVGElement>, provider: Provider) => {
         e.stopPropagation();
-        const documentationUrl = provider.docs ?? `https://docs.nango.dev/integrations/all/${provider.name}`;
+        const documentationUrl = provider.docs ?? `https://nango.dev/docs/integrations/all/${provider.name}`;
         window.open(documentationUrl, '_blank');
     };
 
@@ -146,7 +145,7 @@ export default function Create() {
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+        <DashboardLayout>
             <Helmet>
                 <title>Integrations Create - Nango</title>
             </Helmet>

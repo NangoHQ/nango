@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 import { OperationDrawer } from './components/OperationDrawer';
 import { SearchAllOperations } from './components/SearchAllOperations';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
@@ -20,7 +19,7 @@ export const LogsShow: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6">
+            <DashboardLayout fullWidth className="p-6">
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
@@ -29,7 +28,7 @@ export const LogsShow: React.FC = () => {
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-gray-400">
                         Follow{' '}
-                        <Link to="https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#logs" className="text-blue-400">
+                        <Link to="https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview#logs" className="text-blue-400">
                             these instructions
                         </Link>{' '}
                         to configure logs.
@@ -40,7 +39,7 @@ export const LogsShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Logs} fullWidth className="p-6 h-full">
+        <DashboardLayout fullWidth className="p-6 h-full">
             <Helmet>
                 <title>Logs - Nango</title>
             </Helmet>

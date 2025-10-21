@@ -207,7 +207,13 @@ var createIssue_default = action;
 `;
 
 exports[`edge cases > should catch invalid setMergingStrategy 1`] = `
-[Error: err - ./zero/cases/setMergingStrategy.error.ts:20 
+"err - ./zero/cases/setMergingStrategy.error.ts:20 
   setMergingStrategy should be called before any proxy function
-]
+"
+`;
+
+exports[`edge cases > should catch multiple exports 1`] = `
+"err - ./zero/cases/multipleExports.ts:25 
+  Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent are permitted.
+"
 `;

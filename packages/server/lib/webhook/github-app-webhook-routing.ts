@@ -24,7 +24,6 @@ const route: WebhookHandler = async (nango, headers, body) => {
     const signature = headers['x-hub-signature-256'];
 
     if (signature) {
-        logger.info('Signature found, verifying...');
         const valid = validate(nango.integration, signature, body);
 
         if (!valid) {

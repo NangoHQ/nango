@@ -57,7 +57,7 @@ async function setupPostgres() {
 
 export async function setupActiveMQ() {
     console.log('Starting ActiveMQ...');
-    const amq = await new GenericContainer('apache/activemq-classic:5.18.3').withExposedPorts(61614).start();
+    const amq = await new GenericContainer('apache/activemq-classic:5.18.3').withExposedPorts(61614).withName(`activemq-test-${randomUUID()}`).start();
     containers.push(amq);
 
     const url = `ws://${amq.getHost()}:${amq.getMappedPort(61614)}`;
@@ -68,8 +68,19 @@ export async function setupActiveMQ() {
     console.log('ActiveMQ running at', url);
 }
 
+export async function setupRedis() {
+    console.log('Starting Redis...');
+    const redis = await new GenericContainer('redis:8.0.4-alpine').withExposedPorts(6379).withName(`redis-test-${randomUUID()}`).start();
+    containers.push(redis);
+
+    const url = `redis://${redis.getHost()}:${redis.getMappedPort(6379)}`;
+
+    process.env['NANGO_REDIS_URL'] = url;
+    console.log('Redis running at', url);
+}
+
 export async function setup() {
-    await Promise.all([setupPostgres(), setupElasticsearch(), setupActiveMQ()]);
+    await Promise.all([setupPostgres(), setupElasticsearch(), setupActiveMQ(), setupRedis()]);
 }
 
 export const teardown = async () => {

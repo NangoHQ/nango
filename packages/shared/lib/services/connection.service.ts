@@ -12,6 +12,7 @@ import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as signatureClient from '../auth/signature.js';
+import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import {
@@ -38,22 +39,19 @@ import {
 } from '../utils/utils.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type {
-    ApiKeyCredentials,
-    AppCredentials,
-    AppStoreCredentials,
-    BasicApiCredentials,
-    OAuth2ClientCredentials,
-    OAuth2Credentials
-} from '../models/Auth.js';
 import type { ServiceResponse } from '../models/Generic.js';
-import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/index.js';
 import type { AuthCredentialsError } from '../utils/error.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type {
+    AllAuthCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
     AuthModeType,
+    BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
     ConnectionConfig,
@@ -68,6 +66,9 @@ import type {
     JwtCredentials,
     MaybePromise,
     Metadata,
+    OAuth1Credentials,
+    OAuth2ClientCredentials,
+    OAuth2Credentials,
     Provider,
     ProviderAppleAppStore,
     ProviderBill,
@@ -103,7 +104,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        parsedRawCredentials: AuthCredentials;
+        parsedRawCredentials: AllAuthCredentials;
         connectionConfig?: ConnectionConfig;
         environmentId: number;
         metadata?: Metadata | null;
@@ -857,7 +858,11 @@ class ConnectionService {
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom): AuthCredentials {
+    public parseRawCredentials(
+        rawCredentials: object,
+        authMode: AuthModeType,
+        template?: ProviderOAuth2 | ProviderTwoStep | ProviderCustom
+    ): AllAuthCredentials {
         const rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
@@ -1501,6 +1506,10 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if ((provider as any).auth_mode === 'MCP_OAUTH2_GENERIC') {
+            const { success, error, response: creds } = await refreshMcpGenericCredentials({ connection, logCtx });
+
+            return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         } else {
             const {
                 success,

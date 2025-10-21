@@ -18,12 +18,27 @@ export { type Lock, Locking } from './Locking.js';
 // Not my best code
 
 let redis: RedisClientType | undefined;
-async function getRedis(url: string): Promise<RedisClientType> {
+export async function getRedis(url: string): Promise<RedisClientType> {
     if (redis) {
         return redis;
     }
-    redis = createClient({ url });
+    const isExternal = url.startsWith('rediss://');
+    const socket = isExternal
+        ? {
+              reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
+              connectTimeout: 10_000,
+              tls: true,
+              servername: new URL(url).hostname,
+              keepAlive: 60_000
+          }
+        : {};
 
+    redis = createClient({
+        url: url,
+        disableOfflineQueue: true,
+        pingInterval: 30_000,
+        socket
+    });
     redis.on('error', (err) => {
         // TODO: report error
         console.error(`Redis (kvstore) error: ${err}`);

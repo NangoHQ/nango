@@ -1,18 +1,18 @@
-import { IconAnchor, IconKey, IconLockOpen } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { CodeXml, ExternalLink, KeySquare, LockOpen, PartyPopper, RefreshCcw, Waypoints, Webhook } from 'lucide-react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 import VerticalSteps from './components/VerticalSteps';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
+import { SlackIcon } from '@/assets/SlackIcon';
 
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
@@ -36,96 +36,142 @@ export const GettingStarted: React.FC = () => {
         currentStep = -1;
     }
 
+    if (currentStep == 2) {
+        // Last step is completed automatically
+        currentStep = 3;
+    }
+
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.GettingStarted}>
+        <DashboardLayout className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>
-            <header className="flex items-center mb-8">
-                <h2 className="flex text-left text-3xl font-semibold tracking-tight text-text-primary">Try Nango with Google Calendar</h2>
+            <header className="flex flex-col gap-3.5">
+                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting started</h2>
+                <p className="text-text-secondary text-sm">Try connecting Nango with Google Calendar to see how integrations work.</p>
             </header>
-            <VerticalSteps
-                className="w-full"
-                currentStep={currentStep}
-                steps={[
-                    {
-                        id: 'authorize-google-calendar',
-                        renderTitle: (status) => {
-                            if (status === 'completed') {
-                                return <h3 className="text-success-4 text-lg font-semibold">Google Calendar Authorized!</h3>;
-                            }
-                            return <h3 className="text-text-primary text-lg font-semibold">Experience the user&apos;s auth flow</h3>;
-                        },
-                        content: (
-                            <FirstStep
-                                connection={gettingStarted?.connection ?? null}
-                                integration={gettingStarted?.meta.integration ?? null}
-                                onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
-                                onConnected={async (connectionId) => {
-                                    try {
-                                        analyticsTrack('web:getting_started:connection-created');
-                                        const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
-                                        if (!res.ok) {
-                                            throw new Error('Failed to patch getting started');
+            <div className="flex flex-row gap-10 min-w-0">
+                <VerticalSteps
+                    className="flex-1 min-w-0"
+                    currentStep={currentStep}
+                    steps={[
+                        {
+                            id: 'authorize-google-calendar',
+                            icon: KeySquare,
+                            content: (
+                                <FirstStep
+                                    connection={gettingStarted?.connection ?? null}
+                                    integration={gettingStarted?.meta.integration ?? null}
+                                    onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
+                                    onConnected={async (connectionId) => {
+                                        try {
+                                            analyticsTrack('web:getting_started:connection-created');
+                                            const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
+                                            if (!res.ok) {
+                                                throw new Error('Failed to patch getting started');
+                                            }
+                                            await refetch();
+                                        } catch {
+                                            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
                                         }
-                                        await refetch();
-                                    } catch {
-                                        toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
-                                    }
-                                }}
-                                onDisconnected={async () => {
-                                    try {
-                                        analyticsTrack('web:getting_started:connection-disconnected');
-                                        await refetch();
-                                    } catch {
-                                        toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
-                                    }
-                                }}
-                            />
-                        ),
-                        icon: IconKey
-                    },
-                    {
-                        id: 'access-google-calendar-api',
-                        renderTitle: () => {
-                            return <h3 className="text-text-primary text-lg font-semibold">Use Nango as a proxy to make requests to Google Calendar</h3>;
-                        },
-                        content: (
-                            <SecondStep
-                                connectionId={gettingStarted?.connection?.connection_id}
-                                providerConfigKey={gettingStarted?.meta.integration?.unique_key}
-                                onExecuted={async () => {
-                                    try {
-                                        analyticsTrack('web:getting_started:code-snippet-executed');
-                                        const { res } = await patchGettingStarted(env, { step: 2 });
-                                        if (!res.ok) {
-                                            throw new Error('Failed to patch getting started');
+                                    }}
+                                    onDisconnected={async () => {
+                                        try {
+                                            analyticsTrack('web:getting_started:connection-disconnected');
+                                            await refetch();
+                                        } catch {
+                                            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
                                         }
-                                        await refetch();
-                                    } catch {
-                                        toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
-                                    }
-                                }}
-                                completed={currentStep >= 2}
-                            />
-                        ),
-                        icon: IconLockOpen
-                    },
-                    {
-                        id: 'go-deeper',
-                        renderTitle: () => {
-                            return <h3 className="text-text-primary text-lg font-semibold">Go deeper</h3>;
+                                    }}
+                                />
+                            )
                         },
-                        content: (
-                            <ThirdStep
-                                onDocumentationLinkClicked={(link) => analyticsTrack(`web:getting_started:documentation-link-clicked`, { link })}
-                                onSlackLinkClicked={() => analyticsTrack('web:getting_started:slack-community-link-clicked')}
-                            />
-                        ),
-                        icon: IconAnchor
-                    }
-                ]}
-            />
+                        {
+                            id: 'access-google-calendar-api',
+                            icon: LockOpen,
+                            content: (
+                                <SecondStep
+                                    connectionId={gettingStarted?.connection?.connection_id}
+                                    providerConfigKey={gettingStarted?.meta.integration?.unique_key}
+                                    onExecuted={async () => {
+                                        try {
+                                            analyticsTrack('web:getting_started:code-snippet-executed');
+                                            const { res } = await patchGettingStarted(env, { step: 2 });
+                                            if (!res.ok) {
+                                                throw new Error('Failed to patch getting started');
+                                            }
+                                            await refetch();
+                                        } catch {
+                                            toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
+                                        }
+                                    }}
+                                    completed={currentStep >= 2}
+                                />
+                            )
+                        },
+                        ...(currentStep >= 2
+                            ? [
+                                  {
+                                      id: 'go-deeper',
+                                      icon: PartyPopper,
+                                      branded: true,
+                                      content: <ThirdStep onSetupIntegrationClicked={() => analyticsTrack('web:getting_started:setup-integration-clicked')} />
+                                  }
+                              ]
+                            : [])
+                    ]}
+                />
+                <div className="shrink-0 w-[300px] flex flex-col gap-2.5">
+                    <h4 className="text-s leading-5 text-text-secondary uppercase">DISCOVER THE NANGO PLATFORM</h4>
+
+                    <div className="flex flex-col gap-5">
+                        <DocCard
+                            to="https://nango.dev/docs/getting-started/quickstart/embed-in-your-app"
+                            icon={CodeXml}
+                            title="Embed in your app"
+                            description="Let your users authorize 3rd-party APIs seamlessly."
+                        />
+                        <DocCard
+                            to="https://nango.dev/docs/guides/use-cases/proxy"
+                            icon={Waypoints}
+                            title="Proxy"
+                            description="Run authenticated API requests to external APIs."
+                        />
+                        <DocCard
+                            to="https://nango.dev/docs/guides/use-cases/syncs"
+                            icon={RefreshCcw}
+                            title="Syncs"
+                            description="Continously sync data from external APIs."
+                        />
+                        <DocCard
+                            to="https://nango.dev/docs/guides/use-cases/webhooks"
+                            icon={Webhook}
+                            title="Webhooks"
+                            description="Listen to webhooks from external APIs."
+                        />
+                        <DocCard
+                            to="https://nango.dev/slack"
+                            icon={SlackIcon}
+                            title="Join the Slack community"
+                            description="Seek help from the Nango team and the community."
+                        />
+                    </div>
+                </div>
+            </div>
         </DashboardLayout>
+    );
+};
+
+const DocCard = ({ to, icon, title, description }: { to: string; icon: React.ElementType; title: string; description: string }) => {
+    const IconComponent = icon;
+    return (
+        <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-bg-elevated transition-all">
+            <IconComponent className="shrink-0 size-4.5 text-icon-primary" />
+            <div className="flex flex-col gap-1">
+                <h5 className="text-sm font-medium leading-5 text-text-primary">{title}</h5>
+                <p className="text-sm leading-5 text-text-tertiary group-hover:text-text-secondary transition-all">{description}</p>
+            </div>
+            <ExternalLink className="shrink-0 size-3.5 text-icon-tertiary ml-auto group-hover:text-icon-primary transition-all" />
+        </Link>
     );
 };

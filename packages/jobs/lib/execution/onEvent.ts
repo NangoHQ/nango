@@ -1,10 +1,11 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, configService, environmentService, getApiUrl, getEndUserByConnectionId } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { NangoError, configService, environmentService, getApiUrl, getEndUserByConnectionId, safeGetPlan } from '@nangohq/shared';
+import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
+import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -28,6 +29,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         }
         account = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
         tagTraceUser(accountAndEnv);
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
@@ -41,6 +43,21 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         }
 
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
+
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            throw new Error(message);
+        }
+        // Function logs capping is just informational - it does not block syncs from running
+        // nango.log() will still work, but logs won't be persisted
+        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        if (cappingFunctionLogsStatus.isCapped) {
+            const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
+            void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
 
         void logCtx.info(`Starting script '${task.onEventName}'`, {
             postConnection: task.onEventName,
@@ -93,13 +110,14 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: {
+                ...(await getRunnerFlags()),
+                functionLogs: !cappingFunctionLogsStatus.isCapped
+            },
             startedAt: new Date(),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
-
-        metrics.increment(metrics.Types.ON_EVENT_SCRIPT_EXECUTION, 1, { accountId: account.id });
 
         const res = await startScript({
             taskId: task.id,

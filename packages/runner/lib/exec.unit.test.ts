@@ -30,7 +30,8 @@ function getNangoProps(): NangoProps {
             validateActionInput: false,
             validateActionOutput: false,
             validateSyncMetadata: false,
-            validateSyncRecords: false
+            validateSyncRecords: false,
+            functionLogs: true
         },
         endUser: null,
         heartbeatTimeoutSecs: 30
@@ -71,7 +72,8 @@ describe('Exec', () => {
         expect(res.error.toJSON()).toEqual({
             payload: {
                 message: 'foobar',
-                name: 'Error'
+                name: 'Error',
+                stacktrace: ['Error: foobar', 'at fn (undefined-provider-config-key.cjs:3:19)']
             },
             status: 500,
             type: 'script_internal_error',

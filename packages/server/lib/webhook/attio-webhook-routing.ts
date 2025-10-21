@@ -30,8 +30,6 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
         logger.info('no webhook secret configured, skipping signature validation', { configId: nango.integration.id });
     }
 
-    logger.info('received', { configId: nango.integration.id });
-
     const parsedBody = body;
 
     // For empty events we can just return success
@@ -42,7 +40,6 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
 
     let connectionIds: string[] = [];
     for (const event of parsedBody.events) {
-        logger.info(`processing event ${event.event_type}`, { configId: nango.integration.id });
         const response = await nango.executeScriptForWebhooks({
             body: event,
             webhookType: 'event_type',

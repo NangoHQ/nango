@@ -14,13 +14,15 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
+    safeGetPlan,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
+import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -46,7 +48,10 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
-        tagTraceUser(accountAndEnv);
+
+        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
+
+        tagTraceUser({ ...accountAndEnv, plan });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -85,6 +90,21 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             integration: task.connection.provider_config_key
         });
 
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'records');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            throw new Error(message);
+        }
+        // Function logs capping is just informational - it does not block syncs from running
+        // nango.log() will still work, but logs won't be persisted
+        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        if (cappingFunctionLogsStatus.isCapped) {
+            const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
+            void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
+
         syncJob = await createSyncJob({
             sync_id: sync.id,
             type: SyncJobsType.INCREMENTAL,
@@ -119,13 +139,14 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: {
+                ...(await getRunnerFlags()),
+                functionLogs: !cappingFunctionLogsStatus.isCapped
+            },
+            endUser: endUser,
             startedAt: new Date(),
-            endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
-
-        metrics.increment(metrics.Types.WEBHOOK_EXECUTION, 1, { accountId: team.id });
 
         const res = await startScript({
             taskId: task.id,
@@ -165,8 +186,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             runTime: 0,
             error,
             syncConfig,
-            endUser,
-            startedAt: new Date()
+            endUser
         });
         return Err(error);
     }
@@ -289,9 +309,6 @@ export async function handleWebhookSuccess({
     });
 
     await logCtx.success();
-
-    metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
 }
 
 export async function handleWebhookError({
@@ -346,7 +363,6 @@ export async function handleWebhookError({
         error,
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
-        startedAt: nangoProps.startedAt,
         telemetryBag
     });
 }
@@ -367,7 +383,6 @@ async function onFailure({
     runTime,
     error,
     endUser,
-    startedAt,
     telemetryBag
 }: {
     connection: ConnectionJobs;
@@ -385,7 +400,6 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
-    startedAt: Date;
     telemetryBag?: TelemetryBag | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
@@ -476,7 +490,4 @@ async function onFailure({
     void logCtx?.error(error.message, { error });
     await logCtx?.enrichOperation({ error });
     await logCtx?.failed();
-
-    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

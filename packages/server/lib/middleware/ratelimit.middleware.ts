@@ -43,7 +43,22 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
     const url = getRedisUrl();
     let limiter: RateLimiterAbstract;
     if (url) {
-        const redisClient = await createClient({ url: url, disableOfflineQueue: true }).connect();
+        const isExternal = url.startsWith('rediss://');
+        const socket = isExternal
+            ? {
+                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
+                  connectTimeout: 10_000,
+                  tls: true,
+                  servername: new URL(url).hostname,
+                  keepAlive: 60_000
+              }
+            : {};
+        const redisClient = await createClient({
+            url: url,
+            disableOfflineQueue: true,
+            pingInterval: 30_000,
+            socket
+        }).connect();
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });

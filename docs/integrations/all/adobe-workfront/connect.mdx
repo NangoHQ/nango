@@ -1,0 +1,46 @@
+---
+title: Adobe Workfront - How do I link my account?
+sidebarTitle: Adobe Workfront
+---
+
+# Overview
+
+To authenticate with Adobe Workfront, you will need:
+1. **Hostname** - Your organization's Adobe Workfront domain URL, which is used for API calls.
+
+This guide will walk you through obtaining your **Hostname** in Adobe Workfront.
+
+### Prerequisites:
+
+- You must have an Adobe Workfront account with administrator access.
+
+### Instructions:
+
+#### Step 1: Locate your Adobe Workfront Domain
+
+The format for your domain URL differs based on whether your organization has been onboarded to the Adobe Unified Shell.
+
+To determine your domain format:
+
+1. **Check your current Workfront URL** when viewing any Workfront page:
+   - If your Workfront URL begins with `<yourdomain>.my.workfront.com`, then your API domain is: `<yourdomain>.my.workfront.com`
+   - If your Workfront URL begins with `experience.adobe.com`, then your API domain is: `<yourdomain>.my.workfront.adobe.com`
+
+2. **To locate your domain**:
+   1. Click the **Main Menu** icon in the upper-right corner of Adobe Workfront, or (if available), click the **Main Menu** icon in the upper-left corner.
+   2. Click **Setup**.
+   3. Select **System**, then select **Customer Info**.
+   4. Your domain is listed on the right side of the screen, combine it with the other part to make a full **Hostname**.
+
+<img src="/integrations/all/adobe-workfront/domain.webp"/>
+
+#### Step 2: Enter your credentials in the Connect UI
+
+Once you have your **Hostname**:
+1. Open the form where you need to authenticate with Adobe Workfront.
+2. Enter your **Hostname** in its designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/adobe-workfront/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Adobe Workfront.

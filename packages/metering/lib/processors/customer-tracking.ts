@@ -22,7 +22,6 @@ export class CustomerTrackingProcessor {
             consumerGroup: 'customer-tracking',
             subject: 'usage',
             callback: async (event) => {
-                logger.info(`Processing customer tracking event`, { event });
                 const result = await process(event);
                 if (result.isErr()) {
                     report(new Error(`Failed to process customer tracking event: ${result.error}`), { event });
@@ -36,7 +35,6 @@ async function process(event: UsageEvent): Promise<Result<void>> {
     try {
         switch (event.type) {
             case 'usage.connections': {
-                logger.info(`Tracking usage for account ${event.payload.properties.accountId}`);
                 if (typeof event.payload.properties['environmentId'] === 'number') {
                     await notifyOnProdUsageThreshold({
                         accountId: event.payload.properties.accountId,

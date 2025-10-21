@@ -6,8 +6,8 @@ import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/util
 import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
-import type { AuthorizationTokenResponse, Config as ProviderConfig, RefreshTokenResponse } from '../models/index.js';
-import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
+import type { Config as ProviderConfig } from '../models/index.js';
+import type { AuthorizationTokenResponse, ConnectionConfig, DBConnectionDecrypted, ProviderOAuth2, RefreshTokenResponse } from '@nangohq/types';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
@@ -30,6 +30,8 @@ class ProviderClient {
             case 'figjam':
             case 'facebook':
             case 'jobber':
+            case 'one-drive':
+            case 'sharepoint-online':
             case 'tiktok-ads':
             case 'tiktok-accounts':
             case 'sentry-oauth':
@@ -72,6 +74,9 @@ class ProviderClient {
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'tiktok-ads':
                 return this.createTiktokAdsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'one-drive':
+            case 'sharepoint-online':
+                return this.createSharepointToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'sentry-oauth':
                 return this.createSentryOauthToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'stripe-app':
@@ -127,6 +132,15 @@ class ProviderClient {
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
+            case 'one-drive':
+            case 'sharepoint-online':
+                return this.refreshSharepointToken(
+                    provider.token_url as string,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    connection.connection_config
+                );
             case 'tiktok-accounts':
                 return this.refreshTiktokAccountsToken(
                     provider.refresh_url as string,
@@ -821,6 +835,105 @@ class ProviderClient {
             logger.error('introspectSalesforce', stringifyError(err));
             // TODO add observability
             return true;
+        }
+    }
+
+    private async createSharepointToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                code: code,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code'
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('sharepoint_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('sharepoint_token_request_error', err.message);
+        }
+    }
+
+    private async refreshSharepointToken(
+        tokenUrl: string,
+        refreshToken: string,
+        clientId: string,
+        clientSecret: string,
+        connectionConfig: ConnectionConfig
+    ): Promise<object> {
+        try {
+            let sharepointAccessToken: Record<string, string> | undefined = undefined;
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            if (connectionConfig['sharepointAccessToken'] && connectionConfig['sharepointAccessToken']['refresh_token']) {
+                const tenantId = connectionConfig['tenantId'];
+                if (!tenantId) {
+                    throw new NangoError('sharepoint_tenant_id_missing');
+                }
+
+                const sharepointTokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+
+                const sharepointBody = {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    refresh_token: connectionConfig['sharepointAccessToken']['refresh_token'],
+                    grant_type: 'refresh_token',
+                    scope: `https://${tenantId}.sharepoint.com/Sites.Read.All`
+                };
+
+                const sharepointResponse = await axios.post(sharepointTokenUrl, sharepointBody, { headers });
+
+                if (sharepointResponse.status === 200 && sharepointResponse.data) {
+                    const expires_at = Date.now() + sharepointResponse.data.expires_in * 1000;
+
+                    sharepointAccessToken = {
+                        ...sharepointResponse.data,
+                        expires_at
+                    };
+                } else {
+                    throw new NangoError('sharepoint_refresh_token_request_error', sharepointResponse.data);
+                }
+            }
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    sharepointAccessToken
+                };
+            }
+
+            throw new NangoError('sharepoint_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('sharepoint_refresh_token_request_error', err.message);
         }
     }
 }

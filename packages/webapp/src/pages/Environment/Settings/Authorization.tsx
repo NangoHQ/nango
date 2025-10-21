@@ -44,7 +44,7 @@ export const AuthorizationSettings: React.FC = () => {
             <div className="px-8 flex flex-col gap-10 w-1/2">
                 <fieldset className="flex flex-col gap-4">
                     <Link
-                        to="https://docs.nango.dev/implementation-guides/migrations/migrate-from-public-key"
+                        to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
                         className="flex gap-2 items-center"
                         target="_blank"
                     >
@@ -65,7 +65,7 @@ export const AuthorizationSettings: React.FC = () => {
 
                 <div className="flex flex-col gap-4">
                     <Link
-                        to="https://docs.nango.dev/implementation-guides/migrations/migrate-from-public-key"
+                        to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
                         className="flex gap-2 items-center"
                         target="_blank"
                     >

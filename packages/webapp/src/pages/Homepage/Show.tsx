@@ -2,7 +2,6 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import { InsightChart } from './components/InsightChart';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { useMeta } from '../../hooks/useMeta';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -18,7 +17,7 @@ export const Homepage: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
+            <DashboardLayout>
                 <Helmet>
                     <title>Homepage - Nango</title>
                 </Helmet>
@@ -32,7 +31,7 @@ export const Homepage: React.FC = () => {
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-gray-400">
                         Follow{' '}
-                        <Link to="https://docs.nango.dev/guides/self-hosting/free-self-hosting/overview#logs" className="text-blue-400">
+                        <Link to="https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview#logs" className="text-blue-400">
                             these instructions
                         </Link>{' '}
                         to configure logs and enable execution metrics in your dashboard.
@@ -43,7 +42,7 @@ export const Homepage: React.FC = () => {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
+        <DashboardLayout>
             <Helmet>
                 <title>Homepage - Nango</title>
             </Helmet>
@@ -66,7 +65,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No sync executions in the last 14 days.{' '}
-                                <Link to="https://docs.nango.dev/guides/use-cases/syncs" className="underline text-white">
+                                <Link to="https://nango.dev/docs/guides/use-cases/syncs" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -81,7 +80,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No action executions in the last 14 days.{' '}
-                                <Link to="https://docs.nango.dev/guides/use-cases/actions" className="underline text-white">
+                                <Link to="https://nango.dev/docs/guides/use-cases/actions" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -95,7 +94,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No proxy requests sent in the last 14 days.{' '}
-                            <Link to="https://docs.nango.dev/guides/use-cases/proxy" className="underline text-white">
+                            <Link to="https://nango.dev/docs/guides/use-cases/proxy" className="underline text-white">
                                 Learn more
                             </Link>
                         </div>
@@ -109,7 +108,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No webhook executions in the last 14 days.{' '}
-                                <Link to="https://docs.nango.dev/guides/use-cases/webhooks" className="underline text-white">
+                                <Link to="https://nango.dev/docs/guides/use-cases/webhooks" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -123,7 +122,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No authorization attempted in the last 14 days.{' '}
-                            <Link to="https://docs.nango.dev/guides/use-cases/api-auth" className="underline text-white">
+                            <Link to="https://nango.dev/docs/guides/use-cases/api-auth" className="underline text-white">
                                 Learn more
                             </Link>
                         </div>

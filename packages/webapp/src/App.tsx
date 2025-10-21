@@ -1,6 +1,6 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
@@ -8,6 +8,7 @@ import { SWRConfig } from 'swr';
 
 import { PrivateRoute } from './components/PrivateRoute';
 import { Toaster } from './components/ui/toast/Toaster';
+import { useMeta } from './hooks/useMeta';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
 import { InviteSignup } from './pages/Account/InviteSignup';
@@ -52,6 +53,7 @@ const App = () => {
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
+    const { meta } = useMeta();
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
@@ -59,6 +61,17 @@ const App = () => {
             setLastEnvironment(env);
         }
     }, [env, setShowGettingStarted, setLastEnvironment]);
+
+    // Print the version and git hash to the console (only once)
+    const hasPrintedVersion = useRef(false);
+    useEffect(() => {
+        if (!meta || hasPrintedVersion.current) {
+            return;
+        }
+
+        hasPrintedVersion.current = true;
+        console.log(`Nango v${meta.version} ${globalEnv.gitHash ? `(${globalEnv.gitHash})` : ''}`);
+    }, [meta]);
 
     return (
         <MantineProvider theme={theme}>
