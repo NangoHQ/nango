@@ -45,6 +45,7 @@ export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';
+export * as genericMcpClient from './clients/mcpGeneric.client.js';
 
 export * from './models/index.js';
 

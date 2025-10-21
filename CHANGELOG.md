@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.4] - 2025-10-16
+
+### Added
+
+- *(kvstore)* Add more commands (#4838) by @TBonnin
+- *(integrations)* Add support for aimfox (#4842) by @hassan254-prog
+- Usage/cache logic to store usage metric (#4846) by @TBonnin
+- *(mcp-generic)* Nango mcp generic (#4852) by @khaliqgant
+- *(integrations)* Add support for onedrive personal (#4858) by @hassan254-prog
+- *(validation)* Add validation script to other types (#4859) by @khaliqgant
+- Add usage max columns to plans table (#4857) by @TBonnin
+
+### Changed
+
+- Rename docs-v2 to docs (#4855) by @rguldener
+- Track usageV2 (#4856) by @TBonnin
+- Update version in manifest by @actions-user
+- Update links to docs everywhere (#4862) by @rguldener
+- *(webapp)* Upgrade react (#4868) by @kaposke
+- Add capping logic for usage v2 (#4863) by @TBonnin
+- Usage widget in dashboard to support usagev2 metrics (#4870) by @TBonnin
+
+### Fixed
+
+- Api url configuration via env var (#4833) by @TBonnin
+- Batch schedules.setLastScheduledTask db query (#4841) by @TBonnin
+- *(webhook)* Fix return statement for sentry-oauth (#4836) by @hassan254-prog
+- *(webapp-envs)* Small env fixes (#4844) by @khaliqgant
+- *(mcp-action)* Throw the entire object to get the stack trace included (#4840) by @khaliqgant
+- Update sync job result on deleteRecordsFromPreviousExecutions (#4847) by @TBonnin
+- *(deploy)* Remove render deployment steps (#4850) by @rossmcewan
+- *(providers)* Allow for host:port baseurl pattern for jira data center (#4851) by @hassan254-prog
+- *(providers)* Use `automated: true` for pipedrive api_domain (#4853) by @hassan254-prog
+- *(docker-build)* Fix import (#4865) by @khaliqgant
+- *(providers)* Use a different endpoint for verification endpoint within recruitee (#4866) by @hassan254-prog
+- *(webhook-errors)* Expose more granular errors on errors from functions (#4843) by @khaliqgant
+- Revert "chore(webapp): upgrade react" (#4869) by @kaposke
+
 ## [v0.69.3] - 2025-10-10
 
 ### Added
@@ -5102,6 +5140,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
 [v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
 [v0.69.2]: https://github.com/NangoHQ/nango/compare/v0.69.1..v0.69.2
 [v0.69.1]: https://github.com/NangoHQ/nango/compare/v0.69.0..v0.69.1

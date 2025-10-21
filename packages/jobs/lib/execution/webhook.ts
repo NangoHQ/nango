@@ -14,6 +14,7 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
+    safeGetPlan,
     updateSyncJobStatus
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -21,6 +22,7 @@ import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient } from '../clients.js';
 import { startScript } from './operations/start.js';
+import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -46,7 +48,10 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
-        tagTraceUser(accountAndEnv);
+
+        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
+
+        tagTraceUser({ ...accountAndEnv, plan });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -85,6 +90,21 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             integration: task.connection.provider_config_key
         });
 
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'records');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            throw new Error(message);
+        }
+        // Function logs capping is just informational - it does not block syncs from running
+        // nango.log() will still work, but logs won't be persisted
+        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        if (cappingFunctionLogsStatus.isCapped) {
+            const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
+            void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
+
         syncJob = await createSyncJob({
             sync_id: sync.id,
             type: SyncJobsType.INCREMENTAL,
@@ -119,8 +139,11 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
-            endUser,
+            runnerFlags: {
+                ...(await getRunnerFlags()),
+                functionLogs: !cappingFunctionLogsStatus.isCapped
+            },
+            endUser: endUser,
             startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };

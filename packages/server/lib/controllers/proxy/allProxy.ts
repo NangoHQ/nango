@@ -21,6 +21,7 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { capping } from '../../utils/capping.js';
 import { featureFlags } from '../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -57,8 +58,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
         return;
     }
-
-    const { environment, account } = res.locals;
+    const { environment, account, plan } = res.locals;
 
     metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
@@ -85,6 +85,16 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
         if (logCtx instanceof LogContextOrigin) {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+        }
+
+        // capping
+        const cappingStatus = await capping.getStatus(plan, 'proxy');
+        if (cappingStatus.isCapped) {
+            const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
+            void logCtx.error(message, { cappingStatus });
+            await logCtx.failed();
+            res.status(402).send({ error: { code: 'plan_limit', message } });
+            return;
         }
 
         const method = req.method.toUpperCase() as HTTP_METHOD;

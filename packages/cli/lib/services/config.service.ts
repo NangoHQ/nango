@@ -99,7 +99,7 @@ export function validateYaml(yaml: any): ValidationMessage[] {
     if (!yaml || !('integrations' in yaml)) {
         return [
             {
-                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://docs.nango.dev/reference/integration-configuration'
+                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://nango.dev/docs/reference/integration-configuration'
             }
         ];
     }

@@ -160,6 +160,22 @@ class Kubernetes {
     }
 
     private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<void>> {
+        let noDisruptSpec = {};
+        if (envs.RUNNER_DO_NOT_DISRUPT) {
+            noDisruptSpec = {
+                nodeSelector: {
+                    'nango.dev/lifecycle': 'no-disrupt'
+                },
+                tolerations: [
+                    {
+                        key: 'nango.dev/lifecycle',
+                        operator: 'Equal',
+                        value: 'no-disrupt',
+                        effect: 'NoSchedule'
+                    }
+                ]
+            };
+        }
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
                 name,
@@ -171,11 +187,13 @@ class Kubernetes {
                 template: {
                     metadata: {
                         annotations: {
-                            [`ad.datadoghq.com/runner.logs`]: `[{"source":"nango","service":"${name}"}]`
+                            [`ad.datadoghq.com/runner.logs`]: `[{"source":"nango","service":"${name}"}]`,
+                            ['karpenter.sh/do-not-disrupt']: `${envs.RUNNER_DO_NOT_DISRUPT}`
                         },
                         labels: { app: name }
                     },
                     spec: {
+                        ...noDisruptSpec,
                         containers: [
                             {
                                 name: 'runner',

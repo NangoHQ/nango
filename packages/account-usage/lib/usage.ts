@@ -16,6 +16,7 @@ export interface UsageStatus {
 
 export interface IUsageTracker {
     get(params: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>>;
+    getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>>;
 }
 
@@ -28,6 +29,18 @@ export class UsageTrackerNoOps implements IUsageTracker {
                 current: 0
             })
         );
+    }
+
+    public async getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>> {
+        const result: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
+        for (const metric of Object.keys(usageMetrics) as UsageMetric[]) {
+            result[metric] = {
+                accountId,
+                metric,
+                current: 0
+            };
+        }
+        return Promise.resolve(Ok(result));
     }
 
     public async incr({ accountId, metric, delta = 1 }: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>> {
@@ -60,6 +73,26 @@ export class UsageTracker implements IUsageTracker {
             metric,
             current: entry.value?.count || 0
         });
+    }
+
+    public async getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>> {
+        const now = new Date();
+        const result: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
+        await Promise.all(
+            Object.keys(usageMetrics).map(async (metric) => {
+                const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
+                const entry = await this.cache.get(cacheKey);
+                if (entry.isErr()) {
+                    return;
+                }
+                result[metric as UsageMetric] = {
+                    accountId,
+                    metric: metric as UsageMetric,
+                    current: entry.value?.count || 0
+                };
+            })
+        );
+        return Ok(result);
     }
 
     public async incr({ accountId, metric, delta = 1 }: { accountId: number; metric: UsageMetric; delta?: number }): Promise<Result<UsageStatus>> {

@@ -1,0 +1,86 @@
+---
+title: 'Affinity (v2)'
+sidebarTitle: 'Affinity (v2)'
+description: 'Access the Affinity v2 API in 2 minutes 💨'
+---
+
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Affinity (v2)_.
+      </Step>
+      <Step title="Authorize Affinity (v2)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Affinity API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Affinity (v2) API">
+        Let's make your first request to the Affinity (v2) API (fetch current user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/auth/whoami" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/v2/auth/whoami',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Affinity accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Affinity (v2) using Connect UI](/integrations/all/affinity-v2/connect) |
+    | General | [Affinity Website](https://www.affinity.co/) |
+    | Developer | [How to generate an Affinity API Key](https://support.affinity.co/s/article/How-to-obtain-your-Affinity-API-key) |
+    | | [Affinity API v2 docs](https://developer.affinity.co/docs/v2/?_gl=1*1fcozr*_ga*MTE0NTU1Mzk2Mi4xNzYwMzY1Njc0*_ga_XS522XXLBP*czE3NjA0NDQ1MjckbzEkZzEkdDE3NjA0NDUzNjYkajU1JGwwJGgw) |
+    | | [API Authentication](https://developer.affinity.co/docs/v2/?_gl=1*1fcozr*_ga*MTE0NTU1Mzk2Mi4xNzYwMzY1Njc0*_ga_XS522XXLBP*czE3NjA0NDQ1MjckbzEkZzEkdDE3NjA0NDUzNjYkajU1JGwwJGgw#section/Getting-Started/Authentication) |
+    | | [API Rate Limiting](https://developer.affinity.co/docs/v2/?_gl=1*1fcozr*_ga*MTE0NTU1Mzk2Mi4xNzYwMzY1Njc0*_ga_XS522XXLBP*czE3NjA0NDQ1MjckbzEkZzEkdDE3NjA0NDUzNjYkajU1JGwwJGgw#section/Getting-Started/Rate-Limits) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/affinity-v2.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - The Affinity API is only for Premium and Enterprise tier customers, and for Professional tier customers _who signed up for Affinity before July 5, 2023_.
+    - Currently, Affinity supports one key per user on your team.
+    - Currently, webhooks work only with API v1.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/affinity-v2.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
