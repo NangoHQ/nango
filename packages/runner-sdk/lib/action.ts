@@ -355,11 +355,14 @@ export abstract class NangoActionBase<
         const proxyConfig = this.getProxyConfig(config);
         switch (paginationConfig.type) {
             case 'cursor':
-                return yield* paginateService.cursor<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                yield* paginateService.cursor<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return;
             case 'link':
-                return yield* paginateService.link<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                yield* paginateService.link<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return;
             case 'offset':
-                return yield* paginateService.offset<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                yield* paginateService.offset<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+                return;
             default:
                 throw Error(`'${paginationConfig['type']}' pagination is not supported.}`);
         }
