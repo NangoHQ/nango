@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { EndUserMapper, configService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
@@ -201,7 +201,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        return { status: 201, response: { data: { token, expires_at: privateKey.expiresAt!.toISOString() } } };
+        const connect_link = new URL(`${connectUrl}?session_token=${token}`).toString();
+        return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 
     res.status(status).send(response);

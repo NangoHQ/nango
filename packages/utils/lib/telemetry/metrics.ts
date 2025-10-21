@@ -95,7 +95,9 @@ export enum Types {
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 
-    ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested'
+    ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
+
+    USAGE_IS_CAPPED = 'nango.capping.isCapped'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
