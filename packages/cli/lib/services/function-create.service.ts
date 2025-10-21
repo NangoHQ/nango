@@ -3,7 +3,7 @@ import path from 'path';
 
 import chalk from 'chalk';
 
-import { exampleFolder } from '../zeroYaml/constants.js';
+import { templateFolder } from '../zeroYaml/constants.js';
 
 export async function create({
     absolutePath,
@@ -41,13 +41,13 @@ export async function create({
         let templateFile: string;
         switch (functionType) {
             case 'sync':
-                templateFile = path.join(exampleFolder, 'github', 'syncs', 'fetchIssues.ts');
+                templateFile = path.join(templateFolder, 'sync.ts');
                 break;
             case 'action':
-                templateFile = path.join(exampleFolder, 'github', 'actions', 'createIssue.ts');
+                templateFile = path.join(templateFolder, 'action.ts');
                 break;
             case 'on-event':
-                templateFile = path.join(exampleFolder, 'github', 'on-events', 'pre-connection-deletion.ts');
+                templateFile = path.join(templateFolder, 'on-event.ts');
                 break;
         }
 
@@ -56,32 +56,12 @@ export async function create({
             return false;
         }
 
-        const targetDir = path.join(absolutePath, integration, functionType === 'on-event' ? 'on-events' : `${functionType}s`);
+        const formattedFunctionType = `${functionType}s`;
+        const targetDir = path.join(absolutePath, integration, formattedFunctionType);
         await fs.promises.mkdir(targetDir, { recursive: true });
 
         // Read the template file
         const templateContent = await fs.promises.readFile(templateFile, 'utf-8');
-
-        let customizedContent = templateContent;
-
-        if (functionType === 'sync') {
-            customizedContent = customizedContent
-                .replace(/fetchIssues/g, name)
-                .replace(/Fetches the Github issues from all a user's repositories\./g, `Fetches ${name} data.`)
-                .replace(/GithubIssue/g, `${name.charAt(0).toUpperCase() + name.slice(1)}Record`)
-                .replace(/issueSchema/g, `${name}Schema`)
-                .replace(/GithubIssue\[\]/g, `${name.charAt(0).toUpperCase() + name.slice(1)}Record[]`);
-        } else if (functionType === 'action') {
-            customizedContent = customizedContent
-                .replace(/createIssue/g, name)
-                .replace(/Create an issue in GitHub/g, `Create ${name} in ${integration}`)
-                .replace(/GithubIssue/g, `${name.charAt(0).toUpperCase() + name.slice(1)}Record`)
-                .replace(/issueSchema/g, `${name}Schema`);
-        } else if (functionType === 'on-event') {
-            customizedContent = customizedContent
-                .replace(/pre-connection-deletion/g, 'pre-connection-deletion') // Keep the event type
-                .replace(/This script is executed before a connection is deleted/g, `This script is executed for ${name} event`);
-        }
 
         const targetFile = path.join(targetDir, `${name}.ts`);
 
@@ -91,7 +71,13 @@ export async function create({
             return false;
         }
 
-        await fs.promises.writeFile(targetFile, customizedContent);
+        const indexContent = `import './${integration}/${formattedFunctionType}/${name}.js';`;
+
+        const indexFile = path.join(absolutePath, 'index.ts');
+
+        await fs.promises.appendFile(indexFile, `\n${indexContent}`);
+
+        await fs.promises.writeFile(targetFile, templateContent);
 
         console.log(chalk.green(`Created ${functionType}: ${targetFile}`));
         return true;
