@@ -70,7 +70,7 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        if (futurePlan?.code !== 'free') {
+        if (futurePlan.isPaid) {
             return `Your ${plans?.activePlan.title} subscription will switch to Starter at the end of the month.`;
         }
 

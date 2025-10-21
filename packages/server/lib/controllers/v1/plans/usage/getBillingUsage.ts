@@ -29,7 +29,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     }
 
     // Backfill orb subscription (free by default)
-    if (!plan.orb_subscription_id && plan.name === 'free') {
+    if (!plan.orb_subscription_id) {
         const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
         if (linkOrbSubscriptionRes.isErr()) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to link billing subscription' } });

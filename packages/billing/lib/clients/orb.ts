@@ -123,7 +123,7 @@ export class OrbClient implements BillingClient {
                 external_plan_id: planExternalId,
                 start_date: startDate
             });
-            return Ok({ id: subscription.id, planExternalId: planExternalId });
+            return Ok({ id: subscription.id, planExternalId: planExternalId, planVersion: subscription.plan?.version || 0 });
         } catch (err) {
             return Err(new Error('failed_to_create_subscription', { cause: err }));
         }
@@ -140,7 +140,8 @@ export class OrbClient implements BillingClient {
             return Ok({
                 id: sub.id,
                 pendingChangeId: sub.pending_subscription_change?.id,
-                planExternalId: sub.plan?.external_plan_id || ''
+                planExternalId: sub.plan?.external_plan_id || '',
+                planVersion: sub.plan?.version || 0
             });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
@@ -251,7 +252,8 @@ export class OrbClient implements BillingClient {
 
             return Ok({
                 id: res.subscription.id,
-                planExternalId: res.subscription.plan!.external_plan_id!
+                planExternalId: res.subscription.plan!.external_plan_id!,
+                planVersion: res.subscription.plan!.version
             });
         } catch (err) {
             return Err(new Error('failed_to_apply_pending_changes', { cause: err }));

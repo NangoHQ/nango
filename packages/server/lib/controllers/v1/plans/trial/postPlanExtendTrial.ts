@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { productTracking, startTrial } from '@nangohq/shared';
+import { getMatchingPlanDefinitionFromCode, productTracking, startTrial } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -25,7 +25,13 @@ export const postPlanExtendTrial = asyncWrapper<PostPlanExtendTrial>(async (req,
         return;
     }
 
-    if (!plan || !plan.trial_start_at || !plan.trial_end_at || plan.name !== 'free') {
+    if (!plan || !plan.trial_start_at || !plan.trial_end_at) {
+        res.status(400).send({ error: { code: 'conflict', message: 'No active trial' } });
+        return;
+    }
+
+    const planDefinition = getMatchingPlanDefinitionFromCode(plan.name);
+    if (!planDefinition || planDefinition.isPaid) {
         res.status(400).send({ error: { code: 'conflict', message: 'No active trial' } });
         return;
     }

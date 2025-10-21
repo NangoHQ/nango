@@ -458,7 +458,7 @@ const initDb = async () => {
     const env = await environmentService.createEnvironment(0, 'testEnv');
     if (!env) throw new Error('Environment not created');
 
-    await createPlan(db.knex, { account_id: 0, name: 'free' });
+    await createPlan(db.knex, { account_id: 0, name: 'free-v2' });
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },

@@ -4,7 +4,7 @@ import { flagHasPlan, metrics, report } from '@nangohq/utils';
 import environmentService from './environment.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { plansList } from './plans/definitions.js';
+import { freeV2Plan } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
 
 import type { Knex } from '@nangohq/database';
@@ -138,8 +138,8 @@ class AccountService {
 
         await environmentService.createDefaultEnvironments(result[0].id);
         if (flagHasPlan) {
-            const freePlan = plansList.find((plan) => plan.code === 'free');
-            const res = await createPlan(db.knex, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
+            const freePlan = freeV2Plan;
+            const res = await createPlan(db.knex, { account_id: result[0].id, name: freePlan.code, ...freePlan?.flags });
             if (res.isErr()) {
                 report(res.error);
             }

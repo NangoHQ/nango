@@ -129,7 +129,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     } else {
         // -- Downgrade
-        if (newPlan.code !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
+        if (newPlan.isPaid && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
             res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
             return;
         }

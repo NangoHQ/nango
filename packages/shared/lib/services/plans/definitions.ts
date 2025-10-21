@@ -1,12 +1,18 @@
 import type { PlanDefinition } from '@nangohq/types';
 
-export const freePlan: PlanDefinition = {
-    code: 'free',
+/**
+ * Latest plans
+ */
+
+export const freeV2Plan: PlanDefinition = {
+    code: 'free-v2',
+    orbId: 'free',
+    orbVersion: 2,
     title: 'Free',
     description: 'For hobby and testing.',
+    isPaid: false,
     prevPlan: null,
-    nextPlan: ['starter', 'growth', 'enterprise'],
-    orbId: 'free',
+    nextPlan: ['starter-v6', 'growth-v4'],
     canChange: true,
     basePrice: 0,
     flags: {
@@ -21,7 +27,7 @@ export const freePlan: PlanDefinition = {
         function_compute_gbms_max: 50_000_000,
         webhook_forwards_max: 100_000,
         function_logs_max: 100_000,
-        name: 'free',
+        name: 'free-v2',
         sync_frequency_secs_min: 3600,
         auto_idle: true,
         monthly_actions_max: 1000,
@@ -31,37 +37,26 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false
-    },
-    display: {
-        features: [
-            { title: '10 connections' },
-            { title: '1k actions' },
-            { title: '5k synced records' },
-            { title: '2 environments' },
-            { title: 'API authorization' },
-            { title: 'Syncs & actions' },
-            { title: 'MCP & AI Tools' },
-            { title: 'Proxy requests' }
-        ],
-        sub: 'Certain features of free projects (syncs & actions) are paused after two weeks of inactivity.'
     }
 };
 
-export const starterPlan: PlanDefinition = {
-    code: 'starter',
+export const starterV6Plan: PlanDefinition = {
+    code: 'starter-v6',
+    orbId: 'starter',
+    orbVersion: 6,
+    isPaid: true,
     title: 'Starter',
     description: 'For small teams.',
-    prevPlan: ['free'],
-    nextPlan: ['growth', 'enterprise'],
+    prevPlan: ['free-v2'],
+    nextPlan: ['growth-v4'],
     canChange: true,
     basePrice: 50,
-    orbId: 'starter',
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
         has_sync_variants: false,
-        name: 'starter',
+        name: 'starter-v5',
         sync_frequency_secs_min: 3600,
         connections_max: null,
         records_max: null,
@@ -83,34 +78,26 @@ export const starterPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false
-    },
-    display: {
-        featuresHeading: 'Everything in Free, plus:',
-        features: [
-            { title: '10 connections', sub: 'then $1 per connection' },
-            { title: '1k actions', sub: 'then $0.01 per action' },
-            { title: '5k synced records', sub: 'then $0.002 per record' },
-            { title: '3 environments' },
-            { title: 'SOC 2 Type 2' }
-        ]
     }
 };
 
-export const growthPlan: PlanDefinition = {
-    code: 'growth',
+export const growthV4Plan: PlanDefinition = {
+    code: 'growth-v4',
+    orbId: 'growth',
+    orbVersion: 4,
+    isPaid: true,
     title: 'Growth',
     description: 'For growing teams.',
-    prevPlan: ['free', 'starter'],
-    nextPlan: ['enterprise'],
+    prevPlan: ['free-v2', 'starter-v6'],
+    nextPlan: null,
     canChange: true,
-    orbId: 'growth',
     basePrice: 500,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
-        name: 'growth',
+        name: 'growth-v3',
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -132,27 +119,19 @@ export const growthPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true
-    },
-    display: {
-        featuresHeading: 'Everything in Starter, plus:',
-        features: [
-            { title: '100 connections', sub: 'then $1 per connection' },
-            { title: '10k actions', sub: 'then $0.01 per action' },
-            { title: '50k synced records', sub: 'then $0.002 per record' },
-            { title: '10 environments' },
-            { title: 'Real-time syncing' },
-            { title: 'Remove Nango branding' },
-            { title: 'Private Slack channel' },
-            { title: 'Request new APIs' }
-        ]
     }
 };
+
+/**
+ * Enterprise plan - Custom needs
+ */
 
 export const enterprisePlan: PlanDefinition = {
     code: 'enterprise',
     title: 'Enterprise',
     description: 'For custom needs.',
-    prevPlan: ['free', 'starter', 'growth'],
+    isPaid: true,
+    prevPlan: null,
     nextPlan: null,
     canChange: false,
     cta: 'Contact Us',
@@ -184,17 +163,142 @@ export const enterprisePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true
-    },
-    display: {
-        features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
     }
 };
 
-// Old plans
+/**
+ * Legacy Orb plans
+ */
+
+export const freeV1Plan: PlanDefinition = {
+    code: 'free-v1',
+    orbId: 'free',
+    orbVersion: 1,
+    title: 'Free (Legacy)',
+    description: 'For hobby and testing.',
+    isPaid: false,
+    prevPlan: null,
+    nextPlan: null,
+    hidden: true,
+    canChange: false,
+    basePrice: 0,
+    flags: {
+        api_rate_limit_size: 'm',
+        environments_max: 2,
+        has_otel: false,
+        has_sync_variants: false,
+        connections_max: 10,
+        records_max: 100_000,
+        proxy_max: 100_000,
+        function_executions_max: 100_000,
+        function_compute_gbms_max: 50_000_000,
+        webhook_forwards_max: 100_000,
+        function_logs_max: 100_000,
+        name: 'free-v1',
+        sync_frequency_secs_min: 3600,
+        auto_idle: true,
+        monthly_actions_max: 1000,
+        monthly_active_records_max: 5000,
+        has_webhooks_script: false,
+        has_webhooks_forward: false,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false
+    }
+};
+
+export const starterV5Plan: PlanDefinition = {
+    code: 'starter-v5',
+    orbId: 'starter',
+    orbVersion: [1, 2, 3, 4, 5],
+    title: 'Starter (Legacy)',
+    description: 'For small teams.',
+    isPaid: true,
+    prevPlan: ['free-v2'],
+    nextPlan: null,
+    canChange: false,
+    hidden: true,
+    basePrice: 50,
+    flags: {
+        api_rate_limit_size: 'l',
+        environments_max: 3,
+        has_otel: false,
+        has_sync_variants: false,
+        name: 'starter-v5',
+        sync_frequency_secs_min: 3600,
+        connections_max: null,
+        records_max: null,
+        proxy_max: null,
+        function_executions_max: null,
+        function_compute_gbms_max: null,
+        webhook_forwards_max: null,
+        function_logs_max: null,
+        auto_idle: false,
+        monthly_actions_max: null,
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null,
+        has_webhooks_script: false,
+        has_webhooks_forward: false,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: false,
+        can_disable_connect_ui_watermark: false
+    }
+};
+
+export const growthV3Plan: PlanDefinition = {
+    code: 'growth-v3',
+    orbId: 'growth',
+    orbVersion: [1, 2, 3],
+    title: 'Growth (Legacy)',
+    description: 'For growing teams.',
+    isPaid: true,
+    prevPlan: ['free-v2'],
+    nextPlan: null,
+    canChange: false,
+    hidden: true,
+    basePrice: 500,
+    flags: {
+        api_rate_limit_size: 'l',
+        environments_max: 10,
+        has_otel: true,
+        has_sync_variants: true,
+        name: 'growth-v3',
+        sync_frequency_secs_min: 30,
+        auto_idle: false,
+        connections_max: null,
+        records_max: null,
+        proxy_max: null,
+        function_executions_max: null,
+        function_compute_gbms_max: null,
+        webhook_forwards_max: null,
+        function_logs_max: null,
+        monthly_actions_max: null,
+        monthly_active_records_max: null,
+        trial_start_at: null,
+        trial_end_at: null,
+        trial_end_notified_at: null,
+        trial_extension_count: 0,
+        trial_expired: null,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
+        can_override_docs_connect_url: false,
+        can_customize_connect_ui_theme: true,
+        can_disable_connect_ui_watermark: true
+    }
+};
+
+/**
+ * Legacy non-Orb plans
+ */
 export const starterLegacyPlan: PlanDefinition = {
     code: 'starter-legacy',
     title: 'Starter (legacy)',
     description: 'Tailored to your scale.',
+    isPaid: true,
     prevPlan: [],
     nextPlan: [],
     canChange: false,
@@ -232,6 +336,7 @@ export const scaleLegacyPlan: PlanDefinition = {
     code: 'scale-legacy',
     title: 'Scale (legacy)',
     description: 'Tailored to your scale.',
+    isPaid: true,
     prevPlan: [],
     nextPlan: [],
     canChange: false,
@@ -269,6 +374,7 @@ export const growthLegacyPlan: PlanDefinition = {
     code: 'growth-legacy',
     title: 'Growth (legacy)',
     description: 'Tailored to your scale.',
+    isPaid: true,
     prevPlan: [],
     nextPlan: [],
     canChange: false,
@@ -304,12 +410,20 @@ export const growthLegacyPlan: PlanDefinition = {
 };
 
 export const plansList: PlanDefinition[] = [
-    freePlan,
-    starterPlan,
-    growthPlan,
+    // Latest plans
+    freeV2Plan,
+    starterV6Plan,
+    growthV4Plan,
+
+    // Enterprise plan - Custom needs
     enterprisePlan,
 
-    // Old plans
+    // Legacy Orb plans
+    freeV1Plan,
+    starterV5Plan,
+    growthV3Plan,
+
+    // Legacy non-Orb plans
     starterLegacyPlan,
     scaleLegacyPlan,
     growthLegacyPlan

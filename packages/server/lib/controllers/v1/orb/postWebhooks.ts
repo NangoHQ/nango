@@ -47,7 +47,7 @@ interface SubscriptionEvent extends BaseWebhookEvent {
     subscription: {
         id: string;
         customer: { id: string; external_customer_id: string };
-        plan: { id: string; external_plan_id: string };
+        plan: { id: string; external_plan_id: string; version: number };
     };
 }
 
@@ -72,14 +72,39 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
     };
 }
 
-type Webhooks = SubscriptionCreatedEvent | SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent;
+interface SubscriptionPlanVersionChangedEvent extends SubscriptionEvent {
+    type: 'subscription.plan_version_changed';
+    properties: {
+        effective_date: string;
+        previous_plan_version_number: number;
+        new_plan_version_number: number;
+    };
+}
+
+interface SubscriptionPlanVersionChangedScheduledEvent extends SubscriptionEvent {
+    type: 'subscription.plan_version_change_scheduled';
+    properties: {
+        effective_date: string;
+        previous_plan_version_number: number;
+        new_plan_version_number: number;
+    };
+}
+
+type Webhooks =
+    | SubscriptionCreatedEvent
+    | SubscriptionStartedEvent
+    | SubscriptionPlanChangedEvent
+    | SubscriptionPlanChangedScheduledEvent
+    | SubscriptionPlanVersionChangedEvent
+    | SubscriptionPlanVersionChangedScheduledEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
     logger.info('[orb-hook]', body.type);
 
     switch (body.type) {
         case 'subscription.started':
-        case 'subscription.plan_changed': {
+        case 'subscription.plan_changed':
+        case 'subscription.plan_version_changed': {
             return await db.knex.transaction(async (trx) => {
                 const teamId = body.subscription.customer.external_customer_id;
                 if (!teamId) {
@@ -94,6 +119,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 logger.info(`Sub started for team "${team.id}"`);
                 const res = await handlePlanChanged(trx, team, {
                     newPlanCode: body.subscription.plan.external_plan_id,
+                    newPlanVersion: body.subscription.plan.version,
                     orbCustomerId: body.subscription.customer.id,
                     orbSubscriptionId: body.subscription.id
                 });
@@ -133,6 +159,34 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     account_id: team.id,
                     orb_future_plan: resNewPlan.value.external_plan_id,
                     orb_future_plan_at: new Date(body.properties.change_date)
+                });
+                if (updated.isErr()) {
+                    return Err('Failed to updated plan');
+                }
+
+                return Ok(undefined);
+            });
+        }
+
+        case 'subscription.plan_version_change_scheduled': {
+            return await db.knex.transaction(async (trx) => {
+                const planId = body.subscription.plan.external_plan_id;
+
+                const teamId = body.subscription.customer.external_customer_id;
+                if (!teamId) {
+                    return Err('Received a customer without external id');
+                }
+
+                const team = await accountService.getAccountById(trx, parseInt(teamId, 10));
+                if (!team) {
+                    return Err('Failed to find team');
+                }
+
+                logger.info(`Sub version change scheduled for team "${team.id}"`);
+                const updated = await updatePlanByTeam(trx, {
+                    account_id: team.id,
+                    orb_future_plan: planId,
+                    orb_future_plan_at: new Date(body.properties.effective_date)
                 });
                 if (updated.isErr()) {
                     return Err('Failed to updated plan');

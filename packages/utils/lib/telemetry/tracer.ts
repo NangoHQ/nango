@@ -6,7 +6,7 @@ export function tagTraceUser({ account, environment, plan }: { account: DBTeam; 
     tracer.setUser({
         id: String(account.id),
         environmentId: String(environment.id),
-        paying: plan?.name !== 'free' ? 'paying' : 'free',
+        paying: plan?.name !== 'free-v1' && plan?.name !== 'free-v2' ? 'paying' : 'free',
         plan: plan?.name
     });
 }

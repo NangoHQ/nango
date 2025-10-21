@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { freePlan, updatePlanByTeam } from '@nangohq/shared';
+import { freeV2Plan, updatePlanByTeam } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { BillingCustomer, BillingSubscription, DBTeam, DBUser, Result } from '@nangohq/types';
@@ -26,7 +26,7 @@ export async function linkBillingCustomer(account: DBTeam, user: DBUser): Promis
  * Creates a billing subscription (free) and links it to the account plan
  */
 export async function linkBillingFreeSubscription(account: DBTeam): Promise<Result<BillingSubscription>> {
-    const resCreate = await billing.createSubscription(account, freePlan.orbId ?? 'free');
+    const resCreate = await billing.createSubscription(account, freeV2Plan.orbId ?? 'free');
     if (resCreate.isErr()) {
         return Err(resCreate.error);
     }

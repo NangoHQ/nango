@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { freePlan, updatePlan } from '@nangohq/shared';
+import { getMatchingPlanDefinitionFromCode, updatePlan } from '@nangohq/shared';
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
@@ -34,7 +34,8 @@ export const deleteStripePaymentMethod = asyncWrapper<DeleteStripePayment>(async
         return;
     }
 
-    if (plan.name !== freePlan.code) {
+    const planDefinition = getMatchingPlanDefinitionFromCode(plan.name);
+    if (planDefinition && planDefinition.isPaid) {
         res.status(400).send({
             error: {
                 code: 'invalid_body',
