@@ -7,7 +7,6 @@ import remoteFileService from '../../file/remote.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { NangoError } from '../../../utils/error.js';
-import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
@@ -150,21 +149,47 @@ export async function deploy({
     const flowNames = flows.map((flow) => flow.syncName);
 
     try {
-        const flowIds = await db.knex.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
-
-        const endpoints: DBSyncEndpointCreate[] = [];
-        for (const [index, row] of flowIds.entries()) {
-            const flow = flows[index];
-            if (!flow) {
-                continue;
+        await db.knex.transaction(async (trx) => {
+            // Mark old configs as inactive BEFORE inserting new ones
+            if (idsToMarkAsInactive.length > 0) {
+                await trx.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
             }
 
-            endpoints.push(...endpointToSyncEndpoint(flow, row.id));
-        }
+            const flowIds = await trx.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
 
-        if (endpoints.length > 0) {
-            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
-        }
+            const endpoints: DBSyncEndpointCreate[] = [];
+            for (const [index, row] of flowIds.entries()) {
+                const flow = flows[index];
+                if (!flow) {
+                    continue;
+                }
+
+                endpoints.push(...endpointToSyncEndpoint(flow, row.id));
+            }
+
+            if (endpoints.length > 0) {
+                await trx.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+            }
+
+            if (idsToMarkAsInactive.length > 0) {
+                await trx.raw(
+                    `
+                    UPDATE _nango_syncs
+                    SET sync_config_id = (
+                        SELECT active_config.id
+                        FROM _nango_sync_configs as old_config
+                        JOIN _nango_sync_configs as active_config
+                            ON old_config.sync_name = active_config.sync_name
+                            AND old_config.nango_config_id = active_config.nango_config_id
+                            AND old_config.environment_id = active_config.environment_id
+                        WHERE old_config.id = _nango_syncs.sync_config_id
+                            AND active_config.active = true
+                    )
+                    WHERE sync_config_id = ANY(?)`,
+                    [idsToMarkAsInactive]
+                );
+            }
+        });
 
         if (onEventScriptsByProvider) {
             const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
@@ -178,10 +203,6 @@ export async function deploy({
                 };
             });
             deployResults.push(...result);
-        }
-
-        for (const id of idsToMarkAsInactive) {
-            await switchActiveSyncConfig(id);
         }
 
         void logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {

@@ -2,7 +2,6 @@ import db from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { Err, Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
 
-import { switchActiveSyncConfig } from './utils.js';
 import { NangoError } from '../../utils/error.js';
 import remoteFileService from '../file/remote.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId } from '../sync/config/config.service.js';
@@ -41,7 +40,7 @@ export async function deployTemplate({
     deployInfo: { integrationId: string; provider: string };
     logCtx: LogContext;
 }): Promise<Result<{ result: SyncDeploymentResult; logCtx: LogContext }>> {
-    const idsToMarkAsInactive = [];
+    const idsToMarkAsInactive: number[] = [];
     const publicRoute = deployInfo.provider;
     const remoteBasePath = `${env}/account/${team.id}/environment/${environment.id}`;
 
@@ -179,33 +178,57 @@ export async function deployTemplate({
     const now = new Date();
 
     try {
-        const syncConfigs = await db.knex.from<DBSyncConfig>('_nango_sync_configs').insert(toInsert).returning('*');
-        if (syncConfigs.length !== 1 || !syncConfigs[0]) {
-            void logCtx.error('Failed to insert');
-            await logCtx.failed();
-            return Err(new NangoError('failed_to_insert'));
-        }
+        // Wrap all database operations in a transaction to ensure atomicity
+        await db.knex.transaction(async (trx) => {
+            // Mark old configs as inactive BEFORE inserting new ones
+            if (idsToMarkAsInactive.length > 0) {
+                await trx.from<DBSyncConfig>('_nango_sync_configs').update({ active: false }).whereIn('id', idsToMarkAsInactive);
+            }
 
-        deployResult.id = syncConfigs[0].id;
+            const syncConfigs = await trx.from<DBSyncConfig>('_nango_sync_configs').insert(toInsert).returning('*');
+            if (syncConfigs.length !== 1 || !syncConfigs[0]) {
+                void logCtx.error('Failed to insert');
+                await logCtx.failed();
+                throw new NangoError('failed_to_insert');
+            }
 
-        const endpoints: DBSyncEndpointCreate[] = template.endpoints.map((endpoint, index) => {
-            return {
-                sync_config_id: deployResult.id!,
-                method: endpoint.method,
-                path: endpoint.path,
-                group_name: endpoint.group || null,
-                model: template.returns[index] || null,
-                created_at: now,
-                updated_at: now
-            };
+            deployResult.id = syncConfigs[0].id;
+
+            const endpoints: DBSyncEndpointCreate[] = template.endpoints.map((endpoint, index) => {
+                return {
+                    sync_config_id: deployResult.id!,
+                    method: endpoint.method,
+                    path: endpoint.path,
+                    group_name: endpoint.group || null,
+                    model: template.returns[index] || null,
+                    created_at: now,
+                    updated_at: now
+                };
+            });
+            if (endpoints.length > 0) {
+                await trx.from<DBSyncEndpoint>('_nango_sync_endpoints').insert(endpoints);
+            }
+
+            // Update sync_config_id references in _nango_syncs table to point to new active config
+            if (idsToMarkAsInactive.length > 0) {
+                await trx.raw(
+                    `
+                    UPDATE _nango_syncs
+                    SET sync_config_id = (
+                        SELECT active_config.id
+                        FROM _nango_sync_configs as old_config
+                        JOIN _nango_sync_configs as active_config
+                            ON old_config.sync_name = active_config.sync_name
+                            AND old_config.nango_config_id = active_config.nango_config_id
+                            AND old_config.environment_id = active_config.environment_id
+                        WHERE old_config.id = _nango_syncs.sync_config_id
+                            AND active_config.active = true
+                    )
+                    WHERE sync_config_id = ANY(?)`,
+                    [idsToMarkAsInactive]
+                );
+            }
         });
-        if (endpoints.length > 0) {
-            await db.knex.from<DBSyncEndpoint>('_nango_sync_endpoints').insert(endpoints);
-        }
-
-        for (const id of idsToMarkAsInactive) {
-            await switchActiveSyncConfig(id);
-        }
 
         void logCtx.info('Successfully deployed');
         await logCtx.success();
