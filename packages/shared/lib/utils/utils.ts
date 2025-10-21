@@ -519,13 +519,3 @@ function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
     }
     return cleaned;
 }
-
-function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
-    const cleaned: Record<string, any> = {};
-    for (const [key, value] of Object.entries(obj)) {
-        if (value !== '' && value !== undefined && value !== null) {
-            cleaned[key] = typeof value === 'object' && !Array.isArray(value) ? removeEmptyValues(value) : value;
-        }
-    }
-    return cleaned;
-}
