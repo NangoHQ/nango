@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import * as uuid from 'uuid';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_TABLE } from '../constants.js';
+import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
 import { formatRecords } from '../helpers/format.js';
@@ -12,12 +12,13 @@ import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../t
 import type { MergingStrategy, Result } from '@nangohq/types';
 
 describe('Records service', () => {
-    beforeAll(async () => {
+    beforeEach(async () => {
         await migrate();
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         await db(RECORDS_TABLE).truncate();
+        await db(RECORD_COUNTS_TABLE).truncate();
     });
 
     describe('Should fetch cursor', () => {
@@ -918,9 +919,31 @@ describe('Records service', () => {
             expect(finalStats[model]?.count).toBe(0);
         });
     });
+
+    describe('metrics', () => {
+        it('should report records stats for all accounts', async () => {
+            const { environmentId: env1 } = await upsertNRecords(10);
+            const { environmentId: env2 } = await upsertNRecords(7);
+            const res = (await Records.metrics()).unwrap();
+            expect(res.length).toBe(2);
+            expect(res).toEqual(
+                expect.arrayContaining([
+                    { environmentId: env1, count: 10, sizeBytes: expect.any(Number) },
+                    { environmentId: env2, count: 7, sizeBytes: expect.any(Number) }
+                ])
+            );
+        });
+        it('should report records stats for selected accounts', async () => {
+            const { environmentId: env1 } = await upsertNRecords(11);
+            await upsertNRecords(12);
+            const res = (await Records.metrics({ environmentIds: [env1] })).unwrap();
+            expect(res.length).toBe(1);
+            expect(res).toMatchObject([expect.objectContaining({ environmentId: env1, count: 11, sizeBytes: expect.any(Number) })]);
+        });
+    });
 });
 
-async function upsertNRecords(n: number): Promise<{ connectionId: number; model: string; syncId: string; result: UpsertSummary }> {
+async function upsertNRecords(n: number): Promise<{ environmentId: number; connectionId: number; model: string; syncId: string; result: UpsertSummary }> {
     const records = Array.from({ length: n }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
     const connectionId = rnd.number();
     const environmentId = rnd.number();
@@ -928,6 +951,7 @@ async function upsertNRecords(n: number): Promise<{ connectionId: number; model:
     const syncId = uuid.v4();
     const result = await upsertRecords({ records, connectionId, environmentId, model, syncId });
     return {
+        environmentId,
         connectionId,
         model,
         syncId,

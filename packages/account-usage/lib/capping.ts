@@ -68,7 +68,7 @@ export class Capping {
             const dimensions = {
                 accountId: plan.account_id,
                 dryRun: this.options?.enabled ? 'false' : 'true',
-                ...Object.fromEntries(Object.keys(status.metrics).map((key) => [key, 'true']))
+                ...Object.fromEntries(Object.keys(status.metrics).map((key) => [`metric-${key}`, 'true']))
             };
             ddMetrics.increment(ddMetrics.Types.USAGE_IS_CAPPED, 1, dimensions);
         }
