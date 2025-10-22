@@ -121,6 +121,18 @@ export const ENVS = z.object({
         .optional()
         .default('nango_runners'),
     RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
+    RUNNER_PROFILED_ACCOUNTS: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`RUNNER_PROFILED_ACCOUNTS must be a valid JSON array of strings`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.array(z.string()))
+        .default([]),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
