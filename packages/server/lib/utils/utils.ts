@@ -56,6 +56,14 @@ export function dirname() {
  */
 export function missesInterpolationParam(str: string, replacers: Record<string, any>) {
     const strWithoutConnectionConfig = str.replace(/connectionConfig\./g, '');
+
+    const parts = strWithoutConnectionConfig.split('||');
+    if (parts[1]) {
+        const fallback = parts[1].trim();
+        const interpolatedFallback = interpolateString(fallback, replacers);
+        return /\${([^{}]*)}/g.test(interpolatedFallback);
+    }
+
     const interpolatedStr = interpolateString(strWithoutConnectionConfig, replacers);
     return /\${([^{}]*)}/g.test(interpolatedStr);
 }

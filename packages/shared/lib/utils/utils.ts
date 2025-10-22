@@ -451,13 +451,19 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     const cleanTemplate = template.replace(/connectionConfig\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
     const interpolatedUrl = interpolateStringFromObject(cleanTemplate, removeEmptyValues(encodedParams));
+
     if (interpolatedUrl.includes('${')) {
         throw new Error(`Failed to interpolate URL template: ${template}. Missing config parameters.`);
     }
+
     try {
         return new URL(interpolatedUrl);
     } catch {
-        throw new Error(`Invalid URL after interpolation: ${interpolatedUrl}. Template: ${template}`);
+        try {
+            return new URL(decodeURIComponent(interpolatedUrl));
+        } catch {
+            throw new Error(`Invalid URL after interpolation: ${interpolatedUrl}. Template: ${template}`);
+        }
     }
 }
 
