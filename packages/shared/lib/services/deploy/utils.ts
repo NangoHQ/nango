@@ -1,10 +1,6 @@
-import type { DBSyncConfig } from '@nangohq/types';
 import type { Knex } from 'knex';
 
 export async function switchActiveSyncConfig(oldSyncConfigId: number, trx: Knex.Transaction): Promise<void> {
-    // mark sync config as inactive
-    await trx.from<DBSyncConfig>('_nango_sync_configs').update({ active: false }).where({ id: oldSyncConfigId });
-
     // update sync_config_id in syncs table to point to active sync config
     await trx.raw(
         `
