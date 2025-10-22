@@ -13775,8 +13775,10 @@ zoho:
         access_type: offline
     redirect_uri_metadata:
         - accounts-server
+    token_response_metadata:
+        - api_domain
     proxy:
-        base_url: https://www.zohoapis.${connectionConfig.extension} || ${connectionConfig.accounts-server}
+        base_url: https://www.zohoapis.${connectionConfig.extension} || ${connectionConfig.api_domain}
         paginate:
             type: offset
             response_path: data
