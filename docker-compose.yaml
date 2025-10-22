@@ -1,93 +1,130 @@
-version: '3.9'
-services:
-    nango-db:
-        image: postgres:16.0-alpine
-        container_name: nango-db
-        environment:
-            POSTGRES_PASSWORD: nango
-            POSTGRES_USER: nango
-            POSTGRES_DB: nango
-        ports:
-            - '${NANGO_DB_PORT:-5432}:5432'
-        volumes:
-            - ./nango-data:/var/lib/postgresql/data
-        networks:
-            - nango
+name: Deploy to GCP VM (Docker Compose)
 
-    nango-server:
-        # It's recommended to pin the version using the commit hash tag or a version tag
-        # https://hub.docker.com/r/nangohq/nango-server/tags
-        image: nangohq/nango-server:hosted
-        container_name: nango-server
-        platform: linux/amd64
-        environment:
-            - NANGO_ENCRYPTION_KEY
-            - NANGO_DB_USER
-            - NANGO_DB_PASSWORD
-            - NANGO_DB_HOST=${NANGO_DB_HOST:-nango-db}
-            - NANGO_DB_NAME
-            - NANGO_DB_SSL
-            - NANGO_DB_ADDITIONAL_SCHEMAS
-            - NANGO_DB_POOL_MIN
-            - NANGO_DB_POOL_MAX
-            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
-            - SERVER_PORT
-            - CSP_REPORT_ONLY=true
-            - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
-            - NANGO_PUBLIC_SERVER_URL=${NANGO_PUBLIC_SERVER_URL:-http://localhost:3000}
-            - FLAG_AUTH_ENABLED
-            - NANGO_DASHBOARD_USERNAME
-            - NANGO_DASHBOARD_PASSWORD
-            - LOG_LEVEL=${LOG_LEVEL:-info}
-            - NANGO_SERVER_WEBSOCKETS_PATH
-            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
-            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
-            - NANGO_LOGS_ES_USER
-            - NANGO_LOGS_ES_PWD
-            - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
-        volumes:
-            - './packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml'
-        restart: always
-        ports:
-            - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
-            - '${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}'
-        depends_on:
-            - nango-db
-            # - nango-elasticsearch
-        networks:
-            - nango
+on:
+  push:
+    branches: [cicd]
+    paths:
+      - "docker-compose.yaml"
+      - "packages/providers/providers.yaml"
+      - ".github/workflows/deploy-gcp-compose.yml"
+  workflow_dispatch:
+    inputs:
+      deploy_dir:
+        description: "Remote deploy dir override (else use secret)"
+        required: false
 
-    nango-redis:
-        image: redis:7.2.4
-        container_name: nango-redis
-        ports:
-            - '6379:6379'
-        networks:
-            - nango
-    #
-    # Optional dependency
-    # To load elasticsearch, set NANGO_LOGS_ENABLED=true in nango-server and uncomment this dependency
-    # nango-elasticsearch:
-    #     image: elasticsearch:8.13.0
-    #     container_name: nango-elasticsearch
-    #     ulimits:
-    #         memlock:
-    #             soft: -1
-    #             hard: -1
-    #     volumes:
-    #         - elasticsearch-data1:/usr/share/elasticsearch/data
-    #     ports:
-    #         - 9500:9200
-    #         - 9600:9300
-    #     environment:
-    #         - discovery.type=single-node
-    #         - xpack.security.enabled=false
-    #     networks:
-    #         - nango
+permissions:
+  contents: read
 
-networks:
-    nango:
+jobs:
+  deploy:
+    name: Sync → Compose Up → Healthcheck → Rollback
+    runs-on: ubuntu-latest
 
-volumes:
-    elasticsearch-data1:
-        driver: local
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yaml
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "docker-compose.yaml"
+          target: "${{ github.event.inputs.deploy_dir || secrets.DEPLOY_DIR }}"
+
+      - name: Copy providers.yaml
+        if: ${{ hashFiles('packages/providers/providers.yaml') != '' }}
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "packages/providers/providers.yaml"
+          target: "${{ github.event.inputs.deploy_dir || secrets.DEPLOY_DIR }}/packages/providers"
+          strip_components: 2
+
+      - name: Deploy via SSH
+        id: ssh
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DEPLOY_DIR: ${{ github.event.inputs.deploy_dir || secrets.DEPLOY_DIR }}
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}   
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd "$DEPLOY_DIR"
+
+            # Pastikan docker & compose terpasang
+            docker --version
+            docker compose version
+
+            # Pastikan .env ada (isi var2 untuk nango-server & nango-db jika dipakai)
+            if [ ! -f .env ]; then
+              echo "::error::.env tidak ditemukan di $DEPLOY_DIR" >&2
+              exit 1
+            fi
+
+            # Pastikan folder providers ada bila dibutuhkan oleh bind mount
+            mkdir -p packages/providers
+
+            # Catat image lama untuk rollback (jika ada)
+            PREV_IMAGE=$(docker inspect --format='{{.Config.Image}}' nango-server 2>/dev/null || true)
+            echo "Prev image: ${PREV_IMAGE:-<none>}"
+
+            # Pull image terbaru sesuai compose
+            docker compose pull nango-server || true
+            docker compose pull nango-db || true
+            docker compose pull nango-redis || true
+
+            # Up/recreate service
+            docker compose up -d
+
+            # Health check eksternal (via reverse proxy/domain)
+            echo "Health check: $HEALTH_URL"
+            for i in $(seq 1 20); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || true)
+              if [ "$code" = "200" ]; then
+                echo "Healthy"
+                exit 0
+              fi
+              sleep 5
+            done
+
+            echo "Health check FAILED. Rolling back nango-server..."
+            if [ -n "$PREV_IMAGE" ]; then
+              docker pull "$PREV_IMAGE" || true
+              # Replace image untuk service nango-server lalu recreate
+              docker stop nango-server || true
+              docker rm nango-server || true
+              # Jalankan kembali dengan image sebelumnya
+              IMAGE_RESTORE_FILE=".image.restore"
+              echo "IMAGE=$PREV_IMAGE" > "$IMAGE_RESTORE_FILE"
+              # Override image lewat env substitution (compose file menggunakan image tetap untuk nango-server,
+              # kita pakai 'docker run' manual untuk rollback cepat)
+              docker run -d --name nango-server \
+                --restart=always \
+                --env-file .env \
+                --network $(basename "$(pwd)")_nango \
+                -p ${SERVER_PORT:-3003}:${SERVER_PORT:-3003} \
+                -p ${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009} \
+                -v "$(pwd)/packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml" \
+                "$PREV_IMAGE"
+              rm -f "$IMAGE_RESTORE_FILE"
+              exit 1
+            else
+              echo "Tidak ada image sebelumnya untuk rollback."
+              exit 1
+            fi
+
+      - name: Mark success
+        if: ${{ success() }}
+        run: echo "Deploy OK"
