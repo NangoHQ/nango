@@ -42,7 +42,7 @@ export const ProfileDropdown: React.FC = () => {
 
         if (globalEnv.features.plan) {
             list.push({
-                label: 'Usage & Billing',
+                label: 'Billing & usage',
                 icon: CreditCard,
                 href: `/${env}/team/billing`
             });
