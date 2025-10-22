@@ -139,7 +139,7 @@ class AccountService {
         await environmentService.createDefaultEnvironments(result[0].id);
         if (flagHasPlan) {
             const freePlan = freeV2Plan;
-            const res = await createPlan(db.knex, { account_id: result[0].id, name: freePlan.code, ...freePlan?.flags });
+            const res = await createPlan(db.knex, { account_id: result[0].id, name: freePlan.name, ...freePlan?.flags });
             if (res.isErr()) {
                 report(res.error);
             }

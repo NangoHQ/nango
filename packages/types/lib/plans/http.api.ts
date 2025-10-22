@@ -16,23 +16,21 @@ export type PostPlanExtendTrial = Endpoint<{
 }>;
 
 export interface PlanDefinition {
-    code: DBPlan['name'];
+    /**
+     * Maps to external_plan_id in Orb
+     */
+    name: DBPlan['name'];
+    orbVersion?: number | number[];
     title: string;
     description: string;
     isPaid: boolean;
     canChange: boolean;
-    nextPlan: DBPlan['name'][] | null;
-    prevPlan: DBPlan['name'][] | null;
+    nextPlan: PlanDefinition[] | null;
+    prevPlan: PlanDefinition[] | null;
     basePrice?: number;
-    /**
-     * OrbId is the custom external_plan_id that we can setup
-     * It's handy because you can set the same id in staging and prod
-     */
-    orbId?: string;
-    orbVersion?: number | number[];
     cta?: string;
     hidden?: boolean;
-    flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;
+    flags: Omit<Partial<DBPlan>, 'id' | 'account_id' | 'name'>;
     display?: {
         featuresHeading?: string;
         features: { title: string; sub?: string }[];
@@ -84,7 +82,7 @@ export type PostPlanChange = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };
-    Body: { orbId: string };
+    Body: { name: string; version?: number | undefined };
     Success: {
         data: { success: true } | { paymentIntent: any };
     };

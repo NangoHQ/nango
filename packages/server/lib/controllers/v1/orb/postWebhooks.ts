@@ -118,7 +118,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
 
                 logger.info(`Sub started for team "${team.id}"`);
                 const res = await handlePlanChanged(trx, team, {
-                    newPlanCode: body.subscription.plan.external_plan_id,
+                    newPlanName: body.subscription.plan.external_plan_id,
                     newPlanVersion: body.subscription.plan.version,
                     orbCustomerId: body.subscription.customer.id,
                     orbSubscriptionId: body.subscription.id

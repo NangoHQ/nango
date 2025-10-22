@@ -3,7 +3,8 @@ import type { Timestamps } from '../db.js';
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
-    name: 'free-v2' | 'starter-v2' | 'growth-v2' | 'enterprise' | 'free-v1' | 'starter-v1' | 'growth-v1' | 'starter-legacy' | 'scale-legacy' | 'growth-legacy';
+    name: 'free' | 'starter' | 'growth' | 'enterprise' | 'starter-legacy' | 'scale-legacy' | 'growth-legacy';
+    version?: number | null;
 
     // Stripe
     stripe_customer_id: string | null;

@@ -4,7 +4,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
     return {
         id: 1,
         account_id: 1,
-        name: 'free-v2',
+        name: 'free',
         stripe_customer_id: null,
         stripe_payment_id: null,
         orb_customer_id: null,

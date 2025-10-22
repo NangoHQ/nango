@@ -7,3 +7,12 @@ export interface PlanDefinitionList {
     isDowngrade?: boolean;
     isUpgrade?: boolean;
 }
+
+export function getLatestVersionInDefinition(definition: PlanDefinition): number {
+    if (Array.isArray(definition.orbVersion)) {
+        return Math.max(...definition.orbVersion);
+    } else if (typeof definition.orbVersion === 'number') {
+        return definition.orbVersion;
+    }
+    return -1;
+}

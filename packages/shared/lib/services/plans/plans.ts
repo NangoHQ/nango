@@ -2,10 +2,10 @@ import ms from 'ms';
 
 import { Err, Ok, flagHasPlan } from '@nangohq/utils';
 
-import { plansList } from './definitions.js';
+import { getMatchingPlanDefinition } from './utils.js';
 import { productTracking } from '../../utils/productTracking.js';
 
-import type { DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
+import type { DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -128,27 +128,17 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
 }
 
-export function getMatchingPlanDefinitionFromOrbId(orbId: string, planVersion: number): PlanDefinition | undefined {
-    return plansList.find(
-        (p) => (p.orbId === orbId && p.orbVersion === planVersion) || (p.orbVersion && Array.isArray(p.orbVersion) && p.orbVersion.includes(planVersion))
-    );
-}
-
-export function getMatchingPlanDefinitionFromCode(code: string): PlanDefinition | undefined {
-    return plansList.find((p) => p.code === code);
-}
-
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
     {
-        newPlanCode,
+        newPlanName,
         newPlanVersion,
         orbCustomerId,
         orbSubscriptionId
-    }: { newPlanCode: string; newPlanVersion: number; orbCustomerId?: string | undefined; orbSubscriptionId: string }
+    }: { newPlanName: string; newPlanVersion: number; orbCustomerId?: string | undefined; orbSubscriptionId: string }
 ): Promise<Result<boolean>> {
-    const newPlanDefinition = getMatchingPlanDefinitionFromOrbId(newPlanCode, newPlanVersion);
+    const newPlanDefinition = getMatchingPlanDefinition(newPlanName, newPlanVersion);
     if (!newPlanDefinition) {
         return Err('Received a plan not linked to the plansList');
     }
@@ -158,13 +148,13 @@ export async function handlePlanChanged(
         return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
     }
 
-    const currentPlanDefinition = getMatchingPlanDefinitionFromCode(currentPlan.value.name);
+    const currentPlanDefinition = getMatchingPlanDefinition(currentPlan.value.name, currentPlan.value.version);
     if (!currentPlanDefinition) {
         return Err(new Error('Failed to get current plan definition'));
     }
 
     // Plan hasn't changed
-    if (currentPlan.value.name === newPlanDefinition.code) {
+    if (currentPlanDefinition === newPlanDefinition) {
         return Ok(true);
     }
 
@@ -174,7 +164,8 @@ export async function handlePlanChanged(
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
-        name: newPlanDefinition.code as unknown as DBPlan['name'],
+        name: newPlanDefinition.name as unknown as DBPlan['name'],
+        version: newPlanVersion,
         orb_subscription_id: orbSubscriptionId,
         orb_future_plan: null,
         orb_future_plan_at: null,
@@ -190,7 +181,12 @@ export async function handlePlanChanged(
     productTracking.track({
         name: 'account:billing:plan_changed',
         team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, orbCustomerId: currentPlan.value.orb_customer_id }
+        eventProperties: {
+            previousPlan: currentPlan.value.name,
+            newPlan: newPlanName,
+            newPlanVersion: newPlanVersion,
+            orbCustomerId: currentPlan.value.orb_customer_id
+        }
     });
 
     return Ok(true);

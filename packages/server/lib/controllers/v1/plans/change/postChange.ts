@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { billing, getStripe } from '@nangohq/billing';
-import { plansList, productTracking } from '@nangohq/shared';
+import { getMatchingPlanDefinition, plansList, productTracking } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -10,10 +10,11 @@ import type { PostPlanChange } from '@nangohq/types';
 
 const logger = getLogger('orb');
 
-const orbIds = plansList.map((p) => p.orbId).filter(Boolean) as string[];
+const names = plansList.map((p) => p.name).filter(Boolean) as string[];
 const validation = z
     .object({
-        orbId: z.enum(orbIds as [string, ...string[]])
+        name: z.enum(names as [string, ...string[]]),
+        version: z.number().optional()
     })
     .strict();
 
@@ -33,9 +34,14 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     }
 
     const { account, plan } = res.locals;
+    if (!plan) {
+        res.status(500).send({ error: { code: 'server_error', message: 'team has no plan' } });
+        return;
+    }
+
     const body: PostPlanChange['Body'] = val.data;
-    const currentDef = plansList.find((p) => p.code === plan!.name);
-    if (!currentDef) {
+    const currentPlan = getMatchingPlanDefinition(plan.name, plan.version);
+    if (!currentPlan) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'team has an invalid plan' } });
         return;
     }
@@ -43,12 +49,21 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         res.status(400).send({ error: { code: 'invalid_body', message: "team doesn't not have a subscription" } });
         return;
     }
-    if (!currentDef.canChange) {
+    if (!currentPlan.canChange) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change plan' } });
         return;
     }
 
-    const newPlan = plansList.find((p) => p.orbId === body.orbId)!;
+    const newPlan = getMatchingPlanDefinition(body.name, body.version);
+    if (!newPlan) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'new plan not found' } });
+        return;
+    }
+
+    if (newPlan.name === currentPlan.name) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'team is already on this plan' } });
+        return;
+    }
 
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
@@ -68,7 +83,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
+    const isUpgrade = currentPlan.nextPlan?.includes(newPlan);
 
     // -- Upgrade
     if (isUpgrade) {
@@ -79,10 +94,10 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
         let hasPending: string | undefined;
         try {
-            logger.info(`Upgrading ${account.id} to ${body.orbId}`);
+            logger.info(`Upgrading ${account.id} to ${body.name} version ${body.version ?? 'latest'}`);
 
             // Schedule an upgrade
-            const resUpgrade = await billing.upgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
+            const resUpgrade = await billing.upgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.name });
             if (resUpgrade.isErr()) {
                 report(resUpgrade.error);
                 res.status(500).send({ error: { code: 'server_error' } });
@@ -134,9 +149,9 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             return;
         }
 
-        logger.info(`Downgrading ${account.id} to ${body.orbId}`);
+        logger.info(`Downgrading ${account.id} to ${body.name} version ${body.version ?? 'latest'}`);
 
-        const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
+        const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.name });
         if (resDowngrade.isErr()) {
             report(resDowngrade.error);
             res.status(500).send({ error: { code: 'server_error' } });
@@ -150,7 +165,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         productTracking.track({
             name: 'account:billing:downgraded',
             team: account,
-            eventProperties: { previousPlan: plan.name, newPlan: body.orbId, orbCustomerId: plan.orb_customer_id }
+            eventProperties: { previousPlan: plan.name, newPlan: body.name, newPlanVersion: body.version ?? -1, orbCustomerId: plan.orb_customer_id }
         });
         return;
     }
