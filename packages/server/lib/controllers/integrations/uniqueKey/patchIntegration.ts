@@ -91,7 +91,7 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         integration.forward_webhooks = body.forward_webhooks;
     }
 
-    if ('custom' in body && body.custom !== undefined && body.custom !== null && Object.keys(body.custom).length > 0) {
+    if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
         const custom: Record<string, string> = body.custom as Record<string, string>;
         integration.custom = {
             ...integration.custom,
