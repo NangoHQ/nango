@@ -11924,6 +11924,37 @@ strava-web:
         base_url: https://www.strava.com
     docs: https://nango.dev/docs/integrations/all/strava-web
 
+streak:
+    display_name: Streak
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.streak.com/api
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+            headers:
+                content-type: application/json
+                accept: application/json
+    docs: https://nango.dev/docs/integrations/all/streak
+    docs_connect: https://nango.dev/docs/integrations/all/streak/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key for your Streak account
+            example: 'strk_7SGgswz9ZJrNZp7iJmoAFjwdaym1'
+            pattern: '^strk_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 stripe:
     display_name: Stripe Connect
     categories:

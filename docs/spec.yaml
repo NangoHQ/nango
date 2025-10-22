@@ -2074,7 +2074,7 @@ paths:
                                             upstream:
                                                 type: object
                                                 properties:
-                                                    status_code:
+                                                    status:
                                                         type: integer
                                                     headers:
                                                         type: object
