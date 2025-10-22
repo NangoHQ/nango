@@ -2,6 +2,7 @@ import db from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { Err, Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
 
+import { switchActiveSyncConfig } from './utils.js';
 import { NangoError } from '../../utils/error.js';
 import remoteFileService from '../file/remote.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId } from '../sync/config/config.service.js';
@@ -209,24 +210,9 @@ export async function deployTemplate({
                 await trx.from<DBSyncEndpoint>('_nango_sync_endpoints').insert(endpoints);
             }
 
-            // Update sync_config_id references in _nango_syncs table to point to new active config
-            if (idsToMarkAsInactive.length > 0) {
-                await trx.raw(
-                    `
-                    UPDATE _nango_syncs
-                    SET sync_config_id = (
-                        SELECT active_config.id
-                        FROM _nango_sync_configs as old_config
-                        JOIN _nango_sync_configs as active_config
-                            ON old_config.sync_name = active_config.sync_name
-                            AND old_config.nango_config_id = active_config.nango_config_id
-                            AND old_config.environment_id = active_config.environment_id
-                        WHERE old_config.id = _nango_syncs.sync_config_id
-                            AND active_config.active = true
-                    )
-                    WHERE sync_config_id = ANY(?)`,
-                    [idsToMarkAsInactive]
-                );
+            // Use the switchActiveSyncConfig function for each inactive config
+            for (const id of idsToMarkAsInactive) {
+                await switchActiveSyncConfig(id, trx);
             }
         });
 

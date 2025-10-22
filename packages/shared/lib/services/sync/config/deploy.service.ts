@@ -7,6 +7,7 @@ import remoteFileService from '../../file/remote.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { NangoError } from '../../../utils/error.js';
+import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
@@ -171,39 +172,26 @@ export async function deploy({
                 await trx.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
             }
 
-            if (idsToMarkAsInactive.length > 0) {
-                await trx.raw(
-                    `
-                    UPDATE _nango_syncs
-                    SET sync_config_id = (
-                        SELECT active_config.id
-                        FROM _nango_sync_configs as old_config
-                        JOIN _nango_sync_configs as active_config
-                            ON old_config.sync_name = active_config.sync_name
-                            AND old_config.nango_config_id = active_config.nango_config_id
-                            AND old_config.environment_id = active_config.environment_id
-                        WHERE old_config.id = _nango_syncs.sync_config_id
-                            AND active_config.active = true
-                    )
-                    WHERE sync_config_id = ANY(?)`,
-                    [idsToMarkAsInactive]
-                );
+            // Use the switchActiveSyncConfig function for each inactive config
+            for (const id of idsToMarkAsInactive) {
+                await switchActiveSyncConfig(id, trx);
+            }
+
+            // Update on-event scripts within the same transaction
+            if (onEventScriptsByProvider) {
+                const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
+                const result: SyncDeploymentResult[] = updated.map((u) => {
+                    return {
+                        name: u.name,
+                        version: u.version,
+                        providerConfigKey: u.providerConfigKey,
+                        type: 'on-event',
+                        models: []
+                    };
+                });
+                deployResults.push(...result);
             }
         });
-
-        if (onEventScriptsByProvider) {
-            const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
-            const result: SyncDeploymentResult[] = updated.map((u) => {
-                return {
-                    name: u.name,
-                    version: u.version,
-                    providerConfigKey: u.providerConfigKey,
-                    type: 'on-event',
-                    models: []
-                };
-            });
-            deployResults.push(...result);
-        }
 
         void logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
             nameOfType,
