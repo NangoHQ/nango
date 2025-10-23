@@ -12,7 +12,7 @@ export const TeamBilling: React.FC = () => {
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            <h2 className="text-text-primary text-2xl font-bold">Billing & usage</h2>
+            <h2 className="text-text-primary text-2xl font-semibold">Billing & usage</h2>
             <Navigation defaultValue="usage" className="max-w-full">
                 <NavigationList>
                     <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
