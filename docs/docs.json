@@ -227,7 +227,18 @@
               "implementation-guides/building-integrations/unified-apis",
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
-              "implementation-guides/building-integrations/data-validation"
+              "implementation-guides/building-integrations/data-validation",
+              {
+                "group": "Advanced Integration Patterns",
+                "pages": [
+                  "implementation-guides/building-integrations/configuration-based-sync",
+                  "implementation-guides/building-integrations/selection-based-sync",
+                  "implementation-guides/building-integrations/window-time-based-sync",
+                  "implementation-guides/building-integrations/action-leveraging-sync-responses",
+                  "implementation-guides/building-integrations/24-hour-extended-sync",
+                  "implementation-guides/building-integrations/multi-model-sync"
+                ]
+              }
             ]
           },
           {
