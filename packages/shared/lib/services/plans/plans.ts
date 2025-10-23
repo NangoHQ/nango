@@ -133,7 +133,7 @@ export async function handlePlanChanged(
     team: DBTeam,
     { newPlanCode, orbCustomerId, orbSubscriptionId }: { newPlanCode: string; orbCustomerId?: string | undefined; orbSubscriptionId: string }
 ): Promise<Result<boolean>> {
-    const newPlan = plansList.find((p) => p.orbId === newPlanCode);
+    const newPlan = plansList.find((p) => p.name === newPlanCode);
     if (!newPlan) {
         return Err('Received a plan not linked to the plansList');
     }
@@ -144,17 +144,17 @@ export async function handlePlanChanged(
     }
 
     // Plan hasn't changed
-    if (currentPlan.value.name === newPlan.code) {
+    if (currentPlan.value.name === newPlan.name) {
         return Ok(true);
     }
 
     // Only update subscription date from free to paid (undefined = no update)
-    const isCurrentFree = currentPlan.value.name === freePlan.code;
-    const isNewPaid = newPlan.code !== freePlan.code;
+    const isCurrentFree = currentPlan.value.name === freePlan.name;
+    const isNewPaid = newPlan.name !== freePlan.name;
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
-        name: newPlan.code as unknown as DBPlan['name'],
+        name: newPlan.name,
         orb_subscription_id: orbSubscriptionId,
         orb_future_plan: null,
         orb_future_plan_at: null,
