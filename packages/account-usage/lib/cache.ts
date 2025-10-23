@@ -36,12 +36,9 @@ export class UsageCache {
 
     public async incr(key: string, { delta, ttlMs }: { delta: number; ttlMs?: number | undefined }): Promise<Result<UsageCacheEntry>> {
         try {
-            const oneHourMs = 60 * 60 * 1000; // TODO: make this configurable?
-            const revalidateAfter = Date.now() + oneHourMs + Math.random() * oneHourMs; // default revalidateAfter is between 1 and 2 hours to spread the load
-
             const multi = this.store.multi();
             multi.hIncrBy(key, 'count', delta);
-            multi.hSetNX(key, 'revalidateAfter', `${revalidateAfter}`);
+            multi.hSetNX(key, 'revalidateAfter', `${UsageCache.revalidateAfter()}`);
             if (ttlMs) {
                 multi.pExpire(key, ttlMs);
             }
@@ -54,6 +51,35 @@ export class UsageCache {
         } catch (err) {
             return Err(new Error(`cache_incr_error`, { cause: err }));
         }
+    }
+
+    public async overwrite(key: string, count: number): Promise<Result<void>> {
+        try {
+            await this.store.hSet(key, {
+                count: count,
+                revalidateAfter: `${UsageCache.revalidateAfter()}`
+            });
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error(`cache_set_error`, { cause: err }));
+        }
+    }
+
+    public async tryAcquireLock(key: string, { ttlMs }: { ttlMs: number }): Promise<Result<string>> {
+        const acquired = await this.store.set(key, '1', { NX: true, PX: ttlMs });
+        if (acquired) {
+            return Ok(key);
+        }
+        return Err(new Error(`lock_not_acquired`));
+    }
+
+    public async releaseLock(key: string): Promise<void> {
+        await this.store.del(key);
+    }
+
+    private static revalidateAfter(): number {
+        const oneHourMs = 60 * 60 * 1000; // TODO: make this configurable
+        return Date.now() + oneHourMs + Math.random() * oneHourMs; // revalidateAfter is between 1 and 2 hours to spread the load
     }
 
     private async validateEntry(key: string, data: any): Promise<Result<UsageCacheEntry>> {

@@ -114,7 +114,7 @@ program
     .action(async function (this: Command) {
         const { debug, ai, copy } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
         const currentPath = process.cwd();
-        const absolutePath = path.resolve(currentPath, this.args[0] || '');
+        const absolutePath = path.resolve(currentPath, this.args[0] || 'nango-integrations');
 
         const setupAI = async (): Promise<void> => {
             const ok = await initAI({ absolutePath, debug, aiOpts: ai });

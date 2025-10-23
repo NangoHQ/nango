@@ -160,6 +160,22 @@ class Kubernetes {
     }
 
     private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<void>> {
+        let noDisruptSpec = {};
+        if (envs.RUNNER_DO_NOT_DISRUPT) {
+            noDisruptSpec = {
+                nodeSelector: {
+                    'nango.dev/lifecycle': 'no-disrupt'
+                },
+                tolerations: [
+                    {
+                        key: 'nango.dev/lifecycle',
+                        operator: 'Equal',
+                        value: 'no-disrupt',
+                        effect: 'NoSchedule'
+                    }
+                ]
+            };
+        }
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
                 name,
@@ -177,6 +193,7 @@ class Kubernetes {
                         labels: { app: name }
                     },
                     spec: {
+                        ...noDisruptSpec,
                         containers: [
                             {
                                 name: 'runner',
@@ -397,10 +414,16 @@ class Kubernetes {
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
+            { name: 'DD_PROFILING_ENABLED', value: String(this.isProfilingEnabled(node)) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
         ];
+    }
+
+    private isProfilingEnabled(node: Node): boolean {
+        const accountId = node.routingId.split('-')[3]; //this index is based on routing id being in the format {stage}-runner-account-{accountId}-{suffix}
+        return accountId ? envs.RUNNER_PROFILED_ACCOUNTS.includes(accountId) : false;
     }
 
     private getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {

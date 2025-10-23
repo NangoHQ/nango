@@ -1,3 +1,5 @@
+import { metrics as ddMetrics } from '@nangohq/utils';
+
 import type { UsageMetric } from './metrics.js';
 import type { IUsageTracker } from './usage.js';
 import type { DBPlan } from '@nangohq/types';
@@ -26,7 +28,7 @@ export class Capping {
     public async getStatus(plan: DBPlan | null, ...metrics: UsageMetric[]): Promise<CappingStatus> {
         const status: CappingStatus = { isCapped: false, metrics: {} };
 
-        if (!plan || !this.options?.enabled) {
+        if (!plan) {
             return status;
         }
 
@@ -61,7 +63,20 @@ export class Capping {
             status.message = messages.join(' ') + ' Please upgrade your plan to remove the limits.';
         }
 
-        // TODO: DD metric
+        // Emit a datadog metric if the account is capped on any metric
+        if (status.isCapped) {
+            const dimensions = {
+                accountId: plan.account_id,
+                dryRun: this.options?.enabled ? 'false' : 'true',
+                ...Object.fromEntries(Object.keys(status.metrics).map((key) => [`metric-${key}`, 'true']))
+            };
+            ddMetrics.increment(ddMetrics.Types.USAGE_IS_CAPPED, 1, dimensions);
+        }
+
+        // If capping is disabled, always return not capped
+        if (!this.options?.enabled) {
+            return { isCapped: false, metrics: {} };
+        }
 
         return status;
     }

@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.5] - 2025-10-22
+
+### Added
+
+- Add plan.webhook_forwards_max column (#4871) by @TBonnin
+- *(integrations)* Add support for ironclad (#4818) by @hassan254-prog
+- *(webhooks)* Add support for notion webhooks (#4864) by @hassan254-prog
+- *(integrations)* Add support for teamleader focus (#4819) by @hassan254-prog
+- *(integrations)* Add support for loop returns (#4849) by @hassan254-prog
+- *(integrations)* Add support for affinity v2 and webhooks (#4854) by @hassan254-prog
+- *(integrations)* Add support for pingone (#4845) by @hassan254-prog
+- *(auth-links)* Add in logic for a magic auth link and adjust styling appropriately (#4879) by @khaliqgant
+- *(runner)* Add node selector and toleration (#4889) by @rossmcewan
+- *(webapp)* Redesign billing & usage (#4873) by @kaposke
+- *(integrations)* Add support for streak (#4887) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bd49103166eca4e9b9d7f80811a1e6d505c68280 by Hassan_Wari by @github-actions[bot]
+- Dd metric when usage is capped (#4875) by @TBonnin
+
+### Fixed
+
+- Rename webhook_forwards usage metric (#4872) by @TBonnin
+- *(runner)* Annotate pods to prevent disruption (#4874) by @rossmcewan
+- *(providers)* Fix jira post connection script (#4883) by @hassan254-prog
+- *(webapp)* Spacing in verify email screen (#4878) by @kaposke
+- *(docs)* Docs typo (#4867) by @khaliqgant
+- *(cli)* Default to nango-integrations if no path provided (#4880) by @khaliqgant
+- *(connect-ui)* Close button alignment on single integration (#4876) by @kaposke
+- *(webapp)* Nav bar links should open in new tab (#4877) by @kaposke
+- Orb_subcribed_at backfill (#4890) by @kaposke
+- *(cli)* Fix autoconfirm flag (#4896) by @hassan254-prog
+- *(providers)* Support region interpolation from connection config for intercom (#4861) by @hassan254-prog
+- *(mcp-dynamic)* Allow custom for mcp generic to patch (#4893) by @khaliqgant
+
 ## [v0.69.4] - 2025-10-16
 
 ### Added
@@ -5140,6 +5176,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5
 [v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
 [v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
 [v0.69.2]: https://github.com/NangoHQ/nango/compare/v0.69.1..v0.69.2

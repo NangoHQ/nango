@@ -6596,15 +6596,25 @@ intercom:
         - surveys
         - ticketing
     auth_mode: OAUTH2
-    authorization_url: https://app.intercom.io/oauth
-    token_url: https://api.intercom.io/auth/eagle/token
+    authorization_url: https://app.${connectionConfig.region}.intercom.com || https://app.intercom.com/oauth
+    token_url: https://api.${connectionConfig.region}.intercom.io/auth/eagle/token || https://api.intercom.io/auth/eagle/token
     proxy:
-        base_url: https://api.intercom.io
+        base_url: https://api.${connectionConfig.region}.intercom.io || https://api.intercom.io
         retry:
             at:
                 - 'x-ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/intercom
+    docs_connect: https://nango.dev/docs/integrations/all/intercom/connect
     pre_connection_deletion_script: intercomPreConnectionDeletion
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The API region for your Intercom workspace.
+            pattern: '^(eu|au)$'
+            example: eu
+            optional: true
+            doc_section: '#step-1-finding-your-region'
 
 intuit:
     display_name: Intuit
@@ -9523,6 +9533,78 @@ pingboard:
         grant_type: client_credentials
     docs: https://nango.dev/docs/integrations/all/pingboard
 
+pingone:
+    display_name: PingOne
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/authorize
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.pingone.${connectionConfig.tld}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/pingone
+    docs_connect: https://docs.nango.dev/integrations/all/pingone/connect
+    connection_config:
+        tld:
+            type: string
+            title: Top Level Domain
+            description: The top level domain for your PingOne account
+            example: com
+            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            doc_section: '#step-2-finding-your-top-level-domain'
+        environmentId:
+            type: string
+            title: Environment ID
+            order: 1
+            description: The environment ID for your PingOne account
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+            format: uuid
+            doc_section: '#step-1-finding-your-environment-id'
+
+pingone-cc:
+    display_name: PingOne (Client Credentials)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.pingone.${connectionConfig.tld}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/pingone-cc
+    docs_connect: https://docs.nango.dev/integrations/all/pingone-cc/connect
+    connection_config:
+        tld:
+            type: string
+            title: Top Level Domain
+            description: The top level domain for your PingOne account
+            example: com
+            order: 2
+            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            doc_section: '#step-3-finding-your-top-level-domain'
+        environmentId:
+            type: string
+            title: Environment ID
+            order: 1
+            description: The environment ID for your PingOne account
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+            format: uuid
+            doc_section: '#step-2-finding-your-environment-id'
+
 pinterest:
     display_name: Pinterest
     categories:
@@ -11842,6 +11924,37 @@ strava-web:
         base_url: https://www.strava.com
     docs: https://nango.dev/docs/integrations/all/strava-web
 
+streak:
+    display_name: Streak
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.streak.com/api
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+            headers:
+                content-type: application/json
+                accept: application/json
+    docs: https://nango.dev/docs/integrations/all/streak
+    docs_connect: https://nango.dev/docs/integrations/all/streak/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key for your Streak account
+            example: 'strk_7SGgswz9ZJrNZp7iJmoAFjwdaym1'
+            pattern: '^strk_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 stripe:
     display_name: Stripe Connect
     categories:
@@ -13655,13 +13768,17 @@ zoho:
     categories:
         - accounting
     auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
-    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
+    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth || https://accounts.zoho.com/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token
     authorization_params:
         prompt: consent
         access_type: offline
+    redirect_uri_metadata:
+        - accounts-server
+    token_response_metadata:
+        - api_domain
     proxy:
-        base_url: https://www.zohoapis.${connectionConfig.extension}
+        base_url: https://www.zohoapis.${connectionConfig.extension} || ${connectionConfig.api_domain}
         paginate:
             type: offset
             response_path: data
@@ -13676,7 +13793,13 @@ zoho:
             pattern: '^[a-z.]+$'
             prefix: https://accounts.zoho.
             example: com
+            optional: true
             suffix: /
+        accounts-server:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 zoho-books:
     display_name: Zoho Books
@@ -13691,6 +13814,7 @@ zoho-books:
             pattern: '^[a-z.]+$'
             prefix: https://books.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-crm:
@@ -13706,6 +13830,7 @@ zoho-crm:
             pattern: '^[a-z.]+$'
             prefix: https://crm.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-calendar:
@@ -13725,6 +13850,7 @@ zoho-calendar:
             pattern: '^[a-z.]+$'
             prefix: https://calendar.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-desk:
@@ -13745,6 +13871,7 @@ zoho-desk:
             pattern: '^[a-z.]+$'
             prefix: https://desk.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-inventory:
@@ -13762,6 +13889,7 @@ zoho-inventory:
             pattern: '^[a-z.]+$'
             prefix: https://inventory.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-invoice:
@@ -13779,6 +13907,7 @@ zoho-invoice:
             pattern: '^[a-z.]+$'
             prefix: https://invoice.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-mail:
@@ -13799,6 +13928,7 @@ zoho-mail:
             pattern: '^[a-z.]+$'
             prefix: https://mail.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-bigin:
@@ -13814,6 +13944,7 @@ zoho-bigin:
             pattern: '^[a-z.]+$'
             prefix: https://bigin.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoho-people:
@@ -13833,6 +13964,7 @@ zoho-people:
             pattern: '^[a-z.]+$'
             prefix: https://people.zoho.
             example: com
+            optional: true
             suffix: /
 
 zoom:
