@@ -433,8 +433,8 @@ class Kubernetes {
     private getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {
         const requestCpu = Math.max(this.MIN_REQUEST_CPU, Math.min(this.MAX_REQUEST_CPU, Math.floor(node.cpuMilli * 0.6)));
         const requestMemory = Math.max(this.MIN_REQUEST_MEMORY, Math.min(this.MAX_REQUEST_MEMORY, Math.floor(node.memoryMb * 0.6)));
-        const limitCpu = Math.max(this.MIN_REQUEST_CPU, Math.min(this.MAX_REQUEST_CPU, node.cpuMilli));
-        const limitMemory = Math.max(this.MIN_REQUEST_MEMORY, Math.min(this.MAX_REQUEST_MEMORY, node.memoryMb));
+        const limitCpu = Math.max(requestCpu, Math.min(this.MAX_REQUEST_CPU, node.cpuMilli));
+        const limitMemory = Math.max(requestMemory, Math.min(this.MAX_REQUEST_MEMORY, node.memoryMb));
         return {
             requests: {
                 cpu: `${requestCpu}m`,
