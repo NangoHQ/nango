@@ -427,74 +427,18 @@ class Kubernetes {
     }
 
     private getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {
-        if (node.cpuMilli >= 8000 && node.memoryMb >= 32000) {
-            return {
-                requests: {
-                    cpu: '4000m',
-                    memory: '16384Mi'
-                },
-                limits: {
-                    cpu: '8000m',
-                    memory: '32768Mi'
-                }
-            };
-        }
-        if (node.cpuMilli >= 4000 && node.memoryMb >= 16000) {
-            return {
-                requests: {
-                    cpu: '4000m',
-                    memory: '8192Mi'
-                },
-                limits: {
-                    cpu: '4000m',
-                    memory: '16384Mi'
-                }
-            };
-        }
-        if (node.cpuMilli >= 4000 && node.memoryMb >= 8000) {
-            return {
-                requests: {
-                    cpu: '2000m',
-                    memory: '4096Mi'
-                },
-                limits: {
-                    cpu: '4000m',
-                    memory: '8192Mi'
-                }
-            };
-        }
-        if (node.cpuMilli > 2000 || node.memoryMb >= 4000) {
-            return {
-                requests: {
-                    cpu: '1000m',
-                    memory: '2048Mi'
-                },
-                limits: {
-                    cpu: '2000m',
-                    memory: '4096Mi'
-                }
-            };
-        }
-        if (node.cpuMilli > 1000 || node.memoryMb >= 2000) {
-            return {
-                requests: {
-                    cpu: '500m',
-                    memory: '1024Mi'
-                },
-                limits: {
-                    cpu: '1000m',
-                    memory: '2048Mi'
-                }
-            };
-        }
+        const requestCpu = Math.floor(node.cpuMilli * 0.6);
+        const requsetMemory = Math.floor(node.memoryMb * 0.6);
+        const limitCpu = node.cpuMilli;
+        const limitMemory = node.memoryMb;
         return {
             requests: {
-                cpu: '500m',
-                memory: '512Mi'
+                cpu: `${requestCpu}m`,
+                memory: `${requsetMemory}Mi`
             },
             limits: {
-                cpu: '500m',
-                memory: '1024Mi'
+                cpu: `${limitCpu}m`,
+                memory: `${limitMemory}Mi`
             }
         };
     }
