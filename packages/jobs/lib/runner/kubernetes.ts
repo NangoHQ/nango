@@ -426,10 +426,10 @@ class Kubernetes {
         return accountId ? envs.RUNNER_PROFILED_ACCOUNTS.includes(accountId) : false;
     }
 
-    private MAX_REQUEST_CPU = 4000;
-    private MAX_REQUEST_MEMORY = 16384;
-    private MIN_REQUEST_CPU = 100;
-    private MIN_REQUEST_MEMORY = 128;
+    private MAX_REQUEST_CPU = envs.RUNNER_MAX_REQUEST_CPU;
+    private MAX_REQUEST_MEMORY = envs.RUNNER_MAX_REQUEST_MEMORY;
+    private MIN_REQUEST_CPU = envs.RUNNER_MIN_REQUEST_CPU;
+    private MIN_REQUEST_MEMORY = envs.RUNNER_MIN_REQUEST_MEMORY;
     private getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {
         const requestCpu = Math.max(this.MIN_REQUEST_CPU, Math.min(this.MAX_REQUEST_CPU, Math.floor(node.cpuMilli * 0.6)));
         const requestMemory = Math.max(this.MIN_REQUEST_MEMORY, Math.min(this.MAX_REQUEST_MEMORY, Math.floor(node.memoryMb * 0.6)));

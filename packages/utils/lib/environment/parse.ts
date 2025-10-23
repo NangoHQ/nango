@@ -147,6 +147,10 @@ export const ENVS = z.object({
     RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
     RUNNER_CLIENT_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(5000),
     RUNNER_CLIENT_RESPONSE_TIMEOUT_MS: z.coerce.number().optional().default(15_000),
+    RUNNER_MAX_REQUEST_CPU: z.coerce.number().optional().default(4000),
+    RUNNER_MAX_REQUEST_MEMORY: z.coerce.number().optional().default(16384),
+    RUNNER_MIN_REQUEST_CPU: z.coerce.number().optional().default(500),
+    RUNNER_MIN_REQUEST_MEMORY: z.coerce.number().optional().default(512),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
