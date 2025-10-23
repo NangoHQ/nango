@@ -4,9 +4,6 @@ sidebarTitle: 'Microsoft Admin'
 description: 'Access the Microsoft Admin API in 2 minutes 💨'
 ---
 
-import APIGotchas from "/snippets/microsoft-shared/api-gotchas.mdx"
-import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
-
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
@@ -93,7 +90,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
         1. In the left sidebar, select **API permissions**.
         2. Click **Add a permission**.
         3. Select **Microsoft Graph** to integrate with **Microsoft Admin**.
-        4. Select the required permissions from the **Application permissions section**..
+        4. Select the required permissions from the **Application permissions section**.
         5. Select the specific permissions your app requires. Please refer to the table below for some of the [commonly used scopes](#common-scopes).
         6. Click **Add permissions**.
         7. If your application requires admin consent, click **Grant admin consent for [tenant]** to pre-authorize the permissions.
@@ -133,14 +130,36 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 
   </Tab>
   <Tab title="🔗 Useful links">
-    <UsefulLinks />
+    ## Useful links
+    | Topic | Links | 
+    | - | - | 
+    | General | [Microsoft Entra Admin Center](https://entra.microsoft.com) |
+    | | [Azure Portal](https://portal.azure.com) |
+    | | [Microsoft Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) |
+    | Developer | [Microsoft identity platform documentation](https://learn.microsoft.com/en-us/entra/identity-platform/) |
+    | | [Microsoft Graph API Overview](https://learn.microsoft.com/en-us/graph/overview) |
+    | | [How to register an Application](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) |
+    | | [Overview of user and admin consent](https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/user-admin-consent-overview) |
+    | | [How to configure an admin consent workflow](https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/configure-admin-consent-workflow) |
+    | | [Microsoft Graph Permissions Reference](https://learn.microsoft.com/en-us/graph/permissions-reference) |
+    | | [Microsoft Authentication Libraries (MSAL)](https://learn.microsoft.com/en-us/entra/identity-platform/msal-overview) |
+    | | [Microsoft Graph API Reference](https://learn.microsoft.com/en-us/graph/api/overview) |
+    | | [Microsoft Graph Throttling Guidance](https://learn.microsoft.com/en-us/graph/throttling) |
+    | | [Redirect URI Best Practices](https://learn.microsoft.com/en-us/entra/identity-platform/reply-url) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/microsoft-admin.mdx)</Note>
-  </Tab>
+  </Tab> 
   <Tab title="🚨 API gotchas">
-    - You can find the permissions required for each API call in its corresponding API method section. For example, to retrieve a user from Teams, refer to the Application permission type in the [Get a user permissions](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http#permissions) documentation.
-
-    <APIGotchas />
+    -   Only organization administrators can authorize this integration, as admin consent is required to grant permissions for the entire organization.
+    -   You can find the permissions required for each API call in its corresponding API method section. For example, to retrieve a user from Teams, refer to the Application permission type in the [Get a user permissions](https://learn.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http#permissions) documentation.
+    -   Microsoft offers a tool that allows you to construct and perform Graph API queries and see their response for any apps on which you have an admin, developer, or tester role. For more information you can check [Microsoft Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+    -   Please be aware that the Microsoft Graph API implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Graph Throttling Guidance](https://learn.microsoft.com/en-us/graph/throttling).
+    -   Microsoft Graph API has different versions (v1.0 and beta). The v1.0 endpoint is for production use, while the beta endpoint contains features that are still in preview.
+    -   You can set the [`.default` scope documentation](https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc#default-when-the-user-gives-consent) to ensure the permissions remain the same as those granted at the organization level.
+    -   The `.default` scope can't be combined with the scopes registered in the Azure portal. So either just use the `.default` scope or remove it to list out explicit parameters that are required. If you attempt to combine them you'll receive the following error
+    ```
+    .default scope can't be combined with resource-specific scopes
+    ```
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/microsoft-admin.mdx)</Note>
   </Tab>
