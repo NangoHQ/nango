@@ -37,25 +37,28 @@ export class InternalNango {
     async executeScriptForWebhooks({
         body,
         webhookType,
+        webhookTypeValue,
         connectionIdentifier,
+        connectionIdentifierValue,
         propName
     }: {
         body: Record<string, any>;
-        webhookType: string;
+        webhookType?: string;
+        webhookTypeValue?: string;
         connectionIdentifier?: string;
+        connectionIdentifierValue?: string;
         propName?: string;
     }): Promise<{ connectionIds: string[] }> {
         let connections: DBConnectionDecrypted[] | null | ConnectionInternal[] = null;
-        if (!connectionIdentifier || connectionIdentifier === '') {
+
+        const identifierValue = connectionIdentifierValue || (connectionIdentifier ? get(body, connectionIdentifier) : undefined);
+
+        if ((!connectionIdentifier || connectionIdentifier === '') && !identifierValue) {
             connections = await connectionService.getConnectionsByEnvironmentAndConfig(this.environment.id, this.integration.unique_key);
-        } else if (!get(body, connectionIdentifier)) {
+        } else if (!identifierValue) {
             return { connectionIds: [] };
         } else if (propName === 'connectionId') {
-            const { success, response: connection } = await connectionService.getConnection(
-                get(body, connectionIdentifier),
-                this.integration.unique_key,
-                this.environment.id
-            );
+            const { success, response: connection } = await connectionService.getConnection(identifierValue, this.integration.unique_key, this.environment.id);
 
             if (success && connection) {
                 connections = [connection];
@@ -64,14 +67,14 @@ export class InternalNango {
             const strippedMetadata = propName.replace('metadata.', '');
             connections = await connectionService.findConnectionsByMetadataValue({
                 metadataProperty: strippedMetadata,
-                payloadIdentifier: get(body, connectionIdentifier),
+                payloadIdentifier: identifierValue,
                 configId: this.integration.id,
                 environmentId: this.environment.id
             });
         } else {
             connections = await connectionService.findConnectionsByConnectionConfigValue(
-                propName || connectionIdentifier,
-                get(body, connectionIdentifier),
+                propName || connectionIdentifier || '',
+                identifierValue,
                 this.environment.id
             );
         }
@@ -91,7 +94,8 @@ export class InternalNango {
             return { connectionIds: connections?.map((connection) => connection.connection_id) };
         }
 
-        const type = get(body, webhookType);
+        // use webhookTypeValue if provided (direct value from headers), otherwise extract from body
+        const type = webhookTypeValue || (webhookType ? get(body, webhookType) : undefined);
 
         const orchestrator = getOrchestrator();
 
