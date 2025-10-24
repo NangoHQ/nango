@@ -245,6 +245,8 @@ export class UsageTracker implements IUsageTracker {
             return this.billingClient.getUsage(subscriptionId);
         });
         if (billingUsage.isErr()) {
+            // Note: errors (including rate limit errors) are not being retried
+            // revalidateAfter isn't being updated, so next incr will attempt to revalidate again
             return Err(billingUsage.error);
         }
         const res = {} as Record<UsageMetric, number>;
