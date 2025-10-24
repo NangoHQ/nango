@@ -155,7 +155,7 @@ export class UsageTracker implements IUsageTracker {
 
     public async revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>> {
         const source = sources[metric];
-        return tracer.trace('nango.usage.revalidate', { tags: { accountId, metric, source } }, async (span) => {
+        return await tracer.trace('nango.usage.revalidate', { tags: { accountId, metric, source } }, async (span) => {
             // Acquire a lock to avoid multiple revalidations in parallel
             const lockKey = `${cacheKeyPrefix}:revalidate:${accountId}:${source}`;
             const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
