@@ -22,7 +22,8 @@ export default tseslint.config(
             'packages/cli/fixtures/',
             'docs/script.js',
             'docs/snippets/api-down-watch/status-widget.jsx',
-            'packages/runner-sdk/models.d.ts'
+            'packages/runner-sdk/models.d.ts',
+            'packages/cli/templates/'
         ]
     },
 
