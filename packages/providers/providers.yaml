@@ -12610,7 +12610,8 @@ totango:
     proxy:
         base_url: https://api.totango.com/api/v3
         headers:
-            app-token: ${appToken}
+            authorization: app-token ${appToken}
+            service_id: ${serviceId}
         verification:
             method: GET
             endpoints:
@@ -12623,15 +12624,14 @@ totango:
             title: App Token
             description: The App Token for your Totango account
             doc_section: '#step-1-finding-app-token'
-            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            example: 9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
         serviceId:
             type: string
             title: Service ID
-            description: The Service ID for your Totango account
+            description: The Service ID for your Totango account (use only the middle number, e.g., if your service ID is SP-275419-01, use 275419)
             doc_section: '#step-2-finding-service-id'
-            example: SP-275419-01
-            pattern: '^SP-[0-9]+-[0-9]+$'
+            example: 275419
+            pattern: '^[0-9]+$'
 tumblr:
     display_name: Tumblr
     categories:

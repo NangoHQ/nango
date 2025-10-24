@@ -76,11 +76,12 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
   <Step title="Find your Service ID">
     1. In the same Totango support article, you'll also find instructions for getting your Service ID.
     2. Copy the Service ID - it should be in the format `SP-XXXXXX-XX`.
+    3. **Important**: For the Nango integration, use only the middle number from your Service ID. For example, if your Service ID is `SP-275419-01`, use `275419`.
   </Step>
   <Step title="Configure your integration">
     When setting up your Totango integration in Nango, you'll need to provide:
     - **App Token**: Your personal access token from Totango
-    - **Service ID**: Your unique service identifier from Totango
+    - **Service ID**: Only the middle number from your Totango Service ID (e.g., `275419` instead of `SP-275419-01`)
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
@@ -99,10 +100,12 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/totango.mdx)</Note>
   </Tab>
-  <Tab title="🚨 API gotchas">.
-    - **Service ID Format**: Service IDs must follow the pattern `SP-XXXXXX-XX` where X represents digits. Make sure to include the `SP-` prefix and hyphens.
+  <Tab title="🚨 API gotchas">
+    - **Service ID Format**: When configuring in Nango, use only the middle number from your Totango Service ID. For example, if your Service ID is `SP-275419-01`, use `275419` in Nango.
     - **API Base URL**: All Totango API requests are made to `https://api.totango.com/api/v3`. Nango handles this automatically when using the proxy.
-    - **Authentication Header**: Totango uses the `app-token` header for authentication, not the standard `Authorization` header.
+    - **Authentication Header**: Totango uses the `Authorization` header with the format `app-token <your-token>`. Nango handles this automatically.
+    - **Service ID Header**: The service ID is sent as a separate `service_id` header parameter.
+    - **Matching Credentials**: Your App Token and Service ID must point to the same Totango service, otherwise requests will be rejected.
     - **Rate Limits**: Be aware of Totango's API rate limits. Check the [API documentation](https://support.totango.com/hc/en-us/articles/360000000006-API-Overview) for current limits.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/totango.mdx)</Note>
