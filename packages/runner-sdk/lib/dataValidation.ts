@@ -12,7 +12,7 @@ export interface ValidateProps {
 }
 
 let ajv: Ajv;
-const cache = new Map<string, ValidateFunction<any>>();
+const cache = new Map<string, ValidateFunction<any> | Error>(); // caching compiled validators (or error if compilation fails) by modelName-version
 
 export function clearValidationCache() {
     cache.clear();
@@ -48,11 +48,24 @@ export function validateData({ version, input, modelName, jsonSchema }: Validate
     try {
         const key = `${modelName}-${version}`;
         if (cache.has(key)) {
-            validator = cache.get(key)!;
+            const cached = cache.get(key)!;
+            // if the cached value is an error, return it directly
+            // this avoids re-compiling schemas that previously failed to compile
+            if (cached instanceof Error) {
+                return [cached];
+            }
+            validator = cached;
         } else {
             // append all definitions and set current model name as the entry point
-            validator = ajv.compile({ ...(jsonSchema as any), ...(jsonSchema['definitions']![modelName] as any) });
-            cache.set(key, validator);
+            try {
+                validator = ajv.compile({ ...(jsonSchema as any), ...(jsonSchema['definitions']![modelName] as any) });
+                cache.set(key, validator);
+            } catch (err) {
+                const error = err instanceof Error ? err : new Error('failed_to_compile_json_schema');
+                // store the error in cache to avoid re-compiling
+                cache.set(key, error);
+                return [error];
+            }
         }
 
         if (validator(input)) {
