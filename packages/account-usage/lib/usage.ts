@@ -155,67 +155,74 @@ export class UsageTracker implements IUsageTracker {
 
     public async revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>> {
         const source = sources[metric];
-        return await tracer.trace('nango.usage.revalidate', { tags: { accountId, metric, source } }, async (span) => {
-            // Acquire a lock to avoid multiple revalidations in parallel
-            const lockKey = `${cacheKeyPrefix}:revalidate:${accountId}:${source}`;
-            const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
-            if (lock.isErr()) {
-                // another revalidation is in progress, skip
-                return Ok(undefined);
-            }
-            try {
-                const now = new Date();
-                switch (metric) {
-                    case 'connections': {
-                        const count = await connectionService.countByAccountId(accountId);
+        const span = tracer.startSpan('nango.usage.revalidate', {
+            tags: { accountId, metric, source }
+        });
+        // Acquire a lock to avoid multiple revalidations in parallel
+        const lockKey = `${cacheKeyPrefix}:revalidate:${accountId}:${source}`;
+        const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
+        if (lock.isErr()) {
+            // another revalidation is in progress, skip
+            return Ok(undefined);
+        }
+        try {
+            const now = new Date();
+            switch (metric) {
+                case 'connections': {
+                    const count = await connectionService.countByAccountId(accountId);
+                    const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
+                    await this.cache.overwrite(cacheKey, count);
+                    return Ok(undefined);
+                }
+                case 'records': {
+                    const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+                    if (envs.length > 0) {
+                        const envIds = envs.map((e) => e.id);
+                        const res = await records.metrics({ environmentIds: envIds });
+                        if (res.isErr()) {
+                            throw res.error;
+                        }
+                        const count = res.value.reduce((acc, entry) => acc + entry.count, 0);
                         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
                         await this.cache.overwrite(cacheKey, count);
-                        return Ok(undefined);
+                        span?.setTag('count', count);
                     }
-                    case 'records': {
-                        const envs = await environmentService.getEnvironmentsByAccountId(accountId);
-                        if (envs.length > 0) {
-                            const envIds = envs.map((e) => e.id);
-                            const res = await records.metrics({ environmentIds: envIds });
-                            if (res.isErr()) {
-                                throw res.error;
-                            }
-                            const count = res.value.reduce((acc, entry) => acc + entry.count, 0);
-                            const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                            await this.cache.overwrite(cacheKey, count);
-                            span?.setTag('count', count);
-                        }
-                        return Ok(undefined);
-                    }
-                    case 'proxy':
-                    case 'function_executions':
-                    case 'function_compute_gbms':
-                    case 'webhook_forwards':
-                    case 'function_logs': {
-                        const billingUsage = await this.getBillingUsage(accountId);
-                        if (billingUsage.isErr()) {
-                            logger.warning(`Failed to fetch billing usage for accountId: ${accountId}`, billingUsage.error);
-                            if (billingUsage.error.message === 'rate_limit_exceeded') {
-                                span?.setTag('rate_limited', true);
-                            }
-                            throw billingUsage.error;
-                        }
-                        // update all billing-related metrics
-                        for (const [metric, count] of Object.entries(billingUsage.value)) {
-                            const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
-                            await this.cache.overwrite(cacheKey, count);
-                        }
-                        return Ok(undefined);
-                    }
+                    return Ok(undefined);
                 }
-            } catch (err) {
-                logger.error(`Failed to revalidate usage for accountId: ${accountId}, metric: ${metric}`, err);
-                span?.setTag('error', err);
-                return Err(new Error('usage_revalidate_error'));
-            } finally {
-                // not releasing the lock to avoid quick re-entrance in case of error
+                case 'proxy':
+                case 'function_executions':
+                case 'function_compute_gbms':
+                case 'webhook_forwards':
+                case 'function_logs': {
+                    const billingUsage = await this.getBillingUsage(accountId);
+                    if (billingUsage.isErr()) {
+                        logger.warning(`Failed to fetch billing usage for accountId: ${accountId}`, billingUsage.error);
+                        if (billingUsage.error.message === 'rate_limit_exceeded') {
+                            span?.setTag('rate_limited', true);
+                        }
+                        throw billingUsage.error;
+                    }
+                    // update all billing-related metrics
+                    for (const [metric, count] of Object.entries(billingUsage.value)) {
+                        const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
+                        await this.cache.overwrite(cacheKey, count);
+                    }
+                    return Ok(undefined);
+                }
+                default: {
+                    ((_exhaustiveCheck: never) => {
+                        throw new Error(`Unhandled usage metric type: ${metric}`);
+                    })(metric);
+                }
             }
-        });
+        } catch (err) {
+            logger.error(`Failed to revalidate usage for accountId: ${accountId}, metric: ${metric}`, err);
+            span?.setTag('error', err);
+            return Err(new Error('usage_revalidate_error'));
+        } finally {
+            span?.finish();
+            // Note: not releasing the lock to avoid quick re-entrance in case of error
+        }
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
