@@ -1,0 +1,84 @@
+---
+title: 'SAP Business One'
+sidebarTitle: 'SAP Business One'
+description: 'Access the SAP Business One API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _SAP Business One_.
+      </Step>
+      <Step title="Authorize SAP Business One">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your SAP Business One credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the SAP Business One API">
+        Let's make your first request to the SAP Business One API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/b1s/v2/Users" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              // https://help.sap.com/doc/056f69366b5345a386bb8149f1700c19/10.0/en-US/Service%20Layer%20API%20Reference.html
+              endpoint: '/b1s/v2/Users',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their SAP Business One accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to SAP Business One using Connect UI](/integrations/all/sap-business-one/connect) |
+    | General | [SAP Business One Website](https://www.sap.com/products/erp/business-one.html) |
+    | Developer | [Service Layer Documentation](https://help.sap.com/docs/SAP_BUSINESS_ONE_VERSION_FOR_SAP_HANA/68a2e87fb29941b5bf959a184d9c6727/4a30f1756fd64520a0d226ac8f0e7bb7.html) |
+    | | [Service Layer API Reference](https://help.sap.com/doc/056f69366b5345a386bb8149f1700c19/10.0/en-US/Service%20Layer%20API%20Reference.html) |
+    | | [Authentication Guide](https://help.sap.com/docs/SAP_BUSINESS_ONE_VERSION_FOR_SAP_HANA/686100cb1bc34346b2bc6642685bab43/b174cb51e48a4cfb8e9a28a46122748a.html) |
+    | | [Administrator's Guide (PDF)](https://help.sap.com/doc/1287198a7ca64cb4b5fef47877cd0a74/10.0/en-US/AdministratorGuide_SQL.pdf) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-business-one.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-business-one.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
