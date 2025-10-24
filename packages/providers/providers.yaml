@@ -10896,7 +10896,7 @@ sap-business-one:
     display_name: SAP Business One
     categories:
         - erp
-    body_format: body
+    body_format: json
     auth_mode: TWO_STEP
     token_url: https://${connectionConfig.domain}/login
     token_params:
