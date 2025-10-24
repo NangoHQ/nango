@@ -19,4 +19,5 @@ export { default as jobdivaWebhookRouting } from './jobdiva-webhook-routing.js';
 export { default as highlevelWebhookRouting } from './highlevel-webhook-routing.js';
 export { default as notionWebhookRouting } from './notion-webhook-routing.js';
 export { default as affinityWebhookRouting } from './affinity-webhook-routing.js';
+export { default as shopifyWebhookRouting } from './shopify-webhook-routing.js';
 export type * from './types.js';

@@ -88,9 +88,15 @@ export async function getRecordStatsByModel({
     }
 }
 
-export async function metrics(): Promise<Result<{ environmentId: number; count: number; sizeBytes: number }[]>> {
+export async function metrics({ environmentIds }: { environmentIds?: number[] } = {}): Promise<
+    Result<{ environmentId: number; count: number; sizeBytes: number }[]>
+> {
     try {
-        const res = await db
+        if (environmentIds && environmentIds.length === 0) {
+            return Err(new Error(`No environment provided`));
+        }
+
+        const query = db
             .from(RECORD_COUNTS_TABLE)
             .select<
                 { environment_id: number; count: number; size_bytes: number }[]
@@ -98,6 +104,11 @@ export async function metrics(): Promise<Result<{ environmentId: number; count: 
             .groupBy('environment_id')
             .having(db.raw('sum(size_bytes) > 0 OR sum(count) > 0')); // only return entries with records
 
+        if (environmentIds) {
+            query.whereIn('environment_id', environmentIds);
+        }
+
+        const res = await query;
         if (!res) {
             return Err(new Error(`Failed to count records`));
         }

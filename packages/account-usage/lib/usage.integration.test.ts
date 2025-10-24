@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getRedis } from '@nangohq/kvstore';
+import { Ok } from '@nangohq/utils';
 
 import { UsageTracker } from './usage.js';
 
@@ -63,7 +64,8 @@ describe('Usage', () => {
             const accountId = 1;
             const metric = 'connections';
 
-            const revalidateSpy = vi.spyOn(UsageTracker as any, 'revalidate');
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
 
             let res = (await usageTracker.incr({ accountId, metric, delta: 5 })).unwrap();
             expect(res).toEqual({ accountId, metric, current: 5 });
