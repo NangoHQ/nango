@@ -37,7 +37,7 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        return plansList?.data.find((p) => p.orbId === currentPlan.orb_future_plan);
+        return plansList?.data.find((p) => p.name === currentPlan.orb_future_plan);
     }, [currentPlan, plansList]);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
@@ -45,21 +45,21 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
+        const curr = plansList.data.find((p) => p.name === currentPlan.name)!;
 
         const list: PlanDefinitionList[] = [];
         for (const plan of plansList.data) {
             if (plan.hidden) {
                 continue;
             }
-            const same = plan.code === currentPlan.name;
+            const same = plan.name === currentPlan.name;
 
             list.push({
                 plan,
                 active: same,
-                isFuture: plan.orbId === currentPlan.orb_future_plan,
-                isDowngrade: curr.prevPlan?.includes(plan.code) || false,
-                isUpgrade: curr.nextPlan?.includes(plan.code) || false
+                isFuture: plan.name === currentPlan.orb_future_plan,
+                isDowngrade: curr.prevPlan?.includes(plan.name) || false,
+                isUpgrade: curr.nextPlan?.includes(plan.name) || false
             });
         }
         return { list, activePlan: curr };
@@ -70,7 +70,7 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        if (futurePlan?.code !== 'free') {
+        if (futurePlan?.name !== 'free') {
             return `Your ${plans?.activePlan.title} subscription will switch to Starter at the end of the month.`;
         }
 
@@ -98,7 +98,7 @@ export const Plans: React.FC = () => {
                         />
                     )}
                     {plans?.list.map((plan) => {
-                        return <PlanRow key={plan.plan.code} planDefinition={plan} activePlan={plans?.activePlan} paymentMethod={paymentMethod} />;
+                        return <PlanRow key={plan.plan.name} planDefinition={plan} activePlan={plans?.activePlan} paymentMethod={paymentMethod} />;
                     })}
                 </TableBody>
             </Table>
@@ -223,14 +223,14 @@ const PlanChangeDialog: React.FC<{
     const refInterval = useRef<NodeJS.Timeout>();
 
     const onUpgrade = async () => {
-        if (!selectedPlan?.plan.orbId) {
+        if (!selectedPlan?.plan.name) {
             return;
         }
 
         setLoading(true);
         setLongWait(false);
 
-        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.orbId });
+        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.name });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to upgrade, an error occurred', variant: 'error' });
@@ -256,7 +256,7 @@ const PlanChangeDialog: React.FC<{
             if ('error' in res.json) {
                 return;
             }
-            if (res.json.data.name !== selectedPlan.plan.orbId) {
+            if (res.json.data.name !== selectedPlan.plan.name) {
                 setLongWait(true);
                 return;
             }
@@ -277,12 +277,12 @@ const PlanChangeDialog: React.FC<{
     };
 
     const onDowngrade = async () => {
-        if (!selectedPlan?.plan.orbId) {
+        if (!selectedPlan?.plan.name) {
             return;
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.orbId });
+        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.name });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to downgrade, an error occurred', variant: 'error' });
@@ -294,7 +294,7 @@ const PlanChangeDialog: React.FC<{
             if ('error' in res.json) {
                 return;
             }
-            if (res.json.data.orb_future_plan !== selectedPlan.plan.orbId) {
+            if (res.json.data.orb_future_plan !== selectedPlan.plan.name) {
                 setLongWait(true);
                 return;
             }

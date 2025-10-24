@@ -10,7 +10,7 @@ import type { PostPlanChange } from '@nangohq/types';
 
 const logger = getLogger('orb');
 
-const orbIds = plansList.map((p) => p.orbId).filter(Boolean) as string[];
+const orbIds = plansList.map((p) => p.name).filter(Boolean) as string[];
 const validation = z
     .object({
         orbId: z.enum(orbIds as [string, ...string[]])
@@ -34,7 +34,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
     const { account, plan } = res.locals;
     const body: PostPlanChange['Body'] = val.data;
-    const currentDef = plansList.find((p) => p.code === plan!.name);
+    const currentDef = plansList.find((p) => p.name === plan!.name);
     if (!currentDef) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'team has an invalid plan' } });
         return;
@@ -48,7 +48,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
-    const newPlan = plansList.find((p) => p.orbId === body.orbId)!;
+    const newPlan = plansList.find((p) => p.name === body.orbId)!;
 
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
@@ -68,7 +68,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.name))?.find((p) => p.name === body.orbId);
 
     // -- Upgrade
     if (isUpgrade) {
@@ -129,7 +129,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     } else {
         // -- Downgrade
-        if (newPlan.code !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
+        if (newPlan.name !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
             res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
             return;
         }
