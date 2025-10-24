@@ -12623,13 +12623,13 @@ totango:
             type: string
             title: App Token
             description: The App Token for your Totango account
-            doc_section: '#step-1-finding-app-token'
+            doc_section: '#instructions'
             example: 9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
         serviceId:
             type: string
             title: Service ID
             description: The Service ID for your Totango account (use only the middle number, e.g., if your service ID is SP-275419-01, use 275419)
-            doc_section: '#step-2-finding-service-id'
+            doc_section: '#instructions'
             example: 275419
             pattern: '^[0-9]+$'
 tumblr:
