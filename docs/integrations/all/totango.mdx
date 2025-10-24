@@ -1,0 +1,114 @@
+---
+title: 'Totango'
+sidebarTitle: 'Totango'
+description: 'Access the Totango API in 2 minutes 💨'
+---
+
+import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
+
+<StatusWidget service="totango" />
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Totango_.
+      </Step>
+      <Step title="Authorize Totango">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Totango credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Totango API">
+        Let's make your first request to the Totango API (fetch user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v0/me" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v0/me',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Totango accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 API credentials setup">
+   <Steps>
+  <Step title="Get your Totango account">
+    You need a Totango account to use the API. If you don't have one, sign up at [Totango](https://app.totango.com/).
+  </Step>
+  <Step title="Find your App Token">
+    1. Log in to your [Totango account](https://app.totango.com/).
+    2. Follow the instructions [here](https://support.totango.com/hc/en-us/articles/203036939-Personal-Access-Token-and-Service-ID) to get your App Token.
+    3. Copy the App Token.
+  </Step>
+  <Step title="Find your Service ID">
+    1. In the same Totango support article, you'll also find instructions for getting your Service ID.
+    2. Copy the Service ID - it should be in the format `SP-XXXXXX-XX`.
+  </Step>
+  <Step title="Configure your integration">
+    When setting up your Totango integration in Nango, you'll need to provide:
+    - **App Token**: Your personal access token from Totango
+    - **Service ID**: Your unique service identifier from Totango
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.totango.com/) |
+    | | [Sign up for Totango](https://app.totango.com/) |
+    | Developer | [API documentation](https://support.totango.com/hc/en-us/articles/360000000006-API-Overview) |
+    | | [Authentication guide](https://support.totango.com/hc/en-us/articles/203036939-Personal-Access-Token-and-Service-ID) |
+    | | [API reference](https://support.totango.com/hc/en-us/articles/360000000006-API-Overview) |
+    | | [Rate limits](https://support.totango.com/hc/en-us/articles/360000000006-API-Overview) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/totango.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">.
+    - **Service ID Format**: Service IDs must follow the pattern `SP-XXXXXX-XX` where X represents digits. Make sure to include the `SP-` prefix and hyphens.
+    - **API Base URL**: All Totango API requests are made to `https://api.totango.com/api/v3`. Nango handles this automatically when using the proxy.
+    - **Authentication Header**: Totango uses the `app-token` header for authentication, not the standard `Authorization` header.
+    - **Rate Limits**: Be aware of Totango's API rate limits. Check the [API documentation](https://support.totango.com/hc/en-us/articles/360000000006-API-Overview) for current limits.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/totango.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

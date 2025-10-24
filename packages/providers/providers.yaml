@@ -6596,7 +6596,7 @@ intercom:
         - surveys
         - ticketing
     auth_mode: OAUTH2
-    authorization_url: https://app.${connectionConfig.region}.intercom.com/oauth || https://app.intercom.com/oauth
+    authorization_url: https://app.${connectionConfig.region}.intercom.com || https://app.intercom.com/oauth
     token_url: https://api.${connectionConfig.region}.intercom.io/auth/eagle/token || https://api.intercom.io/auth/eagle/token
     proxy:
         base_url: https://api.${connectionConfig.region}.intercom.io || https://api.intercom.io
@@ -12602,7 +12602,36 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://nango.dev/docs/integrations/all/todoist
-
+totango:
+    display_name: Totango
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.totango.com/api/v3
+        headers:
+            app-token: ${appToken}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/me
+    docs: https://nango.dev/docs/integrations/all/totango
+    docs_connect: https://nango.dev/docs/integrations/all/totango/connect
+    credentials:
+        appToken:
+            type: string
+            title: App Token
+            description: The App Token for your Totango account
+            doc_section: '#step-1-finding-app-token'
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+        serviceId:
+            type: string
+            title: Service ID
+            description: The Service ID for your Totango account
+            doc_section: '#step-2-finding-service-id'
+            example: SP-275419-01
+            pattern: '^SP-[0-9]+-[0-9]+$'
 tumblr:
     display_name: Tumblr
     categories:
