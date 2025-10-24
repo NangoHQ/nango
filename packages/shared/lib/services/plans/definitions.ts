@@ -1,237 +1,137 @@
+import { enterprisePlanFlags, freePlanFlags, growthPlanFlags, starterPlanFlags } from './flags.js';
+
 import type { PlanDefinition } from '@nangohq/types';
 
-export const freePlan: PlanDefinition = {
-    code: 'free',
+/**
+ * Latest plans
+ */
+
+export const freeV2Plan: PlanDefinition = {
+    name: 'free',
+    orbVersion: 2,
     title: 'Free',
     description: 'For hobby and testing.',
+    isPaid: false,
     prevPlan: null,
-    nextPlan: ['starter', 'growth', 'enterprise'],
-    orbId: 'free',
+    nextPlan: null, // Will be set after all plans are defined
     canChange: true,
     basePrice: 0,
-    flags: {
-        api_rate_limit_size: 'm',
-        environments_max: 2,
-        has_otel: false,
-        has_sync_variants: false,
-        connections_max: 10,
-        records_max: 100_000,
-        proxy_max: 100_000,
-        function_executions_max: 100_000,
-        function_compute_gbms_max: 50_000_000,
-        webhook_forwards_max: 100_000,
-        function_logs_max: 100_000,
-        name: 'free',
-        sync_frequency_secs_min: 3600,
-        auto_idle: true,
-        monthly_actions_max: 1000,
-        monthly_active_records_max: 5000,
-        has_webhooks_script: false,
-        has_webhooks_forward: false,
-        can_override_docs_connect_url: false,
-        can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
-    },
-    display: {
-        features: [
-            { title: '10 connections' },
-            { title: '1k actions' },
-            { title: '5k synced records' },
-            { title: '2 environments' },
-            { title: 'API authorization' },
-            { title: 'Syncs & actions' },
-            { title: 'MCP & AI Tools' },
-            { title: 'Proxy requests' }
-        ],
-        sub: 'Certain features of free projects (syncs & actions) are paused after two weeks of inactivity.'
-    }
+    flags: freePlanFlags
 };
 
-export const starterPlan: PlanDefinition = {
-    code: 'starter',
+export const starterV2Plan: PlanDefinition = {
+    name: 'starter',
+    orbVersion: 6,
+    isPaid: true,
     title: 'Starter',
     description: 'For small teams.',
-    prevPlan: ['free'],
-    nextPlan: ['growth', 'enterprise'],
+    prevPlan: null, // Will be set after all plans are defined
+    nextPlan: null, // Will be set after all plans are defined
     canChange: true,
     basePrice: 50,
-    orbId: 'starter',
-    flags: {
-        api_rate_limit_size: 'l',
-        environments_max: 3,
-        has_otel: false,
-        has_sync_variants: false,
-        name: 'starter',
-        sync_frequency_secs_min: 3600,
-        connections_max: null,
-        records_max: null,
-        proxy_max: null,
-        function_executions_max: null,
-        function_compute_gbms_max: null,
-        webhook_forwards_max: null,
-        function_logs_max: null,
-        auto_idle: false,
-        monthly_actions_max: null,
-        monthly_active_records_max: null,
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_end_notified_at: null,
-        trial_extension_count: 0,
-        trial_expired: null,
-        has_webhooks_script: false,
-        has_webhooks_forward: false,
-        can_override_docs_connect_url: false,
-        can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
-    },
-    display: {
-        featuresHeading: 'Everything in Free, plus:',
-        features: [
-            { title: '10 connections', sub: 'then $1 per connection' },
-            { title: '1k actions', sub: 'then $0.01 per action' },
-            { title: '5k synced records', sub: 'then $0.002 per record' },
-            { title: '3 environments' },
-            { title: 'SOC 2 Type 2' }
-        ]
-    }
+    flags: starterPlanFlags
 };
 
-export const growthPlan: PlanDefinition = {
-    code: 'growth',
+export const growthV2Plan: PlanDefinition = {
+    name: 'growth',
+    orbVersion: 4,
+    isPaid: true,
     title: 'Growth',
     description: 'For growing teams.',
-    prevPlan: ['free', 'starter'],
-    nextPlan: ['enterprise'],
+    prevPlan: null, // Will be set after all plans are defined
+    nextPlan: null,
     canChange: true,
-    orbId: 'growth',
     basePrice: 500,
-    flags: {
-        api_rate_limit_size: 'l',
-        environments_max: 10,
-        has_otel: true,
-        has_sync_variants: true,
-        name: 'growth',
-        sync_frequency_secs_min: 30,
-        auto_idle: false,
-        connections_max: null,
-        records_max: null,
-        proxy_max: null,
-        function_executions_max: null,
-        function_compute_gbms_max: null,
-        webhook_forwards_max: null,
-        function_logs_max: null,
-        monthly_actions_max: null,
-        monthly_active_records_max: null,
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_end_notified_at: null,
-        trial_extension_count: 0,
-        trial_expired: null,
-        has_webhooks_script: true,
-        has_webhooks_forward: true,
-        can_override_docs_connect_url: false,
-        can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
-    },
-    display: {
-        featuresHeading: 'Everything in Starter, plus:',
-        features: [
-            { title: '100 connections', sub: 'then $1 per connection' },
-            { title: '10k actions', sub: 'then $0.01 per action' },
-            { title: '50k synced records', sub: 'then $0.002 per record' },
-            { title: '10 environments' },
-            { title: 'Real-time syncing' },
-            { title: 'Remove Nango branding' },
-            { title: 'Private Slack channel' },
-            { title: 'Request new APIs' }
-        ]
-    }
+    flags: growthPlanFlags
 };
 
+// Set up cross-references after all plans are defined
+freeV2Plan.nextPlan = [starterV2Plan, growthV2Plan];
+starterV2Plan.prevPlan = [freeV2Plan];
+starterV2Plan.nextPlan = [growthV2Plan];
+growthV2Plan.prevPlan = [freeV2Plan, starterV2Plan];
+
+/**
+ * Enterprise plan - Custom needs
+ */
+
 export const enterprisePlan: PlanDefinition = {
-    code: 'enterprise',
+    name: 'enterprise',
     title: 'Enterprise',
     description: 'For custom needs.',
-    prevPlan: ['free', 'starter', 'growth'],
+    isPaid: true,
+    prevPlan: null,
     nextPlan: null,
     canChange: false,
     cta: 'Contact Us',
-    orbId: 'enterprise',
-    flags: {
-        api_rate_limit_size: '2xl',
-        environments_max: 10,
-        has_otel: true,
-        has_sync_variants: true,
-        name: 'enterprise',
-        sync_frequency_secs_min: 30,
-        connections_max: null,
-        records_max: null,
-        proxy_max: null,
-        function_executions_max: null,
-        function_compute_gbms_max: null,
-        webhook_forwards_max: null,
-        function_logs_max: null,
-        auto_idle: false,
-        monthly_actions_max: null,
-        monthly_active_records_max: null,
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_end_notified_at: null,
-        trial_extension_count: 0,
-        trial_expired: null,
-        has_webhooks_script: true,
-        has_webhooks_forward: true,
-        can_override_docs_connect_url: false,
-        can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
-    },
-    display: {
-        features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
-    }
+    flags: enterprisePlanFlags
 };
 
-// Old plans
+/**
+ * Legacy Orb plans
+ */
+
+export const freeV1Plan: PlanDefinition = {
+    name: 'free',
+    orbVersion: 1,
+    title: 'Free (Legacy)',
+    description: 'For hobby and testing.',
+    isPaid: false,
+    prevPlan: null,
+    nextPlan: null,
+    hidden: true,
+    canChange: false,
+    basePrice: 0,
+    flags: freePlanFlags
+};
+
+export const starterV1Plan: PlanDefinition = {
+    name: 'starter',
+    orbVersion: [1, 2, 3, 4, 5],
+    title: 'Starter (Legacy)',
+    description: 'For small teams.',
+    isPaid: true,
+    prevPlan: [freeV1Plan],
+    nextPlan: null,
+    canChange: false,
+    hidden: true,
+    basePrice: 50,
+    flags: starterPlanFlags
+};
+
+export const growthV1Plan: PlanDefinition = {
+    name: 'growth',
+    orbVersion: [1, 2, 3],
+    title: 'Growth (Legacy)',
+    description: 'For growing teams.',
+    isPaid: true,
+    prevPlan: [freeV1Plan],
+    nextPlan: null,
+    canChange: false,
+    hidden: true,
+    basePrice: 500,
+    flags: growthPlanFlags
+};
+
+/**
+ * Legacy non-Orb plans
+ */
 export const starterLegacyPlan: PlanDefinition = {
-    code: 'starter-legacy',
+    name: 'starter-legacy',
     title: 'Starter (legacy)',
     description: 'Tailored to your scale.',
+    isPaid: true,
     prevPlan: [],
     nextPlan: [],
     canChange: false,
     hidden: true,
-    flags: {
-        api_rate_limit_size: 'l',
-        environments_max: 3,
-        has_otel: false,
-        has_sync_variants: true,
-        name: 'starter-legacy',
-        sync_frequency_secs_min: 30,
-        connections_max: null,
-        records_max: null,
-        proxy_max: null,
-        function_executions_max: null,
-        function_compute_gbms_max: null,
-        webhook_forwards_max: null,
-        function_logs_max: null,
-        auto_idle: false,
-        monthly_actions_max: null,
-        monthly_active_records_max: null,
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_end_notified_at: null,
-        trial_extension_count: 0,
-        trial_expired: null,
-        has_webhooks_script: true,
-        has_webhooks_forward: true,
-        can_override_docs_connect_url: false,
-        can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
-    }
+    flags: starterPlanFlags
 };
 export const scaleLegacyPlan: PlanDefinition = {
-    code: 'scale-legacy',
+    name: 'scale-legacy',
     title: 'Scale (legacy)',
     description: 'Tailored to your scale.',
+    isPaid: true,
     prevPlan: [],
     nextPlan: [],
     canChange: false,
@@ -241,7 +141,6 @@ export const scaleLegacyPlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'scale-legacy',
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -266,9 +165,10 @@ export const scaleLegacyPlan: PlanDefinition = {
     }
 };
 export const growthLegacyPlan: PlanDefinition = {
-    code: 'growth-legacy',
+    name: 'growth-legacy',
     title: 'Growth (legacy)',
     description: 'Tailored to your scale.',
+    isPaid: true,
     prevPlan: [],
     nextPlan: [],
     canChange: false,
@@ -278,7 +178,6 @@ export const growthLegacyPlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'growth-legacy',
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -304,12 +203,20 @@ export const growthLegacyPlan: PlanDefinition = {
 };
 
 export const plansList: PlanDefinition[] = [
-    freePlan,
-    starterPlan,
-    growthPlan,
+    // Latest plans
+    freeV2Plan,
+    starterV2Plan,
+    growthV2Plan,
+
+    // Enterprise plan - Custom needs
     enterprisePlan,
 
-    // Old plans
+    // Legacy Orb plans
+    freeV1Plan,
+    starterV1Plan,
+    growthV1Plan,
+
+    // Legacy non-Orb plans
     starterLegacyPlan,
     scaleLegacyPlan,
     growthLegacyPlan

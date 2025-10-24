@@ -188,7 +188,8 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 const planExternalId = resApply.value.planExternalId;
 
                 const res = await handlePlanChanged(trx, team, {
-                    newPlanCode: planExternalId,
+                    newPlanName: planExternalId,
+                    newPlanVersion: resApply.value.planVersion,
                     orbSubscriptionId: resApply.value.id
                 });
 

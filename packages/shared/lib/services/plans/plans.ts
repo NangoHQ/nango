@@ -2,7 +2,7 @@ import ms from 'ms';
 
 import { Err, Ok, flagHasPlan } from '@nangohq/utils';
 
-import { freePlan, plansList } from './definitions.js';
+import { getMatchingPlanDefinition } from './utils.js';
 import { productTracking } from '../../utils/productTracking.js';
 
 import type { DBPlan, DBTeam } from '@nangohq/types';
@@ -131,10 +131,15 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
-    { newPlanCode, orbCustomerId, orbSubscriptionId }: { newPlanCode: string; orbCustomerId?: string | undefined; orbSubscriptionId: string }
+    {
+        newPlanName,
+        newPlanVersion,
+        orbCustomerId,
+        orbSubscriptionId
+    }: { newPlanName: string; newPlanVersion: number; orbCustomerId?: string | undefined; orbSubscriptionId: string }
 ): Promise<Result<boolean>> {
-    const newPlan = plansList.find((p) => p.orbId === newPlanCode);
-    if (!newPlan) {
+    const newPlanDefinition = getMatchingPlanDefinition(newPlanName, newPlanVersion);
+    if (!newPlanDefinition) {
         return Err('Received a plan not linked to the plansList');
     }
 
@@ -143,24 +148,30 @@ export async function handlePlanChanged(
         return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
     }
 
+    const currentPlanDefinition = getMatchingPlanDefinition(currentPlan.value.name, currentPlan.value.version);
+    if (!currentPlanDefinition) {
+        return Err(new Error('Failed to get current plan definition'));
+    }
+
     // Plan hasn't changed
-    if (currentPlan.value.name === newPlan.code) {
+    if (currentPlanDefinition === newPlanDefinition) {
         return Ok(true);
     }
 
     // Only update subscription date from free to paid (undefined = no update)
-    const isCurrentFree = currentPlan.value.name === freePlan.code;
-    const isNewPaid = newPlan.code !== freePlan.code;
+    const isCurrentFree = !currentPlanDefinition.isPaid;
+    const isNewPaid = newPlanDefinition.isPaid;
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
-        name: newPlan.code as unknown as DBPlan['name'],
+        name: newPlanDefinition.name as unknown as DBPlan['name'],
+        version: newPlanVersion,
         orb_subscription_id: orbSubscriptionId,
         orb_future_plan: null,
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
-        ...newPlan.flags
+        ...newPlanDefinition.flags
     });
 
     if (updated.isErr()) {
@@ -170,7 +181,12 @@ export async function handlePlanChanged(
     productTracking.track({
         name: 'account:billing:plan_changed',
         team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, orbCustomerId: currentPlan.value.orb_customer_id }
+        eventProperties: {
+            previousPlan: currentPlan.value.name,
+            newPlan: newPlanName,
+            newPlanVersion: newPlanVersion,
+            orbCustomerId: currentPlan.value.orb_customer_id
+        }
     });
 
     return Ok(true);
