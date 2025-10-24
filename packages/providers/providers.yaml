@@ -6596,7 +6596,7 @@ intercom:
         - surveys
         - ticketing
     auth_mode: OAUTH2
-    authorization_url: https://app.${connectionConfig.region}.intercom.com || https://app.intercom.com/oauth
+    authorization_url: https://app.${connectionConfig.region}.intercom.com/oauth || https://app.intercom.com/oauth
     token_url: https://api.${connectionConfig.region}.intercom.io/auth/eagle/token || https://api.intercom.io/auth/eagle/token
     proxy:
         base_url: https://api.${connectionConfig.region}.intercom.io || https://api.intercom.io
