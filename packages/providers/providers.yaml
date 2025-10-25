@@ -14141,3 +14141,26 @@ zuora:
             example: rest.test
             doc_section: '#step-1-finding-your-zuora-subdomain'
             order: 1
+statista:
+    display_name: Statista
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.statista.ai/v1
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/json
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /statistics?q=*
+    docs: https://statista.mintlify.app/start/introduction
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Statista account
