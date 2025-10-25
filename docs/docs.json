@@ -281,6 +281,7 @@
               "integrations/all/affinity",
               "integrations/all/affinity-v2",
               "integrations/all/aimfox",
+              "integrations/all/aimfox-oauth",
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "integrations/all/airtable",

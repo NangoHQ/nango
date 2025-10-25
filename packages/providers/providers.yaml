@@ -436,6 +436,24 @@ aimfox:
             example: 123e4567-e89b-12d3-a456-426614174000
             doc_section: '#step-1-generating-your-api-key'
 
+aimfox-oauth:
+    display_name: Aimfox (OAuth)
+    categories:
+        - surveys
+    auth_mode: OAUTH2
+    authorization_url: https://id.aimfox.com/realms/aimfox-prod/protocol/openid-connect/auth
+    token_url: https://id.aimfox.com/realms/aimfox-prod/protocol/openid-connect/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.aimfox.com/api
+    docs: https://nango.dev/docs/integrations/all/aimfox-oauth
+
 aircall:
     display_name: Aircall (OAuth)
     categories:
