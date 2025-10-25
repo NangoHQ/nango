@@ -8109,6 +8109,34 @@ microsoft:
         decompress: true
     docs: https://nango.dev/docs/integrations/all/microsoft
 
+microsoft-admin:
+    display_name: Microsoft (Admin)
+    auth_mode: OAUTH2
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/adminconsent
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    authorization_code_param_in_callback: tenant
+    proxy:
+        base_url: https://graph.microsoft.com
+        retry:
+            after:
+                - 'retry-after'
+        decompress: true
+    docs: https://nango.dev/docs/integrations/all/microsoft-admin
+    docs_connect: https://nango.dev/docs/integrations/all/microsoft-admin/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
 microsoft-excel:
     display_name: Microsoft Excel
     categories:

@@ -532,8 +532,8 @@ export async function shouldRefreshCredentials({
 
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
-    if (providerConfig.provider === 'facebook') {
-        return { should: instantRefresh, reason: 'facebook' };
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'microsoft-admin') {
+        return { should: instantRefresh, reason: providerConfig.provider };
     }
 
     if (credentials.type === 'OAUTH2') {
