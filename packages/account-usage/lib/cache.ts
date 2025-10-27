@@ -2,6 +2,8 @@ import * as z from 'zod';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { envs } from './env.js';
+
 import type { getRedis } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
 
@@ -78,8 +80,8 @@ export class UsageCache {
     }
 
     private static revalidateAfter(): number {
-        const oneHourMs = 60 * 60 * 1000; // TODO: make this configurable
-        return Date.now() + oneHourMs + Math.random() * oneHourMs; // revalidateAfter is between 1 and 2 hours to spread the load
+        const revalidateAfterMs = envs.USAGE_REVALIDATE_AFTER_MS;
+        return Date.now() + revalidateAfterMs + Math.random() * revalidateAfterMs; // add jitter to avoid thundering herd
     }
 
     private async validateEntry(key: string, data: any): Promise<Result<UsageCacheEntry>> {

@@ -17,7 +17,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '../ui/sidebar';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
@@ -33,7 +32,6 @@ interface SidebarItem {
 
 export const AppSidebar: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { plan } = useEnvironment(env);
     const { meta, mutate: mutateMeta } = useMeta();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
 
@@ -89,11 +87,9 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
-                {plan?.name === 'free' && (
-                    <div className="px-3 mb-8">
-                        <UsageCard />
-                    </div>
-                )}
+                <div className="px-3 mb-8">
+                    <UsageCard />
+                </div>
                 <ProfileDropdown />
             </SidebarFooter>
         </Sidebar>
