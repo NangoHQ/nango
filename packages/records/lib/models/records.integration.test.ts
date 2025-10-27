@@ -941,6 +941,51 @@ describe('Records service', () => {
             expect(res).toMatchObject([expect.objectContaining({ environmentId: env1, count: 11, sizeBytes: expect.any(Number) })]);
         });
     });
+    describe('paginateRecordCounts', () => {
+        it('should paginate through record counts', async () => {
+            const res1 = await upsertNRecords(15);
+            const res2 = await upsertNRecords(25);
+            const res3 = await upsertNRecords(35);
+
+            const received = [];
+            for await (const res of Records.paginateRecordCounts({ batchSize: 2 })) {
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                received.push(...res.value);
+            }
+
+            expect(received).toHaveLength(3);
+            expect(received).toEqual(
+                expect.arrayContaining([
+                    {
+                        environment_id: res1.environmentId,
+                        connection_id: res1.connectionId,
+                        model: res1.model,
+                        count: 15,
+                        size_bytes: expect.any(String),
+                        updated_at: expect.any(Date)
+                    },
+                    {
+                        environment_id: res2.environmentId,
+                        connection_id: res2.connectionId,
+                        model: res2.model,
+                        count: 25,
+                        size_bytes: expect.any(String),
+                        updated_at: expect.any(Date)
+                    },
+                    {
+                        environment_id: res3.environmentId,
+                        connection_id: res3.connectionId,
+                        model: res3.model,
+                        count: 35,
+                        size_bytes: expect.any(String),
+                        updated_at: expect.any(Date)
+                    }
+                ])
+            );
+        });
+    });
 });
 
 async function upsertNRecords(n: number): Promise<{ environmentId: number; connectionId: number; model: string; syncId: string; result: UpsertSummary }> {

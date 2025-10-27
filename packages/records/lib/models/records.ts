@@ -123,6 +123,32 @@ export async function metrics({ environmentIds }: { environmentIds?: number[] } 
     }
 }
 
+export async function* paginateRecordCounts({
+    batchSize = 1000
+}: {
+    batchSize?: number;
+} = {}): AsyncGenerator<Result<RecordCount[]>> {
+    let offset = 0;
+
+    try {
+        while (true) {
+            // TODO: optimize with cursor pagination when needed
+            const results = await db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
+
+            if (results.length === 0) break;
+
+            yield Ok(results);
+            offset += results.length;
+
+            if (results.length < batchSize) break;
+        }
+        return Ok([]);
+    } catch (err) {
+        yield Err(new Error(`Failed to fetch record counts: ${String(err)}`));
+        return;
+    }
+}
+
 /**
  * Get Records is using the read replicas (when possible)
  */
