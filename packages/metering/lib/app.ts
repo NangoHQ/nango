@@ -6,7 +6,6 @@ import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { initSentry, once, report } from '@nangohq/utils';
 
-import { persistAccountUsageCron } from './crons/persistAccountUsage.js';
 import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { BillingProcessor } from './processors/billing.js';
@@ -52,7 +51,6 @@ try {
 
     // Crons
     exportUsageCron();
-    persistAccountUsageCron();
 
     // Graceful shutdown
     const close = once(async () => {
