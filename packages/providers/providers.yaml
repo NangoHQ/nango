@@ -11874,6 +11874,27 @@ stackexchange:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
 
+statista:
+    display_name: Statista
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.statista.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/statistics?q=*
+    docs: https://nango.dev/docs/integrations/all/statista
+    docs_connect: https://nango.dev/docs/integrations/all/statista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Statista account
+
 strava:
     display_name: Strava (Mobile)
     categories:
@@ -14004,26 +14025,3 @@ zuora:
             example: rest.test
             doc_section: '#step-1-finding-your-zuora-subdomain'
             order: 1
-statista:
-    display_name: Statista
-    categories:
-        - analytics
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.statista.ai/v1
-        headers:
-            x-api-key: ${apiKey}
-            content-type: application/json
-        retry:
-            after:
-                - 'retry-after'
-        verification:
-            method: GET
-            endpoints:
-                - /statistics?q=*
-    docs: https://statista.mintlify.app/start/introduction
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: The API key for your Statista account
