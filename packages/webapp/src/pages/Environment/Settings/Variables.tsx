@@ -54,7 +54,6 @@ export const VariablesSettings: React.FC = () => {
     };
 
     const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        e.preventDefault();
         const filtered = handlePastedEnv(
             e.clipboardData.getData('Text'),
             vars.map((v) => v.name)
@@ -62,6 +61,8 @@ export const VariablesSettings: React.FC = () => {
         if (!filtered || filtered.size === 0) {
             return;
         }
+
+        e.preventDefault();
 
         setVars((prev) => {
             const copy = [...prev].filter((v) => v.value !== '');
@@ -147,6 +148,7 @@ export const VariablesSettings: React.FC = () => {
                                     <SecretInput
                                         value={envVar.value}
                                         onChange={(e) => onUpdate('value', e.target.value, i)}
+                                        copy={true}
                                         inputSize={'lg'}
                                         variant={'black'}
                                         onPaste={(e) => onPaste(e)}
