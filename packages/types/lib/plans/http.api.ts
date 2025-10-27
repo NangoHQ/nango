@@ -19,7 +19,7 @@ export interface PlanDefinition {
     /**
      * Maps to orb external plan id
      */
-    name: DBPlan['name'];
+    code: DBPlan['name'];
     title: string;
     description: string;
     canChange: boolean;

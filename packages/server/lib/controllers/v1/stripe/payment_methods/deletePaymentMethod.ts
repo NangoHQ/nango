@@ -34,7 +34,7 @@ export const deleteStripePaymentMethod = asyncWrapper<DeleteStripePayment>(async
         return;
     }
 
-    if (plan.name !== freePlan.name) {
+    if (plan.name !== freePlan.code) {
         res.status(400).send({
             error: {
                 code: 'invalid_body',

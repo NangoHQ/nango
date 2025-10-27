@@ -26,7 +26,7 @@ export async function linkBillingCustomer(account: DBTeam, user: DBUser): Promis
  * Creates a billing subscription (free) and links it to the account plan
  */
 export async function linkBillingFreeSubscription(account: DBTeam): Promise<Result<BillingSubscription>> {
-    const resCreate = await billing.createSubscription(account, freePlan.name ?? 'free');
+    const resCreate = await billing.createSubscription(account, freePlan.code ?? 'free');
     if (resCreate.isErr()) {
         return Err(resCreate.error);
     }

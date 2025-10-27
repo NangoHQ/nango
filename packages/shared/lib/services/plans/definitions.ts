@@ -1,7 +1,7 @@
 import type { PlanDefinition } from '@nangohq/types';
 
 export const freePlan: PlanDefinition = {
-    name: 'free',
+    code: 'free',
     title: 'Free',
     description: 'For hobby and testing.',
     prevPlan: null,
@@ -33,7 +33,7 @@ export const freePlan: PlanDefinition = {
 };
 
 export const starterV1Plan: PlanDefinition = {
-    name: 'starter',
+    code: 'starter',
     title: 'Starter (legacy)',
     description: 'For small teams.',
     prevPlan: ['free'],
@@ -71,7 +71,7 @@ export const starterV1Plan: PlanDefinition = {
 };
 
 export const growthV1Plan: PlanDefinition = {
-    name: 'growth',
+    code: 'growth',
     title: 'Growth (legacy)',
     description: 'For growing teams.',
     prevPlan: ['free'],
@@ -109,7 +109,7 @@ export const growthV1Plan: PlanDefinition = {
 };
 
 export const starterV2Plan: PlanDefinition = {
-    name: 'starter-v2',
+    code: 'starter-v2',
     title: 'Starter',
     description: 'For small teams.',
     prevPlan: ['free'],
@@ -126,20 +126,18 @@ export const starterV2Plan: PlanDefinition = {
 };
 
 export const growthV2Plan: PlanDefinition = {
-    name: 'growth-v2',
+    code: 'growth-v2',
     title: 'Growth',
     description: 'For growing teams.',
     prevPlan: ['free', 'starter-v2'],
     nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 500,
-    flags: {
-        ...growthV1Plan.flags
-    }
+    flags: growthV1Plan.flags
 };
 
 export const enterprisePlan: PlanDefinition = {
-    name: 'enterprise',
+    code: 'enterprise',
     title: 'Enterprise',
     description: 'For custom needs.',
     prevPlan: ['free', 'starter', 'growth'],
@@ -177,7 +175,7 @@ export const enterprisePlan: PlanDefinition = {
 
 // Old plans
 export const starterLegacyPlan: PlanDefinition = {
-    name: 'starter-legacy',
+    code: 'starter-legacy',
     title: 'Starter (legacy)',
     description: 'Tailored to your scale.',
     prevPlan: [],
@@ -214,7 +212,7 @@ export const starterLegacyPlan: PlanDefinition = {
 };
 
 export const scaleLegacyPlan: PlanDefinition = {
-    name: 'scale-legacy',
+    code: 'scale-legacy',
     title: 'Scale (legacy)',
     description: 'Tailored to your scale.',
     prevPlan: [],
@@ -251,7 +249,7 @@ export const scaleLegacyPlan: PlanDefinition = {
 };
 
 export const growthLegacyPlan: PlanDefinition = {
-    name: 'growth-legacy',
+    code: 'growth-legacy',
     title: 'Growth (legacy)',
     description: 'Tailored to your scale.',
     prevPlan: [],
