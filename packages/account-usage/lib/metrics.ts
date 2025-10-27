@@ -1,11 +1,3 @@
-import type { AccountUsageMetric } from '@nangohq/types';
-
-export const metricFlags: Record<AccountUsageMetric, string> = {
-    actions: 'monthly_actions_max',
-    active_records: 'monthly_active_records_max',
-    connections: 'connections_max'
-};
-
 export type UsageMetric = 'proxy' | 'connections' | 'function_executions' | 'function_compute_gbms' | 'records' | 'webhook_forwards' | 'function_logs';
 export interface UsageMetricProperties {
     reset: 'monthly' | 'never';
