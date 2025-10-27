@@ -156,7 +156,7 @@ program
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
         if (!precheck.isZeroYaml) {
-            console.log(chalk.yellow(`Test generation skipped - detected nango yaml project`));
+            console.log(chalk.yellow(`Function creation skipped - detected nango yaml project`));
             return;
         }
         await create({ absolutePath, sync, action, onEvent, integration, name });

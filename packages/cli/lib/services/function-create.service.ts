@@ -82,7 +82,7 @@ export async function create({
         console.log(chalk.green(`Created ${functionType}: ${targetFile}`));
         return true;
     } catch (err) {
-        console.log(chalk.red(`Error creating ${name}:`, err));
+        console.log(chalk.red(`Error creating ${name}:`, err instanceof Error ? err.message : 'Unknown error'));
         return false;
     }
 }
