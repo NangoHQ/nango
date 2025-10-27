@@ -102,7 +102,7 @@ export async function deploy({
         return Err('failed');
     }
 
-    const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !options.autoConfirm;
+    const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
     const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
     if (confirmed.isErr()) {
         return Err('not_confirmed');

@@ -41,7 +41,7 @@ export async function deployTemplate({
     deployInfo: { integrationId: string; provider: string };
     logCtx: LogContext;
 }): Promise<Result<{ result: SyncDeploymentResult; logCtx: LogContext }>> {
-    const idsToMarkAsInactive = [];
+    const idsToMarkAsInactive: number[] = [];
     const publicRoute = deployInfo.provider;
     const remoteBasePath = `${env}/account/${team.id}/environment/${environment.id}`;
 
@@ -179,33 +179,42 @@ export async function deployTemplate({
     const now = new Date();
 
     try {
-        const syncConfigs = await db.knex.from<DBSyncConfig>('_nango_sync_configs').insert(toInsert).returning('*');
-        if (syncConfigs.length !== 1 || !syncConfigs[0]) {
-            void logCtx.error('Failed to insert');
-            await logCtx.failed();
-            return Err(new NangoError('failed_to_insert'));
-        }
+        // Wrap all database operations in a transaction to ensure atomicity
+        await db.knex.transaction(async (trx) => {
+            // Mark old configs as inactive BEFORE inserting new ones
+            if (idsToMarkAsInactive.length > 0) {
+                await trx.from<DBSyncConfig>('_nango_sync_configs').update({ active: false }).whereIn('id', idsToMarkAsInactive);
+            }
 
-        deployResult.id = syncConfigs[0].id;
+            const syncConfigs = await trx.from<DBSyncConfig>('_nango_sync_configs').insert(toInsert).returning('*');
+            if (syncConfigs.length !== 1 || !syncConfigs[0]) {
+                void logCtx.error('Failed to insert');
+                await logCtx.failed();
+                throw new NangoError('failed_to_insert');
+            }
 
-        const endpoints: DBSyncEndpointCreate[] = template.endpoints.map((endpoint, index) => {
-            return {
-                sync_config_id: deployResult.id!,
-                method: endpoint.method,
-                path: endpoint.path,
-                group_name: endpoint.group || null,
-                model: template.returns[index] || null,
-                created_at: now,
-                updated_at: now
-            };
+            deployResult.id = syncConfigs[0].id;
+
+            const endpoints: DBSyncEndpointCreate[] = template.endpoints.map((endpoint, index) => {
+                return {
+                    sync_config_id: deployResult.id!,
+                    method: endpoint.method,
+                    path: endpoint.path,
+                    group_name: endpoint.group || null,
+                    model: template.returns[index] || null,
+                    created_at: now,
+                    updated_at: now
+                };
+            });
+            if (endpoints.length > 0) {
+                await trx.from<DBSyncEndpoint>('_nango_sync_endpoints').insert(endpoints);
+            }
+
+            // Use the switchActiveSyncConfig function for each inactive config
+            for (const id of idsToMarkAsInactive) {
+                await switchActiveSyncConfig(id, trx);
+            }
         });
-        if (endpoints.length > 0) {
-            await db.knex.from<DBSyncEndpoint>('_nango_sync_endpoints').insert(endpoints);
-        }
-
-        for (const id of idsToMarkAsInactive) {
-            await switchActiveSyncConfig(id);
-        }
 
         void logCtx.info('Successfully deployed');
         await logCtx.success();

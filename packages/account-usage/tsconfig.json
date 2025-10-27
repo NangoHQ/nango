@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../billing"
+        },
+        {
             "path": "../utils"
         },
         {
@@ -22,6 +25,9 @@
         },
         {
             "path": "../email"
+        },
+        {
+            "path": "../records"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

@@ -101,16 +101,25 @@ export class BillingProcessor {
                     ]);
                 }
                 case 'usage.connections': {
+                    const accountId = event.payload.properties.accountId;
+                    const value = event.payload.value;
                     await trackUsage({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'connections',
-                        delta: event.payload.value
+                        delta: value
                     });
                     await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'connections',
-                        delta: event.payload.value
+                        delta: value,
+                        forceRevalidation: value < 0 // force revalidation when connections are being deleted
                     });
+
+                    // also revalidate records usage metric immediately when connections are being deleted
+                    if (value < 0) {
+                        await this.usageTracker.revalidate({ accountId, metric: 'records' });
+                    }
+
                     // No billing action for connections, just tracking usage
                     return Ok(undefined);
                 }

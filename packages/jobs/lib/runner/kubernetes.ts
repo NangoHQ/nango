@@ -414,81 +414,38 @@ class Kubernetes {
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
+            { name: 'DD_PROFILING_ENABLED', value: String(this.isProfilingEnabled(node)) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
         ];
     }
 
+    private isProfilingEnabled(node: Node): boolean {
+        const accountId = node.routingId.split('-')[3]; //this index is based on routing id being in the format {stage}-runner-account-{accountId}-{suffix}
+        return accountId ? envs.RUNNER_PROFILED_ACCOUNTS.includes(accountId) : false;
+    }
+
+    private MAX_REQUEST_CPU = envs.RUNNER_MAX_REQUEST_CPU;
+    private MAX_REQUEST_MEMORY = envs.RUNNER_MAX_REQUEST_MEMORY;
+    private MIN_REQUEST_CPU = envs.RUNNER_MIN_REQUEST_CPU;
+    private MIN_REQUEST_MEMORY = envs.RUNNER_MIN_REQUEST_MEMORY;
+    private REQUEST_CPU_MULTIPLIER = envs.RUNNER_REQUEST_CPU_MULTIPLIER;
+    private REQUEST_MEMORY_MULTIPLIER = envs.RUNNER_REQUEST_MEMORY_MULTIPLIER;
+
     private getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {
-        if (node.cpuMilli >= 8000 && node.memoryMb >= 32000) {
-            return {
-                requests: {
-                    cpu: '4000m',
-                    memory: '16384Mi'
-                },
-                limits: {
-                    cpu: '8000m',
-                    memory: '32768Mi'
-                }
-            };
-        }
-        if (node.cpuMilli >= 4000 && node.memoryMb >= 16000) {
-            return {
-                requests: {
-                    cpu: '4000m',
-                    memory: '8192Mi'
-                },
-                limits: {
-                    cpu: '4000m',
-                    memory: '16384Mi'
-                }
-            };
-        }
-        if (node.cpuMilli >= 4000 && node.memoryMb >= 8000) {
-            return {
-                requests: {
-                    cpu: '2000m',
-                    memory: '4096Mi'
-                },
-                limits: {
-                    cpu: '4000m',
-                    memory: '8192Mi'
-                }
-            };
-        }
-        if (node.cpuMilli > 2000 || node.memoryMb >= 4000) {
-            return {
-                requests: {
-                    cpu: '1000m',
-                    memory: '2048Mi'
-                },
-                limits: {
-                    cpu: '2000m',
-                    memory: '4096Mi'
-                }
-            };
-        }
-        if (node.cpuMilli > 1000 || node.memoryMb >= 2000) {
-            return {
-                requests: {
-                    cpu: '500m',
-                    memory: '1024Mi'
-                },
-                limits: {
-                    cpu: '1000m',
-                    memory: '2048Mi'
-                }
-            };
-        }
+        const requestCpu = Math.max(this.MIN_REQUEST_CPU, Math.min(this.MAX_REQUEST_CPU, Math.floor(node.cpuMilli * this.REQUEST_CPU_MULTIPLIER)));
+        const requestMemory = Math.max(this.MIN_REQUEST_MEMORY, Math.min(this.MAX_REQUEST_MEMORY, Math.floor(node.memoryMb * this.REQUEST_MEMORY_MULTIPLIER)));
+        const limitCpu = Math.max(requestCpu, Math.min(this.MAX_REQUEST_CPU, node.cpuMilli));
+        const limitMemory = Math.max(requestMemory, Math.min(this.MAX_REQUEST_MEMORY, node.memoryMb));
         return {
             requests: {
-                cpu: '500m',
-                memory: '512Mi'
+                cpu: `${requestCpu}m`,
+                memory: `${requestMemory}Mi`
             },
             limits: {
-                cpu: '500m',
-                memory: '1024Mi'
+                cpu: `${limitCpu}m`,
+                memory: `${limitMemory}Mi`
             }
         };
     }

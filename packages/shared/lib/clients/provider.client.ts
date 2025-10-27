@@ -30,6 +30,7 @@ class ProviderClient {
             case 'figjam':
             case 'facebook':
             case 'jobber':
+            case 'microsoft-admin':
             case 'one-drive':
             case 'sharepoint-online':
             case 'tiktok-ads':
@@ -77,6 +78,8 @@ class ProviderClient {
             case 'one-drive':
             case 'sharepoint-online':
                 return this.createSharepointToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'microsoft-admin':
+                return this.createMicrosoftAdminToken(tokenUrl, config.oauth_client_id, config.oauth_client_secret, config.oauth_scopes);
             case 'sentry-oauth':
                 return this.createSentryOauthToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'stripe-app':
@@ -99,7 +102,7 @@ class ProviderClient {
         const credentials = connection.credentials;
         const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
 
-        if (config.provider !== 'facebook' && !credentials.refresh_token) {
+        if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin') {
             throw new NangoError('missing_refresh_token');
         } else if (config.provider === 'facebook' && !credentials.access_token) {
             throw new NangoError('missing_facebook_access_token');
@@ -141,6 +144,8 @@ class ProviderClient {
                     config.oauth_client_secret,
                     connection.connection_config
                 );
+            case 'microsoft-admin':
+                return this.refreshMicrosoftAdminToken(interpolatedTokenUrl.href, config.oauth_client_id, config.oauth_client_secret, config.oauth_scopes);
             case 'tiktok-accounts':
                 return this.refreshTiktokAccountsToken(
                     provider.refresh_url as string,
@@ -934,6 +939,74 @@ class ProviderClient {
             throw new NangoError('sharepoint_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('sharepoint_refresh_token_request_error', err.message);
+        }
+    }
+
+    private async createMicrosoftAdminToken(
+        tokenUrl: string,
+        clientId: string,
+        clientSecret: string,
+        oauthScopes?: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const scope = String(oauthScopes).split(',').join(' ').trim();
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'client_credentials',
+                scope: encodeURIComponent(scope)
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('microsoft_admin_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('microsoft_admin_token_request_error', err.message);
+        }
+    }
+
+    private async refreshMicrosoftAdminToken(
+        tokenUrl: string,
+        clientId: string,
+        clientSecret: string,
+        oauthScopes?: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const scope = String(oauthScopes).split(',').join(' ').trim();
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'client_credentials',
+                scope: encodeURIComponent(scope)
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('microsoft_admin_token_refresh_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('microsoft_admin_token_refresh_request_error', err.message);
         }
     }
 }

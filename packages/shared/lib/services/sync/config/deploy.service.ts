@@ -150,39 +150,48 @@ export async function deploy({
     const flowNames = flows.map((flow) => flow.syncName);
 
     try {
-        const flowIds = await db.knex.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
-
-        const endpoints: DBSyncEndpointCreate[] = [];
-        for (const [index, row] of flowIds.entries()) {
-            const flow = flows[index];
-            if (!flow) {
-                continue;
+        await db.knex.transaction(async (trx) => {
+            // Mark old configs as inactive BEFORE inserting new ones
+            if (idsToMarkAsInactive.length > 0) {
+                await trx.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
             }
 
-            endpoints.push(...endpointToSyncEndpoint(flow, row.id));
-        }
+            const flowIds = await trx.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
 
-        if (endpoints.length > 0) {
-            await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
-        }
+            const endpoints: DBSyncEndpointCreate[] = [];
+            for (const [index, row] of flowIds.entries()) {
+                const flow = flows[index];
+                if (!flow) {
+                    continue;
+                }
 
-        if (onEventScriptsByProvider) {
-            const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
-            const result: SyncDeploymentResult[] = updated.map((u) => {
-                return {
-                    name: u.name,
-                    version: u.version,
-                    providerConfigKey: u.providerConfigKey,
-                    type: 'on-event',
-                    models: []
-                };
-            });
-            deployResults.push(...result);
-        }
+                endpoints.push(...endpointToSyncEndpoint(flow, row.id));
+            }
 
-        for (const id of idsToMarkAsInactive) {
-            await switchActiveSyncConfig(id);
-        }
+            if (endpoints.length > 0) {
+                await trx.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+            }
+
+            // Use the switchActiveSyncConfig function for each inactive config
+            for (const id of idsToMarkAsInactive) {
+                await switchActiveSyncConfig(id, trx);
+            }
+
+            // Update on-event scripts within the same transaction
+            if (onEventScriptsByProvider) {
+                const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider, sdkVersion });
+                const result: SyncDeploymentResult[] = updated.map((u) => {
+                    return {
+                        name: u.name,
+                        version: u.version,
+                        providerConfigKey: u.providerConfigKey,
+                        type: 'on-event',
+                        models: []
+                    };
+                });
+                deployResults.push(...result);
+            }
+        });
 
         void logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
             nameOfType,
