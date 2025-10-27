@@ -5,8 +5,7 @@ export const freePlan: PlanDefinition = {
     title: 'Free',
     description: 'For hobby and testing.',
     prevPlan: null,
-    nextPlan: ['starter', 'growth', 'enterprise'],
-    orbId: 'free',
+    nextPlan: ['starter-v2', 'growth-v2', 'enterprise'],
     canChange: true,
     basePrice: 0,
     flags: {
@@ -21,7 +20,6 @@ export const freePlan: PlanDefinition = {
         function_compute_gbms_max: 50_000_000,
         webhook_forwards_max: 100_000,
         function_logs_max: 100_000,
-        name: 'free',
         sync_frequency_secs_min: 3600,
         auto_idle: true,
         monthly_actions_max: 1000,
@@ -31,37 +29,23 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false
-    },
-    display: {
-        features: [
-            { title: '10 connections' },
-            { title: '1k actions' },
-            { title: '5k synced records' },
-            { title: '2 environments' },
-            { title: 'API authorization' },
-            { title: 'Syncs & actions' },
-            { title: 'MCP & AI Tools' },
-            { title: 'Proxy requests' }
-        ],
-        sub: 'Certain features of free projects (syncs & actions) are paused after two weeks of inactivity.'
     }
 };
 
-export const starterPlan: PlanDefinition = {
+export const starterV1Plan: PlanDefinition = {
     code: 'starter',
-    title: 'Starter',
+    title: 'Starter (legacy)',
     description: 'For small teams.',
     prevPlan: ['free'],
-    nextPlan: ['growth', 'enterprise'],
+    nextPlan: null,
     canChange: true,
+    hidden: true,
     basePrice: 50,
-    orbId: 'starter',
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
         has_sync_variants: false,
-        name: 'starter',
         sync_frequency_secs_min: 3600,
         connections_max: null,
         records_max: null,
@@ -83,34 +67,23 @@ export const starterPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false
-    },
-    display: {
-        featuresHeading: 'Everything in Free, plus:',
-        features: [
-            { title: '10 connections', sub: 'then $1 per connection' },
-            { title: '1k actions', sub: 'then $0.01 per action' },
-            { title: '5k synced records', sub: 'then $0.002 per record' },
-            { title: '3 environments' },
-            { title: 'SOC 2 Type 2' }
-        ]
     }
 };
 
-export const growthPlan: PlanDefinition = {
+export const growthV1Plan: PlanDefinition = {
     code: 'growth',
-    title: 'Growth',
+    title: 'Growth (legacy)',
     description: 'For growing teams.',
-    prevPlan: ['free', 'starter'],
-    nextPlan: ['enterprise'],
+    prevPlan: ['free'],
+    nextPlan: null,
     canChange: true,
-    orbId: 'growth',
+    hidden: true,
     basePrice: 500,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
-        name: 'growth',
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -132,20 +105,35 @@ export const growthPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true
-    },
-    display: {
-        featuresHeading: 'Everything in Starter, plus:',
-        features: [
-            { title: '100 connections', sub: 'then $1 per connection' },
-            { title: '10k actions', sub: 'then $0.01 per action' },
-            { title: '50k synced records', sub: 'then $0.002 per record' },
-            { title: '10 environments' },
-            { title: 'Real-time syncing' },
-            { title: 'Remove Nango branding' },
-            { title: 'Private Slack channel' },
-            { title: 'Request new APIs' }
-        ]
     }
+};
+
+export const starterV2Plan: PlanDefinition = {
+    code: 'starter-v2',
+    title: 'Starter',
+    description: 'For small teams.',
+    prevPlan: ['free'],
+    nextPlan: ['growth-v2', 'enterprise'],
+    canChange: true,
+    basePrice: 50,
+    flags: {
+        ...starterV1Plan.flags,
+        sync_frequency_secs_min: 30,
+        has_sync_variants: true,
+        has_webhooks_script: true,
+        has_webhooks_forward: true
+    }
+};
+
+export const growthV2Plan: PlanDefinition = {
+    code: 'growth-v2',
+    title: 'Growth',
+    description: 'For growing teams.',
+    prevPlan: ['free', 'starter-v2'],
+    nextPlan: ['enterprise'],
+    canChange: true,
+    basePrice: 500,
+    flags: growthV1Plan.flags
 };
 
 export const enterprisePlan: PlanDefinition = {
@@ -156,13 +144,11 @@ export const enterprisePlan: PlanDefinition = {
     nextPlan: null,
     canChange: false,
     cta: 'Contact Us',
-    orbId: 'enterprise',
     flags: {
         api_rate_limit_size: '2xl',
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,
-        name: 'enterprise',
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -184,9 +170,6 @@ export const enterprisePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true
-    },
-    display: {
-        features: [{ title: 'Custom usage' }, { title: 'Unlimited environments' }, { title: 'Self-hosting' }, { title: 'SAML SSO' }, { title: 'SLAs' }]
     }
 };
 
@@ -204,7 +187,6 @@ export const starterLegacyPlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'starter-legacy',
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -228,6 +210,7 @@ export const starterLegacyPlan: PlanDefinition = {
         can_disable_connect_ui_watermark: false
     }
 };
+
 export const scaleLegacyPlan: PlanDefinition = {
     code: 'scale-legacy',
     title: 'Scale (legacy)',
@@ -241,7 +224,6 @@ export const scaleLegacyPlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'scale-legacy',
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -265,6 +247,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         can_disable_connect_ui_watermark: false
     }
 };
+
 export const growthLegacyPlan: PlanDefinition = {
     code: 'growth-legacy',
     title: 'Growth (legacy)',
@@ -278,7 +261,6 @@ export const growthLegacyPlan: PlanDefinition = {
         environments_max: 3,
         has_otel: false,
         has_sync_variants: true,
-        name: 'growth-legacy',
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -305,8 +287,15 @@ export const growthLegacyPlan: PlanDefinition = {
 
 export const plansList: PlanDefinition[] = [
     freePlan,
-    starterPlan,
-    growthPlan,
+
+    // V2 plans
+    starterV2Plan,
+    growthV2Plan,
+
+    // V1 plans
+    starterV1Plan,
+    growthV1Plan,
+
     enterprisePlan,
 
     // Old plans
