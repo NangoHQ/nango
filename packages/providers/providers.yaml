@@ -11894,6 +11894,7 @@ statista:
             type: string
             title: API Key
             description: The API key for your Statista account
+            doc_section: '#step-1-finding-your-api-key'
 
 strava:
     display_name: Strava (Mobile)
