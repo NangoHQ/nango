@@ -1,0 +1,83 @@
+---
+title: 'Momentum.io'
+sidebarTitle: 'Momentum.io'
+description: 'Access the Momentum.io API to automate sales intelligence and meeting workflows 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Momentum.io_.
+      </Step>
+      <Step title="Authorize Momentum.io">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Momentum.io API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Momentum.io API">
+        Let's make your first request to the Momentum.io API (fetch meetings). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/v1/meetings" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/v1/meetings',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Momentum.io accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Momentum.io using Connect UI](/integrations/all/momentum-io/connect) |
+    | General | [Momentum.io Website](https://www.momentum.io/) |
+    | | [Momentum.io Dashboard](https://app.momentum.io/) |
+    | Developer | [Momentum.io Documentation](https://docs.momentum.io/) |
+    | | [API Access Guide](https://docs.momentum.io/api-access) |
+    | | [API Reference](https://docs.momentum.io/api-reference) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/momentum-io.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/momentum-io.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

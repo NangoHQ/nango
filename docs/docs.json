@@ -595,6 +595,7 @@
               "integrations/all/missive",
               "integrations/all/mixpanel",
               "integrations/all/monday",
+              "integrations/all/momentum-io",
               "integrations/all/mural",
               "integrations/all/nationbuilder",
               "integrations/all/namely",
