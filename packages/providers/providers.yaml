@@ -8520,6 +8520,28 @@ monday:
         base_url: https://api.monday.com
     docs: https://nango.dev/docs/integrations/all/monday
 
+momentum-io:
+    display_name: Momentum.io
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.momentum.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/meetings
+    docs: https://nango.dev/docs/integrations/all/momentum-io
+    docs_connect: https://nango.dev/docs/integrations/all/momentum-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Make account
+            doc_section: '#step-1-generating-an-api-key'
+
 mural:
     display_name: Mural
     categories:
