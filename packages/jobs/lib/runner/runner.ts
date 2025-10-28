@@ -30,6 +30,9 @@ function getRunnerId(suffix: string): string {
     if (envs.RUNNER_TYPE === 'KUBERNETES') {
         suffix = `${suffix}-k8s`;
     }
+    if (envs.RUNNER_TYPE === 'KNATIVE') {
+        suffix = `${suffix}-knative`;
+    }
     return `${env}-runner-account-${suffix}`;
 }
 

@@ -114,7 +114,7 @@ export const ENVS = z.object({
     ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
-    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
+    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES', 'KNATIVE']).default('LOCAL'),
     RUNNER_FLEET_ID: z
         .string()
         .regex(/^[a-zA-Z0-9_-]+$/)

@@ -1,6 +1,7 @@
 import { Fleet } from '@nangohq/fleet';
 
 import { envs } from '../env.js';
+import { knativeNodeProvider } from './knative.js';
 import { kubernetesNodeProvider } from './kubernetes.js';
 import { localNodeProvider } from './local.js';
 import { renderNodeProvider } from './render.js';
@@ -14,6 +15,8 @@ export const runnersFleet = (() => {
             return new Fleet({ fleetId, nodeProvider: renderNodeProvider });
         case 'KUBERNETES':
             return new Fleet({ fleetId, nodeProvider: kubernetesNodeProvider });
+        case 'KNATIVE':
+            return new Fleet({ fleetId, nodeProvider: knativeNodeProvider });
         default:
             return new Fleet({ fleetId });
     }
