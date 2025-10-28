@@ -46,24 +46,6 @@ export class Knative extends Kubernetes {
         return Ok(undefined);
     }
 
-    async deleteKnativeService(name: string, namespace: string): Promise<Result<void>> {
-        try {
-            await this.customObjectsApi.deleteNamespacedCustomObject({
-                group: 'serving.knative.dev',
-                version: 'v1',
-                namespace,
-                plural: 'services',
-                name
-            });
-            return Ok(undefined);
-        } catch (err: any) {
-            if (this.notFound(err)) {
-                return Ok(undefined);
-            }
-            return Err(new Error('Failed to delete knative service', { cause: err }));
-        }
-    }
-
     override async createNode(node: Node): Promise<Result<void>> {
         const name = this.getServiceName(node);
         const namespace = this.getNamespace(node);
@@ -96,7 +78,7 @@ export class Knative extends Kubernetes {
             kind: 'Service',
             metadata: {
                 name,
-                namespace
+                labels: { app: name }
             },
             spec: {
                 template: {
