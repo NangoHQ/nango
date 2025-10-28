@@ -12608,7 +12608,10 @@ totango:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.totango.com/api/v3
+        base_url: https://${connectionConfig.subdomain}.totango.com/api
+        retry:
+            after:
+                - 'ratelimit-reset'
         headers:
             authorization: app-token ${appToken}
             service_id: ${serviceId}
