@@ -294,8 +294,6 @@ function billingMetricToUsageMetric(name: string): UsageMetric | null {
     if (lowerName.includes('proxy')) return 'proxy';
     if (lowerName.includes('forward')) return 'webhook_forwards';
     if (lowerName.includes('compute')) return 'function_compute_gbms';
-    if (lowerName.includes('records')) return 'records';
-    if (lowerName.includes('connections')) return 'connections';
     if (lowerName.includes('function')) return 'function_executions';
 
     return null;
