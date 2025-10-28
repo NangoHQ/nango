@@ -1,4 +1,5 @@
-export type UsageMetric = 'proxy' | 'connections' | 'function_executions' | 'function_compute_gbms' | 'records' | 'webhook_forwards' | 'function_logs';
+import type { UsageMetric } from '@nangohq/types';
+
 export interface UsageMetricProperties {
     reset: 'monthly' | 'never';
 }
