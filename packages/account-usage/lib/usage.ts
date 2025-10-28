@@ -12,9 +12,8 @@ import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
-import type { UsageMetric } from './metrics.js';
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric } from '@nangohq/types';
+import type { BillingUsageMetric, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { IRateLimiterRedisOptions } from 'rate-limiter-flexible';
 
