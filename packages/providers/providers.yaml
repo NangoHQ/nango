@@ -12613,7 +12613,7 @@ totango:
             after:
                 - 'ratelimit-reset'
         headers:
-            authorization: app-token ${appToken}
+            app-token ${apiKey}
             service_id: ${serviceId}
         verification:
             method: GET
