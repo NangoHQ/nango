@@ -37,7 +37,7 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        return plansList?.data.find((p) => p.orbId === currentPlan.orb_future_plan);
+        return plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
     }, [currentPlan, plansList]);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
@@ -57,7 +57,7 @@ export const Plans: React.FC = () => {
             list.push({
                 plan,
                 active: same,
-                isFuture: plan.orbId === currentPlan.orb_future_plan,
+                isFuture: plan.code === currentPlan.orb_future_plan,
                 isDowngrade: curr.prevPlan?.includes(plan.code) || false,
                 isUpgrade: curr.nextPlan?.includes(plan.code) || false
             });
@@ -223,14 +223,14 @@ const PlanChangeDialog: React.FC<{
     const refInterval = useRef<NodeJS.Timeout>();
 
     const onUpgrade = async () => {
-        if (!selectedPlan?.plan.orbId) {
+        if (!selectedPlan?.plan.code) {
             return;
         }
 
         setLoading(true);
         setLongWait(false);
 
-        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.orbId });
+        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.code });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to upgrade, an error occurred', variant: 'error' });
@@ -256,7 +256,7 @@ const PlanChangeDialog: React.FC<{
             if ('error' in res.json) {
                 return;
             }
-            if (res.json.data.name !== selectedPlan.plan.orbId) {
+            if (res.json.data.name !== selectedPlan.plan.code) {
                 setLongWait(true);
                 return;
             }
@@ -277,12 +277,12 @@ const PlanChangeDialog: React.FC<{
     };
 
     const onDowngrade = async () => {
-        if (!selectedPlan?.plan.orbId) {
+        if (!selectedPlan?.plan.code) {
             return;
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.orbId });
+        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.code });
         if ('error' in res.json) {
             setLoading(false);
             toast({ title: 'Failed to downgrade, an error occurred', variant: 'error' });
@@ -294,7 +294,7 @@ const PlanChangeDialog: React.FC<{
             if ('error' in res.json) {
                 return;
             }
-            if (res.json.data.orb_future_plan !== selectedPlan.plan.orbId) {
+            if (res.json.data.orb_future_plan !== selectedPlan.plan.code) {
                 setLongWait(true);
                 return;
             }

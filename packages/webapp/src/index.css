@@ -179,12 +179,14 @@
     --color-code-orange: #f09745;
     --color-code-yellow: #f7c752;
 
-    --text-xs: 11px;
-    --text-xs--line-height: 16px;
+    --text-xs: 10px;
+    --text-xs--line-height: 12px;
     --text-s: 12px;
     --text-s--line-height: 18px;
     --text-sm: 14px;
-    --text-base: 16px;
+    --text-sm--line-height: 20px;
+    --text-base: 14px;
+    --text-base--line-height: 20px;
     --text-xl: 20px;
     --text-2xl: 24px;
     --text-3xl: 28px;

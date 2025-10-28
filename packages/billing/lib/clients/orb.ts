@@ -178,7 +178,7 @@ export class OrbClient implements BillingClient {
                 })
             );
         } catch (err) {
-            return Err(new Error('failed_to_get_customer', { cause: err }));
+            return Err(new Error('failed_to_get_usage', { cause: err }));
         }
     }
 

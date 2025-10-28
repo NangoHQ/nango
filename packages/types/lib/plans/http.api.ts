@@ -16,6 +16,9 @@ export type PostPlanExtendTrial = Endpoint<{
 }>;
 
 export interface PlanDefinition {
+    /**
+     * Maps to orb external plan id
+     */
     code: DBPlan['name'];
     title: string;
     description: string;
@@ -23,19 +26,10 @@ export interface PlanDefinition {
     nextPlan: string[] | null;
     prevPlan: string[] | null;
     basePrice?: number;
-    /**
-     * OrbId is the custom external_plan_id that we can setup
-     * It's handy because you can set the same id in staging and prod
-     */
-    orbId?: string;
+
     cta?: string;
     hidden?: boolean;
-    flags: Omit<Partial<DBPlan>, 'id' | 'account_id'>;
-    display?: {
-        featuresHeading?: string;
-        features: { title: string; sub?: string }[];
-        sub?: string;
-    };
+    flags: Omit<Partial<DBPlan>, 'id' | 'account_id' | 'name'>;
 }
 
 export type GetPlans = Endpoint<{

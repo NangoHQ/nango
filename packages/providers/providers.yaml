@@ -436,6 +436,24 @@ aimfox:
             example: 123e4567-e89b-12d3-a456-426614174000
             doc_section: '#step-1-generating-your-api-key'
 
+aimfox-oauth:
+    display_name: Aimfox (OAuth)
+    categories:
+        - surveys
+    auth_mode: OAUTH2
+    authorization_url: https://id.aimfox.com/realms/aimfox-prod/protocol/openid-connect/auth
+    token_url: https://id.aimfox.com/realms/aimfox-prod/protocol/openid-connect/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.aimfox.com/api
+    docs: https://nango.dev/docs/integrations/all/aimfox-oauth
+
 aircall:
     display_name: Aircall (OAuth)
     categories:
@@ -6596,7 +6614,7 @@ intercom:
         - surveys
         - ticketing
     auth_mode: OAUTH2
-    authorization_url: https://app.${connectionConfig.region}.intercom.com || https://app.intercom.com/oauth
+    authorization_url: https://app.${connectionConfig.region}.intercom.com/oauth || https://app.intercom.com/oauth
     token_url: https://api.${connectionConfig.region}.intercom.io/auth/eagle/token || https://api.intercom.io/auth/eagle/token
     proxy:
         base_url: https://api.${connectionConfig.region}.intercom.io || https://api.intercom.io
@@ -8091,6 +8109,34 @@ microsoft:
         decompress: true
     docs: https://nango.dev/docs/integrations/all/microsoft
 
+microsoft-admin:
+    display_name: Microsoft (Admin)
+    auth_mode: OAUTH2
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/adminconsent
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    authorization_code_param_in_callback: tenant
+    proxy:
+        base_url: https://graph.microsoft.com
+        retry:
+            after:
+                - 'retry-after'
+        decompress: true
+    docs: https://nango.dev/docs/integrations/all/microsoft-admin
+    docs_connect: https://nango.dev/docs/integrations/all/microsoft-admin/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
 microsoft-excel:
     display_name: Microsoft Excel
     categories:
@@ -9362,6 +9408,35 @@ pennylane:
     authorization_url_skip_encode:
         - scopes
     docs: https://nango.dev/docs/integrations/all/pennylane
+
+pennylane-company-api:
+    display_name: Pennylane (Company API)
+    categories:
+        - accounting
+        - banking
+        - invoicing
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://app.pennylane.com
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /api/external/v2/me
+    docs: https://docs.nango.dev/integrations/all/pennylane-company-api
+    docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The company API token for your Pennylane account
+            pattern: '^[A-Za-z0-9_-]{43}$'
+            example: aZ9b4Lp3QhN7vXyK1sTcO0WfR8jMdEuD5GrIi2-H6PnU
+            doc_section: '#step-1-generating-your-company-api-token'
 
 peopledatalabs:
     display_name: People Data Labs
@@ -11493,6 +11568,8 @@ shopify-api-key:
                 content-type: application/json
             endpoints:
                 - /admin/api/2024-10/graphql.json?query=%7B__schema%7Btypes%7Bname%2Ckind%2Cfields%7Bname%7D%7D%7D%7D
+    webhook_routing_script: shopifyWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/integrations/all/shopify-api-key
     docs_connect: https://nango.dev/docs/integrations/all/shopify-api-key/connect
     connection_config:

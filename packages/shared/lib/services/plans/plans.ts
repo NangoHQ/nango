@@ -133,7 +133,7 @@ export async function handlePlanChanged(
     team: DBTeam,
     { newPlanCode, orbCustomerId, orbSubscriptionId }: { newPlanCode: string; orbCustomerId?: string | undefined; orbSubscriptionId: string }
 ): Promise<Result<boolean>> {
-    const newPlan = plansList.find((p) => p.orbId === newPlanCode);
+    const newPlan = plansList.find((p) => p.code === newPlanCode);
     if (!newPlan) {
         return Err('Received a plan not linked to the plansList');
     }
@@ -154,7 +154,7 @@ export async function handlePlanChanged(
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
-        name: newPlan.code as unknown as DBPlan['name'],
+        name: newPlan.code,
         orb_subscription_id: orbSubscriptionId,
         orb_future_plan: null,
         orb_future_plan_at: null,

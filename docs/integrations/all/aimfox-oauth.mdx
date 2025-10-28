@@ -1,0 +1,75 @@
+---
+title: 'Aimfox (OAuth)'
+sidebarTitle: 'Aimfox (OAuth)'
+description: 'Access the Aimfox (OAuth) API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Aimfox_. Nango doesn't provide a test OAuth app for Aimfox yet. You'll need to reach out to the Aimfox team to help with setting up your OAuth application. After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Aimfox (OAuth)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Aimfox. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Aimfox (OAuth) API">
+        Let's make your first request to the Aimfox (OAuth) API (fetch a list of workspaces). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/workspaces" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v1/workspaces',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Aimfox accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Note>
+    Aimfox OAuth integration setup requires assistance from the Aimfox team. Please reach out to [Aimfox support](mailto:support@aimfox.com) to help you configure your OAuth application and obtain the necessary client credentials.
+    </Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - This integration is currently private and the API documentation is not publicly available.
+    - You will need to reach out to the Aimfox team to help with obtaining access to the integration and documentation.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/aimfox-oauth.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

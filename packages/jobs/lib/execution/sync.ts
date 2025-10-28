@@ -677,6 +677,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
 
         const isCancel = task.abortedTask.state === 'CANCELLED';
+        const lastSyncDate = await getLastSyncDate(task.syncId);
         await onFailure({
             connection: {
                 id: task.connection.id,
@@ -704,6 +705,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             endUser: getEndUser.isOk()
                 ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
                 : null,
+            lastSyncDate: lastSyncDate || undefined,
             startedAt: new Date()
         });
         const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
