@@ -920,27 +920,6 @@ describe('Records service', () => {
         });
     });
 
-    describe('metrics', () => {
-        it('should report records stats for all accounts', async () => {
-            const { environmentId: env1 } = await upsertNRecords(10);
-            const { environmentId: env2 } = await upsertNRecords(7);
-            const res = (await Records.metrics()).unwrap();
-            expect(res.length).toBe(2);
-            expect(res).toEqual(
-                expect.arrayContaining([
-                    { environmentId: env1, count: 10, sizeBytes: expect.any(Number) },
-                    { environmentId: env2, count: 7, sizeBytes: expect.any(Number) }
-                ])
-            );
-        });
-        it('should report records stats for selected accounts', async () => {
-            const { environmentId: env1 } = await upsertNRecords(11);
-            await upsertNRecords(12);
-            const res = (await Records.metrics({ environmentIds: [env1] })).unwrap();
-            expect(res.length).toBe(1);
-            expect(res).toMatchObject([expect.objectContaining({ environmentId: env1, count: 11, sizeBytes: expect.any(Number) })]);
-        });
-    });
     describe('paginateRecordCounts', () => {
         it('should paginate through record counts', async () => {
             const res1 = await upsertNRecords(15);
@@ -979,6 +958,43 @@ describe('Records service', () => {
                         connection_id: res3.connectionId,
                         model: res3.model,
                         count: 35,
+                        size_bytes: expect.any(String),
+                        updated_at: expect.any(Date)
+                    }
+                ])
+            );
+        });
+        it('should paginate through record counts for specific environments', async () => {
+            const res1 = await upsertNRecords(10);
+            const res2 = await upsertNRecords(30);
+            await upsertNRecords(20);
+
+            const targetEnvironments = [res1.environmentId, res2.environmentId];
+
+            const received = [];
+            for await (const res of Records.paginateRecordCounts({ environmentIds: targetEnvironments, batchSize: 2 })) {
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                received.push(...res.value);
+            }
+
+            expect(received).toHaveLength(2);
+            expect(received).toEqual(
+                expect.arrayContaining([
+                    {
+                        environment_id: res1.environmentId,
+                        connection_id: res1.connectionId,
+                        model: res1.model,
+                        count: 10,
+                        size_bytes: expect.any(String),
+                        updated_at: expect.any(Date)
+                    },
+                    {
+                        environment_id: res2.environmentId,
+                        connection_id: res2.connectionId,
+                        model: res2.model,
+                        count: 30,
                         size_bytes: expect.any(String),
                         updated_at: expect.any(Date)
                     }
