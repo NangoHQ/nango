@@ -1772,7 +1772,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Create a connect session
 
-Create a connect session for a given end user. A token validity is short lived and lasts for 30 minutes
+Create a connect session for a given end user. A token validity is short lived and lasts for 30 minutes" with "The token is short-lived and lasts for 30 minutes.
 
 ```js
 const { data } = await nango.createConnectSession({
@@ -1797,7 +1797,7 @@ Additionally you can pass in a single integration and a user_id
 
 ```js
 const { data } = await nango.createConnectSession({
-  user_id: ''<END-USER-ID>,
+  user_id: '<END-USER-ID>,
   integration_id: '<INTEGRATION-ID>'
 });
 ```
