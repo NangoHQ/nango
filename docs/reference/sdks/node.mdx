@@ -472,21 +472,21 @@ await nango.checkConnection(userId);
 <Expandable>
 ```json
 {
-      id: 897017,
-      connection_id: '0c24a65d-01e5-48a8-8b91-b5400aa14fb1',
-      provider_config_key: 'github',
-      provider: 'github',
-      errors: [],
-      end_user: {
-        id: 'd88afbc5-3b05-4bb0-8f9a-a59c6ba0e965',
-        display_name: 'Some User',
-        email: 'someuser@foo.com',
-        tags: null,
-        organization: null
+      "id": 897017,
+      "connection_id": "0c24a65d-01e5-48a8-8b91-b5400aa14fb1",
+      "provider_config_key": "github",
+      "provider": "github",
+      "errors": [],
+      "end_user": {
+        "id": "d88afbc5-3b05-4bb0-8f9a-a59c6ba0e965",
+        "display_name": "Some User",
+        "email": "someuser@foo.com",
+        "tags": null,
+        "organization": null
       },
-      metadata: null,
-      created: '2025-10-24T21:48:28.518+00:00'
-    }
+      "metadata": null,
+      "created": "2025-10-24T21:48:28.518+00:00"
+}
 ```
 </Expandable>
 
@@ -1799,7 +1799,6 @@ Additionally you can pass in a single integration and a user_id
 const { data } = await nango.createConnectSession({
   user_id: ''<END-USER-ID>,
   integration_id: '<INTEGRATION-ID>'
-  }
 });
 ```
 
