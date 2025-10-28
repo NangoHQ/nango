@@ -92,11 +92,11 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
       4. Click **Register** and note the **Application (client) ID** from the Overview page.
       5. Go to **Authentication** > **Add a platform** > **Web** and add `https://api.nango.dev/oauth/callback` as the Redirect URI.
       6. Go to **Certificates & secrets** > **New client secret**, create a secret, and copy the value immediately (you won't see it again).
-      - Go back to the OneDrive Personal integration in Nango. In the _Authorization_ tab, add:
-        - `client_id`: Application (client) ID from step 4
-        - `client_secret`: Client secret value from step 6
-        - `scopes`: Add `offline_access` and `onedrive.readonly`
-      - In the _Endpoints_ tab, activate `GET /user-files/selected` endpoint.
+    - Go back to the OneDrive Personal integration in Nango. In the _Authorization_ tab, add:
+      - `client_id`: Application (client) ID from step 4
+      - `client_secret`: Client secret value from step 6
+      - `scopes`: Add `offline_access` and `onedrive.readonly`
+    - In the _Endpoints_ tab, activate `GET /user-files/selected` endpoint.
   </Step>
   <Step title="Prepare your env">
     - Install: `NodeJS`, `Docker`. Then run:
