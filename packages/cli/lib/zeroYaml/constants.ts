@@ -6,6 +6,7 @@ import ts from 'typescript';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const exampleFolder = path.join(__dirname, '../../example');
+export const templateFolder = path.join(__dirname, '../../templates');
 export const npmPackageRegex = /^[^./\s]/;
 export const importRegex = /^import ['"](?<path>\.\/[^'"]+)['"];?/gm;
 
