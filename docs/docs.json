@@ -694,6 +694,7 @@
               "integrations/all/salesloft",
               "integrations/all/sap-concur",
               "integrations/all/sap-success-factors",
+              "integrations/all/sap-fieldglass",
               "integrations/all/scrapedo",
               "integrations/all/sedna",
               "integrations/all/sedna-basic",

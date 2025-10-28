@@ -10936,6 +10936,54 @@ salesforce-cdp:
             description: This is your pre-generated, encoded JSON Web Token (JWT)
             secret: true
             doc_section: '#step-1-generating-your-encoded-jwt'
+
+sap-fieldglass:
+    display_name: SAP Fieldglass
+    categories:
+        - hr
+    body_format: form
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.domain}/api/oauth2/v2.0/token?grant_type=client_credentials&response_type=token
+    token_headers:
+        authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
+        X-ApplicationKey: ${credentials.appKey}
+    proxy:
+        base_url: https://${connectionConfig.domain}/api
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/integrations/all/sap-fieldglass
+    docs_connect: https://nango.dev/docs/integrations/all/sap-fieldglass/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your SAP Fieldglass application Client ID
+            doc_section: '#step-1-generating-an-application'
+        clientSecret:
+            type: string
+            title: Client secret
+            description: Your SAP Fieldglass application Client secret
+            secret: true
+            doc_section: '#step-1-generating-an-application'
+        appKey:
+            type: string
+            title: Application Key
+            description: Your SAP Fieldglass application key
+            secret: true
+            optional: true
+            doc_section: '#step-1-generating-an-application'
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your SAP Fieldglass environment URL
+            example: auth.fieldglass.net
+            prefix: https://
+            pattern: '^(?:[a-zA-Z0-9_-]+-(?:auth\.)?fgvms\.com|auth\.fieldglass\.net|sso\.fieldglass\.eu)$'
+            doc_section: '#step-2-determining-your-domain'
+
 sap-concur:
     display_name: SAP Concur
     categories:
