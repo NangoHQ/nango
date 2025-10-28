@@ -4,7 +4,7 @@ import * as cron from 'node-cron';
 import { billing as usageBilling } from '@nangohq/billing';
 import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
-import { connectionService, environmentService } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { flagHasUsage, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -95,31 +95,43 @@ const observability = {
     exportRecordsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.records', async (span) => {
             try {
-                const res = await records.metrics();
-                if (res.isErr()) {
-                    throw res.error;
-                }
-
-                // records metrics are per environment, we need to get the account ids
-                const envIds = res.value.map((r) => r.environmentId);
-                const envs = await environmentService.getEnvironmentsByIds(envIds);
-                const metricsWithAccount = res.value.flatMap(({ environmentId, count, sizeBytes }) => {
-                    const env = envs.find((e) => e.id === environmentId);
-                    if (!env) {
-                        return [];
-                    }
-                    return [{ environmentId, accountId: env.account_id, count, sizeBytes }];
-                });
-
-                // Group by account
                 const metricsByAccount = new Map<number, { count: number; sizeBytes: number }>();
-                for (const metric of metricsWithAccount) {
-                    const existing = metricsByAccount.get(metric.accountId);
-                    if (existing) {
-                        existing.count += metric.count;
-                        existing.sizeBytes += metric.sizeBytes;
-                    } else {
-                        metricsByAccount.set(metric.accountId, { count: metric.count, sizeBytes: metric.sizeBytes });
+                // records metrics are per environment, so we fetch the record counts first and then we need to:
+                // - get the account ids
+                // - filter out connections that have been deleted
+                // - aggregate per account
+                //
+                // Performance note: This nested pagination approach is necessary because records and connections
+                // are stored in separate databases, making SQL JOINs impossible.
+                // To reconsider when record counts table becomes very large (currently <10k entries)
+                for await (const recordCounts of records.paginateRecordCounts()) {
+                    if (recordCounts.isErr()) {
+                        throw recordCounts.error;
+                    }
+                    if (recordCounts.value.length === 0) {
+                        continue;
+                    }
+
+                    const connectionIds = recordCounts.value.map((r) => r.connection_id);
+                    for await (const res of connectionService.paginateConnections({ connectionIds })) {
+                        if (res.isErr()) {
+                            throw res.error;
+                        }
+                        for (const value of res.value) {
+                            const recordCount = recordCounts.value.find((r) => r.connection_id === value.connection.id);
+                            if (recordCount) {
+                                const existing = metricsByAccount.get(value.account.id);
+                                if (existing) {
+                                    existing.count += recordCount.count;
+                                    existing.sizeBytes += recordCount.size_bytes;
+                                } else {
+                                    metricsByAccount.set(value.account.id, {
+                                        count: recordCount.count,
+                                        sizeBytes: recordCount.size_bytes
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
 

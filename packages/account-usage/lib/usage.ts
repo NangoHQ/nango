@@ -196,7 +196,6 @@ export class UsageTracker implements IUsageTracker {
                 case 'function_logs': {
                     const billingUsage = await this.getBillingUsage(accountId);
                     if (billingUsage.isErr()) {
-                        logger.warning(`Failed to fetch billing usage for accountId: ${accountId}`, billingUsage.error);
                         if (billingUsage.error.message === 'rate_limit_exceeded') {
                             span?.setTag('rate_limited', true);
                         }
