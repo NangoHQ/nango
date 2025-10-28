@@ -118,16 +118,26 @@ const observability = {
                             throw res.error;
                         }
                         for (const value of res.value) {
-                            const recordCount = recordCounts.value.find((r) => r.connection_id === value.connection.id);
-                            if (recordCount) {
+                            // sum records data for this connection. There might be multiple models or variants for the same connection
+                            const sum = recordCounts.value
+                                .filter((r) => r.connection_id === value.connection.id)
+                                .reduce(
+                                    (acc, curr) => {
+                                        acc.count += curr.count;
+                                        acc.size_bytes += curr.size_bytes;
+                                        return acc;
+                                    },
+                                    { count: 0, size_bytes: 0 }
+                                );
+                            if (sum.count > 0) {
                                 const existing = metricsByAccount.get(value.account.id);
                                 if (existing) {
-                                    existing.count += recordCount.count;
-                                    existing.sizeBytes += recordCount.size_bytes;
+                                    existing.count += sum.count;
+                                    existing.sizeBytes += sum.size_bytes;
                                 } else {
                                     metricsByAccount.set(value.account.id, {
-                                        count: recordCount.count,
-                                        sizeBytes: recordCount.size_bytes
+                                        count: sum.count,
+                                        sizeBytes: sum.size_bytes
                                     });
                                 }
                             }
