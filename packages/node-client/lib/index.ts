@@ -17,6 +17,7 @@ import type {
 } from './types.js';
 import type {
     ApiKeyCredentials,
+    ApiPublicConnection,
     ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
@@ -285,6 +286,27 @@ export class Nango {
     ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshToken, refreshGithubAppJwtToken });
         return response.data;
+    }
+
+    /**
+     * Returns a connection object given an user id
+     * @param userId - The user ID used to create the connection
+     * @returns A promise that resolves with a connection object
+     */
+    public async checkConnection(userId: string): Promise<ApiPublicConnection> {
+        const response = await this.listConnections(undefined, undefined, { endUserId: userId });
+
+        if (response.connections.length === 0) {
+            throw new Error(`No connection found for user ID: ${userId}`);
+        }
+
+        const [connection] = response.connections;
+
+        if (!connection) {
+            throw new Error(`No connection found for user ID: ${userId}`);
+        }
+
+        return connection;
     }
 
     /**
@@ -1049,8 +1071,24 @@ export class Nango {
      * @param sessionProps - The properties for the new session, including end user information
      * @returns A promise that resolves with the created session token and expiration date
      */
-    public async createConnectSession(sessionProps: PostConnectSessions['Body']): Promise<PostConnectSessions['Success']> {
+    public async createConnectSession(
+        sessionProps: PostConnectSessions['Body'] & { integration_id?: string; user_id?: string }
+    ): Promise<PostConnectSessions['Success']> {
         const url = `${this.serverUrl}/connect/sessions`;
+
+        if (sessionProps.integration_id && sessionProps?.['allowed_integrations'] && sessionProps['allowed_integrations'].length > 0) {
+            throw new Error('Cannot specify both integrationId and allowed_integrations');
+        }
+
+        if (sessionProps.integration_id) {
+            sessionProps['allowed_integrations'] = [sessionProps.integration_id];
+            delete sessionProps.integration_id;
+        }
+
+        if (sessionProps.user_id) {
+            sessionProps['end_user'] = { id: sessionProps.user_id };
+            delete sessionProps.user_id;
+        }
 
         const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
         return response.data;

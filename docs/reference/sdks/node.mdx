@@ -451,6 +451,45 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
 ```
 </Expandable>
 
+### Check Connection
+
+Retrieve a connection given an end user id
+
+```js
+await nango.checkConnection(userId);
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="userId" type="string" required>
+        The end user id
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+      id: 897017,
+      connection_id: '0c24a65d-01e5-48a8-8b91-b5400aa14fb1',
+      provider_config_key: 'github',
+      provider: 'github',
+      errors: [],
+      end_user: {
+        id: 'd88afbc5-3b05-4bb0-8f9a-a59c6ba0e965',
+        display_name: 'Some User',
+        email: 'someuser@foo.com',
+        tags: null,
+        organization: null
+      },
+      metadata: null,
+      created: '2025-10-24T21:48:28.518+00:00'
+    }
+```
+</Expandable>
+
 ### Patch a connection
 
 Patch a connection.
@@ -1733,7 +1772,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Create a connect session
 
-Create a connect session for a given end user
+Create a connect session for a given end user. A token validity is short lived and lasts for 30 minutes
 
 ```js
 const { data } = await nango.createConnectSession({
@@ -1750,6 +1789,16 @@ const { data } = await nango.createConnectSession({
         <CONFIG-KEY>: '<VALUE>'
       }
     }
+  }
+});
+```
+
+Additionally you can pass in a single integration and a user_id
+
+```js
+const { data } = await nango.createConnectSession({
+  user_id: ''<END-USER-ID>,
+  integration_id: '<INTEGRATION-ID>'
   }
 });
 ```
@@ -1784,6 +1833,14 @@ const { data } = await nango.createConnectSession({
 
   <ResponseField name="allowed_integrations" type="string[]">
     An array of integration IDs that are allowed for this session.
+  </ResponseField>
+
+  <ResponseField name="integration_id" type="string">
+    An integration that is allowed for this session.
+  </ResponseField>
+
+  <ResponseField name="user_id" type="string">
+    The unique identifier for the end user
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
