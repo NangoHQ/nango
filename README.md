@@ -35,7 +35,7 @@ Nango is a complete infrastructure for engineers to build **product integrations
 - **[Data Syncing](https://nango.dev/docs/guides/use-cases/syncs)**: Continuously synchronize data from APIs to your application.
 - **[Actions](https://nango.dev/docs/guides/use-cases/actions)**: Encapsulate use cases into reusable actions.
 - **[Webhooks](https://nango.dev/docs/guides/use-cases/webhooks)**: Listen to webhooks from APIs with a universal interface.
-- **[MCP Server](https://nango.dev/docs/guides/use-cases/mcp-server)**: Expose your integrations as an MCP server for tool calling.
+- **[MCP Server](https://nango.dev/docs/guides/use-cases/ai-tool-calling)**: Expose your integrations as an MCP server for tool calling.
 - **[Observability](https://nango.dev/docs/guides/platform/logs)**: Tailored monitoring for integrations.
 - **Management dashboard & APIs**: Control and oversee all connected accounts.
 
