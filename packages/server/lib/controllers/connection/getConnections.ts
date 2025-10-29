@@ -14,6 +14,7 @@ const validationQuery = z
         connectionId: z.string().min(1).max(255).optional(),
         search: z.string().min(1).max(255).optional(),
         endUserId: bodySchema.shape.end_user.shape.id.optional(),
+        integrationId: z.string().min(1).optional(),
         endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional()
     })
     .strict();
@@ -35,6 +36,7 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         connectionId: queryParam.connectionId,
         search: queryParam.search,
         endUserId: queryParam.endUserId,
+        integrationIds: queryParam.integrationId ? queryParam.integrationId.split(',').map((id) => id.trim()) : undefined,
         endUserOrganizationId: queryParam.endUserOrganizationId,
         limit: 10000
     });

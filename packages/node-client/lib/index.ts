@@ -245,24 +245,65 @@ export class Nango {
         connectionId?: string,
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
-        // override method
-        // deprecate this
-        // single object, everything optional, userId, integrationId
-        // remove endUserOrganizationId
-        // TODO which API Endpoint to use?
+    ): Promise<GetPublicConnections['Success']>;
+
+    /**
+     * Returns a list of connections using object parameter syntax
+     * @param params - Object containing optional filter parameters
+     * @returns A promise that resolves with an array of connection objects
+     */
+    public async listConnections(params: {
+        connectionId?: string;
+        userId?: string;
+        integrationId?: string;
+        tags?: Record<string, string>;
+    }): Promise<GetPublicConnections['Success']>;
+
+    public async listConnections(
+        connectionIdOrParams?:
+            | string
+            | {
+                  connectionId?: string;
+                  userId?: string;
+                  integrationId?: string;
+                  tags?: Record<string, string>;
+              },
+        search?: string,
+        queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
     ): Promise<GetPublicConnections['Success']> {
         const url = new URL(`${this.serverUrl}/connections`);
-        if (connectionId) {
-            url.searchParams.append('connectionId', connectionId);
-        }
-        if (search) {
-            url.searchParams.append('search', search);
-        }
-        if (queries?.endUserId) {
-            url.searchParams.append('endUserId', queries.endUserId);
-        }
-        if (queries?.endUserOrganizationId) {
-            url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
+
+        // Handle both call signatures
+        if (typeof connectionIdOrParams === 'object') {
+            // New object parameter syntax
+            const { connectionId, userId, integrationId, tags } = connectionIdOrParams;
+
+            if (connectionId) {
+                url.searchParams.append('connectionId', connectionId);
+            }
+            if (userId) {
+                url.searchParams.append('endUserId', userId);
+            }
+            if (integrationId) {
+                url.searchParams.append('integrationIds', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
+            }
+            if (tags && Object.keys(tags).length > 0) {
+                url.searchParams.append('tags', JSON.stringify(tags));
+            }
+        } else {
+            // Legacy parameter syntax
+            if (connectionIdOrParams) {
+                url.searchParams.append('connectionId', connectionIdOrParams);
+            }
+            if (search) {
+                url.searchParams.append('search', search);
+            }
+            if (queries?.endUserId) {
+                url.searchParams.append('endUserId', queries.endUserId);
+            }
+            if (queries?.endUserOrganizationId) {
+                url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
+            }
         }
 
         const headers = {
