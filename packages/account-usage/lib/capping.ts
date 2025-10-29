@@ -1,8 +1,7 @@
 import { metrics as ddMetrics } from '@nangohq/utils';
 
-import type { UsageMetric } from './metrics.js';
 import type { IUsageTracker } from './usage.js';
-import type { DBPlan } from '@nangohq/types';
+import type { DBPlan, UsageMetric } from '@nangohq/types';
 
 export interface CappingStatus {
     isCapped: boolean;

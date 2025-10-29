@@ -32,8 +32,7 @@ export type * from './sharedCredentials/db.js';
 export type * from './sharedCredentials/dto.js';
 export type * from './billing/types.js';
 export type * from './billing/http.api.js';
-export type * from './usage/dto.js';
-export type * from './usage/db.js';
+export type * from './usage/index.js';
 
 export type * from './providers/api.js';
 export type * from './proxy/api.js';

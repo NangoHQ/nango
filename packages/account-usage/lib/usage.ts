@@ -12,9 +12,8 @@ import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
-import type { UsageMetric } from './metrics.js';
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric } from '@nangohq/types';
+import type { BillingUsageMetric, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { IRateLimiterRedisOptions } from 'rate-limiter-flexible';
 
@@ -196,7 +195,6 @@ export class UsageTracker implements IUsageTracker {
                 case 'function_logs': {
                     const billingUsage = await this.getBillingUsage(accountId);
                     if (billingUsage.isErr()) {
-                        logger.warning(`Failed to fetch billing usage for accountId: ${accountId}`, billingUsage.error);
                         if (billingUsage.error.message === 'rate_limit_exceeded') {
                             span?.setTag('rate_limited', true);
                         }
@@ -296,8 +294,6 @@ function billingMetricToUsageMetric(name: string): UsageMetric | null {
     if (lowerName.includes('proxy')) return 'proxy';
     if (lowerName.includes('forward')) return 'webhook_forwards';
     if (lowerName.includes('compute')) return 'function_compute_gbms';
-    if (lowerName.includes('records')) return 'records';
-    if (lowerName.includes('connections')) return 'connections';
     if (lowerName.includes('function')) return 'function_executions';
 
     return null;
