@@ -12121,6 +12121,8 @@ statista:
             type: string
             title: API Key
             description: The API key for your Statista account
+            example: c5c28261f9ade4e34891ccf761491b94
+            pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
 strava:
