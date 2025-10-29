@@ -64,7 +64,7 @@
       "destination": "/"
     },
     {
-      "source": "/guides/mcs",
+      "source": "/guides/mcp",
       "destination": "/guides/use-cases/ai-tool-calling"
     },
     {
@@ -100,8 +100,8 @@
       "destination": "/reference/functions"
     },
     {
-      "source": ".guides/use-cases/ai-tool-calling",
-      "destination": ".guides/use-cases/mai-tool-calling"
+      "source": "guides/use-cases/mcp-server",
+      "destination": "guides/use-cases/ai-tool-calling"
     }
   ],
   "navigation": {
