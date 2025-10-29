@@ -26,6 +26,7 @@ import { runnersFleet } from './fleet.js';
 import { pubsub } from './pubsub.js';
 import { router } from './routes.js';
 import migrate from './utils/migrate.js';
+import { setShuttingDown } from './utils/state.js';
 
 import type { WebSocket } from 'ws';
 
@@ -106,6 +107,7 @@ server.listen(port, () => {
 
 // --- Close function
 const close = once(() => {
+    setShuttingDown(true);
     logger.info('Closing...');
 
     cron.getTasks().forEach((task) => task.stop());
