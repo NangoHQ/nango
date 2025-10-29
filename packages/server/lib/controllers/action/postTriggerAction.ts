@@ -1,9 +1,8 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, errorManager, getSyncConfigRaw, productTracking } from '@nangohq/shared';
+import { configService, connectionService, errorManager, getSyncConfigRaw } from '@nangohq/shared';
 import { actionAllowListCustomers, getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
@@ -27,7 +26,6 @@ const schemaBody = z.object({
     input: z.unknown()
 });
 
-const accountUsageTracker = await getAccountUsageTracker();
 const actionPayloadAllowList = isCloud ? actionAllowListCustomers : [];
 
 export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(async (req, res) => {
@@ -49,7 +47,7 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
         return;
     }
 
-    const { account, environment, plan } = res.locals;
+    const { account, environment } = res.locals;
     metrics.increment(metrics.Types.ACTION_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     await tracer.trace<Promise<void>>('server.sync.triggerAction', async (span) => {
@@ -105,23 +103,6 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                 }
             );
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
-
-            if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'actions'))) {
-                const message =
-                    'Your monthly limit for action executions has been reached. No actions will run until you upgrade your account or the limit resets.';
-                void logCtx.error(message, {
-                    usage: await accountUsageTracker.getUsage({ accountId: account.id, metric: 'actions' }),
-                    limit: accountUsageTracker.getLimit(plan, 'actions')
-                });
-
-                productTracking.track({ name: 'server:resource_capped:action_triggered', team: account });
-
-                res.status(400).send({ error: { code: 'resource_capped', message } });
-
-                span.setTag('nango.usageLimitExceeded', true);
-                await logCtx.failed();
-                return;
-            }
 
             const actionResponse = await getOrchestrator().triggerAction({
                 accountId: account.id,

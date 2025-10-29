@@ -1,16 +1,21 @@
 import tracer from 'dd-trace';
+import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
+import { billing } from '@nangohq/billing';
+import db from '@nangohq/database';
 import { records } from '@nangohq/records';
-import { connectionService, environmentService } from '@nangohq/shared';
+import { connectionService, environmentService, getPlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { UsageCache } from './cache.js';
+import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
-import type { UsageMetric } from './metrics.js';
 import type { getRedis } from '@nangohq/kvstore';
+import type { BillingUsageMetric, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { IRateLimiterRedisOptions } from 'rate-limiter-flexible';
 
 const cacheKeyPrefix = 'usageV2';
 
@@ -67,9 +72,18 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
+    private throttler: Throttler;
+    private billingClient: typeof billing;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
+        this.throttler = new Throttler({
+            storeClient: redis,
+            keyPrefix: 'billing',
+            points: envs.USAGE_BILLING_API_MAX_RPS,
+            duration: 1
+        });
+        this.billingClient = billing;
     }
 
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
@@ -139,65 +153,74 @@ export class UsageTracker implements IUsageTracker {
     }
 
     public async revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>> {
-        const sources: Record<UsageMetric, string> = {
-            connections: 'db:connections',
-            records: 'db:records',
-            // Orb related metrics are fetched from the same orb endpoint, hence the same source
-            proxy: 'orb:subscription:usage',
-            function_executions: 'orb:subscription:usage',
-            function_compute_gbms: 'orb:subscription:usage',
-            webhook_forwards: 'orb:subscription:usage',
-            function_logs: 'orb:subscription:usage'
-        };
-        return tracer.trace('nango.usage.revalidate', { tags: { accountId, metric } }, async (span) => {
-            // Acquire a lock to avoid multiple revalidations in parallel
-            const lockKey = `${cacheKeyPrefix}:revalidate:${accountId}:${sources[metric]}`;
-            const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
-            if (lock.isErr()) {
-                return Ok(undefined);
-            }
-            try {
-                let count: number | undefined = undefined;
-                switch (metric) {
-                    case 'connections': {
-                        count = await connectionService.countByAccountId(accountId);
-                        break;
-                    }
-                    case 'records': {
-                        const envs = await environmentService.getEnvironmentsByAccountId(accountId);
-                        if (envs.length > 0) {
-                            const envIds = envs.map((e) => e.id);
-                            const res = await records.metrics({ environmentIds: envIds });
-                            if (res.isErr()) {
-                                throw res.error;
-                            }
-                            count = res.value.reduce((acc, entry) => acc + entry.count, 0);
-                        }
-                        break;
-                    }
-                    case 'proxy':
-                    case 'function_executions':
-                    case 'function_compute_gbms':
-                    case 'webhook_forwards':
-                    case 'function_logs':
-                        // TODO
-                        break;
-                }
-                if (count !== undefined) {
-                    const now = new Date();
+        const source = sources[metric];
+        const span = tracer.startSpan('nango.usage.revalidate', {
+            tags: { accountId, metric, source }
+        });
+        // Acquire a lock to avoid multiple revalidations in parallel
+        const lockKey = `${cacheKeyPrefix}:revalidate:${accountId}:${source}`;
+        const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
+        if (lock.isErr()) {
+            // another revalidation is in progress, skip
+            return Ok(undefined);
+        }
+        try {
+            const now = new Date();
+            switch (metric) {
+                case 'connections': {
+                    const count = await connectionService.countByAccountId(accountId);
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
                     await this.cache.overwrite(cacheKey, count);
-                    span?.setTag('count', count);
+                    return Ok(undefined);
                 }
-                return Ok(undefined);
-            } catch (err) {
-                logger.error(`Failed to revalidate usage for accountId: ${accountId}, metric: ${metric}`, err);
-                span?.setTag('error', err);
-                return Err(new Error('usage_revalidate_error'));
-            } finally {
-                // not releasing the lock on purpose to avoid quick re-entrance in case of error
+                case 'records': {
+                    const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+                    if (envs.length > 0) {
+                        const envIds = envs.map((e) => e.id);
+                        const res = await records.metrics({ environmentIds: envIds });
+                        if (res.isErr()) {
+                            throw res.error;
+                        }
+                        const count = res.value.reduce((acc, entry) => acc + entry.count, 0);
+                        const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
+                        await this.cache.overwrite(cacheKey, count);
+                        span?.setTag('count', count);
+                    }
+                    return Ok(undefined);
+                }
+                case 'proxy':
+                case 'function_executions':
+                case 'function_compute_gbms':
+                case 'webhook_forwards':
+                case 'function_logs': {
+                    const billingUsage = await this.getBillingUsage(accountId);
+                    if (billingUsage.isErr()) {
+                        if (billingUsage.error.message === 'rate_limit_exceeded') {
+                            span?.setTag('rate_limited', true);
+                        }
+                        throw billingUsage.error;
+                    }
+                    // update all billing-related metrics
+                    for (const [metric, count] of Object.entries(billingUsage.value)) {
+                        const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
+                        await this.cache.overwrite(cacheKey, count);
+                    }
+                    return Ok(undefined);
+                }
+                default: {
+                    ((_exhaustiveCheck: never) => {
+                        throw new Error(`Unhandled usage metric type: ${metric}`);
+                    })(metric);
+                }
             }
-        });
+        } catch (err) {
+            logger.error(`Failed to revalidate usage for accountId: ${accountId}, metric: ${metric}`, err);
+            span?.setTag('error', err);
+            return Err(new Error('usage_revalidate_error'));
+        } finally {
+            span?.finish();
+            // Note: not releasing the lock to avoid quick re-entrance in case of error
+        }
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
@@ -213,4 +236,77 @@ export class UsageTracker implements IUsageTracker {
         }
         return { cacheKey };
     }
+
+    private async getBillingUsage(accountId: number): Promise<Result<Record<UsageMetric, number>>> {
+        const billingUsage: Result<BillingUsageMetric[]> = await this.throttler.execute('usage', async () => {
+            const plan = await getPlan(db.knex, { accountId });
+            if (plan.isErr()) {
+                return Err(plan.error);
+            }
+            if (!plan.value.orb_subscription_id) {
+                return Err(new Error('orb_subscription_id_missing'));
+            }
+            const subscriptionId = plan.value.orb_subscription_id;
+            return this.billingClient.getUsage(subscriptionId);
+        });
+        if (billingUsage.isErr()) {
+            // Note: errors (including rate limit errors) are not being retried
+            // revalidateAfter isn't being updated, so next incr will attempt to revalidate again
+            return Err(billingUsage.error);
+        }
+        const res = {} as Record<UsageMetric, number>;
+        for (const billingMetric of billingUsage.value) {
+            const usageMetric = billingMetricToUsageMetric(billingMetric.name);
+            if (usageMetric) {
+                res[usageMetric] = billingMetric.quantity;
+            }
+        }
+        return Ok(res);
+    }
 }
+
+class Throttler {
+    private throttler: RateLimiterRedis;
+
+    constructor(opts: IRateLimiterRedisOptions) {
+        this.throttler = new RateLimiterRedis(opts);
+    }
+
+    public async execute<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        try {
+            await this.throttler.consume(key);
+            return await fn();
+        } catch (err) {
+            if (err instanceof RateLimiterRes) {
+                throw new Error('rate_limit_exceeded');
+            }
+            throw err;
+        }
+    }
+}
+
+function billingMetricToUsageMetric(name: string): UsageMetric | null {
+    // Not ideal to match on BillingMetric name but Orb only exposes the user friendly name or internal ids
+    const lowerName = name.toLowerCase();
+    // order matters here
+    if (lowerName.includes('legacy')) return null;
+    if (lowerName.includes('logs')) return 'function_logs';
+    if (lowerName.includes('proxy')) return 'proxy';
+    if (lowerName.includes('forward')) return 'webhook_forwards';
+    if (lowerName.includes('compute')) return 'function_compute_gbms';
+    if (lowerName.includes('function')) return 'function_executions';
+
+    return null;
+}
+
+const sources: Record<UsageMetric, string> = {
+    // source of truth for connections and records is main internal db
+    connections: 'db:connections',
+    records: 'db:records',
+    // billing related metrics are fetched from the same billing endpoint, hence the same source
+    proxy: 'billing:subscription:usage',
+    function_executions: 'billing:subscription:usage',
+    function_compute_gbms: 'billing:subscription:usage',
+    webhook_forwards: 'billing:subscription:usage',
+    function_logs: 'billing:subscription:usage'
+};

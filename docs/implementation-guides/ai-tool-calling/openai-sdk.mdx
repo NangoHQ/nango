@@ -1,0 +1,84 @@
+---
+title: "OpenAI SDK example"
+sidebarTitle: "OpenAI SDK example"
+description: "End-to-end example of calling external tools with the OpenAI SDK."
+---
+
+This guide demonstrates how to combine **Nango** and the **OpenAI SDK** to consume external APIs via tool calling.
+
+In this example:
+- The OpenAI model defines a `who_am_i` tool and sends a prompt to OpenAI.  
+- When the model calls the tool, the script uses **Nango** to ensure the user’s connection is active and, if needed, walks them through the HubSpot auth flow.  
+- Once authorized, the script executes the model’s tool call by triggering the `whoami` action on **HubSpot** through Nango.  
+- Finally, it prints the resulting HubSpot user info in the console.  
+
+<Tip>
+**Requirements:** 
+- A Nango account with an integration for `hubspot` with the `whoami` action enabled.
+- A OpenAI account.
+</Tip>
+
+```ts
+import OpenAI from "openai";
+import { Nango } from "@nangohq/node";
+import readline from "readline";
+
+export async function runOpenAIAgent() {
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+  const userId = "user1", integrationId = "hubspot";
+
+  console.log("🔒 Checking API authorization...")
+  let connectionId = (await nango.listConnections(undefined, undefined, { endUserId: userId })).connections[0]?.connection_id;
+
+  if (!connectionId) {
+    const session = await nango.createConnectSession({
+      allowed_integrations: [integrationId],
+      end_user: { id: userId },
+    }); // Handle API auth via Nango.
+
+    console.log(`Please authorize the app by visiting this URL: ${session.data.connect_link}`);
+    await waitForEnter("Press Enter once you've authorized the app...");
+
+    connectionId = (await nango.listConnections(undefined, undefined, { endUserId: userId })).connections[0]?.connection_id;
+    if (!connectionId) {
+      console.log("Connect flow failed.");
+      return;
+    }
+  }
+
+  console.log("🤖 Agent running...")
+  const response = await client.responses.create({
+    model: "gpt-5",
+    input: "Using the who_am_i tool, provide the current user info.",
+    tools: [
+      {
+        type: "function",
+        name: "who_am_i",
+        description: "Get the current user info.",
+        parameters: { type: "object", properties: {}, additionalProperties: false },
+        strict: true,
+      },
+    ],
+  });
+
+  const functionCall = response.output.find((item) => item.type === "function_call") as any;
+
+  if (functionCall?.name === "who_am_i") {
+    try {
+      const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami"); // Call tools via Nango.
+      console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
+    } catch (error: any) {
+      console.error("Nango API error:", error.response?.data?.error || error);
+    }
+  } else {
+    console.log(response.output_text);
+  }
+}
+
+function waitForEnter(prompt: string) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise<void>((resolve) => rl.question(prompt, () => { rl.close(); resolve(); }));
+}
+```

@@ -436,6 +436,24 @@ aimfox:
             example: 123e4567-e89b-12d3-a456-426614174000
             doc_section: '#step-1-generating-your-api-key'
 
+aimfox-oauth:
+    display_name: Aimfox (OAuth)
+    categories:
+        - surveys
+    auth_mode: OAUTH2
+    authorization_url: https://id.aimfox.com/realms/aimfox-prod/protocol/openid-connect/auth
+    token_url: https://id.aimfox.com/realms/aimfox-prod/protocol/openid-connect/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.aimfox.com/api
+    docs: https://nango.dev/docs/integrations/all/aimfox-oauth
+
 aircall:
     display_name: Aircall (OAuth)
     categories:
@@ -8007,29 +8025,41 @@ medallia:
         retry:
             after:
                 - 'x-ratelimit-reset'
-        base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
+        base_url: https://${connectionConfig.apiHostUrl} || https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://nango.dev/docs/integrations/all/medallia
     docs_connect: https://nango.dev/docs/integrations/all/medallia/connect
     connection_config:
         reportingInstance:
             type: string
             title: Domain
-            description: The domain of your Medallia account
+            description: The base domain for your Medallia instance
             format: hostname
             prefix: https://
-            doc_section: '#step-3-connect-your-medallia-account'
+            suffix: /oauth
+            example: instance.medallia.com
+            order: 1
+            doc_section: '#step-2-identifying-your-domain'
         tenantName:
             type: string
             title: Tenant Name
             description: The tenant name of your Medallia account
-            doc_section: '#step-3-connect-your-medallia-account'
-        gatewayUrl:
+            order: 2
+            example: acme
+            doc_section: '#step-3-identifying-your-tenant-name'
+        apiHostUrl:
             type: string
-            title: Gateway URL
-            description: The gateway URL of your Medallia account
+            title: API Host URL
+            description: The base API endpoint (gateway URL) for your Medallia account
             format: hostname
             prefix: https://
-            doc_section: '#step-3-connect-your-medallia-account'
+            order: 3
+            example: fo-acme.apis.medallia.eu
+            doc_section: '#step-4-identifying-your-api-host-url'
+        gatewayUrl:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of apiHostUrl
 
 metabase:
     display_name: Metabase
@@ -8090,6 +8120,34 @@ microsoft:
                 - 'retry-after'
         decompress: true
     docs: https://nango.dev/docs/integrations/all/microsoft
+
+microsoft-admin:
+    display_name: Microsoft (Admin)
+    auth_mode: OAUTH2
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/adminconsent
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    authorization_code_param_in_callback: tenant
+    proxy:
+        base_url: https://graph.microsoft.com
+        retry:
+            after:
+                - 'retry-after'
+        decompress: true
+    docs: https://nango.dev/docs/integrations/all/microsoft-admin
+    docs_connect: https://nango.dev/docs/integrations/all/microsoft-admin/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
 
 microsoft-excel:
     display_name: Microsoft Excel
@@ -8473,6 +8531,28 @@ monday:
     proxy:
         base_url: https://api.monday.com
     docs: https://nango.dev/docs/integrations/all/monday
+
+momentum-io:
+    display_name: Momentum.io
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.momentum.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/meetings
+    docs: https://nango.dev/docs/integrations/all/momentum-io
+    docs_connect: https://nango.dev/docs/integrations/all/momentum-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Make account
+            doc_section: '#step-1-generating-an-api-key'
 
 mural:
     display_name: Mural
@@ -9362,6 +9442,35 @@ pennylane:
     authorization_url_skip_encode:
         - scopes
     docs: https://nango.dev/docs/integrations/all/pennylane
+
+pennylane-company-api:
+    display_name: Pennylane (Company API)
+    categories:
+        - accounting
+        - banking
+        - invoicing
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://app.pennylane.com
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /api/external/v2/me
+    docs: https://docs.nango.dev/integrations/all/pennylane-company-api
+    docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The company API token for your Pennylane account
+            pattern: '^[A-Za-z0-9_-]{43}$'
+            example: aZ9b4Lp3QhN7vXyK1sTcO0WfR8jMdEuD5GrIi2-H6PnU
+            doc_section: '#step-1-generating-your-company-api-token'
 
 peopledatalabs:
     display_name: People Data Labs
@@ -10861,6 +10970,54 @@ salesforce-cdp:
             description: This is your pre-generated, encoded JSON Web Token (JWT)
             secret: true
             doc_section: '#step-1-generating-your-encoded-jwt'
+
+sap-fieldglass:
+    display_name: SAP Fieldglass
+    categories:
+        - hr
+    body_format: form
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.domain}/api/oauth2/v2.0/token?grant_type=client_credentials&response_type=token
+    token_headers:
+        authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
+        X-ApplicationKey: ${credentials.appKey}
+    proxy:
+        base_url: https://${connectionConfig.domain}/api
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/integrations/all/sap-fieldglass
+    docs_connect: https://nango.dev/docs/integrations/all/sap-fieldglass/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your SAP Fieldglass application Client ID
+            doc_section: '#step-1-generating-an-application'
+        clientSecret:
+            type: string
+            title: Client secret
+            description: Your SAP Fieldglass application Client secret
+            secret: true
+            doc_section: '#step-1-generating-an-application'
+        appKey:
+            type: string
+            title: Application Key
+            description: Your SAP Fieldglass application key
+            secret: true
+            optional: true
+            doc_section: '#step-1-generating-an-application'
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your SAP Fieldglass environment URL
+            example: auth.fieldglass.net
+            prefix: https://
+            pattern: '^(?:[a-zA-Z0-9_-]+-(?:auth\.)?fgvms\.com|auth\.fieldglass\.net|sso\.fieldglass\.eu)$'
+            doc_section: '#step-2-determining-your-domain'
+
 sap-concur:
     display_name: SAP Concur
     categories:
@@ -10891,6 +11048,64 @@ sap-concur:
             description: The SAP Concur Data Center region (e.g., `us`, `eu`, `cn`)
             example: us
             doc_section: '#step-3-determine-your-region'
+
+sap-business-one:
+    display_name: SAP Business One
+    categories:
+        - erp
+    body_format: json
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.domain}/login
+    token_params:
+        CompanyDB: ${connectionConfig.companyDb}
+        UserName: ${credentials.userName}
+        DBInstance: ${connectionConfig.dbInstance}
+        Password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    token_response:
+        token: AccessToken
+    docs: https://nango.dev/docs/integrations/all/sap-business-one
+    docs_connect: https://nango.dev/docs/integrations/all/sap-business-one/connect
+    connection_config:
+        domain:
+            type: string
+            title: Service Layer URL
+            prefix: https://
+            suffix: /login
+            pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
+            order: 1
+            description: The base URL for your SAP Business One Service Layer
+            doc_section: '#step-3-finding-your-service-layer-url'
+        companyDb:
+            type: string
+            title: Company Database Name
+            description: The name of your SAP Business One company database
+            example: 10COR0809H
+            order: 2
+            doc_section: '#step-2-identifying-your-company-database'
+        dbInstance:
+            type: string
+            title: Database Instance
+            description: The database server instance name
+            optional: true
+            order: 3
+            example: C200@10.58.114.200:30013
+            doc_section: '#step-4-finding-your-database-instance'
+    credentials:
+        userName:
+            type: string
+            title: Username
+            description: Your SAP Business One username
+            doc_section: '#step-1-obtaining-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your SAP Business One password
+            secret: true
+            doc_section: '#step-1-obtaining-your-credentials'
 
 sap-success-factors:
     display_name: SAP SuccessFactors

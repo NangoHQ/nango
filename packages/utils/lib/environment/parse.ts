@@ -21,6 +21,7 @@ export const ENVS = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional(),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
@@ -47,7 +48,6 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
-    CRON_PERSIST_ACCOUNT_USAGE_MINUTES: z.coerce.number().optional().default(30),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -220,6 +220,8 @@ export const ENVS = z.object({
 
     // Usage
     USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),
+    USAGE_REVALIDATE_AFTER_MS: z.coerce.number().optional().default(3_600_000), // 1 hour
+    USAGE_BILLING_API_MAX_RPS: z.coerce.number().optional().default(5), // max requests per second to Orb API usage endpoint is 10, keeping some margin
 
     // --- Third parties
     // AWS

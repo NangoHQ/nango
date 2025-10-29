@@ -10,7 +10,7 @@ import type { PostPlanChange } from '@nangohq/types';
 
 const logger = getLogger('orb');
 
-const orbIds = plansList.map((p) => p.orbId).filter(Boolean) as string[];
+const orbIds = plansList.map((p) => p.code).filter(Boolean) as string[];
 const validation = z
     .object({
         orbId: z.enum(orbIds as [string, ...string[]])
@@ -48,7 +48,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
-    const newPlan = plansList.find((p) => p.orbId === body.orbId)!;
+    const newPlan = plansList.find((p) => p.code === body.orbId)!;
 
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
@@ -68,7 +68,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.orbId === body.orbId);
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.code === body.orbId);
 
     // -- Upgrade
     if (isUpgrade) {

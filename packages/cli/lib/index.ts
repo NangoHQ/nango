@@ -22,6 +22,7 @@ import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
+import { create } from './services/function-create.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
@@ -138,6 +139,27 @@ program
         await setupAI();
         console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
         return;
+    });
+
+program
+    .command('create')
+    .description('Create a new Nango function scaffold')
+    .option('--sync', 'Create a new sync scaffold')
+    .option('--action', 'Create a new action scaffold')
+    .option('--on-event', 'Create a new on event scaffold')
+    .argument('[integration]', 'Integration name, e.g. "google-calendar"')
+    .argument('[name]', 'Name of the sync/action, e.g. "calendar-events"')
+    .action(async function (this: Command) {
+        const { debug, sync, action, onEvent } = this.opts();
+        const [integration, name] = this.args;
+        const absolutePath = process.cwd();
+
+        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Function creation skipped - detected nango yaml project`));
+            return;
+        }
+        await create({ absolutePath, sync, action, onEvent, integration, name });
     });
 
 program
