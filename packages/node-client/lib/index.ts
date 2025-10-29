@@ -245,6 +245,11 @@ export class Nango {
         connectionId?: string,
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
+        // override method
+        // deprecate this
+        // single object, everything optional, userId, integrationId
+        // remove endUserOrganizationId
+        // TODO which API Endpoint to use?
     ): Promise<GetPublicConnections['Success']> {
         const url = new URL(`${this.serverUrl}/connections`);
         if (connectionId) {
@@ -1071,24 +1076,8 @@ export class Nango {
      * @param sessionProps - The properties for the new session, including end user information
      * @returns A promise that resolves with the created session token and expiration date
      */
-    public async createConnectSession(
-        sessionProps: PostConnectSessions['Body'] & { integration_id?: string; user_id?: string }
-    ): Promise<PostConnectSessions['Success']> {
+    public async createConnectSession(sessionProps: PostConnectSessions['Body']): Promise<PostConnectSessions['Success']> {
         const url = `${this.serverUrl}/connect/sessions`;
-
-        if (sessionProps.integration_id && sessionProps?.['allowed_integrations'] && sessionProps['allowed_integrations'].length > 0) {
-            throw new Error('Cannot specify both integrationId and allowed_integrations');
-        }
-
-        if (sessionProps.integration_id) {
-            sessionProps['allowed_integrations'] = [sessionProps.integration_id];
-            delete sessionProps.integration_id;
-        }
-
-        if (sessionProps.user_id) {
-            sessionProps['end_user'] = { id: sessionProps.user_id };
-            delete sessionProps.user_id;
-        }
 
         const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
         return response.data;

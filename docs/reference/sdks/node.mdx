@@ -1793,15 +1793,6 @@ const { data } = await nango.createConnectSession({
 });
 ```
 
-Additionally you can pass in a single integration and a user_id
-
-```js
-const { data } = await nango.createConnectSession({
-  user_id: '<END-USER-ID>,
-  integration_id: '<INTEGRATION-ID>'
-});
-```
-
 **Parameters**
 
 <Expandable>
@@ -1832,14 +1823,6 @@ const { data } = await nango.createConnectSession({
 
   <ResponseField name="allowed_integrations" type="string[]">
     An array of integration IDs that are allowed for this session.
-  </ResponseField>
-
-  <ResponseField name="integration_id" type="string">
-    An integration that is allowed for this session.
-  </ResponseField>
-
-  <ResponseField name="user_id" type="string">
-    The unique identifier for the end user
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
