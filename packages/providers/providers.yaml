@@ -12608,33 +12608,32 @@ totango:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.subdomain}.totango.com/api
-        retry:
-            after:
-                - 'ratelimit-reset'
+        base_url: https://api.totango.com/api/v3
         headers:
-            app-token ${apiKey}
-            service_id: ${serviceId}
+            app-token: ${apiKey}
+        connection_config:
+            service_id: ${connectionConfig.serviceId}
         verification:
             method: GET
             endpoints:
-                - /v0/me
+                - /v0/activity-types
     docs: https://nango.dev/docs/integrations/all/totango
     docs_connect: https://nango.dev/docs/integrations/all/totango/connect
     credentials:
-        appToken:
+        apiKey:
             type: string
             title: App Token
             description: The App Token for your Totango account
-            doc_section: '#instructions'
-            example: 9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            doc_section: '#step-1-finding-your-app-token'
+            example: '9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b'
+    connection_config:
         serviceId:
             type: string
             title: Service ID
-            description: The Service ID for your Totango account (use only the middle number, e.g., if your service ID is SP-275419-01, use 275419)
-            doc_section: '#instructions'
-            example: 275419
-            pattern: '^[0-9]+$'
+            description: The Service ID for your Totango account
+            doc_section: '#step-2-finding-your-service-id'
+            example: 'SP-275419-01'
+            pattern: '^SP-[0-9]+-[0-9]+$'
 tumblr:
     display_name: Tumblr
     categories:

@@ -18,15 +18,34 @@ This guide will walk you through obtaining your App Token and Service ID within 
 ### Instructions:
 
 #### Step 1: Finding Your App Token
-1. Log in to your [Totango](https://app.totango.com/) account.
-2. Follow instructions [here](https://support.totango.com/hc/en-us/articles/203036939-Personal-Access-Token-and-Service-ID) to get app token and service ID.
 
-#### Step 2: Enter credentials in the Connect UI
+1. Log in to your [Totango](https://app.totango.com/) account.
+2. Click your profile icon and choose **Edit Profile**.
+3. From the **Integration** tab, click **Create Token**.
+4. In the **New Token Details** window, enter the following details:
+   - **Token Name**: Choose a name to identify the token among others within your profile.
+   - **Expiration Time**: Choose from 7, 30, 60, 90 days, no expiration, or custom.
+5. Click **Generate Token**.
+6. Copy the generated token - it will be available to copy and paste directly into the third-party system.
+7. Click **Close**.
+
+<Note>
+Personal access tokens are intended for personal use when writing scripts/applications that access Totango API. Protect them as you protect your password, as they provide the same access to your user account. Do not share them with anyone.
+</Note>
+
+#### Step 2: Finding Your Service ID
+
+1. From within Totango, click your profile icon.
+2. Make note of the service information, which is built out of three parts: **[SP]-[Account Number]-[Instance] = Service ID**.
+3. In the following example, `SP-234164-01` is the service ID.
+4. **Important**: For the Nango integration, use only the middle number from your Service ID. For example, if your Service ID is `SP-234164-01`, use `234164`.
+
+#### Step 3: Enter credentials in the Connect UI
 
 Once you have your **App Token** and **Service ID**:
 1. Open the form where you need to authenticate with Totango.
 2. Enter your **App Token** in the App Token field.
-3. Enter your **Service ID** in the Service ID field.
+3. Enter your **Service ID** (middle number only) in the Service ID field.
 4. Submit the form, and you should be successfully authenticated.
 
 You are now connected to Totango.
