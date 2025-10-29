@@ -1594,6 +1594,54 @@ class ConnectionService {
         return Err(new NangoError('failed_to_get_connections_count'));
     }
 
+    // paginate through all connections
+    // yields batches of connections with their associated account and environment
+    public async *paginateConnections({
+        batchSize = 1000,
+        connectionIds
+    }: {
+        batchSize?: number;
+        connectionIds?: number[];
+    } = {}): AsyncGenerator<Result<{ connection: DBConnectionAsJSONRow; account: DBTeam; environment: DBEnvironment; cursor: number }[]>> {
+        let cursor = 0;
+
+        try {
+            while (true) {
+                const query = db
+                    .readOnly<DBConnection>('_nango_connections')
+                    .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
+                    .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
+                    .select<
+                        { connection: DBConnectionAsJSONRow; account: DBTeam; environment: DBEnvironment; cursor: number }[]
+                    >(db.knex.raw('row_to_json(_nango_connections.*) as connection'), db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'), '_nango_connections.id as cursor')
+                    .where('_nango_connections.deleted', false)
+                    .orderBy('_nango_connections.id', 'asc')
+                    .limit(batchSize);
+
+                if (connectionIds && connectionIds.length > 0) {
+                    query.whereIn('_nango_connections.id', connectionIds);
+                }
+
+                if (cursor > 0) {
+                    query.andWhere('_nango_connections.id', '>', cursor);
+                }
+
+                const results = await query;
+
+                if (results.length === 0) break;
+
+                yield Ok(results);
+
+                cursor = results.at(-1)?.cursor ?? cursor;
+
+                if (results.length < batchSize) break;
+            }
+        } catch (err) {
+            yield Err(new NangoError('failed_to_get_connections', { error: err }));
+            return;
+        }
+    }
+
     /**
      * Note:
      * a billable connection is a connection that is not deleted and has not been deleted during the month

@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { getAccountUsageTracker } from '@nangohq/account-usage';
 import db from '@nangohq/database';
 import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
@@ -22,7 +21,6 @@ import {
     getLastSyncDate,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    productTracking,
     safeGetPlan,
     setLastSyncDate,
     updateSyncJobResult,
@@ -106,21 +104,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation, startedAt));
-
-        const accountUsageTracker = await getAccountUsageTracker();
-        // We stop any sync from running if the active_records limit is reached
-        if (plan && (await accountUsageTracker.shouldCapUsage(plan, 'active_records'))) {
-            const message =
-                'Your monthly limit for active records synced has been reached. No syncs will run until you upgrade your account or the limit resets.';
-            void logCtx.error(message, {
-                usage: await accountUsageTracker.getUsage({ accountId: team.id, metric: 'active_records' }),
-                limit: accountUsageTracker.getLimit(plan, 'active_records')
-            });
-
-            productTracking.track({ name: 'server:resource_capped:active_records', team });
-
-            throw new Error(message);
-        }
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
@@ -677,6 +660,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
 
         const isCancel = task.abortedTask.state === 'CANCELLED';
+        const lastSyncDate = await getLastSyncDate(task.syncId);
         await onFailure({
             connection: {
                 id: task.connection.id,
@@ -704,6 +688,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             endUser: getEndUser.isOk()
                 ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
                 : null,
+            lastSyncDate: lastSyncDate || undefined,
             startedAt: new Date()
         });
         const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
