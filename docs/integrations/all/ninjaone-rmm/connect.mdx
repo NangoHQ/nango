@@ -1,0 +1,63 @@
+---
+title: NinjaOne RMM - How do I link my account?
+sidebarTitle: NinjaOne RMM
+---
+
+# Overview
+
+To authenticate with NinjaOne RMM, you need:
+1. **Client ID** – Your OAuth application's Client ID
+2. **Client Secret** – Your OAuth application's Client Secret
+3. **Scopes** – The access scopes for your application (optional, defaults to all)
+
+This guide walks you through creating an OAuth Client Application in NinjaOne RMM.
+
+### Prerequisites:
+
+- Admin access to your NinjaOne RMM tenant.
+
+### Step 1: Create an OAuth Client Application
+
+1. Log in to your NinjaOne instance at `https://app.ninjarmm.com`.
+2. Navigate to **Administration** > **Apps** > **API**.
+<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_api_menu.png"/>
+3. Click on the **Client App IDs** tab.
+4. Click the **Add** button to open the Application Configuration form.
+5. Select **API Services (machine-to-machine)** as the Application Platform.
+<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_add_client.png"/>
+6. Select the necessary scopes based on your needs:
+   - **Monitoring**: Read-only access to monitoring data and organization structure
+   - **Management**: Modify device and organization information
+   - **Control**: Enable remote access via API
+<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_configure_app.png"/>   
+7. Ensure **Client Credentials** is selected in Allowed Grant Types.
+8. Click **Add** to create the application. You may have to perform a
+   multi-factor authentication step in order to finish adding your new
+   application.
+
+
+### Step 2: Copy your credentials
+
+1. After creating the application, the **Client ID** and **Client Secret** will be displayed.
+2. **Important**: Copy and securely store both values immediately. The Client Secret is only shown once and cannot be retrieved later.
+<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_view_credentials.png"/>
+
+### Step 3: Enter your details in the Connect UI
+
+Once you have the credentials:
+1. Open the form where you need to authenticate with NinjaOne RMM.
+2. Enter the **Client ID** in the appropriate field.
+3. Enter the **Client Secret** in the appropriate field.
+4. (Optional) Enter specific scopes if you don't want all available scopes. Leave empty for default access.
+5. Submit the form to complete the authentication.
+
+<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_connect_form.png"/>
+
+You are now connected to NinjaOne RMM.
+
+## Scopes
+
+NinjaOne RMM supports three main scopes: `monitoring`, `management`, and `control`.
+
+Contrary to NinjaOne RMM's documentation, you _must_ specify at least one valid scope in order to successfully authenticate to
+NinjaOne RMM's API.
