@@ -67,7 +67,7 @@ description: 'Access the Atlassian Government Cloud API in 2 minutes 💨'
   <Tab title="🧑‍💻 OAuth app setup">
     <Steps>
       <Step title="Request access to an AGC developer account">
-        If you don't already have one, request access to [Atlassian Government Cloud instance](https://developer.atlassian.com/platform/framework/agc/guides/get-access-to-agc/) for testing purposes. 
+        If you don't already have one, request access to an [Atlassian Government Cloud instance](https://developer.atlassian.com/platform/framework/agc/guides/get-access-to-agc/) for testing purposes. 
       </Step>
       <Step title="Create a new OAuth 2.0 (3LO) app for Government Cloud">
         1. Go to the [AGC developer console](https://developer.atlassian-us-gov-mod.com/console/).
@@ -155,7 +155,7 @@ description: 'Access the Atlassian Government Cloud API in 2 minutes 💨'
     - When using the Atlassian proxy, note that API requests need to be routed through product-specific paths:
       1. Jira apps use the `/jira/{cloudId}/{api}` endpoint.
       2. Confluence apps use the `/confluence/{cloudId}/{api}` endpoint.
-    - Refresh tokens will expire after 365 days of non-use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+    - Refresh tokens will expire after 365 days of non-use and will expire after 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
     - When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
     
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/atlassian-government-cloud.mdx)</Note>
