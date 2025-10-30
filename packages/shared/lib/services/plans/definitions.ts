@@ -303,3 +303,119 @@ export const plansList: PlanDefinition[] = [
     scaleLegacyPlan,
     growthLegacyPlan
 ];
+
+export function getPlanDefinition(code: PlanDefinition['code']): PlanDefinition | null {
+    const plan = plansList.find((p) => p.code === code);
+    return plan || null;
+}
+export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code']; to: PlanDefinition['code'] }): boolean {
+    // Matrix defining whether moving from one plan to another is a downgrade
+    // true = downgrade, false = not a downgrade
+    // Plan hierarchy: free < starter < growth < enterprise
+    // Account for all possible combinations, not just the acceptable transitions defined in nextPlan/prevPlan (ie: manual changes in billing system)
+    // v2 plans are equivalent to their non-v2 counterparts (lateral moves = not downgrades)
+    // legacy plans are equivalent to their current counterparts (lateral moves = not downgrades)
+    // scale-legacy is positioned between growth and enterprise
+    const downgradeMatrix = {
+        free: {
+            free: false,
+            'starter-v2': false,
+            'growth-v2': false,
+            starter: false,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': false,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        'starter-v2': {
+            free: true,
+            'starter-v2': false,
+            'growth-v2': false,
+            starter: false,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': false,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        'growth-v2': {
+            free: true,
+            'starter-v2': true,
+            'growth-v2': false,
+            starter: true,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': true,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        starter: {
+            free: true,
+            'starter-v2': false,
+            'growth-v2': false,
+            starter: false,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': false,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        growth: {
+            free: true,
+            'starter-v2': true,
+            'growth-v2': false,
+            starter: true,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': true,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        enterprise: {
+            free: true,
+            'starter-v2': true,
+            'growth-v2': true,
+            starter: true,
+            growth: true,
+            enterprise: false,
+            'starter-legacy': true,
+            'scale-legacy': true,
+            'growth-legacy': true
+        },
+        'starter-legacy': {
+            free: true,
+            'starter-v2': false,
+            'growth-v2': false,
+            starter: false,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': false,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        'growth-legacy': {
+            free: true,
+            'starter-v2': true,
+            'growth-v2': false,
+            starter: true,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': true,
+            'scale-legacy': false,
+            'growth-legacy': false
+        },
+        'scale-legacy': {
+            free: true,
+            'starter-v2': true,
+            'growth-v2': true,
+            starter: true,
+            growth: true,
+            enterprise: false,
+            'starter-legacy': true,
+            'scale-legacy': false,
+            'growth-legacy': true
+        }
+    } satisfies Record<PlanDefinition['code'], Record<PlanDefinition['code'], boolean>>;
+    return downgradeMatrix[from][to];
+}

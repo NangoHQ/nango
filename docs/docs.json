@@ -64,8 +64,8 @@
       "destination": "/"
     },
     {
-      "source": "/guides/mcs",
-      "destination": "/guides/use-cases/mcp-server"
+      "source": "/guides/mcp",
+      "destination": "/guides/use-cases/ai-tool-calling"
     },
     {
       "source": "/guides/api-authorization/authorize-in-your-app-default-ui",
@@ -98,6 +98,10 @@
     {
       "source": "/reference/scripts",
       "destination": "/reference/functions"
+    },
+    {
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/guides/use-cases/ai-tool-calling"
     }
   ],
   "navigation": {
@@ -123,11 +127,11 @@
             "group": "Use Cases",
             "pages": [
               "guides/use-cases/api-auth",
+              "guides/use-cases/ai-tool-calling",
               "guides/use-cases/proxy",
               "guides/use-cases/syncs",
               "guides/use-cases/actions",
-              "guides/use-cases/webhooks",
-              "guides/use-cases/mcp-server"
+              "guides/use-cases/webhooks"
             ]
           },
           {
@@ -184,6 +188,13 @@
             ]
           },
           {
+            "group": "AI tool calling",
+            "pages": [
+              "implementation-guides/ai-tool-calling/openai-sdk",
+              "implementation-guides/ai-tool-calling/implement-mcp-server"
+            ]
+          },
+          {
             "group": "Requests Proxy",
             "pages": [
               "implementation-guides/requests-proxy/implement-requests-proxy"
@@ -210,12 +221,6 @@
             "group": "Webhooks",
             "pages": [
               "implementation-guides/webhooks/implement-webhooks"
-            ]
-          },
-          {
-            "group": "MCP Server",
-            "pages": [
-              "implementation-guides/mcp-server/implement-mcp-server"
             ]
           },
           {
