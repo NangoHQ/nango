@@ -1,0 +1,94 @@
+---
+title: Passportal
+sidebarTitle: Passportal
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/passportal/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/passportal/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅  | Passportal account required for API access |
+| Paid test account | ✅ | Passportal account required for testing |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+## Setup guide
+<Steps>
+  <Step title="Create a Passportal account">
+    Sign up for a [Passportal account](https://www.n-able.com/products/passportal) if you don't already have one.
+  </Step>
+  <Step title="Generate API Access Key ID and Secret Access Key">
+    1. Log into your Passportal dashboard
+    2. In the left pane go to **Settings** > **API Keys**
+    3. Click **Create access key**
+    4. View the **Access key ID** then click **Show key** to reveal the **Secret access key**
+    5. Copy both the **Access key ID** and **Secret access key** to a secure location
+    
+    **Important**: The Secret access key is only viewable in the Create access key dialog. After closing this dialog, the Secret access key is no longer accessible.
+    
+    See the [API Key Management guide](https://documentation.n-able.com/passportal/userguide/Content/api/api_key_management.htm) for more details.
+  </Step>
+  <Step title="Generate HMAC Token">
+    You need to create an HMAC-SHA256 token using:
+    - **Plain text message**: Choose a content string (e.g., 'api-content-hash')
+    - **Secret key**: Your Secret access key from the previous step
+    - **Algorithm**: SHA-256
+    
+    You can generate the HMAC token using Python:
+    
+```python
+import hmac
+import hashlib
+
+secret_key = "YOUR_SECRET_ACCESS_KEY"
+content = "api-content-hash"
+hmac_token = hmac.new(secret_key.encode(), content.encode(), hashlib.sha256).hexdigest()
+print(hmac_token)
+```
+
+    Or using an online HMAC generator:
+    1. Use an HMAC generator (many are available online)
+    2. Enter your chosen content string as the message
+    3. Enter your Secret access key as the key
+    4. Select SHA-256 as the algorithm
+    5. Generate the HMAC hash in hexadeciaml form
+    6. Store the HMAC token securely
+
+    _Note: online HMAC generators are not recommended - what if the website has been secretly compromised?_
+
+    See the [Create HMAC Token guide](https://documentation.n-able.com/passportal/userguide/Content/api/api_create_hmac.htm) for more details.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+## Useful links
+
+- [Passportal API Documentation](https://documentation.n-able.com/passportal/userguide/Content/api/api_information.htm)
+- [API Key Management Guide](https://documentation.n-able.com/passportal/userguide/Content/api/api_key_management.htm)
+- [Create HMAC Token Guide](https://documentation.n-able.com/passportal/userguide/Content/api/api_create_hmac.htm)
+- [Generate API Access Token](https://documentation.n-able.com/passportal/userguide/Content/api/api_authorization.htm)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/passportal.mdx)</Note>
+
+## API gotchas
+
+- Passportal uses instance-specific base URLs. Example: `mycompany.mypasswordapp.com` or `instance.passportalmsp.com`
+- Authentication requires a POST request to `/api/v2/auth/client_token` with the API Access Key ID in the `x-key` header
+- The `x-hash` header must contain a pre-generated HMAC-SHA256 token (hash of content string, base64 encoded)
+- Generate your HMAC token offline before configuring the integration
+- You must provide the same content string that was used to generate the HMAC token in the request body
+- The token request must include `scope: "docs_api"` in the body
+- The access token expires and should be refreshed using the provided refresh token
+- All API requests must include the access token in the Authorization Bearer header
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/passportal.mdx)</Note>
