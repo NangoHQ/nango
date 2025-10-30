@@ -140,7 +140,7 @@ description: 'Access the Atlassian Government Cloud API in 2 minutes 💨'
     - To [use](https://developer.atlassian.com/platform/framework/agc/why-agc/) the AGC, a customer or entity must be a United States government agency or contractor/vendor working with the United States government.
     - When connecting to Atlassian Government Cloud, you have two options for specifying which site to connect to:
       1. Provide a `Subdomain` during connection creation (recommended)
-      2. Let Nango auto-select the first available site: If no `Subdomain` is specified, Nango will use the first site from the accessible resources api.
+      2. Let Nango auto-select the first available site: If no `Subdomain` is specified, Nango will use the first site from the accessible resources API.
 
     ```ts
     const response = await nango.get({
@@ -151,11 +151,11 @@ description: 'Access the Atlassian Government Cloud API in 2 minutes 💨'
 
     - A single Atlassian OAuth token can grant access to multiple Atlassian products and sites. For example, the same token might grant access to both "myorg-gov.atlassian.net" and "myorg-test-gov.atlassian.net". This is why specifying the `Subdomain` during connection creation is important if you need to connect to a specific site.
 
-    - The `cloudId` is required when making requests to the Jira or Confluence Cloud REST APIs through the global Atlassian domain (https://api.atlassian.com) using [OAuth 2.0 (3LO)](https://developer.atlassian.com/cloud/jira/platform/rest/v2/intro/#other-integrations). Nango handles getting this automatically by matching it to your specified `subdomain` if provided, or by selecting the first available site if it is not. You will then need to construct your Nango integration's `endpoint` respectively. 
+    - The `cloudId` is required when making requests to the Jira or Confluence Cloud REST APIs through the global Atlassian domain (https://api.atlassian.com) using [OAuth 2.0 (3LO)](https://developer.atlassian.com/cloud/jira/platform/rest/v2/intro/#other-integrations). Nango handles getting this automatically by matching it to your specified `subdomain` if provided, or by selecting the first available site if it is not. You will then need to construct your Nango integration's `endpoint` accordingly. 
     - When using the Atlassian proxy, note that API requests need to be routed through product-specific paths:
       1. Jira apps use the `/jira/{cloudId}/{api}` endpoint.
       2. Confluence apps use the `/confluence/{cloudId}/{api}` endpoint.
-    - Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+    - Refresh tokens will expire after 365 days of non-use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
     - When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
     
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/atlassian-government-cloud.mdx)</Note>
