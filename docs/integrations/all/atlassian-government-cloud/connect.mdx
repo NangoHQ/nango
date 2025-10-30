@@ -1,0 +1,38 @@
+---
+title: Atlassian Government Cloud - How do I link my account?
+sidebarTitle: Atlassian Government Cloud
+---
+
+# Overview
+
+To authenticate with Atlassian Government Cloud, you need:
+1. **Subdomain (Optional)** - Your Atlassian Government Cloud site subdomain.
+
+<Note>
+The **Subdomain** is optional. If not provided, Nango will automatically select the first available site from your accessible resources. However, if you have access to multiple sites, it's recommended to specify the subdomain to ensure you connect to the correct one.
+</Note>
+
+This guide will walk you through finding your subdomain and connecting to Atlassian Government Cloud.
+
+### Prerequisites:
+
+- You must have an Atlassian Government Cloud account.
+
+### Instructions:
+
+#### Step 1: Finding Your Subdomain
+
+1. Log in to your Atlassian Government Cloud instance.
+2. Check the address bar in your browser.
+3. Your subdomain is the part between `https://` and `.atlassian-us-gov-mod.net`. For example, if your URL is `https://acme.atlassian-us-gov-mod.net`, your subdomain is `acme`.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Subdomain**:
+1. Open the form where you need to authenticate with Atlassian Government Cloud.
+2. Enter your **Subdomain** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/atlassian-government-cloud/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Atlassian Government Cloud.
