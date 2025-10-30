@@ -17,6 +17,7 @@ import type {
 } from './types.js';
 import type {
     ApiKeyCredentials,
+    ApiPublicConnection,
     ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
@@ -731,6 +732,30 @@ export class Nango {
         const response = await this.http.put(url, body, { headers: this.enrichHeaders() });
 
         return response.data;
+    }
+
+    /**
+     * Wait for connection to be created
+     * @param integrationKey - The integration key
+     * @param userId - The user ID
+     * @returns A promise that resolves when the connection is created
+     */
+    public async waitForConnection(integrationKey: string, userId: string): Promise<ApiPublicConnection> {
+        const maxAttempts = 30;
+        const delayBetweenAttemptsMs = 2000;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const response = await this.listConnections(undefined, undefined, { endUserId: userId, endUserOrganizationId: undefined });
+            const connection = response.connections.find((conn) => conn.provider_config_key === integrationKey);
+
+            if (connection) {
+                return connection;
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, delayBetweenAttemptsMs));
+        }
+
+        throw new Error('Timeout waiting for connection to be created');
     }
 
     /**
