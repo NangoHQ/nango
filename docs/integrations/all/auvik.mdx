@@ -1,0 +1,46 @@
+---
+title: Auvik
+sidebarTitle: Auvik
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/auvik/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/auvik/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Required | Auvik account required for API access |
+| Paid test account | ✅ Required | Auvik account required for testing |
+| Partnership | ❌ Not required | |
+| App review | ❌ Not required | |
+| Security audit | ❌ Not required | |
+
+## Setup guide
+
+- Follow the [instructions in Auvik's API documentation](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate)
+- Follow the [_Quickstart_](/getting-started/quickstart).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## Useful links
+
+- [Auvik API Documentation](https://auvikapi.us1.my.auvik.com/docs)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+
+## API gotchas
+
+- Auvik uses Basic authentication with username and API key. Your API key is _not_ the password associated with your username.
+  Follow [Auvik's instructions](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate)
+  to generate an API key for your account.
+- When you generate an Auvik API key, it will only be visible once. Make sure you store it securely as soon as you generate it.
+- Make sure to use the correct regional API endpoint (us1, us2, eu1, etc.) based on your account region. You can find your Region
+  by logging into your Auvik account on the web and checking the address bar. You should seem something like
+  https://yourtenantname.us2.my.auvik.com/#msp/root/clients. In this case, your region would be `us2`.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>

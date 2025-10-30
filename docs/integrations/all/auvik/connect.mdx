@@ -1,0 +1,58 @@
+---
+title: Auvik - How do I link my account?
+sidebarTitle: Auvik
+---
+
+# Overview
+
+To authenticate with Auvik, you need:
+1. **Username** – Your Auvik account username (usually your email address).
+2. **API Key** – Your Auvik API key (separate from your password).
+3. **Region** – Your Auvik region (e.g., `us1`, `us2`, `eu1`). This determines your API base URL like `https://auvikapi.<region>.my.auvik.com`.
+
+This guide walks you through generating an API key and finding your region in Auvik.
+
+### Prerequisites:
+
+- Optional: create a new, separate Auvik account within your organization to hold your API Key
+  so that this key is not tied to any one individual. Auvik documentation refers to this as
+  setting up a ["service account."](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate)
+- Access to your Auvik account with API permissions.
+
+### Step 1: Generate an API Key
+
+1. Log in to your Auvik dashboard.
+2. Scroll to the bottom of the left-hand nav. Look for your account's name and click to view and edit your profile.
+<img src="/integrations/all/auvik/auvik-left-nav.png" style={{maxWidth: "450px" }}/>
+3. Under the **API Key** section, click **Generate**.
+<img src="/integrations/all/auvik/auvik-edit-profile.png" style={{maxWidth: "450px" }}/>
+4. Copy and securely store your **API Key** – this is separate from your password and will be used for API authentication.
+<img src="/integrations/all/auvik/auvik-api-key-modal.png" style={{maxWidth: "450px" }}/>
+5. Your **Username** is the email address associated with your Auvik account.
+
+See: [Auvik API Documentation](https://auvikapi.us1.my.auvik.com/docs)
+
+### Step 2: Determine your region
+
+Your region is visible in your browser's address bar when you're logged into the Auvik web UI:
+
+- If your URL is `https://yourcompany.us1.my.auvik.com/...` → Your region is `us1`
+- If your URL is `https://yourcompany.us2.my.auvik.com/...` → Your region is `us2`
+- If your URL is `https://yourcompany.eu1.my.auvik.com/...` → Your region is `eu1`
+
+Common regions:
+- `us1` → `https://auvikapi.us1.my.auvik.com`
+- `us2` → `https://auvikapi.us2.my.auvik.com`
+- `eu1` → `https://auvikapi.eu1.my.auvik.com`
+
+### Step 3: Enter your details in the Connect UI
+
+Once you have your **Username**, **API Key**, and **Region**:
+1. Open the form where you connect to Auvik.
+2. Enter your **Username** (email address).
+3. Enter your **API Key**.
+4. Enter your **Region** (e.g., `us2`).
+5. Click **Connect**.
+
+You are now connected to Auvik.
+

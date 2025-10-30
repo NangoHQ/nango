@@ -1245,6 +1245,40 @@ auth0-cc:
             optional: true
             doc_section: '#step-4-finding-your-organization'
 
+auvik:
+    display_name: Auvik
+    categories:
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://auvikapi.${connectionConfig.region}.my.auvik.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/authentication/verify
+    credentials:
+        username:
+            type: string
+            title: User Name / Account Email
+            description: Auvik User Name (usually an individual user's email address)
+            doc_section: '#step-1-generate-an-api-key'
+        password:
+            type: string
+            title: API Key
+            description: Auvik API Key (separate from the user's password)
+            secret: true
+            doc_section: '#step-1-generate-an-api-key'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI)
+            example: us2
+            pattern: '^[a-z0-9-]+$'
+            doc_section: '#step-2-determine-your-region'
+    docs: https://nango.dev/docs/integrations/all/auvik
+    docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
+
 avalara:
     display_name: Avalara
     categories:
