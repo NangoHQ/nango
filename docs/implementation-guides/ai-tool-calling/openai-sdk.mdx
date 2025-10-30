@@ -82,3 +82,7 @@ function waitForEnter(prompt: string) {
   return new Promise<void>((resolve) => rl.question(prompt, () => { rl.close(); resolve(); }));
 }
 ```
+
+<Tip>
+  You can let agents/models introspect & select tools autonomously with this [endpoint](/reference/api/scripts/config).
+</Tip>

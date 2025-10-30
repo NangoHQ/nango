@@ -1,6 +1,6 @@
 ---
-title: 'AI Tool Calling'
-sidebarTitle: 'AI Tool Calling'
+title: 'AI tool calling'
+sidebarTitle: 'AI tool calling'
 description: 'Connect your AI agents and workflows to the real world.'
 ---
 
@@ -34,11 +34,13 @@ For RAG-style use cases where data must be replicated locally, use [Syncs](/guid
 - **Unified API auth:** Securely authorize access to third-party APIs via Nango’s [Auth](/guides/use-cases/api-auth) system.  
   You can even surface [Connect Links](/reference/api/connect/sessions/create#response-data-connect-link) directly in your chat UI for user-driven OAuth.
 - **Tool execution via Actions:**  
-  Tools in Nango are powered by [Actions](/guides/use-cases/actions).  
+  - Tools in Nango are powered by [Actions](/guides/use-cases/actions).  
   - Use prebuilt templates for common tools (e.g. “Create Lead”, “Send Message”).  
   - Or build your own Actions for full control and reliability.
+  - Autonomous tool introspection & selection ([reference](/reference/api/scripts/config))
 - **MCP-compatible:**  
   - Expose your integrations through Nango’s built-in MCP Server.  
+  - Follow our [implement the MCP Server](/implementation-guides/ai-tool-calling/implement-mcp-server) guide.
   - Check out the [MCP server demo](https://www.youtube.com/embed/80W3AZMM9KY)
   - Connect to existing official MCP servers (e.g. Notion, Linear) with Nango's MCP auth.
 - **Secure, scalable, and observable:**  
