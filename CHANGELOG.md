@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.6] - 2025-10-30
+
+### Added
+
+- *(oauth2)* Allow tokenurl interpolation from redirect url metadata (#4804) by @hassan254-prog
+- *(webapp)* Redesign UsageCard (#4884) by @kaposke
+- *(webhooks)* Add support for shopify-api-key webhooks (#4903) by @hassan254-prog
+- *(integrations)* Add support for pennylane-company-api (#4848) by @hassan254-prog
+- Add docs about retrieval of sharepoint specific access token (#4835) by @hassan254-prog
+- *(integrations)* Add support for aimfox oauth (#4888) by @hassan254-prog
+- *(integrations)* Add support for microsoft admin (#4904) by @hassan254-prog
+- *(server)* V2 plan definitions (#4906) by @kaposke
+- Hide usage for old plans (#4917) by @kaposke
+- *(cli-create-command)* New create command for zeroyaml in the cli (#4892) by @khaliqgant
+- *(integrations)* Add support for sap fieldglass (#4907) by @hassan254-prog
+- *(integrations)* Add support for sap business one (#4911) by @hassan254-prog
+- *(integrations)* Add support for momentum-io (#4914) by @hassan254-prog
+- *(ui-copy)* Add copy button and allow pasting (#4916) by @khaliqgant
+- Add breaking changelog entry about log ingestion (#4933) by @bastienbeurier
+
+### Changed
+
+- *(usage)* Revalidate connections and records usage metrics in cache (#4898) by @TBonnin
+- *(usage)* Revalidate billing metrics from orb (#4910) by @TBonnin
+- Delete old usage tracking / capping (#4918) by @kaposke
+- Slack api gotchas (#4921) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Add AI tool calling use case (#4909) by @bastienbeurier
+- Address OpenAI SDK implement guide PR comments + standardize page capitalization (#4936) by @bastienbeurier
+
+### Fixed
+
+- *(docs)* Status not status_code (#4899) by @khaliqgant
+- *(deploy)* Concurrency issue (#4894) by @khaliqgant
+- *(runner)* Optionally set datadog profiling for runners (#4900) by @rossmcewan
+- *(providers)* Use api_domain as zoho base_url fallback (#4901) by @hassan254-prog
+- *(runner)* Be more explicit with the runner sizing (#4905) by @rossmcewan
+- *(providers)* Fix intercom url (#4908) by @hassan254-prog
+- When a sync expires, webhook says type = INITIAL (#4912) by @TBonnin
+- *(record count)* Do not count records from deleted connections (#4919) by @TBonnin
+- *(usage)* Don't overwrite records/connections with orb metrics (#4924) by @TBonnin
+- *(server)* Set keep-alive and header timeouts (#4925) by @rossmcewan
+- Records count reporting logic to account for all models/variants (#4926) by @TBonnin
+- *(providers)* Use dynamic value for base_url in Medallia (#4922) by @hassan254-prog
+- Do not push self-hosted image on PR build (#4929) by @TBonnin
+
 ## [v0.69.5] - 2025-10-22
 
 ### Added
@@ -5176,6 +5222,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
 [v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5
 [v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
 [v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
