@@ -9128,8 +9128,12 @@ pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
+    webhook_routing_script: pagerdutyWebhookRouting
     proxy:
         base_url: https://api.pagerduty.com
+        retry:
+            after:
+                - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
 
 pandadoc:
