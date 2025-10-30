@@ -8025,29 +8025,41 @@ medallia:
         retry:
             after:
                 - 'x-ratelimit-reset'
-        base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
+        base_url: https://${connectionConfig.apiHostUrl} || https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://nango.dev/docs/integrations/all/medallia
     docs_connect: https://nango.dev/docs/integrations/all/medallia/connect
     connection_config:
         reportingInstance:
             type: string
             title: Domain
-            description: The domain of your Medallia account
+            description: The base domain for your Medallia instance
             format: hostname
             prefix: https://
-            doc_section: '#step-3-connect-your-medallia-account'
+            suffix: /oauth
+            example: instance.medallia.com
+            order: 1
+            doc_section: '#step-2-identifying-your-domain'
         tenantName:
             type: string
             title: Tenant Name
             description: The tenant name of your Medallia account
-            doc_section: '#step-3-connect-your-medallia-account'
-        gatewayUrl:
+            order: 2
+            example: acme
+            doc_section: '#step-3-identifying-your-tenant-name'
+        apiHostUrl:
             type: string
-            title: Gateway URL
-            description: The gateway URL of your Medallia account
+            title: API Host URL
+            description: The base API endpoint (gateway URL) for your Medallia account
             format: hostname
             prefix: https://
-            doc_section: '#step-3-connect-your-medallia-account'
+            order: 3
+            example: fo-acme.apis.medallia.eu
+            doc_section: '#step-4-identifying-your-api-host-url'
+        gatewayUrl:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of apiHostUrl
 
 metabase:
     display_name: Metabase
