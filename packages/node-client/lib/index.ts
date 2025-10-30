@@ -17,7 +17,6 @@ import type {
 } from './types.js';
 import type {
     ApiKeyCredentials,
-    ApiPublicConnection,
     ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
@@ -332,27 +331,6 @@ export class Nango {
     ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshToken, refreshGithubAppJwtToken });
         return response.data;
-    }
-
-    /**
-     * Returns a connection object given an user id
-     * @param userId - The user ID used to create the connection
-     * @returns A promise that resolves with a connection object
-     */
-    public async checkConnection(userId: string): Promise<ApiPublicConnection> {
-        const response = await this.listConnections(undefined, undefined, { endUserId: userId });
-
-        if (response.connections.length === 0) {
-            throw new Error(`No connection found for user ID: ${userId}`);
-        }
-
-        const [connection] = response.connections;
-
-        if (!connection) {
-            throw new Error(`No connection found for user ID: ${userId}`);
-        }
-
-        return connection;
     }
 
     /**
