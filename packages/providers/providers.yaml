@@ -916,6 +916,28 @@ apaleo:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/apaleo
 
+apify:
+    display_name: Apify
+    categories:
+        - dev-tools
+        - analytics
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.apify.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/apify
+    docs_connect: https://nango.dev/docs/integrations/all/apify/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Apify account
+            example: apify_api_***************************nt4w
+            pattern: '^apify_api_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 apollo:
     display_name: Apollo (API Key)
     categories:
