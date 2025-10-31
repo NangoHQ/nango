@@ -8939,6 +8939,30 @@ one-note:
     alias: microsoft
     docs: https://nango.dev/docs/integrations/all/one-note
 
+onelogin:
+    display_name: OneLogin
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.onelogin.com/auth/oauth2/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.onelogin.com
+    pre_connection_deletion_script: oneloginPreConnectionDeletion
+    docs: https://nango.dev/docs/integrations/all/onelogin
+    docs_connect: https://nango.dev/docs/integrations/all/onelogin/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your OneLogin subdomain
+            example: acme
+            order: 1
+            prefix: https://
+            suffix: .onelogin.com
+            doc_section: '#step-1-finding-your-subdomain'
+
 openai:
     display_name: OpenAI
     categories:

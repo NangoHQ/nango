@@ -31,3 +31,4 @@ export { default as skioCredentialsVerification } from './providers/skio/credent
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';
 export { default as onedrivePostConnection } from './providers/one-drive/post-connection.js';
+export { default as oneloginPreConnectionDeletion } from './providers/onelogin/pre-connection-deletion.js';
