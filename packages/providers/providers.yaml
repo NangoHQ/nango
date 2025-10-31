@@ -12159,6 +12159,30 @@ stackexchange:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
 
+statista:
+    display_name: Statista
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.statista.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/statistics?q=*
+    docs: https://nango.dev/docs/integrations/all/statista
+    docs_connect: https://nango.dev/docs/integrations/all/statista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Statista account
+            example: c5c28261f9ade4e34891ccf761491b94
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
