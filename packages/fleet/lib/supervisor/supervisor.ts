@@ -342,7 +342,9 @@ export class Supervisor {
                 image: nodeConfigOverrideValue.image || newNodeConfig.image,
                 cpuMilli: nodeConfigOverrideValue.cpuMilli || newNodeConfig.cpuMilli,
                 memoryMb: nodeConfigOverrideValue.memoryMb || newNodeConfig.memoryMb,
-                storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb
+                storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
+                isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
+                isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled
             };
         }
 
@@ -352,7 +354,9 @@ export class Supervisor {
             image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,
             memoryMb: newNodeConfig.memoryMb,
-            storageMb: newNodeConfig.storageMb
+            storageMb: newNodeConfig.storageMb,
+            isTracingEnabled: newNodeConfig.isTracingEnabled,
+            isProfilingEnabled: newNodeConfig.isProfilingEnabled
         });
     }
 

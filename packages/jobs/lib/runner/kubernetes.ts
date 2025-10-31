@@ -455,7 +455,9 @@ export const kubernetesNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
         memoryMb: 512,
-        storageMb: 20000
+        storageMb: 20000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();

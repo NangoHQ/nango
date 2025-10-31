@@ -12,4 +12,6 @@ export interface NodeConfig {
     readonly cpuMilli: number;
     readonly memoryMb: number;
     readonly storageMb: number;
+    readonly isTracingEnabled: boolean;
+    readonly isProfilingEnabled: boolean;
 }
