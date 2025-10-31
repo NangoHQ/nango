@@ -1,0 +1,50 @@
+---
+title: OneLogin - How do I link my account?
+sidebarTitle: OneLogin
+---
+
+# Overview
+
+To authenticate with OneLogin using OAuth2 Client Credentials, you need:
+1. **Subdomain** - Your OneLogin account subdomain.
+2. **Client ID** - A unique identifier for your API Credential Pair.
+3. **Client Secret** - A confidential key used to authenticate your API Credential Pair.
+
+This guide will walk you through generating these credentials within OneLogin.
+
+### Prerequisites:
+
+- You must have a OneLogin account with administrator access.
+
+### Instructions:
+
+#### Step 1: Finding Your Subdomain
+
+1. Log in to your OneLogin account.
+2. Look at the browser’s address bar at the top of the page.
+3. Your **Subdomain** is the value between `https://` and `.onelogin.com`. If you're logged in and the URL in your browser is: `https://acme.onelogin.com/portal`, your subdomain is `acme`.
+
+
+#### Step 2: Generating API Credentials
+
+1. Log in to your OneLogin Admin Console as an account owner or administrator.
+2. Navigate to **Developers** > **API Credentials**.
+<img src="/integrations/all/onelogin/api_credentials.png"/>
+3. On the API Access page, click the **New Credential** button in the top right.
+<img src="/integrations/all/onelogin/new_credentials.png"/>
+4. Give your credentials a meaningful **Name**, select the appropriate **Scope** for your integration and click **Save** to generate your client credentials.
+<img src="/integrations/all/onelogin/create_credentials_form.png"/>
+
+<img src="/integrations/all/onelogin/generated_credentials.png"/>
+
+
+#### Step 3: Enter Credentials in the Connect UI
+
+Once you have your **Subdomain**, **Client ID** and **Client Secret**:
+1. Open the form where you need to authenticate with OneLogin.
+2. Enter your **Subdomain**, **Client ID** and **Client Secret** in their respective fields. 
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/onelogin/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to OneLogin.
