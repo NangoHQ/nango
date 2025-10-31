@@ -33,6 +33,7 @@ const fr: Translation = {
         popupWarning: "Une fenêtre pop-up va s'ouvrir, veuillez vous assurer que votre navigateur ne bloque pas les pop-ups",
         popupBlocked: "La fenêtre d'authentification a été bloquée par votre navigateur, veuillez autoriser les pop-ups",
         popupClosed: "La fenêtre d'authentification a été fermée avant la fin du processus, veuillez réessayer",
+        closeTab: 'Vous pouvez maintenant fermer cet onglet.',
         invalidCredentials: "{provider} n'a pas validé vos identifiants. Veuillez vérifier les valeurs et réessayer.",
         resourceCapped: "Vous avez atteint le nombre maximum de connexions autorisées. Veuillez contacter l'administrateur.",
         invalidPreconfigured: "Un champ préconfiguré par l'administrateur n'est pas valide, veuillez contacter le support"

@@ -88,27 +88,35 @@ export async function getRecordStatsByModel({
     }
 }
 
-export async function metrics(): Promise<Result<{ environmentId: number; count: number; sizeBytes: number }[]>> {
-    try {
-        const res = await db
-            .from(RECORD_COUNTS_TABLE)
-            .select<
-                { environment_id: number; count: number; size_bytes: number }[]
-            >('environment_id', db.raw('SUM(count) as count'), db.raw('SUM(size_bytes) as size_bytes'))
-            .groupBy('environment_id')
-            .having(db.raw('sum(size_bytes) > 0 OR sum(count) > 0')); // only return entries with records
+export async function* paginateRecordCounts({
+    environmentIds,
+    batchSize = 1000
+}: {
+    environmentIds?: number[];
+    batchSize?: number;
+} = {}): AsyncGenerator<Result<RecordCount[]>> {
+    let offset = 0;
 
-        if (!res) {
-            return Err(new Error(`Failed to count records`));
+    try {
+        while (true) {
+            // TODO: optimize with cursor pagination
+            const query = db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
+            if (environmentIds && environmentIds.length > 0) {
+                query.whereIn('environment_id', environmentIds);
+            }
+            const results = await query;
+
+            if (results.length === 0) break;
+
+            yield Ok(results);
+            offset += results.length;
+
+            if (results.length < batchSize) break;
         }
-        const metrics = res.map((r) => ({
-            environmentId: r.environment_id,
-            count: Number(r.count),
-            sizeBytes: Number(r.size_bytes)
-        }));
-        return Ok(metrics);
-    } catch {
-        return Err(new Error(`Failed to count records`));
+        return Ok([]);
+    } catch (err) {
+        yield Err(new Error(`Failed to fetch record counts: ${String(err)}`));
+        return;
     }
 }
 

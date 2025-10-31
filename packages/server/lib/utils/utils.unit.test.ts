@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAdditionalAuthorizationParams, parseConnectionConfigParamsFromTemplate } from './utils.js';
+import { getAdditionalAuthorizationParams, missesInterpolationParam, parseConnectionConfigParamsFromTemplate } from './utils.js';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
@@ -180,5 +180,37 @@ describe('Utils unit tests', () => {
         expect(result).toEqual({});
         result = getAdditionalAuthorizationParams(undefined);
         expect(result).toEqual({});
+    });
+});
+
+describe('missesInterpolationParam', () => {
+    it('Should return false when single string is fully interpolated', () => {
+        const template = 'https://api.${region}.example.com';
+        const replacers = { region: 'us-east-1' };
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return true when single string has missing param', () => {
+        const template = 'https://api.${region}.example.com';
+        const replacers = {};
+        expect(missesInterpolationParam(template, replacers)).toBe(true);
+    });
+
+    it('Should return false when fallback is used (first part missing, fallback complete)', () => {
+        const template = 'https://api.${region}.example.com || https://api.example.com';
+        const replacers = {};
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return false when first part is interpolated (fallback ignored)', () => {
+        const template = 'https://api.${region}.example.com || https://api.fallback.com';
+        const replacers = { region: 'eu' };
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return false when no interpolation needed', () => {
+        const template = 'https://api.example.com';
+        const replacers = {};
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
     });
 });

@@ -1,15 +1,12 @@
-import { getAccountUsageTracker, onUsageIncreased } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
-import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
-import { connectionService, getPlan } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
 import type { Usage } from '@nangohq/account-usage';
 import type { Transport, UsageEvent } from '@nangohq/pubsub';
-import type { AccountUsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -53,11 +50,6 @@ export class BillingProcessor {
                     }
                     const mar = event.payload.value;
                     metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId: event.payload.properties.accountId });
-                    await trackUsage({
-                        accountId: event.payload.properties.accountId,
-                        metric: 'active_records',
-                        delta: mar
-                    });
 
                     return billing.add([
                         {
@@ -83,11 +75,6 @@ export class BillingProcessor {
                     return Ok(undefined); // No billing action for records, just tracking usage
                 }
                 case 'usage.actions': {
-                    await trackUsage({
-                        accountId: event.payload.properties.accountId,
-                        metric: 'actions',
-                        delta: event.payload.value
-                    });
                     return billing.add([
                         {
                             type: 'billable_actions',
@@ -101,16 +88,20 @@ export class BillingProcessor {
                     ]);
                 }
                 case 'usage.connections': {
-                    await trackUsage({
-                        accountId: event.payload.properties.accountId,
-                        metric: 'connections',
-                        delta: event.payload.value
-                    });
+                    const accountId = event.payload.properties.accountId;
+                    const value = event.payload.value;
                     await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'connections',
-                        delta: event.payload.value
+                        delta: value,
+                        forceRevalidation: value < 0 // force revalidation when connections are being deleted
                     });
+
+                    // also revalidate records usage metric immediately when connections are being deleted
+                    if (value < 0) {
+                        await this.usageTracker.revalidate({ accountId, metric: 'records' });
+                    }
+
                     // No billing action for connections, just tracking usage
                     return Ok(undefined);
                 }
@@ -253,32 +244,5 @@ export class BillingProcessor {
         } catch (err) {
             return Err(`Error processing billing event: ${stringifyError(err)}`);
         }
-    }
-}
-
-/** @deprecated legacy **/
-async function trackUsage({ accountId, metric, delta }: { accountId: number; metric: AccountUsageMetric; delta: number }): Promise<void> {
-    try {
-        if (metric !== 'connections') {
-            const accountUsageTracker = await getAccountUsageTracker();
-            await accountUsageTracker.incrementUsage({
-                accountId,
-                metric,
-                delta
-            });
-        }
-
-        const plan = await getPlan(db.knex, { accountId });
-        if (plan.isErr()) {
-            throw new Error(`Failed to get plan for account ${accountId}: ${plan.error.message}}`);
-        }
-        await onUsageIncreased({
-            accountId,
-            metric,
-            delta,
-            plan: plan.value
-        });
-    } catch (err) {
-        report(new Error('Failed to track usage', { cause: err }), { accountId, metric, delta });
     }
 }

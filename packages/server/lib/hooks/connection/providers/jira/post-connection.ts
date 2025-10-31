@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { getLogger } from '@nangohq/utils';
 
+import type { ConfluenceUser, JiraSite, JiraUser } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
 
 const logger = getLogger('post-connection:jira');
@@ -10,27 +11,30 @@ export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const connectionConfig = connection.connection_config || {};
 
-    const response = await nango.proxy({
+    const response = await nango.proxy<JiraSite[]>({
         endpoint: `oauth/token/accessible-resources`,
         providerConfigKey: connection.provider_config_key
     });
 
-    if (axios.isAxiosError(response) || !response || !response.data || response.data.length === 0 || !response.data[0].id) {
+    if (axios.isAxiosError(response) || !response || !response.data || response.data.length === 0 || !response.data[0]?.id) {
         return;
     }
 
-    // If baseUrl is provided, find the matching site
-    let site = response.data[0]; // Default to first site
+    // If subdomain is provided, find the matching site
+    let site: JiraSite | undefined = response.data[0]; // Default to first site
 
-    if (connectionConfig['baseUrl']?.length) {
-        const providedBaseUrl = connectionConfig['baseUrl'];
+    if (connectionConfig['subdomain']?.length) {
+        const providedBaseUrl = connectionConfig['subdomain'].toLowerCase();
 
-        const matchingSite = response.data.find((s: any) => {
-            return s.url.includes(providedBaseUrl) || (s.name && s.name === providedBaseUrl) || s.url === providedBaseUrl;
+        const exactMatch = response.data.find((s: JiraSite) => {
+            const urlSubdomain = s.url.match(/^https?:\/\/([^./]+)/)?.[1]?.toLowerCase();
+            return urlSubdomain === providedBaseUrl;
         });
 
-        if (matchingSite) {
-            site = matchingSite;
+        const partialMatch = exactMatch ?? response.data.find((s: JiraSite) => s.name?.toLowerCase().includes(providedBaseUrl));
+
+        if (partialMatch) {
+            site = partialMatch;
         }
     }
 
@@ -44,13 +48,13 @@ export default async function execute(nango: Nango) {
     // we are making calls to endpoints that require certain scopes. Wrap these
     // calls in a try/catch to avoid breaking the connection if the scopes are not available.
     try {
-        const accountResponse = await nango.proxy({
+        const accountResponse = await nango.proxy<JiraUser | ConfluenceUser>({
             // jira: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
             // confluence https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-users/#api-wiki-rest-api-user-current-get
             endpoint,
             providerConfigKey: connection.provider_config_key
         });
-        accountId = accountResponse && !axios.isAxiosError(accountResponse) ? accountResponse.data?.accountId : null;
+        accountId = accountResponse && !axios.isAxiosError(accountResponse) ? (accountResponse.data?.accountId ?? null) : null;
     } catch {
         logger.warning('Failed to fetch account ID from Jira/Confluence API. This may be due to insufficient scopes or permissions.');
     }

@@ -10,23 +10,32 @@ interface HeaderButtonsProps extends React.HTMLAttributes<HTMLDivElement> {
     onClickClose?: () => void;
     backLink?: string;
     onClickBack?: () => void;
+    isAuthLink?: boolean;
 }
 
-export const HeaderButtons: React.FC<HeaderButtonsProps> = ({ onClickClose = () => triggerClose('click:close'), backLink, onClickBack, ...props }) => {
+export const HeaderButtons: React.FC<HeaderButtonsProps> = ({
+    onClickClose = () => triggerClose('click:close'),
+    backLink,
+    onClickBack,
+    isAuthLink,
+    ...props
+}) => {
     const { t } = useI18n();
 
     return (
-        <header {...props} className={cn('flex justify-end', onClickBack && 'justify-between', props.className)}>
+        <header {...props} className={cn('flex justify-end', backLink && 'justify-between', props.className)}>
             {backLink && (
                 <Link to={backLink} onClick={onClickBack}>
                     <Button size={'icon'} title={t('common.back')} variant={'transparent'}>
-                        <ArrowLeft className="w-4 h-4 mr-1" /> {t('common.back')}
+                        <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
                     </Button>
                 </Link>
             )}
-            <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={onClickClose}>
-                <X className="w-4 h-4" />
-            </Button>
+            {!isAuthLink && (
+                <Button size={'icon'} title={t('common.close')} variant={'transparent'} onClick={onClickClose}>
+                    <X className="w-4 h-4" />
+                </Button>
+            )}
         </header>
     );
 };

@@ -20,7 +20,8 @@ const validationBody = z
         unique_key: providerConfigKeySchema.optional(),
         display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        custom: z.record(z.string(), z.string()).optional()
     })
     .strict();
 
@@ -90,6 +91,14 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         integration.forward_webhooks = body.forward_webhooks;
     }
 
+    if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
+        const custom: Record<string, string> = body.custom as Record<string, string>;
+        integration.custom = {
+            ...integration.custom,
+            ...custom
+        };
+    }
+
     // Credentials
     // maybe to sync with postIntegration
     const creds = body.credentials;
@@ -115,7 +124,11 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
                 integration.oauth_client_secret = creds.client_secret;
                 integration.app_link = creds.app_link;
                 // This is a legacy thing
-                integration.custom = { app_id: creds.app_id, private_key: Buffer.from(creds.private_key).toString('base64') };
+                integration.custom = {
+                    ...integration.custom,
+                    app_id: creds.app_id,
+                    private_key: Buffer.from(creds.private_key).toString('base64')
+                };
                 break;
             }
 

@@ -33,9 +33,9 @@ interface SidebarItem {
 
 export const AppSidebar: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { plan } = useEnvironment(env);
     const { meta, mutate: mutateMeta } = useMeta();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const { plan } = useEnvironment(env);
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -59,6 +59,11 @@ export const AppSidebar: React.FC = () => {
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Settings2 }
         ].filter((item) => item !== null);
     }, [env, meta, mutateMeta, showGettingStarted]);
+
+    const showUsageCard = useMemo(() => {
+        if (!plan) return false;
+        return ['free', 'starter-v2', 'growth-v2'].includes(plan?.name);
+    }, [plan]);
 
     return (
         <Sidebar collapsible="none">
@@ -89,7 +94,7 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
-                {plan?.name === 'free' && (
+                {showUsageCard && (
                     <div className="px-3 mb-8">
                         <UsageCard />
                     </div>

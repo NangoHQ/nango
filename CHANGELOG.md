@@ -2,6 +2,106 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.7] - 2025-10-31
+
+### Added
+
+- *(integrations)* Add support for onelogin (#4932) by @hassan254-prog
+
+### Changed
+
+- Sample app (#4920) by @hassan254-prog
+
+### Fixed
+
+- *(usage)* Account for deleted connections when revalidating records (#4928) by @TBonnin
+- *(deploy)* Ensure we filter on the type (#4937) by @khaliqgant
+- Keep feature flag overrides when upgrading (#4934) by @TBonnin
+- Record schema compilation caching (#4902) by @TBonnin
+- *(deploy-versions)* Dont force version (#4938) by @khaliqgant
+
+## [v0.69.6] - 2025-10-30
+
+### Added
+
+- *(oauth2)* Allow tokenurl interpolation from redirect url metadata (#4804) by @hassan254-prog
+- *(webapp)* Redesign UsageCard (#4884) by @kaposke
+- *(webhooks)* Add support for shopify-api-key webhooks (#4903) by @hassan254-prog
+- *(integrations)* Add support for pennylane-company-api (#4848) by @hassan254-prog
+- Add docs about retrieval of sharepoint specific access token (#4835) by @hassan254-prog
+- *(integrations)* Add support for aimfox oauth (#4888) by @hassan254-prog
+- *(integrations)* Add support for microsoft admin (#4904) by @hassan254-prog
+- *(server)* V2 plan definitions (#4906) by @kaposke
+- Hide usage for old plans (#4917) by @kaposke
+- *(cli-create-command)* New create command for zeroyaml in the cli (#4892) by @khaliqgant
+- *(integrations)* Add support for sap fieldglass (#4907) by @hassan254-prog
+- *(integrations)* Add support for sap business one (#4911) by @hassan254-prog
+- *(integrations)* Add support for momentum-io (#4914) by @hassan254-prog
+- *(ui-copy)* Add copy button and allow pasting (#4916) by @khaliqgant
+- Add breaking changelog entry about log ingestion (#4933) by @bastienbeurier
+
+### Changed
+
+- *(usage)* Revalidate connections and records usage metrics in cache (#4898) by @TBonnin
+- *(usage)* Revalidate billing metrics from orb (#4910) by @TBonnin
+- Delete old usage tracking / capping (#4918) by @kaposke
+- Slack api gotchas (#4921) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Add AI tool calling use case (#4909) by @bastienbeurier
+- Address OpenAI SDK implement guide PR comments + standardize page capitalization (#4936) by @bastienbeurier
+
+### Fixed
+
+- *(docs)* Status not status_code (#4899) by @khaliqgant
+- *(deploy)* Concurrency issue (#4894) by @khaliqgant
+- *(runner)* Optionally set datadog profiling for runners (#4900) by @rossmcewan
+- *(providers)* Use api_domain as zoho base_url fallback (#4901) by @hassan254-prog
+- *(runner)* Be more explicit with the runner sizing (#4905) by @rossmcewan
+- *(providers)* Fix intercom url (#4908) by @hassan254-prog
+- When a sync expires, webhook says type = INITIAL (#4912) by @TBonnin
+- *(record count)* Do not count records from deleted connections (#4919) by @TBonnin
+- *(usage)* Don't overwrite records/connections with orb metrics (#4924) by @TBonnin
+- *(server)* Set keep-alive and header timeouts (#4925) by @rossmcewan
+- Records count reporting logic to account for all models/variants (#4926) by @TBonnin
+- *(providers)* Use dynamic value for base_url in Medallia (#4922) by @hassan254-prog
+- Do not push self-hosted image on PR build (#4929) by @TBonnin
+
+## [v0.69.5] - 2025-10-22
+
+### Added
+
+- Add plan.webhook_forwards_max column (#4871) by @TBonnin
+- *(integrations)* Add support for ironclad (#4818) by @hassan254-prog
+- *(webhooks)* Add support for notion webhooks (#4864) by @hassan254-prog
+- *(integrations)* Add support for teamleader focus (#4819) by @hassan254-prog
+- *(integrations)* Add support for loop returns (#4849) by @hassan254-prog
+- *(integrations)* Add support for affinity v2 and webhooks (#4854) by @hassan254-prog
+- *(integrations)* Add support for pingone (#4845) by @hassan254-prog
+- *(auth-links)* Add in logic for a magic auth link and adjust styling appropriately (#4879) by @khaliqgant
+- *(runner)* Add node selector and toleration (#4889) by @rossmcewan
+- *(webapp)* Redesign billing & usage (#4873) by @kaposke
+- *(integrations)* Add support for streak (#4887) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bd49103166eca4e9b9d7f80811a1e6d505c68280 by Hassan_Wari by @github-actions[bot]
+- Dd metric when usage is capped (#4875) by @TBonnin
+
+### Fixed
+
+- Rename webhook_forwards usage metric (#4872) by @TBonnin
+- *(runner)* Annotate pods to prevent disruption (#4874) by @rossmcewan
+- *(providers)* Fix jira post connection script (#4883) by @hassan254-prog
+- *(webapp)* Spacing in verify email screen (#4878) by @kaposke
+- *(docs)* Docs typo (#4867) by @khaliqgant
+- *(cli)* Default to nango-integrations if no path provided (#4880) by @khaliqgant
+- *(connect-ui)* Close button alignment on single integration (#4876) by @kaposke
+- *(webapp)* Nav bar links should open in new tab (#4877) by @kaposke
+- Orb_subcribed_at backfill (#4890) by @kaposke
+- *(cli)* Fix autoconfirm flag (#4896) by @hassan254-prog
+- *(providers)* Support region interpolation from connection config for intercom (#4861) by @hassan254-prog
+- *(mcp-dynamic)* Allow custom for mcp generic to patch (#4893) by @khaliqgant
+
 ## [v0.69.4] - 2025-10-16
 
 ### Added
@@ -5140,6 +5240,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
+[v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
+[v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5
 [v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
 [v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
 [v0.69.2]: https://github.com/NangoHQ/nango/compare/v0.69.1..v0.69.2

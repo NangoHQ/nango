@@ -64,8 +64,8 @@
       "destination": "/"
     },
     {
-      "source": "/guides/mcs",
-      "destination": "/guides/use-cases/mcp-server"
+      "source": "/guides/mcp",
+      "destination": "/guides/use-cases/ai-tool-calling"
     },
     {
       "source": "/guides/api-authorization/authorize-in-your-app-default-ui",
@@ -98,6 +98,10 @@
     {
       "source": "/reference/scripts",
       "destination": "/reference/functions"
+    },
+    {
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/guides/use-cases/ai-tool-calling"
     }
   ],
   "navigation": {
@@ -123,11 +127,11 @@
             "group": "Use Cases",
             "pages": [
               "guides/use-cases/api-auth",
+              "guides/use-cases/ai-tool-calling",
               "guides/use-cases/proxy",
               "guides/use-cases/syncs",
               "guides/use-cases/actions",
-              "guides/use-cases/webhooks",
-              "guides/use-cases/mcp-server"
+              "guides/use-cases/webhooks"
             ]
           },
           {
@@ -184,6 +188,13 @@
             ]
           },
           {
+            "group": "AI tool calling",
+            "pages": [
+              "implementation-guides/ai-tool-calling/openai-sdk",
+              "implementation-guides/ai-tool-calling/implement-mcp-server"
+            ]
+          },
+          {
             "group": "Requests Proxy",
             "pages": [
               "implementation-guides/requests-proxy/implement-requests-proxy"
@@ -210,12 +221,6 @@
             "group": "Webhooks",
             "pages": [
               "implementation-guides/webhooks/implement-webhooks"
-            ]
-          },
-          {
-            "group": "MCP Server",
-            "pages": [
-              "implementation-guides/mcp-server/implement-mcp-server"
             ]
           },
           {
@@ -279,7 +284,9 @@
               "integrations/all/adp-workforce-now-next-gen",
               "integrations/all/adyen",
               "integrations/all/affinity",
+              "integrations/all/affinity-v2",
               "integrations/all/aimfox",
+              "integrations/all/aimfox-oauth",
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "integrations/all/airtable",
@@ -562,6 +569,7 @@
               "integrations/all/listmonk",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
+              "integrations/all/loop-returns",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
               "integrations/all/mailchimp",
@@ -582,6 +590,7 @@
               "integrations/all/microsoft-teams",
               "integrations/all/microsoft-tenant-specific",
               "integrations/all/microsoft-oauth2-cc",
+              "integrations/all/microsoft-admin",
               "integrations/all/mindbody",
               "integrations/all/minimax",
               "integrations/all/mip-cloud",
@@ -591,6 +600,7 @@
               "integrations/all/missive",
               "integrations/all/mixpanel",
               "integrations/all/monday",
+              "integrations/all/momentum-io",
               "integrations/all/mural",
               "integrations/all/nationbuilder",
               "integrations/all/namely",
@@ -607,6 +617,7 @@
               "integrations/all/one-drive",
               "integrations/all/one-drive-personal",
               "integrations/all/one-note",
+              "integrations/all/onelogin",
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
@@ -629,6 +640,7 @@
               "integrations/all/paycor-sandbox",
               "integrations/all/pendo",
               "integrations/all/pennylane",
+              "integrations/all/pennylane-company-api",
               "integrations/all/peopledatalabs",
               "integrations/all/perimeter81",
               "integrations/all/perplexity",
@@ -637,6 +649,8 @@
               "integrations/all/personio-v2",
               "integrations/all/pingboard",
               "integrations/all/pinterest",
+              "integrations/all/pingone",
+              "integrations/all/pingone-cc",
               "integrations/all/pipedrive",
               "integrations/all/pipedream",
               "integrations/all/pipedream-oauth2-cc",
@@ -685,8 +699,10 @@
               "integrations/all/salesforce-cdp",
               "integrations/all/salesforce-sandbox",
               "integrations/all/salesloft",
+              "integrations/all/sap-business-one",
               "integrations/all/sap-concur",
               "integrations/all/sap-success-factors",
+              "integrations/all/sap-fieldglass",
               "integrations/all/scrapedo",
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
@@ -729,6 +745,7 @@
               "integrations/all/stackexchange",
               "integrations/all/strava",
               "integrations/all/strava-web",
+              "integrations/all/streak",
               "integrations/all/stripe",
               "integrations/all/stripe-app",
               "integrations/all/stripe-app-sandbox",

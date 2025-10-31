@@ -8,11 +8,16 @@ export type PostStripeCollectPayment = Endpoint<{
     };
 }>;
 
+export interface StripePaymentMethod {
+    id: string;
+    last4: string;
+}
+
 export type GetStripePaymentMethods = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/stripe/payment_methods';
     Success: {
-        data: { id: string; last4: string }[];
+        data: StripePaymentMethod[];
     };
 }>;
 

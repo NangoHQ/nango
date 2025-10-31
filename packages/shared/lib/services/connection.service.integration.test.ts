@@ -255,4 +255,29 @@ describe('Connection service integration tests', () => {
             expect(count.withError).toBe(2);
         });
     });
+
+    describe('paginate', () => {
+        it('should paginate through connections', async () => {
+            const env = await createEnvironmentSeed();
+
+            await createConfigSeed(env, 'notion', 'notion');
+
+            const connection1 = await createConnectionSeed({ env, provider: 'notion' });
+            const connection2 = await createConnectionSeed({ env, provider: 'notion' });
+            const connection3 = await createConnectionSeed({ env, provider: 'notion' });
+            const connectionIds = [connection1.id, connection2.id, connection3.id];
+
+            const paginatedConnections: number[] = [];
+            for await (const res of connectionService.paginateConnections({ connectionIds, batchSize: 2 })) {
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                for (const c of res.value) {
+                    paginatedConnections.push(c.connection.id);
+                }
+            }
+
+            expect(paginatedConnections).toEqual(connectionIds);
+        });
+    });
 });

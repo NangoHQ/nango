@@ -450,8 +450,21 @@ export function getConnectionMetadata(
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
     const cleanTemplate = template.replace(/connectionConfig\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
-    const interpolatedUrl = interpolateString(cleanTemplate, encodedParams);
-    return new URL(interpolatedUrl);
+    const interpolatedUrl = interpolateStringFromObject(cleanTemplate, removeEmptyValues(encodedParams));
+
+    if (interpolatedUrl.includes('${')) {
+        throw new Error(`Failed to interpolate URL template: ${template}. Missing config parameters.`);
+    }
+
+    try {
+        return new URL(interpolatedUrl);
+    } catch {
+        try {
+            return new URL(decodeURIComponent(interpolatedUrl));
+        } catch {
+            throw new Error(`Invalid URL after interpolation: ${interpolatedUrl}. Template: ${template}`);
+        }
+    }
 }
 
 export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY'): string {
@@ -495,4 +508,14 @@ function getFingerprint(privateKeyPEM: string): string {
     const hash = crypto.createHash('sha256').update(publicKeyDER).digest('base64');
 
     return `SHA256:${hash}`;
+}
+
+function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (value !== '' && value !== undefined && value !== null) {
+            cleaned[key] = typeof value === 'object' && !Array.isArray(value) ? removeEmptyValues(value) : value;
+        }
+    }
+    return cleaned;
 }

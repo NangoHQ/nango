@@ -179,12 +179,14 @@
     --color-code-orange: #f09745;
     --color-code-yellow: #f7c752;
 
-    --text-xs: 11px;
-    --text-xs--line-height: 16px;
+    --text-xs: 10px;
+    --text-xs--line-height: 12px;
     --text-s: 12px;
     --text-s--line-height: 18px;
     --text-sm: 14px;
-    --text-base: 16px;
+    --text-sm--line-height: 20px;
+    --text-base: 14px;
+    --text-base--line-height: 20px;
     --text-xl: 20px;
     --text-2xl: 24px;
     --text-3xl: 28px;
@@ -312,16 +314,21 @@
     --color-nav-bg-hover: var(--color-gray-50);
     --color-nav-bg-press: var(--color-gray-200);
 
+    /* Text */
     --color-text-primary: var(--color-gray-900);
     --color-text-secondary: var(--color-gray-750);
     --color-text-tertiary: var(--color-gray-600);
     --color-text-disabled: var(--color-gray-500);
+    --color-text-brand: var(--color-brand-500);
 
+    /* Border */
     --color-border-default: var(--color-gray-300);
     --color-border-muted: var(--color-gray-200);
     --color-border-strong: var(--color-gray-300);
+    --color-border-disabled: var(--color-gray-150);
     --color-border-brand: var(--color-brand-500);
 
+    /* Icon */
     --color-icon-primary: var(--color-gray-900);
     --color-icon-secondary: var(--color-gray-750);
     --color-icon-tertiary: var(--color-gray-600);
@@ -331,6 +338,12 @@
     --color-focus-ring: var(--color-brand-500);
 
     /* Feedback */
+    --color-feedback-success-fg: var(--color-green-700);
+    --color-feedback-success-bg: var(--color-green-100);
+    --color-feedback-warning-fg: var(--color-yellow-700);
+    --color-feedback-warning-bg: var(--color-yellow-500);
+    --color-feedback-info-fg: var(--color-brand-700);
+    --color-feedback-info-bg: var(--color-brand-100);
     --color-feedback-error-fg: var(--color-red-700);
     --color-feedback-error-bg: var(--color-red-100);
     --color-feedback-error-border: var(--color-red-300);
@@ -360,6 +373,12 @@
     --color-btn-destructive-fg: var(--color-gray-50);
     --color-btn-destructive-hover: var(--color-red-700);
     --color-btn-destructive-press: var(--color-red-900);
+
+    /* Link */
+    --color-link-default: var(--color-gray-1000);
+    --color-link-hover: var(--color-brand-500);
+    --color-link-press: var(--color-brand-700);
+    --color-link-disabled: var(--color-gray-700);
 }
 
 @layer theme {
@@ -376,16 +395,21 @@
             --color-nav-bg-hover: var(--color-gray-850);
             --color-nav-bg-press: var(--color-gray-700);
 
+            /* Text */
             --color-text-primary: var(--color-gray-50);
             --color-text-secondary: var(--color-gray-300);
             --color-text-tertiary: var(--color-gray-500);
             --color-text-disabled: var(--color-gray-600);
+            --color-text-brand: var(--color-brand-500);
 
+            /* Border */
             --color-border-default: var(--color-gray-700);
             --color-border-muted: var(--color-gray-800);
             --color-border-strong: var(--color-gray-500);
+            --color-border-disabled: var(--color-gray-900);
             --color-border-brand: var(--color-brand-500);
 
+            /* Icon */
             --color-icon-primary: var(--color-gray-50);
             --color-icon-secondary: var(--color-gray-300);
             --color-icon-tertiary: var(--color-gray-500);
@@ -395,6 +419,12 @@
             --color-focus-ring: var(--color-brand-500);
 
             /* Feedback */
+            --color-feedback-success-fg: var(--color-green-500);
+            --color-feedback-success-bg: var(--color-green-900);
+            --color-feedback-warning-fg: var(--color-yellow-300);
+            --color-feedback-warning-bg: var(--color-yellow-900);
+            --color-feedback-info-fg: var(--color-brand-500);
+            --color-feedback-info-bg: var(--color-brand-900);
             --color-feedback-error-fg: var(--color-red-500);
             --color-feedback-error-bg: var(--color-red-900);
             --color-feedback-error-border: var(--color-red-500);
@@ -424,6 +454,12 @@
             --color-btn-destructive-fg: var(--color-gray-50);
             --color-btn-destructive-hover: var(--color-red-700);
             --color-btn-destructive-press: var(--color-red-900);
+
+            /* Link */
+            --color-link-default: var(--color-gray-50);
+            --color-link-hover: var(--color-brand-300);
+            --color-link-press: var(--color-brand-500);
+            --color-link-disabled: var(--color-gray-500);
         }
     }
 }

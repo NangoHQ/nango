@@ -1,55 +1,86 @@
 ---
-title: Affinity
-sidebarTitle: Affinity
+title: 'Affinity (v1)'
+sidebarTitle: 'Affinity (v1)'
+description: 'Access the Affinity v1 API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/affinity/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/affinity/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Affinity (v1)_.
+      </Step>
+      <Step title="Authorize Affinity (v1)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Affinity API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Affinity (v1) API">
+        Let's make your first request to the Affinity (v1) API (fetch current user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/auth/whoami" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            </Tab>
 
+            <Tab title="Node">
 
-## Setup guide
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-_No setup guide yet._
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/affinity.mdx)</Note>
+            const res = await nango.get({
+              endpoint: '/auth/whoami',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
 
-## Useful links
+        </Tabs>
 
--   [Generate an API secret key in your Affinity account](https://api-docs.affinity.co/#getting-started)
--   [API docs](https://api-docs.affinity.co/#introduction)
--   [Auth-related docs](https://api-docs.affinity.co/#authentication)
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/affinity.mdx)</Note>
+      </Step>
+    </Steps>
 
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-## API gotchas
-- Affinity gives you only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the password to Nango and leave the username blank.
-- The Affinity API is only for Premium and Enterprise tier customers, and for Professional tier customers _who signed up for Affinity before July 5, 2023_.
-- Currently, Affinity supports _one key per user_ on your team.
-- There is a limit of _three webhook subscriptions per Affinity instance_.
-- For rate limit details, check out [Affinity](https://api-docs.affinity.co/#rate-limits).
- 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/affinity.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Affinity accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Affinity (v1) using Connect UI](/integrations/all/affinity/connect) |
+    | General | [Affinity Website](https://www.affinity.co/) |
+    | Developer | [How to generate an Affinity API Key](https://support.affinity.co/s/article/How-to-obtain-your-Affinity-API-key) |
+    | | [Affinity API v1 docs](https://api-docs.affinity.co/) |
+    | | [API Authentication](https://api-docs.affinity.co/#authentication) |
+    | | [API Rate Limiting](https://api-docs.affinity.co/#rate-limits) |
 
-## Going further
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/affinity.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - The Affinity API is only for Premium and Enterprise tier customers, and for Professional tier customers _who signed up for Affinity before July 5, 2023_.
+    - Currently, Affinity supports one key per user on your team.
+    - There is a [limit](https://api-docs.affinity.co/#webhook-subscription-limit) of three webhook subscriptions per Affinity instance.
+    - Currently, webhooks work only with API v1.
 
-<Card title="Connect to Affinity" icon="link" href="/integrations/all/affinity/connect" horizontal>
-  Guide to connect to Affinity using Connect UI
-</Card>
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/affinity.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

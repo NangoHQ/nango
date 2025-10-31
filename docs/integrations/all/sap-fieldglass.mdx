@@ -1,0 +1,84 @@
+---
+title: 'SAP Fieldglass'
+sidebarTitle: 'SAP Fieldglass'
+description: 'Access the SAP Fieldglass API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _SAP Fieldglass_.
+      </Step>
+      <Step title="Authorize SAP Fieldglass">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your SAP Fieldglass credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the SAP Fieldglass API">
+        Let's make your first request to the SAP Fieldglass API (Get a list of audit trails). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/api/vc/auditTrail" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const response = await nango.get({
+              // https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/37b387b915784cea97b8a6677ab0d525/2413bd3b64bb40cbaf96397d4560dc98.html
+              endpoint: '/api/vc/auditTrail',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(response.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their SAP Fieldglass accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to SAP Fieldglass using Connect UI](/integrations/all/sap-fieldglass/connect) |
+    | General | [SAP Fieldglass Website](https://www.fieldglass.com/) |
+    | Developer | [SAP Fieldglass Integration Guide](https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/1befd97581554895bb7fcfca6049f53e/37676614e64f454c8aa6188c5328d0d8.html) |
+    | | [OAuth 2.0 Authentication](https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/1befd97581554895bb7fcfca6049f53e/2eb112386ca348cb8a7da962d25ddaef.html) |
+    | | [How the REST API Resource Works](https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/1befd97581554895bb7fcfca6049f53e/652c911c1b014bdc9bcf6a8305124e52.html) |
+    | | [SAP Fieldglass Connector Library](https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/9cfd5c12ee3046d59453e73974f9c4b7/de446f74158b4f09be8766e3673fee2c.html) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-fieldglass.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-fieldglass.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

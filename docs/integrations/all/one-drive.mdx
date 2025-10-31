@@ -1,6 +1,6 @@
 ---
-title: OneDrive
-sidebarTitle: OneDrive
+title: OneDrive for Business
+sidebarTitle: OneDrive for Business
 ---
 
 import Overview from "/snippets/overview.mdx"
@@ -101,9 +101,37 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
 | `offline_access`                  | Access to refresh tokens for offline access                                 |
 | `User.Read.All`                   | Read user profiles in the organization (useful for file ownership mapping)  |
 
+## Complete Integration Implementation
+
+For a complete, production-ready implementation of OneDrive for Business integration with Nango, check out the **[Nango Sample App](/getting-started/sample-app)**.
+
+The sample app provides:
+- Full OAuth flow implementation
+- OneDrive for Business file picker integration
+- File syncing with webhooks
+- File download functionality
+- Complete frontend and backend code examples
+
+You can also watch a [demo video walkthrough](https://youtu.be/oTpWlmnv7dM) or view the [GitHub repository](https://github.com/NangoHQ/sample-app).
+
+<Tip>
+The sample app is the fastest way to get started with OneDrive for Business integration. It includes all the code you need and can be customized for your specific use case.
+</Tip>
+
 
 ## API gotchas
 -   You can find permissions required for each API call in their corresponding API methods section, i.e, to retrieve a list available drives from OneDrive, you can have a look at [List available drives permissions](https://learn.microsoft.com/en-us/graph/api/drive-list?view=graph-rest-1.0&tabs=http#permissions).
 <APIGotchas />
+#### SharePoint and Graph tokens
+Each connection now issues **two tokens:**
+1. **Main Token (Graph Token):**
+   Used for standard Microsoft Graph API operations, such as making proxy calls to the Graph API at `https://graph.microsoft.com`.
+
+2. **SharePoint Token (`sharepointAccessToken`):**
+   Available under `connection_config` and required when interacting with SharePoint-specific components, such as the latest **File Picker (v8.0)**.
+
+<Note> To obtain the `sharepointAccessToken`, your integration **must include and request the `Sites.Read.All` scope** during authorization. Without this scope, the SharePoint token will **not** be issued — only the Graph token will be available for your connection. </Note>
+
+- The `sharepointAccessToken` is only available for new connections. If it’s missing from your `connection_config`, please reauthorize your connection to obtain and include the token.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/one-drive.mdx)</Note>
