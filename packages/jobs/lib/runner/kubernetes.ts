@@ -422,11 +422,6 @@ class Kubernetes {
         ];
     }
 
-    private isProfilingEnabled(node: Node): boolean {
-        const accountId = node.routingId.split('-')[3]; //this index is based on routing id being in the format {stage}-runner-account-{accountId}-{suffix}
-        return accountId ? envs.RUNNER_PROFILED_ACCOUNTS.includes(accountId) : false;
-    }
-
     private MAX_REQUEST_CPU = envs.RUNNER_MAX_REQUEST_CPU;
     private MAX_REQUEST_MEMORY = envs.RUNNER_MAX_REQUEST_MEMORY;
     private MIN_REQUEST_CPU = envs.RUNNER_MIN_REQUEST_CPU;
