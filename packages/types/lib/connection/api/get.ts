@@ -60,6 +60,7 @@ export type GetPublicConnections = Endpoint<{
         connectionId?: string | undefined;
         search?: string | undefined;
         endUserId?: string | undefined;
+        integrationId?: string | undefined;
         endUserOrganizationId?: string | undefined;
     };
     Path: '/connection';

@@ -8,6 +8,6 @@ nango
     .then((response) => {
         console.log(response);
     })
-    .catch((err: unknown) => {
+    .catch((err) => {
         console.log(err.response?.data || err.message);
     });
