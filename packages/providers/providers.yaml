@@ -1158,6 +1158,40 @@ atlassian-admin:
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
+atlassian-government-cloud:
+    display_name: Atlassian Government Cloud
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian-us-gov-mod.com/authorize
+    token_url: https://auth.atlassian-us-gov-mod.com/oauth/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        audience: api.atlassian-us-gov-mod.com
+        prompt: consent
+    proxy:
+        base_url: https://api.atlassian-us-gov-mod.com
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    post_connection_script: atlassianGovernmentCloudPostConnection
+    docs: https://nango.dev/docs/integrations/all/atlassian-government-cloud
+    docs_connect: https://nango.dev/docs/integrations/all/atlassian-government-cloud/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Atlassian Government Cloud account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: acme
+            suffix: .atlassian-us-gov-mod.net
+            prefix: https://
+
 attio:
     display_name: Attio
     categories:
