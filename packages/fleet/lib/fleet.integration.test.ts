@@ -116,7 +116,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -136,7 +138,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(props);
             const updatedProps = {
@@ -164,7 +168,9 @@ describe('fleet', () => {
                 image: null,
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(props);
 
@@ -184,7 +190,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(props);
 
@@ -193,7 +201,9 @@ describe('fleet', () => {
                 image: props.image,
                 cpuMilli: null,
                 memoryMb: null,
-                storageMb: null
+                storageMb: null,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(defaultProps);
 
