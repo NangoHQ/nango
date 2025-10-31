@@ -745,7 +745,7 @@ export class Nango {
         const delayBetweenAttemptsMs = 2000;
 
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            const response = await this.listConnections(undefined, undefined, { endUserId: userId, endUserOrganizationId: undefined });
+            const response = await this.listConnections(undefined, undefined, { endUserId: userId });
             const connection = response.connections.find((conn) => conn.provider_config_key === integrationKey);
 
             if (connection) {
