@@ -44,7 +44,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
@@ -57,6 +59,8 @@ describe('fleet', () => {
                 cpuMilli: props.cpuMilli,
                 memoryMb: props.memoryMb,
                 storageMb: props.storageMb,
+                isTracingEnabled: props.isTracingEnabled,
+                isProfilingEnabled: props.isProfilingEnabled,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -128,6 +132,8 @@ describe('fleet', () => {
                 cpuMilli: props.cpuMilli,
                 memoryMb: props.memoryMb,
                 storageMb: props.storageMb,
+                isTracingEnabled: props.isTracingEnabled,
+                isProfilingEnabled: props.isProfilingEnabled,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
