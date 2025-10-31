@@ -225,11 +225,13 @@ class NangoSyncMock extends NangoActionMock {
 
     batchSave: ReturnType<typeof vi.fn>;
     batchDelete: ReturnType<typeof vi.fn>;
+    deleteRecordsFromPreviousExecutions: ReturnType<typeof vi.fn>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         super({ dirname, name, Model });
         this.batchSave = vi.fn();
         this.batchDelete = vi.fn();
+        this.deleteRecordsFromPreviousExecutions = vi.fn();
     }
 }
 
