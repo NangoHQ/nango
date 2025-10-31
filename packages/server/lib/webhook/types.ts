@@ -222,3 +222,15 @@ export interface affinityWebhookResponse {
     body: object;
     sent_at: number;
 }
+
+export interface PagerDutyWebhookPayload {
+    event: {
+        id: string;
+        event_type: string;
+        resource_type: string;
+        occurred_at: string;
+        agent: object | null;
+        client: object | null;
+        data: object;
+    };
+}
