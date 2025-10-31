@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.7] - 2025-10-31
+
+### Added
+
+- *(integrations)* Add support for onelogin (#4932) by @hassan254-prog
+
+### Changed
+
+- Sample app (#4920) by @hassan254-prog
+
+### Fixed
+
+- *(usage)* Account for deleted connections when revalidating records (#4928) by @TBonnin
+- *(deploy)* Ensure we filter on the type (#4937) by @khaliqgant
+- Keep feature flag overrides when upgrading (#4934) by @TBonnin
+- Record schema compilation caching (#4902) by @TBonnin
+- *(deploy-versions)* Dont force version (#4938) by @khaliqgant
+
 ## [v0.69.6] - 2025-10-30
 
 ### Added
@@ -5222,6 +5240,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
 [v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
 [v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5
 [v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
