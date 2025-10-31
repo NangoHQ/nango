@@ -20,4 +20,5 @@ export { default as highlevelWebhookRouting } from './highlevel-webhook-routing.
 export { default as notionWebhookRouting } from './notion-webhook-routing.js';
 export { default as affinityWebhookRouting } from './affinity-webhook-routing.js';
 export { default as shopifyWebhookRouting } from './shopify-webhook-routing.js';
+export { default as connectwisePsaWebhookRouting } from './connectwise-psa-webhook-routing.js';
 export type * from './types.js';

@@ -4,7 +4,7 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, environmentService, getPlan } from '@nangohq/shared';
-import { flagHasPlan, metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -21,11 +21,12 @@ const paramValidation = z
     .strict();
 
 export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
-        return;
-    }
+    // TEMPORARY: Query parameter validation disabled for testing ConnectWise webhooks
+    // const emptyQuery = requireEmptyQuery(req);
+    // if (emptyQuery) {
+    //     res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+    //     return;
+    // }
 
     const paramValue = paramValidation.safeParse(req.params);
     if (!paramValue.success) {

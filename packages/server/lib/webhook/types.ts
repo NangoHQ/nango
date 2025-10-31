@@ -222,3 +222,21 @@ export interface affinityWebhookResponse {
     body: object;
     sent_at: number;
 }
+
+export interface ConnectWisePsaWebhookPayload {
+    MessageId?: string;
+    FromUrl?: string;
+    CompanyId?: string;
+    MemberId?: string;
+    Action?: string;
+    Type?: string;
+    ID?: number;
+    ProductInstanceId?: string;
+    PartnerId?: string;
+    Entity?: string | Record<string, any>;
+    Metadata?: {
+        key_url?: string;
+    };
+    CallbackObjectRecId?: number;
+    [key: string]: any;
+}
