@@ -8093,6 +8093,7 @@ medallia:
             type: string
             title: ''
             description: ''
+            default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
 
 metabase:
