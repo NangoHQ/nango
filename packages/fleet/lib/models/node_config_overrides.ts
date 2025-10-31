@@ -66,8 +66,8 @@ export async function upsert(
             cpu_milli: props.cpuMilli ?? null,
             memory_mb: props.memoryMb ?? null,
             storage_mb: props.storageMb ?? null,
-            is_tracing_enabled: props.isTracingEnabled ?? null,
-            is_profiling_enabled: props.isProfilingEnabled ?? null,
+            is_tracing_enabled: props.isTracingEnabled ?? false,
+            is_profiling_enabled: props.isProfilingEnabled ?? false,
             created_at: now,
             updated_at: now
         };

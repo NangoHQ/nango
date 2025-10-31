@@ -414,7 +414,8 @@ class Kubernetes {
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
-            { name: 'DD_PROFILING_ENABLED', value: String(this.isProfilingEnabled(node)) },
+            { name: 'DD_PROFILING_ENABLED', value: String(node.isProfilingEnabled) },
+            { name: 'DD_TRACING_ENABLED', value: String(node.isTracingEnabled) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
