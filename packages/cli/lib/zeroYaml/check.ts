@@ -3,6 +3,7 @@ import path from 'path';
 
 import chalk from 'chalk';
 import ora from 'ora';
+import semver from 'semver';
 
 import { exampleFolder } from './constants.js';
 import { runPackageManagerInstall } from '../migrations/toZeroYaml.js';
@@ -33,9 +34,29 @@ export async function checkAndSyncPackageJson({ fullPath, debug }: { fullPath: s
                 packageJson.devDependencies = {};
                 updated = true;
             }
-            if (!packageJson.devDependencies['zod'] || packageJson.devDependencies['zod'] !== examplePkg.devDependencies!['zod']!) {
+            const userZodVersion = packageJson.devDependencies['zod'];
+            const nangoZodVersion = examplePkg.devDependencies!['zod']!;
+
+            if (!userZodVersion) {
+                // No zod version installed, add it
                 updated = true;
-                packageJson.devDependencies['zod'] = examplePkg.devDependencies!['zod']!;
+                packageJson.devDependencies['zod'] = nangoZodVersion;
+            } else {
+                // Check if the major version matches
+                const userZodMajor = semver.major(semver.coerce(userZodVersion) || '0.0.0');
+                const nangoZodMajor = semver.major(semver.coerce(nangoZodVersion) || '0.0.0');
+
+                if (userZodMajor !== nangoZodMajor) {
+                    // Different major version - force update
+                    updated = true;
+                    packageJson.devDependencies['zod'] = nangoZodVersion;
+                } else if (userZodVersion !== nangoZodVersion) {
+                    // Same major version, different minor/patch - warn but don't update
+                    console.log(chalk.yellow(`⚠️  You are using zod version ${userZodVersion}, while Nango internally uses ${nangoZodVersion}.`));
+                    console.log(
+                        chalk.yellow(`   You may encounter compatibility issues. If you experience any problems, please update to ${nangoZodVersion}.`)
+                    );
+                }
             }
             if (!packageJson.devDependencies['nango'] || packageJson.devDependencies['nango'] !== NANGO_VERSION) {
                 updated = true;

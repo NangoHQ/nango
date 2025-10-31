@@ -13,6 +13,7 @@ import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { buildDefinitions } from './definitions.js';
+import { runLightweightTypecheck, shouldUseLightweightMode } from './lightweightTypecheck.js';
 import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
@@ -50,7 +51,18 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         printDebug(`Found ${entryPoints.length} entry points in index.ts: ${entryPoints.join(', ')}`, debug);
 
         // Typecheck the code
-        const typechecked = typeCheck({ fullPath, entryPoints });
+        // If dependency versions don't match (e.g., Zod 4.1 vs 4.0), use lightweight mode to prevent OOM
+        const useLightweightMode = await shouldUseLightweightMode(fullPath);
+
+        let typechecked: Result<boolean>;
+        if (useLightweightMode) {
+            // Lightweight mode: syntax + Zod validation only (prevents OOM with version mismatches)
+            typechecked = await runLightweightTypecheck({ fullPath, entryPoints, debug });
+        } else {
+            // Normal mode: full TypeScript type checking
+            typechecked = typeCheck({ fullPath, entryPoints, debug });
+        }
+
         if (typechecked.isErr()) {
             spinner.fail();
             return typechecked;
@@ -146,8 +158,9 @@ export function getEntryPoints(indexContent: string): string[] {
 
 /**
  * Runs the typescript compiler to typecheck the code.
+ * This is the NORMAL/HAPPY PATH - only runs when dependency versions match correctly.
  */
-function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
+function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[]; debug?: boolean }): Result<boolean> {
     const program = ts.createProgram({
         rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
         options: tsconfig
