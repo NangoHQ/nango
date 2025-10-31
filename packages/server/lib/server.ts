@@ -107,7 +107,6 @@ server.listen(port, () => {
 
 // --- Close function
 const close = once(() => {
-    setShuttingDown(true);
     logger.info('Closing...');
 
     cron.getTasks().forEach((task) => task.stop());
@@ -139,5 +138,6 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
     logger.info('Received SIGTERM...');
-    close();
+    setShuttingDown(true);
+    setTimeout(close, envs.SERVER_SHUTDOWN_DELAY);
 });
