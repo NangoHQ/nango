@@ -9202,7 +9202,7 @@ passportal:
         content: ${credentials.content}
     token_response:
         token: access_token
-        token_expiration: data.expiry_time
+        token_expiration: expiry_time
         token_expiration_strategy: expireAt
     proxy:
         base_url: https://${connectionConfig.base_url}
@@ -9226,19 +9226,22 @@ passportal:
         apiKey:
             type: string
             title: API Access Key ID
-            description: Your Passportal API Access Key ID (generated in the dashboard under Administration > API)
+            description: Your Passportal API Access Key ID
+            example: a14e6b4923ba5027189baded6ba7b68e6fcda742008c5d57b867f43a09768ece
+            pattern: '^[a-fA-F0-9]{64}$'
             doc_section: '#step-2-generate-api-access-key-id-and-secret-access-key'
         hmacToken:
             type: string
             title: HMAC Token
-            description: Your pre-generated HMAC token (HMAC-SHA256 hash of your content string, hex encoded)
+            description: Your pre-generated HMAC token, hex encoded
+            example: 23ec313efecb560a7f44239f6dd439ea56d18911c18b59e1150a3c7299da8202
             pattern: '^[a-fA-F0-9]{64}$'
             secret: true
             doc_section: '#step-3-generate-hmac-token'
         content:
             type: string
             title: Content String
-            description: Plain text message used to compute the HMAC token (e.g., 'api-content-hash')
+            description: Plain text message used to compute the HMAC token
             example: api-content-hash
             doc_section: '#step-3-generate-hmac-token'
     docs: https://nango.dev/docs/integrations/all/passportal
