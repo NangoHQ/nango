@@ -45,8 +45,8 @@ const DBNodeConfigOverride = {
             cpuMilli: dbNodeConfigOverride.cpu_milli,
             memoryMb: dbNodeConfigOverride.memory_mb,
             storageMb: dbNodeConfigOverride.storage_mb,
-            isTracingEnabled: dbNodeConfigOverride.is_tracing_enabled || false,
-            isProfilingEnabled: dbNodeConfigOverride.is_profiling_enabled || false,
+            isTracingEnabled: dbNodeConfigOverride.is_tracing_enabled,
+            isProfilingEnabled: dbNodeConfigOverride.is_profiling_enabled,
             createdAt: dbNodeConfigOverride.created_at,
             updatedAt: dbNodeConfigOverride.updated_at
         };
@@ -66,8 +66,8 @@ export async function upsert(
             cpu_milli: props.cpuMilli ?? null,
             memory_mb: props.memoryMb ?? null,
             storage_mb: props.storageMb ?? null,
-            is_tracing_enabled: props.isTracingEnabled ?? false,
-            is_profiling_enabled: props.isProfilingEnabled ?? false,
+            is_tracing_enabled: props.isTracingEnabled ?? null,
+            is_profiling_enabled: props.isProfilingEnabled ?? null,
             created_at: now,
             updated_at: now
         };

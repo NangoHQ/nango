@@ -27,8 +27,8 @@ export interface NodeConfigOverride {
     readonly cpuMilli: NodeConfig['cpuMilli'] | null;
     readonly memoryMb: NodeConfig['memoryMb'] | null;
     readonly storageMb: NodeConfig['storageMb'] | null;
-    readonly isTracingEnabled: NodeConfig['isTracingEnabled'];
-    readonly isProfilingEnabled: NodeConfig['isProfilingEnabled'];
+    readonly isTracingEnabled: NodeConfig['isTracingEnabled'] | null;
+    readonly isProfilingEnabled: NodeConfig['isProfilingEnabled'] | null;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }

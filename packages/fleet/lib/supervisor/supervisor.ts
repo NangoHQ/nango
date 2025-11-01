@@ -349,8 +349,8 @@ export class Supervisor {
                 cpuMilli: nodeConfigOverrideValue.cpuMilli || newNodeConfig.cpuMilli,
                 memoryMb: nodeConfigOverrideValue.memoryMb || newNodeConfig.memoryMb,
                 storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
-                isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled,
-                isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled
+                isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
+                isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled
             };
         }
 

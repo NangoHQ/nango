@@ -51,8 +51,8 @@ interface DBNode {
     readonly cpu_milli: number;
     readonly memory_mb: number;
     readonly storage_mb: number;
-    readonly is_tracing_enabled: boolean | null;
-    readonly is_profiling_enabled: boolean | null;
+    readonly is_tracing_enabled: boolean;
+    readonly is_profiling_enabled: boolean;
     readonly error: string | null;
     readonly created_at: Date;
     readonly last_state_transition_at: Date;
@@ -88,8 +88,8 @@ const DBNode = {
             cpuMilli: dbNode.cpu_milli,
             memoryMb: dbNode.memory_mb,
             storageMb: dbNode.storage_mb,
-            isTracingEnabled: dbNode.is_tracing_enabled || false,
-            isProfilingEnabled: dbNode.is_profiling_enabled || false,
+            isTracingEnabled: dbNode.is_tracing_enabled,
+            isProfilingEnabled: dbNode.is_profiling_enabled,
             error: dbNode.error,
             createdAt: dbNode.created_at,
             lastStateTransitionAt: dbNode.last_state_transition_at

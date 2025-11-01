@@ -48,8 +48,8 @@ describe('NodeConfgOverrides', () => {
                 cpuMilli: null,
                 memoryMb: null,
                 storageMb: null,
-                isTracingEnabled: false,
-                isProfilingEnabled: false
+                isTracingEnabled: null,
+                isProfilingEnabled: null
             })
         ).unwrap();
         expect(nodeConfigOverride).toStrictEqual({
@@ -59,8 +59,8 @@ describe('NodeConfgOverrides', () => {
             cpuMilli: null,
             memoryMb: null,
             storageMb: null,
-            isTracingEnabled: false,
-            isProfilingEnabled: false,
+            isTracingEnabled: null,
+            isProfilingEnabled: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
