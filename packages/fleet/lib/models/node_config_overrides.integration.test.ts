@@ -19,7 +19,9 @@ describe('NodeConfgOverrides', () => {
         image: 'my-image',
         cpuMilli: 1000,
         memoryMb: 1000,
-        storageMb: 1000
+        storageMb: 1000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false
     };
 
     it('should be successfully created', async () => {
@@ -31,6 +33,8 @@ describe('NodeConfgOverrides', () => {
             cpuMilli: props.cpuMilli,
             memoryMb: props.memoryMb,
             storageMb: props.storageMb,
+            isTracingEnabled: props.isTracingEnabled,
+            isProfilingEnabled: props.isProfilingEnabled,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -43,7 +47,9 @@ describe('NodeConfgOverrides', () => {
                 image: null,
                 cpuMilli: null,
                 memoryMb: null,
-                storageMb: null
+                storageMb: null,
+                isTracingEnabled: null,
+                isProfilingEnabled: null
             })
         ).unwrap();
         expect(nodeConfigOverride).toStrictEqual({
@@ -53,6 +59,8 @@ describe('NodeConfgOverrides', () => {
             cpuMilli: null,
             memoryMb: null,
             storageMb: null,
+            isTracingEnabled: null,
+            isProfilingEnabled: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -65,7 +73,9 @@ describe('NodeConfgOverrides', () => {
             image: 'my-new-image',
             cpuMilli: 2000,
             memoryMb: 2000,
-            storageMb: 2000
+            storageMb: 2000,
+            isTracingEnabled: true,
+            isProfilingEnabled: true
         };
         const updatedNodeConfigOverride = (await node_config_overrides.upsert(dbClient.db, updatedProps)).unwrap();
         expect(updatedNodeConfigOverride).toStrictEqual({
@@ -74,6 +84,8 @@ describe('NodeConfgOverrides', () => {
             cpuMilli: updatedProps.cpuMilli,
             memoryMb: updatedProps.memoryMb,
             storageMb: updatedProps.storageMb,
+            isTracingEnabled: updatedProps.isTracingEnabled,
+            isProfilingEnabled: updatedProps.isProfilingEnabled,
             updatedAt: expect.any(Date)
         });
     });

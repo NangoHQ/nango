@@ -414,16 +414,12 @@ class Kubernetes {
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
-            { name: 'DD_PROFILING_ENABLED', value: String(this.isProfilingEnabled(node)) },
+            { name: 'DD_PROFILING_ENABLED', value: String(node.isProfilingEnabled) },
+            { name: 'DD_TRACE_ENABLED', value: String(node.isTracingEnabled) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
         ];
-    }
-
-    private isProfilingEnabled(node: Node): boolean {
-        const accountId = node.routingId.split('-')[3]; //this index is based on routing id being in the format {stage}-runner-account-{accountId}-{suffix}
-        return accountId ? envs.RUNNER_PROFILED_ACCOUNTS.includes(accountId) : false;
     }
 
     private MAX_REQUEST_CPU = envs.RUNNER_MAX_REQUEST_CPU;
@@ -455,7 +451,9 @@ export const kubernetesNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
         memoryMb: 512,
-        storageMb: 20000
+        storageMb: 20000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();

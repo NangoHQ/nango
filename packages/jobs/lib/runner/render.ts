@@ -25,7 +25,9 @@ export const renderNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
         memoryMb: 512,
-        storageMb: 20000
+        storageMb: 20000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false
     },
     start: async (node) => {
         if (!envs.RUNNER_OWNER_ID) {

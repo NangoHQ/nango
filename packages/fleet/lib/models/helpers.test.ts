@@ -53,7 +53,9 @@ async function createNode(db: knex.Knex, { routingId, deploymentId }: { routingI
         image: 'nangohq/my-image:latest',
         cpuMilli: 500,
         memoryMb: 1024,
-        storageMb: 512
+        storageMb: 512,
+        isTracingEnabled: false,
+        isProfilingEnabled: false
     });
     return node.unwrap();
 }
