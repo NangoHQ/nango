@@ -1,46 +1,87 @@
 ---
-title: Auvik
-sidebarTitle: Auvik
+title: 'Auvik'
+sidebarTitle: 'Auvik'
+description: 'Connect to the Auvik API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/auvik/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/auvik/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _Auvik_.
+      </Step>
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+      <Step title="Authorize Auvik">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Auvik **Username**, **API Key**, and **Region**. Later, you'll let your users do the same directly from your app.
+      </Step>
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Required | Auvik account required for API access |
-| Paid test account | ✅ Required | Auvik account required for testing |
-| Partnership | ❌ Not required | |
-| App review | ❌ Not required | |
-| Security audit | ❌ Not required | |
+      <Step title="Call the Auvik API">
+        Let's make your first request to Auvik (fetch a list of tenants). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
-## Setup guide
+        <Tabs>
+          <Tab title="cURL">
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/v1/tenants" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+          </Tab>
 
-- Follow the [instructions in Auvik's API documentation](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate)
-- Follow the [_Quickstart_](/getting-started/quickstart).
+          <Tab title="Node">
+            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-## Useful links
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-- [Auvik API Documentation](https://auvikapi.us1.my.auvik.com/docs)
+            // Fetch a list of tenants from Auvik
+            const res = await nango.get({
+              endpoint: '/v1/tenants',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+            console.log(res.data);
+            ```
+          </Tab>
+        </Tabs>
 
-## API gotchas
+        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
 
-- Auvik uses Basic authentication with username and API key. Your API key is _not_ the password associated with your username.
-  Follow [Auvik's instructions](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate)
-  to generate an API key for your account.
-- When you generate an Auvik API key, it will only be visible once. Make sure you store it securely as soon as you generate it.
-- Make sure to use the correct regional API endpoint (us1, us2, eu1, etc.) based on your account region. You can find your Region
-  by logging into your Auvik account on the web and checking the address bar. You should see something like
-  https://yourtenantname.us2.my.auvik.com/#msp/root/clients. In this case, your region would be `us2`.
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+    <Tip>
+      Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Auvik accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Auvik using Connect UI](/integrations/all/auvik/connect) |
+    | General | [Auvik Website](https://www.auvik.com/) |
+    | Developer | [Auvik API Documentation](https://auvikapi.us1.my.auvik.com/docs) |
+    | | [How to generate an API key](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+    - Auvik uses Basic authentication with username and API key. Your API key is _not_ the password associated with your username
+    - When you generate an Auvik API key, it will only be visible once. Store it securely immediately
+    - Make sure to use the correct regional API endpoint (us1, us2, eu1, etc.) based on your account region
+    - You can find your region by checking the address bar when logged into Auvik (e.g., `https://yourcompany.us2.my.auvik.com/...` means your region is `us2`)
+    - Consider creating a separate "service account" in Auvik for API access so the key isn't tied to an individual user
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

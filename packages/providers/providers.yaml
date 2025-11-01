@@ -1274,7 +1274,7 @@ auvik:
             title: Region
             description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI)
             example: us2
-            pattern: '^[a-z0-9-]+$'
+            pattern: '^[a-z]{2,4}\d{1,3}$'
             doc_section: '#step-2-determine-your-region'
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
