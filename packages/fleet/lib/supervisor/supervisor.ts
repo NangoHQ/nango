@@ -198,10 +198,10 @@ export class Supervisor {
                     if (configOverride.storageMb && configOverride.storageMb !== node.storageMb) {
                         return true;
                     }
-                    if (configOverride.isTracingEnabled !== node.isTracingEnabled) {
+                    if (configOverride.isTracingEnabled !== null && configOverride.isTracingEnabled !== node.isTracingEnabled) {
                         return true;
                     }
-                    if (configOverride.isProfilingEnabled !== node.isProfilingEnabled) {
+                    if (configOverride.isProfilingEnabled !== null && configOverride.isProfilingEnabled !== node.isProfilingEnabled) {
                         return true;
                     }
                     return false;
