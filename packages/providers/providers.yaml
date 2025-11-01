@@ -9218,7 +9218,7 @@ passportal:
         base_url:
             type: string
             title: Passportal Base URL
-            description: Your Passportal base URL name (e.g., if your dashboard URL is https://mycompany.mypasswordapp.com/dashboard, use 'mycompany.mypasswordapp.com')
+            description: Your Passportal base URL
             example: mycompany.mypasswordapp.com
             format: hostname
             doc_section: '#step-1-find-your-passportal-base-url'
