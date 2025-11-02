@@ -18,7 +18,8 @@ To receive webhooks from ConnectWise PSA, follow these steps:
   <Step title="Configure your trusted ConnectWise subdomain in Nango">
     1. In the Nango UI _Settings_ page for your ConnectWise PSA integration
     2. In the **Webhook Configuration** section, enter your ConnectWise subdomain in the **Webhook Secret** field
-    3. The subdomain should be just the subdomain portion (e.g., `sandbox-na`, `api-na`, `api-eu`, or `api-au`)
+    3. The subdomain should be just the subdomain portion (
+       e.g., `mycompany` if you log into Connectwise at `mycompany.myconnectwise.net`)
     4. Click **Save**
 
     <Warning>
@@ -45,7 +46,7 @@ To receive webhooks from ConnectWise PSA, follow these steps:
     ```
 
     **Configuration Parameters**:
-    - **subdomain**: Your ConnectWise subdomain (e.g., `api-na`, `sandbox-na`) - see step 2
+    - **subdomain**: Your ConnectWise subdomain - see step 2
     - **username**: Your ConnectWise username (CompanyId + Public Key/Integrator Username/MemberId)
     - **password**: Your ConnectWise password (Private Key/Integrator Password/Member Hash)
     - **clientId**: Your integration's Client ID from ConnectWise
@@ -80,7 +81,7 @@ This ensures that only legitimate webhooks from your ConnectWise environment are
 
 ## Webhook Events
 
-Once configured, you can receive webhook events from ConnectWise PSA for various object types:
+Once configured, you can receive webhook events from ConnectWise PSA for various object types, including...
 - **Service Tickets**: Created, updated, or deleted tickets
 - **Companies**: Created or updated company records
 - **Contacts**: Created or updated contact records
@@ -88,20 +89,7 @@ Once configured, you can receive webhook events from ConnectWise PSA for various
 - **Time Entries**: Created or updated time entries
 - **Expenses**: Created or updated expense entries
 
-For more details on available callback types, refer to the [ConnectWise PSA API documentation](https://developer.connectwise.com/Products/Manage/Developer_Guide#Callbacks).
-
-## Common Subdomain Values
-
-Depending on your ConnectWise environment, use one of these subdomains:
-
-| Environment | Subdomain |
-|-------------|-----------|
-| North America Production | `api-na` |
-| Europe Production | `api-eu` |
-| Australia Production | `api-au` |
-| North America Sandbox | `sandbox-na` |
-| Europe Sandbox | `sandbox-eu` |
-| Australia Sandbox | `sandbox-au` |
+For more details on available callback types, refer to the [ConnectWise PSA API documentation](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Callbacks_(Webhooks)).
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
