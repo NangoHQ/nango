@@ -53,6 +53,7 @@ interface DBNode {
     readonly storage_mb: number;
     readonly is_tracing_enabled: boolean;
     readonly is_profiling_enabled: boolean;
+    readonly idle_timeout: number | null;
     readonly error: string | null;
     readonly created_at: Date;
     readonly last_state_transition_at: Date;
@@ -72,6 +73,7 @@ const DBNode = {
             storage_mb: node.storageMb,
             is_tracing_enabled: node.isTracingEnabled,
             is_profiling_enabled: node.isProfilingEnabled,
+            idle_timeout: node.idleTimeout,
             error: node.error,
             created_at: node.createdAt,
             last_state_transition_at: node.lastStateTransitionAt
@@ -90,6 +92,7 @@ const DBNode = {
             storageMb: dbNode.storage_mb,
             isTracingEnabled: dbNode.is_tracing_enabled,
             isProfilingEnabled: dbNode.is_profiling_enabled,
+            idleTimeout: dbNode.idle_timeout,
             error: dbNode.error,
             createdAt: dbNode.created_at,
             lastStateTransitionAt: dbNode.last_state_transition_at
@@ -112,6 +115,7 @@ export async function create(
         storage_mb: nodeProps.storageMb,
         is_tracing_enabled: nodeProps.isTracingEnabled,
         is_profiling_enabled: nodeProps.isProfilingEnabled,
+        idle_timeout: nodeProps.idleTimeout,
         error: null,
         created_at: now,
         last_state_transition_at: now

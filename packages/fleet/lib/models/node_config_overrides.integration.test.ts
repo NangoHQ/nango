@@ -21,7 +21,8 @@ describe('NodeConfgOverrides', () => {
         memoryMb: 1000,
         storageMb: 1000,
         isTracingEnabled: false,
-        isProfilingEnabled: false
+        isProfilingEnabled: false,
+        idleTimeout: 1800
     };
 
     it('should be successfully created', async () => {
@@ -35,6 +36,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: props.storageMb,
             isTracingEnabled: props.isTracingEnabled,
             isProfilingEnabled: props.isProfilingEnabled,
+            idleTimeout: props.idleTimeout,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -49,7 +51,8 @@ describe('NodeConfgOverrides', () => {
                 memoryMb: null,
                 storageMb: null,
                 isTracingEnabled: null,
-                isProfilingEnabled: null
+                isProfilingEnabled: null,
+                idleTimeout: null
             })
         ).unwrap();
         expect(nodeConfigOverride).toStrictEqual({
@@ -61,6 +64,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: null,
             isTracingEnabled: null,
             isProfilingEnabled: null,
+            idleTimeout: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -75,7 +79,8 @@ describe('NodeConfgOverrides', () => {
             memoryMb: 2000,
             storageMb: 2000,
             isTracingEnabled: true,
-            isProfilingEnabled: true
+            isProfilingEnabled: true,
+            idleTimeout: 1800
         };
         const updatedNodeConfigOverride = (await node_config_overrides.upsert(dbClient.db, updatedProps)).unwrap();
         expect(updatedNodeConfigOverride).toStrictEqual({
@@ -86,6 +91,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: updatedProps.storageMb,
             isTracingEnabled: updatedProps.isTracingEnabled,
             isProfilingEnabled: updatedProps.isProfilingEnabled,
+            idleTimeout: updatedProps.idleTimeout,
             updatedAt: expect.any(Date)
         });
     });
