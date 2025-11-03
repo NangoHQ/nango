@@ -21,7 +21,7 @@ const mockNodeProvider = {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleTimeout: 1800
+        idleTimeoutSecs: 1800
     },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
@@ -144,7 +144,7 @@ describe('Supervisor', () => {
             memoryMb: 1234,
             storageMb: 567890,
             error: null,
-            idleTimeout: 1800
+            idleTimeoutSecs: 1800
         });
     });
 
@@ -159,7 +159,7 @@ describe('Supervisor', () => {
             storageMb: node.storageMb,
             isTracingEnabled: node.isTracingEnabled,
             isProfilingEnabled: node.isProfilingEnabled,
-            idleTimeout: node.idleTimeout
+            idleTimeoutSecs: node.idleTimeoutSecs
         });
 
         await supervisor.tick();

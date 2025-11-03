@@ -189,7 +189,7 @@ export class Fleet {
                 defaultConfig.storageMb === override.storageMb &&
                 defaultConfig.isTracingEnabled === override.isTracingEnabled &&
                 defaultConfig.isProfilingEnabled === override.isProfilingEnabled &&
-                defaultConfig.idleTimeout === override.idleTimeout;
+                defaultConfig.idleTimeoutSecs === override.idleTimeoutSecs;
 
             if (isDefault) {
                 return nodeConfigOverrides.remove(trx, override.routingId);
