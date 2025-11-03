@@ -6363,6 +6363,31 @@ heap:
             format: uuid
             doc_section: '#step-1-generating-your-api-key-and-app-id'
 
+heyreach:
+    display_name: HeyReach
+    categories:
+        - social
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.heyreach.io/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /public/auth/CheckApiKey
+    docs: https://nango.dev/docs/integrations/all/heyreach
+    docs_connect: https://nango.dev/docs/integrations/all/heyreach/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your HeyReach account
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            example: 'FoVLZoM+nVyMELhqr7vH120O2FS1gZcAG5d2qs1bndg='
+            doc_section: '#step-1-generating-an-api-key'
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
