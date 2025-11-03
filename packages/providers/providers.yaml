@@ -9280,6 +9280,7 @@ passportal:
             description: Your Passportal base URL
             example: mycompany.mypasswordapp.com
             format: hostname
+            prefix: https://
             doc_section: '#step-1-find-your-passportal-base-url'
     credentials:
         apiKey:
