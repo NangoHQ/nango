@@ -9,7 +9,8 @@ export type AuthErrorType =
     | 'connection_test_failed'
     | 'missing_connect_session_token'
     | 'connection_validation_failed'
-    | 'resource_capped';
+    | 'resource_capped'
+    | 'unknown_error';
 
 export type AuthResult = ConnectionResponseSuccess;
 export type AuthSuccess = AuthResult; // alias for backward compatibility

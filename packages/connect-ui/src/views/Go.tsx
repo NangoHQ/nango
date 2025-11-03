@@ -306,7 +306,7 @@ export const Go: React.FC = () => {
 
                 setConnectionFailed(true);
                 const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-                triggerError('missing_credentials', errorMsg);
+                triggerError('unknown_error', errorMsg);
             } finally {
                 setLoading(false);
             }
