@@ -250,7 +250,8 @@ export class Supervisor {
                 // Timeout IDLE nodes if they are taking too long (nodeProvider probably failed to terminate the node)
                 plan.push(
                     ...(nodes.IDLE || []).flatMap<Operation>((node) => {
-                        if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.IDLE) {
+                        const idleTimeout = node.idleTimeout ? node.idleTimeout * 1000 : STATE_TIMEOUT_MS.IDLE;
+                        if (Date.now() - node.lastStateTransitionAt.getTime() > idleTimeout) {
                             return [{ type: 'FAIL', node, reason: 'idle_timeout_reached' as const }];
                         }
                         return [];
