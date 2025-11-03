@@ -47,7 +47,7 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeout: 1800
+                idleTimeoutSecs: 1800
             };
             await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
@@ -62,7 +62,7 @@ describe('fleet', () => {
                 storageMb: props.storageMb,
                 isTracingEnabled: props.isTracingEnabled,
                 isProfilingEnabled: props.isProfilingEnabled,
-                idleTimeout: props.idleTimeout,
+                idleTimeoutSecs: props.idleTimeoutSecs,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
