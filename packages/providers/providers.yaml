@@ -1158,6 +1158,40 @@ atlassian-admin:
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
+atlassian-government-cloud:
+    display_name: Atlassian Government Cloud
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian-us-gov-mod.com/authorize
+    token_url: https://auth.atlassian-us-gov-mod.com/oauth/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        audience: api.atlassian-us-gov-mod.com
+        prompt: consent
+    proxy:
+        base_url: https://api.atlassian-us-gov-mod.com
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    post_connection_script: atlassianGovernmentCloudPostConnection
+    docs: https://nango.dev/docs/integrations/all/atlassian-government-cloud
+    docs_connect: https://nango.dev/docs/integrations/all/atlassian-government-cloud/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Atlassian Government Cloud account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: acme
+            suffix: .atlassian-us-gov-mod.net
+            prefix: https://
+
 attio:
     display_name: Attio
     categories:
@@ -8059,6 +8093,7 @@ medallia:
             type: string
             title: ''
             description: ''
+            default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
 
 metabase:
@@ -8938,6 +8973,30 @@ one-note:
         - productivity
     alias: microsoft
     docs: https://nango.dev/docs/integrations/all/one-note
+
+onelogin:
+    display_name: OneLogin
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.onelogin.com/auth/oauth2/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.onelogin.com
+    pre_connection_deletion_script: oneloginPreConnectionDeletion
+    docs: https://nango.dev/docs/integrations/all/onelogin
+    docs_connect: https://nango.dev/docs/integrations/all/onelogin/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your OneLogin subdomain
+            example: acme
+            order: 1
+            prefix: https://
+            suffix: .onelogin.com
+            doc_section: '#step-1-finding-your-subdomain'
 
 openai:
     display_name: OpenAI
@@ -12100,6 +12159,30 @@ stackexchange:
     proxy:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
+
+statista:
+    display_name: Statista
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.statista.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/statistics?q=*
+    docs: https://nango.dev/docs/integrations/all/statista
+    docs_connect: https://nango.dev/docs/integrations/all/statista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Statista account
+            example: c5c28261f9ade4e34891ccf761491b94
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
 
 strava:
     display_name: Strava (Mobile)
