@@ -1,0 +1,167 @@
+---
+title: 'Atlassian Government Cloud'
+sidebarTitle: 'Atlassian Government Cloud'
+description: 'Access the Atlassian Government Cloud API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Atlassian Government Cloud_. Nango doesn't provide a test OAuth app for Atlassian Government Cloud yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Atlassian Government Cloud">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Atlassian Government Cloud. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Atlassian Government Cloud API">
+        Let's make your first request to the Atlassian Government Cloud API (fetch a list of issues from Jira). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/ex/jira/{connectionConfig.cloudId}/rest/api/3/search?maxResults=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/ex/jira/{connectionConfig.cloudId}/rest/api/3/search',
+                params: {
+                  maxResults: 10
+                },
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+        <Note>
+        The `{connectionConfig.cloudId}` in the URL represents the cloudId. You can get this value from your connection configuration after creating the connection. The cloudId is automatically set by Nango.
+        </Note>
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Atlassian Government Cloud accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Request access to an AGC developer account">
+        If you don't already have one, request access to an [Atlassian Government Cloud instance](https://developer.atlassian.com/platform/framework/agc/guides/get-access-to-agc/) for testing purposes. 
+      </Step>
+      <Step title="Create a new OAuth 2.0 (3LO) app for Government Cloud">
+        1. Go to the [AGC developer console](https://developer.atlassian-us-gov-mod.com/console/).
+        2. Click **Create** and select **OAuth 2.0 integration**.
+        3. Enter a name, agree to Atlassian's developer terms by checking the agreement checkbox for your app and click **Create**.
+        4. Your app will be created and you'll be taken to the app management page.
+      </Step>
+      <Step title="Configure OAuth 2.0 (3LO)">
+        1. In the left sidebar, select **Authorization**.
+        2. Next to OAuth 2.0 (3LO), click **Configure**.
+        3. Enter `https://api.nango.dev/oauth/callback` as the **Callback URL**.
+        4. Click **Save Changes** to save your changes.
+      </Step>
+      <Step title="Add API permissions">
+        1. In the left sidebar, select **Permissions**.
+        2. Next to the API you want to add (e.g., Jira API), click **Add**.
+        3. Click **Configure**, then click **Edit Scopes**.
+        4. Select the scopes your application requires. For reference, see our [Common Scopes](#common-scopes) table below.
+        5. Click **Save** to save your changes.
+      </Step>
+      <Step title="Obtain your client credentials">
+        1. In the left sidebar, select **Settings**.
+        2. Note your **Client ID**.
+        3. Copy both the **Client ID** and **Secret** by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
+      </Step>
+      <Step title="Make your app available to users">
+        1. In the left sidebar, select **Distribution**.
+        2. Enable sharing using the toggle switch in the **Enable sharing** section.
+       <Note>By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.</Note>
+      </Step>
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+      </Step>
+    </Steps>
+
+    ## Common Scopes
+
+    | Scope                             | Description                           |
+    | --------------------------------- | ------------------------------------- |
+    | `read:jira-user`                  | Read user information                 |
+    | `read:jira-work`                  | Read Jira issues and projects         |
+    | `write:jira-work`                 | Create and update Jira issues         |
+    | `manage:jira-project`             | Manage project settings               |
+    | `offline_access`                  | Access refresh tokens for offline use |
+    | `read:page:confluence`            | Read Confluence pages                 |
+    | `write:page:confluence`           | Create or update Confluence pages     |
+    | `read:confluence-space.summary`   | View space information                |
+    | `write:confluence-file`           | Upload files or attachments           |
+    | `manage:confluence-configuration` | Manage Confluence settings            |
+
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic      | Links                                                                                                                                                      |
+    | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | Authorization | [Guide to connect to Atlassian Government Cloud using Connect UI](/integrations/all/atlassian-government-cloud/connect) |
+    | General    | [AGC Developer Console](https://developer.atlassian-us-gov-mod.com/console/)                                                                         |
+    | Developer  | [OAuth 2.0 (3LO) Apps Documentation](https://developer.atlassian.com/platform/framework/agc/guides/manage-3lo-apps/#implementing-oauth-2-0--3lo-)         |
+    |            | [Determining the scopes required for an operation](https://developer.atlassian.com/platform/framework/agc/guides/manage-3lo-apps/#determining-the-scopes-required-for-an-operation) |
+    |            | [Jira REST API v3 Documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/)  
+    |            | [Confluence REST API v2 Documentation](https://developer.atlassian.com/cloud/confluence/rest/v2/)                                                       |
+    |            | [Jira API Rate Limits](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/)                                                                      |
+    |            | [Confluence API Rate Limits](https://developer.atlassian.com/cloud/confluence/rate-limiting/)                                                                      |
+    |            | [Distributing OAuth 2.0 Apps](https://developer.atlassian.com/platform/framework/agc/guides/manage-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)     |
+    |            | [Security and compliance on the AGC](https://developer.atlassian.com/platform/framework/agc/security-compliance/)                                                                      |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/atlassian-government-cloud.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - To [use](https://developer.atlassian.com/platform/framework/agc/why-agc/) the AGC, a customer or entity must be a United States government agency or contractor/vendor working with the United States government.
+    - When connecting to Atlassian Government Cloud, you have two options for specifying which site to connect to:
+      1. Provide a `Subdomain` during connection creation (recommended)
+      2. Let Nango auto-select the first available site: If no `Subdomain` is specified, Nango will use the first site from the accessible resources API.
+
+    ```ts
+    const response = await nango.get({
+        endpoint: `oauth/token/accessible-resources`
+    });
+    const cloudId = response.data[0].id;
+    ```
+
+    - A single Atlassian OAuth token can grant access to multiple Atlassian products and sites. For example, the same token might grant access to both "myorg-gov.atlassian.net" and "myorg-test-gov.atlassian.net". This is why specifying the `Subdomain` during connection creation is important if you need to connect to a specific site.
+
+    - The `cloudId` is required when making requests to the Jira or Confluence Cloud REST APIs through the global Atlassian domain (https://api.atlassian.com) using [OAuth 2.0 (3LO)](https://developer.atlassian.com/cloud/jira/platform/rest/v2/intro/#other-integrations). Nango handles getting this automatically by matching it to your specified `subdomain` if provided, or by selecting the first available site if it is not. You will then need to construct your Nango integration's `endpoint` accordingly. 
+    - When using the Atlassian proxy, note that API requests need to be routed through product-specific paths:
+      1. Jira apps use the `/jira/{cloudId}/{api}` endpoint.
+      2. Confluence apps use the `/confluence/{cloudId}/{api}` endpoint.
+    - Refresh tokens will expire after 365 days of non-use and will expire after 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+    - When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
+    
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/atlassian-government-cloud.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

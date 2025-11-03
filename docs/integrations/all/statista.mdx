@@ -1,0 +1,84 @@
+---
+title: 'Statista'
+sidebarTitle: 'Statista'
+description: 'Access the Statista API in 2 minutes 🔗'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Statista_.
+      </Step>
+      <Step title="Authorize Statista">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Statista API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Statista API">
+        Let's make your first request to the Statista API (search for statistics). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/v1/statistics?q=*&size=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" 
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/v1/statistics',
+              params: { q: '*', size: 10 },
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Statista accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic        | Links |
+    |--------------|-------|
+    | Authorization | [Guide to connect to Statista using Connect UI](/integrations/all/statista/connect) |
+    | General       | [Statista Website](https://www.statista.com/) |
+    |              | [Statista Business Solutions](https://www.statista.com/business/connect-api) |
+    | Developer     | [Request for an API Key](https://forms.office.com/pages/responsepage.aspx?id=OfiFB67f4U-gaID-j8YfKwI-9bbupjFMnubBsPP0QlRUMjZNOFczSjA4NkdFN0U4ODVORU5GTFIxTyQlQCN0PWcu&route=shorturl) |
+    |              | [Statista API Documentation](https://statista.mintlify.app/) |
+    |              | [API Authentication](https://statista.mintlify.app/start/authentication) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/statista.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - The service is capable of supporting 10,000 requests per second. Ensure your application respects this limit to avoid throttling. If you need higher limits, please [contact Statista](mailto:support@statista.com).
+    - Requests are cached and the cache is flushed every 4 hours. Cached requests do not incur additional charges.
+    
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/statista.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
