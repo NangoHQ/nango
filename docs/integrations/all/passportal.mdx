@@ -74,14 +74,9 @@ description: 'Connect to the Passportal API in 2 minutes 💨'
   </Tab>
 
   <Tab title="🚨 API gotchas">
-    - Passportal uses instance-specific base URLs (e.g., `mycompany.passportalmsp.com`)
-    - Authentication requires a POST request to `/api/v2/auth/client_token` with the API Access Key ID in the `x-key` header
-    - The `x-hash` header must contain a pre-generated HMAC-SHA256 token (hexadecimal hash)
-    - Generate your HMAC token offline before configuring the integration
-    - You must provide the same content string that was used to generate the HMAC token in the request body
-    - The token request must include `scope: "docs_api"` in the body
-    - The access token expires and should be refreshed using the provided refresh token
-    - All API requests must include the access token in the Authorization header (Bearer token)
+    - Passportal uses instance-specific base URLs (for example, mycompany.passportalmsp.com).
+- Generate your **HMAC Token** offline before creating a connection in Nango.
+- When creating the connection, ensure you provide the same **Content String** that was used to generate the **HMAC Token**.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/passportal.mdx)</Note>
   </Tab>
