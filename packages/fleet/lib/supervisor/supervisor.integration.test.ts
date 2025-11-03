@@ -18,7 +18,9 @@ const mockNodeProvider = {
         image: 'image',
         cpuMilli: 1000,
         memoryMb: 1000,
-        storageMb: 1000
+        storageMb: 1000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false
     },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
@@ -152,7 +154,9 @@ describe('Supervisor', () => {
             image: imageOverride,
             cpuMilli: node.cpuMilli,
             memoryMb: node.memoryMb,
-            storageMb: node.storageMb
+            storageMb: node.storageMb,
+            isTracingEnabled: node.isTracingEnabled,
+            isProfilingEnabled: node.isProfilingEnabled
         });
 
         await supervisor.tick();
@@ -171,7 +175,9 @@ describe('Supervisor', () => {
             cpuMilli: node.cpuMilli,
             memoryMb: node.memoryMb,
             storageMb: node.storageMb,
-            error: null
+            error: null,
+            isTracingEnabled: node.isTracingEnabled,
+            isProfilingEnabled: node.isProfilingEnabled
         });
     });
 

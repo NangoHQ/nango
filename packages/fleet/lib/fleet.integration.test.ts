@@ -44,7 +44,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
@@ -57,6 +59,8 @@ describe('fleet', () => {
                 cpuMilli: props.cpuMilli,
                 memoryMb: props.memoryMb,
                 storageMb: props.storageMb,
+                isTracingEnabled: props.isTracingEnabled,
+                isProfilingEnabled: props.isProfilingEnabled,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -116,7 +120,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -126,6 +132,8 @@ describe('fleet', () => {
                 cpuMilli: props.cpuMilli,
                 memoryMb: props.memoryMb,
                 storageMb: props.storageMb,
+                isTracingEnabled: props.isTracingEnabled,
+                isProfilingEnabled: props.isProfilingEnabled,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -136,7 +144,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: true,
+                isProfilingEnabled: true
             };
             await fleet.overrideNodeConfig(props);
             const updatedProps = {
@@ -144,7 +154,9 @@ describe('fleet', () => {
                 image: 'my-new-image-override',
                 cpuMilli: 2000,
                 memoryMb: 2000,
-                storageMb: 2000
+                storageMb: 2000,
+                isTracingEnabled: true,
+                isProfilingEnabled: true
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(updatedProps)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -154,6 +166,8 @@ describe('fleet', () => {
                 cpuMilli: updatedProps.cpuMilli,
                 memoryMb: updatedProps.memoryMb,
                 storageMb: updatedProps.storageMb,
+                isTracingEnabled: updatedProps.isTracingEnabled,
+                isProfilingEnabled: updatedProps.isProfilingEnabled,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -164,7 +178,9 @@ describe('fleet', () => {
                 image: null,
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(props);
 
@@ -184,7 +200,9 @@ describe('fleet', () => {
                 image: 'my-image-override',
                 cpuMilli: 1000,
                 memoryMb: 100,
-                storageMb: 100
+                storageMb: 100,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(props);
 
@@ -193,7 +211,9 @@ describe('fleet', () => {
                 image: props.image,
                 cpuMilli: null,
                 memoryMb: null,
-                storageMb: null
+                storageMb: null,
+                isTracingEnabled: false,
+                isProfilingEnabled: false
             };
             await fleet.overrideNodeConfig(defaultProps);
 
@@ -205,6 +225,8 @@ describe('fleet', () => {
                 cpuMilli: null,
                 memoryMb: null,
                 storageMb: null,
+                isTracingEnabled: false,
+                isProfilingEnabled: false,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });

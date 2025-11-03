@@ -198,6 +198,12 @@ export class Supervisor {
                     if (configOverride.storageMb && configOverride.storageMb !== node.storageMb) {
                         return true;
                     }
+                    if (configOverride.isTracingEnabled !== null && configOverride.isTracingEnabled !== node.isTracingEnabled) {
+                        return true;
+                    }
+                    if (configOverride.isProfilingEnabled !== null && configOverride.isProfilingEnabled !== node.isProfilingEnabled) {
+                        return true;
+                    }
                     return false;
                 };
                 plan.push(
@@ -342,7 +348,9 @@ export class Supervisor {
                 image: nodeConfigOverrideValue.image || newNodeConfig.image,
                 cpuMilli: nodeConfigOverrideValue.cpuMilli || newNodeConfig.cpuMilli,
                 memoryMb: nodeConfigOverrideValue.memoryMb || newNodeConfig.memoryMb,
-                storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb
+                storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
+                isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
+                isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled
             };
         }
 
@@ -352,7 +360,9 @@ export class Supervisor {
             image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,
             memoryMb: newNodeConfig.memoryMb,
-            storageMb: newNodeConfig.storageMb
+            storageMb: newNodeConfig.storageMb,
+            isTracingEnabled: newNodeConfig.isTracingEnabled,
+            isProfilingEnabled: newNodeConfig.isProfilingEnabled
         });
     }
 
