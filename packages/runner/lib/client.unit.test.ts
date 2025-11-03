@@ -31,7 +31,8 @@ describe('Runner client', () => {
         runnerFlags: {} as any,
         endUser: null,
         team: { id: 1, name: 'team' },
-        heartbeatTimeoutSecs: 30
+        heartbeatTimeoutSecs: 30,
+        logger: { level: 'off' }
     };
 
     beforeAll(() => {

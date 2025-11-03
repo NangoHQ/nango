@@ -131,6 +131,11 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             return;
         }
 
+        // if logging is turned off, we bail early
+        if (this.logger.level === 'off') {
+            return;
+        }
+
         if (args.length === 0) {
             return;
         }
@@ -145,7 +150,13 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             args.pop();
         }
 
-        const level = userDefinedLevel?.level ?? 'info';
+        const legacyLevel = userDefinedLevel?.level ?? 'info';
+        const level = oldLevelToNewLevel[legacyLevel];
+
+        if (!this.shouldLog(level)) {
+            return;
+        }
+
         const [message, payload] = args;
 
         // arrays are not supported in the log meta, so we convert them to objects
@@ -153,7 +164,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
 
         await this.sendLogToPersist({
             type: 'log',
-            level: oldLevelToNewLevel[level],
+            level,
             source: 'user',
             message: stringifyAndTruncateValue(message),
             meta,

@@ -12,7 +12,7 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
@@ -57,6 +57,13 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         if (cappingFunctionLogsStatus.isCapped) {
             const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
             void logCtx.warn(message, { cappingFunctionLogsStatus });
+        }
+
+        let sdkLogger: SdkLogger;
+        if (cappingFunctionLogsStatus.isCapped) {
+            sdkLogger = { level: 'off' };
+        } else {
+            sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
         void logCtx.info(`Starting script '${task.onEventName}'`, {
@@ -110,6 +117,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             syncConfig,
             debug: false,
+            logger: sdkLogger,
             runnerFlags: {
                 ...(await getRunnerFlags()),
                 functionLogs: !cappingFunctionLogsStatus.isCapped

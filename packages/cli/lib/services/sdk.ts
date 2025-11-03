@@ -70,6 +70,10 @@ export class NangoActionCLI extends NangoActionBase {
 
         const logLevel = logLevelToLogger[level] ?? 'info';
 
+        if (!this.shouldLog(logLevel)) {
+            return;
+        }
+
         if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
             console[logLevel](args[0], { status: args[1]?.response?.code || 'xxx' });
         } else {

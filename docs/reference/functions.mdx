@@ -382,7 +382,32 @@ You can collect logs in integration functions. This is particularly useful when:
 Collect logs in integration functions as follows:
 
 ```ts
-await nango.log("This is a log.");
+await nango.log("This is a log."); // default log level is 'info'
+await nango.log("This is an info log", { level: 'info' });
+await nango.log("This is a warning", { level: 'warn' });
+await nango.log("This is an error", { level: 'error' });
+```
+
+### Log Levels
+
+Nango supports the following log levels (from most to least verbose): `debug`, `info`, `warn`, `error`, `off`.
+
+Only logs with a level greater than or equal to the configured logger level will be ingested. For example, if the logger level is set to `warn`, only `warn` and `error` logs will be saved.
+
+**Default log levels:**
+- **Cloud/production**: `warn` (only warnings and errors are logged by default)
+- **CLI dry-run**: `debug` (all logs are shown in the console)
+
+### Configuring Log Level
+
+You can override the default log level in two ways:
+
+1. **Environment variable**: Set `NANGO_LOGGER_LEVEL` in your environment settings (values: `debug`, `info`, `warn`, `error`, `off`)
+
+2. **In your function code**:
+```ts
+nango.setLogger({ level: 'debug' }); // Enable all logs
+nango.setLogger({ level: 'off' }); // Disable all logs
 ```
 
 Logs can be viewed & searched in the Nango UI. We plan to make them exportable in the future as well.
