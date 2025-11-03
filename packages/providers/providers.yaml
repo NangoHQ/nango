@@ -1301,6 +1301,9 @@ auvik:
             title: API Key
             description: Auvik API Key (separate from the user's password)
             secret: true
+            # API key is a base64 encoded string
+            pattern: '^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$'
+            example: 'aJ7EjSEDD+7+JqlQ1NtUXyY/3/05GGWwfF7vBbPd0Iy8HG1s'
             doc_section: '#step-1-generate-an-api-key'
     connection_config:
         region:
