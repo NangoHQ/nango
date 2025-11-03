@@ -13,7 +13,7 @@ import { CustomInput } from '@/components/CustomInput';
 import { HeaderButtons } from '@/components/HeaderButtons';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { triggerClose, triggerConnection } from '@/lib/events';
+import { triggerClose, triggerConnection, triggerError } from '@/lib/events';
 import { useI18n } from '@/lib/i18n';
 import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
@@ -273,28 +273,40 @@ export const Go: React.FC = () => {
                 if (err instanceof AuthError) {
                     if (err.type === 'blocked_by_browser') {
                         telemetry('popup:blocked_by_browser');
-                        setError(t('go.popupBlocked'));
+                        const errorMsg = t('go.popupBlocked');
+                        setError(errorMsg);
+                        triggerError(err.type, errorMsg);
                         return;
                     } else if (err.type === 'window_closed') {
                         telemetry('popup:closed_early');
-                        setError(t('go.popupClosed'));
+                        const errorMsg = t('go.popupClosed');
+                        setError(errorMsg);
+                        triggerError(err.type, errorMsg);
                         return;
                     } else if (err.type === 'connection_test_failed') {
                         setConnectionFailed(true);
-                        setError(t('go.invalidCredentials', { provider: displayName }));
+                        const errorMsg = t('go.invalidCredentials', { provider: displayName });
+                        setError(errorMsg);
+                        triggerError(err.type, errorMsg);
                         return;
                     } else if (err.type === 'connection_validation_failed') {
                         setConnectionFailed(true);
-                        setError(err.message || t('go.invalidCredentials', { provider: displayName }));
+                        const errorMsg = err.message || t('go.invalidCredentials', { provider: displayName });
+                        setError(errorMsg);
+                        triggerError(err.type, errorMsg);
                         return;
                     } else if (err.type === 'resource_capped') {
                         setConnectionFailed(true);
-                        setError(t('go.resourceCapped'));
+                        const errorMsg = t('go.resourceCapped');
+                        setError(errorMsg);
+                        triggerError(err.type, errorMsg);
                         return;
                     }
                 }
 
                 setConnectionFailed(true);
+                const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+                triggerError('missing_credentials', errorMsg);
             } finally {
                 setLoading(false);
             }

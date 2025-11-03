@@ -115,9 +115,17 @@ export interface ConnectUIEventConnect {
     payload: AuthResult;
 }
 
+export interface ConnectUIEventError {
+    type: 'error';
+    payload: {
+        errorType: AuthErrorType;
+        errorMessage: string;
+    };
+}
+
 export interface ConnectUIEventSettingsChanged {
     type: 'settings_changed';
     payload: ConnectUISettings;
 }
 
-export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect | ConnectUIEventSettingsChanged;
+export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect | ConnectUIEventError | ConnectUIEventSettingsChanged;
