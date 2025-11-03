@@ -10,10 +10,15 @@ const logger = getLogger('post-connection:jira');
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const connectionConfig = connection.connection_config || {};
+    const integration = await nango.getIntegration();
+
+    const isGovernmentCloud = integration?.provider === 'atlassian-government-cloud';
+    const baseUrlOverride = isGovernmentCloud ? 'https://auth.atlassian-us-gov-mod.com' : undefined;
 
     const response = await nango.proxy<JiraSite[]>({
         endpoint: `oauth/token/accessible-resources`,
-        providerConfigKey: connection.provider_config_key
+        providerConfigKey: connection.provider_config_key,
+        ...(baseUrlOverride ? { baseUrlOverride } : {})
     });
 
     if (axios.isAxiosError(response) || !response || !response.data || response.data.length === 0 || !response.data[0]?.id) {
@@ -52,7 +57,8 @@ export default async function execute(nango: Nango) {
             // jira: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get
             // confluence https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-users/#api-wiki-rest-api-user-current-get
             endpoint,
-            providerConfigKey: connection.provider_config_key
+            providerConfigKey: connection.provider_config_key,
+            ...(baseUrlOverride ? { baseUrlOverride } : {})
         });
         accountId = accountResponse && !axios.isAxiosError(accountResponse) ? (accountResponse.data?.accountId ?? null) : null;
     } catch {

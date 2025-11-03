@@ -88,52 +88,23 @@ export async function getRecordStatsByModel({
     }
 }
 
-export async function metrics({ environmentIds }: { environmentIds?: number[] } = {}): Promise<
-    Result<{ environmentId: number; count: number; sizeBytes: number }[]>
-> {
-    try {
-        if (environmentIds && environmentIds.length === 0) {
-            return Err(new Error(`No environment provided`));
-        }
-
-        const query = db
-            .from(RECORD_COUNTS_TABLE)
-            .select<
-                { environment_id: number; count: number; size_bytes: number }[]
-            >('environment_id', db.raw('SUM(count) as count'), db.raw('SUM(size_bytes) as size_bytes'))
-            .groupBy('environment_id')
-            .having(db.raw('sum(size_bytes) > 0 OR sum(count) > 0')); // only return entries with records
-
-        if (environmentIds) {
-            query.whereIn('environment_id', environmentIds);
-        }
-
-        const res = await query;
-        if (!res) {
-            return Err(new Error(`Failed to count records`));
-        }
-        const metrics = res.map((r) => ({
-            environmentId: r.environment_id,
-            count: Number(r.count),
-            sizeBytes: Number(r.size_bytes)
-        }));
-        return Ok(metrics);
-    } catch {
-        return Err(new Error(`Failed to count records`));
-    }
-}
-
 export async function* paginateRecordCounts({
+    environmentIds,
     batchSize = 1000
 }: {
+    environmentIds?: number[];
     batchSize?: number;
 } = {}): AsyncGenerator<Result<RecordCount[]>> {
     let offset = 0;
 
     try {
         while (true) {
-            // TODO: optimize with cursor pagination when needed
-            const results = await db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
+            // TODO: optimize with cursor pagination
+            const query = db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
+            if (environmentIds && environmentIds.length > 0) {
+                query.whereIn('environment_id', environmentIds);
+            }
+            const results = await query;
 
             if (results.length === 0) break;
 
