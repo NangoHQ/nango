@@ -9207,7 +9207,7 @@ passportal:
     proxy:
         base_url: https://${connectionConfig.base_url}
         headers:
-            authorization: Bearer ${accessToken}
+            x-access-token: ${accessToken}
         verification:
             method: GET
             headers:
