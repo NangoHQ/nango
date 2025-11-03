@@ -255,7 +255,7 @@ export class Nango {
         connectionId?: string;
         userId?: string;
         integrationId?: string;
-        tags?: Record<string, string>;
+        tags?: Record<'displayName' | 'email', string>;
     }): Promise<GetPublicConnections['Success']>;
 
     public async listConnections(
@@ -264,8 +264,8 @@ export class Nango {
             | {
                   connectionId?: string;
                   userId?: string;
-                  integrationId?: string;
-                  tags?: Record<string, string>;
+                  integrationId?: string | string[];
+                  tags?: Record<'displayName' | 'email', string>;
               },
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
@@ -287,7 +287,12 @@ export class Nango {
                 url.searchParams.append('integrationIds', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
             }
             if (tags && Object.keys(tags).length > 0) {
-                url.searchParams.append('tags', JSON.stringify(tags));
+                if (tags['displayName']) {
+                    url.searchParams.append('search', tags['displayName']);
+                }
+                if (tags['email']) {
+                    url.searchParams.append('email', tags['email']);
+                }
             }
         } else {
             // Legacy parameter syntax

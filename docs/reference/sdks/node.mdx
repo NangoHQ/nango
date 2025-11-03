@@ -323,7 +323,8 @@ await nango.listConnections({
     connectionId: 'connection-id',
     userId: 'user-123',
     integrationId: 'integration-456',
-    tags: { environment: 'production' }
+    // only supports email | displayName
+    tags: { displayName: 'My User' }
 });
 ```
 
