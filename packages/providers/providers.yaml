@@ -14267,6 +14267,26 @@ zoho-people:
             optional: true
             suffix: /
 
+zoho-recruit:
+    display_name: Zoho Recruit
+    alias: zoho
+    categories:
+        - ats
+    proxy:
+        base_url: https://recruit.zoho.com/recruit
+    docs: https://nango.dev/docs/integrations/all/zoho-recruit
+    docs_connect: https://nango.dev/docs/integrations/all/zoho-recruit/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Recruit account
+            pattern: '^[a-z.]+$'
+            prefix: https://recruit.zoho.
+            example: com
+            optional: true
+            suffix: /
+
 zoom:
     display_name: Zoom
     categories:
