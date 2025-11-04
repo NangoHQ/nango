@@ -22,7 +22,7 @@ describe('NodeConfgOverrides', () => {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1800
+        idleMaxDurationMs: 1_800_000
     };
 
     it('should be successfully created', async () => {
@@ -80,7 +80,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: 2000,
             isTracingEnabled: true,
             isProfilingEnabled: true,
-            idleMaxDurationMs: 1800
+            idleMaxDurationMs: 1_800_000
         };
         const updatedNodeConfigOverride = (await node_config_overrides.upsert(dbClient.db, updatedProps)).unwrap();
         expect(updatedNodeConfigOverride).toStrictEqual({

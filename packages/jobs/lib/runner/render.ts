@@ -28,7 +28,7 @@ export const renderNodeProvider: NodeProvider = {
         storageMb: 20000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1800
+        idleMaxDurationMs: 1_800_000
     },
     start: async (node) => {
         if (!envs.RUNNER_OWNER_ID) {
