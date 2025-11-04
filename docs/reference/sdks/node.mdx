@@ -314,11 +314,6 @@ await nango.deleteIntegration(<UNIQUE_KEY>);
 Returns a list of connections without credentials.
 
 ```js
-// Legacy parameter syntax
-await nango.listConnections();
-await nango.listConnections('connection-id', 'search-term', { endUserId: 'user-123' });
-
-// New object parameter syntax (recommended)
 await nango.listConnections({
     connectionId: 'connection-id',
     userId: 'user-123',
@@ -328,28 +323,7 @@ await nango.listConnections({
 });
 ```
 
-**Parameters (Legacy Syntax)**
-
-<Expandable>
-    <ResponseField name="connectionId" type="string">
-        Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
-    </ResponseField>
-    <ResponseField name="search" type="string">
-        Optional. Search connections. Will search in connection ID or end user profile.
-    </ResponseField>
-    <ResponseField name="queries" type="object">
-        <Expandable title="queries" defaultOpen>
-            <ResponseField name="endUserId" type="string">
-                Optional. Will exactly match a given end user ID.
-            </ResponseField>
-            <ResponseField name="endUserOrganizationId" type="string">
-                Optional. Will exactly match a given end organization ID.
-            </ResponseField>
-        </Expandable>
-    </ResponseField>
-</Expandable>
-
-**Parameters (Object Syntax - Recommended)**
+**Parameters**
 
 <Expandable>
     <ResponseField name="params" type="object">

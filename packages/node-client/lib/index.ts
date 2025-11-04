@@ -254,7 +254,7 @@ export class Nango {
     public async listConnections(params: {
         connectionId?: string;
         userId?: string;
-        integrationId?: string;
+        integrationId?: string | string[];
         tags?: Record<'displayName' | 'email', string>;
     }): Promise<GetPublicConnections['Success']>;
 
