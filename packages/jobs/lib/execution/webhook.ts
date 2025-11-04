@@ -147,10 +147,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncJobId: syncJob.id,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            runnerFlags: await getRunnerFlags(),
             endUser: endUser,
             startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs

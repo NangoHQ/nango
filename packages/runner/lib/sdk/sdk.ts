@@ -126,11 +126,6 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
     public override async log(...args: [...any]): Promise<void> {
         this.throwIfAborted();
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
-        if (this.runnerFlags.functionLogs === false) {
-            return;
-        }
-
         // if logging is turned off, we bail early
         if (this.logger.level === 'off') {
             return;
