@@ -15,6 +15,7 @@ export interface Node {
     readonly storageMb: NodeConfig['storageMb'];
     readonly isTracingEnabled: NodeConfig['isTracingEnabled'];
     readonly isProfilingEnabled: NodeConfig['isProfilingEnabled'];
+    readonly idleMaxDurationMs: number | null;
     readonly error: string | null;
     readonly createdAt: Date;
     readonly lastStateTransitionAt: Date;
@@ -29,6 +30,7 @@ export interface NodeConfigOverride {
     readonly storageMb: NodeConfig['storageMb'] | null;
     readonly isTracingEnabled: NodeConfig['isTracingEnabled'] | null;
     readonly isProfilingEnabled: NodeConfig['isProfilingEnabled'] | null;
+    readonly idleMaxDurationMs: number | null;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }

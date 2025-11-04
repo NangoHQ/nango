@@ -19,7 +19,8 @@ export const localNodeProvider: NodeProvider = {
         memoryMb: 512,
         storageMb: 20000,
         isTracingEnabled: false,
-        isProfilingEnabled: false
+        isProfilingEnabled: false,
+        idleMaxDurationMs: 1800
     },
     start: async (node) => {
         try {
