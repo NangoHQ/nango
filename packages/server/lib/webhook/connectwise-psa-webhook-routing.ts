@@ -1,11 +1,9 @@
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 
-import { NangoError } from '@nangohq/shared';
-import { Err, Ok, axiosInstance, getLogger } from '@nangohq/utils';
+import { Err, Ok, axiosInstance } from '@nangohq/utils';
 
 import type { ConnectWisePsaWebhookPayload, WebhookHandler } from './types.js';
-
-const logger = getLogger('Webhook.ConnectWisePsa');
+import type { Result } from '@nangohq/utils';
 
 interface SigningKeyResponse {
     signing_key: string;
@@ -18,16 +16,15 @@ interface SigningKeyResponse {
  *
  * @param keyUrl - The URL from the webhook's Metadata.key_url field (UNTRUSTED)
  * @param trustedSubdomain - The pre-configured trusted subdomain (e.g., "sandbox-na" or "api-na")
- * @returns true if the keyUrl matches the trusted subdomain under .myconnectwise.net
+ * @returns The validated key URL or an error
  */
-function isTrustedKeyUrl(keyUrl: string, trustedSubdomain: string): boolean {
+function trustedKeyUrl(keyUrl: string, trustedSubdomain: string): Result<string> {
     try {
         const keyUrlParsed = new URL(keyUrl);
 
         // Only accept HTTPS protocol
         if (keyUrlParsed.protocol !== 'https:') {
-            logger.error('Key URL must use HTTPS protocol', { keyUrl, protocol: keyUrlParsed.protocol });
-            return false;
+            return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL must use HTTPS protocol' }));
         }
 
         // Construct the expected host from the trusted subdomain
@@ -35,49 +32,39 @@ function isTrustedKeyUrl(keyUrl: string, trustedSubdomain: string): boolean {
 
         // Verify the host matches exactly
         if (keyUrlParsed.host !== expectedHost) {
-            logger.error('Key URL does not match trusted ConnectWise subdomain', {
-                keyUrl,
-                keyUrlHost: keyUrlParsed.host,
-                trustedSubdomain,
-                expectedHost
-            });
-            return false;
+            return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL host does not match trusted subdomain' }));
         }
 
-        return true;
+        return Ok(keyUrl);
     } catch (err) {
-        logger.error('Error parsing key URL', { keyUrl, trustedSubdomain, error: err });
-        return false;
+        return Err(new Error('webhook_invalid_key_url', { cause: err }));
     }
 }
 
 /**
  * Fetches the signing key from ConnectWise key URL.
- * SECURITY CRITICAL: Only fetches from pre-validated trusted subdomains.
+ * Only fetches from pre-validated trusted subdomains.
  *
  * @param keyUrl - The URL from the webhook's Metadata.key_url field (UNTRUSTED until validated)
  * @param trustedSubdomain - The pre-configured trusted subdomain (e.g., "sandbox-na")
- * @returns The signing key if successfully fetched and validated, null otherwise
+ * @returns The signing key or an error
  */
-async function fetchSigningKey(keyUrl: string, trustedSubdomain: string): Promise<string | null> {
+async function fetchSigningKey(keyUrl: string, trustedSubdomain: string): Promise<Result<string>> {
     try {
-        // SECURITY: Validate that the key URL is from a trusted subdomain BEFORE fetching
-        if (!isTrustedKeyUrl(keyUrl, trustedSubdomain)) {
-            return null;
+        // Validate that the key URL is from a trusted subdomain BEFORE fetching
+        const trusted = trustedKeyUrl(keyUrl, trustedSubdomain);
+        if (trusted.isErr()) {
+            return trusted;
         }
 
-        // Fetch the signing key from the validated URL
         const response = await axiosInstance.get<SigningKeyResponse>(keyUrl);
-
         if (!response.data?.signing_key) {
-            logger.error('Invalid signing key response - missing signing_key field', { keyUrl });
-            return null;
+            return Err('webhook_invalid_signing_key');
         }
 
-        return response.data.signing_key;
+        return Ok(response.data.signing_key);
     } catch (err) {
-        logger.error('Error fetching signing key from ConnectWise', { keyUrl, error: err });
-        return null;
+        return Err(new Error('webhook_invalid_signing_key', { cause: err }));
     }
 }
 
@@ -107,64 +94,40 @@ function validateSignature(sharedSecretKey: string, headerSignature: string, raw
         }
 
         return timingSafeEqual(calculatedBuffer, headerBuffer);
-    } catch (err) {
-        logger.error('Error validating ConnectWise signature', err);
+    } catch {
         return false;
     }
 }
 
 const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, headers, body, rawBody) => {
-    // Extract ConnectWise webhook headers
     const signature = headers['x-content-signature'];
 
-    // SECURITY: Verify webhook signature using dynamic key from ConnectWise
-    // The webhookSecret field contains the trusted subdomain (e.g., "sandbox-na" or "api-na").
-    // This field is mandatory as we enforce webhook signature validation.
+    if (!signature) {
+        return Err(new Error('webhook_missing_signature', { cause: 'Missing signature header' }));
+    }
+
+    // Verify webhook signature using payload metadata key_url
+    // The mandatory webhookSecret field contains the trusted subdomain (e.g., "sandbox-na" or "api-na").
     const trustedSubdomain = nango.integration.custom?.['webhookSecret'];
     const keyUrl = body.Metadata?.key_url;
 
     if (!trustedSubdomain || typeof trustedSubdomain !== 'string') {
-        // No trustedSubdomain configured - skip validation but log a warning
-        logger.error('Webhook signature validation skipped - no trustedSubdomain configured.', {
-            configId: nango.integration.id,
-            message:
-                'Configure the Webhook Secret field in integration settings with your trusted ConnectWise subdomain (e.g., "sandbox-na" or "api-na") to enable webhook processing'
-        });
-        return Err(new NangoError('webhook_missing_secret', { configId: nango.integration.id, missing_configuration_field: 'webhookSecret' }));
-    }
-
-    if (!signature) {
-        logger.error('Missing x-content-signature header but trustedSubdomain is configured', { configId: nango.integration.id });
-        return Err(new NangoError('webhook_missing_signature'));
+        return Err(new Error('webhook_invalid_signature', { cause: 'Trusted subdomain is not configured in webhookSecret field' }));
     }
 
     if (typeof keyUrl !== 'string') {
-        logger.error('Missing Metadata.key_url in webhook payload but trustedSubdomain is configured', {
-            configId: nango.integration.id,
-            hasMetadata: !!body.Metadata
-        });
-        return Err(new NangoError('webhook_invalid_signature'));
+        return Err(new Error('webhook_invalid_signature', { cause: 'Missing or invalid key_url in webhook metadata' }));
     }
 
-    // SECURITY: Fetch the signing key ONLY from the pre-trusted ConnectWise subdomain
     const signingKey = await fetchSigningKey(keyUrl, trustedSubdomain);
 
-    if (!signingKey) {
-        logger.error('Failed to fetch signing key or key URL is not from trusted subdomain', {
-            configId: nango.integration.id,
-            keyUrl,
-            trustedSubdomain
-        });
-        return Err(new NangoError('webhook_invalid_signature'));
+    if (signingKey.isErr()) {
+        return Err(new Error('webhook_invalid_signature', { cause: signingKey.error }));
     }
 
-    // Validate the signature using the fetched key
-    if (!validateSignature(signingKey, signature, rawBody)) {
-        logger.error('Invalid signature', { configId: nango.integration.id });
-        return Err(new NangoError('webhook_invalid_signature'));
+    if (!validateSignature(signingKey.value, signature, rawBody)) {
+        return Err(new Error('webhook_invalid_signature', { cause: 'Signature validation failed' }));
     }
-
-    logger.info('Webhook signature validated successfully', { configId: nango.integration.id });
 
     const response = await nango.executeScriptForWebhooks({
         body,
@@ -173,19 +136,10 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
 
     const connectionId = response?.connectionIds?.[0];
 
-    if (!connectionId) {
-        return Ok({
-            content: { status: 'success' },
-            statusCode: 200,
-            connectionIds: [],
-            toForward: body
-        });
-    }
-
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
-        connectionIds: [connectionId],
+        connectionIds: connectionId ? [connectionId] : [],
         toForward: body
     });
 };
