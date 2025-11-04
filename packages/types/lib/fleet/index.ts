@@ -14,5 +14,5 @@ export interface NodeConfig {
     readonly storageMb: number;
     readonly isTracingEnabled: boolean;
     readonly isProfilingEnabled: boolean;
-    readonly idleTimeoutSecs: number;
+    readonly idleMaxDurationMs: number;
 }

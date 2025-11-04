@@ -20,7 +20,7 @@ export const localNodeProvider: NodeProvider = {
         storageMb: 20000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleTimeoutSecs: 1800
+        idleMaxDurationMs: 1800
     },
     start: async (node) => {
         try {

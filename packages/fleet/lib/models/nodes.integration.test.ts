@@ -37,7 +37,7 @@ describe('Nodes', () => {
                 storageMb: 512,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             })
         ).unwrap();
         expect(node).toStrictEqual({
@@ -52,7 +52,7 @@ describe('Nodes', () => {
             storageMb: 512,
             isTracingEnabled: false,
             isProfilingEnabled: false,
-            idleTimeoutSecs: 1800,
+            idleMaxDurationMs: 1800,
             error: null,
             createdAt: expect.any(Date),
             lastStateTransitionAt: expect.any(Date)

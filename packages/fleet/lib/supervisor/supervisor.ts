@@ -204,7 +204,7 @@ export class Supervisor {
                     if (configOverride.isProfilingEnabled !== null && configOverride.isProfilingEnabled !== node.isProfilingEnabled) {
                         return true;
                     }
-                    if (configOverride.idleTimeoutSecs && configOverride.idleTimeoutSecs !== node.idleTimeoutSecs) {
+                    if (configOverride.idleMaxDurationMs && configOverride.idleMaxDurationMs !== node.idleMaxDurationMs) {
                         return true;
                     }
                     return false;
@@ -250,8 +250,7 @@ export class Supervisor {
                 // Timeout IDLE nodes if they are taking too long (nodeProvider probably failed to terminate the node)
                 plan.push(
                     ...(nodes.IDLE || []).flatMap<Operation>((node) => {
-                        const idleTimeout = node.idleTimeoutSecs ? node.idleTimeoutSecs * 1000 : STATE_TIMEOUT_MS.IDLE;
-                        if (Date.now() - node.lastStateTransitionAt.getTime() > idleTimeout) {
+                        if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.IDLE) {
                             return [{ type: 'FAIL', node, reason: 'idle_timeout_reached' as const }];
                         }
                         return [];
@@ -355,7 +354,7 @@ export class Supervisor {
                 storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
                 isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
                 isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled,
-                idleTimeoutSecs: nodeConfigOverrideValue.idleTimeoutSecs || newNodeConfig.idleTimeoutSecs
+                idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs
             };
         }
 
@@ -368,7 +367,7 @@ export class Supervisor {
             storageMb: newNodeConfig.storageMb,
             isTracingEnabled: newNodeConfig.isTracingEnabled,
             isProfilingEnabled: newNodeConfig.isProfilingEnabled,
-            idleTimeoutSecs: newNodeConfig.idleTimeoutSecs
+            idleMaxDurationMs: newNodeConfig.idleMaxDurationMs
         });
     }
 

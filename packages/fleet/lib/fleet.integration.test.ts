@@ -47,7 +47,7 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
@@ -62,7 +62,7 @@ describe('fleet', () => {
                 storageMb: props.storageMb,
                 isTracingEnabled: props.isTracingEnabled,
                 isProfilingEnabled: props.isProfilingEnabled,
-                idleTimeoutSecs: props.idleTimeoutSecs,
+                idleMaxDurationMs: props.idleMaxDurationMs,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -125,7 +125,7 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -137,7 +137,7 @@ describe('fleet', () => {
                 storageMb: props.storageMb,
                 isTracingEnabled: props.isTracingEnabled,
                 isProfilingEnabled: props.isProfilingEnabled,
-                idleTimeoutSecs: props.idleTimeoutSecs,
+                idleMaxDurationMs: props.idleMaxDurationMs,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -151,7 +151,7 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: true,
                 isProfilingEnabled: true,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             await fleet.overrideNodeConfig(props);
             const updatedProps = {
@@ -162,7 +162,7 @@ describe('fleet', () => {
                 storageMb: 2000,
                 isTracingEnabled: true,
                 isProfilingEnabled: true,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(updatedProps)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -174,7 +174,7 @@ describe('fleet', () => {
                 storageMb: updatedProps.storageMb,
                 isTracingEnabled: updatedProps.isTracingEnabled,
                 isProfilingEnabled: updatedProps.isProfilingEnabled,
-                idleTimeoutSecs: updatedProps.idleTimeoutSecs,
+                idleMaxDurationMs: updatedProps.idleMaxDurationMs,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -188,7 +188,7 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             await fleet.overrideNodeConfig(props);
 
@@ -211,7 +211,7 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             await fleet.overrideNodeConfig(props);
 
@@ -223,7 +223,7 @@ describe('fleet', () => {
                 storageMb: null,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800
+                idleMaxDurationMs: 1800
             };
             await fleet.overrideNodeConfig(defaultProps);
 
@@ -237,7 +237,7 @@ describe('fleet', () => {
                 storageMb: null,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleTimeoutSecs: 1800,
+                idleMaxDurationMs: 1800,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });

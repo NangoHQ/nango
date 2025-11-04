@@ -22,7 +22,7 @@ describe('NodeConfgOverrides', () => {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleTimeoutSecs: 1800
+        idleMaxDurationMs: 1800
     };
 
     it('should be successfully created', async () => {
@@ -36,7 +36,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: props.storageMb,
             isTracingEnabled: props.isTracingEnabled,
             isProfilingEnabled: props.isProfilingEnabled,
-            idleTimeoutSecs: props.idleTimeoutSecs,
+            idleMaxDurationMs: props.idleMaxDurationMs,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -52,7 +52,7 @@ describe('NodeConfgOverrides', () => {
                 storageMb: null,
                 isTracingEnabled: null,
                 isProfilingEnabled: null,
-                idleTimeoutSecs: null
+                idleMaxDurationMs: null
             })
         ).unwrap();
         expect(nodeConfigOverride).toStrictEqual({
@@ -64,7 +64,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: null,
             isTracingEnabled: null,
             isProfilingEnabled: null,
-            idleTimeoutSecs: null,
+            idleMaxDurationMs: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -80,7 +80,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: 2000,
             isTracingEnabled: true,
             isProfilingEnabled: true,
-            idleTimeoutSecs: 1800
+            idleMaxDurationMs: 1800
         };
         const updatedNodeConfigOverride = (await node_config_overrides.upsert(dbClient.db, updatedProps)).unwrap();
         expect(updatedNodeConfigOverride).toStrictEqual({
@@ -91,7 +91,7 @@ describe('NodeConfgOverrides', () => {
             storageMb: updatedProps.storageMb,
             isTracingEnabled: updatedProps.isTracingEnabled,
             isProfilingEnabled: updatedProps.isProfilingEnabled,
-            idleTimeoutSecs: updatedProps.idleTimeoutSecs,
+            idleMaxDurationMs: updatedProps.idleMaxDurationMs,
             updatedAt: expect.any(Date)
         });
     });

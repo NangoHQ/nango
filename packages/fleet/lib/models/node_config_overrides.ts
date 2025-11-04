@@ -18,7 +18,7 @@ interface DBNodeConfigOverride {
     readonly storage_mb: number | null;
     readonly is_tracing_enabled: boolean | null;
     readonly is_profiling_enabled: boolean | null;
-    readonly idle_timeout_secs: number | null;
+    readonly idle_max_duration_ms: number | null;
     readonly created_at: Date;
     readonly updated_at: Date;
 }
@@ -34,7 +34,7 @@ const DBNodeConfigOverride = {
             storage_mb: nodeConfigOverride.storageMb,
             is_tracing_enabled: nodeConfigOverride.isTracingEnabled,
             is_profiling_enabled: nodeConfigOverride.isProfilingEnabled,
-            idle_timeout_secs: nodeConfigOverride.idleTimeoutSecs,
+            idle_max_duration_ms: nodeConfigOverride.idleMaxDurationMs,
             created_at: nodeConfigOverride.createdAt,
             updated_at: nodeConfigOverride.updatedAt
         };
@@ -49,7 +49,7 @@ const DBNodeConfigOverride = {
             storageMb: dbNodeConfigOverride.storage_mb,
             isTracingEnabled: dbNodeConfigOverride.is_tracing_enabled,
             isProfilingEnabled: dbNodeConfigOverride.is_profiling_enabled,
-            idleTimeoutSecs: dbNodeConfigOverride.idle_timeout_secs,
+            idleMaxDurationMs: dbNodeConfigOverride.idle_max_duration_ms,
             createdAt: dbNodeConfigOverride.created_at,
             updatedAt: dbNodeConfigOverride.updated_at
         };
@@ -71,7 +71,7 @@ export async function upsert(
             storage_mb: props.storageMb ?? null,
             is_tracing_enabled: props.isTracingEnabled ?? null,
             is_profiling_enabled: props.isProfilingEnabled ?? null,
-            idle_timeout_secs: props.idleTimeoutSecs ?? null,
+            idle_max_duration_ms: props.idleMaxDurationMs ?? null,
             created_at: now,
             updated_at: now
         };
@@ -83,7 +83,7 @@ export async function upsert(
             ...(props.storageMb !== undefined ? { storage_mb: props.storageMb } : {}),
             ...(props.isTracingEnabled !== undefined ? { is_tracing_enabled: props.isTracingEnabled } : {}),
             ...(props.isProfilingEnabled !== undefined ? { is_profiling_enabled: props.isProfilingEnabled } : {}),
-            ...(props.idleTimeoutSecs !== undefined ? { idle_timeout_secs: props.idleTimeoutSecs } : {}),
+            ...(props.idleMaxDurationMs !== undefined ? { idle_max_duration_ms: props.idleMaxDurationMs } : {}),
             updated_at: now
         };
 
