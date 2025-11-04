@@ -56,6 +56,8 @@ export class NangoActionCLI extends NangoActionBase {
             return;
         }
 
+        this.showLoggerLevelWarning();
+
         const lastArg = args[args.length - 1];
         const isUserDefinedLevel = (object: UserLogParameters): boolean => {
             return lastArg && typeof lastArg === 'object' && 'level' in object;
@@ -116,6 +118,21 @@ export class NangoActionCLI extends NangoActionBase {
     public override async releaseAllLocks(): Promise<void> {
         // Not applicable to CLI
     }
+
+    private showLoggerLevelWarning = (() => {
+        // only show it once
+        let called = false;
+        return () => {
+            if (!called) {
+                called = true;
+                console.log(
+                    chalk.yellow(
+                        'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
+                    )
+                );
+            }
+        };
+    })();
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
