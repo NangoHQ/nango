@@ -1,0 +1,105 @@
+---
+title: 'Zoho Recruit'
+sidebarTitle: 'Zoho Recruit'
+description: 'Access the Zoho Recruit API in 2 minutes 💨'
+---
+
+import UsefulLinks from "/snippets/zoho-shared/zoho-shared-useful-links.mdx"
+import SetupGuide from "/snippets/zoho-shared/zoho-shared-setup-guide.mdx"
+
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zoho Recruit_. Nango doesn't provide a test OAuth app for Zoho Recruit yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Zoho Recruit">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zoho Recruit. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Zoho Recruit API">
+        Let's make your first request to the Zoho Recruit API (retrieves a list of modules). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/users" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v2/users',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+            console.log(JSON.stringify(res.data.users, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Zoho Recruit accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+    
+    <SetupGuide />
+    
+    ## Common Scopes
+    | Scope                                | Description                                                       |
+    | ------------------------------------ | ----------------------------------------------------------------- |
+    | `ZohoRecruit.users.ALL`              | Full access to user-related data and operations.                  |
+    | `ZohoRecruit.org.ALL`                | Full access to organization-level data and configurations.        |
+    | `ZohoRecruit.modules.submission.ALL` | Full access to submission module (create, read, update, delete).  |
+    | `ZohoRecruit.modules.notes.READ`     | Read-only access to notes in modules.                             |
+    | `ZohoRecruit.settings.profiles.READ` | Read-only access to user profiles and related settings.           |
+    | `ZohoRecruit.modules.assessment.ALL` | Full access to assessment modules (create, read, update, delete). |
+
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic             | Links                                                                                                   |
+    | ----------------- | ------------------------------------------------------------------------------------------------------- |
+    | Authorization     | [Guide to connect to Zoho Recruit using Connect UI](/integrations/all/zoho-recruit/connect) |
+    | General           | [Zoho API Console](https://api-console.zoho.com/)                                                       |
+    |                   | [Zoho Recruit Website](https://www.zoho.com/recruit/)                                                   |
+    | Developer / OAuth | [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html)                                 |
+    |                   | [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html)      |
+    |                   | [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html)             |
+    |                   | [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-expiry.html) |
+    |                   | [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html)                          |
+    |                   | [OAuth Scopes](https://www.zoho.com/recruit/developer-guide/apiv2/oauth-overview.html#scopes)                    |
+    |                   | [API Limits](https://www.zoho.com/recruit/developer-guide/apiv2/limits.html)                        |
+    | API               | [Zoho Recruit API docs](https://www.zoho.com/recruit/developer-guide/apiv2/)   
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zoho-recruit.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+  - Zoho uses datacenter-specific URLs for authentication. Make sure to use the correct datacenter domain extension (`com`, `eu`, `in`, `com.cn`, `com.au`) based on where your user's account is registered.
+  - For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
+  - For specific scopes, refer to the API documentation pages to find the exact scopes needed per API and per method. 
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zoho-recruit.mdx)</Note>
+  </Tab>
+</Tabs>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
