@@ -4,7 +4,7 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, environmentService, getPlan } from '@nangohq/shared';
-import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, getLogger, metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -20,14 +20,9 @@ const paramValidation = z
     })
     .strict();
 
-export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
-    // TEMPORARY: Query parameter validation disabled for testing ConnectWise webhooks
-    // const emptyQuery = requireEmptyQuery(req);
-    // if (emptyQuery) {
-    //     res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
-    //     return;
-    // }
+const logger = getLogger('Webhook.PostWebhook');
 
+export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
     const paramValue = paramValidation.safeParse(req.params);
     if (!paramValue.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramValue.error) } });
@@ -37,6 +32,14 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
     await tracer.trace('server.sync.receiveWebhook', async (span) => {
         const { environmentUuid, providerConfigKey }: PostPublicWebhook['Params'] = req.params;
         const headers = req.headers;
+
+        const emptyQuery = requireEmptyQuery(req);
+        if (emptyQuery) {
+            logger.warning('Webhook request included query parameters, discarding them as their validity cannot be verified', {
+                environmentUuid,
+                providerConfigKey
+            });
+        }
 
         try {
             const isGloballyDisabled = await featureFlags.isSet('disable-external-webhooks');

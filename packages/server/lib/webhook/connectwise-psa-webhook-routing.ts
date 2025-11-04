@@ -118,55 +118,53 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
     const signature = headers['x-content-signature'];
 
     // SECURITY: Verify webhook signature using dynamic key from ConnectWise
-    // The webhookSecret field contains the trusted subdomain (e.g., "sandbox-na" or "api-na")
+    // The webhookSecret field contains the trusted subdomain (e.g., "sandbox-na" or "api-na").
+    // This field is mandatory as we enforce webhook signature validation.
     const trustedSubdomain = nango.integration.custom?.['webhookSecret'];
     const keyUrl = body.Metadata?.key_url;
 
-    // If trustedSubdomain is configured, signature validation is MANDATORY
-    if (typeof trustedSubdomain === 'string') {
-        // SECURITY: Once a trusted subdomain is configured, we MUST validate signatures
-        // Do not proceed without full validation
-
-        if (!signature) {
-            logger.error('Missing x-content-signature header but trustedSubdomain is configured', { configId: nango.integration.id });
-            return Err(new NangoError('webhook_missing_signature'));
-        }
-
-        if (typeof keyUrl !== 'string') {
-            logger.error('Missing Metadata.key_url in webhook payload but trustedSubdomain is configured', {
-                configId: nango.integration.id,
-                hasMetadata: !!body.Metadata
-            });
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
-
-        // SECURITY: Fetch the signing key ONLY from the pre-trusted ConnectWise subdomain
-        const signingKey = await fetchSigningKey(keyUrl, trustedSubdomain);
-
-        if (!signingKey) {
-            logger.error('Failed to fetch signing key or key URL is not from trusted subdomain', {
-                configId: nango.integration.id,
-                keyUrl,
-                trustedSubdomain
-            });
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
-
-        // Validate the signature using the fetched key
-        if (!validateSignature(signingKey, signature, rawBody)) {
-            logger.error('Invalid signature', { configId: nango.integration.id });
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
-
-        logger.info('Webhook signature validated successfully', { configId: nango.integration.id });
-    } else {
+    if (typeof trustedSubdomain !== 'string') {
         // No trustedSubdomain configured - skip validation but log a warning
-        logger.warn('Webhook signature validation skipped - no trustedSubdomain configured', {
+        logger.error('Webhook signature validation skipped - no trustedSubdomain configured', {
             configId: nango.integration.id,
             message:
-                'Configure the Webhook Secret field in integration settings with your trusted ConnectWise subdomain (e.g., "sandbox-na" or "api-na") to enable webhook signature validation'
+                'Configure the Webhook Secret field in integration settings with your trusted ConnectWise subdomain (e.g., "sandbox-na" or "api-na") to enable webhook processing'
         });
+        return Err(new NangoError('webhook_missing_secret', { configId: nango.integration.id, missing_configuration_field: 'webhookSecret' }));
     }
+
+    if (!signature) {
+        logger.error('Missing x-content-signature header but trustedSubdomain is configured', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_missing_signature'));
+    }
+
+    if (typeof keyUrl !== 'string') {
+        logger.error('Missing Metadata.key_url in webhook payload but trustedSubdomain is configured', {
+            configId: nango.integration.id,
+            hasMetadata: !!body.Metadata
+        });
+        return Err(new NangoError('webhook_invalid_signature'));
+    }
+
+    // SECURITY: Fetch the signing key ONLY from the pre-trusted ConnectWise subdomain
+    const signingKey = await fetchSigningKey(keyUrl, trustedSubdomain);
+
+    if (!signingKey) {
+        logger.error('Failed to fetch signing key or key URL is not from trusted subdomain', {
+            configId: nango.integration.id,
+            keyUrl,
+            trustedSubdomain
+        });
+        return Err(new NangoError('webhook_invalid_signature'));
+    }
+
+    // Validate the signature using the fetched key
+    if (!validateSignature(signingKey, signature, rawBody)) {
+        logger.error('Invalid signature', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_invalid_signature'));
+    }
+
+    logger.info('Webhook signature validated successfully', { configId: nango.integration.id });
 
     const response = await nango.executeScriptForWebhooks({
         body,
