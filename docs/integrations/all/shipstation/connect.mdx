@@ -1,35 +1,37 @@
 ---
-title: ShipStation - How do I link my account?
-sidebarTitle: ShipStation
+title: ShipStation (v1) - How do I link my account?
+sidebarTitle: ShipStation (v1)
 ---
 
 # Overview
 
-To authenticate with ShipStation, you need two key pieces of information:
-1. **API Key** - Your ShipStation Access Key
-2. **API Secret** - Your ShipStation API Secret
+To authenticate with ShipStation (v1), you need:
+1. **API Key** - A unique identifier used to identify your integration when making API requests.
+2. **Secret Key** - Used together with your API Key to authenticate and authorize requests to the ShipStation (v1)'s API.
 
-This guide will walk you through finding or creating those credentials within ShipStation.
+This guide will walk you through generating these credentials within ShipStation.
 
 ### Prerequisites:
 
 - You must set up an account with ShipStation.
 
-#### Step 1: Finding ShipStation API Key and API Secret
+#### Step 1: Generating an API Key
 1. Sign in to your ShipStation account.
-2. Navigate to `My Profile` > `Account` > `API Settings` > `API Keys`.
-3. Click `Generate API Keys`.
-4. Save and securely copy your `API Key` and `API Secret`.
+2. Navigate to **My Profile** > **Account** > **API Settings**, then select **V1 API** from the **Select API Version** dropdown.
+<img src="/integrations/all/shipstation/api_settings.png"/>
+3. Click **Generate API Key** and set the expiration time.
+4. Click **Generate** to generate your **API Key** and **Secret Key**.
+<img src="/integrations/all/shipstation/keys.png"/>
+<Note>You can have a maximum of two API Key pairs at a time.</Note>
 
-<img src="/integrations/all/shipstation/ship1.png" />
+#### Step 2: Enter credentials in the Connect UI
 
-#### Step 2: Connect Your ShipStation Account
+Once you have your **API Key** and **Secret Key**:
+1. Open the form where you need to authenticate with ShipStation (v1).
+2. Enter your **API Key** and **Secret Key** in their respective fields.
+3. Submit the form to complete authentication.
 
-<img src="/integrations/all/shipstation/nango_connect_ui.png" />
 
-To authenticate using your API credentials, navigate to the ShipStation authentication form.
-Enter your credentials as follows:
-- User Name: Your ShipStation API Key
-- Password: Your ShipStation API secret
+<img src="/integrations/all/shipstation/form.png" style={{maxWidth: "450px" }}/>
 
-Click "Connect" to complete the authentication.
+You are now connected to ShipStation (v1).

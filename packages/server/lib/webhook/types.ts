@@ -222,3 +222,8 @@ export interface affinityWebhookResponse {
     body: object;
     sent_at: number;
 }
+
+export interface ShipStationWebhook {
+    resource_url: string;
+    resource_type: string;
+}
