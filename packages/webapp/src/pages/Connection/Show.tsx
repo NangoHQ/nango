@@ -17,7 +17,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Button } from '../../components/ui/button/Button';
-import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
+import { apiDeleteConnection, apiTestConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { clearIntegrationsCache, useGetIntegration } from '../../hooks/useIntegration';
 import { GetUsageQueryKey } from '../../hooks/usePlan';
@@ -82,12 +82,14 @@ export const ConnectionShow: React.FC = () => {
         }
 
         setLoadingTest(true);
-        // TODO: Implement test connection API call
-        // Placeholder for now
-        setTimeout(() => {
-            setLoadingTest(false);
-            toast({ title: `Connection test completed!`, variant: 'success' });
-        }, 1000);
+        const res = await apiTestConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
+        setLoadingTest(false);
+
+        if (res.res.status === 200) {
+            toast({ title: `Connection test successful!`, variant: 'success' });
+        } else {
+            toast({ title: `Connection test failed`, variant: 'error' });
+        }
     };
 
     const onDelete = async () => {

@@ -194,3 +194,21 @@ export type DeleteConnection = Endpoint<{
     Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;
     Success: { success: boolean };
 }>;
+
+export type PostConnectionTest = Endpoint<{
+    Method: 'POST';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Path: '/api/v1/connections/:connectionId/test';
+    Error: ApiError<'unknown_provider_config'> | ApiError<'connection_test_failed'>;
+    Success: {
+        data: {
+            tested: boolean;
+        };
+    };
+}>;

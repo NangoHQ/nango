@@ -5,7 +5,7 @@ import useSWRInfinite from 'swr/infinite';
 import { apiFetch, swrFetcher } from '../utils/api';
 
 import type { SWRError } from '../utils/api';
-import type { DeleteConnection, GetConnection, GetConnections, GetConnectionsCount, PostConnectionRefresh } from '@nangohq/types';
+import type { DeleteConnection, GetConnection, GetConnections, GetConnectionsCount, PostConnectionRefresh, PostConnectionTest } from '@nangohq/types';
 import type { Cache, useSWRConfig } from 'swr';
 
 export function useConnections(queries: GetConnections['Querystring']) {
@@ -92,5 +92,16 @@ export async function apiDeleteConnection(params: DeleteConnection['Params'], qu
     return {
         res,
         json: (await res.json()) as DeleteConnection['Reply']
+    };
+}
+
+export async function apiTestConnection(params: PostConnectionTest['Params'], query: PostConnectionTest['Querystring']) {
+    const res = await apiFetch(`/api/v1/connections/${params.connectionId}/test?${new URLSearchParams(query).toString()}`, {
+        method: 'POST'
+    });
+
+    return {
+        res,
+        json: (await res.json()) as PostConnectionTest['Reply']
     };
 }
