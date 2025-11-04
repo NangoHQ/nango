@@ -1,0 +1,90 @@
+---
+title: 'HeyReach'
+sidebarTitle: 'HeyReach'
+description: 'Access the HeyReach API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _HeyReach_.
+      </Step>
+      <Step title="Authorize HeyReach">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your HeyReach API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the HeyReach API">
+        Let's make your first request to the HeyReach API (fetch a list of LinkedIn accounts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X POST "https://api.nango.dev/proxy/public/li_account/GetAll" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "limit": 10
+                  }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Get all LinkedIn accounts
+            const res = await nango.post({
+              endpoint: '/public/li_account/GetAll',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>',
+              body: {
+                "limit": 10
+              }
+            });
+
+            console.log(res.data.items);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their HeyReach accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to HeyReach using Connect UI](/integrations/all/heyreach/connect) |
+    | General | [HeyReach Website](https://www.heyreach.io/) |
+    | | [HeyReach Dashboard](https://app.heyreach.io/) |
+    | | [HeyReach Help Center](https://help.heyreach.io/en/) |
+    | Developer | [HeyReach API docs](https://documenter.getpostman.com/view/23808049/2sA2xb5F75#intro) |
+    
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/heyreach.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - HeyReach allows a maximum of 300 requests per minute. All requests are attributed to the same limit.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/heyreach.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
