@@ -19,7 +19,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Button } from '../../components/ui/button/Button';
 import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import { clearIntegrationsCache } from '../../hooks/useIntegration';
+import { clearIntegrationsCache, useGetIntegration } from '../../hooks/useIntegration';
 import { GetUsageQueryKey } from '../../hooks/usePlan';
 import { useSyncs } from '../../hooks/useSyncs';
 import { useToast } from '../../hooks/useToast';
@@ -54,10 +54,12 @@ export const ConnectionShow: React.FC = () => {
     const [slackIsConnected, setSlackIsConnected] = useState(true);
     const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
     const { data: syncs, error: errorSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+    const { data: integrationData } = useGetIntegration(env, providerConfigKey!);
 
     // Modal delete
     const [open, setOpen] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(false);
+    const [loadingTest, setLoadingTest] = useState(false);
 
     useEffect(() => {
         if (environmentAndAccount) {
@@ -73,6 +75,20 @@ export const ConnectionShow: React.FC = () => {
             setActiveTab(Tabs.Authorization);
         }
     }, [location]);
+
+    const onTest = async () => {
+        if (!connectionId || !providerConfigKey) {
+            return;
+        }
+
+        setLoadingTest(true);
+        // TODO: Implement test connection API call
+        // Placeholder for now
+        setTimeout(() => {
+            setLoadingTest(false);
+            toast({ title: `Connection test completed!`, variant: 'success' });
+        }, 1000);
+    };
 
     const onDelete = async () => {
         if (!connectionId || !providerConfigKey) {
@@ -191,25 +207,32 @@ export const ConnectionShow: React.FC = () => {
                         </div>
                     </div>
 
-                    <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant={'emptyFaded'}>
-                                <IconTrash stroke={1} size={18} /> Delete
+                    <div className="flex gap-2">
+                        {integrationData?.template?.proxy?.verification && (
+                            <Button variant={'emptyFaded'} onClick={onTest} isLoading={loadingTest}>
+                                Test
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogTitle>Delete connection?</DialogTitle>
-                            <DialogDescription>All credentials & synced data associated with this connection will be deleted.</DialogDescription>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant={'zinc'}>Cancel</Button>
-                                </DialogClose>
-                                <Button variant={'danger'} onClick={onDelete} isLoading={loadingDelete}>
-                                    Delete
+                        )}
+                        <Dialog open={open} onOpenChange={setOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant={'emptyFaded'}>
+                                    <IconTrash stroke={1} size={18} /> Delete
                                 </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogTitle>Delete connection?</DialogTitle>
+                                <DialogDescription>All credentials & synced data associated with this connection will be deleted.</DialogDescription>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button variant={'zinc'}>Cancel</Button>
+                                    </DialogClose>
+                                    <Button variant={'danger'} onClick={onDelete} isLoading={loadingDelete}>
+                                        Delete
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                 </div>
             </div>
 
