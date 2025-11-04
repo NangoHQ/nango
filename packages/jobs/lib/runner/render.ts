@@ -57,7 +57,7 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
                     { key: 'RUNNER_NODE_ID', value: `${node.id}` },
                     { key: 'RUNNER_URL', value: `http://${name}` },
-                    { key: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` }, // 25 hours
+                    { key: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` },
                     { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                     { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
                     ...(envs.DD_ENV ? [{ key: 'DD_ENV', value: envs.DD_ENV }] : []),
