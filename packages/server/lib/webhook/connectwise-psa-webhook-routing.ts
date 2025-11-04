@@ -123,9 +123,9 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
     const trustedSubdomain = nango.integration.custom?.['webhookSecret'];
     const keyUrl = body.Metadata?.key_url;
 
-    if (typeof trustedSubdomain !== 'string') {
+    if (!trustedSubdomain || typeof trustedSubdomain !== 'string') {
         // No trustedSubdomain configured - skip validation but log a warning
-        logger.error('Webhook signature validation skipped - no trustedSubdomain configured', {
+        logger.error('Webhook signature validation skipped - no trustedSubdomain configured.', {
             configId: nango.integration.id,
             message:
                 'Configure the Webhook Secret field in integration settings with your trusted ConnectWise subdomain (e.g., "sandbox-na" or "api-na") to enable webhook processing'
