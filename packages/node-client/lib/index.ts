@@ -789,18 +789,14 @@ export class Nango {
      * Wait for connection to be created
      * @param integrationKey - The integration key
      * @param userId - The user ID
-     * @param options - Optional configuration (signal for cancellation, maxAttempts, initialDelayMs, delayMs)
+     * @param options - Optional configuration (signal for cancellation)
      * @returns A promise that resolves when the connection is created
      * @throws {Error} If the wait is aborted via signal or times out
      */
-    public async waitForConnection(
-        integrationKey: string,
-        userId: string,
-        options?: { signal?: AbortSignal; maxAttempts?: number; initialDelayMs?: number; delayMs?: number }
-    ): Promise<ApiPublicConnection> {
-        const maxAttempts = options?.maxAttempts ?? 30;
-        const initialDelayMs = options?.initialDelayMs ?? 10000; // 10 seconds for initial auth flow
-        const delayBetweenAttemptsMs = options?.delayMs ?? 2000;
+    public async waitForConnection(integrationKey: string, userId: string, options?: { signal?: AbortSignal }): Promise<ApiPublicConnection> {
+        const maxAttempts = 30;
+        const initialDelayMs = 10000;
+        const delayBetweenAttemptsMs = 2000;
         const signal = options?.signal;
 
         if (signal?.aborted) {
@@ -823,22 +819,19 @@ export class Nango {
             const currentDelay = attempt === 0 ? initialDelayMs : delayBetweenAttemptsMs;
 
             await new Promise<void>((resolve, reject) => {
-                const timeout = setTimeout(resolve, currentDelay);
-
                 const onAbort = () => {
                     clearTimeout(timeout);
                     reject(new Error('Wait for connection was aborted'));
                 };
 
-                if (signal) {
-                    signal.addEventListener('abort', onAbort, { once: true });
-                }
-
-                setTimeout(() => {
+                const timeout = setTimeout(() => {
                     if (signal) {
                         signal.removeEventListener('abort', onAbort);
                     }
+                    resolve();
                 }, currentDelay);
+
+                signal?.addEventListener('abort', onAbort, { once: true });
             });
         }
 
