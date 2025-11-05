@@ -32,6 +32,7 @@ export const ENVS = z.object({
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
+    PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z.string().optional(),
 
     // Crons
     CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
