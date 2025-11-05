@@ -9,7 +9,7 @@ export const noopNodeProvider: NodeProvider = {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1800
+        idleMaxDurationMs: 1_800_000
     },
     start: () => {
         return Promise.resolve(Ok(undefined));

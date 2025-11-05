@@ -454,7 +454,7 @@ export const kubernetesNodeProvider: NodeProvider = {
         storageMb: 20000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1800
+        idleMaxDurationMs: 1_800_000 // 30 minutes
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();

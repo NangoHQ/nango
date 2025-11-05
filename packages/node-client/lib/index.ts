@@ -17,6 +17,7 @@ import type {
 } from './types.js';
 import type {
     ApiKeyCredentials,
+    ApiPublicConnection,
     ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
@@ -782,6 +783,59 @@ export class Nango {
         const response = await this.http.put(url, body, { headers: this.enrichHeaders() });
 
         return response.data;
+    }
+
+    /**
+     * Wait for connection to be created
+     * @param integrationKey - The integration key
+     * @param userId - The user ID
+     * @param options - Optional configuration (signal for cancellation)
+     * @returns A promise that resolves when the connection is created
+     * @throws {Error} If the wait is aborted via signal or times out
+     */
+    public async waitForConnection(integrationKey: string, userId: string, options?: { signal?: AbortSignal }): Promise<ApiPublicConnection> {
+        const maxAttempts = 30;
+        const initialDelayMs = 10000;
+        const delayBetweenAttemptsMs = 2000;
+        const signal = options?.signal;
+
+        if (signal?.aborted) {
+            throw new Error('Wait for connection was aborted');
+        }
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (signal?.aborted) {
+                throw new Error('Wait for connection was aborted');
+            }
+
+            const response = await this.listConnections(undefined, undefined, { endUserId: userId });
+            const connection = response.connections.find((conn) => conn.provider_config_key === integrationKey);
+
+            if (connection) {
+                return connection;
+            }
+
+            // Use longer delay for first attempt to account for auth flow
+            const currentDelay = attempt === 0 ? initialDelayMs : delayBetweenAttemptsMs;
+
+            await new Promise<void>((resolve, reject) => {
+                const onAbort = () => {
+                    clearTimeout(timeout);
+                    reject(new Error('Wait for connection was aborted'));
+                };
+
+                const timeout = setTimeout(() => {
+                    if (signal) {
+                        signal.removeEventListener('abort', onAbort);
+                    }
+                    resolve();
+                }, currentDelay);
+
+                signal?.addEventListener('abort', onAbort, { once: true });
+            });
+        }
+
+        throw new Error('Timeout waiting for connection to be created');
     }
 
     /**

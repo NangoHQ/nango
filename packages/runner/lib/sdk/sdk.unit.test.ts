@@ -35,7 +35,8 @@ const nangoProps: NangoProps = {
     runnerFlags: {} as any,
     startedAt: new Date(),
     endUser: null,
-    heartbeatTimeoutSecs: 30
+    heartbeatTimeoutSecs: 30,
+    logger: { level: 'info' }
 };
 
 const locks = new Locks();
@@ -479,6 +480,22 @@ describe('Log', () => {
 
     it('should enforce type: log message + object', async () => {
         await nangoAction.log('hello', { foo: 'bar' });
+    });
+
+    it('should respect logger level', async () => {
+        const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'warn' } }, { persistClient, locks });
+        await nangoAction.log('hello', { level: 'info' });
+        expect(persistClient.saveLog).not.toHaveBeenCalled();
+    });
+    it('should allow setting logger level', () => {
+        const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'debug' } }, { persistClient, locks });
+        nangoAction.setLogger({ level: 'info' });
+        expect(nangoAction['logger'].level).toBe('info');
+    });
+    it('should prevent setting logger level if off', () => {
+        const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'off' } }, { persistClient, locks });
+        nangoAction.setLogger({ level: 'info' });
+        expect(nangoAction['logger'].level).toBe('off');
     });
 });
 

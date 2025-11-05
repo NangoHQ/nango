@@ -1,4 +1,5 @@
 import * as uuid from 'uuid';
+import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { isCloud } from '@nangohq/utils';
@@ -10,7 +11,7 @@ import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 import type { Orchestrator } from '../index.js';
-import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBEnvironmentVariable, DBTeam, SdkLogger } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
 
@@ -477,6 +478,14 @@ class EnvironmentService {
         }
 
         return globalCallbackUrl;
+    }
+    async getSdkLogger(id: number): Promise<SdkLogger> {
+        const defaultLevel = 'warn';
+        const levelSchema = z.enum(['debug', 'info', 'warn', 'error', 'off']).default(defaultLevel);
+        const envVars = await this.getEnvironmentVariables(id);
+        const parsed = levelSchema.safeParse(envVars.find((ev) => ev.name === 'NANGO_LOGGER_LEVEL')?.value);
+        const level = parsed.success ? parsed.data : defaultLevel; // fallback to default if parsing fails
+        return { level };
     }
 
     async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {

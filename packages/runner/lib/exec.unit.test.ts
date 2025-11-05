@@ -26,6 +26,7 @@ function getNangoProps(): NangoProps {
         debug: false,
         startedAt: new Date(),
         team: { id: 1, name: 'dev' },
+        logger: { level: 'off' },
         runnerFlags: {
             validateActionInput: false,
             validateActionOutput: false,

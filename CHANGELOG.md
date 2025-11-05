@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.8] - 2025-11-05
+
+### Added
+
+- *(integrations)* Add support for atlassian-government-cloud (#4935) by @hassan254-prog
+- *(integrations)* Add statista provider (#4860) by @Diginut-GmbH
+- *(providers)* Add a default value for medallia gatewayUrl (#4947) by @hassan254-prog
+- *(server)* Add ready endpoint (#4931) by @rossmcewan
+- *(fleet)* Add metering and profiling controls to node and overrides (#4948) by @rossmcewan
+- *(node-sdk)* Node sdk connection creation detection for agentic flow (#4923) by @khaliqgant
+- *(fleet)* Add idle timeout to node config and overrides (#4952) by @rossmcewan
+- *(integrations)* Add support for zoho-recruit (#4958) by @hassan254-prog
+- *(integrations)* Add support for heyreach (#4951) by @hassan254-prog
+- *(runner-sdk)* Add logger level concept (default to warn in cloud) (#4954) by @TBonnin
+- *(connect-ui)* Add error event emission to notify parent on auth failures (#4953) by @hassan254-prog
+- *(integrations)* Add support for apify (#4930) by @hassan254-prog
+- *(agentic-sdk)* WaitForConnection (#4939) by @khaliqgant
+
+### Changed
+
+- Update screenshots to use new connect ui (#4839) by @hassan254-prog
+
+### Fixed
+
+- *(plan)* Xl api_rate_limit_size for growth plan (#4944) by @TBonnin
+- *(runner)* Error handling and retry in jobs client (#4927) by @TBonnin
+- Remove legacy usage table (#4949) by @TBonnin
+- *(integrations)* Add support for Auvik Networks (#4941) by @jeremydhoon
+- *(integrations)* Add Passportal integration (#4942) by @jeremydhoon
+
 ## [v0.69.7] - 2025-10-31
 
 ### Added
@@ -5240,6 +5270,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.8]: https://github.com/NangoHQ/nango/compare/v0.69.7..v0.69.8
 [v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
 [v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
 [v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5

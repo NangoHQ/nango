@@ -1,7 +1,12 @@
 import type { RunnerFlags } from './index.js';
+import type { LogLevel } from '../logs/messages.js';
 import type { DBSyncConfig } from '../syncConfigs/db.js';
 import type { DBTeam } from '../team/db.js';
 import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
+
+export interface SdkLogger {
+    level: LogLevel | 'off';
+}
 
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
@@ -24,6 +29,7 @@ export interface NangoProps {
     abortSignal?: AbortSignal;
     syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
+    logger: SdkLogger;
     /**
      * @deprecated not used
      */

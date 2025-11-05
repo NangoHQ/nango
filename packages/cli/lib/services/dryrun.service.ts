@@ -26,7 +26,7 @@ import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
 import type { NangoActionBase } from '@nangohq/runner-sdk';
-import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
+import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType, SdkLogger } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
@@ -356,6 +356,10 @@ export class DryRunService {
                 sync_type: lastSyncDate ? 'incremental' : 'full',
                 version: '0.0.1'
             };
+            const sdkLogger: SdkLogger = { level: 'debug' };
+            if (debug) {
+                printDebug(`Nango logger.level is set to '${sdkLogger.level}'`);
+            }
             const nangoProps: NangoProps = {
                 isCLI: true,
                 scriptType: scriptInfo?.type || 'sync',
@@ -374,6 +378,7 @@ export class DryRunService {
                 syncVariant,
                 debug,
                 team: { id: 1, name: 'team' },
+                logger: sdkLogger,
                 runnerFlags: {
                     validateActionInput: this.validation, // irrelevant for cli
                     validateActionOutput: this.validation, // irrelevant for cli
