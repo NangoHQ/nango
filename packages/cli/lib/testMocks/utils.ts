@@ -86,8 +86,17 @@ class NangoActionMock {
         const hashBasedPath = `${dir}/${identity.requestIdentityHash}`;
 
         if (await this.hashDirExists(dir)) {
-            const data = await this.getMockFile(hashBasedPath, true, identity);
-            return data;
+            try {
+                const data = await this.getMockFile(hashBasedPath, true, identity);
+                return data;
+            } catch (err) {
+                const normalizedHash = computeNormalizedHash(identity.requestIdentity);
+                if (normalizedHash !== identity.requestIdentityHash) {
+                    const data = await this.getMockFile(`${dir}${normalizedHash}`, true, identity);
+                    return data;
+                }
+                throw err;
+            }
         } else {
             return {
                 response: await this.getMockFile(`nango/${identity.method}/proxy/${identity.endpoint}/${this.name}`, true, identity)
@@ -280,6 +289,14 @@ function computeConfigIdentity(config: UserProvidedProxyConfiguration): ConfigId
 
 function sortEntries(entries: [string, unknown][]): [string, unknown][] {
     return entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+}
+
+function computeNormalizedHash(requestIdentity: RequestIdentity): string {
+    const normalized = {
+        ...requestIdentity,
+        params: requestIdentity.params.map(([k, v]) => [k, String(v)])
+    };
+    return crypto.createHash('sha1').update(JSON.stringify(normalized)).digest('hex');
 }
 
 function computeDataIdentity(config: UserProvidedProxyConfiguration): string | undefined {
