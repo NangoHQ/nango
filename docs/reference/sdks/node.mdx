@@ -633,6 +633,53 @@ await nango.deleteConnection('<INTEGRATION-ID>', 'CONNECTION-ID');
 
 Empty response.
 
+### Wait for connection
+
+Waits for a connection to be created for a given end user and integration. This is useful in agentic flows where you need to wait for a user to complete the OAuth flow before proceeding.
+
+```js
+const connection = await nango.waitForConnection('<INTEGRATION-ID>', '<END-USER-ID>');
+```
+
+<Tip>
+This method polls for a connection every 2 seconds for up to 60 seconds (30 attempts). If no connection is found within this time, it will throw a timeout error.
+</Tip>
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="integrationKey" type="string" required>
+        The integration ID (provider config key).
+    </ResponseField>
+
+    <ResponseField name="userId" type="string" required>
+        The end user ID to wait for a connection for.
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "id": 1,
+    "connection_id": "user-123",
+    "provider": "slack",
+    "provider_config_key": "slack-integration",
+    "created": "2023-06-03T14:53:22.051Z",
+    "metadata": null,
+    "errors": [],
+    "end_user": {
+        "id": "user-123",
+        "email": "user@example.com",
+        "organization": {
+            "id": "org-456"
+        }
+    }
+}
+```
+</Expandable>
+
 ## Integration functions
 
 
