@@ -314,25 +314,31 @@ await nango.deleteIntegration(<UNIQUE_KEY>);
 Returns a list of connections without credentials.
 
 ```js
-await nango.listConnections();
+await nango.listConnections({
+    connectionId: 'connection-id',
+    userId: 'user-123',
+    integrationId: 'integration-456',
+    // only supports email | displayName
+    tags: { displayName: 'My User' }
+});
 ```
 
 **Parameters**
 
 <Expandable>
-    <ResponseField name="connectionId" type="string">
-        Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
-    </ResponseField>
-    <ResponseField name="search" type="string">
-        Optional. Search connections. Will search in connection ID or end user profile.
-    </ResponseField>
-    <ResponseField name="queries" type="object">
-        <Expandable title="queries" defaultOpen>
-            <ResponseField name="endUserId" type="string">
+    <ResponseField name="params" type="object">
+        <Expandable title="params" defaultOpen>
+            <ResponseField name="connectionId" type="string">
+                Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
+            </ResponseField>
+            <ResponseField name="userId" type="string">
                 Optional. Will exactly match a given end user ID.
             </ResponseField>
-            <ResponseField name="endUserOrganizationId" type="string">
-                Optional. Will exactly match a given end organization ID.
+            <ResponseField name="integrationId" type="string">
+                Optional. Filter by integration ID.
+            </ResponseField>
+            <ResponseField name="tags" type="Record<string, string>">
+                Optional. Filter by tags associated with connections.
             </ResponseField>
         </Expandable>
     </ResponseField>
@@ -450,6 +456,7 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
 }
 ```
 </Expandable>
+
 
 ### Patch a connection
 
@@ -1780,7 +1787,7 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 ### Create a connect session
 
-Create a connect session for a given end user
+Create a connect session for a given end user. The token is short-lived and lasts for 30 minutes.
 
 ```js
 const { data } = await nango.createConnectSession({

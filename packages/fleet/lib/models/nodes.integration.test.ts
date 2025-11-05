@@ -34,7 +34,10 @@ describe('Nodes', () => {
                 image: 'nangohq/my-image:latest',
                 cpuMilli: 500,
                 memoryMb: 1024,
-                storageMb: 512
+                storageMb: 512,
+                isTracingEnabled: false,
+                isProfilingEnabled: false,
+                idleMaxDurationMs: 1_800_000
             })
         ).unwrap();
         expect(node).toStrictEqual({
@@ -47,6 +50,9 @@ describe('Nodes', () => {
             cpuMilli: 500,
             memoryMb: 1024,
             storageMb: 512,
+            isTracingEnabled: false,
+            isProfilingEnabled: false,
+            idleMaxDurationMs: 1_800_000,
             error: null,
             createdAt: expect.any(Date),
             lastStateTransitionAt: expect.any(Date)

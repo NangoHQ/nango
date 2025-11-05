@@ -57,7 +57,8 @@ describe('Connection service integration tests', () => {
                 runnerFlags: {} as any,
                 startedAt: new Date(),
                 endUser: null,
-                heartbeatTimeoutSecs: 30
+                heartbeatTimeoutSecs: 30,
+                logger: { level: 'off' }
             };
 
             const nango = new NangoActionRunner(nangoProps, { locks });
