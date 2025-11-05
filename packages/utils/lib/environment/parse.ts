@@ -32,7 +32,19 @@ export const ENVS = z.object({
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
-    PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z.coerce.date().default(new Date('2025-08-25')),
+    PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z
+        .string()
+        .optional()
+        .transform((val) => {
+            if (!val) {
+                return new Date('2025-08-25');
+            }
+            const parsed = new Date(val);
+            if (isNaN(parsed.getTime())) {
+                return new Date('2025-08-25');
+            }
+            return parsed;
+        }),
 
     // Crons
     CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
