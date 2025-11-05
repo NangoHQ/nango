@@ -9308,6 +9308,67 @@ pandadoc-api-key:
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
 
+passportal:
+    display_name: Passportal
+    categories:
+        - support
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.base_url}/api/v2/auth/client_token
+    token_headers:
+        x-key: ${credentials.apiKey}
+        x-hash: ${credentials.hmacToken}
+        content-type: application/json
+    token_params:
+        scope: docs_api
+        content: ${credentials.content}
+    token_response:
+        token: access_token
+        token_expiration: expiry_time
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://${connectionConfig.base_url}
+        headers:
+            x-access-token: ${accessToken}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v2/documents?resultsPerPage=1
+    connection_config:
+        base_url:
+            type: string
+            title: Passportal Base URL
+            description: Your Passportal base URL
+            example: mycompany.mypasswordapp.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-passportal-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Key ID
+            description: Your Passportal API Access Key ID
+            example: a14e6b4923ba5027189baded6ba7b68e6fcda742008c5d57b867f43a09768ece
+            pattern: '^[a-fA-F0-9]{64}$'
+            doc_section: '#step-2-generate-api-access-key-id-and-secret-access-key'
+        hmacToken:
+            type: string
+            title: HMAC Token
+            description: Your pre-generated HMAC token, hex encoded
+            example: 23ec313efecb560a7f44239f6dd439ea56d18911c18b59e1150a3c7299da8202
+            pattern: '^[a-fA-F0-9]{64}$'
+            secret: true
+            doc_section: '#step-3-generate-hmac-token'
+        content:
+            type: string
+            title: Content String
+            description: Plain text message used to compute the HMAC token
+            example: api-content-hash
+            doc_section: '#step-3-generate-hmac-token'
+    docs: https://nango.dev/docs/integrations/all/passportal
+    docs_connect: https://nango.dev/docs/integrations/all/passportal/connect
+
 paychex:
     display_name: Paychex
     categories:
