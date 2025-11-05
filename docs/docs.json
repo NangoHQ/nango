@@ -300,6 +300,7 @@
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
               "integrations/all/apaleo",
+              "integrations/all/apify",
               "integrations/all/apollo",
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
