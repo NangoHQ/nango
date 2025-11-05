@@ -7,10 +7,17 @@ import { vi } from 'vitest';
 import { getProvider } from '@nangohq/providers';
 import { PaginationService } from '@nangohq/runner-sdk';
 
+import type { NangoAction } from '@nangohq/runner-sdk';
 import type { CursorPagination, LinkPagination, OffsetPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
-class NangoActionMock {
+class NangoActionMock
+    implements
+        Pick<
+            NangoAction,
+            'getConnection' | 'getMetadata' | 'updateMetadata' | 'paginate' | 'get' | 'post' | 'patch' | 'put' | 'delete' | 'proxy' | 'getWebhookURL' | 'log'
+        >
+{
     dirname: string;
     name: string;
     Model: string;
