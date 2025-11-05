@@ -80,7 +80,7 @@ export const growthV1Plan: PlanDefinition = {
     hidden: true,
     basePrice: 500,
     flags: {
-        api_rate_limit_size: 'l',
+        api_rate_limit_size: 'xl',
         environments_max: 10,
         has_otel: true,
         has_sync_variants: true,

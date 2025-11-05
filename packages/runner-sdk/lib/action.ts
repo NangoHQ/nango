@@ -24,6 +24,7 @@ import type {
     OAuth2ClientCredentials,
     Pagination,
     PostPublicTrigger,
+    SdkLogger,
     SetMetadata,
     SignatureCredentials,
     TbaCredentials,
@@ -51,6 +52,7 @@ export abstract class NangoActionBase<
 > {
     abstract nango: Nango;
     private attributes = {};
+    logger: SdkLogger;
     activityLogId: string;
     syncId?: string;
     nangoConnectionId?: number;
@@ -121,6 +123,10 @@ export abstract class NangoActionBase<
         if (config.syncConfig) {
             this.syncConfig = config.syncConfig;
         }
+
+        this.logger = config.logger || {
+            level: 'warn'
+        };
     }
 
     protected getProxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
@@ -139,6 +145,18 @@ export abstract class NangoActionBase<
         if (this.abortSignal?.aborted) {
             throw new AbortedSDKError();
         }
+    }
+
+    protected shouldLog(logLevel: SdkLogger['level']): boolean {
+        const levels: Record<SdkLogger['level'], number> = {
+            debug: 0,
+            info: 1,
+            warn: 2,
+            error: 3,
+            off: 4
+        };
+
+        return levels[logLevel] >= levels[this.logger.level];
     }
 
     public abstract proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
@@ -308,6 +326,23 @@ export abstract class NangoActionBase<
     public abstract log(message: any, options?: UserLogParameters | { [key: string]: any; level?: never }): MaybePromise<void>;
     public abstract log(message: string, ...args: [any, UserLogParameters]): MaybePromise<void>;
     public abstract log(...args: [...any]): MaybePromise<void>;
+
+    /**
+     * Set logger
+     * @desc Set the default logger level
+     * @param logger { level: 'debug' | 'info' | 'warn' | 'error' | 'off' }
+     * @example
+     * ```ts
+     * nango.setLogger({ level: 'warn' })
+     * ```
+     */
+    public setLogger(logger: SdkLogger): void {
+        // If the current logger is off, we don't allow changing it
+        if (this.logger.level === 'off') {
+            return;
+        }
+        this.logger = logger;
+    }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
         return await this.nango.getEnvironmentVariables();

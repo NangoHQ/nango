@@ -518,6 +518,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "integrations/all/highlevel",
               "integrations/all/highlevel-white-label",
@@ -836,6 +837,7 @@
               "integrations/all/zoho-invoice",
               "integrations/all/zoho-mail",
               "integrations/all/zoho-people",
+              "integrations/all/zoho-recruit",
               "integrations/all/zoom",
               "integrations/all/zoominfo",
               "integrations/all/zuora"
