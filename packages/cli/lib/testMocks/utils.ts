@@ -64,6 +64,20 @@ class NangoActionMock {
             const data = JSON.parse(fileContent);
             return data;
         } catch (err: any) {
+            if (identity && identity.requestIdentity && fileName.includes(identity.requestIdentityHash)) {
+                const normalizedHash = computeNormalizedHash(identity.requestIdentity);
+                if (normalizedHash !== identity.requestIdentityHash) {
+                    const fallbackFileName = fileName.replace(identity.requestIdentityHash, normalizedHash);
+                    const fallbackFilePath = path.resolve(this.dirname, `mocks/${fallbackFileName}.json`);
+                    try {
+                        const fileContent = await fs.readFile(fallbackFilePath, 'utf-8');
+                        const data = JSON.parse(fileContent);
+                        return data;
+                        // eslint-disable-next-line no-empty
+                    } catch {}
+                }
+            }
+
             if (throwOnMissing) {
                 throw new Error(`Failed to load mock data from ${filePath}: ${err.message} ${identity ? JSON.stringify(identity, null, 2) : ''}`);
             }
@@ -86,17 +100,8 @@ class NangoActionMock {
         const hashBasedPath = `${dir}/${identity.requestIdentityHash}`;
 
         if (await this.hashDirExists(dir)) {
-            try {
-                const data = await this.getMockFile(hashBasedPath, true, identity);
-                return data;
-            } catch (err) {
-                const normalizedHash = computeNormalizedHash(identity.requestIdentity);
-                if (normalizedHash !== identity.requestIdentityHash) {
-                    const data = await this.getMockFile(`${dir}${normalizedHash}`, true, identity);
-                    return data;
-                }
-                throw err;
-            }
+            const data = await this.getMockFile(hashBasedPath, true, identity);
+            return data;
         } else {
             return {
                 response: await this.getMockFile(`nango/${identity.method}/proxy/${identity.endpoint}/${this.name}`, true, identity)
