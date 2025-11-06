@@ -8,7 +8,7 @@ This guide shows how to combine **Nango** with **any LLM provider** to consume e
 
 ## Example overview
 
-The example below uses HubSpot’s API to demonstrate how to can access a user’s external account through Nango.
+The example below uses Hubspot’s API to demonstrate how to access a user’s external account through Nango.
 <Tip>
 **Requirements**
 - A Nango account with an integration for `hubspot` and the `whoami` action enabled.
@@ -17,7 +17,7 @@ The example below uses HubSpot’s API to demonstrate how to can access a user�
 
 In this example:
 1. Check if the user is already authenticated with Hubspot.  
-2. If not, start the HubSpot OAuth flow. You can do this:
+2. If not, start the Hubspot OAuth flow. You can do this:
    - Directly in the chat session, or  
    - By embedding the [Frontend SDK](https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#2-trigger-the-auth-flow-frontend) in your app.  
 3. Send a prompt to your model.
@@ -36,12 +36,12 @@ export async function runLLMAgent(modelClient: any) {
   const integrationId = "hubspot";
 
   // Step 1: Ensure the user is authorized
-  console.log("🔒 Checking HubSpot authorization...");
+  console.log("🔒 Checking Hubspot authorization...");
   let connectionId = (await nango.listConnections({ userId })).connections[0]?.connection_id;
 
   // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
-    console.log("User not authorized, starting HubSpot auth flow...");
+    console.log("User not authorized, starting Hubspot auth flow...");
 
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
@@ -50,7 +50,7 @@ export async function runLLMAgent(modelClient: any) {
 
     // Redirect the user to a page to authorize Hubspot. 
     // Alternatively, you can embed Nango's Frontend SDK in your app.
-    console.log(`Please authorize HubSpot here: ${session.data.connect_link}`);
+    console.log(`Please authorize Hubspot here: ${session.data.connect_link}`);
 
     const connection = await nango.waitForConnection(integrationId, userId);
     connectionId = connection?.connection_id;
@@ -62,11 +62,11 @@ export async function runLLMAgent(modelClient: any) {
   console.log("🤖 Agent running...");
   const response = await modelClient.generate({
     model: "your-llm-model-id",
-    input: "Get the current HubSpot user info using the who_am_i tool.",
+    input: "Get the current Hubspot user info using the who_am_i tool.",
     tools: [
       {
         name: "who_am_i",
-        description: "Fetch the current HubSpot user profile.",
+        description: "Fetch the current Hubspot user profile.",
         parameters: { type: "object", properties: {} },
       },
     ],
@@ -81,7 +81,7 @@ export async function runLLMAgent(modelClient: any) {
     try {
       // Step 4: Execute the requested tool with Nango.
       const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami");
-      console.log("✅ Retrieved HubSpot user info:", userInfo);
+      console.log("✅ Retrieved Hubspot user info:", userInfo);
     } catch (error: any) {
       console.error("❌ Nango API error:", error.response?.data?.error || error);
     }

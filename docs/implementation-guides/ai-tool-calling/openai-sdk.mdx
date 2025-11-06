@@ -8,17 +8,17 @@ This guide demonstrates how to combine **Nango** and the **OpenAI SDK** to consu
 
 ## Example overview
 
-The example below uses HubSpot's API to demonstrate how to can access a user’s external account through Nango.
+The example below uses Hubspot's API to demonstrate how to access a user’s external account through Nango.
 
 <Tip>
 **Requirements:** 
-- A Nango account with an integration for `hubspot` with the `whoami` action enabled.
-- A OpenAI account.
+- A Nango account with an integration for `Hubspot` with the `whoami` action enabled.
+- An OpenAI account.
 </Tip>
 
 In this example:
 1. Check if the user is already authenticated with Hubspot.  
-2. If not, start the HubSpot OAuth flow. You can do this:
+2. If not, start the Hubspot OAuth flow. You can do this:
    - Directly in the chat session, or  
    - By embedding the [Frontend SDK](https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#2-trigger-the-auth-flow-frontend) in your app.  
 3. Send a prompt to your model.
@@ -34,7 +34,7 @@ export async function runOpenAIAgent() {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
   const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
 
-  const userId = "user1", integrationId = "hubspot";
+  const userId = "user1", integrationId = "Hubspot";
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...")
@@ -80,7 +80,7 @@ export async function runOpenAIAgent() {
   if (functionCall?.name === "who_am_i") {
     try {
       // Step 4: Execute the requested tool with Nango.
-      const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami"); // Call tools via Nango.
+      const userInfo = await nango.triggerAction("Hubspot", connectionId, "whoami"); // Call tools via Nango.
       console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
     } catch (error: any) {
       console.error("Nango API error:", error.response?.data?.error || error);
