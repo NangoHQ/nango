@@ -8,7 +8,7 @@ import { getProvider } from '@nangohq/providers';
 import { ActionError, PaginationService } from '@nangohq/runner-sdk';
 
 import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import type { CursorPagination, LinkPagination, NangoProps, OffsetPagination, TelemetryBag, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { CursorPagination, LinkPagination, NangoProps, OffsetPagination, SdkLogger, TelemetryBag, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
@@ -40,6 +40,9 @@ class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
         durationMs: 0,
         memoryGb: 1
     };
+
+    logger: SdkLogger = { level: 'debug' };
+    setLogger: ReturnType<typeof vi.fn>;
 
     log: ReturnType<typeof vi.fn>;
     getConnection: ReturnType<typeof vi.fn>;
@@ -80,6 +83,7 @@ class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
         this.name = name;
         this.Model = Model;
         this.paginationService = PaginationService;
+        this.setLogger = vi.fn();
         this.log = vi.fn();
         this.getConnection = vi.fn(this.getConnectionData.bind(this));
         this.getMetadata = vi.fn(this.getMetadataData.bind(this));
