@@ -42,12 +42,10 @@ const route: WebhookHandler<ShipStationWebhook> = async (nango, headers, body) =
         propName
     });
 
-    const connectionIds = response?.connectionIds || [];
-
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
-        connectionIds,
+        connectionIds: response?.connectionIds || [],
         toForward: body
     });
 };
