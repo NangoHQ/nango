@@ -8,7 +8,6 @@ sidebarTitle: NinjaOne RMM
 To authenticate with NinjaOne RMM, you need:
 1. **Client ID** – Your OAuth application's Client ID
 2. **Client Secret** – Your OAuth application's Client Secret
-3. **Scopes** – The access scopes for your application (optional, defaults to all)
 
 This guide walks you through creating an OAuth Client Application in NinjaOne RMM.
 
@@ -42,22 +41,50 @@ This guide walks you through creating an OAuth Client Application in NinjaOne RM
 2. **Important**: Copy and securely store both values immediately. The Client Secret is only shown once and cannot be retrieved later.
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_view_credentials.png"/>
 
-### Step 3: Enter your details in the Connect UI
+### Step 3: Create a connect session
 
-Once you have the credentials:
-1. Open the form where you need to authenticate with NinjaOne RMM.
-2. Enter the **Client ID** in the appropriate field.
-3. Enter the **Client Secret** in the appropriate field.
-4. (Optional) Enter specific scopes if you don't want all available scopes. Leave empty for default access.
-5. Submit the form to complete the authentication.
+To authenticate users, you need to create a connect session and obtain a `connect_link`. Use the Nango API to create a session with the required OAuth scopes:
+
+```bash
+curl -X POST 'https://api.nango.dev/connect/sessions' \
+  -H 'Authorization: Bearer <YOUR-SECRET-KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "end_user": {
+      "id": "end-user-id-for-test"
+    },
+    "allowed_integrations": ["ninjaone-rmm"],
+    "integrations_config_defaults": {
+      "ninjaone-rmm": {
+        "connection_config": {
+          "oauth_scopes": "monitoring,management,control"
+        }
+      }
+    }
+  }'
+```
+
+**Important**: The `oauth_scopes` must match the scopes you selected when creating your OAuth Client Application in Step 1. Available scopes are `monitoring`, `management`, and `control`.
+
+The response will include a `connect_link`:
+
+```json
+{
+  "data": {
+    "token": "nango_connect_session_97bc24c5dab2e9354f78625fc0925d533458899d57dd214c919f57c3bab8a1aa",
+    "connect_link": "http://localhost:3009/?session_token=nango_connect_session_97bc24c5dab2e9354f78625fc0925d533458899d57dd214c919f57c3bab8a1aa",
+    "expires_at": "2025-11-06T04:09:39.530Z"
+  }
+}
+```
+
+### Step 4: Complete the connection
+
+1. Navigate to the `connect_link` from the previous step.
+2. You will see the NinjaOne RMM connection form.
+3. Enter the **Client ID** and **Client Secret**.
+4. Submit the form to complete the authentication.
 
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_connect_form.png"/>
 
 You are now connected to NinjaOne RMM.
-
-## Scopes
-
-NinjaOne RMM supports three main scopes: `monitoring`, `management`, and `control`.
-
-Contrary to NinjaOne RMM's documentation, you _must_ specify at least one valid scope in order to successfully authenticate to
-NinjaOne RMM's API.
