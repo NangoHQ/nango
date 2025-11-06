@@ -5,31 +5,43 @@ import * as path from 'path';
 import { vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
-import { PaginationService } from '@nangohq/runner-sdk';
+import { ActionError, PaginationService } from '@nangohq/runner-sdk';
 
-import type { NangoAction } from '@nangohq/runner-sdk';
-import type { CursorPagination, LinkPagination, OffsetPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import type { CursorPagination, LinkPagination, NangoProps, OffsetPagination, TelemetryBag, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
-class NangoActionMock
-    implements
-        Pick<
-            NangoAction,
-            'getConnection' | 'getMetadata' | 'updateMetadata' | 'paginate' | 'get' | 'post' | 'patch' | 'put' | 'delete' | 'proxy' | 'getWebhookURL' | 'log'
-        >
-{
+class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
     dirname: string;
     name: string;
     Model: string;
-    nango: {
-        secretKey: string;
-    };
-
-    providerConfigKey: string;
     private paginationService: typeof PaginationService;
 
-    log = vi.fn();
-    ActionError = vi.fn();
+    nango: any = { secretKey: 'secret-key' };
+    activityLogId: string = 'test-activity-log-id';
+    syncId?: string;
+    nangoConnectionId?: number;
+    environmentId: number = 1;
+    environmentName?: string;
+    syncJobId?: number;
+    abortSignal?: NangoProps['abortSignal'];
+    syncConfig?: NangoProps['syncConfig'];
+    runnerFlags: NangoProps['runnerFlags'] = {} as NangoProps['runnerFlags'];
+    scriptType: NangoProps['scriptType'] = 'action' as NangoProps['scriptType'];
+    startTime: number = Date.now();
+    isCLI: boolean = false;
+    connectionId: string;
+    providerConfigKey: string;
+    provider?: string;
+    ActionError = ActionError;
+    telemetryBag: TelemetryBag = {
+        customLogs: 0,
+        proxyCalls: 0,
+        durationMs: 0,
+        memoryGb: 1
+    };
+
+    log: ReturnType<typeof vi.fn>;
     getConnection: ReturnType<typeof vi.fn>;
     getMetadata: ReturnType<typeof vi.fn>;
     updateMetadata: ReturnType<typeof vi.fn>;
@@ -42,15 +54,33 @@ class NangoActionMock
     proxy: ReturnType<typeof vi.fn>;
     getWebhookURL: ReturnType<typeof vi.fn>;
 
+    getToken: ReturnType<typeof vi.fn>;
+    getIntegration: ReturnType<typeof vi.fn>;
+    setMetadata: ReturnType<typeof vi.fn>;
+    setFieldMapping: ReturnType<typeof vi.fn>;
+    getFieldMapping: ReturnType<typeof vi.fn>;
+    getEnvironmentVariables: ReturnType<typeof vi.fn>;
+    getFlowAttributes: ReturnType<typeof vi.fn>;
+    triggerAction: ReturnType<typeof vi.fn>;
+    triggerSync: ReturnType<typeof vi.fn>;
+    zodValidateInput: ReturnType<typeof vi.fn>;
+    startSync: ReturnType<typeof vi.fn>;
+    uncontrolledFetch: ReturnType<typeof vi.fn>;
+    tryAcquireLock: ReturnType<typeof vi.fn>;
+    releaseLock: ReturnType<typeof vi.fn>;
+    releaseAllLocks: ReturnType<typeof vi.fn>;
+
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         this.dirname = dirname;
         this.nango = {
             secretKey: 'secret-key'
         };
         this.providerConfigKey = dirname;
+        this.connectionId = 'test-connection-id';
         this.name = name;
         this.Model = Model;
         this.paginationService = PaginationService;
+        this.log = vi.fn();
         this.getConnection = vi.fn(this.getConnectionData.bind(this));
         this.getMetadata = vi.fn(this.getMetadataData.bind(this));
         this.paginate = vi.fn(this.getProxyPaginateData.bind(this));
@@ -62,6 +92,21 @@ class NangoActionMock
         this.proxy = vi.fn(this.proxyData.bind(this));
         this.getWebhookURL = vi.fn(() => 'https://example.com/webhook');
         this.updateMetadata = vi.fn();
+        this.getToken = vi.fn();
+        this.getIntegration = vi.fn();
+        this.setMetadata = vi.fn();
+        this.setFieldMapping = vi.fn();
+        this.getFieldMapping = vi.fn();
+        this.getEnvironmentVariables = vi.fn();
+        this.getFlowAttributes = vi.fn();
+        this.triggerAction = vi.fn();
+        this.triggerSync = vi.fn();
+        this.zodValidateInput = vi.fn();
+        this.startSync = vi.fn();
+        this.uncontrolledFetch = vi.fn();
+        this.tryAcquireLock = vi.fn();
+        this.releaseLock = vi.fn();
+        this.releaseAllLocks = vi.fn();
     }
 
     private async getMockFile(fileName: string, throwOnMissing: boolean, identity?: ConfigIdentity) {
@@ -227,18 +272,34 @@ class NangoActionMock
     }
 }
 
-class NangoSyncMock extends NangoActionMock {
-    lastSyncDate = null;
+class NangoSyncMock extends NangoActionMock implements Omit<NangoSyncBase, 'nango'> {
+    variant: string = 'base';
+    track_deletes: boolean = false;
 
     batchSave: ReturnType<typeof vi.fn>;
     batchDelete: ReturnType<typeof vi.fn>;
+    batchUpdate: ReturnType<typeof vi.fn>;
+    getRecordsByIds: ReturnType<typeof vi.fn>;
     deleteRecordsFromPreviousExecutions: ReturnType<typeof vi.fn>;
+    setMergingStrategy: ReturnType<typeof vi.fn>;
+    batchSend: ReturnType<typeof vi.fn>;
+
+    modelFullName(model: string): string {
+        if (this.variant === 'base') {
+            return model;
+        }
+        return `${model}::${this.variant}`;
+    }
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         super({ dirname, name, Model });
         this.batchSave = vi.fn();
         this.batchDelete = vi.fn();
+        this.batchUpdate = vi.fn();
+        this.getRecordsByIds = vi.fn();
         this.deleteRecordsFromPreviousExecutions = vi.fn();
+        this.setMergingStrategy = vi.fn();
+        this.batchSend = vi.fn();
     }
 }
 
