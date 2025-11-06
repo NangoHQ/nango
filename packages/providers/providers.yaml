@@ -8707,7 +8707,6 @@ ninjaone-rmm:
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
-        scope: ${connectionConfig.scope}
     proxy:
         base_url: https://app.ninjarmm.com
     credentials:
@@ -8726,14 +8725,6 @@ ninjaone-rmm:
             pattern: '^[A-Za-z0-9_/+-]{10,}$'
             secret: true
             doc_section: '#step-2-copy-your-credentials'
-    connection_config:
-        scope:
-            type: string
-            title: Scopes
-            description: A space-separated list of scopes to request (leave blank for all scopes)
-            pattern: '(^$)|(^(monitoring|management|control)( (monitoring|management|control)){0,2}$)'
-            example: control management monitoring
-            doc_section: '#step-1-create-an-oauth-client-application'
     docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
     docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
 
