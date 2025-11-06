@@ -11782,7 +11782,7 @@ sharepoint-online-v1:
             doc_section: '#step-4-generating-your-client-assertion'
 
 shipstation:
-    display_name: Shipstation
+    display_name: Shipstation (v1)
     categories:
         - e-commerce
     auth_mode: BASIC
@@ -11797,6 +11797,7 @@ shipstation:
                 content-type: application/json
             endpoints:
                 - /users
+    webhook_routing_script: shipstationWebhookRouting
     docs: https://nango.dev/docs/integrations/all/shipstation
     docs_connect: https://nango.dev/docs/integrations/all/shipstation/connect
     credentials:
@@ -11804,14 +11805,46 @@ shipstation:
             type: string
             title: API Key
             description: Your ShipStation API key
+            example: '0ff30856c5634da1b5ce1953fdaf3dcd'
+            pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
         password:
             type: string
             title: API Secret
             description: Your Shipstation API secret
+            example: '17f1c62148b044c687f80e1060224a4e'
+            pattern: '^[a-f0-9]{32}$'
             # https://www.shipstation.com/docs/api/requirements/#authentication
             # Shipstation is using basic auth with API key and secret
             doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
+
+shipstation-v2:
+    display_name: Shipstation (v2)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.shipstation.com
+        retry:
+            after:
+                - 'retry-after'
+        headers:
+            api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users?page_size=1
+    webhook_routing_script: shipstationWebhookRouting
+    docs: https://nango.dev/docs/integrations/all/shipstation-v2
+    docs_connect: https://nango.dev/docs/integrations/all/shipstation-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Shipstation account
+            example: zEfcI+rouT0q1fjQWHBOYnsGYiax3rGDjtt3O5UhFIw
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            doc_section: '#step-1-generating-your-api-key'
 
 shopify:
     display_name: Shopify (OAuth)
