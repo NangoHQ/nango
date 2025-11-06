@@ -241,6 +241,8 @@ export const ENVS = z.object({
 
     // Elasticsearch
     NANGO_LOGS_ES_URL: z.url().optional(),
+    NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
+    NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),
