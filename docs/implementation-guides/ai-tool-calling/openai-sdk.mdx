@@ -6,17 +6,25 @@ description: "End-to-end example of calling external tools with the OpenAI SDK."
 
 This guide demonstrates how to combine **Nango** and the **OpenAI SDK** to consume external APIs via tool calling.
 
-In this example:
-- The OpenAI model defines a `who_am_i` tool and sends a prompt to OpenAI.  
-- When the model calls the tool, the script uses **Nango** to ensure the user’s connection is active and, if needed, walks them through the HubSpot auth flow.  
-- Once authorized, the script executes the model’s tool call by triggering the `whoami` action on **HubSpot** through Nango.  
-- Finally, it prints the resulting HubSpot user info in the console.  
+## Example overview
+
+The example below uses HubSpot's API to demonstrate how to can access a user’s external account through Nango.
 
 <Tip>
 **Requirements:** 
 - A Nango account with an integration for `hubspot` with the `whoami` action enabled.
 - A OpenAI account.
 </Tip>
+
+In this example:
+1. Check if the user is already authenticated with Hubspot.  
+2. If not, start the HubSpot OAuth flow. You can do this:
+   - Directly in the chat session, or  
+   - By embedding the [Frontend SDK](https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#2-trigger-the-auth-flow-frontend) in your app.  
+3. Send a prompt to your model.
+4. When the model calls a tool, trigger the corresponding Nango action.
+
+## Example code
 
 ```ts
 import OpenAI from "openai";
@@ -28,9 +36,11 @@ export async function runOpenAIAgent() {
 
   const userId = "user1", integrationId = "hubspot";
 
+  // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...")
   let connectionId = (await nango.listConnections({ userId: userId })).connections[0]?.connection_id;
 
+  // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
@@ -48,6 +58,7 @@ export async function runOpenAIAgent() {
     }
   }
 
+  // Step 3: Send a prompt to your model.
   console.log("🤖 Agent running...")
   const response = await client.responses.create({
     model: "gpt-5",
@@ -63,21 +74,29 @@ export async function runOpenAIAgent() {
     ],
   });
 
+  // Check if the model requested a tool call.
   const functionCall = response.output.find((item) => item.type === "function_call") as any;
 
   if (functionCall?.name === "who_am_i") {
     try {
+      // Step 4: Execute the requested tool with Nango.
       const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami"); // Call tools via Nango.
       console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
     } catch (error: any) {
       console.error("Nango API error:", error.response?.data?.error || error);
     }
   } else {
+    // Handle plain text or other model responses
     console.log(response.output_text);
   }
 }
 ```
 
 <Tip>
-  You can let agents/models introspect & select tools autonomously with this [endpoint](/reference/api/scripts/config).
+This example uses the **Nango Node SDK**, which is a thin wrapper around Nango’s REST API. You can use the same flow in any language with the [API reference](https://nango.dev/docs/reference/api/authentication).
+</Tip>
+
+<Tip>
+You can let agents or models introspect available tools and their specifications by calling this  
+[endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
 </Tip>
