@@ -6,7 +6,10 @@ export const noopNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 1000,
         memoryMb: 1000,
-        storageMb: 1000
+        storageMb: 1000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false,
+        idleMaxDurationMs: 1_800_000
     },
     start: () => {
         return Promise.resolve(Ok(undefined));

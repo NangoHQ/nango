@@ -88,6 +88,6 @@ jobs:
                   docker push nangohq/nango:${{ env.SHA }}
 
             - name: (self-hosted) Build and push
-              if: needs.should-run.outputs.should_skip != 'true'
+              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'pull_request'
               run: |
                   ./scripts/build_docker_self_hosted.sh ${{ env.SHA }} ${{ env.CAN_PUSH }}

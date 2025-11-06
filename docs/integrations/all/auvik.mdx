@@ -1,0 +1,85 @@
+---
+title: 'Auvik'
+sidebarTitle: 'Auvik'
+description: 'Connect to the Auvik API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _Auvik_.
+      </Step>
+
+      <Step title="Authorize Auvik">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Auvik **Username**, **API Key**, and **Region**. Later, you'll let your users do the same directly from your app.
+      </Step>
+
+      <Step title="Call the Auvik API">
+        Let's make your first request to Auvik (fetch a list of tenants). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+          <Tab title="cURL">
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/v1/tenants" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+          </Tab>
+
+          <Tab title="Node">
+            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Fetch a list of tenants from Auvik
+            const res = await nango.get({
+              endpoint: '/v1/tenants',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+          </Tab>
+        </Tabs>
+
+        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+      Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Auvik accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Auvik using Connect UI](/integrations/all/auvik/connect) |
+    | General | [Auvik Website](https://www.auvik.com/) |
+    | Developer | [Auvik API Documentation](https://auvikapi.us1.my.auvik.com/docs) |
+    | | [How to generate an API key](https://support.auvik.com/hc/en-us/articles/204309114-How-do-I-update-my-user-profile#topic_generate) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+    
+    - When you generate an Auvik API key, it will only be visible once. Store it securely immediately
+    - Consider creating a separate "service account" in Auvik for API access so the key isn't tied to an individual user
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/auvik.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

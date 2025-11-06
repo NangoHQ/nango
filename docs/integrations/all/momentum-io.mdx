@@ -19,7 +19,7 @@ description: 'Access the Momentum.io API to automate sales intelligence and meet
             <Tab title="cURL">
 
                 ```bash
-                curl -X GET "https://api.nango.dev/proxy/v1/meetings" \
+                curl -X GET "https://api.nango.dev/proxy/v1/meetings?from=1970-01-01T00:00:00.000Z&pageSize=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -38,6 +38,10 @@ description: 'Access the Momentum.io API to automate sales intelligence and meet
 
             const res = await nango.get({
               endpoint: '/v1/meetings',
+              params: {
+                from: "1970-01-01T00:00:00.000Z",
+                pageSize: 10
+              },
               providerConfigKey: '<INTEGRATION-ID>',
               connectionId: '<CONNECTION-ID>'
             });

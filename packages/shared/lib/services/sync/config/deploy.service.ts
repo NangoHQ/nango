@@ -314,7 +314,8 @@ async function compileDeployInfo({
         throw new NangoError('file_upload_error');
     }
 
-    const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
+    const oldConfigsAll = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
+    const oldConfigs = oldConfigsAll.filter((c: DBSyncConfig) => c.type === type);
     let lastSyncWasEnabled = true;
 
     if (oldConfigs.length > 0) {

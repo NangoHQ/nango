@@ -1,0 +1,87 @@
+---
+title: 'Passportal'
+sidebarTitle: 'Passportal'
+description: 'Connect to the Passportal API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _Passportal_.
+      </Step>
+
+      <Step title="Authorize Passportal">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Passportal **API Access Key ID**, **HMAC Token**, **Content String**, and **Base URL**. Later, you'll let your users do the same directly from your app.
+      </Step>
+
+      <Step title="Call the Passportal API">
+        Let's make your first request to Passportal (fetch a list of clients). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+          <Tab title="cURL">
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/api/v2/clients" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+          </Tab>
+
+          <Tab title="Node">
+            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Fetch a list of clients from Passportal
+            const res = await nango.get({
+              endpoint: '/api/v2/clients',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+          </Tab>
+        </Tabs>
+
+        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+      Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Passportal accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Passportal using Connect UI](/integrations/all/passportal/connect) |
+    | General | [Passportal Website](https://www.n-able.com/products/passportal) |
+    | Developer | [Passportal API Documentation](https://documentation.n-able.com/passportal/userguide/Content/api/api_information.htm) |
+    | | [API Key Management Guide](https://documentation.n-able.com/passportal/userguide/Content/api/api_key_management.htm) |
+    | | [Create HMAC Token Guide](https://documentation.n-able.com/passportal/userguide/Content/api/api_create_hmac.htm) |
+    | | [Generate API Access Token](https://documentation.n-able.com/passportal/userguide/Content/api/api_authorization.htm) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/passportal.mdx)</Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+    - Passportal uses instance-specific base URLs (for example, mycompany.passportalmsp.com).
+    - Generate your **HMAC Token** offline before creating a connection in Nango.
+    - When creating the connection, ensure you provide the same **Content String** that was used to generate the **HMAC Token**.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/passportal.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

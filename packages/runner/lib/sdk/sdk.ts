@@ -126,8 +126,8 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
     public override async log(...args: [...any]): Promise<void> {
         this.throwIfAborted();
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
-        if (this.runnerFlags.functionLogs === false) {
+        // if logging is turned off, we bail early
+        if (this.logger.level === 'off') {
             return;
         }
 
@@ -145,7 +145,13 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
             args.pop();
         }
 
-        const level = userDefinedLevel?.level ?? 'info';
+        const legacyLevel = userDefinedLevel?.level ?? 'info';
+        const level = oldLevelToNewLevel[legacyLevel];
+
+        if (!this.shouldLog(level)) {
+            return;
+        }
+
         const [message, payload] = args;
 
         // arrays are not supported in the log meta, so we convert them to objects
@@ -153,7 +159,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
 
         await this.sendLogToPersist({
             type: 'log',
-            level: oldLevelToNewLevel[level],
+            level,
             source: 'user',
             message: stringifyAndTruncateValue(message),
             meta,

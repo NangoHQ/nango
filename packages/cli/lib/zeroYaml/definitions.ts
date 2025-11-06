@@ -192,7 +192,7 @@ export function buildSync({
         sync_type: params.syncType,
         track_deletes: params.trackDeletes === true,
         usedModels: Array.from(usedModels.values()),
-        version: params.version || '0.0.1',
+        version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || []
     };
     return Ok({ sync, models });
@@ -233,7 +233,7 @@ export function buildAction({
         output: [output.name],
         scopes: params.scopes || [],
         usedModels: [input.name, output.name],
-        version: params.version || '0.0.1'
+        version: params.version || ''
     };
     return { action, models };
 }

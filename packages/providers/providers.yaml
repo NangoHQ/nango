@@ -916,6 +916,28 @@ apaleo:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/apaleo
 
+apify:
+    display_name: Apify
+    categories:
+        - dev-tools
+        - analytics
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.apify.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/apify
+    docs_connect: https://nango.dev/docs/integrations/all/apify/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Apify account
+            example: apify_api_***************************nt4w
+            pattern: '^apify_api_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 apollo:
     display_name: Apollo (API Key)
     categories:
@@ -1158,6 +1180,40 @@ atlassian-admin:
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
+atlassian-government-cloud:
+    display_name: Atlassian Government Cloud
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian-us-gov-mod.com/authorize
+    token_url: https://auth.atlassian-us-gov-mod.com/oauth/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        audience: api.atlassian-us-gov-mod.com
+        prompt: consent
+    proxy:
+        base_url: https://api.atlassian-us-gov-mod.com
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    post_connection_script: atlassianGovernmentCloudPostConnection
+    docs: https://nango.dev/docs/integrations/all/atlassian-government-cloud
+    docs_connect: https://nango.dev/docs/integrations/all/atlassian-government-cloud/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Atlassian Government Cloud account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: acme
+            suffix: .atlassian-us-gov-mod.net
+            prefix: https://
+
 attio:
     display_name: Attio
     categories:
@@ -1244,6 +1300,43 @@ auth0-cc:
             example: example
             optional: true
             doc_section: '#step-4-finding-your-organization'
+
+auvik:
+    display_name: Auvik
+    categories:
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://auvikapi.${connectionConfig.region}.my.auvik.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/authentication/verify
+    credentials:
+        username:
+            type: string
+            title: User Name / Account Email
+            description: Auvik User Name (usually an individual user's email address)
+            doc_section: '#step-1-generate-an-api-key'
+        password:
+            type: string
+            title: API Key
+            description: Auvik API Key (separate from the user's password)
+            secret: true
+            # API key is a base64 encoded string
+            pattern: '^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$'
+            example: 'aJ7EjSEDD+7+JqlQ1NtUXyY/3/05GGWwfF7vBbPd0Iy8HG1s'
+            doc_section: '#step-1-generate-an-api-key'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI)
+            example: us2
+            pattern: '^[a-z]{2,4}\d{1,3}$'
+            doc_section: '#step-2-determine-your-region'
+    docs: https://nango.dev/docs/integrations/all/auvik
+    docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
 avalara:
     display_name: Avalara
@@ -6329,6 +6422,31 @@ heap:
             format: uuid
             doc_section: '#step-1-generating-your-api-key-and-app-id'
 
+heyreach:
+    display_name: HeyReach
+    categories:
+        - social
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.heyreach.io/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /public/auth/CheckApiKey
+    docs: https://nango.dev/docs/integrations/all/heyreach
+    docs_connect: https://nango.dev/docs/integrations/all/heyreach/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your HeyReach account
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            example: 'FoVLZoM+nVyMELhqr7vH120O2FS1gZcAG5d2qs1bndg='
+            doc_section: '#step-1-generating-an-api-key'
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
@@ -8025,29 +8143,42 @@ medallia:
         retry:
             after:
                 - 'x-ratelimit-reset'
-        base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
+        base_url: https://${connectionConfig.apiHostUrl} || https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://nango.dev/docs/integrations/all/medallia
     docs_connect: https://nango.dev/docs/integrations/all/medallia/connect
     connection_config:
         reportingInstance:
             type: string
             title: Domain
-            description: The domain of your Medallia account
+            description: The base domain for your Medallia instance
             format: hostname
             prefix: https://
-            doc_section: '#step-3-connect-your-medallia-account'
+            suffix: /oauth
+            example: instance.medallia.com
+            order: 1
+            doc_section: '#step-2-identifying-your-domain'
         tenantName:
             type: string
             title: Tenant Name
             description: The tenant name of your Medallia account
-            doc_section: '#step-3-connect-your-medallia-account'
-        gatewayUrl:
+            order: 2
+            example: acme
+            doc_section: '#step-3-identifying-your-tenant-name'
+        apiHostUrl:
             type: string
-            title: Gateway URL
-            description: The gateway URL of your Medallia account
+            title: API Host URL
+            description: The base API endpoint (gateway URL) for your Medallia account
             format: hostname
             prefix: https://
-            doc_section: '#step-3-connect-your-medallia-account'
+            order: 3
+            example: fo-acme.apis.medallia.eu
+            doc_section: '#step-4-identifying-your-api-host-url'
+        gatewayUrl:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of apiHostUrl
 
 metabase:
     display_name: Metabase
@@ -8532,7 +8663,7 @@ momentum-io:
         verification:
             method: GET
             endpoints:
-                - /v1/meetings
+                - /v1/meetings?from=1970-01-01T00:00:00.000Z&pageSize=1
     docs: https://nango.dev/docs/integrations/all/momentum-io
     docs_connect: https://nango.dev/docs/integrations/all/momentum-io/connect
     credentials:
@@ -8927,6 +9058,30 @@ one-note:
     alias: microsoft
     docs: https://nango.dev/docs/integrations/all/one-note
 
+onelogin:
+    display_name: OneLogin
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.onelogin.com/auth/oauth2/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.onelogin.com
+    pre_connection_deletion_script: oneloginPreConnectionDeletion
+    docs: https://nango.dev/docs/integrations/all/onelogin
+    docs_connect: https://nango.dev/docs/integrations/all/onelogin/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your OneLogin subdomain
+            example: acme
+            order: 1
+            prefix: https://
+            suffix: .onelogin.com
+            doc_section: '#step-1-finding-your-subdomain'
+
 openai:
     display_name: OpenAI
     categories:
@@ -9174,6 +9329,67 @@ pandadoc-api-key:
             doc_section: '#step-1-generating-your-api-key'
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
+
+passportal:
+    display_name: Passportal
+    categories:
+        - support
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.base_url}/api/v2/auth/client_token
+    token_headers:
+        x-key: ${credentials.apiKey}
+        x-hash: ${credentials.hmacToken}
+        content-type: application/json
+    token_params:
+        scope: docs_api
+        content: ${credentials.content}
+    token_response:
+        token: access_token
+        token_expiration: expiry_time
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://${connectionConfig.base_url}
+        headers:
+            x-access-token: ${accessToken}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v2/documents?resultsPerPage=1
+    connection_config:
+        base_url:
+            type: string
+            title: Passportal Base URL
+            description: Your Passportal base URL
+            example: mycompany.mypasswordapp.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-passportal-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Key ID
+            description: Your Passportal API Access Key ID
+            example: a14e6b4923ba5027189baded6ba7b68e6fcda742008c5d57b867f43a09768ece
+            pattern: '^[a-fA-F0-9]{64}$'
+            doc_section: '#step-2-generate-api-access-key-id-and-secret-access-key'
+        hmacToken:
+            type: string
+            title: HMAC Token
+            description: Your pre-generated HMAC token, hex encoded
+            example: 23ec313efecb560a7f44239f6dd439ea56d18911c18b59e1150a3c7299da8202
+            pattern: '^[a-fA-F0-9]{64}$'
+            secret: true
+            doc_section: '#step-3-generate-hmac-token'
+        content:
+            type: string
+            title: Content String
+            description: Plain text message used to compute the HMAC token
+            example: api-content-hash
+            doc_section: '#step-3-generate-hmac-token'
+    docs: https://nango.dev/docs/integrations/all/passportal
+    docs_connect: https://nango.dev/docs/integrations/all/passportal/connect
 
 paychex:
     display_name: Paychex
@@ -11566,7 +11782,7 @@ sharepoint-online-v1:
             doc_section: '#step-4-generating-your-client-assertion'
 
 shipstation:
-    display_name: Shipstation
+    display_name: Shipstation (v1)
     categories:
         - e-commerce
     auth_mode: BASIC
@@ -11581,6 +11797,7 @@ shipstation:
                 content-type: application/json
             endpoints:
                 - /users
+    webhook_routing_script: shipstationWebhookRouting
     docs: https://nango.dev/docs/integrations/all/shipstation
     docs_connect: https://nango.dev/docs/integrations/all/shipstation/connect
     credentials:
@@ -11588,14 +11805,46 @@ shipstation:
             type: string
             title: API Key
             description: Your ShipStation API key
+            example: '0ff30856c5634da1b5ce1953fdaf3dcd'
+            pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
         password:
             type: string
             title: API Secret
             description: Your Shipstation API secret
+            example: '17f1c62148b044c687f80e1060224a4e'
+            pattern: '^[a-f0-9]{32}$'
             # https://www.shipstation.com/docs/api/requirements/#authentication
             # Shipstation is using basic auth with API key and secret
             doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
+
+shipstation-v2:
+    display_name: Shipstation (v2)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.shipstation.com
+        retry:
+            after:
+                - 'retry-after'
+        headers:
+            api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users?page_size=1
+    webhook_routing_script: shipstationWebhookRouting
+    docs: https://nango.dev/docs/integrations/all/shipstation-v2
+    docs_connect: https://nango.dev/docs/integrations/all/shipstation-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Shipstation account
+            example: zEfcI+rouT0q1fjQWHBOYnsGYiax3rGDjtt3O5UhFIw
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            doc_section: '#step-1-generating-your-api-key'
 
 shopify:
     display_name: Shopify (OAuth)
@@ -12088,6 +12337,30 @@ stackexchange:
     proxy:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
+
+statista:
+    display_name: Statista
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.statista.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/statistics?q=*
+    docs: https://nango.dev/docs/integrations/all/statista
+    docs_connect: https://nango.dev/docs/integrations/all/statista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Statista account
+            example: c5c28261f9ade4e34891ccf761491b94
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
 
 strava:
     display_name: Strava (Mobile)
@@ -14168,6 +14441,26 @@ zoho-people:
             description: The domain extension of your Zoho People account
             pattern: '^[a-z.]+$'
             prefix: https://people.zoho.
+            example: com
+            optional: true
+            suffix: /
+
+zoho-recruit:
+    display_name: Zoho Recruit
+    alias: zoho
+    categories:
+        - ats
+    proxy:
+        base_url: https://recruit.zoho.com/recruit
+    docs: https://nango.dev/docs/integrations/all/zoho-recruit
+    docs_connect: https://nango.dev/docs/integrations/all/zoho-recruit/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Recruit account
+            pattern: '^[a-z.]+$'
+            prefix: https://recruit.zoho.
             example: com
             optional: true
             suffix: /
