@@ -7590,6 +7590,31 @@ lattice:
             description: The API key for your Lattice account
             doc_section: '#step-1-finding-lattice-api-key'
 
+leadmagic:
+    display_name: LeadMagic
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.leadmagic.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/credits
+    docs: https://nango.dev/docs/integrations/all/leadmagic
+    docs_connect: https://nango.dev/docs/integrations/all/leadmagic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your LeadMagic account
+            example: 1e30029c105a89d36b76b879f01208d8
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 lessonly:
     display_name: Lessonly
     categories:
