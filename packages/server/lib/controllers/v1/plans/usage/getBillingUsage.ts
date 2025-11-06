@@ -53,9 +53,13 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
 
     const sub = subscriptionRes.value;
 
-    const currentRes = await billing.getUsage(sub.id);
-    const previousRes = await billing.getUsage(sub.id, 'previous');
-    if (currentRes.isErr() || previousRes.isErr()) {
+    const now = new Date();
+    const previousMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+    const previousMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+    const previousMonthUsage = await billing.getUsage(sub.id, { timeframe: { start: previousMonthStart, end: previousMonthEnd } });
+    const currentMonthUsage = await billing.getUsage(sub.id);
+
+    if (currentMonthUsage.isErr() || previousMonthUsage.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
         return;
     }
@@ -63,8 +67,8 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     res.status(200).send({
         data: {
             customer: customerRes.value,
-            current: currentRes.value,
-            previous: previousRes.value
+            current: currentMonthUsage.value,
+            previous: previousMonthUsage.value
         }
     });
 });
