@@ -10,15 +10,20 @@ interface SigningKeyResponse {
 }
 
 /**
+ * Known trusted ConnectWise subdomains.
+ * These are the official ConnectWise PSA API endpoints.
+ */
+const TRUSTED_CONNECTWISE_SUBDOMAINS = new Set(['api-au', 'api-eu', 'api-na', 'sandbox-au', 'sandbox-eu', 'sandbox-na']);
+
+/**
  * Validates that a URL is from a trusted ConnectWise subdomain.
  * SECURITY CRITICAL: This prevents attackers from directing us to fetch signing keys
  * from malicious servers that they control.
  *
  * @param keyUrl - The URL from the webhook's Metadata.key_url field (UNTRUSTED)
- * @param trustedSubdomain - The pre-configured trusted subdomain (e.g., "sandbox-na" or "api-na")
  * @returns The validated key URL or an error
  */
-function trustedKeyUrl(keyUrl: string, trustedSubdomain: string): Result<string> {
+function trustedKeyUrl(keyUrl: string): Result<string> {
     try {
         const keyUrlParsed = new URL(keyUrl);
 
@@ -27,12 +32,17 @@ function trustedKeyUrl(keyUrl: string, trustedSubdomain: string): Result<string>
             return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL must use HTTPS protocol' }));
         }
 
-        // Construct the expected host from the trusted subdomain
-        const expectedHost = `${trustedSubdomain}.myconnectwise.net`;
+        // Verify the host is in the format: <subdomain>.myconnectwise.net
+        if (!keyUrlParsed.host.endsWith('.myconnectwise.net')) {
+            return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL must be from myconnectwise.net domain' }));
+        }
 
-        // Verify the host matches exactly
-        if (keyUrlParsed.host !== expectedHost) {
-            return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL host does not match trusted subdomain' }));
+        // Extract subdomain (e.g., "api-na" from "api-na.myconnectwise.net")
+        const subdomain = keyUrlParsed.host.replace('.myconnectwise.net', '');
+
+        // Verify the subdomain is in our trusted list
+        if (!TRUSTED_CONNECTWISE_SUBDOMAINS.has(subdomain)) {
+            return Err(new Error('webhook_invalid_key_url', { cause: `Subdomain "${subdomain}" is not a known trusted ConnectWise subdomain` }));
         }
 
         return Ok(keyUrl);
@@ -46,13 +56,12 @@ function trustedKeyUrl(keyUrl: string, trustedSubdomain: string): Result<string>
  * Only fetches from pre-validated trusted subdomains.
  *
  * @param keyUrl - The URL from the webhook's Metadata.key_url field (UNTRUSTED until validated)
- * @param trustedSubdomain - The pre-configured trusted subdomain (e.g., "sandbox-na")
  * @returns The signing key or an error
  */
-async function fetchSigningKey(keyUrl: string, trustedSubdomain: string): Promise<Result<string>> {
+async function fetchSigningKey(keyUrl: string): Promise<Result<string>> {
     try {
         // Validate that the key URL is from a trusted subdomain BEFORE fetching
-        const trusted = trustedKeyUrl(keyUrl, trustedSubdomain);
+        const trusted = trustedKeyUrl(keyUrl);
         if (trusted.isErr()) {
             return trusted;
         }
@@ -107,19 +116,14 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
     }
 
     // Verify webhook signature using payload metadata key_url
-    // The mandatory webhookSecret field contains the trusted subdomain (e.g., "sandbox-na" or "api-na").
-    const trustedSubdomain = nango.integration.custom?.['webhookSecret'];
+    // The key_url will be validated against our hardcoded list of trusted ConnectWise subdomains
     const keyUrl = body.Metadata?.key_url;
-
-    if (!trustedSubdomain || typeof trustedSubdomain !== 'string') {
-        return Err(new Error('webhook_invalid_signature', { cause: 'Trusted subdomain is not configured in webhookSecret field' }));
-    }
 
     if (typeof keyUrl !== 'string') {
         return Err(new Error('webhook_invalid_signature', { cause: 'Missing or invalid key_url in webhook metadata' }));
     }
 
-    const signingKey = await fetchSigningKey(keyUrl, trustedSubdomain);
+    const signingKey = await fetchSigningKey(keyUrl);
 
     if (signingKey.isErr()) {
         return Err(new Error('webhook_invalid_signature', { cause: signingKey.error }));

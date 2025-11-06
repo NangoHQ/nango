@@ -3105,7 +3105,6 @@ connectwise-psa:
         - ticketing
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
-    webhook_user_defined_secret: true
     proxy:
         base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
