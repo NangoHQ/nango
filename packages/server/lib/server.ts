@@ -26,6 +26,7 @@ import { runnersFleet } from './fleet.js';
 import { pubsub } from './pubsub.js';
 import { router } from './routes.js';
 import migrate from './utils/migrate.js';
+import { setShuttingDown } from './utils/state.js';
 
 import type { WebSocket } from 'ws';
 
@@ -137,5 +138,6 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
     logger.info('Received SIGTERM...');
-    close();
+    setShuttingDown(true);
+    setTimeout(close, envs.SERVER_SHUTDOWN_DELAY_MS);
 });

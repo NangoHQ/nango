@@ -29,7 +29,7 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -119,6 +119,13 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             throw new Error(`Failed to create sync job for sync: ${sync.id}. TaskId: ${task.id}`);
         }
 
+        let sdkLogger: SdkLogger;
+        if (cappingFunctionLogsStatus.isCapped) {
+            sdkLogger = { level: 'off' };
+        } else {
+            sdkLogger = await environmentService.getSdkLogger(environment.id);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'webhook',
             host: getApiUrl(),
@@ -139,6 +146,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
+            logger: sdkLogger,
             runnerFlags: {
                 ...(await getRunnerFlags()),
                 functionLogs: !cappingFunctionLogsStatus.isCapped

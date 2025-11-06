@@ -360,6 +360,16 @@ export declare class NangoAction {
             }
         ]
     ): Promise<void>;
+    /**
+     * Set logger
+     * @desc Set the default logger level
+     * @param logger { level: 'debug' | 'info' | 'warn' | 'error' | 'off' }
+     * @example
+     * ```ts
+     * nango.setLogger({ level: 'warn' })
+     * ```
+     */
+    setLogger(logger: SdkLogger): void;
     getEnvironmentVariables(): Promise<EnvironmentVariable[] | null>;
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
