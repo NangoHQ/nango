@@ -132,10 +132,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             syncConfig: syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            runnerFlags: await getRunnerFlags(),
             startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
