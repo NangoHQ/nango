@@ -38,7 +38,7 @@ export async function runOpenAIAgent() {
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...")
-  let connectionId = (await nango.listConnections({ userId: userId })).connections[0]?.connection_id;
+  let connectionId = (await nango.listConnections({ userId })).connections[0]?.connection_id;
 
   // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
