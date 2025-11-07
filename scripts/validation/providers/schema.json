@@ -629,6 +629,9 @@
                                 "automated": {
                                     "type": "boolean"
                                 },
+                                "default_value": {
+                                    "type": "string"
+                                },
                                 "hidden": {
                                     "type": "boolean"
                                 }

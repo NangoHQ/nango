@@ -64,8 +64,8 @@
       "destination": "/"
     },
     {
-      "source": "/guides/mcs",
-      "destination": "/guides/use-cases/mcp-server"
+      "source": "/guides/mcp",
+      "destination": "/guides/use-cases/ai-tool-calling"
     },
     {
       "source": "/guides/api-authorization/authorize-in-your-app-default-ui",
@@ -98,6 +98,10 @@
     {
       "source": "/reference/scripts",
       "destination": "/reference/functions"
+    },
+    {
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/guides/use-cases/ai-tool-calling"
     }
   ],
   "navigation": {
@@ -123,11 +127,11 @@
             "group": "Use Cases",
             "pages": [
               "guides/use-cases/api-auth",
+              "guides/use-cases/ai-tool-calling",
               "guides/use-cases/proxy",
               "guides/use-cases/syncs",
               "guides/use-cases/actions",
-              "guides/use-cases/webhooks",
-              "guides/use-cases/mcp-server"
+              "guides/use-cases/webhooks"
             ]
           },
           {
@@ -184,6 +188,14 @@
             ]
           },
           {
+            "group": "AI tool calling",
+            "pages": [
+              "implementation-guides/ai-tool-calling/openai-sdk",
+              "implementation-guides/ai-tool-calling/any-llm-sdk",
+              "implementation-guides/ai-tool-calling/implement-mcp-server"
+            ]
+          },
+          {
             "group": "Requests Proxy",
             "pages": [
               "implementation-guides/requests-proxy/implement-requests-proxy"
@@ -210,12 +222,6 @@
             "group": "Webhooks",
             "pages": [
               "implementation-guides/webhooks/implement-webhooks"
-            ]
-          },
-          {
-            "group": "MCP Server",
-            "pages": [
-              "implementation-guides/mcp-server/implement-mcp-server"
             ]
           },
           {
@@ -295,6 +301,7 @@
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
               "integrations/all/apaleo",
+              "integrations/all/apify",
               "integrations/all/apollo",
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
@@ -305,11 +312,13 @@
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
+              "integrations/all/atlassian-government-cloud",
               "integrations/all/attio",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
               "integrations/all/autotask",
+              "integrations/all/auvik",
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
@@ -512,6 +521,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "integrations/all/highlevel",
               "integrations/all/highlevel-white-label",
@@ -613,6 +623,7 @@
               "integrations/all/one-drive",
               "integrations/all/one-drive-personal",
               "integrations/all/one-note",
+              "integrations/all/onelogin",
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
@@ -623,6 +634,7 @@
               "integrations/all/outlook",
               "integrations/all/outreach",
               "integrations/all/pagerduty",
+              "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
               "integrations/all/payfit",
@@ -714,6 +726,7 @@
               "integrations/all/sharepoint-online-v1",
               "integrations/all/sharepoint-online-oauth2-cc",
               "integrations/all/shipstation",
+              "integrations/all/shipstation-v2",
               "integrations/all/shopify",
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
@@ -738,6 +751,7 @@
               "integrations/all/squareup",
               "integrations/all/squareup-sandbox",
               "integrations/all/stackexchange",
+              "integrations/all/statista",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "integrations/all/streak",
@@ -829,6 +843,7 @@
               "integrations/all/zoho-invoice",
               "integrations/all/zoho-mail",
               "integrations/all/zoho-people",
+              "integrations/all/zoho-recruit",
               "integrations/all/zoom",
               "integrations/all/zoominfo",
               "integrations/all/zuora"

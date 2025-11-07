@@ -8,6 +8,69 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
+<Update label="Oct 29, 2025" description="Function custom logs" tags={["Breaking changes", "Functions"]}>
+
+  ## Function custom logs won't be ingested by default for remote environments
+
+  Function custom logs are calls to `nango.log(...)` in your functions (actions, syncs, webhooks, and on-event handlers).
+
+  Starting in November, only `warn` and `error` level logs will be ingested by default for remote environments. Debug and info level logs will no longer be ingested automatically. This means that when you call `nango.log(...)` without an explicit level (which defaults to `info`), these logs will not appear in the Nango UI logs tab for remote environments.
+
+  All function custom logs, regardless of log level, will continue to surface in your local console when using the `nango dryrun` CLI command.
+
+  ### 🗓️ Timeline
+
+  - **November 1, 2025**: Only warn and error level logs will be ingested for remote environments by default.
+
+  ### 🧐 Am I impacted?
+
+  - If you use custom logs in your syncs and actions with `nango.log(...)`
+  - If you rely on viewing debug and info level logs in the Nango UI logs tab for remote environments
+
+  ### 💡 What should I do?
+
+  If you want to continue viewing custom logs in the Nango UI logs tab, you have three options:
+
+  **Option 1: Increase the log level of individual log calls**
+
+  ```ts
+  nango.log('Important information', { level: 'warn' });
+  nango.log('Critical error occurred', { level: 'error' });
+  ```
+
+  **Option 2: Modify the minimum log level for the entire function run**
+
+  ```ts
+  nango.logger({
+    level: 'info' // info-level logs and above (warn & error) will be indexed
+  });
+
+  // Now all your regular nango.log() calls will be ingested
+  nango.log('This will now appear in the UI');
+  ```
+
+  **Option 3: Set environment variable to revert to original behavior**
+
+  While this is the simplest way to restore the previous behavior, we recommend using Options 1 or 2 instead for better cost control.
+
+  In your environment settings in the Nango UI, create an environment variable with key `NANGO_LOGGER_LEVEL` and value `'info'` (or `'debug'`, `'warn'`, `'error'`).
+
+  ⚠️ **Warning**: This will ingest all function logs across all your syncs and actions. Carefully monitor your log volume starting in November to avoid unexpectedly high bills.
+
+  **Important notes:**
+  - Options 1 and 2 require changes in your functions' code and must be deployed using the Nango CLI
+  - Option 3 can be configured directly in the Nango UI without code changes
+  - Local development is unaffected - all logs continue to appear when using `nango dryrun`
+  - This change helps ensure you're only billed for logs you actively use in production
+
+  ### Why are we making this change?
+
+  Many customers generate a large number of custom logs for local development purposes without using them in their remote environments. With the new pricing model starting in November (which includes generous included usage for function custom logs), this change ensures that customers don't get billed for logs they're not actively using.
+
+  ---
+
+</Update>
+
 <Update label="Sep 1, 2025"  tags={["Breaking changes", "API"]}>
 
   ## End-user info is no longer shared between connections

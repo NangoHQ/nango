@@ -12,6 +12,7 @@ export async function switchActiveSyncConfig(oldSyncConfigId: number, trx: Knex.
                 ON old_config.sync_name = active_config.sync_name
                 AND old_config.nango_config_id = active_config.nango_config_id
                 AND old_config.environment_id = active_config.environment_id
+                AND old_config.type = active_config.type
             WHERE old_config.id = ?
                 AND active_config.active = true
         )

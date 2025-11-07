@@ -174,18 +174,13 @@ export class UsageTracker implements IUsageTracker {
                     return Ok(undefined);
                 }
                 case 'records': {
-                    const envs = await environmentService.getEnvironmentsByAccountId(accountId);
-                    if (envs.length > 0) {
-                        const envIds = envs.map((e) => e.id);
-                        const res = await records.metrics({ environmentIds: envIds });
-                        if (res.isErr()) {
-                            throw res.error;
-                        }
-                        const count = res.value.reduce((acc, entry) => acc + entry.count, 0);
-                        const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                        await this.cache.overwrite(cacheKey, count);
-                        span?.setTag('count', count);
+                    const count = await this.getRecordsUsage(accountId);
+                    if (count.isErr()) {
+                        throw count.error;
                     }
+                    const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
+                    await this.cache.overwrite(cacheKey, count.value);
+                    span?.setTag('count', count.value);
                     return Ok(undefined);
                 }
                 case 'proxy':
@@ -262,6 +257,39 @@ export class UsageTracker implements IUsageTracker {
             }
         }
         return Ok(res);
+    }
+
+    private async getRecordsUsage(accountId: number): Promise<Result<number>> {
+        const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+        let count = 0;
+        if (envs.length > 0) {
+            const envIds = envs.map((e) => e.id);
+            for await (const recordCounts of records.paginateRecordCounts({ environmentIds: envIds })) {
+                if (recordCounts.isErr()) {
+                    return Err(recordCounts.error);
+                }
+                if (recordCounts.value.length === 0) {
+                    continue;
+                }
+                const connectionIds = recordCounts.value.map((r) => r.connection_id);
+                for await (const connPage of connectionService.paginateConnections({ connectionIds })) {
+                    if (connPage.isErr()) {
+                        return Err(connPage.error);
+                    }
+                    for (const conn of connPage.value) {
+                        // sum records data for this connection. There might be multiple models or variants for the same connection
+                        const sum = recordCounts.value
+                            .filter((r) => r.connection_id === conn.connection.id)
+                            .reduce((acc, curr) => {
+                                acc += curr.count;
+                                return acc;
+                            }, 0);
+                        count += sum;
+                    }
+                }
+            }
+        }
+        return Ok(count);
     }
 }
 

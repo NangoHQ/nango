@@ -5,8 +5,8 @@ import { CircuitBreaker } from './circuitBreaker.js';
 
 const rawClient = new Client({
     nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
-    requestTimeout: 5000,
-    maxRetries: 1,
+    requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
+    maxRetries: envs.NANGO_LOGS_ES_MAX_RETRIES,
     auth: {
         username: envs.NANGO_LOGS_ES_USER!, // ggignore
         password: envs.NANGO_LOGS_ES_PWD! // ggignore
