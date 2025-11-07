@@ -15,7 +15,9 @@ This guide walks you through creating an OAuth Client Application in NinjaOne RM
 
 - Admin access to your NinjaOne RMM tenant.
 
-### Step 1: Create an OAuth Client Application
+### Instructions:
+
+#### Step 1: Create an OAuth Client Application
 
 1. Log in to your NinjaOne instance at `https://app.ninjarmm.com`.
 2. Navigate to **Administration** > **Apps** > **API**.
@@ -24,66 +26,23 @@ This guide walks you through creating an OAuth Client Application in NinjaOne RM
 4. Click the **Add** button to open the Application Configuration form.
 5. Select **API Services (machine-to-machine)** as the Application Platform.
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_add_client.png"/>
-6. Select the necessary scopes based on your needs:
-   - **Monitoring**: Read-only access to monitoring data and organization structure
-   - **Management**: Modify device and organization information
-   - **Control**: Enable remote access via API
-<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_configure_app.png"/>   
+6. Select the appropriate permissions for your application (Monitoring, Management, and/or Control).
+<img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_configure_app.png"/>
 7. Ensure **Client Credentials** is selected in Allowed Grant Types.
-8. Click **Add** to create the application. You may have to perform a
-   multi-factor authentication step in order to finish adding your new
-   application.
+8. Click **Add** to create the application. You may have to perform a multi-factor authentication step to finish adding your new application.
 
-
-### Step 2: Copy your credentials
+#### Step 2: Copy your credentials
 
 1. After creating the application, the **Client ID** and **Client Secret** will be displayed.
 2. **Important**: Copy and securely store both values immediately. The Client Secret is only shown once and cannot be retrieved later.
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_view_credentials.png"/>
 
-### Step 3: Create a connect session
+#### Step 3: Enter credentials in the Connect UI
 
-To authenticate users, you need to create a connect session and obtain a `connect_link`. Use the Nango API to create a session with the required OAuth scopes:
-
-```bash
-curl -X POST 'https://api.nango.dev/connect/sessions' \
-  -H 'Authorization: Bearer <YOUR-SECRET-KEY>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "end_user": {
-      "id": "end-user-id-for-test"
-    },
-    "allowed_integrations": ["ninjaone-rmm"],
-    "integrations_config_defaults": {
-      "ninjaone-rmm": {
-        "connection_config": {
-          "oauth_scopes": "monitoring,management,control"
-        }
-      }
-    }
-  }'
-```
-
-**Important**: The `oauth_scopes` must match the scopes you selected when creating your OAuth Client Application in Step 1. Available scopes are `monitoring`, `management`, and `control`.
-
-The response will include a `connect_link`:
-
-```json
-{
-  "data": {
-    "token": "nango_connect_session_97bc24c5dab2e9354f78625fc0925d533458899d57dd214c919f57c3bab8a1aa",
-    "connect_link": "http://localhost:3009/?session_token=nango_connect_session_97bc24c5dab2e9354f78625fc0925d533458899d57dd214c919f57c3bab8a1aa",
-    "expires_at": "2025-11-06T04:09:39.530Z"
-  }
-}
-```
-
-### Step 4: Complete the connection
-
-1. Navigate to the `connect_link` from the previous step.
-2. You will see the NinjaOne RMM connection form.
-3. Enter the **Client ID** and **Client Secret**.
-4. Submit the form to complete the authentication.
+Once you have your **Client ID** and **Client Secret**:
+1. Open the form where you need to authenticate with NinjaOne RMM.
+2. Enter your **Client ID** and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_connect_form.png"/>
 
