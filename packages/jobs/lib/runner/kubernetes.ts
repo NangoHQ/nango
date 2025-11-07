@@ -208,6 +208,9 @@ class Kubernetes {
                 }
             }
         };
+        if (node.isProfilingEnabled || node.isTracingEnabled) {
+            deploymentManifest.spec!.template.metadata!.labels!['nango.dev/apm'] = 'enabled';
+        }
 
         try {
             await this.appsApi.createNamespacedDeployment({
