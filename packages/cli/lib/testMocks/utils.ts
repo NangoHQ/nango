@@ -64,6 +64,20 @@ class NangoActionMock {
             const data = JSON.parse(fileContent);
             return data;
         } catch (err: any) {
+            if (identity && identity.requestIdentity && fileName.includes(identity.requestIdentityHash)) {
+                const normalizedHash = computeNormalizedHash(identity.requestIdentity);
+                if (normalizedHash !== identity.requestIdentityHash) {
+                    const fallbackFileName = fileName.replace(identity.requestIdentityHash, normalizedHash);
+                    const fallbackFilePath = path.resolve(this.dirname, `mocks/${fallbackFileName}.json`);
+                    try {
+                        const fileContent = await fs.readFile(fallbackFilePath, 'utf-8');
+                        const data = JSON.parse(fileContent);
+                        return data;
+                        // eslint-disable-next-line no-empty
+                    } catch {}
+                }
+            }
+
             if (throwOnMissing) {
                 throw new Error(`Failed to load mock data from ${filePath}: ${err.message} ${identity ? JSON.stringify(identity, null, 2) : ''}`);
             }
@@ -280,6 +294,14 @@ function computeConfigIdentity(config: UserProvidedProxyConfiguration): ConfigId
 
 function sortEntries(entries: [string, unknown][]): [string, unknown][] {
     return entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+}
+
+function computeNormalizedHash(requestIdentity: RequestIdentity): string {
+    const normalized = {
+        ...requestIdentity,
+        params: requestIdentity.params.map(([k, v]) => [k, String(v)])
+    };
+    return crypto.createHash('sha1').update(JSON.stringify(normalized)).digest('hex');
 }
 
 function computeDataIdentity(config: UserProvidedProxyConfiguration): string | undefined {
