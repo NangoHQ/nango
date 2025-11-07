@@ -240,3 +240,8 @@ export interface ConnectWisePsaWebhookPayload {
     CallbackObjectRecId?: number;
     [key: string]: any;
 }
+
+export interface ShipStationWebhook {
+    resource_url: string;
+    resource_type: string;
+}

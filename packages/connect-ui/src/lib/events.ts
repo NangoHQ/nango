@@ -1,7 +1,7 @@
 import { useGlobal } from './store';
 import { telemetry } from './telemetry';
 
-import type { AuthResult, ConnectUIEventClose, ConnectUIEventConnect, ConnectUIEventReady } from '@nangohq/frontend';
+import type { AuthErrorType, AuthResult, ConnectUIEventClose, ConnectUIEventConnect, ConnectUIEventError, ConnectUIEventReady } from '@nangohq/frontend';
 import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
 export function triggerReady() {
@@ -30,5 +30,16 @@ export function triggerClose(eventName: PostPublicConnectTelemetry['Body']['even
 
 export function triggerConnection(results: AuthResult) {
     const event: ConnectUIEventConnect = { type: 'connect', payload: results };
+    parent.postMessage(event, '*');
+}
+
+export function triggerError(errorType: AuthErrorType, errorMessage: string) {
+    const event: ConnectUIEventError = {
+        type: 'error',
+        payload: {
+            errorType,
+            errorMessage
+        }
+    };
     parent.postMessage(event, '*');
 }

@@ -26,12 +26,12 @@ function getNangoProps(): NangoProps {
         debug: false,
         startedAt: new Date(),
         team: { id: 1, name: 'dev' },
+        logger: { level: 'off' },
         runnerFlags: {
             validateActionInput: false,
             validateActionOutput: false,
             validateSyncMetadata: false,
-            validateSyncRecords: false,
-            functionLogs: true
+            validateSyncRecords: false
         },
         endUser: null,
         heartbeatTimeoutSecs: 30

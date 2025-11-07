@@ -19,7 +19,8 @@ export const localNodeProvider: NodeProvider = {
         memoryMb: 512,
         storageMb: 20000,
         isTracingEnabled: false,
-        isProfilingEnabled: false
+        isProfilingEnabled: false,
+        idleMaxDurationMs: 0 // No auto-shutdown for local runners
     },
     start: async (node) => {
         try {

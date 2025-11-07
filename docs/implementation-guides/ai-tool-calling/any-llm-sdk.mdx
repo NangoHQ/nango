@@ -1,0 +1,103 @@
+---
+title: "Any LLM SDK example"
+sidebarTitle: "Any LLM SDK example"
+description: "End-to-end example of calling external APIs via tool calling with any LLM provider."
+---
+
+This guide shows how to combine **Nango** with **any LLM provider** to consume external APIs via tool calling.
+
+## Example overview
+
+The example below uses Hubspot’s API to demonstrate how to access a user’s external account through Nango.
+<Tip>
+**Requirements**
+- A Nango account with an integration for `hubspot` and the `whoami` action enabled.
+- An account with your preferred LLM provider.
+</Tip>
+
+In this example:
+1. Check if the user is already authenticated with Hubspot.  
+2. If not, start the Hubspot OAuth flow. You can do this:
+   - Directly in the chat session, or  
+   - By embedding the [Frontend SDK](https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#2-trigger-the-auth-flow-frontend) in your app.  
+3. Send a prompt to your model.
+4. When the model calls a tool, trigger the corresponding Nango action.
+
+## Example code
+
+```ts
+import { Nango } from "@nangohq/node";
+
+// Initialize the Nango client
+const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+export async function runLLMAgent(modelClient: any) {
+  const userId = "user1";
+  const integrationId = "hubspot";
+
+  // Step 1: Ensure the user is authorized
+  console.log("🔒 Checking Hubspot authorization...");
+  let connectionId = (await nango.listConnections({ userId })).connections[0]?.connection_id;
+
+  // Step 2: If the user is not authorized, redirect to the auth flow.
+  if (!connectionId) {
+    console.log("User not authorized, starting Hubspot auth flow...");
+
+    const session = await nango.createConnectSession({
+      allowed_integrations: [integrationId],
+      end_user: { id: userId },
+    }); // Handle API auth via Nango.
+
+    // Redirect the user to a page to authorize Hubspot. 
+    // Alternatively, you can embed Nango's Frontend SDK in your app.
+    console.log(`Please authorize Hubspot here: ${session.data.connect_link}`);
+
+    const connection = await nango.waitForConnection(integrationId, userId);
+    connectionId = connection?.connection_id;
+
+    if (!connectionId) throw new Error("Auth flow failed");
+  }
+
+  // Step 3: Send a prompt to your model.
+  console.log("🤖 Agent running...");
+  const response = await modelClient.generate({
+    model: "your-llm-model-id",
+    input: "Get the current Hubspot user info using the who_am_i tool.",
+    tools: [
+      {
+        name: "who_am_i",
+        description: "Fetch the current Hubspot user profile.",
+        parameters: { type: "object", properties: {} },
+      },
+    ],
+  });
+
+  // Check if the model requested a tool call
+  const toolCall = response?.toolCalls?.[0] || response?.tool_call || null;
+
+  if (toolCall?.name === "who_am_i") {
+    console.log("🧩 Model decided to call the 'who_am_i' tool...");
+
+    try {
+      // Step 4: Execute the requested tool with Nango.
+      const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami");
+      console.log("✅ Retrieved Hubspot user info:", userInfo);
+    } catch (error: any) {
+      console.error("❌ Nango API error:", error.response?.data?.error || error);
+    }
+  } else {
+    // Handle plain text or other model responses
+    const textOutput = response?.text || response?.output_text || JSON.stringify(response);
+    console.log("🗣️ Model response:", textOutput);
+  }
+}
+```
+
+<Tip>
+This example uses the **Nango Node SDK**, which is a thin wrapper around Nango’s REST API. You can use the same flow in any language with the [API reference](https://nango.dev/docs/reference/api/authentication).
+</Tip>
+
+<Tip>
+You can let agents or models introspect available tools and their specifications by calling this  
+[endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
+</Tip>

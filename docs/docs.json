@@ -191,6 +191,7 @@
             "group": "AI tool calling",
             "pages": [
               "implementation-guides/ai-tool-calling/openai-sdk",
+              "implementation-guides/ai-tool-calling/any-llm-sdk",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]
           },
@@ -300,6 +301,7 @@
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
               "integrations/all/apaleo",
+              "integrations/all/apify",
               "integrations/all/apollo",
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
@@ -316,6 +318,7 @@
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
               "integrations/all/autotask",
+              "integrations/all/auvik",
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
@@ -518,6 +521,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "integrations/all/highlevel",
               "integrations/all/highlevel-white-label",
@@ -629,6 +633,7 @@
               "integrations/all/outlook",
               "integrations/all/outreach",
               "integrations/all/pagerduty",
+              "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
               "integrations/all/payfit",
@@ -720,6 +725,7 @@
               "integrations/all/sharepoint-online-v1",
               "integrations/all/sharepoint-online-oauth2-cc",
               "integrations/all/shipstation",
+              "integrations/all/shipstation-v2",
               "integrations/all/shopify",
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
@@ -836,6 +842,7 @@
               "integrations/all/zoho-invoice",
               "integrations/all/zoho-mail",
               "integrations/all/zoho-people",
+              "integrations/all/zoho-recruit",
               "integrations/all/zoom",
               "integrations/all/zoominfo",
               "integrations/all/zuora"

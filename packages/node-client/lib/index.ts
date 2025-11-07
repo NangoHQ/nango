@@ -17,6 +17,7 @@ import type {
 } from './types.js';
 import type {
     ApiKeyCredentials,
+    ApiPublicConnection,
     ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
@@ -244,19 +245,70 @@ export class Nango {
         connectionId?: string,
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
+    ): Promise<GetPublicConnections['Success']>;
+
+    /**
+     * Returns a list of connections using object parameter syntax
+     * @param params - Object containing optional filter parameters
+     * @returns A promise that resolves with an array of connection objects
+     */
+    public async listConnections(params: {
+        connectionId?: string;
+        userId?: string;
+        integrationId?: string | string[];
+        tags?: Record<'displayName' | 'email', string>;
+    }): Promise<GetPublicConnections['Success']>;
+
+    public async listConnections(
+        connectionIdOrParams?:
+            | string
+            | {
+                  connectionId?: string;
+                  userId?: string;
+                  integrationId?: string | string[];
+                  tags?: Record<'displayName' | 'email', string>;
+              },
+        search?: string,
+        queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
     ): Promise<GetPublicConnections['Success']> {
         const url = new URL(`${this.serverUrl}/connections`);
-        if (connectionId) {
-            url.searchParams.append('connectionId', connectionId);
-        }
-        if (search) {
-            url.searchParams.append('search', search);
-        }
-        if (queries?.endUserId) {
-            url.searchParams.append('endUserId', queries.endUserId);
-        }
-        if (queries?.endUserOrganizationId) {
-            url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
+
+        // Handle both call signatures
+        if (typeof connectionIdOrParams === 'object') {
+            // New object parameter syntax
+            const { connectionId, userId, integrationId, tags } = connectionIdOrParams;
+
+            if (connectionId) {
+                url.searchParams.append('connectionId', connectionId);
+            }
+            if (userId) {
+                url.searchParams.append('endUserId', userId);
+            }
+            if (integrationId) {
+                url.searchParams.append('integrationIds', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
+            }
+            if (tags && Object.keys(tags).length > 0) {
+                if (tags['displayName']) {
+                    url.searchParams.append('search', tags['displayName']);
+                }
+                if (tags['email']) {
+                    url.searchParams.append('email', tags['email']);
+                }
+            }
+        } else {
+            // Legacy parameter syntax
+            if (connectionIdOrParams) {
+                url.searchParams.append('connectionId', connectionIdOrParams);
+            }
+            if (search) {
+                url.searchParams.append('search', search);
+            }
+            if (queries?.endUserId) {
+                url.searchParams.append('endUserId', queries.endUserId);
+            }
+            if (queries?.endUserOrganizationId) {
+                url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
+            }
         }
 
         const headers = {
@@ -731,6 +783,59 @@ export class Nango {
         const response = await this.http.put(url, body, { headers: this.enrichHeaders() });
 
         return response.data;
+    }
+
+    /**
+     * Wait for connection to be created
+     * @param integrationKey - The integration key
+     * @param userId - The user ID
+     * @param options - Optional configuration (signal for cancellation)
+     * @returns A promise that resolves when the connection is created
+     * @throws {Error} If the wait is aborted via signal or times out
+     */
+    public async waitForConnection(integrationKey: string, userId: string, options?: { signal?: AbortSignal }): Promise<ApiPublicConnection> {
+        const maxAttempts = 30;
+        const initialDelayMs = 10000;
+        const delayBetweenAttemptsMs = 2000;
+        const signal = options?.signal;
+
+        if (signal?.aborted) {
+            throw new Error('Wait for connection was aborted');
+        }
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (signal?.aborted) {
+                throw new Error('Wait for connection was aborted');
+            }
+
+            const response = await this.listConnections(undefined, undefined, { endUserId: userId });
+            const connection = response.connections.find((conn) => conn.provider_config_key === integrationKey);
+
+            if (connection) {
+                return connection;
+            }
+
+            // Use longer delay for first attempt to account for auth flow
+            const currentDelay = attempt === 0 ? initialDelayMs : delayBetweenAttemptsMs;
+
+            await new Promise<void>((resolve, reject) => {
+                const onAbort = () => {
+                    clearTimeout(timeout);
+                    reject(new Error('Wait for connection was aborted'));
+                };
+
+                const timeout = setTimeout(() => {
+                    if (signal) {
+                        signal.removeEventListener('abort', onAbort);
+                    }
+                    resolve();
+                }, currentDelay);
+
+                signal?.addEventListener('abort', onAbort, { once: true });
+            });
+        }
+
+        throw new Error('Timeout waiting for connection to be created');
     }
 
     /**

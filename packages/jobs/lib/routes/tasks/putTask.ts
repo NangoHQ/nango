@@ -67,9 +67,13 @@ const nangoPropsSchema = z.looseObject({
         validateWebhookInput: z.boolean().default(false),
         validateWebhookOutput: z.boolean().default(false),
         validateSyncRecords: z.boolean().default(false),
-        validateSyncMetadata: z.boolean().default(false),
-        functionLogs: z.boolean().default(true)
-    })
+        validateSyncMetadata: z.boolean().default(false)
+    }),
+    logger: z
+        .looseObject({
+            level: z.enum(['debug', 'info', 'warn', 'error', 'off'])
+        })
+        .default({ level: 'info' })
 });
 
 const validate = validateRequest<PutTask>({

@@ -204,6 +204,9 @@ export class Supervisor {
                     if (configOverride.isProfilingEnabled !== null && configOverride.isProfilingEnabled !== node.isProfilingEnabled) {
                         return true;
                     }
+                    if (configOverride.idleMaxDurationMs && configOverride.idleMaxDurationMs !== node.idleMaxDurationMs) {
+                        return true;
+                    }
                     return false;
                 };
                 plan.push(
@@ -350,7 +353,8 @@ export class Supervisor {
                 memoryMb: nodeConfigOverrideValue.memoryMb || newNodeConfig.memoryMb,
                 storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
                 isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
-                isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled
+                isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled,
+                idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs
             };
         }
 
@@ -362,7 +366,8 @@ export class Supervisor {
             memoryMb: newNodeConfig.memoryMb,
             storageMb: newNodeConfig.storageMb,
             isTracingEnabled: newNodeConfig.isTracingEnabled,
-            isProfilingEnabled: newNodeConfig.isProfilingEnabled
+            isProfilingEnabled: newNodeConfig.isProfilingEnabled,
+            idleMaxDurationMs: newNodeConfig.idleMaxDurationMs
         });
     }
 

@@ -139,5 +139,5 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
     logger.info('Received SIGTERM...');
     setShuttingDown(true);
-    setTimeout(close, envs.SERVER_SHUTDOWN_DELAY);
+    setTimeout(close, envs.SERVER_SHUTDOWN_DELAY_MS);
 });
