@@ -10187,6 +10187,33 @@ prive:
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
 
+prospeo:
+    display_name: Prospeo
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.prospeo.io
+        headers:
+            x-key: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /account-information
+    docs: https://nango.dev/docs/integrations/all/prospeo
+    docs_connect: https://nango.dev/docs/integrations/all/prospeo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Prospeo API Key
+            example: 65d2be5e227e447d8777d36f934c611c
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 private-api-bearer:
     display_name: Private API (Bearer Auth)
     auth_mode: API_KEY
