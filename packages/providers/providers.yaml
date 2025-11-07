@@ -3204,7 +3204,7 @@ connectwise-psa-staging:
         - ticketing
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
-    
+
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
@@ -14531,7 +14531,7 @@ zoho-recruit:
     categories:
         - ats
     proxy:
-        base_url: https://recruit.zoho.com/recruit
+        base_url: https://recruit.zoho.${connectionConfig.extension}/recruit
     docs: https://nango.dev/docs/integrations/all/zoho-recruit
     docs_connect: https://nango.dev/docs/integrations/all/zoho-recruit/connect
     connection_config:
@@ -14542,7 +14542,6 @@ zoho-recruit:
             pattern: '^[a-z.]+$'
             prefix: https://recruit.zoho.
             example: com
-            optional: true
             suffix: /
 
 zoom:
