@@ -111,7 +111,7 @@ function validateSignature(sharedSecretKey: string, headerSignature: string, raw
 const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, headers, body, rawBody) => {
     const signature = headers['x-content-signature'];
 
-    if (!signature) {
+    if (!signature || typeof signature !== 'string') {
         return Err(new Error('webhook_missing_signature', { cause: 'Missing signature header' }));
     }
 
@@ -138,12 +138,10 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
         webhookType: 'Type' // ConnectWise webhook type field
     });
 
-    const connectionId = response?.connectionIds?.[0];
-
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
-        connectionIds: connectionId ? [connectionId] : [],
+        connectionIds: response?.connectionIds || [],
         toForward: body
     });
 };
