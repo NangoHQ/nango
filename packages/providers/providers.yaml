@@ -6689,6 +6689,31 @@ instagram:
         base_url: https://graph.instagram.com
     docs: https://nango.dev/docs/integrations/all/instagram
 
+icypeas:
+    display_name: Icypeas
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.icypeas.com/api
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /email-search
+    docs: https://nango.dev/docs/integrations/all/icypeas
+    docs_connect: https://nango.dev/docs/integrations/all/icypeas/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Icypeas account
+            example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 itglue:
     display_name: IT Glue
     categories:
