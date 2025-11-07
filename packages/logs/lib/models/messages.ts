@@ -148,7 +148,7 @@ export async function searchForMessagesInsideOperations(opts: { search: string; 
         query,
         aggs: {
             // We aggregate because we can have N match per operation
-            parentIdAgg: { terms: { size: opts.operationsIds.length + 1, field: 'parentId' } }
+            parentIdAgg: { terms: { size: opts.operationsIds.length + 1, field: 'parentId', execution_hint: 'map' } }
         }
     });
 
