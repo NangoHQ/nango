@@ -1,0 +1,88 @@
+---
+title: 'GitLab (Personal Access Token)'
+sidebarTitle: 'GitLab (Personal Access Token)'
+description: 'Access the GitLab API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GitLab (Personal Access Token)_.
+      </Step>
+      <Step title="Authorize GitLab (Personal Access Token)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your GitLab (Personal Access Token) credentials. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the GitLab API">
+        Let's make your first request to the GitLab API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/api/v4/users?per_page=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/api/v4/users',
+              params: {
+                per_page: 10
+              }
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their GitLab accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to GitLab (Personal Access Token) using Connect UI](/integrations/all/gitlab-pat/connect) |
+    | General | [GitLab Website](https://gitlab.com/) |
+    | Developer | [How to create a Personal Access Token](https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token) |
+    | | [Personal Access Token Scopes](https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes) |
+    | | [GitLab Personal Access Token Documentation](https://docs.gitlab.com/user/profile/personal_access_tokens/) |
+    | | [GitLab REST API Documentation](https://docs.gitlab.com/ee/api/rest/) |
+    | | [GitLab API Reference](https://docs.gitlab.com/ee/api/api_resources.html) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-pat.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-pat.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
+
