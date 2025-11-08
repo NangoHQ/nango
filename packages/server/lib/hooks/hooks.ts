@@ -80,6 +80,18 @@ export const connectionCreationStartCapCheck = async ({
     return { capped: false };
 };
 
+export function connectionTestSupported({ connection, provider }: { connection: DBConnectionDecrypted; provider: Provider }): boolean {
+    // Only certain credential types support testing
+    const supportedCredentialTypes = ['API_KEY', 'BASIC', 'TBA', 'JWT', 'SIGNATURE'];
+
+    if (!connection.credentials.type || !supportedCredentialTypes.includes(connection.credentials.type)) {
+        return false;
+    }
+
+    // Provider must have either a verification script or proxy verification endpoint
+    return !!(provider.credentials_verification_script || provider.proxy?.verification);
+}
+
 export async function testConnectionCredentials({
     config,
     connectionConfig,

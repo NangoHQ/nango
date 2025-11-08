@@ -5,7 +5,7 @@ import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { testConnectionCredentials } from '../../../../hooks/hooks.js';
+import { connectionTestSupported, testConnectionCredentials } from '../../../../hooks/hooks.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { ApiKeyCredentials, BasicApiCredentials, JwtCredentials, PostConnectionTest, SignatureCredentials, TbaCredentials } from '@nangohq/types';
@@ -79,9 +79,8 @@ export const postConnectionTest = asyncWrapper<PostConnectionTest>(async (req, r
         return;
     }
 
-    // Only certain credential types support testing
-    const supportedCredentialTypes: string[] = ['API_KEY', 'BASIC', 'TBA', 'JWT', 'SIGNATURE'];
-    if (!connection.credentials.type || !supportedCredentialTypes.includes(connection.credentials.type)) {
+    // Check if connection testing is supported for this connection and provider
+    if (!connectionTestSupported({ connection, provider })) {
         res.status(400).send({
             error: {
                 code: 'connection_test_failed',
@@ -97,7 +96,7 @@ export const postConnectionTest = asyncWrapper<PostConnectionTest>(async (req, r
     }
 
     const logCtx = await logContextGetter.create(
-        { operation: { type: 'auth', action: 'refresh_token' } },
+        { operation: { type: 'auth', action: 'connection_test' } },
         {
             account,
             environment,
