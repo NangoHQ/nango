@@ -20,5 +20,4 @@ export interface RunnerFlags {
     validateActionOutput: boolean;
     validateSyncRecords: boolean;
     validateSyncMetadata: boolean;
-    functionLogs: boolean;
 }

@@ -408,7 +408,7 @@ class Kubernetes {
             { name: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
             { name: 'RUNNER_NODE_ID', value: `${node.id}` },
             { name: 'RUNNER_URL', value: runnerUrl },
-            { name: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
+            { name: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` },
             { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
             { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
@@ -453,7 +453,8 @@ export const kubernetesNodeProvider: NodeProvider = {
         memoryMb: 512,
         storageMb: 20000,
         isTracingEnabled: false,
-        isProfilingEnabled: false
+        isProfilingEnabled: false,
+        idleMaxDurationMs: 1_800_000 // 30 minutes
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();

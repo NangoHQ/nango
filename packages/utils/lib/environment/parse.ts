@@ -27,11 +27,12 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
-    SERVER_SHUTDOWN_DELAY: z.coerce.number().optional().default(0),
+    SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
+    PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z.coerce.date().catch(new Date('2025-08-25')),
 
     // Crons
     CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
@@ -241,6 +242,8 @@ export const ENVS = z.object({
 
     // Elasticsearch
     NANGO_LOGS_ES_URL: z.url().optional(),
+    NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
+    NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),

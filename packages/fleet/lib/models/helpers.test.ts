@@ -55,7 +55,8 @@ async function createNode(db: knex.Knex, { routingId, deploymentId }: { routingI
         memoryMb: 1024,
         storageMb: 512,
         isTracingEnabled: false,
-        isProfilingEnabled: false
+        isProfilingEnabled: false,
+        idleMaxDurationMs: 1_800_000
     });
     return node.unwrap();
 }

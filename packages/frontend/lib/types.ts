@@ -9,7 +9,8 @@ export type AuthErrorType =
     | 'connection_test_failed'
     | 'missing_connect_session_token'
     | 'connection_validation_failed'
-    | 'resource_capped';
+    | 'resource_capped'
+    | 'unknown_error';
 
 export type AuthResult = ConnectionResponseSuccess;
 export type AuthSuccess = AuthResult; // alias for backward compatibility
@@ -115,9 +116,17 @@ export interface ConnectUIEventConnect {
     payload: AuthResult;
 }
 
+export interface ConnectUIEventError {
+    type: 'error';
+    payload: {
+        errorType: AuthErrorType;
+        errorMessage: string;
+    };
+}
+
 export interface ConnectUIEventSettingsChanged {
     type: 'settings_changed';
     payload: ConnectUISettings;
 }
 
-export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect | ConnectUIEventSettingsChanged;
+export type ConnectUIEvent = ConnectUIEventReady | ConnectUIEventClose | ConnectUIEventConnect | ConnectUIEventError | ConnectUIEventSettingsChanged;
