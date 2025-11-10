@@ -11440,7 +11440,7 @@ semrush:
             type: string
             title: API Key
             description: Your Semrush API key
-            doc_section: '#step-1-finding-your-semrush-api-key'
+            doc_section: '#step-1-finding-your-api-key'
 
 sentry:
     display_name: Sentry
