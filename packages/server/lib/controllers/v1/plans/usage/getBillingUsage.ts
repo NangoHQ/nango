@@ -3,6 +3,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { usageTracker } from '../../../../utils/usage.js';
 
 import type { GetBillingUsage } from '@nangohq/types';
 
@@ -56,8 +57,8 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     const now = new Date();
     const previousMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
     const previousMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-    const previousMonthUsage = await billing.getUsage(sub.id, { timeframe: { start: previousMonthStart, end: previousMonthEnd } });
-    const currentMonthUsage = await billing.getUsage(sub.id);
+    const previousMonthUsage = await usageTracker.getBillingUsage(sub.id, { timeframe: { start: previousMonthStart, end: previousMonthEnd } });
+    const currentMonthUsage = await usageTracker.getBillingUsage(sub.id);
 
     if (currentMonthUsage.isErr() || previousMonthUsage.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
