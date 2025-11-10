@@ -2119,6 +2119,43 @@ brevo-api-key:
             title: API Key
             description: The API key for your Brevo account
 
+breezy-hr:
+    display_name: Breezy HR
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.breezy.hr/v3/signin
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+    proxy:
+        base_url: https://api.breezy.hr
+        headers:
+            authorization: ${accessToken}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/integrations/all/breezy-hr
+    docs_connect: https://nango.dev/docs/integrations/all/breezy-hr/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: The email address associated with your Breezy HR account
+            format: email
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Breezy HR account
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+
 brex:
     display_name: Brex (OAuth)
     categories:
@@ -3204,7 +3241,7 @@ connectwise-psa-staging:
         - ticketing
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
-    
+
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
