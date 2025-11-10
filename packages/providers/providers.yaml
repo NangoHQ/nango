@@ -5511,6 +5511,45 @@ gitlab:
         base_url: https://gitlab.com
     docs: https://nango.dev/docs/integrations/all/gitlab
 
+gitlab-pat:
+    display_name: GitLab  (Personal Access Token)
+    categories:
+        - dev-tools
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            private-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v4/users
+    docs: https://nango.dev/docs/integrations/all/gitlab-pat
+    docs_connect: https://nango.dev/docs/integrations/all/gitlab-pat/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            example: glpat-PMJoma_*******.***.***xwve
+            pattern: '^glpat-[A-Za-z0-9._-]+$'
+            description: The Personal Access Token for your GitLab account
+            doc_section: '#step-2-creating-your-personal-access-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Gitlab instance
+            format: hostname
+            example: gitlab.com
+            doc_section: '#step-1-finding-your-hostname'
+            order: 1
+
 ghost-admin:
     display_name: Ghost (Admin API)
     categories:

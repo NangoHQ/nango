@@ -480,6 +480,7 @@
               "integrations/all/github-app-oauth",
               "integrations/all/github-pat",
               "integrations/all/gitlab",
+              "integrations/all/gitlab-pat",
               "integrations/all/gong",
               "integrations/all/gong-oauth",
               "integrations/all/google",
