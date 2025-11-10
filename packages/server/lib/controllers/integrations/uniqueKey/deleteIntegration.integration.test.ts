@@ -40,7 +40,7 @@ describe(`DELETE ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
 
         // Getting started meta expects a preprovisioned provider config
-        await seeders.createPreprovisionedProviderConfigSeed(env, 'google-calendar-getting-started', 'google-calendar', {
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', 'github-getting-started', {
             oauth_client_id: 'foo',
             oauth_client_secret: 'bar',
             oauth_scopes: 'hello, world'
@@ -49,7 +49,7 @@ describe(`DELETE ${endpoint}`, () => {
         const metaResult = await gettingStartedService.getOrCreateMeta(db.knex, account.id, env.id);
         expect(metaResult.isOk()).toBe(true);
 
-        const res = await api.fetch(endpoint, { method: 'DELETE', token: env.secret_key, params: { uniqueKey: 'google-calendar-getting-started' } });
+        const res = await api.fetch(endpoint, { method: 'DELETE', token: env.secret_key, params: { uniqueKey: 'github-getting-started' } });
         isSuccess(res.json);
 
         const metaAfter = await gettingStartedService.getMetaByAccountId(db.knex, account.id);
