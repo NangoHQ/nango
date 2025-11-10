@@ -253,7 +253,7 @@ export class UsageTracker implements IUsageTracker {
         for (const billingMetric of billingUsage.value) {
             const usageMetric = billingMetricToUsageMetric(billingMetric.name);
             if (usageMetric) {
-                res[usageMetric] = billingMetric.quantity;
+                res[usageMetric] = billingMetric.total;
             }
         }
         return Ok(res);
