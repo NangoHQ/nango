@@ -11417,6 +11417,31 @@ sendgrid:
             description: The API key for your Sendgrid account
             doc_section: '#step-1-generating-your-sendgrid-api-key'
 
+semrush:
+    display_name: Semrush (v3)
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.semrush.com
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /management/v1/projects
+    docs: https://nango.dev/docs/integrations/all/semrush
+    docs_connect: https://nango.dev/docs/integrations/all/semrush/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Semrush API key
+            doc_section: '#step-1-finding-your-semrush-api-key'
+
 sentry:
     display_name: Sentry
     categories:

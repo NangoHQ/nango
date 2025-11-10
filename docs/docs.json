@@ -713,6 +713,7 @@
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
               "integrations/all/segment",
+              "integrations/all/semrush",
               "integrations/all/sendgrid",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
