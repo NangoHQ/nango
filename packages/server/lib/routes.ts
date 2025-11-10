@@ -8,10 +8,10 @@ import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { securityMiddlewares } from './middleware/security.js';
+import { getReady } from './ready.js';
 import { internalApi } from './routes.internal.js';
 import { privateApi } from './routes.private.js';
 import { publicAPI } from './routes.public.js';
-import { isShuttingDown } from './utils/state.js';
 import { dirname } from './utils/utils.js';
 
 import type { ApiError } from '@nangohq/types';
@@ -26,13 +26,7 @@ router.use(...securityMiddlewares());
 router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
-router.get('/ready', (_, res) => {
-    if (isShuttingDown()) {
-        res.status(500).send({ result: 'shutting down' });
-        return;
-    }
-    res.status(200).send({ result: 'ok' });
-});
+router.get('/ready', getReady);
 router.get('/env.js', getEnvJs);
 router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
