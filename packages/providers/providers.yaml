@@ -12039,6 +12039,7 @@ shopify:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
         headers:
             x-shopify-access-token: ${accessToken}
+    webhook_routing_script: shopifyWebhookRouting
     docs: https://nango.dev/docs/integrations/all/shopify
     docs_connect: https://nango.dev/docs/integrations/all/shopify/connect
     connection_config:
