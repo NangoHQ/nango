@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
+import { RateLimiterQueue, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import { stringify as stableStringify } from 'safe-stable-stringify';
 
 import { billing } from '@nangohq/billing';
@@ -15,16 +15,20 @@ import type { Result } from '@nangohq/utils';
 export class UsageBillingClient {
     private billingClient: typeof billing;
     private redis: Awaited<ReturnType<typeof getRedis>>;
-    private throttler: RateLimiterRedis;
+    private throttler: RateLimiterQueue;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.redis = redis;
-        this.throttler = new RateLimiterRedis({
+        const limiter = new RateLimiterRedis({
             storeClient: redis,
             keyPrefix: 'billing',
             points: envs.USAGE_BILLING_API_MAX_RPS,
             duration: 1
         });
+        this.throttler = new RateLimiterQueue(limiter, {
+            maxQueueSize: envs.USAGE_BILLING_API_MAX_QUEUE_SIZE
+        });
+
         this.billingClient = billing;
     }
 
@@ -68,11 +72,11 @@ export class UsageBillingClient {
 
     private async throttle<T>(key: string, fn: () => Promise<T>): Promise<T> {
         try {
-            await this.throttler.consume(key);
+            await this.throttler.removeTokens(1, key);
             return await fn();
         } catch (err) {
             if (err instanceof RateLimiterRes) {
-                throw new Error('rate_limit_exceeded');
+                throw new Error('rate_limit_exceeded', { cause: err });
             }
             throw err;
         }
