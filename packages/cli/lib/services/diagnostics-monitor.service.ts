@@ -1,35 +1,35 @@
 import chalk from 'chalk';
 
 interface MemorySample {
-    rss: number;
-    heapUsed: number;
-    heapTotal: number;
-    external: number;
+    rssBytes: number;
+    heapUsedBytes: number;
+    heapTotalBytes: number;
+    externalBytes: number;
 }
 
 interface CPUSample {
-    user: number;
-    system: number;
+    userMicros: number;
+    systemMicros: number;
 }
 
 interface Sample {
-    timestamp: number;
+    timestampMs: number;
     memory: MemorySample;
     cpu: CPUSample;
 }
 
 interface MemoryStats {
-    avg: number;
-    peak: number;
+    avgBytes: number;
+    peakBytes: number;
 }
 
 interface CPUStats {
-    avg: number;
-    peak: number;
+    avgPercent: number;
+    peakPercent: number;
 }
 
 export interface DiagnosticsStats {
-    duration: number;
+    durationMs: number;
     memory: {
         rss: MemoryStats;
         heapUsed: MemoryStats;
@@ -40,17 +40,19 @@ export interface DiagnosticsStats {
 }
 
 export class DiagnosticsMonitor {
+    private static readonly MAX_SAMPLES = 5000; // Limit samples to prevent unbounded growth
     private samples: Sample[] = [];
-    private startTime: number = 0;
-    private startCpu: CPUSample = { user: 0, system: 0 };
+    private startTimeMs: number = 0;
+    private startCpu: CPUSample = { userMicros: 0, systemMicros: 0 };
     private intervalId: NodeJS.Timeout | null = null;
-    private currentInterval: number = 100; // Start with 100ms baseline
+    private currentIntervalMs: number = 100; // Start with 100ms baseline
     private lastSample: Sample | null = null;
     private stableCount: number = 0;
 
     start(): void {
-        this.startTime = Date.now();
-        this.startCpu = process.cpuUsage();
+        this.startTimeMs = Date.now();
+        const cpuUsage = process.cpuUsage();
+        this.startCpu = { userMicros: cpuUsage.user, systemMicros: cpuUsage.system };
         this.takeSample(); // Initial sample
         this.scheduleNextSample();
     }
@@ -64,15 +66,15 @@ export class DiagnosticsMonitor {
         // Take final sample
         this.takeSample();
 
-        const duration = Date.now() - this.startTime;
+        const durationMs = Date.now() - this.startTimeMs;
 
         return {
-            duration,
+            durationMs,
             memory: {
-                rss: this.calculateMemoryStats('rss'),
-                heapUsed: this.calculateMemoryStats('heapUsed'),
-                heapTotal: this.calculateMemoryStats('heapTotal'),
-                external: this.calculateMemoryStats('external')
+                rss: this.calculateMemoryStats('rssBytes'),
+                heapUsed: this.calculateMemoryStats('heapUsedBytes'),
+                heapTotal: this.calculateMemoryStats('heapTotalBytes'),
+                external: this.calculateMemoryStats('externalBytes')
             },
             cpu: this.calculateCPUStats()
         };
@@ -80,23 +82,28 @@ export class DiagnosticsMonitor {
 
     private takeSample(): void {
         const memory = process.memoryUsage();
-        const cpu = process.cpuUsage(this.startCpu);
+        const cpu = process.cpuUsage({ user: this.startCpu.userMicros, system: this.startCpu.systemMicros });
 
         const sample: Sample = {
-            timestamp: Date.now() - this.startTime,
+            timestampMs: Date.now() - this.startTimeMs,
             memory: {
-                rss: memory.rss,
-                heapUsed: memory.heapUsed,
-                heapTotal: memory.heapTotal,
-                external: memory.external
+                rssBytes: memory.rss,
+                heapUsedBytes: memory.heapUsed,
+                heapTotalBytes: memory.heapTotal,
+                externalBytes: memory.external
             },
             cpu: {
-                user: cpu.user,
-                system: cpu.system
+                userMicros: cpu.user,
+                systemMicros: cpu.system
             }
         };
 
         this.samples.push(sample);
+
+        // Remove oldest sample if we've reached the limit
+        if (this.samples.length > DiagnosticsMonitor.MAX_SAMPLES) {
+            this.samples.shift();
+        }
 
         // Adaptive sampling: adjust interval based on changes
         if (this.lastSample) {
@@ -104,13 +111,13 @@ export class DiagnosticsMonitor {
 
             if (hasSignificantChange) {
                 // Increase sampling rate when changes detected
-                this.currentInterval = 50;
+                this.currentIntervalMs = 50;
                 this.stableCount = 0;
             } else {
                 this.stableCount++;
                 // Decrease back to baseline after 5 stable samples
                 if (this.stableCount >= 5) {
-                    this.currentInterval = 100;
+                    this.currentIntervalMs = 100;
                 }
             }
         }
@@ -119,26 +126,27 @@ export class DiagnosticsMonitor {
     }
 
     private detectSignificantChange(prev: Sample, current: Sample): boolean {
-        const MEMORY_THRESHOLD = 5 * 1024 * 1024; // 5MB
-        const CPU_THRESHOLD = 0.1; // 10%
+        const MEMORY_THRESHOLD_BYTES = 5 * 1024 * 1024; // 5MB
+        const CPU_THRESHOLD_PERCENT = 0.1; // 10%
 
         // Check memory change
-        const memoryChange = Math.abs(current.memory.rss - prev.memory.rss);
-        if (memoryChange > MEMORY_THRESHOLD) {
+        const memoryChangeBytes = Math.abs(current.memory.rssBytes - prev.memory.rssBytes);
+        if (memoryChangeBytes > MEMORY_THRESHOLD_BYTES) {
             return true;
         }
 
         // Check CPU change (approximate percentage)
-        const prevCpuTotal = prev.cpu.user + prev.cpu.system;
-        const currentCpuTotal = current.cpu.user + current.cpu.system;
-        const timeDiff = current.timestamp - prev.timestamp;
+        const prevCpuTotalMicros = prev.cpu.userMicros + prev.cpu.systemMicros;
+        const currentCpuTotalMicros = current.cpu.userMicros + current.cpu.systemMicros;
+        const timeDiffMs = current.timestampMs - prev.timestampMs;
 
-        if (timeDiff > 0) {
-            const prevCpuPercent = (prevCpuTotal / (timeDiff * 1000)) * 100;
-            const currentCpuPercent = (currentCpuTotal / (timeDiff * 1000)) * 100;
-            const cpuChange = Math.abs(currentCpuPercent - prevCpuPercent);
+        if (timeDiffMs > 0) {
+            // Convert: (microseconds / (milliseconds * 1000 micros/ms)) * 100 = percentage
+            const prevCpuPercent = (prevCpuTotalMicros / (timeDiffMs * 1000)) * 100;
+            const currentCpuPercent = (currentCpuTotalMicros / (timeDiffMs * 1000)) * 100;
+            const cpuChangePercent = Math.abs(currentCpuPercent - prevCpuPercent);
 
-            if (cpuChange > CPU_THRESHOLD) {
+            if (cpuChangePercent > CPU_THRESHOLD_PERCENT) {
                 return true;
             }
         }
@@ -150,26 +158,26 @@ export class DiagnosticsMonitor {
         this.intervalId = setTimeout(() => {
             this.takeSample();
             this.scheduleNextSample();
-        }, this.currentInterval);
+        }, this.currentIntervalMs);
     }
 
     private calculateMemoryStats(metric: keyof MemorySample): MemoryStats {
         if (this.samples.length === 0) {
-            return { avg: 0, peak: 0 };
+            return { avgBytes: 0, peakBytes: 0 };
         }
 
-        const values = this.samples.map((s) => s.memory[metric]);
-        const sum = values.reduce((acc, val) => acc + val, 0);
+        const valuesBytes = this.samples.map((s) => s.memory[metric]);
+        const sumBytes = valuesBytes.reduce((acc, val) => acc + val, 0);
 
         return {
-            avg: sum / values.length,
-            peak: Math.max(...values)
+            avgBytes: sumBytes / valuesBytes.length,
+            peakBytes: Math.max(...valuesBytes)
         };
     }
 
     private calculateCPUStats(): CPUStats {
         if (this.samples.length === 0) {
-            return { avg: 0, peak: 0 };
+            return { avgPercent: 0, peakPercent: 0 };
         }
 
         // Calculate CPU percentage for each sample interval
@@ -178,25 +186,25 @@ export class DiagnosticsMonitor {
         for (let i = 1; i < this.samples.length; i++) {
             const prev = this.samples[i - 1]!;
             const current = this.samples[i]!;
-            const timeDiff = current.timestamp - prev.timestamp;
+            const timeDiffMs = current.timestampMs - prev.timestampMs;
 
-            if (timeDiff > 0) {
-                const cpuDiff = current.cpu.user + current.cpu.system - (prev.cpu.user + prev.cpu.system);
-                // CPU usage is in microseconds, convert to percentage
-                const cpuPercent = (cpuDiff / (timeDiff * 1000)) * 100;
+            if (timeDiffMs > 0) {
+                const cpuDiffMicros = current.cpu.userMicros + current.cpu.systemMicros - (prev.cpu.userMicros + prev.cpu.systemMicros);
+                // Convert: (microseconds / (milliseconds * 1000 micros/ms)) * 100 = percentage
+                const cpuPercent = (cpuDiffMicros / (timeDiffMs * 1000)) * 100;
                 cpuPercentages.push(cpuPercent);
             }
         }
 
         if (cpuPercentages.length === 0) {
-            return { avg: 0, peak: 0 };
+            return { avgPercent: 0, peakPercent: 0 };
         }
 
-        const sum = cpuPercentages.reduce((acc, val) => acc + val, 0);
+        const sumPercent = cpuPercentages.reduce((acc, val) => acc + val, 0);
 
         return {
-            avg: sum / cpuPercentages.length,
-            peak: Math.max(...cpuPercentages)
+            avgPercent: sumPercent / cpuPercentages.length,
+            peakPercent: Math.max(...cpuPercentages)
         };
     }
 }
@@ -207,33 +215,33 @@ export function formatDiagnostics(stats: DiagnosticsStats): string {
     lines.push(chalk.gray('━'.repeat(60)));
     lines.push(chalk.bold('Diagnostics Summary'));
     lines.push(chalk.gray('━'.repeat(60)));
-    lines.push(`Duration: ${chalk.cyan((stats.duration / 1000).toFixed(2) + 's')}`);
+    lines.push(`Duration: ${chalk.cyan((stats.durationMs / 1000).toFixed(2) + 's')}`);
     lines.push('');
 
     // Memory stats
     lines.push(chalk.bold('Memory (RSS):'));
-    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.rss.avg))}`);
-    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.rss.peak))}`);
+    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.rss.avgBytes))}`);
+    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.rss.peakBytes))}`);
     lines.push('');
 
     lines.push(chalk.bold('Memory (Heap Used):'));
-    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.heapUsed.avg))}`);
-    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.heapUsed.peak))}`);
+    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.heapUsed.avgBytes))}`);
+    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.heapUsed.peakBytes))}`);
     lines.push('');
 
     lines.push(chalk.bold('Memory (Heap Total):'));
-    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.heapTotal.avg))}`);
-    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.heapTotal.peak))}`);
+    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.heapTotal.avgBytes))}`);
+    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.heapTotal.peakBytes))}`);
     lines.push('');
 
     lines.push(chalk.bold('Memory (External):'));
-    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.external.avg))}`);
-    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.external.peak))}`);
+    lines.push(`  Average: ${chalk.cyan(formatBytes(stats.memory.external.avgBytes))}`);
+    lines.push(`  Peak:    ${chalk.cyan(formatBytes(stats.memory.external.peakBytes))}`);
     lines.push('');
 
     lines.push(chalk.bold('CPU Usage:'));
-    lines.push(`  Average: ${chalk.cyan(stats.cpu.avg.toFixed(1) + '%')}`);
-    lines.push(`  Peak:    ${chalk.cyan(stats.cpu.peak.toFixed(1) + '%')}`);
+    lines.push(`  Average: ${chalk.cyan(stats.cpu.avgPercent.toFixed(1) + '%')}`);
+    lines.push(`  Peak:    ${chalk.cyan(stats.cpu.peakPercent.toFixed(1) + '%')}`);
 
     lines.push(chalk.gray('━'.repeat(60)));
 
