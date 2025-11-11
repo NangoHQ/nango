@@ -8946,6 +8946,36 @@ next-cloud-ocs:
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
 
+ninjaone-rmm:
+    display_name: NinjaOne RMM
+    categories:
+        - support
+    auth_mode: OAUTH2_CC
+    token_url: https://app.ninjarmm.com/ws/oauth/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://app.ninjarmm.com
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your NinjaOne RMM OAuth Client ID
+            example: KTmhkNf1_dZZVPmIQTK_lH2DCNJ
+            pattern: '^[A-Za-z0-9_/+-]{10,}$'
+            doc_section: '#step-1-create-an-oauth-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your NinjaOne RMM OAuth Client Secret
+            example: 'Ilfs4crKIU1t-5bde-2OMBsB9v3LGmfg82XJO7_q9TtgTnfNRmK'
+            pattern: '^[A-Za-z0-9_/+-]{10,}$'
+            secret: true
+            doc_section: '#step-2-copy-your-credentials'
+    docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
+    docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
+
 notion:
     display_name: Notion
     categories:
