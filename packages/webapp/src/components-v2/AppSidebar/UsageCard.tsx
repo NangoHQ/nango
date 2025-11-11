@@ -6,7 +6,7 @@ import { useStore } from '../../store.js';
 import { cn } from '../../utils/utils.js';
 
 /**
- * Formats multiples of 1000 to K or M
+ * Formats multiples of 1000 to K, M, B, or T
  * @example 1000 -> 1K
  * @example 2000 -> 2K
  * @example 2025 -> 2025
@@ -14,23 +14,35 @@ import { cn } from '../../utils/utils.js';
  * @example 1234000 -> 1234K
  */
 function formatLimit(limit: number) {
+    if (limit >= 1_000_000_000_000 && limit % 1_000_000_000_000 === 0) {
+        return `${(limit / 1_000_000_000_000).toLocaleString('en-US', { maximumFractionDigits: 0 })}T`;
+    }
+    if (limit >= 1_000_000_000 && limit % 1_000_000_000 === 0) {
+        return `${(limit / 1_000_000_000).toLocaleString('en-US', { maximumFractionDigits: 0 })}B`;
+    }
     if (limit >= 1_000_000 && limit % 1_000_000 === 0) {
-        return `${(limit / 1_000_000).toFixed(0)}M`;
+        return `${(limit / 1_000_000).toLocaleString('en-US', { maximumFractionDigits: 0 })}M`;
     }
     if (limit >= 1000 && limit % 1000 === 0) {
-        return `${(limit / 1000).toFixed(0)}K`;
+        return `${(limit / 1000).toLocaleString('en-US', { maximumFractionDigits: 0 })}K`;
     }
-    return limit;
+    return limit.toLocaleString('en-US');
 }
 
 function formatUsage(usage: number) {
+    if (usage >= 1_000_000_000_000) {
+        return `${(usage / 1_000_000_000_000).toLocaleString('en-US', { maximumFractionDigits: 0 })}T`;
+    }
+    if (usage >= 1_000_000_000) {
+        return `${(usage / 1_000_000_000).toLocaleString('en-US', { maximumFractionDigits: 0 })}B`;
+    }
     if (usage >= 1_000_000) {
-        return `${(usage / 1_000_000).toFixed(0)}M`;
+        return `${(usage / 1_000_000).toLocaleString('en-US', { maximumFractionDigits: 0 })}M`;
     }
     if (usage >= 1000) {
-        return `${(usage / 1000).toFixed(0)}K`;
+        return `${(usage / 1000).toLocaleString('en-US', { maximumFractionDigits: 0 })}K`;
     }
-    return usage;
+    return usage.toLocaleString('en-US');
 }
 
 export default function UsageCard() {
