@@ -28,18 +28,6 @@ export class UsageBillingClient {
         this.billingClient = billing;
     }
 
-    private async throttle<T>(key: string, fn: () => Promise<T>): Promise<T> {
-        try {
-            await this.throttler.consume(key);
-            return await fn();
-        } catch (err) {
-            if (err instanceof RateLimiterRes) {
-                throw new Error('rate_limit_exceeded');
-            }
-            throw err;
-        }
-    }
-
     public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
         const cached = await this.redis.get(cacheKey);
@@ -76,5 +64,17 @@ export class UsageBillingClient {
             return `${base}:${hash}`;
         }
         return base;
+    }
+
+    private async throttle<T>(key: string, fn: () => Promise<T>): Promise<T> {
+        try {
+            await this.throttler.consume(key);
+            return await fn();
+        } catch (err) {
+            if (err instanceof RateLimiterRes) {
+                throw new Error('rate_limit_exceeded');
+            }
+            throw err;
+        }
     }
 }
