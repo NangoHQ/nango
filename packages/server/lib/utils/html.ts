@@ -22,7 +22,7 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 
     <div id="content" style="display: flex; width: 100vw; height: 100vh; align-items: center; justify-content: center; font-size: 14px; opacity: 0">
       <div style="text-align: center">
-        ${error ? `<p style="color: #ef665b;">An error occurred during authorization, please reach out to the support (code: ${error}).</p>` : '<p>You are now connected.</p>'}
+        ${error ? `<p style="color: #ef665b;">An error occurred during authorization, please reach out to support (code: ${error}).</p>` : '<p>You are now connected.</p>'}
         <p>You can close this window.</p>
       </div>
     </div>
