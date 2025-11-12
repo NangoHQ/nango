@@ -2,8 +2,6 @@ import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-import { vi } from 'vitest';
-
 import { getProvider } from '@nangohq/providers';
 import { ActionError, PaginationService } from '@nangohq/runner-sdk';
 
@@ -11,7 +9,11 @@ import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { CursorPagination, LinkPagination, NangoProps, OffsetPagination, SdkLogger, TelemetryBag, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
-class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
+/**
+ * Base class for NangoAction mock without vitest dependency.
+ * Can be used in non-test contexts like local CLI tests.
+ */
+class NangoActionMockBase implements Omit<NangoActionBase, 'nango'> {
     dirname: string;
     name: string;
     Model: string;
@@ -42,36 +44,17 @@ class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
     };
 
     logger: SdkLogger = { level: 'debug' };
-    setLogger: ReturnType<typeof vi.fn>;
 
-    log: ReturnType<typeof vi.fn>;
-    getConnection: ReturnType<typeof vi.fn>;
-    getMetadata: ReturnType<typeof vi.fn>;
-    updateMetadata: ReturnType<typeof vi.fn>;
-    paginate: ReturnType<typeof vi.fn>;
-    get: ReturnType<typeof vi.fn>;
-    post: ReturnType<typeof vi.fn>;
-    patch: ReturnType<typeof vi.fn>;
-    put: ReturnType<typeof vi.fn>;
-    delete: ReturnType<typeof vi.fn>;
-    proxy: ReturnType<typeof vi.fn>;
-    getWebhookURL: ReturnType<typeof vi.fn>;
-
-    getToken: ReturnType<typeof vi.fn>;
-    getIntegration: ReturnType<typeof vi.fn>;
-    setMetadata: ReturnType<typeof vi.fn>;
-    setFieldMapping: ReturnType<typeof vi.fn>;
-    getFieldMapping: ReturnType<typeof vi.fn>;
-    getEnvironmentVariables: ReturnType<typeof vi.fn>;
-    getFlowAttributes: ReturnType<typeof vi.fn>;
-    triggerAction: ReturnType<typeof vi.fn>;
-    triggerSync: ReturnType<typeof vi.fn>;
-    zodValidateInput: ReturnType<typeof vi.fn>;
-    startSync: ReturnType<typeof vi.fn>;
-    uncontrolledFetch: ReturnType<typeof vi.fn>;
-    tryAcquireLock: ReturnType<typeof vi.fn>;
-    releaseLock: ReturnType<typeof vi.fn>;
-    releaseAllLocks: ReturnType<typeof vi.fn>;
+    // Store method references for potential wrapping in subclasses
+    protected _getConnectionData: () => Promise<any>;
+    protected _getMetadataData: () => Promise<any>;
+    protected _getProxyPaginateData: (args: UserProvidedProxyConfiguration) => AsyncGenerator<any>;
+    protected _proxyGetData: (args: UserProvidedProxyConfiguration) => Promise<any>;
+    protected _proxyPostData: (args: UserProvidedProxyConfiguration) => Promise<any>;
+    protected _proxyPatchData: (args: UserProvidedProxyConfiguration) => Promise<any>;
+    protected _proxyPutData: (args: UserProvidedProxyConfiguration) => Promise<any>;
+    protected _proxyDeleteData: (args: UserProvidedProxyConfiguration) => Promise<any>;
+    protected _proxyData: (args: UserProvidedProxyConfiguration) => Promise<any>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         this.dirname = dirname;
@@ -83,35 +66,47 @@ class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
         this.name = name;
         this.Model = Model;
         this.paginationService = PaginationService;
-        this.setLogger = vi.fn();
-        this.log = vi.fn();
-        this.getConnection = vi.fn(this.getConnectionData.bind(this));
-        this.getMetadata = vi.fn(this.getMetadataData.bind(this));
-        this.paginate = vi.fn(this.getProxyPaginateData.bind(this));
-        this.get = vi.fn(this.proxyGetData.bind(this));
-        this.post = vi.fn(this.proxyPostData.bind(this));
-        this.patch = vi.fn(this.proxyPatchData.bind(this));
-        this.put = vi.fn(this.proxyPutData.bind(this));
-        this.delete = vi.fn(this.proxyDeleteData.bind(this));
-        this.proxy = vi.fn(this.proxyData.bind(this));
-        this.getWebhookURL = vi.fn(() => 'https://example.com/webhook');
-        this.updateMetadata = vi.fn();
-        this.getToken = vi.fn();
-        this.getIntegration = vi.fn();
-        this.setMetadata = vi.fn();
-        this.setFieldMapping = vi.fn();
-        this.getFieldMapping = vi.fn();
-        this.getEnvironmentVariables = vi.fn();
-        this.getFlowAttributes = vi.fn();
-        this.triggerAction = vi.fn();
-        this.triggerSync = vi.fn();
-        this.zodValidateInput = vi.fn();
-        this.startSync = vi.fn();
-        this.uncontrolledFetch = vi.fn();
-        this.tryAcquireLock = vi.fn();
-        this.releaseLock = vi.fn();
-        this.releaseAllLocks = vi.fn();
+
+        // Bind methods
+        this._getConnectionData = this.getConnectionData.bind(this);
+        this._getMetadataData = this.getMetadataData.bind(this);
+        this._getProxyPaginateData = this.getProxyPaginateData.bind(this);
+        this._proxyGetData = this.proxyGetData.bind(this);
+        this._proxyPostData = this.proxyPostData.bind(this);
+        this._proxyPatchData = this.proxyPatchData.bind(this);
+        this._proxyPutData = this.proxyPutData.bind(this);
+        this._proxyDeleteData = this.proxyDeleteData.bind(this);
+        this._proxyData = this.proxyData.bind(this);
     }
+
+    setLogger = () => {};
+    log = () => {};
+    getConnection = () => this._getConnectionData();
+    getMetadata = () => this._getMetadataData();
+    paginate = (args: UserProvidedProxyConfiguration) => this._getProxyPaginateData(args);
+    get = (args: UserProvidedProxyConfiguration) => this._proxyGetData(args);
+    post = (args: UserProvidedProxyConfiguration) => this._proxyPostData(args);
+    patch = (args: UserProvidedProxyConfiguration) => this._proxyPatchData(args);
+    put = (args: UserProvidedProxyConfiguration) => this._proxyPutData(args);
+    delete = (args: UserProvidedProxyConfiguration) => this._proxyDeleteData(args);
+    proxy = (args: UserProvidedProxyConfiguration) => this._proxyData(args);
+    getWebhookURL = (() => 'https://example.com/webhook') as any;
+    updateMetadata = (() => Promise.resolve()) as any;
+    getToken = (() => Promise.resolve({ access_token: 'test-token', type: 'oauth2' as const })) as any;
+    getIntegration = (() => Promise.resolve({ provider: 'test', unique_key: 'test' })) as any;
+    setMetadata = (() => Promise.resolve()) as any;
+    setFieldMapping = (() => Promise.resolve()) as any;
+    getFieldMapping = (() => Promise.resolve(null)) as any;
+    getEnvironmentVariables = (() => Promise.resolve(null)) as any;
+    getFlowAttributes = (() => Promise.resolve(null)) as any;
+    triggerAction = (() => Promise.resolve({} as any)) as any;
+    triggerSync = (() => Promise.resolve()) as any;
+    zodValidateInput = (({ input }: { input: any; zodSchema: any }) => Promise.resolve({ success: true as const, data: input })) as any;
+    startSync = (() => Promise.resolve()) as any;
+    uncontrolledFetch = (() => Promise.resolve(new Response())) as any;
+    tryAcquireLock = (() => Promise.resolve(true)) as any;
+    releaseLock = (() => Promise.resolve(true)) as any;
+    releaseAllLocks = (() => Promise.resolve()) as any;
 
     private async getMockFile(fileName: string, throwOnMissing: boolean, identity?: ConfigIdentity) {
         const filePath = path.resolve(this.dirname, `mocks/${fileName}.json`);
@@ -290,17 +285,13 @@ class NangoActionMock implements Omit<NangoActionBase, 'nango'> {
     }
 }
 
-class NangoSyncMock extends NangoActionMock implements Omit<NangoSyncBase, 'nango'> {
+/**
+ * Base class for NangoSync mock without vitest dependency.
+ * Can be used in non-test contexts like local CLI tests.
+ */
+class NangoSyncMockBase extends NangoActionMockBase implements Omit<NangoSyncBase, 'nango'> {
     variant: string = 'base';
     track_deletes: boolean = false;
-
-    batchSave: ReturnType<typeof vi.fn>;
-    batchDelete: ReturnType<typeof vi.fn>;
-    batchUpdate: ReturnType<typeof vi.fn>;
-    getRecordsByIds: ReturnType<typeof vi.fn>;
-    deleteRecordsFromPreviousExecutions: ReturnType<typeof vi.fn>;
-    setMergingStrategy: ReturnType<typeof vi.fn>;
-    batchSend: ReturnType<typeof vi.fn>;
 
     modelFullName(model: string): string {
         if (this.variant === 'base') {
@@ -309,16 +300,13 @@ class NangoSyncMock extends NangoActionMock implements Omit<NangoSyncBase, 'nang
         return `${model}::${this.variant}`;
     }
 
-    constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
-        super({ dirname, name, Model });
-        this.batchSave = vi.fn();
-        this.batchDelete = vi.fn();
-        this.batchUpdate = vi.fn();
-        this.getRecordsByIds = vi.fn();
-        this.deleteRecordsFromPreviousExecutions = vi.fn();
-        this.setMergingStrategy = vi.fn();
-        this.batchSend = vi.fn();
-    }
+    batchSave = () => Promise.resolve(true);
+    batchDelete = () => Promise.resolve(true);
+    batchUpdate = () => Promise.resolve(true);
+    getRecordsByIds = () => Promise.resolve(new Map());
+    deleteRecordsFromPreviousExecutions = () => Promise.resolve({ deletedKeys: [] });
+    setMergingStrategy = () => Promise.resolve();
+    batchSend = () => Promise.resolve(true);
 }
 
 const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host', 'connection-id', 'provider-config-key'];
@@ -409,4 +397,9 @@ function computeDataIdentity(config: UserProvidedProxyConfiguration): string | u
     }
 }
 
-export { NangoActionMock, NangoSyncMock };
+// Export base classes that can be used without vitest
+export { NangoActionMockBase, NangoSyncMockBase };
+
+// Note: For vitest-wrapped mocks (NangoActionMock, NangoSyncMock),
+// import from './utils.vitest.js' instead.
+// They are kept separate to avoid loading vitest when using base classes.

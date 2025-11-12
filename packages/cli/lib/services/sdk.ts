@@ -83,19 +83,29 @@ export class NangoActionCLI extends NangoActionBase {
         }
     }
 
-    public triggerSync(
+    public async triggerSync(
         _providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
         _syncMode?: unknown
     ): Promise<void | string> {
         const syncArgs = typeof sync === 'string' ? { sync } : { sync: sync.name, variant: sync.variant };
-        return this.dryRunService.run({
+        const result = await this.dryRunService.run({
             ...syncArgs,
             connectionId,
             autoConfirm: true,
             debug: false
         });
+
+        // Handle the new object return type
+        if (result && typeof result === 'object' && 'success' in result) {
+            if (result.success) {
+                return result.output;
+            }
+            return '';
+        }
+
+        return result;
     }
 
     public startSync(_providerConfigKey: string, _syncs: (string | { name: string; variant: string })[], _connectionId?: string): Promise<void> {

@@ -1,0 +1,224 @@
+---
+title: 'Test functions'
+sidebarTitle: 'Test functions'
+description: 'How to test your syncs and actions locally'
+---
+
+Testing your integration functions ensures they work correctly before deploying to production. Nango provides two testing modes:
+
+- **Remote testing** (default): Tests with real API calls and validates output against your schema
+- **Local testing**: Tests with mocked API responses for fast, repeatable regression testing
+
+## Remote testing
+
+Remote testing executes your function making real API calls to verify it works end-to-end.
+
+### Run a remote test
+
+```bash
+nango test <script-name> <connection-id>
+```
+
+This command:
+1. Compiles your function
+2. Executes it against a real connection
+3. Validates output against your model schema
+4. Reports any validation errors
+
+Example:
+```bash
+nango test salesforce-contacts conn_123abc
+```
+
+<Tip>
+By default, tests use connections from your `dev` environment. Change this with the `-e` flag.
+</Tip>
+
+### Pass input to actions
+
+For actions that require input, use the `--input` flag:
+
+```bash
+nango test create-contact conn_123abc --input '{"email": "test@example.com"}'
+```
+
+You can also load input from a file:
+```bash
+nango test create-contact conn_123abc --input @fixtures/contact.json
+```
+
+## Local testing
+
+Local testing uses mocked API responses to test your functions without making real API calls. This is useful for:
+
+- Fast iteration during development
+- Regression testing in CI/CD
+- Testing without rate limits
+- Reproducible test results
+
+### Set up local testing
+
+**Step 1: Capture API responses**
+
+First, save real API responses from a working connection:
+
+```bash
+nango dryrun <script-name> <connection-id> --save-responses
+```
+
+This creates mock files in your integration directory:
+```
+nango-integrations/
+└── salesforce/
+    └── mocks/
+        └── nango/
+            └── get/
+                └── proxy/
+                    └── services/
+                        └── data/
+                            └── v53.0/
+                                └── query/
+                                    └── salesforce-contacts/
+                                        └── abc123def.json
+```
+
+<Note>
+Mock files are saved with a hash of the request parameters. This ensures different API calls use the correct mocked response.
+</Note>
+
+**Step 2: Create expected output files**
+
+For actions, create an expected output file:
+```bash
+# Create the mock directory
+mkdir -p nango-integrations/<integration>/mocks/<action-name>
+
+# Add the expected output
+echo '{"id": "123", "name": "John Doe"}' > nango-integrations/<integration>/mocks/<action-name>/output.json
+```
+
+For syncs, create expected batch save/delete files:
+```bash
+# Create the model directory
+mkdir -p nango-integrations/<integration>/mocks/<sync-name>/<ModelName>
+
+# Add expected records
+echo '[{"id": "1", "name": "Contact 1"}]' > nango-integrations/<integration>/mocks/<sync-name>/<ModelName>/batchSave.json
+```
+
+**Step 3: Run local tests**
+
+```bash
+nango test <script-name> <connection-id> --local
+```
+
+This command:
+1. Loads your compiled function
+2. Uses mocked API responses instead of real calls
+3. Compares actual output to expected output
+4. Reports any differences
+
+Example:
+```bash
+nango test salesforce-contacts conn_123abc --local
+```
+
+### Mock file structure
+
+#### For actions
+
+```
+<integration>/mocks/
+└── <action-name>/
+    ├── input.json          # Optional: input data for the action
+    └── output.json         # Required: expected output
+```
+
+#### For syncs
+
+```
+<integration>/mocks/
+└── <sync-name>/
+    └── <ModelName>/
+        ├── batchSave.json    # Expected records to save
+        └── batchDelete.json  # Expected records to delete
+```
+
+## Testing in CI/CD
+
+Local testing is ideal for CI/CD pipelines because it's fast and doesn't require API credentials.
+
+Example GitHub Actions workflow:
+
+```yaml
+name: Test Integrations
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Nango CLI
+        run: npm install -g nango
+
+      - name: Run local tests
+        working-directory: ./nango-integrations
+        run: |
+          nango test salesforce-contacts conn_test --local
+          nango test hubspot-contacts conn_test --local
+```
+
+<Warning>
+Commit mock files to your repository so tests run consistently across environments.
+</Warning>
+
+## Best practices
+
+**Update mocks when APIs change**
+
+When external APIs change their response format, re-run `--save-responses` to update your mocks:
+
+```bash
+nango dryrun salesforce-contacts conn_123abc --save-responses
+```
+
+**Test both success and error cases**
+
+Create separate mocks for error scenarios to ensure your error handling works correctly.
+
+**Use meaningful connection IDs**
+
+In local mode, the connection ID doesn't need to be real, but use descriptive names:
+
+```bash
+nango test salesforce-contacts conn_test_pagination --local
+```
+
+**Keep mocks in version control**
+
+Mock files should be committed to your repository so your team and CI can run tests consistently.
+
+## Troubleshooting
+
+**"No mocked responses found"**
+
+Run `nango dryrun <script> <connection-id> --save-responses` first to capture API responses.
+
+**"Output does not match expected result"**
+
+Check the test output for differences between expected and actual values. Update your function or expected output file as needed.
+
+**"Unable to find compiled script file"**
+
+Make sure you've compiled your functions. Run `nango dev` or manually compile before testing.
+
+## Next steps
+
+- [Implement a sync](/implementation-guides/syncs/implement-a-sync)
+- [Implement an action](/implementation-guides/actions/implement-an-action)
+- [Data validation](/implementation-guides/building-integrations/data-validation)

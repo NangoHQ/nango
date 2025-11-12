@@ -82,7 +82,9 @@ export function onAxiosRequestFulfilled({
     if (!providerConfigKey) {
         return response;
     }
-    const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
+    // Fall back to current working directory if not explicitly set
+    const mocksBaseDir = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] || `${process.cwd()}/`;
+    const directoryName = `${mocksBaseDir}${providerConfigKey}`;
 
     if (response.request.path.includes(`/connections/${connectionId}`)) {
         const connection = response.data as GetPublicConnection['Success'];
@@ -134,7 +136,9 @@ export function onAxiosRequestRejected({
     syncName: string;
     syncVariant: string;
 }) {
-    const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
+    // Fall back to current working directory if not explicitly set
+    const mocksBaseDir = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] || `${process.cwd()}/`;
+    const directoryName = `${mocksBaseDir}${providerConfigKey}`;
 
     const response: AxiosResponse | undefined = (error as AxiosError).response;
     if (response) {
