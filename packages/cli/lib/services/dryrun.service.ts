@@ -15,6 +15,7 @@ import * as zod from 'zod';
 import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
 
 import { parse } from './config.service.js';
+import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
 import { loadSchemaJson } from './model.service.js';
 import * as responseSaver from './response-saver.service.js';
 import * as nangoScript from '../sdkScripts.js';
@@ -40,6 +41,7 @@ interface RunArgs extends GlobalOptions {
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
     variant?: string;
+    diagnostics?: boolean;
 }
 
 const require = createRequire(import.meta.url);
@@ -461,7 +463,8 @@ export class DryRunService {
                 nangoProps,
                 loadLocation: './',
                 input: normalizedInput,
-                stubbedMetadata: stubbedMetadata
+                stubbedMetadata: stubbedMetadata,
+                ...(options.diagnostics && { diagnostics: options.diagnostics })
             });
 
             if (results.error) {
@@ -589,13 +592,15 @@ export class DryRunService {
         nangoProps,
         loadLocation,
         input,
-        stubbedMetadata
+        stubbedMetadata,
+        diagnostics
     }: {
         syncName: string;
         nangoProps: NangoProps;
         loadLocation: string;
         input: object;
         stubbedMetadata: Metadata | undefined;
+        diagnostics?: boolean;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
     > {
@@ -610,6 +615,8 @@ export class DryRunService {
             nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
                 ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata })
                 : new NangoActionCLI(nangoProps, { dryRunService: drs });
+
+        const monitor = diagnostics ? new DiagnosticsMonitor() : null;
 
         try {
             const variant = nangoProps.syncVariant === BASE_VARIANT ? '' : `variant:"${nangoProps.syncVariant}"`;
@@ -693,6 +700,9 @@ export class DryRunService {
                     const content = `Invalid default export for ${syncName}`;
                     return { success: false, error: new Error(content), response: null };
                 }
+
+                // Start diagnostics monitoring before script execution
+                monitor?.start();
 
                 if (isAction) {
                     // Validate action input against json schema
@@ -835,6 +845,13 @@ export class DryRunService {
             return { success: false, error: new Error(content, { cause: errorMessage }), response: null };
         } finally {
             nango.log(`Done`);
+
+            // Stop diagnostics monitoring and display results
+            if (monitor) {
+                const stats = monitor.stop();
+                console.log('');
+                console.log(formatDiagnostics(stats));
+            }
         }
     }
 }

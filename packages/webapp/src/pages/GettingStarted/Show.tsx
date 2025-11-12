@@ -48,7 +48,7 @@ export const GettingStarted: React.FC = () => {
             </Helmet>
             <header className="flex flex-col gap-3.5">
                 <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting started</h2>
-                <p className="text-text-secondary text-sm">Try connecting Nango with Google Calendar to see how integrations work.</p>
+                <p className="text-text-secondary text-sm">Try connecting Nango with Github to see how integrations work.</p>
             </header>
             <div className="flex flex-row gap-10 min-w-0">
                 <VerticalSteps
@@ -87,7 +87,7 @@ export const GettingStarted: React.FC = () => {
                             )
                         },
                         {
-                            id: 'access-google-calendar-api',
+                            id: 'access-github-api',
                             icon: LockOpen,
                             content: (
                                 <SecondStep

@@ -233,6 +233,7 @@ program
     )
     .option('--validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
+    .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
         const fullPath = process.cwd();
