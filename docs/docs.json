@@ -697,6 +697,8 @@
               "integrations/all/sap-concur",
               "integrations/all/sap-success-factors",
               "integrations/all/sap-fieldglass",
+              "integrations/all/sap-odata-oauth2-cc",
+              "integrations/all/sap-odata-basic",
               "integrations/all/scrapedo",
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
