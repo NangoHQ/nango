@@ -118,10 +118,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs

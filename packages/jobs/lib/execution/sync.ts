@@ -176,10 +176,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncConfig,
             debug: task.debug || false,
             logger: sdkLogger,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            runnerFlags: await getRunnerFlags(),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,

@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.10] - 2025-11-10
+
+### Added
+
+- *(integrations)* Add support for shipstation webhooks and support for v2 (#4956) by @hassan254-prog
+- *(integrations)* Add support for Connectwise PSA webhooks (#4950) by @jeremydhoon
+- *(integrations)* Add support for leadmagic (#4974) by @hassan254-prog
+- *(integrations)* Add support for icypeas (#4971) by @hassan254-prog
+- *(integrations)* Add support for prospeo (#4970) by @hassan254-prog
+- *(cli)* Add normalized hash fallback for mock file lookup (#4962) by @hassan254-prog
+- *(integrations)* Add support for gitlab pat (#4976) by @hassan254-prog
+
+### Changed
+
+- Improve the OpenAI SDK implementation guide + add guide for any LLM provider (#4969) by @bastienbeurier
+
+### Fixed
+
+- *(server)* Include _MS in shutdown delay env var name (#4963) by @rossmcewan
+- *(providers)* Fix momentum-io verification by adding mandatory parameters (#4960) by @hassan254-prog
+- *(logs)* Allow configurable timeouts for elasticsearch query (#4967) by @rossmcewan
+- Create an billing subscription when signup via Google (#4955) by @TBonnin
+- Remove DEPRECATED functionLogs runner flag (#4961) by @TBonnin
+- *(self-hosted)* Allow env variable to change the deprecation date (#4965) by @khaliqgant
+- *(logs)* Global search bar not working consistently (#4972) by @rossmcewan
+- *(providers)* Fix zoho recruit domain extension (#4978) by @hassan254-prog
+- *(cli)* Make `NangoActionMock` and `NangoSyncMock` implement their base classes (#4945) by @hassan254-prog
+- *(runner)* Only label pods when trace or profiling enabled (#4975) by @rossmcewan
+
 ## [v0.69.8] - 2025-11-05
 
 ### Added
@@ -5270,6 +5299,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10
 [v0.69.8]: https://github.com/NangoHQ/nango/compare/v0.69.7..v0.69.8
 [v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
 [v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
