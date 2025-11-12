@@ -236,6 +236,11 @@ export const ENVS = z.object({
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
 
+    AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
+    AWS_INTEGRATIONS_REGION: z.string().optional(),
+    AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),

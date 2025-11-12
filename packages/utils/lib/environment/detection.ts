@@ -16,7 +16,7 @@ export const isHosted = !isCloud && !isLocal && !isEnterprise;
 
 export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv.Dev;
 
-export const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
+export const useS3 = Boolean(process.env['AWS_INTEGRATIONS_REGION'] && process.env['AWS_INTEGRATIONS_BUCKET_NAME']);
 export const integrationFilesAreRemote = isEnterprise && useS3;
 
 export const flagHasScripts = isLocal || isEnterprise || isCloud || isTest;

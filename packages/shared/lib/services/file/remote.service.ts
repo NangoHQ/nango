@@ -15,25 +15,46 @@ import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
+function getCredentials() {
+    const accessKeyId = process.env['AWS_INTEGRATIONS_ACCESS_KEY_ID'];
+    const secretAccessKey = process.env['AWS_INTEGRATIONS_SECRET_ACCESS_KEY'];
+    if (!accessKeyId || !secretAccessKey) {
+        return undefined;
+    }
+    return {
+        accessKeyId,
+        secretAccessKey
+    };
+}
+
+function getRegion() {
+    return process.env['AWS_INTEGRATIONS_REGION'] || 'us-west-2';
+}
+
+function getBucketName() {
+    return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || 'nangodev-customer-integrations';
+}
+
+function useS3() {
+    return Boolean(process.env['AWS_INTEGRATIONS_REGION'] && process.env['AWS_INTEGRATIONS_BUCKET_NAME']);
+}
+
 class RemoteFileService {
     private client: S3Client;
     private useS3: boolean;
 
-    bucket = (process.env['AWS_BUCKET_NAME'] as string) || 'nangodev-customer-integrations';
+    bucket = getBucketName();
     publicRoute = 'integration-templates';
     publicZeroYamlRoute = 'templates-zero';
 
     constructor() {
-        const region = process.env['AWS_REGION'] ?? 'us-west-2';
+        const region = getRegion();
         if (isEnterprise) {
-            this.useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
+            this.useS3 = useS3();
         } else {
             this.useS3 = !isLocal && !isTest;
         }
-
-        this.client = new S3Client({
-            region
-        });
+        this.client = new S3Client([{ region, credentials: getCredentials() }]);
     }
 
     async upload({
