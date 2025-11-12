@@ -594,8 +594,12 @@ export class Orchestrator {
                             if (syncVariant !== 'base') {
                                 model = `${model}::${syncVariant}`;
                             }
-                            const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                            void logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                            try {
+                                const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                                void logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                            } catch (err) {
+                                void logCtx.error(`Failed to delete records for model ${model}`, { error: err, model });
+                            }
                         }
                     }
 
