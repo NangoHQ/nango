@@ -163,6 +163,7 @@ export interface TwoStepCredentials extends CredentialsCommon {
     type: AuthModes['TwoStep'];
     [key: string]: any;
     token?: string;
+    refresh_token?: string;
     expires_at?: Date | undefined;
 }
 
