@@ -1,0 +1,114 @@
+---
+title: 'TikTok Personal'
+sidebarTitle: 'TikTok Personal'
+description: 'Access the TikTok Personal API in 2 minutes 💨'
+---
+
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _TikTok Personal_.  Nango doesn't provide a test OAuth app for TikTok Personal yet. You’ll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize TikTok Personal">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to TikTok. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the TikTok Personal API">
+        Let's make your first request to the TikTok Personal API (fetch user info). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/user/info/?fields=open_id,union_id,avatar_url" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v2/user/info/',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
+                params: {
+                  fields: 'open_id,union_id,avatar_url'
+                }
+            });
+
+            console.log(res.data.data);
+            ```
+            </Tab>
+
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their TikTok accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
+  <Step title="Create a TikTok Developer account">
+    Go to [TikTok for Developers](https://developers.tiktok.com/) and sign in with your TikTok account. If you don't have a TikTok account, create one first.
+  </Step>
+  <Step title="Create & configure a TikTok app">
+    1. Navigate to [My Apps](https://developers.tiktok.com/apps/) and click _Create an app_. 
+    2. Select the app **Ownership**, enter a name, and select the **App Type**. Then click the **Create app** button.
+    3. Fill in all your app details:
+       - For **Platforms**, select **Web**
+       - For **Products**, make sure you select **Login Kit**
+       - In the Web **Login Kit** field, add `https://api.nango.dev/oauth/callback` as the **Redirect URL**
+       -  In the **Scopes** field, select the scopes your integration requires (e.g., `user.info.basic`, `video.list`, etc.). Copy these scopes as you will need them when configuring the integration in Nango.
+    4. After creating the app, go to the _Basic Information_ tab and note your **Client Key** and **Client Secret**. You will need these to configure the integration in Nango.
+    
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.tiktok.com/) |
+    | | [TikTok for Developers](https://developers.tiktok.com/) |
+    | Developer | [API documentation](https://developers.tiktok.com/doc/overview) |
+    | | [My Apps](https://developers.tiktok.com/apps/) |
+    | | [How to register your Application](https://developers.tiktok.com/doc/getting-started-create-an-app) |
+    | | [How to add a Sandbox](https://developers.tiktok.com/doc/add-a-sandbox) |
+    | | [Authorization documentation](https://developers.tiktok.com/doc/login-kit-web) |
+    | | [Access Token exchange](https://developers.tiktok.com/doc/oauth-user-access-token-management) |
+    | | [OAuth scopes](https://developers.tiktok.com/doc/scopes-overview) |
+    | | [API Rate limiting](https://developers.tiktok.com/doc/tiktok-api-v2-rate-limit) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/tiktok-personal.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/tiktok-personal.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
+
