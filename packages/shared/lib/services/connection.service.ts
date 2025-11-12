@@ -1216,9 +1216,8 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        const isRefresh = (provider as any).refresh_url && provider.refresh_token_params && dynamicCredentials['refresh_token'];
-
-        const tokenUrl = isRefresh ? (provider as any).refresh_url : provider.token_url;
+        const isRefresh = provider.refresh_url && provider.refresh_token_params && dynamicCredentials['refresh_token'];
+        const tokenUrl = isRefresh ? provider.refresh_url : provider.token_url;
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
 
         const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
