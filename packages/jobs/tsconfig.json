@@ -52,6 +52,9 @@
         },
         {
             "path": "../account-usage"
+        },
+        {
+            "path": "../runtimes"
         }
     ],
     "include": ["lib/**/*"]

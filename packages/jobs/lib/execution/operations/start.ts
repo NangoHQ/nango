@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
 import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 
-import { getFunctionInvoker } from '../../functions/functions.js';
+import { getRuntimeAdapter } from '../../runtime/runtimes.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/types';
@@ -50,11 +50,11 @@ export async function startScript({
             return Err(`No team provided (instead ${nangoProps.team})`);
         }
 
-        const functionInvoker = await getFunctionInvoker(nangoProps);
-        if (functionInvoker.isErr()) {
-            return Err(functionInvoker.error);
+        const runtimeAdapter = await getRuntimeAdapter(nangoProps);
+        if (runtimeAdapter.isErr()) {
+            return Err(runtimeAdapter.error);
         }
-        const res = await functionInvoker.value.invoke({
+        const res = await runtimeAdapter.value.invoke({
             taskId,
             nangoProps,
             code: script,
