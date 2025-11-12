@@ -23,7 +23,10 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             FunctionName: functionName,
             Payload: JSON.stringify({
                 taskId: params.taskId,
-                nangoProps: params.nangoProps,
+                nangoProps: {
+                    connectionId: params.nangoProps.connectionId,
+                    providerConfigKey: params.nangoProps.providerConfigKey
+                },
                 code: params.code,
                 codeParams: params.codeParams
             })
