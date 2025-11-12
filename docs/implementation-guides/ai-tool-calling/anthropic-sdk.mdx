@@ -1,10 +1,10 @@
 ---
-title: "OpenAI SDK example"
-sidebarTitle: "OpenAI SDK example"
-description: "End-to-end example of calling external tools with the OpenAI SDK."
+title: "Anthropic SDK example"
+sidebarTitle: "Anthropic SDK example"
+description: "End-to-end example of calling external tools with the Anthropic SDK."
 ---
 
-This guide demonstrates how to combine **Nango** and the **OpenAI SDK** to consume external APIs via tool calling.
+This guide demonstrates how to combine **Nango** and the **Anthropic SDK** to consume external APIs via tool calling.
 
 ## Example overview
 
@@ -13,7 +13,7 @@ The example below uses Hubspot's API to demonstrate how to access a user’s ext
 <Tip>
 **Requirements:** 
 - A Nango account with an integration for `Hubspot` with the `whoami` action enabled.
-- An OpenAI account.
+- An Anthropic account.
 </Tip>
 
 In this example:
@@ -27,14 +27,14 @@ In this example:
 ## Example code
 
 ```ts
-import OpenAI from "openai";
+import Anthropic from '@anthropic-ai/sdk';
 import { Nango } from "@nangohq/node";
 
-export async function runOpenAIAgent() {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+export async function runAnthropicAgent() {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
   const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
 
-  const userId = "user1", integrationId = "Hubspot";
+  const userId = "user1", integrationId = "hubspot";
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...")
@@ -53,36 +53,44 @@ export async function runOpenAIAgent() {
     connectionId = connection!.connection_id;
   }
 
-  // Step 3: Send a prompt to your model.
+  // Step 3: Send a prompt to your model with tool definitions
   console.log("🤖 Agent running...")
-  const response = await client.responses.create({
-    model: "gpt-5",
-    input: "Using the who_am_i tool, provide the current user info.",
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-5",
+    max_tokens: 1024,
+    messages: [
+      {
+        role: "user",
+        content: "Using the who_am_i tool, provide the current user info."
+      }
+    ],
     tools: [
       {
-        type: "function",
         name: "who_am_i",
         description: "Get the current user info.",
-        parameters: { type: "object", properties: {}, additionalProperties: false },
-        strict: true,
-      },
+        input_schema: {
+          type: "object",
+          properties: {},
+          required: []
+        }
+      }
     ],
+    tool_choice: { type: "auto" }
   });
-
-  // Check if the model requested a tool call.
-  const functionCall = response.output.find((item) => item.type === "function_call") as any;
-
-  if (functionCall?.name === "who_am_i") {
+  
+  // Check if Claude requested a tool call
+  const toolUse = message.content.find((content) => content.type === "tool_use");
+  
+  if (toolUse && toolUse.type === "tool_use" && toolUse.name === "who_am_i") {
     try {
-      // Step 4: Execute the requested tool with Nango.
-      const userInfo = await nango.triggerAction("Hubspot", connectionId, "whoami"); // Call tools via Nango.
+      // Step 4: Execute the requested tool with Nango
+      const userInfo = await nango.triggerAction(integrationId, connectionId, "whoami"); // Call tools via Nango
       console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
     } catch (error: any) {
       console.error("Nango API error:", error.response?.data?.error || error);
     }
   } else {
-    // Handle plain text or other model responses
-    console.log(response.output_text);
+    console.log(message.content.find((c) => c.type === "text")?.text);
   }
 }
 ```
