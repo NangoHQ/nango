@@ -713,18 +713,46 @@ export async function deleteRecordsBySyncId({
 }): Promise<{ totalDeletedRecords: number }> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
+    let minBatchSize = 100; // minimum batch size we allow
+    let currentBatchSize = batchSize;
     do {
-        // records table is partitioned by connection_id and model
-        // to avoid table scan, we must filter by connection_id and model
-        deletedRecords = await db
-            .from(RECORDS_TABLE)
-            .where({ connection_id: connectionId, model })
-            .whereIn('id', function (sub) {
-                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
-            })
-            .del();
-        totalDeletedRecords += deletedRecords;
-    } while (deletedRecords >= batchSize);
+        try {
+            deletedRecords = await db
+                .from(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model })
+                .whereIn('id', function (sub: any) {
+                    sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(currentBatchSize);
+                })
+                .del();
+            totalDeletedRecords += deletedRecords;
+            // On success reset batch size in case it was lowered before
+            currentBatchSize = batchSize;
+        } catch (err: any) {
+            // Check for statement timeout error and lower batch size if so
+            const message = typeof err?.message === 'string' ? err.message : '';
+            if (
+                message.includes('canceling statement due to statement timeout') ||
+                message.includes('statement timeout') ||
+                message.includes('QueryCanceledError')
+            ) {
+                if (currentBatchSize > minBatchSize) {
+                    currentBatchSize = Math.floor(currentBatchSize / 2);
+                    if (currentBatchSize < minBatchSize) {
+                        currentBatchSize = minBatchSize;
+                    }
+                    // If batch is too small to make progress, throw
+                } else {
+                    throw new Error(
+                        `Failed to delete records for model '${model}' and syncId '${syncId}': repeatedly hit statement timeout at minimal batch size (${minBatchSize}).`
+                    );
+                }
+            } else {
+                throw err;
+            }
+            // retry the loop with reduced batch size
+            deletedRecords = 0;
+        }
+    } while (deletedRecords >= currentBatchSize);
     await deleteRecordCount({ connectionId, environmentId, model });
 
     return { totalDeletedRecords };
