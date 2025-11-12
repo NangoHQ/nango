@@ -704,7 +704,7 @@ export async function deleteRecordsBySyncId({
     environmentId,
     model,
     syncId,
-    batchSize = 5000
+    batchSize = 1000
 }: {
     connectionId: number;
     environmentId: number;
@@ -714,53 +714,29 @@ export async function deleteRecordsBySyncId({
 }): Promise<{ totalDeletedRecords: number }> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
-    let minBatchSize = 100; // minimum batch size we allow
-    let currentBatchSize = batchSize;
-    do {
-        try {
-            deletedRecords = await db
+
+    await db.transaction(async (trx) => {
+        do {
+            deletedRecords = await trx
                 .from(RECORDS_TABLE)
                 .where({ connection_id: connectionId, model })
-                .whereIn('id', function (sub: any) {
-                    sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(currentBatchSize);
+                .whereIn('id', function (sub) {
+                    sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
                 })
                 .del();
             totalDeletedRecords += deletedRecords;
-            // On success reset batch size in case it was lowered before
-            currentBatchSize = batchSize;
-        } catch (err: any) {
-            // Check for statement timeout error and lower batch size if so
-            const message = typeof err?.message === 'string' ? err.message : '';
-            if (
-                message.includes('canceling statement due to statement timeout') ||
-                message.includes('statement timeout') ||
-                message.includes('QueryCanceledError')
-            ) {
-                if (currentBatchSize > minBatchSize) {
-                    currentBatchSize = Math.floor(currentBatchSize / 2);
-                    if (currentBatchSize < minBatchSize) {
-                        currentBatchSize = minBatchSize;
-                    }
-                    // If batch is too small to make progress, throw
-                } else {
-                    throw new Error(
-                        `Failed to delete records for model '${model}' and syncId '${syncId}': repeatedly hit statement timeout at minimal batch size (${minBatchSize}).`
-                    );
-                }
-            } else {
-                throw err;
-            }
-            // retry the loop with reduced batch size
-            deletedRecords = 0;
-        }
-    } while (deletedRecords >= currentBatchSize);
-    await deleteRecordCount({ connectionId, environmentId, model });
+        } while (deletedRecords > 0);
+        await deleteRecordCount(trx, { connectionId, environmentId, model });
+    });
 
     return { totalDeletedRecords };
 }
 
-export async function deleteRecordCount({ connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }): Promise<void> {
-    await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
+export async function deleteRecordCount(
+    trx: Knex,
+    { connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }
+): Promise<void> {
+    await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
 // Mark all non-deleted records from previous generations as deleted
