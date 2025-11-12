@@ -1002,6 +1002,36 @@ describe('Records service', () => {
             );
         });
     });
+
+    describe('deleteRecordsBySyncId', () => {
+        it('should delete records by sync ID', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' },
+                { id: '4', name: 'Mike Doe' },
+                { id: '5', name: 'Alice Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(records.length);
+
+            const deletedCount = await Records.deleteRecordsBySyncId({ connectionId, environmentId, model, syncId, batchSize: 2 });
+            expect(deletedCount.totalDeletedRecords).toBe(records.length);
+
+            stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]).toBe(undefined);
+
+            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(res.records.length).toBe(0);
+        });
+    });
 });
 
 async function upsertNRecords(n: number): Promise<{ environmentId: number; connectionId: number; model: string; syncId: string; result: UpsertSummary }> {
