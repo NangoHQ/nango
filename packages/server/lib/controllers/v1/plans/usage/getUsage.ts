@@ -1,7 +1,7 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { capping } from '../../../../utils/capping.js';
+import { usageTracker } from '../../../../utils/usage.js';
 
 import type { GetUsage } from '@nangohq/types';
 
@@ -18,7 +18,7 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
         return;
     }
 
-    const usage = await capping.usageTracker.getAll(account.id);
+    const usage = await usageTracker.getAll(account.id);
     if (usage.isErr()) {
         res.status(500).send({ error: { code: 'generic_error_support', message: usage.error.message } });
         return;

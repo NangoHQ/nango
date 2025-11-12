@@ -2119,6 +2119,43 @@ brevo-api-key:
             title: API Key
             description: The API key for your Brevo account
 
+breezy-hr:
+    display_name: Breezy HR
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.breezy.hr/v3/signin
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+    proxy:
+        base_url: https://api.breezy.hr
+        headers:
+            authorization: ${accessToken}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/integrations/all/breezy-hr
+    docs_connect: https://nango.dev/docs/integrations/all/breezy-hr/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: The email address associated with your Breezy HR account
+            format: email
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Breezy HR account
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+
 brex:
     display_name: Brex (OAuth)
     categories:
@@ -8909,6 +8946,36 @@ next-cloud-ocs:
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
 
+ninjaone-rmm:
+    display_name: NinjaOne RMM
+    categories:
+        - support
+    auth_mode: OAUTH2_CC
+    token_url: https://app.ninjarmm.com/ws/oauth/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://app.ninjarmm.com
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your NinjaOne RMM OAuth Client ID
+            example: KTmhkNf1_dZZVPmIQTK_lH2DCNJ
+            pattern: '^[A-Za-z0-9_/+-]{10,}$'
+            doc_section: '#step-1-create-an-oauth-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your NinjaOne RMM OAuth Client Secret
+            example: 'Ilfs4crKIU1t-5bde-2OMBsB9v3LGmfg82XJO7_q9TtgTnfNRmK'
+            pattern: '^[A-Za-z0-9_/+-]{10,}$'
+            secret: true
+            doc_section: '#step-2-copy-your-credentials'
+    docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
+    docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
+
 notion:
     display_name: Notion
     categories:
@@ -11536,6 +11603,31 @@ sendgrid:
             description: The API key for your Sendgrid account
             doc_section: '#step-1-generating-your-sendgrid-api-key'
 
+semrush:
+    display_name: Semrush (v3)
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.semrush.com
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /management/v1/projects
+    docs: https://nango.dev/docs/integrations/all/semrush
+    docs_connect: https://nango.dev/docs/integrations/all/semrush/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Semrush API key
+            doc_section: '#step-1-finding-your-api-key'
+
 sentry:
     display_name: Sentry
     categories:
@@ -11977,6 +12069,7 @@ shopify:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
         headers:
             x-shopify-access-token: ${accessToken}
+    webhook_routing_script: shopifyWebhookRouting
     docs: https://nango.dev/docs/integrations/all/shopify
     docs_connect: https://nango.dev/docs/integrations/all/shopify/connect
     connection_config:

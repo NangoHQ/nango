@@ -11,7 +11,7 @@ import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export class BillingProcessor {
+export class UsageProcessor {
     private subscriber: Subscriber;
     private usageTracker: Usage;
 
@@ -21,15 +21,15 @@ export class BillingProcessor {
     }
 
     public start(): void {
-        logger.info('Starting billing subscriber...');
+        logger.info('Starting usage subscriber...');
 
         this.subscriber.subscribe({
-            consumerGroup: 'billing',
+            consumerGroup: 'billing', // Legacy name for backward compatibility and avoid processing duplication
             subject: 'usage',
             callback: async (event) => {
                 const result = await this.process(event);
                 if (result.isErr()) {
-                    report(new Error(`Failed to process billing event: ${result.error}`), { event });
+                    report(new Error(`Failed to process usage event: ${result.error}`), { event });
                     return;
                 }
             }
