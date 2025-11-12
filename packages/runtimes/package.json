@@ -15,7 +15,7 @@
         "directory": "packages/runtimes"
     },
     "dependencies": {
-        "@aws-sdk/client-lambda": "^3.928.0",
+        "@aws-sdk/client-lambda": "3.928.0",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.52.0",
         "knex": "3.1.0"
