@@ -16,9 +16,9 @@
             "default": "./dist/sdkScripts.js"
         },
         "./test": {
-            "require": "./dist/testMocks/utils.js",
-            "types": "./dist/testMocks/utils.d.ts",
-            "default": "./dist/testMocks/utils.js"
+            "require": "./dist/testMocks/utils.vitest.js",
+            "types": "./dist/testMocks/utils.vitest.d.ts",
+            "default": "./dist/testMocks/utils.vitest.js"
         },
         "./package.json": "./package.json"
     },

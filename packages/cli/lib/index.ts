@@ -23,9 +23,11 @@ import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { create } from './services/function-create.service.js';
+import { LocalTestService } from './services/localTest.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
+import { displayTestResult } from './utils/testResultFormatter.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAll } from './zeroYaml/compile.js';
@@ -487,6 +489,131 @@ program
             console.log(chalk.green(`Tests have been generated successfully!`));
         } else {
             console.log(chalk.red(`Failed to generate tests`));
+        }
+    });
+
+program
+    .command('test')
+    .description(
+        'Test a script with validation against an existing connection.\n\n' +
+            '  Remote mode (default):\n' +
+            '    - Executes the script making real API calls\n' +
+            '    - Validates output against the model schema\n\n' +
+            '  Local mode (--local):\n' +
+            '    - Uses mocked API responses (no real API calls)\n' +
+            '    - Compares output against expected data in mocks/ directory\n' +
+            '    - Requires mocked responses: run "dryrun <script> <connection> --save-responses" first\n\n' +
+            '  For actions: compares actual output vs mocks/<script>/output.json\n' +
+            '  For syncs: compares batchSave/batchDelete calls vs mocks/<script>/<model>/batchSave.json and batchDelete.json'
+    )
+    .arguments('scriptName connectionId')
+    .option('-e [environment]', 'The Nango environment, defaults to dev.', 'dev')
+    .option(
+        '-i, --input [input]',
+        'Optional: input to pass to the script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\'. ' +
+            'You can also pass a file path prefixed with `@` to the input and appended by `json`, for example @fixtures/data.json. Note that only json files can be passed. ' +
+            'If not provided, will look for an input.json file in the script directory.'
+    )
+    .option('--local', 'Use mocked API responses for testing (requires saved responses from dryrun --save-responses)', false)
+    .option('--remote', 'Run the test remotely by calling dryrun with validation (default: true)', true)
+    .action(async function (this: Command, scriptName: string, connectionId: string) {
+        const { input, autoConfirm, debug, e: environment, local } = this.opts();
+        const fullPath = process.cwd();
+
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.error(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return;
+        }
+
+        if (!precheck.isNango || precheck.hasNangoYaml) {
+            await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
+            const { success } = await compileAllFiles({ fullPath, debug });
+            if (!success) {
+                console.log(chalk.red('Failed to compile. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+        } else {
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            if (resCheck.isErr()) {
+                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                process.exitCode = 1;
+                return;
+            }
+
+            const res = await compileAll({ fullPath, debug });
+            if (res.isErr()) {
+                process.exitCode = 1;
+                return;
+            }
+        }
+
+        if (local) {
+            const localTest = new LocalTestService({ fullPath, isZeroYaml: precheck.isZeroYaml });
+            const result = await localTest.run(
+                {
+                    sync: scriptName,
+                    connectionId,
+                    optionalEnvironment: environment,
+                    autoConfirm,
+                    debug,
+                    input
+                },
+                debug
+            );
+
+            displayTestResult(result, {
+                scriptName,
+                connectionId,
+                environment,
+                mode: 'Local'
+            });
+
+            if (!result.success) {
+                process.exitCode = 1;
+            }
+
+            return;
+        }
+
+        const dryRun = new DryRunService({
+            fullPath,
+            validation: true,
+            isZeroYaml: precheck.isZeroYaml,
+            returnOutput: true
+        });
+
+        const result = await dryRun.run(
+            {
+                sync: scriptName,
+                connectionId,
+                optionalEnvironment: environment,
+                autoConfirm,
+                debug,
+                input,
+                saveResponses: false
+            },
+            debug
+        );
+
+        // Format as test result
+        if (!result || typeof result === 'string') {
+            // Shouldn't happen with returnOutput: true, but handle it
+            console.log(chalk.yellow('Test completed with unexpected result format'));
+            return;
+        }
+
+        displayTestResult(result, {
+            scriptName,
+            connectionId,
+            environment,
+            mode: 'Remote'
+        });
+
+        if (!result.success) {
+            process.exitCode = 1;
         }
     });
 

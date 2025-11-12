@@ -228,6 +228,7 @@
             "group": "Building integrations",
             "pages": [
               "implementation-guides/building-integrations/functions-setup",
+              "implementation-guides/building-integrations/test-functions",
               "implementation-guides/building-integrations/leverage-ai-agents",
               "implementation-guides/building-integrations/extend-reference-implementation",
               "implementation-guides/building-integrations/unified-apis",

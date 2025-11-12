@@ -25,7 +25,7 @@ import { buildDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
-import type { NangoActionBase } from '@nangohq/runner-sdk';
+import type { InvalidRecordSDKError, NangoActionBase } from '@nangohq/runner-sdk';
 import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType, SdkLogger } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
@@ -43,6 +43,27 @@ interface RunArgs extends GlobalOptions {
 }
 
 const require = createRequire(import.meta.url);
+
+export interface DryRunServiceConfig {
+    environment?: string;
+    returnOutput?: boolean;
+    fullPath: string;
+    validation: boolean;
+    isZeroYaml: boolean;
+}
+
+export type DryRunResult =
+    | { success: true; output: string }
+    | {
+          success: false;
+          error: string;
+          errorDetails?: string;
+          validationError?:
+              | InvalidActionInputSDKError
+              | InvalidActionOutputSDKError
+              | InvalidRecordSDKError
+              | { type: string; code?: string; payload: unknown };
+      };
 
 /**
  * To avoid pre-installing too much things we dynamically load package inside local package.json
@@ -69,19 +90,7 @@ export class DryRunService {
     environment?: string;
     returnOutput?: boolean;
 
-    constructor({
-        environment,
-        returnOutput = false,
-        fullPath,
-        validation,
-        isZeroYaml
-    }: {
-        environment?: string;
-        returnOutput?: boolean;
-        fullPath: string;
-        validation: boolean;
-        isZeroYaml: boolean;
-    }) {
+    constructor({ environment, returnOutput = false, fullPath, validation, isZeroYaml }: DryRunServiceConfig) {
         this.fullPath = fullPath;
         this.validation = validation;
         this.isZeroYaml = isZeroYaml;
@@ -92,14 +101,18 @@ export class DryRunService {
         this.returnOutput = returnOutput;
     }
 
-    public async run(options: RunArgs, debug = false): Promise<string | undefined> {
+    public async run(options: RunArgs, debug = false): Promise<string | undefined | DryRunResult> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, syncVariant;
 
         const environment = options.optionalEnvironment || this.environment;
 
         if (!environment) {
-            console.log(chalk.red('Environment is required'));
+            const errorMsg = 'Environment is required';
+            if (this.returnOutput) {
+                return { success: false, error: errorMsg };
+            }
+            console.log(chalk.red(errorMsg));
             return;
         }
 
@@ -128,7 +141,11 @@ export class DryRunService {
         }
 
         if (!syncName) {
-            console.log(chalk.red('Sync name is required'));
+            const errorMsg = 'Sync name is required';
+            if (this.returnOutput) {
+                return { success: false, error: errorMsg };
+            }
+            console.log(chalk.red(errorMsg));
             return;
         }
 
@@ -137,7 +154,11 @@ export class DryRunService {
         }
 
         if (!connectionId) {
-            console.log(chalk.red('Connection id is required'));
+            const errorMsg = 'Connection id is required';
+            if (this.returnOutput) {
+                return { success: false, error: errorMsg };
+            }
+            console.log(chalk.red(errorMsg));
             return;
         }
 
@@ -145,8 +166,12 @@ export class DryRunService {
         if (this.isZeroYaml) {
             const def = await buildDefinitions({ fullPath: this.fullPath, debug });
             if (def.isErr()) {
+                const errorMsg = def.error instanceof ReadableError ? def.error.toText() : def.error.message;
+                if (this.returnOutput) {
+                    return { success: false, error: errorMsg };
+                }
                 console.log('');
-                console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
+                console.log(chalk.red(errorMsg));
                 return;
             }
             parsed = def.value;
@@ -268,8 +293,20 @@ export class DryRunService {
         let stubbedMetadata: Metadata | undefined = undefined;
         let normalizedInput;
 
-        const saveResponsesDir = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
+        // Fall back to current working directory if not explicitly set
+        const mocksBaseDir = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] || `${process.cwd()}/`;
+        const saveResponsesDir = `${mocksBaseDir}${providerConfigKey}`;
         const saveResponsesSyncDir = `${saveResponsesDir}/mocks/${syncName}${syncVariant && syncVariant !== BASE_VARIANT ? `/${syncVariant}` : ''}`;
+
+        if (!actionInput) {
+            const inputJsonPath = `${this.fullPath}/${providerConfigKey}/mocks/${syncName}/input.json`;
+            if (fs.existsSync(inputJsonPath)) {
+                if (debug) {
+                    printDebug(`Found input.json file at ${inputJsonPath}`);
+                }
+                actionInput = `@${inputJsonPath}`;
+            }
+        }
 
         if (actionInput) {
             if (actionInput.startsWith('@') && actionInput.endsWith('.json')) {
@@ -429,6 +466,25 @@ export class DryRunService {
 
             if (results.error) {
                 const err = results.error;
+                if (this.returnOutput) {
+                    let errorMessage = 'An error occurred during execution';
+                    let errorDetails = '';
+
+                    if (err instanceof SDKError || err.type === 'invalid_sync_record') {
+                        errorMessage = err.message;
+                        if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.type === 'invalid_sync_record') {
+                            // Capture validation error details
+                            errorDetails = JSON.stringify(err.payload, null, 2);
+                        } else {
+                            errorDetails = JSON.stringify(err.payload, null, 2);
+                        }
+                    } else {
+                        errorDetails = err instanceof Error ? JSON.stringify(err, ['name', 'message'], 2) : JSON.stringify(err, null, 2);
+                    }
+
+                    return { success: false, error: errorMessage, errorDetails, validationError: err };
+                }
+
                 console.error(chalk.red('An error occurred during execution'));
                 if (err instanceof SDKError || err.type === 'invalid_sync_record') {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.code})`));
@@ -519,7 +575,7 @@ export class DryRunService {
             }
 
             if (this.returnOutput) {
-                return resultOutput.join('\n');
+                return { success: true, output: resultOutput.join('\n') };
             }
 
             process.exit(0);
@@ -796,7 +852,7 @@ function readFile(rawFilePath: string): string | null {
     }
 }
 
-function getIntegrationFile({
+export function getIntegrationFile({
     syncName,
     location,
     nangoProps,

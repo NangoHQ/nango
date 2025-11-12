@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';

@@ -3,7 +3,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import Ajv from 'ajv';
-// eslint-disable-next-line import/order
 import chalk from 'chalk';
 import { dump, load } from 'js-yaml';
 
