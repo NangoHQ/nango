@@ -1022,7 +1022,7 @@ describe('Records service', () => {
             let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(records.length);
 
-            const deletedCount = await Records.deleteRecordsBySyncId({ connectionId, environmentId, model, syncId, batchSize: 2 });
+            const deletedCount = (await Records.deleteRecordsBySyncId({ connectionId, environmentId, model, syncId, batchSize: 2 })).unwrap();
             expect(deletedCount.totalDeletedRecords).toBe(records.length);
 
             stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();

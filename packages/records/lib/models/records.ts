@@ -710,25 +710,29 @@ export async function deleteRecordsBySyncId({
     model: string;
     syncId: string;
     batchSize?: number;
-}): Promise<{ totalDeletedRecords: number }> {
+}): Promise<Result<{ totalDeletedRecords: number }>> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
 
-    await db.transaction(async (trx) => {
-        do {
-            deletedRecords = await trx
-                .from(RECORDS_TABLE)
-                .where({ connection_id: connectionId, model })
-                .whereIn('id', function (sub) {
-                    sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
-                })
-                .del();
-            totalDeletedRecords += deletedRecords;
-        } while (deletedRecords > 0);
-        await deleteRecordCount(trx, { connectionId, environmentId, model });
-    });
+    try {
+        await db.transaction(async (trx) => {
+            do {
+                deletedRecords = await trx
+                    .from(RECORDS_TABLE)
+                    .where({ connection_id: connectionId, model })
+                    .whereIn('id', function (sub) {
+                        sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
+                    })
+                    .del();
+                totalDeletedRecords += deletedRecords;
+            } while (deletedRecords > 0);
+            await deleteRecordCount(trx, { connectionId, environmentId, model });
+        });
 
-    return { totalDeletedRecords };
+        return Ok({ totalDeletedRecords });
+    } catch (err) {
+        return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}, syncId ${syncId}`, { cause: err }));
+    }
 }
 
 export async function deleteRecordCount(

@@ -50,11 +50,12 @@ export async function deleteSyncData(sync: Sync, syncConfig: DBSyncConfig, opts:
                     syncId: sync.id,
                     batchSize: limit
                 });
-                if (res.totalDeletedRecords) {
-                    logger.info('deleted', res.totalDeletedRecords, 'records for model', model);
+                if (res.isOk() && res.value.totalDeletedRecords) {
+                    logger.info('deleted', res.value.totalDeletedRecords, 'records for model', model);
+                    return res.value.totalDeletedRecords;
                 }
 
-                return res.totalDeletedRecords;
+                return 0;
             }
         });
     }
