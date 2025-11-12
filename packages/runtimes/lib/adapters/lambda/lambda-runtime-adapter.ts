@@ -7,8 +7,9 @@ import type { NangoProps, Result } from '@nangohq/types';
 
 const client = new LambdaClient();
 
-function getLambdaFunctionName(nangoProps: NangoProps): string {
-    return `nango-function-${nangoProps.scriptType}-128mb`;
+function getLambdaFunctionName(_nangoProps: NangoProps): string {
+    //return `nango-function-${nangoProps.scriptType}-128mb`;
+    return 'lambda-function:4';
 }
 
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
