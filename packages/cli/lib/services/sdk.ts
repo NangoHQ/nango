@@ -26,6 +26,21 @@ const logLevelToColor = {
     warn: 'yellow'
 } as const;
 
+function createLoggerLevelWarning() {
+    // only show it once
+    let called = false;
+    return () => {
+        if (!called) {
+            called = true;
+            console.log(
+                chalk.yellow(
+                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
+                )
+            );
+        }
+    };
+}
+
 export class NangoActionCLI extends NangoActionBase {
     nango: Nango;
     dryRunService: DryRunService;
@@ -119,20 +134,7 @@ export class NangoActionCLI extends NangoActionBase {
         // Not applicable to CLI
     }
 
-    private showLoggerLevelWarning = (() => {
-        // only show it once
-        let called = false;
-        return () => {
-            if (!called) {
-                called = true;
-                console.log(
-                    chalk.yellow(
-                        'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
-                    )
-                );
-            }
-        };
-    })();
+    protected showLoggerLevelWarning = createLoggerLevelWarning();
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
@@ -169,6 +171,8 @@ export class NangoSyncCLI extends NangoSyncBase {
     tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
     releaseLock = NangoActionCLI['prototype']['releaseLock'];
     releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
+
+    protected showLoggerLevelWarning = createLoggerLevelWarning();
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
