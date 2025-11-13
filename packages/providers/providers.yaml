@@ -13773,6 +13773,7 @@ vantage:
             type: link
             link_path_in_response_body: links.next
             limit_name_in_request: limit
+            limit: 100
         verification:
             method: GET
             headers:
@@ -13786,7 +13787,7 @@ vantage:
             title: API Token
             description: The API token for your Vantage account
             secret: true
-            pattern: '^v[a-z]+_[A-Za-z0-9_-]+$'
+            pattern: '^vntg_tkn_[A-Za-z0-9_-]+$'
             example: vntg_tkn_abc123xyz
             doc_section: '#step-1-generating-an-api-token'
 

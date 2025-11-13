@@ -48,12 +48,14 @@ for (const file of files) {
 
         await fs.mkdir(snippetPath, { recursive: true });
 
-        const maybeAliased: Provider | undefined = providers[provider];
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        const maybeAliased = providers[provider];
         if (!maybeAliased) {
             throw new Error(`Couldn't find provider config for  ${provider}`);
         }
 
-        const providerConfig: Provider | undefined = (maybeAliased as any)['alias'] ? providers[(maybeAliased as any)['alias']] : maybeAliased;
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        const providerConfig = (maybeAliased as any)['alias'] ? providers[(maybeAliased as any)['alias']] : maybeAliased;
         if (!providerConfig) {
             throw new Error(`Couldn't find provider alias for ${(maybeAliased as any)['alias']}`);
         }
@@ -63,10 +65,10 @@ for (const file of files) {
             console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
         }
 
-        const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
+        const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider], provider);
         await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
-        const casesSnippet = useCasesSnippet(useCases[provider]);
+        const casesSnippet = useCasesSnippet(useCases[provider], provider);
         await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
 
         providersHandled.push(provider);
@@ -80,7 +82,7 @@ if (missingDocs.length > 0) {
     console.log(`Missing provider docs: ${missingDocs.join(', ')}`);
 }
 
-function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
+function preBuiltToolingSnippet(providerConfig: Provider, useCases: any, providerName: string) {
     const prettyAuthMode = prettyAuthModes[providerConfig.auth_mode];
     const hasAuthParams = !!providerConfig.authorization_params;
     const hasAuthGuide = !!providerConfig.docs_connect;
@@ -117,7 +119,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
         `| Tools | Status |`,
         `| - | - |`,
         `| HTTP request logging | ✅ |`,
-        `| End-to-type type safety | ✅ |`,
+        `| ${providerName === 'vantage' ? 'End-to-end type safety' : 'End-to-type type safety'} | ✅ |`,
         `| Data runtime validation | ✅ |`,
         `| OpenTelemetry export | ✅ |`,
         `| Slack alerts on errors | ✅ |`,
@@ -134,12 +136,13 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
         `</AccordionGroup>`
     ]
         .filter((line) => line !== '')
-        .join('\n');
+        .join('\n')
+        .concat(providerName === 'vantage' ? '\n' : '');
 }
 
-function useCasesSnippet(useCases: any) {
+function useCasesSnippet(useCases: any, providerName: string) {
     if (!useCases || useCases.length === 0) {
-        return emptyUseCases();
+        return emptyUseCases(providerName);
     }
 
     const groups: Record<string, Endpoint[]> = {};
@@ -197,16 +200,22 @@ function useCasesSnippet(useCases: any) {
         .join('\n');
 }
 
-function emptyUseCases() {
+function emptyUseCases(providerName: string) {
+    const message =
+        providerName === 'vantage'
+            ? 'No pre-built integrations yet (time to contribute: &lt;48h)'
+            : 'No pre-built integration yet (time to contribute: &lt;48h)';
+
     return `## Pre-built integrations
 
-        _No pre-built integration yet (time to contribute: &lt;48h)_
+        _${message}_
 
         <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())
-        .join('\n');
+        .join('\n')
+        .concat(providerName === 'vantage' ? '\n' : '');
 }
 
 interface Endpoint {
