@@ -11,7 +11,7 @@ export const NavigationList: React.FC<React.ComponentProps<typeof TabsPrimitive.
 export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {
     return (
         <TabsPrimitive.Trigger
-            className="w-full p-2.5 cursor-pointer text-text-secondary text-sm font-medium text-start rounded hover:bg-bg-surface hover:text-text-primary data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default"
+            className="w-full p-2.5 cursor-pointer text-text-secondary text-body-medium-medium text-start rounded hover:bg-bg-surface hover:text-text-primary data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default"
             {...props}
         />
     );
