@@ -810,6 +810,7 @@
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
               "integrations/all/unipile",
+              "integrations/all/vantage",
               "integrations/all/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",

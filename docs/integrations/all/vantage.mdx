@@ -1,0 +1,64 @@
+---
+title: Vantage
+sidebarTitle: Vantage
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/vantage/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/vantage/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+#### Step 1: Generating an API token {#step-1-generating-an-api-token}
+1. Sign in to your [Vantage](https://www.vantage.sh/) workspace.
+2. Open **Settings → API** and create a new API token (the token begins with `vtkn_`).
+3. Copy the token immediately; it is shown once and will be used as the **API Token** credential in Nango.
+
+#### Step 2: Connect the integration
+1. In the Nango dashboard, create a new integration using the **Vantage** provider.
+2. Enter the API token from Step 1 when prompted.
+3. Save the integration and create a connection to verify the credentials.
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/vantage.mdx)</Note>
+
+
+## API usage
+- Base URL: `https://api.vantage.sh/v2`.
+- Authentication: send `Authorization: Bearer API_TOKEN` in request headers.
+- Retrieve daily service costs with `GET /costs?groupings=service&date_bin=day&limit=1000`. Add `cost_report_token=rprt_...` to have the API apply an existing report’s filters.
+- Responses include a `links.next` URL for pagination; continue requesting until `next` is absent.
+- Cost rows include `accrued_at`, `service`, `amount`, `currency`, and other dimensions defined in the report.
+- Dates are UTC. When you need a PST window ending “yesterday,” convert `23:59:59` PST to UTC before sending it as `end_date`.
+
+
+## Useful links
+
+-   [Vantage API authentication](https://vantage.readme.io/reference/authentication)
+-   [GET /costs endpoint](https://vantage.readme.io/reference/getcosts)
+-   [Pagination docs](https://vantage.readme.io/reference/pagination)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/vantage.mdx)</Note>
+
+## API gotchas
+
+- When filtering by a saved report, pass `cost_report_token=...`; using `report_id` results in `400` errors.
+- The `limit` parameter accepts values up to `1000`—use it to reduce pagination.
+- Retry `429` responses after the `x-rate-limit-reset` timestamp; 4xx errors other than `429` should not be retried.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/vantage.mdx)</Note>
