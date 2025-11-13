@@ -54,11 +54,8 @@ class RemoteFileService {
         } else {
             this.useS3 = !isLocal && !isTest;
         }
-        const config: S3ClientConfig = { region };
         const credentials = getCredentials();
-        if (credentials) {
-            config.credentials = credentials;
-        }
+        const config: S3ClientConfig = credentials ? { region, credentials } : { region };
         this.client = new S3Client(config);
     }
 

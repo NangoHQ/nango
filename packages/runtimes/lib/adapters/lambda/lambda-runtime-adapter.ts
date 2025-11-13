@@ -9,7 +9,7 @@ const client = new LambdaClient();
 
 function getLambdaFunctionName(_nangoProps: NangoProps): string {
     //return `nango-function-${nangoProps.scriptType}-128mb`;
-    return 'lambda-function:4';
+    return 'lambda-function';
 }
 
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
@@ -21,18 +21,24 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         const functionName = getLambdaFunctionName(params.nangoProps);
         const command = new InvokeCommand({
             FunctionName: functionName,
+            Qualifier: '4',
             Payload: JSON.stringify({
                 taskId: params.taskId,
                 nangoProps: {
                     connectionId: params.nangoProps.connectionId,
                     providerConfigKey: params.nangoProps.providerConfigKey
                 },
-                code: params.code,
+                code: Buffer.from(params.code).toString('base64'),
                 codeParams: params.codeParams
             })
         });
         const response = await client.send(command);
-        return Ok(response.StatusCode === 200);
+        console.log('lambda.response', response);
+        if (response.StatusCode == 200) {
+            return Ok(true);
+        } else {
+            return Err(new Error(`Lambda function ${functionName} returned status code ${response.StatusCode}`));
+        }
     }
 
     async cancel(_params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
