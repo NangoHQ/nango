@@ -12,7 +12,7 @@ import PreBuiltUseCases from "/snippets/generated/vantage/PreBuiltUseCases.mdx"
 <PreBuiltUseCases />
 
 ## Access requirements
-| Pre-Requisites | Status | Comment|
+| Prerequisites | Status | Comment|
 | - | - | - |
 | Paid dev account | ❓ |  |
 | Paid test account | ❓ |  |
@@ -45,6 +45,7 @@ import PreBuiltUseCases from "/snippets/generated/vantage/PreBuiltUseCases.mdx"
 - Responses include a `links.next` URL for pagination; continue requesting until `next` is absent.
 - Cost rows include `accrued_at`, `service`, `amount`, `currency`, and other dimensions defined in the report.
 - Dates are UTC. When you need a PST window ending “yesterday,” convert `23:59:59` PST to UTC before sending it as `end_date`.
+- API tokens must have permission to read Cost Reports; share tokens from a report with the desired scope.
 
 
 ## Useful links
