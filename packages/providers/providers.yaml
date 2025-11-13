@@ -13778,7 +13778,7 @@ vantage:
             headers:
                 content-type: application/json
             endpoints:
-                - /cost_reports
+                - /cost_reports?limit=1
     docs: https://nango.dev/docs/integrations/all/vantage
     credentials:
         apiKey:
