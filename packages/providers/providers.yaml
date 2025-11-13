@@ -3542,6 +3542,10 @@ dayforce:
         client_id: Dayforce.HCMAnywhere.Client
     token_headers:
         content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
     docs: https://nango.dev/docs/integrations/all/dayforce
     docs_connect: https://nango.dev/docs/integrations/all/dayforce/connect
     connection_config:
