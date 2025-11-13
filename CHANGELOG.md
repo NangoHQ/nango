@@ -2,6 +2,111 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.12] - 2025-11-12
+
+### Added
+
+- *(integrations)* Add support for breezy-hr (#4981) by @hassan254-prog
+- *(integrations)* Add support for semrush (#4980) by @hassan254-prog
+- *(webapp)* Improve number formatting in usage card (#4988) by @kaposke
+- Switch getting started to Github (#4983) by @kaposke
+- *(dryrun-diagnostics)* Add diagnostics service for dryrun (#4987) by @khaliqgant
+- Add missing NANGO_SERVER_URL in env variables for nango-jobs co… (#4966) by @mesaugat
+
+### Changed
+
+- *(billing)* Refactor getUsage (#4973) by @TBonnin
+- *(usage)* Cache and throttle all calls to Orb usage endpoint (#4985) by @TBonnin
+- *(usage)* Replace rate limiter by queue when throttling (#4989) by @TBonnin
+
+### Fixed
+
+- *(server)* /ready endpoint checks for db connectivity at startup (#4977) by @TBonnin
+- *(providers)* Update shopify docs to mention the recommended flow after custom apps deprecation (#4968) by @hassan254-prog
+- *(integrations)* Add NinjaOne RMM (#4957) by @jeremydhoon
+- *(jobs)* Set correct env vars for dd (#4986) by @rossmcewan
+- Remove close button from popup (#4984) by @kaposke
+- *(records)* Retrying the entire transaction when deadlock detected in upsert (#4991) by @TBonnin
+- *(metering)* Cleanup (#4990) by @TBonnin
+- *(listConnections)* Fix param (#4997) by @khaliqgant
+
+## [v0.69.10] - 2025-11-10
+
+### Added
+
+- *(integrations)* Add support for shipstation webhooks and support for v2 (#4956) by @hassan254-prog
+- *(integrations)* Add support for Connectwise PSA webhooks (#4950) by @jeremydhoon
+- *(integrations)* Add support for leadmagic (#4974) by @hassan254-prog
+- *(integrations)* Add support for icypeas (#4971) by @hassan254-prog
+- *(integrations)* Add support for prospeo (#4970) by @hassan254-prog
+- *(cli)* Add normalized hash fallback for mock file lookup (#4962) by @hassan254-prog
+- *(integrations)* Add support for gitlab pat (#4976) by @hassan254-prog
+
+### Changed
+
+- Improve the OpenAI SDK implementation guide + add guide for any LLM provider (#4969) by @bastienbeurier
+
+### Fixed
+
+- *(server)* Include _MS in shutdown delay env var name (#4963) by @rossmcewan
+- *(providers)* Fix momentum-io verification by adding mandatory parameters (#4960) by @hassan254-prog
+- *(logs)* Allow configurable timeouts for elasticsearch query (#4967) by @rossmcewan
+- Create an billing subscription when signup via Google (#4955) by @TBonnin
+- Remove DEPRECATED functionLogs runner flag (#4961) by @TBonnin
+- *(self-hosted)* Allow env variable to change the deprecation date (#4965) by @khaliqgant
+- *(logs)* Global search bar not working consistently (#4972) by @rossmcewan
+- *(providers)* Fix zoho recruit domain extension (#4978) by @hassan254-prog
+- *(cli)* Make `NangoActionMock` and `NangoSyncMock` implement their base classes (#4945) by @hassan254-prog
+- *(runner)* Only label pods when trace or profiling enabled (#4975) by @rossmcewan
+
+## [v0.69.8] - 2025-11-05
+
+### Added
+
+- *(integrations)* Add support for atlassian-government-cloud (#4935) by @hassan254-prog
+- *(integrations)* Add statista provider (#4860) by @Diginut-GmbH
+- *(providers)* Add a default value for medallia gatewayUrl (#4947) by @hassan254-prog
+- *(server)* Add ready endpoint (#4931) by @rossmcewan
+- *(fleet)* Add metering and profiling controls to node and overrides (#4948) by @rossmcewan
+- *(node-sdk)* Node sdk connection creation detection for agentic flow (#4923) by @khaliqgant
+- *(fleet)* Add idle timeout to node config and overrides (#4952) by @rossmcewan
+- *(integrations)* Add support for zoho-recruit (#4958) by @hassan254-prog
+- *(integrations)* Add support for heyreach (#4951) by @hassan254-prog
+- *(runner-sdk)* Add logger level concept (default to warn in cloud) (#4954) by @TBonnin
+- *(connect-ui)* Add error event emission to notify parent on auth failures (#4953) by @hassan254-prog
+- *(integrations)* Add support for apify (#4930) by @hassan254-prog
+- *(agentic-sdk)* WaitForConnection (#4939) by @khaliqgant
+
+### Changed
+
+- Update screenshots to use new connect ui (#4839) by @hassan254-prog
+
+### Fixed
+
+- *(plan)* Xl api_rate_limit_size for growth plan (#4944) by @TBonnin
+- *(runner)* Error handling and retry in jobs client (#4927) by @TBonnin
+- Remove legacy usage table (#4949) by @TBonnin
+- *(integrations)* Add support for Auvik Networks (#4941) by @jeremydhoon
+- *(integrations)* Add Passportal integration (#4942) by @jeremydhoon
+
+## [v0.69.7] - 2025-10-31
+
+### Added
+
+- *(integrations)* Add support for onelogin (#4932) by @hassan254-prog
+
+### Changed
+
+- Sample app (#4920) by @hassan254-prog
+
+### Fixed
+
+- *(usage)* Account for deleted connections when revalidating records (#4928) by @TBonnin
+- *(deploy)* Ensure we filter on the type (#4937) by @khaliqgant
+- Keep feature flag overrides when upgrading (#4934) by @TBonnin
+- Record schema compilation caching (#4902) by @TBonnin
+- *(deploy-versions)* Dont force version (#4938) by @khaliqgant
+
 ## [v0.69.6] - 2025-10-30
 
 ### Added
@@ -5222,6 +5327,10 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.12]: https://github.com/NangoHQ/nango/compare/v0.69.10..v0.69.12
+[v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10
+[v0.69.8]: https://github.com/NangoHQ/nango/compare/v0.69.7..v0.69.8
+[v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
 [v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
 [v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5
 [v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4

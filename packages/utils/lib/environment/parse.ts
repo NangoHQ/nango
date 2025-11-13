@@ -27,10 +27,12 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
+    SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
+    PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z.coerce.date().catch(new Date('2025-08-25')),
 
     // Crons
     CRON_EXPORT_USAGE_MINUTES: z.coerce.number().optional().default(60),
@@ -222,6 +224,11 @@ export const ENVS = z.object({
     USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),
     USAGE_REVALIDATE_AFTER_MS: z.coerce.number().optional().default(3_600_000), // 1 hour
     USAGE_BILLING_API_MAX_RPS: z.coerce.number().optional().default(5), // max requests per second to Orb API usage endpoint is 10, keeping some margin
+    USAGE_BILLING_API_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100), // max queued requests by rate limiter
+    USAGE_BILLING_API_CACHE_TTL_SECONDS: z.coerce
+        .number()
+        .optional()
+        .default(3600 * 6), // 6 hour
 
     // --- Third parties
     // AWS
@@ -240,6 +247,8 @@ export const ENVS = z.object({
 
     // Elasticsearch
     NANGO_LOGS_ES_URL: z.url().optional(),
+    NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
+    NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),

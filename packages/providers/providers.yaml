@@ -916,6 +916,28 @@ apaleo:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/apaleo
 
+apify:
+    display_name: Apify
+    categories:
+        - dev-tools
+        - analytics
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.apify.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/apify
+    docs_connect: https://nango.dev/docs/integrations/all/apify/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Apify account
+            example: apify_api_***************************nt4w
+            pattern: '^apify_api_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 apollo:
     display_name: Apollo (API Key)
     categories:
@@ -1158,6 +1180,40 @@ atlassian-admin:
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
+atlassian-government-cloud:
+    display_name: Atlassian Government Cloud
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian-us-gov-mod.com/authorize
+    token_url: https://auth.atlassian-us-gov-mod.com/oauth/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        audience: api.atlassian-us-gov-mod.com
+        prompt: consent
+    proxy:
+        base_url: https://api.atlassian-us-gov-mod.com
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    post_connection_script: atlassianGovernmentCloudPostConnection
+    docs: https://nango.dev/docs/integrations/all/atlassian-government-cloud
+    docs_connect: https://nango.dev/docs/integrations/all/atlassian-government-cloud/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Atlassian Government Cloud account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: acme
+            suffix: .atlassian-us-gov-mod.net
+            prefix: https://
+
 attio:
     display_name: Attio
     categories:
@@ -1244,6 +1300,43 @@ auth0-cc:
             example: example
             optional: true
             doc_section: '#step-4-finding-your-organization'
+
+auvik:
+    display_name: Auvik
+    categories:
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://auvikapi.${connectionConfig.region}.my.auvik.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/authentication/verify
+    credentials:
+        username:
+            type: string
+            title: User Name / Account Email
+            description: Auvik User Name (usually an individual user's email address)
+            doc_section: '#step-1-generate-an-api-key'
+        password:
+            type: string
+            title: API Key
+            description: Auvik API Key (separate from the user's password)
+            secret: true
+            # API key is a base64 encoded string
+            pattern: '^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$'
+            example: 'aJ7EjSEDD+7+JqlQ1NtUXyY/3/05GGWwfF7vBbPd0Iy8HG1s'
+            doc_section: '#step-1-generate-an-api-key'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI)
+            example: us2
+            pattern: '^[a-z]{2,4}\d{1,3}$'
+            doc_section: '#step-2-determine-your-region'
+    docs: https://nango.dev/docs/integrations/all/auvik
+    docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
 avalara:
     display_name: Avalara
@@ -2025,6 +2118,43 @@ brevo-api-key:
             type: string
             title: API Key
             description: The API key for your Brevo account
+
+breezy-hr:
+    display_name: Breezy HR
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.breezy.hr/v3/signin
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+    proxy:
+        base_url: https://api.breezy.hr
+        headers:
+            authorization: ${accessToken}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/integrations/all/breezy-hr
+    docs_connect: https://nango.dev/docs/integrations/all/breezy-hr/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: The email address associated with your Breezy HR account
+            format: email
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Breezy HR account
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
 
 brex:
     display_name: Brex (OAuth)
@@ -3070,6 +3200,7 @@ connectwise-psa:
         - support
         - ticketing
     auth_mode: BASIC
+    webhook_routing_script: connectwisePsaWebhookRouting
     proxy:
         base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
@@ -3109,6 +3240,8 @@ connectwise-psa-staging:
         - support
         - ticketing
     auth_mode: BASIC
+    webhook_routing_script: connectwisePsaWebhookRouting
+
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
@@ -5415,6 +5548,45 @@ gitlab:
         base_url: https://gitlab.com
     docs: https://nango.dev/docs/integrations/all/gitlab
 
+gitlab-pat:
+    display_name: GitLab  (Personal Access Token)
+    categories:
+        - dev-tools
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            private-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v4/users
+    docs: https://nango.dev/docs/integrations/all/gitlab-pat
+    docs_connect: https://nango.dev/docs/integrations/all/gitlab-pat/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            example: glpat-PMJoma_*******.***.***xwve
+            pattern: '^glpat-[A-Za-z0-9._-]+$'
+            description: The Personal Access Token for your GitLab account
+            doc_section: '#step-2-creating-your-personal-access-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Gitlab instance
+            format: hostname
+            example: gitlab.com
+            doc_section: '#step-1-finding-your-hostname'
+            order: 1
+
 ghost-admin:
     display_name: Ghost (Admin API)
     categories:
@@ -6329,6 +6501,31 @@ heap:
             format: uuid
             doc_section: '#step-1-generating-your-api-key-and-app-id'
 
+heyreach:
+    display_name: HeyReach
+    categories:
+        - social
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.heyreach.io/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /public/auth/CheckApiKey
+    docs: https://nango.dev/docs/integrations/all/heyreach
+    docs_connect: https://nango.dev/docs/integrations/all/heyreach/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your HeyReach account
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            example: 'FoVLZoM+nVyMELhqr7vH120O2FS1gZcAG5d2qs1bndg='
+            doc_section: '#step-1-generating-an-api-key'
+
 hibob-service-user:
     display_name: Hibob Service User
     categories:
@@ -6567,6 +6764,31 @@ instagram:
     proxy:
         base_url: https://graph.instagram.com
     docs: https://nango.dev/docs/integrations/all/instagram
+
+icypeas:
+    display_name: Icypeas
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.icypeas.com/api
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /email-search
+    docs: https://nango.dev/docs/integrations/all/icypeas
+    docs_connect: https://nango.dev/docs/integrations/all/icypeas/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Icypeas account
+            example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-finding-your-api-key'
 
 itglue:
     display_name: IT Glue
@@ -7472,6 +7694,31 @@ lattice:
             description: The API key for your Lattice account
             doc_section: '#step-1-finding-lattice-api-key'
 
+leadmagic:
+    display_name: LeadMagic
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.leadmagic.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/credits
+    docs: https://nango.dev/docs/integrations/all/leadmagic
+    docs_connect: https://nango.dev/docs/integrations/all/leadmagic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your LeadMagic account
+            example: 1e30029c105a89d36b76b879f01208d8
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 lessonly:
     display_name: Lessonly
     categories:
@@ -8059,6 +8306,7 @@ medallia:
             type: string
             title: ''
             description: ''
+            default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
 
 metabase:
@@ -8544,7 +8792,7 @@ momentum-io:
         verification:
             method: GET
             endpoints:
-                - /v1/meetings
+                - /v1/meetings?from=1970-01-01T00:00:00.000Z&pageSize=1
     docs: https://nango.dev/docs/integrations/all/momentum-io
     docs_connect: https://nango.dev/docs/integrations/all/momentum-io/connect
     credentials:
@@ -8697,6 +8945,36 @@ next-cloud-ocs:
             format: hostname
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
+
+ninjaone-rmm:
+    display_name: NinjaOne RMM
+    categories:
+        - support
+    auth_mode: OAUTH2_CC
+    token_url: https://app.ninjarmm.com/ws/oauth/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://app.ninjarmm.com
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your NinjaOne RMM OAuth Client ID
+            example: KTmhkNf1_dZZVPmIQTK_lH2DCNJ
+            pattern: '^[A-Za-z0-9_/+-]{10,}$'
+            doc_section: '#step-1-create-an-oauth-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your NinjaOne RMM OAuth Client Secret
+            example: 'Ilfs4crKIU1t-5bde-2OMBsB9v3LGmfg82XJO7_q9TtgTnfNRmK'
+            pattern: '^[A-Za-z0-9_/+-]{10,}$'
+            secret: true
+            doc_section: '#step-2-copy-your-credentials'
+    docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
+    docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
 
 notion:
     display_name: Notion
@@ -8938,6 +9216,30 @@ one-note:
         - productivity
     alias: microsoft
     docs: https://nango.dev/docs/integrations/all/one-note
+
+onelogin:
+    display_name: OneLogin
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.onelogin.com/auth/oauth2/v2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.onelogin.com
+    pre_connection_deletion_script: oneloginPreConnectionDeletion
+    docs: https://nango.dev/docs/integrations/all/onelogin
+    docs_connect: https://nango.dev/docs/integrations/all/onelogin/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your OneLogin subdomain
+            example: acme
+            order: 1
+            prefix: https://
+            suffix: .onelogin.com
+            doc_section: '#step-1-finding-your-subdomain'
 
 openai:
     display_name: OpenAI
@@ -9190,6 +9492,67 @@ pandadoc-api-key:
             doc_section: '#step-1-generating-your-api-key'
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
+
+passportal:
+    display_name: Passportal
+    categories:
+        - support
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.base_url}/api/v2/auth/client_token
+    token_headers:
+        x-key: ${credentials.apiKey}
+        x-hash: ${credentials.hmacToken}
+        content-type: application/json
+    token_params:
+        scope: docs_api
+        content: ${credentials.content}
+    token_response:
+        token: access_token
+        token_expiration: expiry_time
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://${connectionConfig.base_url}
+        headers:
+            x-access-token: ${accessToken}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v2/documents?resultsPerPage=1
+    connection_config:
+        base_url:
+            type: string
+            title: Passportal Base URL
+            description: Your Passportal base URL
+            example: mycompany.mypasswordapp.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-passportal-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Key ID
+            description: Your Passportal API Access Key ID
+            example: a14e6b4923ba5027189baded6ba7b68e6fcda742008c5d57b867f43a09768ece
+            pattern: '^[a-fA-F0-9]{64}$'
+            doc_section: '#step-2-generate-api-access-key-id-and-secret-access-key'
+        hmacToken:
+            type: string
+            title: HMAC Token
+            description: Your pre-generated HMAC token, hex encoded
+            example: 23ec313efecb560a7f44239f6dd439ea56d18911c18b59e1150a3c7299da8202
+            pattern: '^[a-fA-F0-9]{64}$'
+            secret: true
+            doc_section: '#step-3-generate-hmac-token'
+        content:
+            type: string
+            title: Content String
+            description: Plain text message used to compute the HMAC token
+            example: api-content-hash
+            doc_section: '#step-3-generate-hmac-token'
+    docs: https://nango.dev/docs/integrations/all/passportal
+    docs_connect: https://nango.dev/docs/integrations/all/passportal/connect
 
 paychex:
     display_name: Paychex
@@ -9933,6 +10296,33 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
+
+prospeo:
+    display_name: Prospeo
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.prospeo.io
+        headers:
+            x-key: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /account-information
+    docs: https://nango.dev/docs/integrations/all/prospeo
+    docs_connect: https://nango.dev/docs/integrations/all/prospeo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Prospeo API Key
+            example: 65d2be5e227e447d8777d36f934c611c
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-finding-your-api-key'
 
 private-api-bearer:
     display_name: Private API (Bearer Auth)
@@ -11217,6 +11607,31 @@ sendgrid:
             description: The API key for your Sendgrid account
             doc_section: '#step-1-generating-your-sendgrid-api-key'
 
+semrush:
+    display_name: Semrush (v3)
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.semrush.com
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /management/v1/projects
+    docs: https://nango.dev/docs/integrations/all/semrush
+    docs_connect: https://nango.dev/docs/integrations/all/semrush/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Semrush API key
+            doc_section: '#step-1-finding-your-api-key'
+
 sentry:
     display_name: Sentry
     categories:
@@ -11582,7 +11997,7 @@ sharepoint-online-v1:
             doc_section: '#step-4-generating-your-client-assertion'
 
 shipstation:
-    display_name: Shipstation
+    display_name: Shipstation (v1)
     categories:
         - e-commerce
     auth_mode: BASIC
@@ -11597,6 +12012,7 @@ shipstation:
                 content-type: application/json
             endpoints:
                 - /users
+    webhook_routing_script: shipstationWebhookRouting
     docs: https://nango.dev/docs/integrations/all/shipstation
     docs_connect: https://nango.dev/docs/integrations/all/shipstation/connect
     credentials:
@@ -11604,14 +12020,46 @@ shipstation:
             type: string
             title: API Key
             description: Your ShipStation API key
+            example: '0ff30856c5634da1b5ce1953fdaf3dcd'
+            pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
         password:
             type: string
             title: API Secret
             description: Your Shipstation API secret
+            example: '17f1c62148b044c687f80e1060224a4e'
+            pattern: '^[a-f0-9]{32}$'
             # https://www.shipstation.com/docs/api/requirements/#authentication
             # Shipstation is using basic auth with API key and secret
             doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
+
+shipstation-v2:
+    display_name: Shipstation (v2)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.shipstation.com
+        retry:
+            after:
+                - 'retry-after'
+        headers:
+            api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users?page_size=1
+    webhook_routing_script: shipstationWebhookRouting
+    docs: https://nango.dev/docs/integrations/all/shipstation-v2
+    docs_connect: https://nango.dev/docs/integrations/all/shipstation-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Shipstation account
+            example: zEfcI+rouT0q1fjQWHBOYnsGYiax3rGDjtt3O5UhFIw
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            doc_section: '#step-1-generating-your-api-key'
 
 shopify:
     display_name: Shopify (OAuth)
@@ -11625,6 +12073,7 @@ shopify:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
         headers:
             x-shopify-access-token: ${accessToken}
+    webhook_routing_script: shopifyWebhookRouting
     docs: https://nango.dev/docs/integrations/all/shopify
     docs_connect: https://nango.dev/docs/integrations/all/shopify/connect
     connection_config:
@@ -12104,6 +12553,30 @@ stackexchange:
     proxy:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
+
+statista:
+    display_name: Statista
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.statista.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/statistics?q=*
+    docs: https://nango.dev/docs/integrations/all/statista
+    docs_connect: https://nango.dev/docs/integrations/all/statista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Statista account
+            example: c5c28261f9ade4e34891ccf761491b94
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
 
 strava:
     display_name: Strava (Mobile)
@@ -14186,6 +14659,25 @@ zoho-people:
             prefix: https://people.zoho.
             example: com
             optional: true
+            suffix: /
+
+zoho-recruit:
+    display_name: Zoho Recruit
+    alias: zoho
+    categories:
+        - ats
+    proxy:
+        base_url: https://recruit.zoho.${connectionConfig.extension}/recruit
+    docs: https://nango.dev/docs/integrations/all/zoho-recruit
+    docs_connect: https://nango.dev/docs/integrations/all/zoho-recruit/connect
+    connection_config:
+        extension:
+            type: string
+            title: Domain Extension
+            description: The domain extension of your Zoho Recruit account
+            pattern: '^[a-z.]+$'
+            prefix: https://recruit.zoho.
+            example: com
             suffix: /
 
 zoom:

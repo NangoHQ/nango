@@ -1,0 +1,105 @@
+---
+title: "Anthropic SDK example"
+sidebarTitle: "Anthropic SDK example"
+description: "End-to-end example of calling external tools with the Anthropic SDK."
+---
+
+This guide demonstrates how to combine **Nango** and the **Anthropic SDK** to consume external APIs via tool calling.
+
+## Example overview
+
+The example below uses Hubspot's API to demonstrate how to access a user’s external account through Nango.
+
+<Tip>
+**Requirements:** 
+- A Nango account with an integration for `Hubspot` with the `whoami` action enabled.
+- An Anthropic account.
+</Tip>
+
+In this example:
+1. Check if the user is already authenticated with Hubspot.  
+2. If not, start the Hubspot OAuth flow. You can do this:
+   - Directly in the chat session, or  
+   - By embedding the [Frontend SDK](https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#2-trigger-the-auth-flow-frontend) in your app.  
+3. Send a prompt to your model.
+4. When the model calls a tool, trigger the corresponding Nango action.
+
+## Example code
+
+```ts
+import Anthropic from '@anthropic-ai/sdk';
+import { Nango } from "@nangohq/node";
+
+export async function runAnthropicAgent() {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+  const userId = "user1", integrationId = "hubspot";
+
+  // Step 1: Ensure the user is authorized
+  console.log("🔒 Checking API authorization...")
+  let connectionId = (await nango.listConnections({ integrationId, userId })).connections[0]?.connection_id;
+
+  // Step 2: If the user is not authorized, redirect to the auth flow.
+  if (!connectionId) {
+    const session = await nango.createConnectSession({
+      allowed_integrations: [integrationId],
+      end_user: { id: userId },
+    }); // Handle API auth via Nango.
+
+    console.log(`Please authorize the app by visiting this URL: ${session.data.connect_link}`);
+
+    const connection = await nango.waitForConnection(integrationId, userId);
+    connectionId = connection!.connection_id;
+  }
+
+  // Step 3: Send a prompt to your model with tool definitions
+  console.log("🤖 Agent running...")
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-5",
+    max_tokens: 1024,
+    messages: [
+      {
+        role: "user",
+        content: "Using the who_am_i tool, provide the current user info."
+      }
+    ],
+    tools: [
+      {
+        name: "who_am_i",
+        description: "Get the current user info.",
+        input_schema: {
+          type: "object",
+          properties: {},
+          required: []
+        }
+      }
+    ],
+    tool_choice: { type: "auto" }
+  });
+  
+  // Check if Claude requested a tool call
+  const toolUse = message.content.find((content) => content.type === "tool_use");
+  
+  if (toolUse && toolUse.type === "tool_use" && toolUse.name === "who_am_i") {
+    try {
+      // Step 4: Execute the requested tool with Nango
+      const userInfo = await nango.triggerAction(integrationId, connectionId, "whoami"); // Call tools via Nango
+      console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
+    } catch (error: any) {
+      console.error("Nango API error:", error.response?.data?.error || error);
+    }
+  } else {
+    console.log(message.content.find((c) => c.type === "text")?.text);
+  }
+}
+```
+
+<Tip>
+This example uses the **Nango Node SDK**, which is a thin wrapper around Nango’s REST API. You can use the same flow in any language with the [API reference](https://nango.dev/docs/reference/api/authentication).
+</Tip>
+
+<Tip>
+You can let agents or models introspect available tools and their specifications by calling this  
+[endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
+</Tip>
