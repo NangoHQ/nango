@@ -26,7 +26,7 @@ const logLevelToColor = {
     warn: 'yellow'
 } as const;
 
-function createLoggerLevelWarning() {
+function showLoggerLevelWarning() {
     // only show it once
     let called = false;
     return () => {
@@ -134,7 +134,7 @@ export class NangoActionCLI extends NangoActionBase {
         // Not applicable to CLI
     }
 
-    protected showLoggerLevelWarning = createLoggerLevelWarning();
+    protected showLoggerLevelWarning = showLoggerLevelWarning();
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
@@ -172,7 +172,7 @@ export class NangoSyncCLI extends NangoSyncBase {
     releaseLock = NangoActionCLI['prototype']['releaseLock'];
     releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
 
-    protected showLoggerLevelWarning = createLoggerLevelWarning();
+    protected showLoggerLevelWarning = showLoggerLevelWarning();
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
