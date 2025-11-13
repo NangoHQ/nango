@@ -401,7 +401,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         }
 
                         // Check if the imported package is in the allowed list, but allow types since this is compile time only
-                        if (!allowedPackages.includes(source) && kind?.toString() !== 'type') {
+                        if (!allowedPackages.includes(source) && kind !== 'type') {
                             throw new CompileError(
                                 'disallowed_import',
                                 lineNumber,
