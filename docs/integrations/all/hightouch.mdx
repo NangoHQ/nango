@@ -1,0 +1,67 @@
+---
+title: Hightouch
+sidebarTitle: Hightouch
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/hightouch/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/hightouch/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+## Setup guide
+
+### Step 1: Create an API Key
+
+To create an API key for Hightouch:
+
+1. Log in to your Hightouch workspace
+2. Navigate to the API keys tab in Settings
+3. Select "Add API key"
+4. Enter a descriptive name for your API key
+5. Copy the generated API key (displayed only once)
+6. Store the API key securely
+
+<Warning>The API key is only displayed once during creation. If you lose it, you'll need to create a new one.</Warning>
+
+<Note>API keys must be created by an Admin user of the Hightouch workspace and provide read/write access to Hightouch resources.</Note>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+
+## Useful links
+
+-   [Hightouch API Overview](https://hightouch.com/docs/developer-tools/api-guide)
+-   [Hightouch API Reference](https://hightouch.com/docs/api-reference)
+-   [Personalization API Documentation](https://hightouch.com/docs/real-time/personalization-api)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+
+## Connection configuration in Nango
+
+Hightouch uses API key authentication with the following configuration:
+- **Authentication**: Bearer token in Authorization header
+- **Base URL**: `https://api.hightouch.com`
+- **Header Format**: `Authorization: Bearer YOUR_API_KEY`
+
+## API gotchas
+
+- Hightouch has a rate limit of **200 requests per 10 seconds per workspace**
+- API keys must be created by an Admin user of the Hightouch workspace
+- API keys provide read/write access to all Hightouch resources, so keep them secure
+- If an API key is compromised, immediately revoke it through the Settings page
+- Authentication error "No user found" may indicate an issue with the API key's creator
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
