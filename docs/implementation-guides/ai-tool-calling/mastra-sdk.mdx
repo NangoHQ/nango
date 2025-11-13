@@ -1,13 +1,13 @@
 ---
-title: "OpenAI"
-sidebarTitle: "OpenAI"
-description: "End-to-end example of calling external tools with the OpenAI SDK."
+title: "Mastra"
+sidebarTitle: "Mastra"
+description: "End-to-end example of calling external tools with the Mastra SDK."
 ---
 
 ## Setup
 
 ```bash
-npm i openai @nangohq/node
+npm i @mastra/core @nangohq/node
 ```
 
 <Tip>
@@ -16,21 +16,25 @@ This example uses the Node SDK, a lightweight wrapper over Nango’s REST API. T
 
 **Requirements:** 
 - A Nango account with a Hubspot integration configured and the `whoami` action enabled.
-- An OpenAI account.
+- An OpenAI account (or another LLM provider).
 
 ## Usage
 
 Example of a basic tool that calls an external API (Hubspot):
 
 ```ts
-import OpenAI from "openai";
+import { Agent } from "@mastra/core/agent";
+import { createTool } from "@mastra/core/tools";
 import { Nango } from "@nangohq/node";
 
-export async function runOpenAIAgent() {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+export async function runMastraAgent() {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log("Missing environment variable: OPENAI_API_KEY.")
+  }
+
   const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
 
-  const userId = "user1", integrationId = "Hubspot";
+  const userId = "user1", integrationId = "hubspot";
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...")
@@ -50,36 +54,26 @@ export async function runOpenAIAgent() {
   }
 
   // Step 3: Send a prompt to your model.
-  console.log("🤖 Agent running...")
-  const response = await client.responses.create({
-    model: "gpt-5",
-    input: "Using the who_am_i tool, provide the current user info.",
-    tools: [
-      {
-        type: "function",
-        name: "who_am_i",
+  const agent = new Agent({
+    name: "Hubspot Agent",
+    instructions: "You are a helpful assistant that can access Hubspot data.",
+    model: "openai/gpt-4o",
+    tools: {
+      who_am_i: createTool({
+        id: "who_am_i",
         description: "Get the current user info.",
-        parameters: { type: "object", properties: {}, additionalProperties: false },
-        strict: true,
-      },
-    ],
+        execute: async () => {
+          // Step 4: Execute the requested tool with Nango.
+          return await nango.triggerAction(integrationId, connectionId, "whoami"); // Call tool via Nango.
+        },
+      }),
+    },
   });
 
-  // Check if the model requested a tool call.
-  const functionCall = response.output.find((item) => item.type === "function_call") as any;
+  console.log("🤖 Agent running...")
+  const response = await agent.generate("Using the who_am_i tool, provide the current user info.");
 
-  if (functionCall?.name === "who_am_i") {
-    try {
-      // Step 4: Execute the requested tool with Nango.
-      const userInfo = await nango.triggerAction("Hubspot", connectionId, "whoami"); // Call tools via Nango.
-      console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
-    } catch (error: any) {
-      console.error("Nango API error:", error.response?.data?.error || error);
-    }
-  } else {
-    // Handle plain text or other model responses
-    console.log(response.output_text);
-  }
+  console.log("✅ Agent retrieved your Hubspot user info:", response.text);
 }
 ```
 
