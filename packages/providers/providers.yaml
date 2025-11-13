@@ -3119,6 +3119,32 @@ commercetools:
             pattern: '^(gcp|aws)$'
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
+crowdstrike:
+    display_name: CrowdStrike
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.baseUrl}/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        retry:
+            after:
+                - 'x-ratelimit-retryafter'
+    docs: https://nango.dev/docs/integrations/all/crowdstrike
+    docs_connect: https://nango.dev/docs/integrations/all/crowdstrike/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The CrowdStrike API base URL for your cloud environment
+            example: api.crowdstrike.com
+            pattern: '^api(?:\.[a-z0-9-]+)*\.crowdstrike\.(?:com|mil)$'
+            prefix: https://
+            doc_section: '#step-1-creating-an-api-client'
+            order: 1
+
 companycam:
     display_name: CompanyCam
     categories:
@@ -13056,6 +13082,30 @@ tiktok-ads:
     authorization_url_replacements:
         client_id: app_id
     docs: https://nango.dev/docs/integrations/all/tiktok-ads
+
+tiktok-personal:
+    display_name: TikTok Personal
+    categories:
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://www.tiktok.com/v2/auth/authorize/
+    token_url: https://open.tiktokapis.com/v2/oauth/token/
+    proxy:
+        base_url: https://open.tiktokapis.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    body_format: form
+    scope_separator: ','
+    authorization_url_replacements:
+        client_id: client_key
+    docs: https://nango.dev/docs/integrations/all/tiktok-personal
 
 timely:
     display_name: Timely
