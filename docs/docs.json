@@ -192,6 +192,7 @@
             "pages": [
               "implementation-guides/ai-tool-calling/openai-sdk",
               "implementation-guides/ai-tool-calling/anthropic-sdk",
+              "implementation-guides/ai-tool-calling/mastra-sdk",
               "implementation-guides/ai-tool-calling/any-llm-sdk",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]
