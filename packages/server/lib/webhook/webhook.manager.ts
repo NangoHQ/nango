@@ -119,20 +119,23 @@ export async function routeWebhook({
         })
             .then((res) => {
                 if (res.isOk()) {
-                    pubsub.publisher.publish({
-                        subject: 'usage',
-                        type: 'usage.webhook_forward',
-                        payload: {
-                            value: res.value.forwarded,
-                            properties: {
-                                accountId: account.id,
-                                environmentId: environment.id,
-                                provider: integration.provider,
-                                providerConfigKey: integration.unique_key,
-                                success: true
+                    for (const connectionId of connectionIds.length > 0 ? connectionIds : ['unkown']) {
+                        pubsub.publisher.publish({
+                            subject: 'usage',
+                            type: 'usage.webhook_forward',
+                            payload: {
+                                value: res.value.forwarded,
+                                properties: {
+                                    accountId: account.id,
+                                    environmentId: environment.id,
+                                    environmentName: environment.name,
+                                    integrationId: integration.unique_key,
+                                    connectionId,
+                                    success: true
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             })
             .finally(() => forwardSpan.finish());

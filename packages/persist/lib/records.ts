@@ -9,7 +9,7 @@ import { logger } from './logger.js';
 import { pubsub } from './pubsub.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import type { MergingStrategy } from '@nangohq/types';
+import type { DBEnvironment, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -19,7 +19,7 @@ export const recordsPath = '/environment/:environmentId/connection/:nangoConnect
 export async function persistRecords({
     persistType,
     accountId,
-    environmentId,
+    environment,
     connectionId,
     providerConfigKey,
     syncId,
@@ -31,7 +31,7 @@ export async function persistRecords({
 }: {
     persistType: PersistType;
     accountId: number;
-    environmentId: number;
+    environment: DBEnvironment;
     connectionId: number;
     providerConfigKey: string;
     syncId: string;
@@ -46,7 +46,7 @@ export async function persistRecords({
         childOf: active as Span,
         tags: {
             persistType,
-            environmentId,
+            environmentId: environment.id,
             providerConfigKey,
             syncId,
             syncJobId,
@@ -70,11 +70,13 @@ export async function persistRecords({
     switch (persistType) {
         case 'save':
             softDelete = false;
-            persistFunction = async (records: FormattedRecord[]) => recordsService.upsert({ records, connectionId, environmentId, model, softDelete, merging });
+            persistFunction = async (records: FormattedRecord[]) =>
+                recordsService.upsert({ records, connectionId, environmentId: environment.id, model, softDelete, merging });
             break;
         case 'delete':
             softDelete = true;
-            persistFunction = async (records: FormattedRecord[]) => recordsService.upsert({ records, connectionId, environmentId, model, softDelete, merging });
+            persistFunction = async (records: FormattedRecord[]) =>
+                recordsService.upsert({ records, connectionId, environmentId: environment.id, model, softDelete, merging });
             break;
         case 'update':
             softDelete = false;
@@ -156,7 +158,18 @@ export async function persistRecords({
             void pubsub.publisher.publish({
                 subject: 'usage',
                 type: 'usage.monthly_active_records',
-                payload: { value: mar, properties: { accountId, environmentId, providerConfigKey, connectionId, syncId, model } }
+                payload: {
+                    value: mar,
+                    properties: {
+                        accountId,
+                        environmentId: environment.id,
+                        environmentName: environment.name,
+                        integrationId: providerConfigKey,
+                        connectionId: connection.connection_id,
+                        syncId,
+                        model
+                    }
+                }
             });
         }
 
@@ -165,7 +178,18 @@ export async function persistRecords({
             void pubsub.publisher.publish({
                 subject: 'usage',
                 type: 'usage.records',
-                payload: { value: delta, properties: { accountId, environmentId, connectionId, syncId, model } }
+                payload: {
+                    value: delta,
+                    properties: {
+                        accountId,
+                        environmentId: environment.id,
+                        environmentName: environment.name,
+                        integrationId: providerConfigKey,
+                        connectionId: connection.connection_id,
+                        syncId,
+                        model
+                    }
+                }
             });
         }
 
@@ -181,7 +205,13 @@ export async function persistRecords({
                 return acc;
             }, 0);
         } catch (err) {
-            logger.warning('Failed to calculate record sizes in bytes', { environmentId, connectionId, syncId, model, error: stringifyError(err) });
+            logger.warning('Failed to calculate record sizes in bytes', {
+                environmentId: environment.id,
+                connectionId,
+                syncId,
+                model,
+                error: stringifyError(err)
+            });
         }
         metrics.increment(metrics.Types.MONTHLY_ACTIVE_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
@@ -204,7 +234,7 @@ export async function persistRecords({
         void logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
 
         errorManager.report(content, {
-            environmentId: environmentId,
+            environmentId: environment.id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.SYNC,
             metadata: {

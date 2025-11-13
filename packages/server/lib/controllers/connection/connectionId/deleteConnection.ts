@@ -72,9 +72,10 @@ export const deletePublicConnection = asyncWrapper<DeletePublicConnection>(async
             value: -1,
             properties: {
                 accountId: team.id,
-                connectionId: connection.id,
                 environmentId: connection.environment_id,
-                providerConfigKey: query.provider_config_key
+                environmentName: environment.name,
+                integrationId: query.provider_config_key,
+                connectionId: connection.connection_id
             }
         }
     });

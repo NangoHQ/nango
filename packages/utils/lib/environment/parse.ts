@@ -216,8 +216,8 @@ export const ENVS = z.object({
     ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
     ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
     BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
-    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(2000),
-    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
+    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
+    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
 
     // Usage
