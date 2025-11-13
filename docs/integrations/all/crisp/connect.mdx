@@ -1,0 +1,51 @@
+---
+title: Crisp - How do I link my account?
+sidebarTitle: Crisp
+---
+
+# Overview
+
+To authenticate with Crisp, you need:
+1. **Token Identifier** - The identifier part of your Crisp token keypair that authenticates your requests.
+2. **Token Key** - The key part of your Crisp token keypair that authenticates your requests.
+
+This guide will walk you through generating your token keypair in the Crisp Marketplace.
+
+### Prerequisites:
+
+- You must have a Crisp account.
+- You need access to the Crisp Marketplace (this account is different from your main Crisp account).
+
+### Instructions:
+
+#### Step 1: Generating Your Token Keypair
+
+1. Go to the [Crisp Marketplace](https://marketplace.crisp.chat/) and sign in or create an account.
+2. Once logged in, go to **Plugins** and click on the **New Plugin** button.
+<img src="/integrations/all/crisp/new_plugin.png"/>
+3. Give your plugin a name and description, then click **Create Plugin**.
+<img src="/integrations/all/crisp/plugin_form.png"/>
+<img src="/integrations/all/crisp/plugin_credentials.png"/>
+4. On the plugin page, go to the **Tokens** tab and scroll down to **Production**.
+5. Click on **Ask a production token**, pick the **scopes** you require for your integration, and provide a **justification**.
+<img src="/integrations/all/crisp/production_token.png"/>
+6. Click on **Request production token**.
+7. Wait for your submission to get approved (this can take a few minutes).
+8. Once accepted, come back to the **Tokens** tab and copy your Production **Token Identifier** and **Token Key**.
+<img src="/integrations/all/crisp/tokens.png"/>
+9. Finally, install the plugin on all websites you need to use it for (using the private install link, provided in the **Settings** section under **Access**).
+<img src="/integrations/all/crisp/access.png"/>
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Token Keypair**:
+
+1. Open the form where you need to authenticate with Crisp.
+2. Enter your **Token Identifier** and **Token Key** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/crisp/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Crisp.

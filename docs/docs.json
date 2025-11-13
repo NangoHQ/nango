@@ -398,6 +398,7 @@
               "integrations/all/coros",
               "integrations/all/coros-sandbox",
               "integrations/all/coupa-compass",
+              "integrations/all/crisp",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
               "integrations/all/databricks-account",
