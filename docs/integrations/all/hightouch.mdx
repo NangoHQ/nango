@@ -1,67 +1,87 @@
 ---
-title: Hightouch
-sidebarTitle: Hightouch
+title: 'Hightouch'
+sidebarTitle: 'Hightouch'
+description: 'Access the Hightouch API in 2 minutes 💨'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/hightouch/PreBuiltTooling.mdx"
-import PreBuiltUseCases from "/snippets/generated/hightouch/PreBuiltUseCases.mdx"
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hightouch_.
+      </Step>
+      <Step title="Authorize Hightouch">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Hightouch API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Hightouch API">
+        Let's make your first request to the Hightouch API (check your workspace info). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
 
-<Overview />
-<PreBuiltTooling />
-<PreBuiltUseCases />
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/models" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+            </Tab>
 
-## Setup guide
+            <Tab title="Node">
 
-### Step 1: Create an API Key
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-To create an API key for Hightouch:
+            ```typescript
+            import { Nango } from '@nangohq/node';
 
-1. Log in to your Hightouch workspace
-2. Navigate to the API keys tab in Settings
-3. Select "Add API key"
-4. Enter a descriptive name for your API key
-5. Copy the generated API key (displayed only once)
-6. Store the API key securely
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-<Warning>The API key is only displayed once during creation. If you lose it, you'll need to create a new one.</Warning>
+            const res = await nango.get({
+                endpoint: '/v1/models',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
 
-<Note>API keys must be created by an Admin user of the Hightouch workspace and provide read/write access to Hightouch resources.</Note>
+            console.log(res.data);
+            ```
+            </Tab>
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+        </Tabs>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-## Useful links
+      </Step>
+    </Steps>
 
--   [Hightouch API Overview](https://hightouch.com/docs/developer-tools/api-guide)
--   [Hightouch API Reference](https://hightouch.com/docs/api-reference)
--   [Personalization API Documentation](https://hightouch.com/docs/real-time/personalization-api)
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Hightouch accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Hightouch using Connect UI](/integrations/all/hightouch/connect) |
+    | General | [Website](https://hightouch.com/) |
+    | Developer | [API Documentation](https://hightouch.com/docs/developer-tools/api-guide) |
+    | | [API Reference](https://hightouch.com/docs/api-reference) |
+    | | [Personalization API Documentation](https://hightouch.com/docs/real-time/personalization-api) |
+    | | [Generate an API key in your Hightouch workspace](https://hightouch.com/docs/developer-tools/api-guide) |
 
-## Connection configuration in Nango
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Hightouch has a rate limit of **200 requests per 10 seconds per workspace**
+    - API keys must be created by an Admin user of the Hightouch workspace
+    - API keys provide read/write access to all Hightouch resources, so keep them secure
+    - If an API key is compromised, immediately revoke it through the Settings page
+    - Authentication error "No user found" may indicate an issue with the API key's creator
 
-Hightouch uses API key authentication with the following configuration:
-- **Authentication**: Bearer token in Authorization header
-- **Base URL**: `https://api.hightouch.com`
-- **Header Format**: `Authorization: Bearer YOUR_API_KEY`
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+  </Tab>
+</Tabs>
 
-## API gotchas
-
-- Hightouch has a rate limit of **200 requests per 10 seconds per workspace**
-- API keys must be created by an Admin user of the Hightouch workspace
-- API keys provide read/write access to all Hightouch resources, so keep them secure
-- If an API key is compromised, immediately revoke it through the Settings page
-- Authentication error "No user found" may indicate an issue with the API key's creator
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/hightouch.mdx)</Note>
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
