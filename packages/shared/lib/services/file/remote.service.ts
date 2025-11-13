@@ -11,7 +11,7 @@ import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
-import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3';
 import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -54,7 +54,12 @@ class RemoteFileService {
         } else {
             this.useS3 = !isLocal && !isTest;
         }
-        this.client = new S3Client([{ region, credentials: getCredentials() }]);
+        const config: S3ClientConfig = { region };
+        const credentials = getCredentials();
+        if (credentials) {
+            config.credentials = credentials;
+        }
+        this.client = new S3Client(config);
     }
 
     async upload({
