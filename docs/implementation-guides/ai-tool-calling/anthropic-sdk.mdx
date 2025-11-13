@@ -1,30 +1,26 @@
 ---
-title: "Anthropic SDK example"
-sidebarTitle: "Anthropic SDK example"
+title: "Anthropic"
+sidebarTitle: "Anthropic"
 description: "End-to-end example of calling external tools with the Anthropic SDK."
 ---
 
-This guide demonstrates how to combine **Nango** and the **Anthropic SDK** to consume external APIs via tool calling.
+## Setup
 
-## Example overview
-
-The example below uses Hubspot's API to demonstrate how to access a user’s external account through Nango.
+```bash
+npm i @anthropic-ai/sdk @nangohq/node
+```
 
 <Tip>
-**Requirements:** 
-- A Nango account with an integration for `Hubspot` with the `whoami` action enabled.
-- An Anthropic account.
+This example uses the Node SDK, a lightweight wrapper over Nango’s REST API. The same flow works in any language by using the [API reference](https://nango.dev/docs/reference/api/authentication).
 </Tip>
 
-In this example:
-1. Check if the user is already authenticated with Hubspot.  
-2. If not, start the Hubspot OAuth flow. You can do this:
-   - Directly in the chat session, or  
-   - By embedding the [Frontend SDK](https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#2-trigger-the-auth-flow-frontend) in your app.  
-3. Send a prompt to your model.
-4. When the model calls a tool, trigger the corresponding Nango action.
+**Requirements:** 
+- A Nango account with a Hubspot integration configured and the `whoami` action enabled.
+- An Anthropic account.
 
-## Example code
+## Usage
+
+Example of a basic tool that calls an external API (Hubspot):
 
 ```ts
 import Anthropic from '@anthropic-ai/sdk';
@@ -96,10 +92,5 @@ export async function runAnthropicAgent() {
 ```
 
 <Tip>
-This example uses the **Nango Node SDK**, which is a thin wrapper around Nango’s REST API. You can use the same flow in any language with the [API reference](https://nango.dev/docs/reference/api/authentication).
-</Tip>
-
-<Tip>
-You can let agents or models introspect available tools and their specifications by calling this  
-[endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
+You can let agents or models introspect available tools and their specifications by calling this [endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
 </Tip>
