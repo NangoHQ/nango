@@ -7,7 +7,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
 import { pubsub } from '../pubsub.js';
-import { capping } from '../utils/capping.js';
+import { capping } from '../utils/usage.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';

@@ -224,6 +224,11 @@ export const ENVS = z.object({
     USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),
     USAGE_REVALIDATE_AFTER_MS: z.coerce.number().optional().default(3_600_000), // 1 hour
     USAGE_BILLING_API_MAX_RPS: z.coerce.number().optional().default(5), // max requests per second to Orb API usage endpoint is 10, keeping some margin
+    USAGE_BILLING_API_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100), // max queued requests by rate limiter
+    USAGE_BILLING_API_CACHE_TTL_SECONDS: z.coerce
+        .number()
+        .optional()
+        .default(3600 * 6), // 6 hour
 
     // --- Third parties
     // AWS
