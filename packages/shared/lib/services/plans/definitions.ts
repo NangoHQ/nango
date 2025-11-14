@@ -24,8 +24,8 @@ export const freePlan: PlanDefinition = {
         auto_idle: true,
         monthly_actions_max: 1000,
         monthly_active_records_max: 5000,
-        has_webhooks_script: false,
-        has_webhooks_forward: false,
+        has_webhooks_script: true,
+        has_webhooks_forward: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false

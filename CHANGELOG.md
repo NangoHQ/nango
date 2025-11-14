@@ -2,6 +2,82 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.13] - 2025-11-13
+
+### Added
+
+- *(integrations)* Add support for crowdstrike (#5004) by @hassan254-prog
+- *(integrations)* Add support for tiktok personal (#4999) by @hassan254-prog
+
+### Changed
+
+- Add Anthropic SDK implementation guide (#5000) by @bastienbeurier
+- Add Mastra example and improve other examples (#5006) by @bastienbeurier
+
+### Fixed
+
+- *(zero-yaml)* Allow type imports (#5008) by @khaliqgant
+- Allow webhooks for free plans (#5007) by @kaposke
+- *(records)* Smaller batch size for records deletion (#5001) by @TBonnin
+- *(cli)* Make showLoggerLevelWarning accessible in NangoSyncCLI (#5013) by @hassan254-prog
+
+## [v0.69.12] - 2025-11-12
+
+### Added
+
+- *(integrations)* Add support for breezy-hr (#4981) by @hassan254-prog
+- *(integrations)* Add support for semrush (#4980) by @hassan254-prog
+- *(webapp)* Improve number formatting in usage card (#4988) by @kaposke
+- Switch getting started to Github (#4983) by @kaposke
+- *(dryrun-diagnostics)* Add diagnostics service for dryrun (#4987) by @khaliqgant
+- Add missing NANGO_SERVER_URL in env variables for nango-jobs co… (#4966) by @mesaugat
+
+### Changed
+
+- *(billing)* Refactor getUsage (#4973) by @TBonnin
+- *(usage)* Cache and throttle all calls to Orb usage endpoint (#4985) by @TBonnin
+- *(usage)* Replace rate limiter by queue when throttling (#4989) by @TBonnin
+
+### Fixed
+
+- *(server)* /ready endpoint checks for db connectivity at startup (#4977) by @TBonnin
+- *(providers)* Update shopify docs to mention the recommended flow after custom apps deprecation (#4968) by @hassan254-prog
+- *(integrations)* Add NinjaOne RMM (#4957) by @jeremydhoon
+- *(jobs)* Set correct env vars for dd (#4986) by @rossmcewan
+- Remove close button from popup (#4984) by @kaposke
+- *(records)* Retrying the entire transaction when deadlock detected in upsert (#4991) by @TBonnin
+- *(metering)* Cleanup (#4990) by @TBonnin
+- *(listConnections)* Fix param (#4997) by @khaliqgant
+
+## [v0.69.10] - 2025-11-10
+
+### Added
+
+- *(integrations)* Add support for shipstation webhooks and support for v2 (#4956) by @hassan254-prog
+- *(integrations)* Add support for Connectwise PSA webhooks (#4950) by @jeremydhoon
+- *(integrations)* Add support for leadmagic (#4974) by @hassan254-prog
+- *(integrations)* Add support for icypeas (#4971) by @hassan254-prog
+- *(integrations)* Add support for prospeo (#4970) by @hassan254-prog
+- *(cli)* Add normalized hash fallback for mock file lookup (#4962) by @hassan254-prog
+- *(integrations)* Add support for gitlab pat (#4976) by @hassan254-prog
+
+### Changed
+
+- Improve the OpenAI SDK implementation guide + add guide for any LLM provider (#4969) by @bastienbeurier
+
+### Fixed
+
+- *(server)* Include _MS in shutdown delay env var name (#4963) by @rossmcewan
+- *(providers)* Fix momentum-io verification by adding mandatory parameters (#4960) by @hassan254-prog
+- *(logs)* Allow configurable timeouts for elasticsearch query (#4967) by @rossmcewan
+- Create an billing subscription when signup via Google (#4955) by @TBonnin
+- Remove DEPRECATED functionLogs runner flag (#4961) by @TBonnin
+- *(self-hosted)* Allow env variable to change the deprecation date (#4965) by @khaliqgant
+- *(logs)* Global search bar not working consistently (#4972) by @rossmcewan
+- *(providers)* Fix zoho recruit domain extension (#4978) by @hassan254-prog
+- *(cli)* Make `NangoActionMock` and `NangoSyncMock` implement their base classes (#4945) by @hassan254-prog
+- *(runner)* Only label pods when trace or profiling enabled (#4975) by @rossmcewan
+
 ## [v0.69.8] - 2025-11-05
 
 ### Added
@@ -5270,6 +5346,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.13]: https://github.com/NangoHQ/nango/compare/v0.69.12..v0.69.13
+[v0.69.12]: https://github.com/NangoHQ/nango/compare/v0.69.10..v0.69.12
+[v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10
 [v0.69.8]: https://github.com/NangoHQ/nango/compare/v0.69.7..v0.69.8
 [v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
 [v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6

@@ -10,7 +10,7 @@ export interface BillingClient {
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
-    getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
+    getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetric[]>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
     downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
     applyPendingChanges: (opts: {
@@ -36,10 +36,31 @@ export interface BillingSubscription {
     planExternalId: string;
 }
 
+export interface GetBillingUsageOpts {
+    timeframe?: {
+        start: Date;
+        end: Date;
+    };
+    granularity?: 'day';
+    billingMetric?: {
+        id: string;
+        group_by?: 'environmentId' | 'provider' | 'providerConfigKey' | 'connectionId' | 'type' | 'functionName' | 'model';
+    };
+}
+
 export interface BillingUsageMetric {
     id: string;
     name: string;
-    quantity: number;
+    group?: {
+        key: string;
+        value: string;
+    };
+    total: number;
+    usage: {
+        timeframeStart: Date;
+        timeframeEnd: Date;
+        quantity: number;
+    }[];
 }
 
 export interface BillingPlan {

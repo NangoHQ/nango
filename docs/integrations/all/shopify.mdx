@@ -71,25 +71,27 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
       <Step title="Create a Shopify Partner account">
         If you don't already have one, go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
       </Step>
-      <Step title="Create a new app in your Partner account">
-        1. From your Partner Dashboard, navigate to **Apps** > **Create app**.
-        2. Choose **Create app manually** and provide a name for your app.
-        3. Click **Create app** to proceed.
+      <Step title="Create a new app in your Dev Dashboard">
+        1. Navigate to the [Dev Dashboard](https://dev.shopify.com/dashboard/), then click **Create app** and provide a name for your app.
+        2. Click **Create** to proceed.
       </Step>
       <Step title="Configure OAuth settings">
-        In the app you just created:
-        1. Navigate to the **Configuration** tab under **Build**.
-        2. In the **App URL** field, enter your application's URL.
-        3. Under **Allowed redirection URLs**, add the following URL: `https://api.nango.dev/oauth/callback`.
-        4. Save your changes.
+        You will be redirected to the **Versions** tab of your newly created app. 
+        1. Click the **Select Scopes** button and select the scopes your integration requires from the list in the **Scopes** section.
+        2. Under **Redirect URLs**, add the following URL: `https://api.nango.dev/oauth/callback`.
+        3. Click the **Release** button at the bottom or top right.
+        4. Fill out the form and click **Release** to publish this version.
+        <Note>This version will automatically be marked as active. If you have multiple versions, ensure that it has the correct Redirect URL and scopes.</Note>
       </Step>
       <Step title="Obtain API credentials">
-        1. Navigate to the created app's **Overview** tab.
-        2. Copy the **Client ID** and **Client secret** from Client credentials, you’ll need these credentials when configuring your integration in Nango.
+        1. Navigate to the created app's **Home** tab. Under **Distribution**, click **Select distribution method** and select **Public distribution**.
+        2. Navigate to the created app's **Settings** tab.
+        3. Copy the **Client ID** and **Secret** from the **Credentials** section. You'll need these credentials when configuring your integration in Nango.
       </Step>
       <Step title="Create a development store for testing (optional)">
         If you don't have a Shopify store already:
-        1. From your Partner's Dashboard, go to **Stores** then select **Development store** and follow the prompts to create a test store.
+        1. From the same **Dev Dashboard**, click **Dev stores**, then click **Create dev store**.
+        2. Fill out the **Create a dev store** form and click **Create store** to finish.
       </Step>
       <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
@@ -116,6 +118,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
     - Shopify's API requires a shop-specific subdomain in the authorization URL.
     - Access tokens are shop-specific and cannot be used across different shops.
     - Some API endpoints have different rate limits than others. Check the [rate limits documentation](https://shopify.dev/docs/api/usage/rate-limits) for details.
+    - You can skip adding scopes in Nango if you've already selected them when setting up your app in Shopify. 
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/shopify.mdx)</Note>
   </Tab>

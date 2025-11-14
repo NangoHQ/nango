@@ -83,6 +83,7 @@ export async function createPreprovisionedProviderConfigSeed(
     env: DBEnvironment,
     unique_key: string,
     providerName: string,
+    shared_credentials_name?: string,
     rest?: Partial<IntegrationConfig>
 ): Promise<IntegrationConfig> {
     const provider = getProvider(providerName);
@@ -90,7 +91,7 @@ export async function createPreprovisionedProviderConfigSeed(
         throw new Error(`createPreprovisionedProviderSeed: ${providerName} provider not found`);
     }
 
-    const sharedCredentials = await createSharedCredentialsSeed(providerName);
+    const sharedCredentials = await createSharedCredentialsSeed(shared_credentials_name ?? providerName);
 
     const created = await configService.createProviderConfig(
         {

@@ -1,4 +1,4 @@
-import { IconBrandGoogleFilled } from '@tabler/icons-react';
+import { IconBrandGithub } from '@tabler/icons-react';
 import { useCallback, useRef } from 'react';
 import { useUnmount } from 'react-use';
 
@@ -111,11 +111,11 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <h3 className="text-brand-500 text-sm font-semibold">Google Calendar connection authorized!</h3>
+                    <h3 className="text-brand-500 text-sm font-semibold">Github connection authorized!</h3>
                 </div>
                 <Button variant="tertiary" size="lg" onClick={onClickDisconnect} className="w-fit">
-                    <IconBrandGoogleFilled className="size-5 mr-2" />
-                    Disconnect from Google Calendar
+                    <IconBrandGithub className="size-5 mr-2" />
+                    Disconnect from Github
                 </Button>
             </div>
         );
@@ -129,14 +129,14 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                     Connect your account just like your users would in your app. <br />
                     This will create a connection for your{' '}
                     <StyledLink to={`/${env}/integrations/${integration?.unique_key}`} icon>
-                        Google Calendar integration
+                        Github integration
                     </StyledLink>
                     .
                 </p>
             </div>
             <Button variant="primary" size="lg" onClick={onClickConnect} className="w-fit">
-                <IconBrandGoogleFilled className="size-5" />
-                Connect to Google Calendar
+                <IconBrandGithub className="size-5" />
+                Connect to Github
             </Button>
         </div>
     );

@@ -5,7 +5,17 @@ import { envs } from './envs.js';
 import { BillingEventGrouping } from './grouping.js';
 import { logger } from './logger.js';
 
-import type { BillingClient, BillingCustomer, BillingEvent, BillingPlan, BillingSubscription, BillingUsageMetric, DBTeam, DBUser } from '@nangohq/types';
+import type {
+    BillingClient,
+    BillingCustomer,
+    BillingEvent,
+    BillingPlan,
+    BillingSubscription,
+    BillingUsageMetric,
+    DBTeam,
+    DBUser,
+    GetBillingUsageOpts
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class Billing {
@@ -82,8 +92,8 @@ export class Billing {
         return await this.client.getSubscription(accountId);
     }
 
-    async getUsage(subscriptionId: string, period?: 'previous'): Promise<Result<BillingUsageMetric[]>> {
-        return await this.client.getUsage(subscriptionId, period);
+    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
+        return await this.client.getUsage(subscriptionId, opts);
     }
 
     async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {

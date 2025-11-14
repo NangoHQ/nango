@@ -1,0 +1,44 @@
+---
+title: CrowdStrike - How do I link my account?
+sidebarTitle: CrowdStrike
+---
+
+# Overview
+
+To authenticate with CrowdStrike, you need:
+1. **Client ID** - A unique identifier for your API client.
+2. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
+3. **Base URL** - The API base URL for your CrowdStrike cloud environment.
+
+This guide will walk you through obtaining these credentials within CrowdStrike.
+
+### Prerequisites:
+
+- You must have access to the CrowdStrike Falcon console.
+
+### Instructions:
+
+#### Step 1: Creating an API Client
+
+1. Log in to your [CrowdStrike Falcon console](https://falcon.crowdstrike.com/).
+2. From the search toolbar, search for **API Clients and Keys** and select it.
+<img src="/integrations/all/crowdstrike/search.png"/>
+3. Click on **Create API Client**.
+<img src="/integrations/all/crowdstrike/create_api_client.png"/>
+4. Enter a Name and Description, select your scopes, and then click **Create**.
+5. Your **Client ID**, **Client Secret**, and **Base URL** will be displayed for you. The **Base URL** is the domain portion (e.g., `api.crowdstrike.com`) without the `https://` prefix.
+<img src="/integrations/all/crowdstrike/credentials.png"/>
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, and **Base URL**:
+
+1. Open the form where you need to authenticate with CrowdStrike.
+2. Enter your **Base URL**, **Client ID**, and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/crowdstrike/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to CrowdStrike.

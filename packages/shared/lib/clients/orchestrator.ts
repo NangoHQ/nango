@@ -55,7 +55,7 @@ export interface RecordsServiceInterface {
         environmentId: number;
         model: string;
         syncId: string;
-    }): Promise<{ totalDeletedRecords: number }>;
+    }): Promise<Result<{ totalDeletedRecords: number }>>;
     getRecordStatsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
@@ -594,8 +594,12 @@ export class Orchestrator {
                             if (syncVariant !== 'base') {
                                 model = `${model}::${syncVariant}`;
                             }
-                            const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                            void logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                            const deletion = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                            if (deletion.isErr()) {
+                                void logCtx.error(`Records for model ${model} failed to be deleted`, { error: deletion.error });
+                                return Err(deletion.error);
+                            }
+                            void logCtx.info(`Records for model ${model} were deleted successfully`, deletion.value);
                         }
                     }
 

@@ -35,7 +35,9 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
         return Err(new NangoError('webhook_missing_shop_domain'));
     }
 
-    const webhookSecret = nango.integration.custom?.['webhookSecret'];
+    // For OAuth apps, we use the client_secret to verify the signature, but for api_key/custom apps, we use the webhookSecret defined when setting up the integration,
+    // this can be obtained in the ui after subscribing to a webhook
+    const webhookSecret = nango.integration.oauth_client_secret || nango.integration.custom?.['webhookSecret'];
 
     if (webhookSecret) {
         if (!signature) {

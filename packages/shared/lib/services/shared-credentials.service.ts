@@ -20,17 +20,23 @@ class SharedCredentialsService {
         environment_id,
         provider,
         display_name,
-        unique_key
+        unique_key,
+        shared_credentials_name
     }: {
         providerName: string;
         environment_id: number;
         provider: Provider;
         display_name?: string;
         unique_key?: string;
+        shared_credentials_name?: string;
     }): Promise<Result<IntegrationConfig>> {
         try {
             const config = await db.knex.transaction(async (trx) => {
-                const sharedCredentials = await trx.select('*').from<DBSharedCredentials>('providers_shared_credentials').where('name', providerName).first();
+                const sharedCredentials = await trx
+                    .select('*')
+                    .from<DBSharedCredentials>('providers_shared_credentials')
+                    .where('name', shared_credentials_name ?? providerName)
+                    .first();
 
                 if (!sharedCredentials) {
                     throw new Error('shared_credentials_not_found');

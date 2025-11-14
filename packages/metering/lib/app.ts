@@ -8,9 +8,8 @@ import { initSentry, once, report } from '@nangohq/utils';
 
 import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
-import { BillingProcessor } from './processors/billing.js';
-import { CustomerTrackingProcessor } from './processors/customer-tracking.js';
 import { TeamProcessor } from './processors/team.js';
+import { UsageProcessor } from './processors/usage.js';
 import { logger } from './utils.js';
 
 try {
@@ -37,17 +36,13 @@ try {
     // Usage
     const usageTracker = await getUsageTracker(envs.NANGO_REDIS_URL);
 
-    // Billing processor
-    const billingProc = new BillingProcessor(pubsubTransport, usageTracker);
-    billingProc.start();
+    // Usage processor
+    const usageProc = new UsageProcessor(pubsubTransport, usageTracker);
+    usageProc.start();
 
     // Team processor
     const teamProc = new TeamProcessor(pubsubTransport);
     teamProc.start();
-
-    // customer tracking
-    const customerTrackingProc = new CustomerTrackingProcessor(pubsubTransport);
-    customerTrackingProc.start();
 
     // Crons
     exportUsageCron();

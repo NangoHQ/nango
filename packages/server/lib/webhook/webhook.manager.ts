@@ -7,7 +7,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
 import { pubsub } from '../pubsub.js';
-import { capping } from '../utils/capping.js';
+import { capping } from '../utils/usage.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -38,7 +38,11 @@ export async function routeWebhook({
     rawBody: string;
     logContextGetter: LogContextGetter;
 }): Promise<WebhookResponse> {
-    if (!body) {
+    // Check if both body and headers are empty
+    const hasBody = body && (typeof body === 'object' ? Object.keys(body).length > 0 : true);
+    const hasHeaders = headers && Object.keys(headers).length > 0;
+
+    if (!hasBody && !hasHeaders) {
         return {
             content: null,
             statusCode: 204

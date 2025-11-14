@@ -23,14 +23,14 @@ export const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined
 
         // Create the merged list
         return Array.from(allIds).map((id) => {
-            const currentItem = data.data.current.find((item) => item.id === id);
-            const previousItem = data.data.previous.find((item) => item.id === id);
+            const currentUsage = data.data.current.find((item) => item.id === id);
+            const previousUsage = data.data.previous.find((item) => item.id === id);
 
             return {
                 id,
-                name: currentItem?.name || previousItem?.name || 'Unknown',
-                current: currentItem?.quantity || 0,
-                previous: previousItem?.quantity || 0
+                name: currentUsage?.name || previousUsage?.name || 'Unknown',
+                current: currentUsage?.total,
+                previous: previousUsage?.total
             };
         });
     }, [data]);

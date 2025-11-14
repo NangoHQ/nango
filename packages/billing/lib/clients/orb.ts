@@ -5,7 +5,17 @@ import { Err, Ok, metrics, retry } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
+import type {
+    BillingClient,
+    BillingCustomer,
+    BillingEvent,
+    BillingSubscription,
+    BillingUsageMetric,
+    DBTeam,
+    DBUser,
+    GetBillingUsageOpts,
+    Result
+} from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -147,17 +157,21 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async getUsage(subscriptionId: string, period?: 'previous'): Promise<Result<BillingUsageMetric[]>> {
+    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
         try {
             const options: Orb.Subscriptions.SubscriptionFetchUsageParams = {};
-            if (period === 'previous') {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                start.setHours(0, 0, 0, 0);
-                const end = new Date(now.getFullYear(), now.getMonth(), 0);
-                end.setHours(23, 59, 59, 999);
-                options.timeframe_start = start.toISOString();
-                options.timeframe_end = end.toISOString();
+            if (opts?.timeframe) {
+                options.timeframe_start = opts.timeframe.start.toISOString();
+                options.timeframe_end = opts.timeframe.end.toISOString();
+            }
+            if (opts?.granularity) {
+                options.granularity = 'day';
+            }
+            if (opts?.billingMetric) {
+                options.billable_metric_id = opts.billingMetric.id;
+                if (opts.billingMetric.group_by) {
+                    options.group_by = opts.billingMetric.group_by;
+                }
             }
 
             const res = await this.orbSDK.subscriptions.fetchUsage(subscriptionId, options, {
@@ -170,10 +184,27 @@ export class OrbClient implements BillingClient {
 
             return Ok(
                 res.data.map((item) => {
+                    const group =
+                        'metric_group' in item
+                            ? {
+                                  group: {
+                                      key: item.metric_group.property_key,
+                                      value: item.metric_group.property_value
+                                  }
+                              }
+                            : {};
                     return {
                         id: item.billable_metric.id,
                         name: item.billable_metric.name,
-                        quantity: item.usage[0]?.quantity || 0
+                        ...group,
+                        total: item.usage.reduce((sum, u) => sum + u.quantity, 0),
+                        usage: item.usage.map((u) => {
+                            return {
+                                timeframeStart: new Date(u.timeframe_start),
+                                timeframeEnd: new Date(u.timeframe_end),
+                                quantity: u.quantity
+                            };
+                        })
                     };
                 })
             );

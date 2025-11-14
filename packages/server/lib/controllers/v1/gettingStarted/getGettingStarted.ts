@@ -8,7 +8,7 @@ import type { GetGettingStarted } from '@nangohq/types';
 
 /**
  * Getting started should always be available, so if it doesn't already exist, we create it,
- * including setting up a new google-calendar-getting-started integration using the preprovisioned provider if needed.
+ * including setting up a new github-getting-started integration using the preprovisioned provider if needed.
  */
 export const getGettingStarted = asyncWrapper<GetGettingStarted>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
