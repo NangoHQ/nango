@@ -285,7 +285,7 @@ export class Nango {
                 url.searchParams.append('endUserId', userId);
             }
             if (integrationId) {
-                url.searchParams.append('integrationIds', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
+                url.searchParams.append('integrationId', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
             }
             if (tags && Object.keys(tags).length > 0) {
                 if (tags['displayName']) {
