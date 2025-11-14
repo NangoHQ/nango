@@ -3557,8 +3557,6 @@ cursor-admin:
             type: string
             title: Password
             description: Password
-            # https://developers.greenhouse.io/harvest.html#authentication
-            # Greenhouse is using basic auth with an api key
             default_value: ''
             hidden: true
 
