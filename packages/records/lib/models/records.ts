@@ -352,71 +352,58 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = {
-        addedKeys: [],
-        updatedKeys: [],
-        deletedKeys: [],
-        nonUniqueKeys,
-        nextMerging: merging,
-        activatedKeys: [],
-        unchangedKeys: []
-    };
     try {
-        await db.transaction(async (trx) => {
-            // Lock to prevent concurrent upserts
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_${softDelete ? 'delete' : 'upsert'}`, [newLockId(connectionId, model)]);
-            let deltaSizeInBytes = 0;
-            for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
-                const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
-                const encryptedRecords = encryptRecords(chunk);
+        return await retry(
+            () => {
+                return db.transaction(async (trx) => {
+                    // Lock to prevent concurrent upserts
+                    await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_${softDelete ? 'delete' : 'upsert'}`, [newLockId(connectionId, model)]);
 
-                // Retry if deadlock detected
-                // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
-                const withRetry = async <T>(query: Knex.QueryBuilder<any, T>) => {
-                    return retry(() => query, {
-                        maxAttempts: 3,
-                        delayMs: 500,
-                        retryIf: (res) => {
-                            if ('code' in res) {
-                                const errorCode = (res as { code: string }).code;
-                                return errorCode === '40P01'; // deadlock_detected
-                            }
-                            return false;
-                        }
-                    });
-                };
+                    const summary: UpsertSummary = {
+                        addedKeys: [],
+                        updatedKeys: [],
+                        deletedKeys: [],
+                        nonUniqueKeys,
+                        nextMerging: merging,
+                        activatedKeys: [],
+                        unchangedKeys: []
+                    };
+                    let deltaSizeInBytes = 0;
+                    for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
+                        const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
+                        const encryptedRecords = encryptRecords(chunk);
 
-                // we need to know which records were updated, deleted, undeleted or unchanged
-                // we achieve this by comparing the records data_hash and deleted_at fields before and after the update
-                const externalIds = chunk.map((r) => r.external_id);
-                const query = trx
-                    .with('existing', (qb) => {
-                        qb.select('external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes'))
-                            .from(RECORDS_TABLE)
-                            .where({
-                                connection_id: connectionId,
-                                model
+                        // we need to know which records were updated, deleted, undeleted or unchanged
+                        // we achieve this by comparing the records data_hash and deleted_at fields before and after the update
+                        const externalIds = chunk.map((r) => r.external_id);
+                        const res = await trx
+                            .with('existing', (qb) => {
+                                qb.select('external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes'))
+                                    .from(RECORDS_TABLE)
+                                    .where({
+                                        connection_id: connectionId,
+                                        model
+                                    })
+                                    .whereIn('external_id', externalIds);
                             })
-                            .whereIn('external_id', externalIds);
-                    })
-                    .with('upsert', (qb) => {
-                        qb.insert(encryptedRecords)
-                            .into(RECORDS_TABLE)
-                            .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes')])
-                            .onConflict(['connection_id', 'external_id', 'model'])
-                            .merge();
-                        if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
-                            const cursor = Cursor.from(merging.cursor);
-                            if (cursor) {
-                                qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
-                                    `${RECORDS_TABLE}.updated_at = ? AND ${RECORDS_TABLE}.id <= ?`,
-                                    [cursor.sort, cursor.id]
-                                );
-                            }
-                        }
-                    })
-                    .select<UpsertResult[]>(
-                        trx.raw(`
+                            .with('upsert', (qb) => {
+                                qb.insert(encryptedRecords)
+                                    .into(RECORDS_TABLE)
+                                    .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes')])
+                                    .onConflict(['connection_id', 'external_id', 'model'])
+                                    .merge();
+                                if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
+                                    const cursor = Cursor.from(merging.cursor);
+                                    if (cursor) {
+                                        qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
+                                            `${RECORDS_TABLE}.updated_at = ? AND ${RECORDS_TABLE}.id <= ?`,
+                                            [cursor.sort, cursor.id]
+                                        );
+                                    }
+                                }
+                            })
+                            .select<UpsertResult[]>(
+                                trx.raw(`
                             upsert.id as id,
                             upsert.external_id as external_id,
                             to_json(upsert.updated_at) as last_modified_at,
@@ -436,83 +423,95 @@ export async function upsert({
                                         ELSE 'unchanged'
                                     END
                             END as status`)
-                    )
-                    .from('upsert')
-                    .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
-                    .orderBy([
-                        { column: 'upsert.updated_at', order: 'asc' },
-                        { column: 'upsert.id', order: 'asc' }
-                    ]);
+                            )
+                            .from('upsert')
+                            .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
+                            .orderBy([
+                                { column: 'upsert.updated_at', order: 'asc' },
+                                { column: 'upsert.id', order: 'asc' }
+                            ]);
 
-                const res = await withRetry(query);
+                        // Billing:
+                        // A record is billed only once per month. ie:
+                        // - If a record is inserted, it is billed
+                        // - If a record is updated, it is billed if it has not been billed yet during the current month
+                        // - If a record is undeleted, it is not billed
+                        // - If a record is deleted, it is not billed
 
-                // Billing:
-                // A record is billed only once per month. ie:
-                // - If a record is inserted, it is billed
-                // - If a record is updated, it is billed if it has not been billed yet during the current month
-                // - If a record is undeleted, it is not billed
-                // - If a record is deleted, it is not billed
+                        if (softDelete) {
+                            const deleted = res.filter((r) => r.status === 'deleted');
+                            summary.deletedKeys?.push(...deleted.map((r) => r.external_id));
+                        } else {
+                            const undeletedRes = res.filter((r) => r.status === 'undeleted');
+                            const changedRes = res.filter((r) => r.status === 'changed');
 
-                if (softDelete) {
-                    const deleted = res.filter((r) => r.status === 'deleted');
-                    summary.deletedKeys?.push(...deleted.map((r) => r.external_id));
-                } else {
-                    const undeletedRes = res.filter((r) => r.status === 'undeleted');
-                    const changedRes = res.filter((r) => r.status === 'changed');
+                            const insertedKeys = res.filter((r) => r.status === 'inserted').map((r) => r.external_id);
+                            const undeletedKeys = undeletedRes.map((r) => r.external_id);
+                            const addedKeys = insertedKeys.concat(undeletedKeys);
+                            const updatedKeys = changedRes.map((r) => r.external_id);
+                            const activatedKeys = [...insertedKeys, ...getInactiveThisMonth(changedRes).map((r) => r.external_id)];
 
-                    const insertedKeys = res.filter((r) => r.status === 'inserted').map((r) => r.external_id);
-                    const undeletedKeys = undeletedRes.map((r) => r.external_id);
-                    const addedKeys = insertedKeys.concat(undeletedKeys);
-                    const updatedKeys = changedRes.map((r) => r.external_id);
-                    const activatedKeys = [...insertedKeys, ...getInactiveThisMonth(changedRes).map((r) => r.external_id)];
+                            summary.addedKeys.push(...addedKeys);
+                            summary.updatedKeys.push(...updatedKeys);
+                            summary.activatedKeys.push(...activatedKeys);
+                            summary.unchangedKeys.push(...res.filter((r) => r.status === 'unchanged').map((r) => r.external_id));
+                        }
 
-                    summary.addedKeys.push(...addedKeys);
-                    summary.updatedKeys.push(...updatedKeys);
-                    summary.activatedKeys.push(...activatedKeys);
-                    summary.unchangedKeys.push(...res.filter((r) => r.status === 'unchanged').map((r) => r.external_id));
-                }
-
-                if (merging.strategy === 'ignore_if_modified_after_cursor') {
-                    // Next cursor is the last MODIFIED record
-                    const getLastModifiedRecord = (records: UpsertResult[]): UpsertResult | undefined => {
-                        for (let i = records.length - 1; i >= 0; i--) {
-                            if (records[i]?.status !== 'unchanged') {
-                                return records[i];
+                        if (merging.strategy === 'ignore_if_modified_after_cursor') {
+                            // Next cursor is the last MODIFIED record
+                            const getLastModifiedRecord = (records: UpsertResult[]): UpsertResult | undefined => {
+                                for (let i = records.length - 1; i >= 0; i--) {
+                                    if (records[i]?.status !== 'unchanged') {
+                                        return records[i];
+                                    }
+                                }
+                                return undefined;
+                            };
+                            const lastRecord = getLastModifiedRecord(res);
+                            if (lastRecord) {
+                                summary.nextMerging = {
+                                    strategy: merging.strategy,
+                                    cursor: Cursor.new(lastRecord)
+                                };
                             }
                         }
-                        return undefined;
-                    };
-                    const lastRecord = getLastModifiedRecord(res);
-                    if (lastRecord) {
-                        summary.nextMerging = {
-                            strategy: merging.strategy,
-                            cursor: Cursor.new(lastRecord)
-                        };
+                        deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
                     }
+                    const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
+                    if (delta !== 0 || deltaSizeInBytes !== 0) {
+                        await trx
+                            .from(RECORD_COUNTS_TABLE)
+                            .insert({
+                                connection_id: connectionId,
+                                model,
+                                environment_id: environmentId,
+                                count: delta,
+                                size_bytes: deltaSizeInBytes
+                            })
+                            .onConflict(['connection_id', 'environment_id', 'model'])
+                            .merge({
+                                count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
+                                size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes`),
+                                updated_at: trx.fn.now()
+                            });
+                    }
+                    return Ok(summary);
+                });
+            },
+            // Retry if deadlock detected
+            // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
+            {
+                maxAttempts: 3,
+                delayMs: 500,
+                retryOnError: (err) => {
+                    if ('code' in err) {
+                        const errorCode = (err as { code: string }).code;
+                        return errorCode === '40P01'; // deadlock_detected
+                    }
+                    return false;
                 }
-                deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
             }
-            const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
-            if (delta !== 0 || deltaSizeInBytes !== 0) {
-                await trx
-                    .from(RECORD_COUNTS_TABLE)
-                    .insert({
-                        connection_id: connectionId,
-                        model,
-                        environment_id: environmentId,
-                        count: delta,
-                        size_bytes: deltaSizeInBytes
-                    })
-                    .onConflict(['connection_id', 'environment_id', 'model'])
-                    .merge({
-                        count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
-                        size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes`),
-                        updated_at: trx.fn.now()
-                    });
-            }
-        });
-
-        return Ok(summary);
+        );
     } catch (err: any) {
         let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
         errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
@@ -704,35 +703,43 @@ export async function deleteRecordsBySyncId({
     environmentId,
     model,
     syncId,
-    batchSize = 5000
+    batchSize = 1000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
     syncId: string;
     batchSize?: number;
-}): Promise<{ totalDeletedRecords: number }> {
+}): Promise<Result<{ totalDeletedRecords: number }>> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
-    do {
-        // records table is partitioned by connection_id and model
-        // to avoid table scan, we must filter by connection_id and model
-        deletedRecords = await db
-            .from(RECORDS_TABLE)
-            .where({ connection_id: connectionId, model })
-            .whereIn('id', function (sub) {
-                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
-            })
-            .del();
-        totalDeletedRecords += deletedRecords;
-    } while (deletedRecords >= batchSize);
-    await deleteRecordCount({ connectionId, environmentId, model });
 
-    return { totalDeletedRecords };
+    try {
+        await db.transaction(async (trx) => {
+            do {
+                deletedRecords = await trx
+                    .from(RECORDS_TABLE)
+                    .where({ connection_id: connectionId, model })
+                    .whereIn('id', function (sub) {
+                        sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
+                    })
+                    .del();
+                totalDeletedRecords += deletedRecords;
+            } while (deletedRecords > 0);
+            await deleteRecordCount(trx, { connectionId, environmentId, model });
+        });
+
+        return Ok({ totalDeletedRecords });
+    } catch (err) {
+        return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}, syncId ${syncId}`, { cause: err }));
+    }
 }
 
-export async function deleteRecordCount({ connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }): Promise<void> {
-    await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
+export async function deleteRecordCount(
+    trx: Knex,
+    { connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }
+): Promise<void> {
+    await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
 // Mark all non-deleted records from previous generations as deleted

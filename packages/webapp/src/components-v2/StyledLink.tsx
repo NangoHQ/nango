@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import type { VariantProps } from 'class-variance-authority';
 
 const styledLinkVariants = cva(
-    'w-fit text-sm underline inline-flex items-center cursor-pointer focus-default disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
+    'w-fit text-body-medium-medium underline inline-flex items-center cursor-pointer focus-default disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
     {
         variants: {
             variant: {
