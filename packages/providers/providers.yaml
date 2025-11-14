@@ -5829,6 +5829,7 @@ google-calendar:
                 - '5xx'
                 - '401'
                 - '429'
+    webhook_routing_script: googleCalendarWebhookRouting
     docs: https://nango.dev/docs/integrations/all/google-calendar
 
 google-chat:
