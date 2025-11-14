@@ -21,7 +21,7 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { capping } from '../../utils/capping.js';
+import { capping } from '../../utils/usage.js';
 import { featureFlags } from '../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
