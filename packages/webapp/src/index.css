@@ -554,12 +554,6 @@
     font-weight: 400;
 }
 
-@utility body-small-regular {
-    font-size: 12px;
-    line-height: 16px;
-    font-weight: 400;
-}
-
 @utility text-body-small-semi {
     font-size: 12px;
     line-height: 16px;
