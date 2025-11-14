@@ -1216,6 +1216,8 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
+        // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
+        // In those cases, we need to use the refresh_url to refresh the token.
         const isRefresh = provider.refresh_url && provider.refresh_token_params && dynamicCredentials['refresh_token'];
         const tokenUrl = isRefresh ? provider.refresh_url : provider.token_url;
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
