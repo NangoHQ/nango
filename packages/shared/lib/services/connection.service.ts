@@ -936,10 +936,12 @@ class ConnectionService {
                 }
 
                 const tokenPath = template.token_response.token;
+                const refreshTokenPath = template.token_response.refresh_token;
                 const expirationPath = template.token_response?.token_expiration;
                 const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
                 const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
+                const refreshToken = refreshTokenPath ? extractValueByPath(rawCreds, refreshTokenPath) : undefined;
                 const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
@@ -966,6 +968,7 @@ class ConnectionService {
                     type: 'TWO_STEP',
                     token: token,
                     expires_at: expiresAt,
+                    refresh_token: refreshToken,
                     raw: rawCreds
                 };
 
@@ -1203,7 +1206,13 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
+        // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
+        // In those cases, we need to use the refresh_url to refresh the token.
+        const isRefresh = provider.refresh_url && provider.refresh_token_params && dynamicCredentials['refresh_token'];
+        const tokenUrl = isRefresh ? provider.refresh_url : provider.token_url;
+        const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
+
+        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
         const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
         const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
         const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
@@ -1212,8 +1221,8 @@ class ConnectionService {
 
         let postBody: Record<string, any> | string = {};
 
-        if (provider.token_params) {
-            for (const [key, value] of Object.entries(provider.token_params)) {
+        if (tokenParams) {
+            for (const [key, value] of Object.entries(tokenParams)) {
                 const strippedValue = stripCredential(value);
 
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
@@ -1346,6 +1355,9 @@ class ConnectionService {
 
             if ('token' in dynamicCredentials) {
                 delete dynamicCredentials['token'];
+            }
+            if ('refresh_token' in dynamicCredentials) {
+                delete dynamicCredentials['refresh_token'];
             }
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;

@@ -813,6 +813,8 @@
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
               "integrations/all/unipile",
+              "integrations/all/valley",
+              "integrations/all/valley-api-key",
               "integrations/all/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
