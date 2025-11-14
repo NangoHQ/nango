@@ -32,6 +32,7 @@ import { putConnectUISettings } from './controllers/v1/connectUISettings/putConn
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { postConnectionTest } from './controllers/v1/connections/connectionId/postTest.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
@@ -196,6 +197,7 @@ web.route('/connections').get(webAuth, getConnections);
 web.route('/connections/count').get(webAuth, getConnectionsCount);
 web.route('/connections/:connectionId').get(webAuth, getConnectionWeb);
 web.route('/connections/:connectionId/refresh').post(webAuth, getConnectionRefresh);
+web.route('/connections/:connectionId/test').post(webAuth, postConnectionTest);
 web.route('/connections/:connectionId').delete(webAuth, deleteConnection);
 web.route('/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 

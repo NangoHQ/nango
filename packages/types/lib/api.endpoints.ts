@@ -41,6 +41,7 @@ import type {
     GetPublicConnection,
     GetPublicConnections,
     PostConnectionRefresh,
+    PostConnectionTest,
     PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
@@ -164,6 +165,7 @@ export type PrivateApiEndpoints =
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
+    | PostConnectionTest
     | PostManagedSignup
     | PostPreBuiltDeploy
     | PostEnvironment
