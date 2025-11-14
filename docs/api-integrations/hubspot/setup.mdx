@@ -1,0 +1,34 @@
+---
+title: 'Set up Hubspot with Nango'
+sidebarTitle: 'Hubspot Setup'
+description: 'Register an OAuth app with Hubspot and connect it to Nango'
+---
+
+This guide shows you how to create a HubSpot app and obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their HubSpot account.
+
+## Creating a HubSpot App
+
+<Steps>
+  <Step title="Create a developer account">
+    Go to [HubSpot's developer signup page](https://app.hubspot.com/signup-hubspot/developers) and create an account.
+  </Step>
+  <Step title="Create & configure a HubSpot app">
+    1. Click the **Create app** button
+    2. Give your app a name and fill in the required information
+    3. Navigate to the **Auth** tab
+    4. Configure the Redirect URL: `https://api.nango.dev/oauth/callback`
+    5. Copy your **Client ID** and **Client Secret** - you will need these when configuring your integration in Nango
+  </Step>
+  <Step title="Set up the OAuth scopes">
+    Still in the **Auth** tab, add the scopes that are relevant for your use case.
+
+    Select only the permissions your app needs to function. For the full list of available scopes, see [HubSpot's OAuth scopes documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  </Step>
+  <Step title="Create a HubSpot test account">
+    If you don't have a HubSpot account already, [create one](https://app.hubspot.com/signup-hubspot/crm) to test your integration.
+  </Step>
+</Steps>
+
+You're now ready to integrate HubSpot with Nango. For more details on HubSpot's OAuth implementation, see the [HubSpot API documentation](https://developers.hubspot.com/docs/reference/api/overview).
+
+---

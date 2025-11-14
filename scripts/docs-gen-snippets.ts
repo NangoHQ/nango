@@ -167,54 +167,40 @@ function useCasesSnippet(useCases: any) {
         sortedGroups['Others'] = others;
     }
 
-    return `
-        ## Pre-built integrations
+    const sections = Object.entries(sortedGroups)
+        .map(([groupName, endpoints]) => {
+            return `
+### ${groupName}
 
-        <AccordionGroup>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+${endpoints
+    .map(
+        (endpoint) =>
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/guides/use-cases/${endpoint.type}s) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+    )
+    .join('\n')}
+            `.trim();
+        })
+        .join('\n\n');
 
-            ${Object.values(sortedGroups)
-                .map(
-                    (group) => `
-                        <Accordion title="${group[0]?.group ?? 'Others'}">
-                        | Endpoint | Description | Readme |
-                        | - | - | - |
-                        ${group
-                            .map(
-                                (endpoint) =>
-                                    `| \`${endpoint.method} ${endpoint.path}\` | ${endpoint.description?.replaceAll('\n', '<br />') ?? ''} | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.md) |`
-                            )
-                            .join('\n')}
-                        </Accordion>
-                `
-                )
-                .join('\n')}
-        </AccordionGroup>
-
-        <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
-    `
-        .split('\n')
-        .map((line) => line.trim())
-        .join('\n');
+    return sections;
 }
 
 function emptyUseCases() {
-    return `## Pre-built integrations
+    return `_No pre-built syncs or actions available yet._
 
-        _No pre-built integration yet (time to contribute: &lt;48h)_
-
-        <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
-    `
-        .split('\n')
-        .map((line) => line.trim())
-        .join('\n');
+<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>`;
 }
 
 interface Endpoint {
+    functionName: string;
     method: string;
     path: string;
     description: string;
     group: string;
     script: string;
+    type: string;
 }
 
 function buildEndpoints(type: string, syncOrAction: any, integration: string, symLinkTargetName: string | null) {
@@ -229,11 +215,13 @@ function buildEndpoints(type: string, syncOrAction: any, integration: string, sy
             const currentEndpoints = Array.isArray(endpointOrEndpoints) ? endpointOrEndpoints : [endpointOrEndpoints];
             for (const endpoint of currentEndpoints) {
                 endpoints.push({
+                    functionName: item.name,
                     method: endpoint?.method,
                     path: endpoint?.path,
                     description: item?.description?.trim(),
                     group: endpoint?.group,
-                    script: `${symLinkTargetName || integration}/${type}s/${item.name}`
+                    script: `${symLinkTargetName || integration}/${type}s/${item.name}`,
+                    type: type
                 });
             }
         }

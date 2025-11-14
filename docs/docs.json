@@ -179,7 +179,7 @@
         "anchor": "Implementation Guides",
         "icon": "pen",
         "groups": [
-          { 
+          {
             "group": "API Auth",
             "pages": [
               "implementation-guides/api-auth/configure-integration",
@@ -203,7 +203,7 @@
               "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
           },
-          { 
+          {
             "group": "Syncs",
             "pages": [
               "implementation-guides/syncs/implement-a-sync",
@@ -533,7 +533,7 @@
               "integrations/all/highlevel-white-label",
               "integrations/all/holded",
               "integrations/all/hover",
-              "integrations/all/hubspot",
+              "api-integrations/hubspot",
               "integrations/all/icypeas",
               "integrations/all/incident-io",
               "integrations/all/insightly",
@@ -620,7 +620,7 @@
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/netsuite",
-              "integrations/all/netsuite-tba",
+              "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
               "integrations/all/notion",
               "integrations/all/notion-scim",
@@ -710,7 +710,7 @@
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
-              "integrations/all/salesforce",
+              "api-integrations/salesforce",
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "integrations/all/salesforce-sandbox",
