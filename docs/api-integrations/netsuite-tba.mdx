@@ -1,192 +1,84 @@
 ---
-title: 'Set up Netsuite TBA with Nango'
-sidebarTitle: 'Netsuite TBA Setup'
-description: 'Configure token-based authentication with Netsuite and connect it to Nango'
+title: Netsuite TBA
+sidebarTitle: Netsuite TBA
+description: 'Integrate your application with the Netsuite TBA API'
 ---
 
-This guide shows you how to set up token-based authentication (TBA) with Netsuite and connect it to Nango. TBA provides a machine-to-machine authentication flow that's more reliable than OAuth, as it doesn't have the 7-day refresh token expiration that Netsuite's standard OAuth flow has.
+## 🚀 Quickstart
 
-<Note>
-Creating a Netsuite account typically requires scheduling a call with their sales team. If you don't have an account yet, visit [Netsuite's website](https://www.netsuite.com/) to get started.
-</Note>
-
-## Admin Setup for Token-Based Authentication
-
-If you have admin privileges in your Netsuite account, follow these steps to enable TBA and create the necessary credentials.
-
-### Enable Required Features
+Connect to Netsuite TBA with Nango and see data flow in 2 minutes.
 
 <Steps>
-  <Step title="Navigate to feature settings">
-    Log in to your Netsuite account and navigate to **Setup** > **Company** > **Enable Features**.
-  </Step>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Netsuite TBA_.
+    </Step>
+    <Step title="Authorize Netsuite TBA">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then complete the Netsuite TBA authentication. Later, you'll let your users do the same directly from your app.
 
-  <Step title="Enable SuiteTalk web services">
-    Under the "**SuiteTalk**" header, check both:
-    - _SOAP WEB SERVICES_
-    - _REST WEB SERVICES_
+    <Note>Netsuite requires a user-specific account ID to run OAuth. You'll need to provide this along with your OAuth credentials.</Note>
+    </Step>
+    <Step title="Call the Netsuite TBA API">
+    Let's make your first request to the Netsuite API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
 
-    <Frame>
-      <img src="/images/netsuite-soap-rest-checkboxes.png" />
-    </Frame>
-  </Step>
+            ```bash
+            curl "https://api.nango.dev/proxy/record/v1/customer" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
 
-  <Step title="Enable token-based authentication">
-    Under the "**Manage Authentication**" header, check:
-    - _TOKEN-BASED AUTHENTICATION_
+        </Tab>
 
-    <Frame>
-      <img src="/images/netsuite-tba-checkbox.png" />
-    </Frame>
+        <Tab title="Node">
 
-    Click the save button.
-  </Step>
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/record/v1/customer',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
 </Steps>
 
-### Create an Integration Application
+## 📚 Netsuite TBA Integration Guides
 
-<Steps>
-  <Step title="Create new integration">
-    Navigate to **Setup** > **Integration** > **Manage Integrations** > **New**.
-  </Step>
+Nango maintained guides for common use cases.
 
-  <Step title="Configure integration settings">
-    Set the desired name for this integration.
+- [How to set up Netsuite TBA with Nango](/api-integrations/netsuite-tba-setup)
+Configure token-based authentication with Netsuite and connect it to Nango
 
-    Enable _TOKEN-BASED AUTHENTICATION_ and disable both:
-    - _TBA: AUTHORIZATION FLOW_
-    - _AUTHORIZATION CODE GRANT_
+Official docs: [Netsuite REST API documentation](https://system.netsuite.com/help/helpcenter/en_US/APIs/REST_API_Browser/record/v1/2023.1/index.html)
 
-    <Frame>
-      <img src="/images/netsuite-tba-configuration.png" />
-    </Frame>
+## 🧩 Pre-built syncs & actions for Netsuite TBA
 
-    Click the save button.
-  </Step>
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
 
-  <Step title="Copy client credentials">
-    The client credentials will now be displayed. Copy and securely store:
-    - **Consumer Key** (also called Client ID)
-    - **Consumer Secret** (also called Client Secret)
+import PreBuiltUseCases from "/snippets/generated/netsuite-tba/PreBuiltUseCases.mdx"
 
-    You'll need these to configure your Nango integration.
-  </Step>
-</Steps>
-
-### Generate Access Tokens
-
-<Steps>
-  <Step title="Navigate to access tokens">
-    Return to the homepage by clicking the home icon. At the bottom left corner, click the **Manage Access Tokens** button.
-
-    <Frame>
-      <img src="/images/netsuite-create-token.png" />
-    </Frame>
-  </Step>
-
-  <Step title="Create a new token">
-    - Select the **Application Name** you created for this integration
-    - Enter a "**Token Name**"
-    - Save your new access token
-  </Step>
-
-  <Step title="Copy token credentials">
-    The token credentials will now be displayed. Copy and securely store:
-    - **Token ID**
-    - **Token Secret**
-  </Step>
-</Steps>
-
-### Configure Nango
-
-<Steps>
-  <Step title="Create integration in Nango">
-    In Nango, create a new integration using the `netsuite-tba` provider and leave the "Client Id" and "Client Secret" values empty.
-  </Step>
-
-  <Step title="Create connection with credentials">
-    Create a new connection and provide the following values:
-    - **OAuth Client Id Override**: Paste the **Client ID** (Consumer Key) from Netsuite
-    - **OAuth Client Secret**: Paste the **Client Secret** (Consumer Secret) from Netsuite
-    - **Token ID**: Paste the **Token ID** from the access token step
-    - **Token Secret**: Paste the **Token Secret** from the access token step
-    - **Account ID**: Your Netsuite account ID (found in your [Netsuite URL instance](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_1498754928.html))
-  </Step>
-</Steps>
-
-## Non-Admin Role Setup
-
-When setting up Netsuite TBA with a non-admin role, additional configuration is required. This section covers the necessary permissions and setup steps for non-administrator users.
-
-### Required Role Permissions
-
-The role must have the following permissions enabled under **Setup** > **Users/Roles** > **Manage Roles** > **[Your Role]** > **Permissions**:
-
-Under "Setup":
-- _SOAP Web Services_ permission
-- _REST Web Services_ permission
-- _Token-Based Authentication_ permission
-- _OAuth 2.0_ permission (recommended for future flexibility)
-
-### Creating Access Tokens with Specific Roles
-
-To create an access token for a non-admin role:
-
-1. Switch to the desired role using the role selector in the top-right corner
-2. Navigate to **Setup** > **Integration** > **Manage Access Tokens**
-3. Click "New Access Token"
-4. Select your application from the dropdown
-5. Provide a token name
-6. Save and securely store the Token ID and Token Secret that are displayed
-
-<Note>
-The role selection at token creation time determines the permissions available to that token. Make sure you're using the correct role before creating the token.
-</Note>
-
-### Required Permissions for Token Management
-
-Users who will be creating integrations and tokens need these additional permissions:
-
-Under "Setup":
-- _Access Token Management_ permission
-- _Integration Application_ permission
-- _Manage Integration_ permission
-
-### Concurrent Web Services User
-
-If you need to make concurrent API calls:
-
-1. Navigate to **Setup** > **Company** > **Enable Features** > **SuiteCloud** tab
-2. Enable "CONCURRENT USERS FOR WEB SERVICES"
-3. For each user that needs this capability:
-   - Go to **Setup** > **Users/Roles** > **Manage Users**
-   - Edit the user
-   - Check "Web Services User"
-   - Check "Concurrent Web Services User"
-
-<Warning>
-The "Concurrent Web Services User" setting may require an additional user license. Consult your Netsuite account representative for details.
-</Warning>
-
-### Troubleshooting Non-Admin Access
-
-If you encounter authentication issues:
-
-1. **Permission Verification**:
-   - Log out and log back in after permission changes
-   - Verify permissions are saved by checking the role again
-   - Ensure all parent permissions are also enabled (some permissions have dependencies)
-
-2. **Role Configuration**:
-   - Confirm the user is assigned the correct role
-   - Verify the role has all required permissions listed above
-   - Check if the role has access to the necessary records and features
-
-## Additional Resources
-
-For more details on Netsuite's token-based authentication and REST API, see the official documentation:
-- [Netsuite Token-Based Authentication Setup Guide](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_0605103340.html)
-- [Netsuite REST API Browser](https://system.netsuite.com/help/helpcenter/en_US/APIs/REST_API_Browser/record/v1/2023.1/index.html)
-- [OAuth 2.0 Setup](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158081944642.html)
+<PreBuiltUseCases />
 
 ---

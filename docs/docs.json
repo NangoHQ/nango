@@ -265,7 +265,13 @@
             "group": "API Guides",
             "pages": [
               "integrations/overview",
-              "integrations/google-security-review"
+              "integrations/google-security-review",
+              "api-integrations/hubspot",
+              "api-integrations/hubspot-setup",
+              "api-integrations/netsuite-tba",
+              "api-integrations/netsuite-tba-setup",
+              "api-integrations/salesforce",
+              "api-integrations/salesforce-setup"
             ]
           },
           {
@@ -533,7 +539,6 @@
               "integrations/all/highlevel-white-label",
               "integrations/all/holded",
               "integrations/all/hover",
-              "integrations/all/hubspot",
               "integrations/all/icypeas",
               "integrations/all/incident-io",
               "integrations/all/insightly",
@@ -620,7 +625,6 @@
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/netsuite",
-              "integrations/all/netsuite-tba",
               "integrations/all/next-cloud-ocs",
               "integrations/all/notion",
               "integrations/all/notion-scim",
@@ -710,7 +714,6 @@
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
-              "integrations/all/salesforce",
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "integrations/all/salesforce-sandbox",
