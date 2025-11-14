@@ -324,7 +324,9 @@ export async function handleSyncSuccess({
                         properties: {
                             accountId: nangoProps.team.id,
                             environmentId: nangoProps.environmentId,
-                            connectionId: nangoProps.nangoConnectionId,
+                            environmentName: nangoProps.environmentName,
+                            integrationId: nangoProps.providerConfigKey,
+                            connectionId: nangoProps.connectionId,
                             syncId: nangoProps.syncId,
                             model
                         }
@@ -518,8 +520,12 @@ export async function handleSyncSuccess({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: nangoProps.providerConfigKey,
+                    connectionId: connection.connection_id,
                     type: 'sync',
+                    functionName: nangoProps.syncConfig.sync_name,
                     success: true,
                     frequencyMs,
                     telemetryBag
@@ -920,7 +926,11 @@ async function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment ? environment.id : -1,
+                    environmentName: environment ? environment.name : 'unknown',
+                    integrationId: providerConfig?.unique_key || 'unknown',
+                    connectionId: connection.connection_id,
+                    functionName: syncName,
                     type: 'sync',
                     success: false,
                     telemetryBag
