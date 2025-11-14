@@ -124,7 +124,7 @@ export async function routeWebhook({
                             subject: 'usage',
                             type: 'usage.webhook_forward',
                             payload: {
-                                value: res.value.forwarded,
+                                value: 1,
                                 properties: {
                                     accountId: account.id,
                                     environmentId: environment.id,

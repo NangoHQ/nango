@@ -1557,8 +1557,7 @@ class ConnectionService {
                     db.knex.raw(`count(DISTINCT _nango_connections.id) AS "count"`)
                 )
                 .whereNull('_nango_connections.deleted_at')
-                .groupBy('_nango_environments.account_id', '_nango_environments.id', '_nango_environments.name', '_nango_connections.provider_config_key')
-                .debug(true);
+                .groupBy('_nango_environments.account_id', '_nango_environments.id', '_nango_environments.name', '_nango_connections.provider_config_key');
 
             if (res) {
                 return Ok(res);
