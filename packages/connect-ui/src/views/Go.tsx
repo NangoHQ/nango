@@ -21,9 +21,32 @@ import { telemetry } from '@/lib/telemetry';
 import { cn, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, AwsSigV4TemplateSummary } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
+
+const buildAwsQuickCreateUrl = (template: AwsSigV4TemplateSummary): string | null => {
+    if (!template.template_url && !template.template_body) {
+        return null;
+    }
+    const params = new URLSearchParams();
+    if (template.stack_name) {
+        params.set('stackName', template.stack_name);
+    }
+    if (template.template_url) {
+        params.set('templateURL', template.template_url);
+    } else if (template.template_body) {
+        params.set('templateBody', template.template_body);
+    }
+    if (template.parameters) {
+        for (const [key, value] of Object.entries(template.parameters)) {
+            if (key && typeof value === 'string') {
+                params.set(`param_${key}`, value);
+            }
+        }
+    }
+    return `https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?${params.toString()}`;
+};
 
 const formSchema: Record<AuthModeType, z.ZodObject> = {
     API_KEY: z.object({
@@ -66,6 +89,10 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         username: z.string().min(1),
         password: z.string().min(1)
     }),
+    AWS_SIGV4: z.object({
+        role_arn: z.string().min(1),
+        region: z.string().min(1).optional()
+    }),
     CUSTOM: z.object({}),
     MCP_OAUTH2: z.object({}),
     MCP_OAUTH2_GENERIC: z.object({})
@@ -87,7 +114,9 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
-    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' }
+    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' },
+    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' },
+    'credentials.region': { secret: false, title: 'AWS Region', example: 'us-east-1' }
 };
 
 export const Go: React.FC = () => {
@@ -100,7 +129,8 @@ export const Go: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [connectionFailed, setConnectionFailed] = useState(false);
 
-    const preconfigured = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+    const preconfiguredCredentials = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.credentials || {} : {};
+    const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
 
     const displayName = useMemo(() => {
         return integration?.display_name ?? provider?.display_name ?? '';
@@ -112,6 +142,8 @@ export const Go: React.FC = () => {
         if (override) return [override, true];
         return [provider?.docs_connect, false];
     }, [provider, integration, session]);
+    const awsSigV4Instructions = integration?.aws_sigv4?.instructions;
+    const awsSigV4Templates = integration?.aws_sigv4?.templates || [];
 
     useMount(() => {
         if (integration) {
@@ -148,6 +180,9 @@ export const Go: React.FC = () => {
             }
             order += 1;
             orderedFields[`credentials.${name}`] = order;
+            if (typeof preconfiguredCredentials[name] !== 'undefined') {
+                hiddenFields += 1;
+            }
         }
 
         // Modify base form with credentials specific
@@ -160,7 +195,8 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[fullName] = order;
             }
-            if (preconfigured[name] ?? schema.hidden) {
+            const isPreconfigured = typeof preconfiguredCredentials[name] !== 'undefined';
+            if (isPreconfigured || schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -182,7 +218,8 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            if (preconfigured[name] ?? schema.hidden) {
+            const isPreconfigured = typeof preconfiguredParams[name] !== 'undefined';
+            if (isPreconfigured || schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -202,7 +239,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider]);
+    }, [provider, preconfiguredCredentials, preconfiguredParams]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -406,6 +443,42 @@ export const Go: React.FC = () => {
                     <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
+                {awsSigV4Instructions && (
+                    <div className="flex flex-col gap-3 border border-subtle rounded-md p-4 bg-elevated">
+                        {awsSigV4Instructions.description && <p className="text-sm text-text-secondary">{awsSigV4Instructions.description}</p>}
+                        {awsSigV4Instructions.url && (
+                            <Button
+                                className="border border-subtle bg-white text-text-primary hover:bg-elevated"
+                                type="button"
+                                onClick={() => window.open(awsSigV4Instructions.url, '_blank')}
+                            >
+                                {awsSigV4Instructions.label || 'Open setup instructions'}
+                            </Button>
+                        )}
+                    </div>
+                )}
+                {awsSigV4Templates.length > 0 && (
+                    <div className="flex flex-col gap-3 border border-subtle rounded-md p-4 bg-elevated">
+                        <p className="text-sm text-text-secondary">Deploy the required AWS resources directly from these templates.</p>
+                        <div className="flex flex-col gap-3">
+                            {awsSigV4Templates.map((template) => {
+                                const launchUrl = buildAwsQuickCreateUrl(template);
+                                return launchUrl ? (
+                                    <div key={template.id} className="flex flex-col gap-2 border border-subtle rounded-md p-3">
+                                        <div>
+                                            <p className="text-sm font-semibold text-text-primary">{template.label || template.id}</p>
+                                            {template.description && <p className="text-xs text-text-secondary mt-1">{template.description}</p>}
+                                        </div>
+                                        <Button type="button" onClick={() => window.open(launchUrl, '_blank')}>
+                                            Deploy in AWS Console
+                                        </Button>
+                                    </div>
+                                ) : null;
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {error && (
                     <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
                         <TriangleAlert className="w-5 h-5" />
@@ -430,14 +503,15 @@ export const Go: React.FC = () => {
                                     const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                    const isPreconfigured = typeof preconfigured[key] !== 'undefined';
+                                    const source = type === 'credentials' ? preconfiguredCredentials : preconfiguredParams;
+                                    const isPreconfigured = typeof source[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
                                     return (
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
+                                            defaultValue={isPreconfigured ? source[key] : (definition?.default_value ?? '')}
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {

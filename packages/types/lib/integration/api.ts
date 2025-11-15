@@ -5,11 +5,31 @@ import type { NangoSyncConfig } from '../flow/index.js';
 import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
+export interface AwsSigV4TemplateSummary {
+    id: string;
+    label?: string;
+    description?: string;
+    stack_name?: string;
+    template_url?: string;
+    template_body?: string;
+    parameters?: Record<string, string>;
+}
+
 export type ApiPublicIntegration = Merge<
     Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
     ApiTimestamps
 > & {
     logo: string;
+    aws_sigv4?:
+        | {
+              instructions?: {
+                  label?: string;
+                  url?: string;
+                  description?: string;
+              };
+              templates?: AwsSigV4TemplateSummary[];
+          }
+        | undefined;
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
@@ -138,6 +158,7 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
+        | { custom: Record<string, string> }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
               clientId: string;

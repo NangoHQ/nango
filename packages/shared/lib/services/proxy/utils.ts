@@ -6,6 +6,7 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
+import { signAwsSigV4Request } from './aws-sigv4.js';
 import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
@@ -348,6 +349,18 @@ export function buildProxyHeaders({
         case 'BILL': {
             break;
         }
+        case 'AWS_SIGV4': {
+            const signedHeaders = signAwsSigV4Request({
+                url,
+                method: config.method,
+                headers,
+                body: resolveSigV4Payload(config),
+                credentials: connection.credentials
+            });
+            removeExistingHeaders(headers, Object.keys(signedHeaders));
+            headers = { ...headers, ...signedHeaders };
+            break;
+        }
         case 'OAUTH1': {
             throw new ProxyError('unsupported_auth', 'OAuth1 is not supported');
         }
@@ -400,4 +413,49 @@ export function buildProxyHeaders({
     }
 
     return headers;
+}
+
+function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): string | Buffer | null {
+    if (!methodDataAllowed.includes(config.method)) {
+        return '';
+    }
+
+    if (!config.data) {
+        return '';
+    }
+
+    if (typeof config.data === 'string' || Buffer.isBuffer(config.data)) {
+        return config.data;
+    }
+
+    if (isFormData(config.data)) {
+        return null;
+    }
+
+    if (typeof config.data === 'object') {
+        try {
+            return JSON.stringify(config.data);
+        } catch {
+            return null;
+        }
+    }
+
+    return '';
+}
+
+function removeExistingHeaders(headers: Record<string, string>, keys: string[]) {
+    if (!keys.length) {
+        return;
+    }
+
+    const lower = keys.map((key) => key.toLowerCase());
+    for (const currentKey of Object.keys(headers)) {
+        if (lower.includes(currentKey.toLowerCase())) {
+            Reflect.deleteProperty(headers, currentKey);
+        }
+    }
+}
+
+function isFormData(value: unknown): value is FormData {
+    return Boolean(value && typeof (value as FormData).getBoundary === 'function');
 }

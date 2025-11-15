@@ -43,8 +43,142 @@ const FIELD_DISPLAY_NAMES: Record<string, Record<string, string>> = {
         app_link: 'App Public Link',
         app_id: 'App ID',
         private_key: 'App Private Key'
+    },
+    APP_STORE: {
+        oauth_client_id: 'Key ID',
+        oauth_client_secret: 'Private Key',
+        app_link: 'Issuer ID'
     }
 } as const;
+
+interface AwsSigV4TemplateParam {
+    key: string;
+    value: string;
+}
+interface AwsSigV4Template {
+    id: string;
+    label: string;
+    description: string;
+    stackName: string;
+    templateUrl: string;
+    templateBody: string;
+    parameters: AwsSigV4TemplateParam[];
+}
+
+type TemplateStringField = 'id' | 'label' | 'description' | 'stackName' | 'templateUrl' | 'templateBody';
+type TemplateParamField = 'key' | 'value';
+
+const defaultAwsSigV4Template = (): AwsSigV4Template => ({
+    id: '',
+    label: '',
+    description: '',
+    stackName: '',
+    templateUrl: '',
+    templateBody: '',
+    parameters: []
+});
+
+function defaultAwsSigV4Config() {
+    return {
+        service: '',
+        defaultRegion: '',
+        stsEndpoint: {
+            url: '',
+            authType: 'none' as 'none' | 'api_key' | 'basic',
+            header: 'x-api-key',
+            value: '',
+            username: '',
+            password: ''
+        },
+        instructions: {
+            label: '',
+            url: '',
+            description: ''
+        },
+        templates: [] as AwsSigV4Template[]
+    };
+}
+
+type AwsSigV4Config = ReturnType<typeof defaultAwsSigV4Config>;
+
+const validateAwsSigV4Templates = (templates: AwsSigV4Template[]): string | null => {
+    for (let i = 0; i < templates.length; i += 1) {
+        const template = templates[i];
+        const id = (template.id || '').trim();
+        if (!id) {
+            return `Template ${i + 1} is missing an ID`;
+        }
+        const hasBody = Boolean(template.templateBody && template.templateBody.trim().length > 0);
+        const hasUrl = Boolean(template.templateUrl && template.templateUrl.trim().length > 0);
+        if (!hasBody && !hasUrl) {
+            return `Template "${id}" needs either a template URL or a template body`;
+        }
+    }
+    return null;
+};
+
+const deserializeAwsSigV4Config = (raw?: string | null) => {
+    if (!raw) {
+        return null;
+    }
+    try {
+        const parsed = JSON.parse(raw);
+        const base = defaultAwsSigV4Config();
+        if (parsed.service) {
+            base.service = parsed.service;
+        }
+        if (parsed.defaultRegion) {
+            base.defaultRegion = parsed.defaultRegion;
+        }
+        if (parsed.stsEndpoint) {
+            base.stsEndpoint.url = parsed.stsEndpoint.url || '';
+            if (parsed.stsEndpoint.auth?.type === 'api_key') {
+                base.stsEndpoint.authType = 'api_key';
+                base.stsEndpoint.header = parsed.stsEndpoint.auth.header || 'x-api-key';
+                base.stsEndpoint.value = parsed.stsEndpoint.auth.value || '';
+            } else if (parsed.stsEndpoint.auth?.type === 'basic') {
+                base.stsEndpoint.authType = 'basic';
+                base.stsEndpoint.username = parsed.stsEndpoint.auth.username || '';
+                base.stsEndpoint.password = parsed.stsEndpoint.auth.password || '';
+            }
+        }
+        if (parsed.instructions) {
+            base.instructions = {
+                label: parsed.instructions.label || '',
+                url: parsed.instructions.url || '',
+                description: parsed.instructions.description || ''
+            };
+        }
+        if (Array.isArray(parsed.templates)) {
+            base.templates = parsed.templates
+                .map((template: any) => {
+                    if (!template || typeof template !== 'object') {
+                        return null;
+                    }
+                    const normalized = defaultAwsSigV4Template();
+                    normalized.id = typeof template.id === 'string' ? template.id : '';
+                    normalized.label = typeof template.label === 'string' ? template.label : '';
+                    normalized.description = typeof template.description === 'string' ? template.description : '';
+                    normalized.stackName = typeof template.stackName === 'string' ? template.stackName : template.stack_name || '';
+                    normalized.templateUrl = typeof template.templateUrl === 'string' ? template.templateUrl : template.template_url || '';
+                    normalized.templateBody = typeof template.templateBody === 'string' ? template.templateBody : template.template_body || '';
+                    if (template.parameters && typeof template.parameters === 'object') {
+                        normalized.parameters = Object.entries(template.parameters)
+                            .filter(([key, value]) => typeof key === 'string' && typeof value === 'string')
+                            .map(([key, value]) => ({ key, value: value as string }));
+                    }
+                    if (!normalized.id && !(normalized.templateBody || normalized.templateUrl)) {
+                        return null;
+                    }
+                    return normalized;
+                })
+                .filter(Boolean) as AwsSigV4Template[];
+        }
+        return base;
+    } catch {
+        return null;
+    }
+};
 
 function missingFieldsMessage(
     template: GetIntegration['Success']['data']['template'],
@@ -70,6 +204,7 @@ export const SettingsGeneral: React.FC<{
     const [displayName, setDisplayName] = useState(integration.display_name || template.display_name);
     const [integrationId, setIntegrationId] = useState(integration.unique_key);
     const [webhookSecret, setWebhookSecret] = useState(integration.custom?.webhookSecret || '');
+    const [awsSigV4Config, setAwsSigV4Config] = useState<AwsSigV4Config | null>(() => deserializeAwsSigV4Config(integration.custom?.['aws_sigv4_config']));
     const [loading, setLoading] = useState(false);
     const [forwardWebhooks, setForwardWebhooks] = useState(integration.forward_webhooks);
 
@@ -129,6 +264,177 @@ export const SettingsGeneral: React.FC<{
             setShowEditForwardWebhooks(false);
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
         }
+    };
+
+    const buildAwsSigV4Payload = () => {
+        if (!awsSigV4Config) {
+            return null;
+        }
+
+        if (!awsSigV4Config.service || !awsSigV4Config.stsEndpoint.url) {
+            return null;
+        }
+
+        const payload: any = {
+            service: awsSigV4Config.service,
+            defaultRegion: awsSigV4Config.defaultRegion,
+            stsEndpoint: {
+                url: awsSigV4Config.stsEndpoint.url
+            }
+        };
+
+        if (awsSigV4Config.stsEndpoint.authType === 'api_key') {
+            payload.stsEndpoint.auth = {
+                type: 'api_key',
+                header: awsSigV4Config.stsEndpoint.header,
+                value: awsSigV4Config.stsEndpoint.value
+            };
+        } else if (awsSigV4Config.stsEndpoint.authType === 'basic') {
+            payload.stsEndpoint.auth = {
+                type: 'basic',
+                username: awsSigV4Config.stsEndpoint.username,
+                password: awsSigV4Config.stsEndpoint.password
+            };
+        }
+
+        if (awsSigV4Config.instructions?.label || awsSigV4Config.instructions?.url || awsSigV4Config.instructions?.description) {
+            payload.instructions = awsSigV4Config.instructions;
+        }
+
+        if (awsSigV4Config.templates && awsSigV4Config.templates.length > 0) {
+            const templates = awsSigV4Config.templates
+                .map((template) => {
+                    if (!template.id || (!template.templateBody && !template.templateUrl)) {
+                        return null;
+                    }
+                    const normalized: Record<string, any> = {
+                        id: template.id,
+                        label: template.label,
+                        description: template.description,
+                        stackName: template.stackName,
+                        templateBody: template.templateBody,
+                        templateUrl: template.templateUrl
+                    };
+                    if (template.parameters && template.parameters.length > 0) {
+                        const params = template.parameters
+                            .filter((param) => param.key && typeof param.value === 'string')
+                            .reduce<Record<string, string>>((acc, param) => {
+                                acc[param.key] = param.value;
+                                return acc;
+                            }, {});
+                        if (Object.keys(params).length > 0) {
+                            normalized.parameters = params;
+                        }
+                    }
+                    return normalized;
+                })
+                .filter(Boolean);
+            if (templates.length > 0) {
+                payload.templates = templates;
+            }
+        }
+
+        return JSON.stringify(payload);
+    };
+
+    const onSaveAwsSigV4 = async () => {
+        if (template.auth_mode !== 'AWS_SIGV4') {
+            return;
+        }
+
+        if (awsSigV4Config?.templates?.length) {
+            const templateValidationError = validateAwsSigV4Templates(awsSigV4Config.templates);
+            if (templateValidationError) {
+                toast({ title: templateValidationError, variant: 'error' });
+                return;
+            }
+        }
+
+        const payload = buildAwsSigV4Payload();
+        if (!payload) {
+            toast({ title: 'Service and STS endpoint URL are required', variant: 'error' });
+            return;
+        }
+
+        setLoading(true);
+        const updated = await apiPatchIntegration(env, integration.unique_key, {
+            custom: {
+                aws_sigv4_config: payload
+            }
+        });
+        setLoading(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: 'Successfully updated AWS SigV4 settings', variant: 'success' });
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
+        }
+    };
+
+    const addAwsSigV4Template = () => {
+        setAwsSigV4Config((prev) => {
+            const base = prev ? { ...prev } : defaultAwsSigV4Config();
+            const templates = [...base.templates, defaultAwsSigV4Template()];
+            return { ...base, templates };
+        });
+    };
+
+    const removeAwsSigV4Template = (index: number) => {
+        setAwsSigV4Config((prev) => {
+            if (!prev) {
+                return prev;
+            }
+            const templates = prev.templates.filter((_, i) => i !== index);
+            return { ...prev, templates };
+        });
+    };
+
+    const updateAwsSigV4TemplateField = (index: number, field: TemplateStringField, value: string) => {
+        setAwsSigV4Config((prev) => {
+            const base = prev ? { ...prev } : defaultAwsSigV4Config();
+            const templates = [...base.templates];
+            const template = { ...(templates[index] || defaultAwsSigV4Template()) };
+            template[field] = value;
+            templates[index] = template;
+            return { ...base, templates };
+        });
+    };
+
+    const updateAwsSigV4TemplateParam = (templateIndex: number, paramIndex: number, field: TemplateParamField, value: string) => {
+        setAwsSigV4Config((prev) => {
+            const base = prev ? { ...prev } : defaultAwsSigV4Config();
+            const templates = [...base.templates];
+            const template = { ...(templates[templateIndex] || defaultAwsSigV4Template()) };
+            const parameters = [...template.parameters];
+            parameters[paramIndex] = { ...parameters[paramIndex], [field]: value };
+            template.parameters = parameters;
+            templates[templateIndex] = template;
+            return { ...base, templates };
+        });
+    };
+
+    const addAwsSigV4TemplateParam = (templateIndex: number) => {
+        setAwsSigV4Config((prev) => {
+            const base = prev ? { ...prev } : defaultAwsSigV4Config();
+            const templates = [...base.templates];
+            const template = { ...(templates[templateIndex] || defaultAwsSigV4Template()) };
+            template.parameters = [...template.parameters, { key: '', value: '' }];
+            templates[templateIndex] = template;
+            return { ...base, templates };
+        });
+    };
+
+    const removeAwsSigV4TemplateParam = (templateIndex: number, paramIndex: number) => {
+        setAwsSigV4Config((prev) => {
+            if (!prev) {
+                return prev;
+            }
+            const templates = [...prev.templates];
+            const template = { ...(templates[templateIndex] || defaultAwsSigV4Template()) };
+            template.parameters = template.parameters.filter((_, i) => i !== paramIndex);
+            templates[templateIndex] = template;
+            return { ...prev, templates };
+        });
     };
 
     return (
@@ -308,6 +614,336 @@ export const SettingsGeneral: React.FC<{
                             )}
                         </InfoBloc>
                     )}
+                </div>
+            )}
+
+            {template.auth_mode === 'AWS_SIGV4' && (
+                <div className="grid grid-cols-1 gap-10">
+                    <InfoBloc title="AWS SigV4 Settings" help={<p>Configure how this integration issues temporary AWS credentials via your STS endpoint.</p>}>
+                        <div className="flex flex-col gap-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-white font-semibold">AWS Service</label>
+                                    <Input
+                                        value={awsSigV4Config?.service || ''}
+                                        onChange={(e) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                service: e.target.value
+                                            }))
+                                        }
+                                        placeholder="e.g. s3"
+                                        variant={'flat'}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-white font-semibold">Default Region (optional)</label>
+                                    <Input
+                                        value={awsSigV4Config?.defaultRegion || ''}
+                                        onChange={(e) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                defaultRegion: e.target.value
+                                            }))
+                                        }
+                                        placeholder="e.g. us-east-1"
+                                        variant={'flat'}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-white font-semibold">STS Endpoint URL</label>
+                                <Input
+                                    value={awsSigV4Config?.stsEndpoint.url || ''}
+                                    onChange={(e) =>
+                                        setAwsSigV4Config((prev) => ({
+                                            ...(prev || defaultAwsSigV4Config()),
+                                            stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), url: e.target.value }
+                                        }))
+                                    }
+                                    placeholder="https://sts.example.com/assume"
+                                    variant={'flat'}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-white font-semibold">Auth Type</label>
+                                    <select
+                                        className="bg-active-gray text-white rounded-md border border-border-gray px-2 py-1 text-sm"
+                                        value={awsSigV4Config?.stsEndpoint.authType || 'none'}
+                                        onChange={(e) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                stsEndpoint: {
+                                                    ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
+                                                    authType: e.target.value as 'none' | 'api_key' | 'basic'
+                                                }
+                                            }))
+                                        }
+                                    >
+                                        <option value="none">None</option>
+                                        <option value="api_key">API Key</option>
+                                        <option value="basic">Basic</option>
+                                    </select>
+                                </div>
+
+                                {awsSigV4Config?.stsEndpoint.authType === 'api_key' && (
+                                    <>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Header</label>
+                                            <Input
+                                                value={awsSigV4Config?.stsEndpoint.header || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), header: e.target.value }
+                                                    }))
+                                                }
+                                                placeholder="x-api-key"
+                                                variant={'flat'}
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Value</label>
+                                            <SecretInput
+                                                value={awsSigV4Config?.stsEndpoint.value || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), value: e.target.value }
+                                                    }))
+                                                }
+                                                placeholder="API key"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {awsSigV4Config?.stsEndpoint.authType === 'basic' && (
+                                    <>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Username</label>
+                                            <Input
+                                                value={awsSigV4Config?.stsEndpoint.username || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), username: e.target.value }
+                                                    }))
+                                                }
+                                                placeholder="Username"
+                                                variant={'flat'}
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Password</label>
+                                            <SecretInput
+                                                value={awsSigV4Config?.stsEndpoint.password || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), password: e.target.value }
+                                                    }))
+                                                }
+                                                placeholder="Password"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-white font-semibold">End-user Instructions (optional)</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <Input
+                                        value={awsSigV4Config?.instructions?.label || ''}
+                                        onChange={(e) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                instructions: {
+                                                    ...(prev?.instructions || defaultAwsSigV4Config().instructions),
+                                                    label: e.target.value
+                                                }
+                                            }))
+                                        }
+                                        placeholder="Button label"
+                                        variant={'flat'}
+                                    />
+                                    <Input
+                                        value={awsSigV4Config?.instructions?.url || ''}
+                                        onChange={(e) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                instructions: {
+                                                    ...(prev?.instructions || defaultAwsSigV4Config().instructions),
+                                                    url: e.target.value
+                                                }
+                                            }))
+                                        }
+                                        placeholder="https://..."
+                                        variant={'flat'}
+                                    />
+                                    <Input
+                                        value={awsSigV4Config?.instructions?.description || ''}
+                                        onChange={(e) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                instructions: {
+                                                    ...(prev?.instructions || defaultAwsSigV4Config().instructions),
+                                                    description: e.target.value
+                                                }
+                                            }))
+                                        }
+                                        placeholder="Short description"
+                                        variant={'flat'}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <div>
+                                    <label className="text-xs text-white font-semibold">CloudFormation Templates (optional)</label>
+                                    <p className="text-xs text-text-soft">
+                                        Store one or more named templates for this integration. They will appear in Connect as one-click deployment buttons for
+                                        your customers.
+                                    </p>
+                                </div>
+                                <div className="flex flex-col gap-4">
+                                    {awsSigV4Config?.templates && awsSigV4Config.templates.length > 0 ? (
+                                        awsSigV4Config.templates.map((template, index) => (
+                                            <div
+                                                key={`${template.id || 'template'}-${index}`}
+                                                className="border border-subtle rounded-md p-4 flex flex-col gap-3 bg-[#0f1117]"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-sm font-semibold text-white">{template.label || `Template ${index + 1}`}</p>
+                                                    <Button variant="danger" size="xs" type="button" onClick={() => removeAwsSigV4Template(index)}>
+                                                        Remove template
+                                                    </Button>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="flex flex-col gap-1">
+                                                        <label className="text-xs text-text-soft font-semibold">Template ID</label>
+                                                        <Input
+                                                            value={template.id}
+                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'id', e.target.value)}
+                                                            placeholder="s3-readonly"
+                                                            variant="flat"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <label className="text-xs text-text-soft font-semibold">Display Label</label>
+                                                        <Input
+                                                            value={template.label}
+                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'label', e.target.value)}
+                                                            placeholder="AWS S3 Read Only"
+                                                            variant="flat"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="flex flex-col gap-1">
+                                                        <label className="text-xs text-text-soft font-semibold">Description</label>
+                                                        <Input
+                                                            value={template.description}
+                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'description', e.target.value)}
+                                                            placeholder="Allows read-only access to the shared bucket"
+                                                            variant="flat"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <label className="text-xs text-text-soft font-semibold">Stack Name (optional)</label>
+                                                        <Input
+                                                            value={template.stackName}
+                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'stackName', e.target.value)}
+                                                            placeholder="NangoSigV4Stack"
+                                                            variant="flat"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="flex flex-col gap-1">
+                                                        <label className="text-xs text-text-soft font-semibold">Template URL (optional)</label>
+                                                        <Input
+                                                            value={template.templateUrl}
+                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'templateUrl', e.target.value)}
+                                                            placeholder="https://..."
+                                                            variant="flat"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <label className="text-xs text-text-soft font-semibold">Template Body (JSON or YAML)</label>
+                                                        <textarea
+                                                            className="bg-active-gray border border-neutral-800 text-white text-sm rounded-md px-3 py-2 min-h-[140px]"
+                                                            value={template.templateBody}
+                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'templateBody', e.target.value)}
+                                                            placeholder="Paste JSON or YAML template body"
+                                                        />
+                                                        <p className="text-[11px] text-text-soft">
+                                                            Provide either a public Template URL or paste the template body directly. Connect will embed
+                                                            whichever is supplied.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-xs text-text-soft font-semibold">Default Parameters (optional)</label>
+                                                    <div className="flex flex-col gap-2">
+                                                        {template.parameters.length === 0 && (
+                                                            <p className="text-[11px] text-text-soft">No parameters configured.</p>
+                                                        )}
+                                                        {template.parameters.map((param, paramIndex) => (
+                                                            <div key={`${template.id}-param-${paramIndex}`} className="grid grid-cols-[1fr_auto] gap-2">
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    <Input
+                                                                        value={param.key}
+                                                                        onChange={(e) => updateAwsSigV4TemplateParam(index, paramIndex, 'key', e.target.value)}
+                                                                        placeholder="BucketName"
+                                                                        variant="flat"
+                                                                    />
+                                                                    <Input
+                                                                        value={param.value}
+                                                                        onChange={(e) =>
+                                                                            updateAwsSigV4TemplateParam(index, paramIndex, 'value', e.target.value)
+                                                                        }
+                                                                        placeholder="my-shared-bucket"
+                                                                        variant="flat"
+                                                                    />
+                                                                </div>
+                                                                <Button
+                                                                    variant="zombieGray"
+                                                                    size="xs"
+                                                                    type="button"
+                                                                    onClick={() => removeAwsSigV4TemplateParam(index, paramIndex)}
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <Button variant="zinc" size="xs" type="button" onClick={() => addAwsSigV4TemplateParam(index)}>
+                                                        Add parameter
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-xs text-text-soft">No templates configured.</p>
+                                    )}
+                                    <Button variant="zinc" size="xs" type="button" onClick={addAwsSigV4Template}>
+                                        Add template
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end">
+                                <Button variant={'primary'} onClick={onSaveAwsSigV4} isLoading={loading}>
+                                    Save AWS SigV4 Settings
+                                </Button>
+                            </div>
+                        </div>
+                    </InfoBloc>
                 </div>
             )}
         </div>

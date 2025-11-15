@@ -20,7 +20,8 @@ const validationBody = z
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.union([z.string().min(0).max(255), publicKeySchema]).optional(),
         displayName: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        custom: z.record(z.string(), z.string()).optional()
     })
     .strict()
     .or(
@@ -137,6 +138,13 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     // Forward webhooks
     if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
         integration.forward_webhooks = body.forward_webhooks;
+    }
+
+    if ('custom' in body && body.custom) {
+        integration.custom = {
+            ...(integration.custom || {}),
+            ...body.custom
+        };
     }
 
     // Credentials

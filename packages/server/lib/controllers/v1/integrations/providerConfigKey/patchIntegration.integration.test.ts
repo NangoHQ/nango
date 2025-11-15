@@ -86,4 +86,38 @@ describe(`PATCH ${endpoint}`, () => {
             error: { code: 'invalid_body', message: "Can't rename an integration with active connections" }
         });
     });
+
+    it('should update custom fields such as aws_sigv4_config', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const payload = JSON.stringify({
+            service: 's3',
+            stsEndpoint: { url: 'https://example.com/hooks' }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: payload } }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: { success: true }
+        });
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json).toMatchObject({
+            data: { integration: { custom: { aws_sigv4_config: payload } } }
+        });
+    });
 });

@@ -148,6 +148,17 @@ export const connectionCredentialsGithubAppSchema = z.strictObject({
     installation_id: z.string().min(1).max(255)
 });
 
+export const connectionCredentialsAwsSigV4Schema = z.strictObject({
+    role_arn: z.string().min(1).max(1024),
+    region: z.string().min(1).max(255),
+    service: z.string().min(1).max(255),
+    access_key_id: z.string().min(1).max(255),
+    secret_access_key: z.string().min(1).max(4096),
+    session_token: z.string().min(1).max(4096),
+    expires_at: z.coerce.date().optional(),
+    external_id: z.string().max(255).optional()
+});
+
 export const connectionTagsSchema = z
     // Please be careful when changing this:
     // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that

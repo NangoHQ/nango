@@ -49,7 +49,8 @@
                         "TWO_STEP",
                         "SIGNATURE",
                         "MCP_OAUTH2",
-                        "MCP_OAUTH2_GENERIC"
+                        "MCP_OAUTH2_GENERIC",
+                        "AWS_SIGV4"
                     ]
                 },
                 "authorization_method": {

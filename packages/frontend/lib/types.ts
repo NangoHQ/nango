@@ -36,7 +36,8 @@ export interface ConnectionConfig {
         | JwtCredentials
         | TwoStepCredentials
         | OAuth2ClientCredentials
-        | SignatureCredentials;
+        | SignatureCredentials
+        | AwsSigV4Credentials;
 }
 
 export interface OAuthCredentialsOverride {
@@ -95,6 +96,12 @@ export interface SignatureCredentials {
     type: 'SIGNATURE';
     username: string;
     password: string;
+}
+
+export interface AwsSigV4Credentials {
+    type: 'AWS_SIGV4';
+    role_arn: string;
+    region?: string;
 }
 
 // This one is sent by parent only

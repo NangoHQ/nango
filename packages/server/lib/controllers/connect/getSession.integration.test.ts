@@ -183,4 +183,45 @@ describe(`GET ${endpoint}`, () => {
         });
         expect(res.res.status).toBe(200);
     });
+
+    it('should include integrations_config_defaults credentials when provided', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const endUserId = 'knownId';
+        const resCreate = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                end_user: { id: endUserId, email: 'a@b.com' },
+                integrations_config_defaults: {
+                    github: {
+                        connection_config: { region: 'us-east-1' },
+                        credentials: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+                    }
+                }
+            }
+        });
+        isSuccess(resCreate.json);
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: resCreate.json.data.token
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
+                integrations_config_defaults: {
+                    github: {
+                        connection_config: { region: 'us-east-1' },
+                        credentials: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+                    }
+                },
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+            }
+        });
+        expect(res.res.status).toBe(200);
+    });
 });

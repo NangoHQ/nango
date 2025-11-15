@@ -180,6 +180,21 @@ export type PostPublicSignatureAuthorization = Endpoint<{
     Success: ConnectionResponseSuccess;
 }>;
 
+export type PostPublicAwsSigV4Authorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        role_arn: string;
+        region?: string | undefined;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/aws-sigv4/:providerConfigKey';
+    Error: AuthErrors;
+    Success: ConnectionResponseSuccess;
+}>;
+
 export type PostPublicOauthOutboundAuthorization = Endpoint<{
     Method: 'POST';
     Body: {

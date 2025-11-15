@@ -2896,6 +2896,11 @@ components:
                                     oauth_scopes_override:
                                         type: string
                                         description: Override oauth scopes
+                            credentials:
+                                type: object
+                                description: Pre-populated credential values (hidden fields in Connect UI)
+                                additionalProperties:
+                                    type: string
                 overrides:
                     type: object
                     additionalProperties:

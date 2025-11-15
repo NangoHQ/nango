@@ -8,6 +8,7 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 
 import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
+import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
@@ -51,6 +52,7 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     AuthModeType,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
@@ -174,7 +176,15 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
+        credentials:
+            | TwoStepCredentials
+            | TbaCredentials
+            | JwtCredentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | BillCredentials
+            | SignatureCredentials
+            | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -1405,6 +1415,7 @@ class ConnectionService {
             | TwoStepCredentials
             | SignatureCredentials
             | CombinedOauth2AppCredentials
+            | AwsSigV4Credentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1508,6 +1519,52 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if (provider.auth_mode === 'AWS_SIGV4') {
+            const settingsResult = awsSigV4Client.getAwsSigV4Settings(providerConfig);
+            if (settingsResult.isErr()) {
+                return { success: false, error: settingsResult.error, response: null };
+            }
+            const settings = settingsResult.value;
+
+            const roleArn = (connection.connection_config['role_arn'] as string) || (connection.credentials as AwsSigV4Credentials).role_arn;
+            const externalId = (connection.connection_config['external_id'] as string) || (connection.credentials as AwsSigV4Credentials).external_id || null;
+            const region =
+                (connection.connection_config['region'] as string) || (connection.credentials as AwsSigV4Credentials).region || settings.defaultRegion;
+
+            if (!roleArn || !externalId || !region) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_region'), response: null };
+            }
+
+            const credsResult = await awsSigV4Client.fetchAwsTemporaryCredentials({
+                settings,
+                input: { roleArn, externalId, region }
+            });
+
+            if (credsResult.isErr()) {
+                return { success: false, error: credsResult.error, response: null };
+            }
+
+            const creds = credsResult.value;
+
+            const refreshed: AwsSigV4Credentials = {
+                type: 'AWS_SIGV4',
+                raw: {
+                    access_key_id: creds.accessKeyId,
+                    secret_access_key: creds.secretAccessKey,
+                    session_token: creds.sessionToken,
+                    expires_at: creds.expiresAt
+                },
+                role_arn: roleArn,
+                region,
+                service: settings.service,
+                access_key_id: creds.accessKeyId,
+                secret_access_key: creds.secretAccessKey,
+                session_token: creds.sessionToken,
+                expires_at: creds.expiresAt,
+                external_id: externalId
+            };
+
+            return { success: true, error: null, response: refreshed };
         } else if ((provider as any).auth_mode === 'MCP_OAUTH2_GENERIC') {
             const { success, error, response: creds } = await refreshMcpGenericCredentials({ connection, logCtx });
 

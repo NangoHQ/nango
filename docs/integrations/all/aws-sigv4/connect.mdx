@@ -1,0 +1,39 @@
+---
+title: AWS SigV4 Proxy - How do I link my account?
+sidebarTitle: AWS SigV4 Proxy
+---
+
+# Overview
+
+To finish connecting an AWS SigV4 integration, you (the end customer) need:
+
+1. **Access to your AWS account** – enough permission to deploy the CloudFormation template (or equivalent) your vendor provides.
+2. **The IAM Role ARN** created by that template, which trusts your vendor's AWS account.
+3. (Optional) **A region override** if you want this connection to run in a different AWS region than the default advertised by the vendor.
+
+### Prerequisites
+
+-   Run the CloudFormation template (or follow the manual instructions) surfaced in the Connect UI so the trusted role exists in your account.
+-   Copy the full IAM Role ARN that the template outputs.
+
+### Instructions
+
+#### Step 1: Run the vendor-provided setup link
+
+1. Click the **Open setup instructions** button or one of the CloudFormation template buttons provided in the Connect UI.
+2. Follow the vendor's steps to deploy the CloudFormation stack in your AWS account.
+3. After the stack finishes, copy the IAM Role ARN from the stack outputs or from the IAM console.
+
+#### Step 2: Provide the Role ARN
+
+1. Return to the Connect form.
+2. Paste the IAM Role ARN into the **IAM Role ARN** field exactly as it appears in AWS (for example `arn:aws:iam::123456789012:role/NangoAccessRole`).
+
+#### Step 3: Enter connection details
+
+1. If the vendor asked you to use a specific AWS region, enter it in the **AWS Region (optional)** field (e.g., `us-east-1`). Leave it empty to use the vendor’s default region.
+2. Submit the form. Nango will validate the role by assuming it via the vendor’s secure STS endpoint.
+
+Once the form succeeds, the integration owner can begin proxying requests to AWS services on your behalf.
+
+You are now connected to the AWS SigV4 Proxy integration.
