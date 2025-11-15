@@ -14,6 +14,7 @@ const prettyAuthModes: Record<string, string> = {
     APP_STORE: 'Custom',
     BILL: 'Bill',
     SIGNATURE: 'Signature',
+    AWS_SIGV4: 'AWS SigV4',
     JWT: 'JWT',
     TWO_STEP: 'Two Step',
     TABLEAU: 'Tableau',

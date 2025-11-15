@@ -7,6 +7,8 @@ import { patchIntegrationBodySchema } from '../validation.js';
 
 import type { PatchIntegration } from '@nangohq/types';
 
+
+
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
@@ -72,6 +74,13 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     // Forward webhooks
     if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
         integration.forward_webhooks = body.forward_webhooks;
+    }
+
+    if ('custom' in body && body.custom) {
+        integration.custom = {
+            ...(integration.custom || {}),
+            ...body.custom
+        };
     }
 
     // Credentials
