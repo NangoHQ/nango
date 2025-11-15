@@ -3043,6 +3043,11 @@ components:
                                     oauth_client_secret_override:
                                         type: string
                                         description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
+                            credentials:
+                                type: object
+                                description: Pre-populated credential values (hidden fields in Connect UI)
+                                additionalProperties:
+                                    type: string
                 overrides:
                     type: object
                     additionalProperties:

@@ -79,6 +79,7 @@ export interface AuthModes {
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
     InstallPlugin: 'INSTALL_PLUGIN';
+    AwsSigV4: 'AWS_SIGV4';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
