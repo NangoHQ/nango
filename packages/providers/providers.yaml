@@ -8777,8 +8777,7 @@ mixpanel:
 mimecast:
     display_name: Mimecast
     categories:
-        - security
-        - email
+        - other
     auth_mode: OAUTH2_CC
     token_url: https://api.services.mimecast.com/oauth/token
     body_format: form
