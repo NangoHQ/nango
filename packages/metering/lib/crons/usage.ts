@@ -69,15 +69,12 @@ const observability = {
                 if (counts.isErr()) {
                     throw counts.error;
                 }
-                for (const { accountId, environmentId, environmentName, integrationId, count } of counts.value) {
+                for (const { accountId, count } of counts.value) {
                     usageBilling.add([
                         {
                             type: 'billable_connections_v2' as const,
                             properties: {
                                 accountId,
-                                environmentId,
-                                environmentName,
-                                integrationId,
                                 count,
                                 timestamp: new Date(),
                                 frequencyMs: cronMinutes * 60 * 1000
@@ -96,7 +93,7 @@ const observability = {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.records', async (span) => {
             try {
                 const now = new Date();
-                const aggMetrics = new Map<string, RecordsBillingEvent>();
+                const aggMetrics = new Map<number, RecordsBillingEvent>();
                 // records metrics are per environment, so we fetch the record counts first and then we need to:
                 // - get the account ids
                 // - aggregate per account
@@ -131,7 +128,7 @@ const observability = {
                                 );
                             if (sum.count > 0) {
                                 // aggregate
-                                const key = `account:${entry.account.id}:env:${entry.environment.id}:integration:${entry.connection.provider_config_key}`;
+                                const key = entry.account.id;
                                 const existingAgg = aggMetrics.get(key);
                                 if (existingAgg) {
                                     existingAgg.properties.count += sum.count;
@@ -142,9 +139,6 @@ const observability = {
                                         properties: {
                                             count: sum.count,
                                             accountId: entry.account.id,
-                                            environmentId: entry.environment.id,
-                                            environmentName: entry.environment.name,
-                                            integrationId: entry.connection.provider_config_key,
                                             timestamp: now,
                                             frequencyMs: cronMinutes * 60 * 1000,
                                             telemetry: { sizeBytes: sum.size_bytes }

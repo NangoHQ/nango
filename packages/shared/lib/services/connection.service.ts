@@ -1537,14 +1537,11 @@ class ConnectionService {
         return Number(res?.count || 0);
     }
 
-    // return the number of connections per account/environment/integration
+    // return the number of connections per account
     async countMetric(): Promise<
         Result<
             {
                 accountId: number;
-                environmentId: number;
-                environmentName: string;
-                integrationId: string;
                 count: number;
             }[]
         >
@@ -1556,20 +1553,11 @@ class ConnectionService {
                 .select<
                     {
                         accountId: number;
-                        environmentId: number;
-                        environmentName: string;
-                        integrationId: string;
                         count: number;
                     }[]
-                >(
-                    db.knex.raw(`_nango_environments.account_id as "accountId"`),
-                    db.knex.raw(`_nango_environments.id as "environmentId"`),
-                    db.knex.raw(`_nango_environments.name as "environmentName"`),
-                    db.knex.raw(`_nango_connections.provider_config_key as "integrationId"`),
-                    db.knex.raw(`count(DISTINCT _nango_connections.id) AS "count"`)
-                )
+                >(db.knex.raw(`_nango_environments.account_id as "accountId"`), db.knex.raw(`count(_nango_connections.id) AS "count"`))
                 .whereNull('_nango_connections.deleted_at')
-                .groupBy('_nango_environments.account_id', '_nango_environments.id', '_nango_environments.name', '_nango_connections.provider_config_key');
+                .groupBy('_nango_environments.account_id');
 
             if (res) {
                 return Ok(res);
