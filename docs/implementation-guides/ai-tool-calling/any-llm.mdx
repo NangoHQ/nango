@@ -43,10 +43,8 @@ export async function runLLMAgent(modelClient: any) {
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
       end_user: { id: userId },
-    }); // Handle API auth via Nango.
+    });
 
-    // Redirect the user to a page to authorize Hubspot. 
-    // Alternatively, you can embed Nango's Frontend SDK in your app.
     console.log(`Please authorize Hubspot here: ${session.data.connect_link}`);
 
     const connection = await nango.waitForConnection(integrationId, userId);
@@ -73,17 +71,10 @@ export async function runLLMAgent(modelClient: any) {
   const toolCall = response?.toolCalls?.[0] || response?.tool_call || null;
 
   if (toolCall?.name === "who_am_i") {
-    console.log("🧩 Model decided to call the 'who_am_i' tool...");
-
-    try {
-      // Step 4: Execute the requested tool with Nango.
-      const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami");
-      console.log("✅ Retrieved Hubspot user info:", userInfo);
-    } catch (error: any) {
-      console.error("❌ Nango API error:", error.response?.data?.error || error);
-    }
+    // Step 4: Execute the requested tool with Nango.
+    const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami");
+    console.log("✅ Retrieved Hubspot user info:", userInfo);
   } else {
-    // Handle plain text or other model responses
     const textOutput = response?.text || response?.output_text || JSON.stringify(response);
     console.log("🗣️ Model response:", textOutput);
   }
