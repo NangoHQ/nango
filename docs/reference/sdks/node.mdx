@@ -2011,6 +2011,43 @@ Returns a list of providers.
 await nango.listProviders()
 ```
 
+**Parameters**
+
+<Expandable>
+  <ResponseField name="end_user" type="object" required>
+    <Expandable title="end_user" defaultOpen>
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the end user.
+      </ResponseField>
+      <ResponseField name="email" type="string">
+        The email address of the end user.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the end user.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="organization" type="object">
+    <Expandable title="organization" defaultOpen>
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="allowed_integrations" type="string[]">
+    An array of integration IDs that are allowed for this session.
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations. Each entry can include `connection_config` (params rendered as additional form inputs) and `credentials` (values that pre-populate and hide credential fields such as IAM Role ARN or the AWS SigV4 `external_id`).
+  </ResponseField>
+</Expandable>
+
 **Example Response**
 
 <Expandable>
@@ -2039,6 +2076,47 @@ Returns a specific provider.
 ```js
 await nango.getProvider({ provider: <NAME> })
 ```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="connection_id" type="string" required>
+    The unique identifier for the connection.
+  </ResponseField>
+
+  <ResponseField name="integration_id" type="string" required>
+    The unique identifier for the integration.
+  </ResponseField>
+
+  <ResponseField name="end_user" type="object">
+    <Expandable title="end_user">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the end user.
+      </ResponseField>
+      <ResponseField name="email" type="string">
+        The email address of the end user.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the end user.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="organization" type="object">
+    <Expandable title="organization">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations. Include `connection_config` entries for parameter defaults and `credentials` entries to hide/pre-populate credential fields (for example `role_arn`, `region`, or `external_id`).
+  </ResponseField>
+</Expandable>
 
 **Example Response**
 
