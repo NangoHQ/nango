@@ -305,8 +305,12 @@ export async function handleWebhookSuccess({
             value: 1,
             properties: {
                 accountId: team.id,
-                connectionId: nangoProps.nangoConnectionId,
+                environmentId: environment.id,
+                environmentName: environment.name,
+                connectionId: nangoProps.connectionId,
+                integrationId: nangoProps.providerConfigKey,
                 type: 'webhook',
+                functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag
             }
@@ -483,8 +487,12 @@ async function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
                     type: 'webhook',
+                    functionName: syncName,
                     success: false,
                     telemetryBag
                 }

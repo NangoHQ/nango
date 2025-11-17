@@ -15,10 +15,10 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_actions',
                 properties: {
                     accountId: 1,
-                    actionName: 'action1',
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
+                    actionName: 'action1',
                     count: 5,
                     timestamp: new Date()
                 }
@@ -27,10 +27,9 @@ describe('BillingEventGrouping', () => {
                 type: 'proxy',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
-                    provider: 'provider1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     telemetry: {
                         successes: 4,
                         failures: 0
@@ -44,8 +43,8 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     environmentId: 3,
-                    provider: 'provider1',
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 6,
                     timestamp: new Date(),
                     telemetry: {
@@ -58,8 +57,11 @@ describe('BillingEventGrouping', () => {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     type: 'action',
+                    functionName: 'actionFunction',
                     telemetry: {
                         successes: 2,
                         failures: 0,
@@ -76,7 +78,10 @@ describe('BillingEventGrouping', () => {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
+                    functionName: 'syncFunction',
                     type: 'sync',
                     frequencyMs: 100,
                     telemetry: {
@@ -95,10 +100,10 @@ describe('BillingEventGrouping', () => {
                 type: 'monthly_active_records',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
+                    environmentName: 'env',
                     model: 'model1',
-                    providerConfigKey: 'providerConfigKey2',
+                    integrationId: '5',
                     syncId: 'sync1',
                     count: 15,
                     timestamp: new Date()
@@ -108,6 +113,9 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 100,
                     timestamp: new Date(),
                     frequencyMs: 60_000,
@@ -120,6 +128,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 10,
                     timestamp: new Date(),
                     frequencyMs: 86_400_000
@@ -129,6 +140,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 11,
                     timestamp: new Date()
                 }
@@ -136,15 +150,15 @@ describe('BillingEventGrouping', () => {
         ];
         const keys = events.map((event) => grouping.groupingKey(event));
         expect(keys).toEqual([
-            'billable_actions|accountId:1|actionName:action1|connectionId:2|environmentId:3|providerConfigKey:providerConfigKey1',
-            'proxy|accountId:1|connectionId:2|environmentId:3|provider:provider1|providerConfigKey:providerConfigKey1',
-            'webhook_forwards|accountId:1|environmentId:3|provider:provider1|providerConfigKey:providerConfigKey1',
-            'function_executions|accountId:1|connectionId:2|type:action',
-            'function_executions|accountId:1|connectionId:2|frequencyMs:100|type:sync',
-            'monthly_active_records|accountId:1|connectionId:2|environmentId:3|model:model1|providerConfigKey:providerConfigKey2|syncId:sync1',
-            'records|accountId:1',
-            'billable_connections_v2|accountId:1',
-            'billable_connections|accountId:1'
+            'billable_actions|accountId:1|actionName:action1|environmentId:3|environmentName:env|integrationId:4',
+            'proxy|accountId:1|environmentId:3|environmentName:env|integrationId:4',
+            'webhook_forwards|accountId:1|environmentId:3|environmentName:env|integrationId:4',
+            'function_executions|accountId:1|environmentId:3|environmentName:env|functionName:actionFunction|integrationId:4|type:action',
+            'function_executions|accountId:1|environmentId:3|environmentName:env|frequencyMs:100|functionName:syncFunction|integrationId:4|type:sync',
+            'monthly_active_records|accountId:1|environmentId:3|environmentName:env|integrationId:5|model:model1|syncId:sync1',
+            'records|accountId:1|environmentId:3|environmentName:env|integrationId:4',
+            'billable_connections_v2|accountId:1|environmentId:3|environmentName:env|integrationId:4',
+            'billable_connections|accountId:1|environmentId:3|environmentName:env|integrationId:4'
         ]);
     });
 
@@ -154,6 +168,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 5,
                     timestamp: new Date('2024-01-01T00:00:00Z')
                 }
@@ -162,6 +179,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 7,
                     timestamp: new Date('2024-01-02T00:00:00Z')
                 }
@@ -175,9 +195,9 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     actionName: 'action1',
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 5,
                     timestamp: new Date('2024-01-01T00:00:00Z')
                 }
@@ -187,9 +207,9 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     actionName: 'action1',
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 7,
                     timestamp: new Date('2024-01-02T00:00:00Z')
                 }
@@ -200,9 +220,8 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     actionName: 'action1',
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
+                    integrationId: '4',
                     count: 12,
                     timestamp: new Date('2024-01-02T00:00:00Z')
                 }
@@ -213,10 +232,10 @@ describe('BillingEventGrouping', () => {
                 type: 'monthly_active_records',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
+                    environmentName: 'env',
                     model: 'model1',
-                    providerConfigKey: 'providerConfigKey2',
+                    integrationId: '5',
                     syncId: 'sync1',
                     count: 5,
                     timestamp: new Date('2024-01-01T00:00:00Z')
@@ -226,10 +245,10 @@ describe('BillingEventGrouping', () => {
                 type: 'monthly_active_records',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
+                    environmentName: 'env',
                     model: 'model1',
-                    providerConfigKey: 'providerConfigKey2',
+                    integrationId: '5',
                     syncId: 'sync1',
                     count: 7,
                     timestamp: new Date('2024-01-02T00:00:00Z')
@@ -240,10 +259,9 @@ describe('BillingEventGrouping', () => {
                 type: 'monthly_active_records',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
                     model: 'model1',
-                    providerConfigKey: 'providerConfigKey2',
+                    integrationId: '5',
                     syncId: 'sync1',
                     count: 12,
                     timestamp: new Date('2024-01-02T00:00:00Z')
@@ -255,8 +273,11 @@ describe('BillingEventGrouping', () => {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     type: 'sync',
+                    functionName: 'syncFunction',
                     frequencyMs: 100,
                     telemetry: {
                         successes: 6,
@@ -274,8 +295,11 @@ describe('BillingEventGrouping', () => {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     type: 'sync',
+                    functionName: 'syncFunction',
                     frequencyMs: 100,
                     telemetry: {
                         successes: 7,
@@ -294,8 +318,11 @@ describe('BillingEventGrouping', () => {
                 type: 'function_executions',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     type: 'sync',
+                    functionName: 'syncFunction',
                     frequencyMs: 100,
                     count: 50,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
@@ -315,10 +342,9 @@ describe('BillingEventGrouping', () => {
                 type: 'proxy',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
-                    provider: 'provider1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     telemetry: {
                         successes: 4,
                         failures: 0
@@ -331,10 +357,9 @@ describe('BillingEventGrouping', () => {
                 type: 'proxy',
                 properties: {
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
-                    provider: 'provider1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     telemetry: {
                         successes: 0,
                         failures: 1
@@ -350,10 +375,8 @@ describe('BillingEventGrouping', () => {
                     count: 20,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     accountId: 1,
-                    connectionId: 2,
                     environmentId: 3,
-                    providerConfigKey: 'providerConfigKey1',
-                    provider: 'provider1',
+                    integrationId: '4',
                     telemetry: {
                         successes: 4,
                         failures: 1
@@ -367,8 +390,8 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     environmentId: 3,
-                    provider: 'provider1',
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 6,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
                     telemetry: {
@@ -382,8 +405,8 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     environmentId: 3,
-                    provider: 'provider1',
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 15,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     telemetry: {
@@ -398,8 +421,8 @@ describe('BillingEventGrouping', () => {
                 properties: {
                     accountId: 1,
                     environmentId: 3,
-                    provider: 'provider1',
-                    providerConfigKey: 'providerConfigKey1',
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 21,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     telemetry: {
@@ -414,6 +437,9 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 6,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -426,6 +452,9 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 30,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -439,6 +468,9 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 36,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -453,6 +485,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 7,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
                     frequencyMs: 60_000
@@ -462,6 +497,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 40,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000
@@ -472,6 +510,9 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
+                    environmentId: 3,
+                    environmentName: 'env',
+                    integrationId: '4',
                     count: 47,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000

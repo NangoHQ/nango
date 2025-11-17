@@ -517,6 +517,9 @@
                         "type": "string"
                     }
                 },
+                "refresh_token_params": {
+                    "type": "object"
+                },
                 "credentials_verification_script": {
                     "type": "string"
                 },
