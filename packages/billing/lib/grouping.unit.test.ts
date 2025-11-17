@@ -113,9 +113,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 100,
                     timestamp: new Date(),
                     frequencyMs: 60_000,
@@ -128,9 +125,6 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 10,
                     timestamp: new Date(),
                     frequencyMs: 86_400_000
@@ -156,8 +150,8 @@ describe('BillingEventGrouping', () => {
             'function_executions|accountId:1|environmentId:3|environmentName:env|functionName:actionFunction|integrationId:4|type:action',
             'function_executions|accountId:1|environmentId:3|environmentName:env|frequencyMs:100|functionName:syncFunction|integrationId:4|type:sync',
             'monthly_active_records|accountId:1|environmentId:3|environmentName:env|integrationId:5|model:model1|syncId:sync1',
-            'records|accountId:1|environmentId:3|environmentName:env|integrationId:4',
-            'billable_connections_v2|accountId:1|environmentId:3|environmentName:env|integrationId:4',
+            'records|accountId:1',
+            'billable_connections_v2|accountId:1',
             'billable_connections|accountId:1|environmentId:3|environmentName:env|integrationId:4'
         ]);
     });
@@ -437,9 +431,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 6,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -452,9 +443,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 30,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -468,9 +456,6 @@ describe('BillingEventGrouping', () => {
                 type: 'records',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 36,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000,
@@ -485,9 +470,6 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 7,
                     timestamp: new Date('2024-01-01T00:00:00Z'),
                     frequencyMs: 60_000
@@ -497,9 +479,6 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 40,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000
@@ -510,9 +489,6 @@ describe('BillingEventGrouping', () => {
                 type: 'billable_connections_v2',
                 properties: {
                     accountId: 1,
-                    environmentId: 3,
-                    environmentName: 'env',
-                    integrationId: '4',
                     count: 47,
                     timestamp: new Date('2024-01-02T00:00:00Z'),
                     frequencyMs: 60_000
