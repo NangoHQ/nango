@@ -158,7 +158,7 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
-        | { custom: Record<string, string> }
+        | { custom: Record<string, string | null> }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
               clientId: string;

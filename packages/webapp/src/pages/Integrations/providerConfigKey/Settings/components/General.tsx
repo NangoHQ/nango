@@ -266,43 +266,62 @@ export const SettingsGeneral: React.FC<{
         }
     };
 
-    const buildAwsSigV4Payload = () => {
-        if (!awsSigV4Config) {
+    const hasAwsSigV4Values = (config: AwsSigV4Config | null) => {
+        if (!config) {
+            return false;
+        }
+        if (config.service || config.defaultRegion || config.stsEndpoint.url) {
+            return true;
+        }
+        if (config.stsEndpoint.authType === 'api_key' && (config.stsEndpoint.header || config.stsEndpoint.value)) {
+            return true;
+        }
+        if (config.stsEndpoint.authType === 'basic' && (config.stsEndpoint.username || config.stsEndpoint.password)) {
+            return true;
+        }
+        if (config.instructions?.label || config.instructions?.url || config.instructions?.description) {
+            return true;
+        }
+        return config.templates.length > 0;
+    };
+
+    const buildAwsSigV4Payload = (config: AwsSigV4Config | null) => {
+        if (!config) {
             return null;
         }
 
-        if (!awsSigV4Config.service || !awsSigV4Config.stsEndpoint.url) {
+        if (!config.service || !config.stsEndpoint.url) {
             return null;
         }
 
         const payload: any = {
-            service: awsSigV4Config.service,
-            defaultRegion: awsSigV4Config.defaultRegion,
+            service: config.service,
+            defaultRegion: config.defaultRegion,
             stsEndpoint: {
-                url: awsSigV4Config.stsEndpoint.url
+                url: config.stsEndpoint.url
             }
         };
 
-        if (awsSigV4Config.stsEndpoint.authType === 'api_key') {
+        if (config.stsEndpoint.authType === 'api_key') {
             payload.stsEndpoint.auth = {
                 type: 'api_key',
-                header: awsSigV4Config.stsEndpoint.header,
-                value: awsSigV4Config.stsEndpoint.value
+                header: config.stsEndpoint.header,
+                value: config.stsEndpoint.value
             };
-        } else if (awsSigV4Config.stsEndpoint.authType === 'basic') {
+        } else if (config.stsEndpoint.authType === 'basic') {
             payload.stsEndpoint.auth = {
                 type: 'basic',
-                username: awsSigV4Config.stsEndpoint.username,
-                password: awsSigV4Config.stsEndpoint.password
+                username: config.stsEndpoint.username,
+                password: config.stsEndpoint.password
             };
         }
 
-        if (awsSigV4Config.instructions?.label || awsSigV4Config.instructions?.url || awsSigV4Config.instructions?.description) {
-            payload.instructions = awsSigV4Config.instructions;
+        if (config.instructions?.label || config.instructions?.url || config.instructions?.description) {
+            payload.instructions = config.instructions;
         }
 
-        if (awsSigV4Config.templates && awsSigV4Config.templates.length > 0) {
-            const templates = awsSigV4Config.templates
+        if (config.templates && config.templates.length > 0) {
+            const templates = config.templates
                 .map((template) => {
                     if (!template.id || (!template.templateBody && !template.templateUrl)) {
                         return null;
@@ -350,8 +369,9 @@ export const SettingsGeneral: React.FC<{
             }
         }
 
-        const payload = buildAwsSigV4Payload();
-        if (!payload) {
+        const hasValues = hasAwsSigV4Values(awsSigV4Config);
+        const payload = hasValues ? buildAwsSigV4Payload(awsSigV4Config) : null;
+        if (hasValues && !payload) {
             toast({ title: 'Service and STS endpoint URL are required', variant: 'error' });
             return;
         }
@@ -359,14 +379,20 @@ export const SettingsGeneral: React.FC<{
         setLoading(true);
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             custom: {
-                aws_sigv4_config: payload
+                aws_sigv4_config: payload ?? ''
             }
         });
         setLoading(false);
         if ('error' in updated.json) {
             toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
         } else {
-            toast({ title: 'Successfully updated AWS SigV4 settings', variant: 'success' });
+            toast({
+                title: payload ? 'Successfully updated AWS SigV4 settings' : 'Removed AWS SigV4 settings',
+                variant: 'success'
+            });
+            if (!payload) {
+                setAwsSigV4Config(null);
+            }
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
         }
     };

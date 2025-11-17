@@ -120,4 +120,72 @@ describe(`PATCH ${endpoint}`, () => {
             data: { integration: { custom: { aws_sigv4_config: payload } } }
         });
     });
+
+    it('should reject invalid aws_sigv4_config payloads', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: '{"service":""' } }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' }
+        });
+
+        const resMissingFields = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: JSON.stringify({ service: 's3' }) } }
+        });
+
+        isError(resMissingFields.json);
+        expect(resMissingFields.json).toStrictEqual<typeof resMissingFields.json>({
+            error: { code: 'missing_aws_sigv4_sts_endpoint', message: 'AWS SigV4 integration is missing the STS endpoint configuration.' }
+        });
+    });
+
+    it('should allow removing aws_sigv4_config', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const payload = JSON.stringify({
+            service: 's3',
+            stsEndpoint: { url: 'https://example.com/hooks' }
+        });
+
+        await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: payload } }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: null } }
+        });
+
+        isSuccess(res.json);
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'aws-sigv4' }
+        });
+
+        isSuccess(resGet.json);
+        const custom = resGet.json.data.integration.custom ?? {};
+        expect(custom).not.toHaveProperty('aws_sigv4_config');
+    });
 });

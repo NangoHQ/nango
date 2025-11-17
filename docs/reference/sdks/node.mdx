@@ -1844,7 +1844,7 @@ const { data } = await nango.createConnectSession({
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations. Each entry can include `connection_config` (params rendered as additional form inputs) and `credentials` (values that pre-populate and hide credential fields such as IAM Role ARN).
+    Default configuration for specific integrations. Each entry can include `connection_config` (params rendered as additional form inputs) and `credentials` (values that pre-populate and hide credential fields such as IAM Role ARN or the AWS SigV4 `external_id`).
   </ResponseField>
 </Expandable>
 
@@ -1933,7 +1933,7 @@ const { data } = await nango.createReconnectSession({
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations. Include `connection_config` entries for parameter defaults and `credentials` entries to hide/pre-populate credential fields.
+    Default configuration for specific integrations. Include `connection_config` entries for parameter defaults and `credentials` entries to hide/pre-populate credential fields (for example `role_arn`, `region`, or `external_id`).
   </ResponseField>
 </Expandable>
 

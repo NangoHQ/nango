@@ -321,10 +321,10 @@ export default class Nango {
         if ('type' in credentials && credentials.type === 'AWS_SIGV4') {
             const awsCredentials: Record<string, string> = {
                 type: credentials.type,
-                role_arn: credentials.role_arn
+                role_arn: credentials['role_arn']
             };
-            if (credentials.region) {
-                awsCredentials['region'] = credentials.region;
+            if (credentials['region']) {
+                awsCredentials['region'] = credentials['region'];
             }
             return { params: awsCredentials } as unknown as ConnectionConfig;
         }
@@ -339,10 +339,10 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
         if ('role_arn' in credentials) {
-            params['role_arn'] = credentials.role_arn;
+            params['role_arn'] = credentials['role_arn'];
         }
-        if ('region' in credentials && credentials.region) {
-            params['region'] = credentials.region;
+        if ('region' in credentials && credentials['region']) {
+            params['region'] = credentials['region'];
         }
 
         if (

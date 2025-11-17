@@ -91,6 +91,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
         post:
+            operationId: postAuthAwsSigV4
             summary: Create an integration
             description: Create an integration
             requestBody:
@@ -235,6 +236,64 @@ paths:
                                 properties:
                                     success:
                                         type: boolean
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+    /auth/aws-sigv4/{providerConfigKey}:
+        post:
+            summary: Authorize an AWS SigV4 integration
+            description: Exchanges an IAM Role ARN for temporary AWS credentials via the configured SigV4 integration.
+            parameters:
+                - name: providerConfigKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The unique integration key that was configured for the AWS SigV4 provider.
+                - name: connection_id
+                  in: query
+                  schema:
+                      type: string
+                  description: Optional connection identifier supplied by the caller.
+                - name: user_scope
+                  in: query
+                  schema:
+                      type: string
+                  description: Optional Connect session scope when using Hosted Connect.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - role_arn
+                            properties:
+                                role_arn:
+                                    type: string
+                                    description: The IAM Role ARN that trusts your SigV4 integration.
+                                region:
+                                    type: string
+                                    description: Optional AWS region override.
+            responses:
+                '200':
+                    description: Successfully created or updated the AWS SigV4 connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - connectionId
+                                    - providerConfigKey
+                                properties:
+                                    connectionId:
+                                        type: string
+                                    providerConfigKey:
+                                        type: string
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':

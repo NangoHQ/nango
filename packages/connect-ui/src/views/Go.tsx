@@ -2,14 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
 import { ExternalLink, Info, TriangleAlert } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
 import * as z from 'zod';
 
 import { AuthError } from '@nangohq/frontend';
 
-import { CustomInput } from '@/components/CustomInput';
+import { CustomInput, StandaloneInput } from '@/components/CustomInput';
 import { HeaderButtons } from '@/components/HeaderButtons';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -24,6 +24,13 @@ import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType, AwsSigV4TemplateSummary } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
+
+const generateExternalId = (): string => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `ext-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
+};
 
 const buildAwsQuickCreateUrl = (template: AwsSigV4TemplateSummary): string | null => {
     if (!template.template_url && !template.template_body) {
@@ -131,6 +138,13 @@ export const Go: React.FC = () => {
 
     const preconfiguredCredentials = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.credentials || {} : {};
     const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+    const initialExternalId = useMemo(() => {
+        const value = (preconfiguredParams['external_id'] as string | undefined) || (preconfiguredCredentials['external_id'] as string | undefined);
+        return value && value.length > 0 ? value : generateExternalId();
+    }, [preconfiguredParams, preconfiguredCredentials]);
+    const [awsExternalId] = useState(initialExternalId);
+    const [externalIdCopied, setExternalIdCopied] = useState(false);
+    const externalIdCopyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const displayName = useMemo(() => {
         return integration?.display_name ?? provider?.display_name ?? '';
@@ -152,8 +166,24 @@ export const Go: React.FC = () => {
         // on unmount always clear popup and state
         return () => {
             nango?.clear();
+            if (externalIdCopyTimeout.current) {
+                clearTimeout(externalIdCopyTimeout.current);
+            }
         };
     });
+    const handleCopyExternalId = useCallback(() => {
+        if (!awsExternalId) {
+            return;
+        }
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+            void navigator.clipboard.writeText(awsExternalId);
+        }
+        setExternalIdCopied(true);
+        if (externalIdCopyTimeout.current) {
+            clearTimeout(externalIdCopyTimeout.current);
+        }
+        externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
+    }, [awsExternalId]);
 
     const { resolver, shouldAutoTrigger, orderedFields } = useMemo<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -297,8 +327,12 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
+                    const params = { ...(values['params'] || {}) };
+                    if (provider.auth_mode === 'AWS_SIGV4') {
+                        params['external_id'] = awsExternalId;
+                    }
                     res = await nango.auth(integration.unique_key, {
-                        params: values['params'] || {},
+                        params,
                         credentials: { ...values['credentials'], type: provider.auth_mode } as Record<string, string>,
                         detectClosedAuthWindow,
                         ...(provider.installation && { installation: provider.installation })
@@ -348,7 +382,7 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [provider, integration, loading, nango, t, detectClosedAuthWindow]
+        [provider, integration, loading, nango, t, detectClosedAuthWindow, awsExternalId]
     );
 
     if (!provider || !integration) {
@@ -475,6 +509,17 @@ export const Go: React.FC = () => {
                                     </div>
                                 ) : null;
                             })}
+                        </div>
+                    </div>
+                )}
+                {provider.auth_mode === 'AWS_SIGV4' && awsExternalId && (
+                    <div className="flex flex-col gap-2 border border-subtle rounded-md p-4 bg-elevated">
+                        <p className="text-sm text-text-secondary">Use this External ID when configuring your IAM trust policy.</p>
+                        <div className="flex gap-2 items-center">
+                            <StandaloneInput readOnly className="font-mono text-xs" value={awsExternalId} />
+                            <Button size="sm" type="button" onClick={handleCopyExternalId}>
+                                {externalIdCopied ? 'Copied' : 'Copy'}
+                            </Button>
                         </div>
                     </div>
                 )}
