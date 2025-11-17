@@ -45,7 +45,7 @@ export async function runMastraAgent() {
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
       end_user: { id: userId },
-    }); // Handle API auth via Nango.
+    });
 
     console.log(`Please authorize the app by visiting this URL: ${session.data.connect_link}`);
 
@@ -64,7 +64,7 @@ export async function runMastraAgent() {
         description: "Get the current user info.",
         execute: async () => {
           // Step 4: Execute the requested tool with Nango.
-          return await nango.triggerAction(integrationId, connectionId, "whoami"); // Call tool via Nango.
+          return await nango.triggerAction(integrationId, connectionId, "whoami");
         },
       }),
     },
