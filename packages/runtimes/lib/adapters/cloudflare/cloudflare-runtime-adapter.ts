@@ -21,7 +21,7 @@ export class CloudflareRuntimeAdapter implements RuntimeAdapter {
             body: JSON.stringify(payload)
         });
         const isSuccess = response.status === 200;
-        const output = response.body ? await response.json() : null;
+        const output = response.body ? await response.text() : null;
         await updateTask({
             taskId: params.taskId,
             nangoProps: params.nangoProps,
