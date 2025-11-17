@@ -1,0 +1,86 @@
+---
+title: 'Mimecast'
+sidebarTitle: 'Mimecast'
+description: 'Connect to the Mimecast API using client credentials in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _Mimecast_.
+      </Step>
+
+      <Step title="Authorize Mimecast">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Mimecast **Client ID** and **Client Secret**. Later, you'll let your users do the same directly from your app.
+      </Step>
+
+      <Step title="Call the Mimecast API">
+        Let's make your first request to Mimecast (fetch account information). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+          <Tab title="cURL">
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/api/account/get-account" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+          </Tab>
+
+          <Tab title="Node">
+            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Fetch account information from Mimecast
+            const res = await nango.get({
+              endpoint: '/api/account/get-account',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+          </Tab>
+        </Tabs>
+
+        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+      Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Mimecast accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Mimecast using Connect UI](/integrations/all/mimecast/connect) |
+    | General | [Mimecast Website](https://www.mimecast.com/) |
+    | Developer | [Managing API 2.0 Applications](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000360548755-API-Integrations-Managing-API-2-0-for-Cloud-Gateway#h_01JK62GWQ91FX2VPS7EWE3M9RX) |
+    | | [Mimecast API Documentation](https://developer.services.mimecast.com/api-overview) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/mimecast.mdx)</Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+    - The Client Secret is only displayed once during the registration/configuration process, so store it securely in a credentials vault.
+    - Access tokens have a TTL of 30 minutes and must be refreshed by calling the `/oauth/token` endpoint again.
+    - Mimecast uses OAuth 2.0 Client Credentials flow with the `grant_type=client_credentials` parameter.
+    - The token endpoint expects credentials in `application/x-www-form-urlencoded` format.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/mimecast.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

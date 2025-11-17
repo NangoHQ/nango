@@ -8774,6 +8774,21 @@ mixpanel:
     docs: https://nango.dev/docs/integrations/all/mixpanel
     docs_connect: https://nango.dev/docs/integrations/all/mixpanel/connect
 
+mimecast:
+    display_name: Mimecast
+    categories:
+        - security
+        - email
+    auth_mode: OAUTH2_CC
+    token_url: https://api.services.mimecast.com/oauth/token
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.services.mimecast.com
+    docs: https://nango.dev/docs/integrations/all/mimecast
+    docs_connect: https://nango.dev/docs/integrations/all/mimecast/connect
+
 miro:
     display_name: Miro
     categories:
