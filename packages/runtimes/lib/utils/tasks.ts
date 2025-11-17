@@ -1,4 +1,3 @@
-import { logger } from '@nangohq/logs/lib/utils.js';
 import { getJobsUrl } from '@nangohq/shared';
 import { retryWithBackoff } from '@nangohq/utils';
 
@@ -32,12 +31,12 @@ export async function updateTask({
             try {
                 res = await fetch(url, init);
             } catch (err) {
-                logger.error(`${init.method} ${url.toString()} -> ${(err as Error).message}`);
+                console.error(`${init.method} ${url.toString()} -> ${(err as Error).message}`);
                 throw err;
             }
 
             if (!res.ok) {
-                logger.error(`${init.method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+                console.error(`${init.method} ${url.toString()} -> ${res.status} ${res.statusText}`);
             }
 
             // Retry only on 5xx or 429 responses
