@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.13] - 2025-11-13
+
+### Added
+
+- *(integrations)* Add support for crowdstrike (#5004) by @hassan254-prog
+- *(integrations)* Add support for tiktok personal (#4999) by @hassan254-prog
+
+### Changed
+
+- Add Anthropic SDK implementation guide (#5000) by @bastienbeurier
+- Add Mastra example and improve other examples (#5006) by @bastienbeurier
+
+### Fixed
+
+- *(zero-yaml)* Allow type imports (#5008) by @khaliqgant
+- Allow webhooks for free plans (#5007) by @kaposke
+- *(records)* Smaller batch size for records deletion (#5001) by @TBonnin
+- *(cli)* Make showLoggerLevelWarning accessible in NangoSyncCLI (#5013) by @hassan254-prog
+
 ## [v0.69.12] - 2025-11-12
 
 ### Added
@@ -5327,6 +5346,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.13]: https://github.com/NangoHQ/nango/compare/v0.69.12..v0.69.13
 [v0.69.12]: https://github.com/NangoHQ/nango/compare/v0.69.10..v0.69.12
 [v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10
 [v0.69.8]: https://github.com/NangoHQ/nango/compare/v0.69.7..v0.69.8

@@ -38,7 +38,11 @@ export async function routeWebhook({
     rawBody: string;
     logContextGetter: LogContextGetter;
 }): Promise<WebhookResponse> {
-    if (!body) {
+    // Check if both body and headers are empty
+    const hasBody = body && (typeof body === 'object' ? Object.keys(body).length > 0 : true);
+    const hasHeaders = headers && Object.keys(headers).length > 0;
+
+    if (!hasBody && !hasHeaders) {
         return {
             content: null,
             statusCode: 204
@@ -119,20 +123,23 @@ export async function routeWebhook({
         })
             .then((res) => {
                 if (res.isOk()) {
-                    pubsub.publisher.publish({
-                        subject: 'usage',
-                        type: 'usage.webhook_forward',
-                        payload: {
-                            value: res.value.forwarded,
-                            properties: {
-                                accountId: account.id,
-                                environmentId: environment.id,
-                                provider: integration.provider,
-                                providerConfigKey: integration.unique_key,
-                                success: true
+                    for (const connectionId of connectionIds.length > 0 ? connectionIds : ['unkown']) {
+                        pubsub.publisher.publish({
+                            subject: 'usage',
+                            type: 'usage.webhook_forward',
+                            payload: {
+                                value: 1,
+                                properties: {
+                                    accountId: account.id,
+                                    environmentId: environment.id,
+                                    environmentName: environment.name,
+                                    integrationId: integration.unique_key,
+                                    connectionId,
+                                    success: true
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             })
             .finally(() => forwardSpan.finish());

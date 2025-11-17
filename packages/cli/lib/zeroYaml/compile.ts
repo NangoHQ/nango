@@ -279,9 +279,9 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
             // Babel is wrapping our own custom error but I couldn't find a way to access the original error easily
             // So we serialize it and hope for the best
             const obj = serializeError(err) as Record<string, any>;
-            if ('errors' in obj) {
-                const custom = obj['errors'][0]['detail'];
-                if (custom['type']) {
+            if ('errors' in obj && Array.isArray(obj['errors']) && obj['errors'].length > 0) {
+                const custom = obj['errors'][0]?.['detail'];
+                if (custom && custom['type']) {
                     return Err(new CompileError(custom['type'], custom['lineNumber'], custom['customMessage'], friendlyPath));
                 }
             }
@@ -390,6 +390,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                     ImportDeclaration(path) {
                         const lineNumber = path.node.loc?.start.line || 0;
                         const source = path.node.source.value;
+                        const kind = path.node.importKind;
                         if (typeof source !== 'string') {
                             return;
                         }
@@ -399,8 +400,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             return;
                         }
 
-                        // Check if the imported package is in the allowed list
-                        if (!allowedPackages.includes(source)) {
+                        // Check if the imported package is in the allowed list, but allow types since this is compile time only
+                        if (!allowedPackages.includes(source) && kind !== 'type') {
                             throw new CompileError(
                                 'disallowed_import',
                                 lineNumber,

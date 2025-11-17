@@ -3119,6 +3119,32 @@ commercetools:
             pattern: '^(gcp|aws)$'
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
+crowdstrike:
+    display_name: CrowdStrike
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.baseUrl}/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        retry:
+            after:
+                - 'x-ratelimit-retryafter'
+    docs: https://nango.dev/docs/integrations/all/crowdstrike
+    docs_connect: https://nango.dev/docs/integrations/all/crowdstrike/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The CrowdStrike API base URL for your cloud environment
+            example: api.crowdstrike.com
+            pattern: '^api(?:\.[a-z0-9-]+)*\.crowdstrike\.(?:com|mil)$'
+            prefix: https://
+            doc_section: '#step-1-creating-an-api-client'
+            order: 1
+
 companycam:
     display_name: CompanyCam
     categories:
@@ -3675,6 +3701,10 @@ dayforce:
         client_id: Dayforce.HCMAnywhere.Client
     token_headers:
         content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
     docs: https://nango.dev/docs/integrations/all/dayforce
     docs_connect: https://nango.dev/docs/integrations/all/dayforce/connect
     connection_config:
@@ -3943,6 +3973,38 @@ discourse:
             type: string
             title: API Key
             description: The API key for your Discourse account
+
+crisp:
+    display_name: Crisp
+    categories:
+        - communication
+        - support
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.crisp.chat
+        headers:
+            x-crisp-tier: plugin
+        verification:
+            method: GET
+            endpoints:
+                - /v1/plugin/connect/account
+    docs: https://nango.dev/docs/integrations/all/crisp
+    docs_connect: https://nango.dev/docs/integrations/all/crisp/connect
+    credentials:
+        username:
+            type: string
+            title: Token Identifier
+            description: The identifier part of your Crisp token keypair
+            example: 123e4567-e89b-12d3-a456-426614174000
+            format: uuid
+            doc_section: '#step-1-generating-your-token-keypair'
+        password:
+            type: string
+            title: Token Key
+            pattern: '^[a-f0-9]{64}$'
+            example: a3f5c8d2b9e4713f2c0a7b4d5e6f8c9b1a2d3e4f5b6c7d8e9f0a1b2c3d4e5f6a7
+            description: The key part of your Crisp token keypair
+            doc_section: '#step-1-generating-your-token-keypair'
 
 dixa:
     display_name: Dixa
@@ -5803,6 +5865,7 @@ google-calendar:
                 - '5xx'
                 - '401'
                 - '429'
+    webhook_routing_script: googleCalendarWebhookRouting
     docs: https://nango.dev/docs/integrations/all/google-calendar
 
 google-chat:
@@ -9442,8 +9505,12 @@ pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
+    webhook_routing_script: pagerdutyWebhookRouting
     proxy:
         base_url: https://api.pagerduty.com
+        retry:
+            after:
+                - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
 
 pandadoc:
@@ -13057,6 +13124,30 @@ tiktok-ads:
         client_id: app_id
     docs: https://nango.dev/docs/integrations/all/tiktok-ads
 
+tiktok-personal:
+    display_name: TikTok Personal
+    categories:
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://www.tiktok.com/v2/auth/authorize/
+    token_url: https://open.tiktokapis.com/v2/oauth/token/
+    proxy:
+        base_url: https://open.tiktokapis.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    body_format: form
+    scope_separator: ','
+    authorization_url_replacements:
+        client_id: client_key
+    docs: https://nango.dev/docs/integrations/all/tiktok-personal
+
 timely:
     display_name: Timely
     categories:
@@ -13816,6 +13907,75 @@ vimeo-basic:
             endpoints:
                 - /
     docs: https://nango.dev/docs/integrations/all/vimeo-basic
+
+valley-api-key:
+    display_name: Valley (API Key)
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.joinvalley.co/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/auth/verify-api-key
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/integrations/all/valley-api-key
+    docs_connect: https://nango.dev/docs/integrations/all/valley-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            example: valley_a3f4c8d2e1b9a7**********************************************c5d8e2f1
+            pattern: '^valley_[a-f0-9]{64}$'
+            description: The API key for your Valley account
+            doc_section: '#step-1-verifying-your-api-key'
+
+valley:
+    display_name: Valley (OAuth)
+    categories:
+        - marketing
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.joinvalley.co/api/v1/auth/get-token
+    refresh_url: https://api.joinvalley.co/api/v1/auth/refresh-token
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    refresh_token_params:
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/json
+    proxy:
+        base_url: https://api.joinvalley.co/api/
+        headers:
+            authorization: Bearer ${accessToken}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+        refresh_token: refresh_token
+    docs: https://nango.dev/docs/integrations/all/valley
+    docs_connect: https://nango.dev/docs/integrations/all/valley/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: Your Valley email address
+            format: email
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Valley password
+            doc_section: '#step-1-getting-your-credentials'
 
 wakatime:
     display_name: Wakatime

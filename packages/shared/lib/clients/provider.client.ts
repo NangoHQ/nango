@@ -35,6 +35,7 @@ class ProviderClient {
             case 'sharepoint-online':
             case 'tiktok-ads':
             case 'tiktok-accounts':
+            case 'tiktok-personal':
             case 'sentry-oauth':
             case 'stripe-app':
             case 'stripe-app-sandbox':
@@ -87,6 +88,8 @@ class ProviderClient {
                 return this.createStripeAppToken(tokenUrl, code, config.oauth_client_secret, callBackUrl);
             case 'tiktok-accounts':
                 return this.createTiktokAccountsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'tiktok-personal':
+                return this.createTiktokPersonalToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'workday-oauth':
                 return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             default:
@@ -149,6 +152,13 @@ class ProviderClient {
             case 'tiktok-accounts':
                 return this.refreshTiktokAccountsToken(
                     provider.refresh_url as string,
+                    credentials.refresh_token as string,
+                    config.oauth_client_id,
+                    config.oauth_client_secret
+                );
+            case 'tiktok-personal':
+                return this.refreshTiktokPersonalToken(
+                    provider.token_url as string,
                     credentials.refresh_token as string,
                     config.oauth_client_id,
                     config.oauth_client_secret
@@ -593,6 +603,61 @@ class ProviderClient {
             throw new NangoError('tiktok_token_refresh_request_error');
         } catch (err: any) {
             throw new NangoError('tiktok_token_refresh_request_error', err.message);
+        }
+    }
+
+    private async createTiktokPersonalToken(tokenUrl: string, code: string, clientKey: string, clientSecret: string, redirectUri: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_key: clientKey,
+                client_secret: clientSecret,
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('tiktok_personal_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('tiktok_personal_token_request_error', err.message);
+        }
+    }
+
+    private async refreshTiktokPersonalToken(tokenUrl: string, refreshToken: string, clientKey: string, clientSecret: string): Promise<object> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_key: clientKey,
+                client_secret: clientSecret,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('tiktok_personal_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('tiktok_personal_refresh_token_request_error', err.message);
         }
     }
 

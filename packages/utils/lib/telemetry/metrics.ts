@@ -82,9 +82,6 @@ export enum Types {
     GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
 
     CONNECTIONS_COUNT = 'nango.connections.count',
-    CONNECTIONS_WITH_ACTIONS_COUNT = 'nango.connections.withActions.count',
-    CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
-    CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
     RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',

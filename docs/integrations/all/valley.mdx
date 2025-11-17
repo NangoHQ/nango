@@ -1,0 +1,87 @@
+---
+title: 'Valley'
+sidebarTitle: 'Valley'
+description: 'Access the Valley API in 2 minutes 💨'
+---
+
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Valley_.
+      </Step>
+      <Step title="Authorize Valley">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Valley email and password. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Valley API">
+        Let's make your first request to the Valley API (fetch a list of campaigns). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/campaigns/get-all?limit=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/v1/campaigns/get-all',
+              params: {
+                limit: 10
+              },
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Valley accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Valley using Connect UI](/integrations/all/valley/connect) |
+    | General | [Valley Website](https://joinvalley.co/) |
+    | Developer | [Valley API Usage Guide](https://www.notion.so/withvalley/Valley-API-Usage-Guide-2a3b917b0ed480aabf2af47b370748c6) |
+    | | [Valley OAuth docs](https://www.notion.so/withvalley/Valley-API-Usage-Guide-2a3b917b0ed480aabf2af47b370748c6#2a8b917b0ed4809ab1b6f42ec1e056a7) |
+    | | [API rate limiting](https://www.notion.so/withvalley/Valley-API-Usage-Guide-2a3b917b0ed480aabf2af47b370748c6#2a3b917b0ed480f983ffe34fcb3e718e) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/valley.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/valley.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
+

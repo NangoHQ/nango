@@ -703,35 +703,43 @@ export async function deleteRecordsBySyncId({
     environmentId,
     model,
     syncId,
-    batchSize = 5000
+    batchSize = 1000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
     syncId: string;
     batchSize?: number;
-}): Promise<{ totalDeletedRecords: number }> {
+}): Promise<Result<{ totalDeletedRecords: number }>> {
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
-    do {
-        // records table is partitioned by connection_id and model
-        // to avoid table scan, we must filter by connection_id and model
-        deletedRecords = await db
-            .from(RECORDS_TABLE)
-            .where({ connection_id: connectionId, model })
-            .whereIn('id', function (sub) {
-                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
-            })
-            .del();
-        totalDeletedRecords += deletedRecords;
-    } while (deletedRecords >= batchSize);
-    await deleteRecordCount({ connectionId, environmentId, model });
 
-    return { totalDeletedRecords };
+    try {
+        await db.transaction(async (trx) => {
+            do {
+                deletedRecords = await trx
+                    .from(RECORDS_TABLE)
+                    .where({ connection_id: connectionId, model })
+                    .whereIn('id', function (sub) {
+                        sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
+                    })
+                    .del();
+                totalDeletedRecords += deletedRecords;
+            } while (deletedRecords > 0);
+            await deleteRecordCount(trx, { connectionId, environmentId, model });
+        });
+
+        return Ok({ totalDeletedRecords });
+    } catch (err) {
+        return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}, syncId ${syncId}`, { cause: err }));
+    }
 }
 
-export async function deleteRecordCount({ connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }): Promise<void> {
-    await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
+export async function deleteRecordCount(
+    trx: Knex,
+    { connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }
+): Promise<void> {
+    await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
 // Mark all non-deleted records from previous generations as deleted
