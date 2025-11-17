@@ -131,9 +131,6 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         timestamp: b.properties.timestamp,
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
-                        environmentId: b.properties.environmentId,
-                        environmentName: b.properties.environmentName,
-                        integrationId: b.properties.integrationId,
                         telemetry: {
                             sizeBytes: _a.properties.telemetry.sizeBytes + b.properties.telemetry.sizeBytes
                         },
@@ -175,9 +172,6 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         timestamp: b.properties.timestamp,
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
-                        environmentId: b.properties.environmentId,
-                        environmentName: b.properties.environmentName,
-                        integrationId: b.properties.integrationId,
                         count: a.properties.count + b.properties.count,
                         frequencyMs: b.properties.frequencyMs
                     }

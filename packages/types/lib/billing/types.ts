@@ -95,9 +95,6 @@ export type MarBillingEvent = BillingEventBase<
 export type RecordsBillingEvent = BillingEventBase<
     'records',
     {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
         frequencyMs: number;
         telemetry: {
             sizeBytes: number;
@@ -166,9 +163,6 @@ export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
 export type ConnectionsBillingEventV2 = BillingEventBase<
     'billable_connections_v2',
     {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
         frequencyMs: number;
     }
 >;
