@@ -61,6 +61,7 @@ export interface BillingUsageMetric {
         timeframeEnd: Date;
         quantity: number;
     }[];
+    cumulative: boolean;
 }
 
 export interface BillingPlan {

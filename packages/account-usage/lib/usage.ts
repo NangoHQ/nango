@@ -214,7 +214,20 @@ export class UsageTracker implements IUsageTracker {
     }
 
     public async getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
-        return this.billingClient.getUsage(subscriptionId, opts);
+        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
+
+        if (billingUsageMetrics.isErr()) {
+            return billingUsageMetrics;
+        }
+
+        return Ok(
+            billingUsageMetrics.value.map((billingUsageMetric) => {
+                const usageMetric = billingMetricToUsageMetric(billingUsageMetric.name);
+                const cumulative = usageMetric && ['connections', 'records'].includes(usageMetric);
+
+                return cumulative ? toCumulativeUsage(billingUsageMetric) : billingUsageMetric;
+            })
+        );
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
@@ -299,6 +312,8 @@ function billingMetricToUsageMetric(name: string): UsageMetric | null {
     if (lowerName.includes('forward')) return 'webhook_forwards';
     if (lowerName.includes('compute')) return 'function_compute_gbms';
     if (lowerName.includes('function')) return 'function_executions';
+    if (lowerName.includes('connections')) return 'connections';
+    if (lowerName.includes('records')) return 'records';
 
     return null;
 }
@@ -314,3 +329,28 @@ const sources: Record<UsageMetric, string> = {
     webhook_forwards: 'billing:subscription:usage',
     function_logs: 'billing:subscription:usage'
 };
+
+function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {
+    const cumulativeUsage: BillingUsageMetric['usage'] = [];
+    let previousQuantity = 0;
+
+    for (const usage of periodicUsage.usage) {
+        if (usage?.quantity === undefined) {
+            continue;
+        }
+        const quantity = usage.quantity + previousQuantity;
+
+        cumulativeUsage.push({
+            timeframeStart: usage.timeframeStart,
+            timeframeEnd: usage.timeframeEnd,
+            quantity: quantity
+        });
+
+        previousQuantity = quantity;
+    }
+    return {
+        ...periodicUsage,
+        cumulative: true,
+        usage: cumulativeUsage
+    };
+}
