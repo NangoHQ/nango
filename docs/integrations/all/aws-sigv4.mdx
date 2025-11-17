@@ -44,7 +44,7 @@ import Overview from "/snippets/overview.mdx"
   </Step>
   <Step title="Collect Role ARN & optional region during Connect">
     1. Create a Connect session as usual. You can optionally pre-fill credential fields via `integrations_config_defaults` (see <a href="#pre-populating-credential-values">Pre-populating credential values</a>).  
-    2. The Connect UI shows your instructions and collects the IAM Role ARN (and region override).  
+    2. The Connect UI shows your instructions, a one-click button for each template, **and a generated External ID**. Ask the customer to copy that External ID into their IAM trust policy before finishing the flow.  
     3. When the end customer submits the form, Nango generates a unique ExternalId, calls your STS endpoint, tests the credentials via `GetCallerIdentity`, and stores a refreshable SigV4 credential.
   </Step>
   <Step title="Proxy AWS service calls">
@@ -115,7 +115,7 @@ const { data } = await nango.createConnectSession({
 });
 ```
 
-Only the fields you specify are hidden; the others stay editable so the end customer can override them.
+Only the fields you specify are hidden; the others stay editable so the end customer can override them. This is also where you can pre-fill or persist the `external_id` that appears in the Connect UI if you want to reuse a value for reconnect flows.
 
 ## Useful links
 

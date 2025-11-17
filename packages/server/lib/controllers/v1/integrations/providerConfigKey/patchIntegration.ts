@@ -1,4 +1,4 @@
-import { configService, connectionService, getProvider } from '@nangohq/shared';
+import { awsSigV4Client, configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
@@ -6,6 +6,7 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 
 import type { PatchIntegration } from '@nangohq/types';
+
 
 
 
@@ -77,10 +78,30 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     }
 
     if ('custom' in body && body.custom) {
-        integration.custom = {
-            ...(integration.custom || {}),
-            ...body.custom
-        };
+        let nextCustom: Record<string, string> = { ...(integration.custom || {}) };
+        for (const [key, value] of Object.entries(body.custom)) {
+            if (value === null || value === '') {
+                const { [key]: _removed, ...rest } = nextCustom;
+                nextCustom = rest;
+                continue;
+            }
+            if (key === 'aws_sigv4_config') {
+                try {
+                    JSON.parse(value);
+                } catch {
+                    res.status(400).send({ error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' } });
+                    return;
+                }
+                const simulated = { ...integration, custom: { ...nextCustom, [key]: value } } as Parameters<typeof awsSigV4Client.getAwsSigV4Settings>[0];
+                const validation = awsSigV4Client.getAwsSigV4Settings(simulated);
+                if (validation.isErr()) {
+                    res.status(400).send({ error: { code: validation.error.type, message: validation.error.message } });
+                    return;
+                }
+            }
+            nextCustom[key] = value;
+        }
+        integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : null;
     }
 
     // Credentials
