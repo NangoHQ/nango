@@ -223,9 +223,9 @@ export class UsageTracker implements IUsageTracker {
         return Ok(
             billingUsageMetrics.value.map((billingUsageMetric) => {
                 const usageMetric = billingMetricToUsageMetric(billingUsageMetric.name);
-                const cumulative = usageMetric && ['connections', 'records'].includes(usageMetric);
+                const shouldBeCumulative = usageMetric && ['connections', 'records'].includes(usageMetric);
 
-                return cumulative ? toCumulativeUsage(billingUsageMetric) : billingUsageMetric;
+                return shouldBeCumulative ? toCumulativeUsage(billingUsageMetric) : billingUsageMetric;
             })
         );
     }
@@ -331,11 +331,13 @@ const sources: Record<UsageMetric, string> = {
 };
 
 function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {
+    const orderedPeriodicUsage = periodicUsage.usage.sort((a, b) => new Date(a.timeframeStart).getTime() - new Date(b.timeframeStart).getTime());
     const cumulativeUsage: BillingUsageMetric['usage'] = [];
     let previousQuantity = 0;
 
-    for (const usage of periodicUsage.usage) {
+    for (const usage of orderedPeriodicUsage) {
         if (usage?.quantity === undefined) {
+            cumulativeUsage.push(usage);
             continue;
         }
         const quantity = usage.quantity + previousQuantity;
@@ -350,7 +352,7 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
     }
     return {
         ...periodicUsage,
-        cumulative: true,
+        view_mode: 'cumulative',
         usage: cumulativeUsage
     };
 }
