@@ -102,6 +102,18 @@
     {
       "source": "/guides/use-cases/mcp-server",
       "destination": "/guides/use-cases/ai-tool-calling"
+    },
+    {
+      "source": "/integrations/all/salesforce",
+      "destination": "/api-integrations/salesforce"
+    },
+    {
+      "source": "/integrations/all/hubspot",
+      "destination": "/api-integrations/hubspot"
+    },
+    {
+      "source": "/integrations/all/netsuite-tba",
+      "destination": "/api-integrations/netsuite-tba"
     }
   ],
   "navigation": {
