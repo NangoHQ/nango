@@ -14122,6 +14122,33 @@ wildix-pbx:
             suffix: .wildixin.com
             prefix: https://
 
+wiza:
+    display_name: Wiza
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://wiza.co/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /meta/credits
+    docs: https://nango.dev/docs/integrations/all/wiza
+    docs_connect: https://nango.dev/docs/integrations/all/wiza/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Wiza API key
+            pattern: '^[a-f0-9]{64}$'
+            example: 6e0f838beb0a09d35f3f56b52b1344b262ecc713aab41456485d12c5f6edaef7
+            doc_section: '#step-1-getting-your-api-key'
+
 wordpress:
     display_name: WordPress
     categories:
