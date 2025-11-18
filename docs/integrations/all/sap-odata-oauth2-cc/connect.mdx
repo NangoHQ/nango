@@ -7,11 +7,11 @@ sidebarTitle: SAP S/4HANA Cloud (Client Credentials)
 
 To authenticate with SAP S/4HANA Cloud using OAuth 2.0 Client Credentials, you will need the following:
 
-1. **Subdomain** - The subdomain where your SAP S/4HANA cloud instance is hosted.
-2. **Region** - The region where your SAP S/4HANA cloud instance is hosted.
-3. **API Server** - The API base URL of the SAP S/4HANA cloud API service you want to connect to.
-4. **Client ID** -  A unique identifier for your client.
-5. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
+1. **Subdomain**: The subdomain where your SAP S/4HANA Cloud instance is hosted.
+2. **Region**: The region where your SAP S/4HANA Cloud instance is hosted.
+3. **API Server**: The base URL of the SAP S/4HANA Cloud API service you want to connect to.
+4. **Client ID**: A unique identifier for your client.
+5. **Client Secret**: A confidential key used to authenticate the identity of the application (client).
 
 This guide will walk you through enabling OAuth 2.0 and obtaining these credentials.
 
@@ -47,9 +47,9 @@ This guide will walk you through enabling OAuth 2.0 and obtaining these credenti
 14. Right-click the service again and select **Test Service** to verify the URL: `https://<hostname>:<port>/sap/bc/sec/oauth2/token?sap-client=<XXX>`
 15. Go to transaction code `SU01`.
 16. Create a new integration user to whom you will assign OAuth scopes. In the **Address** tab, enter the **Last name**. In the **Logon Data** tab:
-   - Set a **New Password**. We recommend using the **Generate** option to create a complex string for enhanced security. This password will be used as the **Client Secret**.
+   - Set a **New Password**. We recommend using the **Generate** option to create a complex string for enhanced security. This password serves as the **Client Secret**.
    - Set the **User Type** as **System** to restrict GUI access for this user.
-<Note> The password set here is your **Client Secret** </Note>
+<Note>The password set here is your **Client Secret**.</Note>
 17. Save the integration user. The Username will be used as the **Client ID**.
 
 18. Go to transaction code `SOAUTH2`.
@@ -63,7 +63,7 @@ This guide will walk you through enabling OAuth 2.0 and obtaining these credenti
 ## Step 2: Finding your Subdomain
 
 1. The **Subdomain** is the tenant name of your SAP S/4HANA Cloud instance.
-2. You can locate this in your SAP BTP Cockpit by checking the URL in your browser's address bar. The subdomain is the value between `https://` and `.hana`.
+2. You can locate this in your SAP BTP Cockpit by checking the URL in your browser's address bar. The subdomain is the value between `https://` and `.hana` in the URL.
 3. **Example**: In `https://acme.hana.ondemand.com`, the subdomain is `acme`.
 
 ## Step 3: Finding your Region
@@ -84,13 +84,13 @@ To identify your region:
 1. The **API Server** is the base URL of your OData endpoint.
 2. Navigate to the SAP Gateway Client or [Service Catalog](https://api.sap.com/content-type/API/apis/ODATAV4) to find the base URL.
 3. **Example**: For the [Measurement Concept Class API](https://api.sap.com/api/MeasurementConceptClassAPI/overview), the API Server would be `c4u-foundation-mcm-service.cfapps.eu10.hana.ondemand.com`.
-=
+
 ## Step 5: Enter Credentials in the Connect UI
 
 Once you have all the required information:
 
 1. Open the form where you need to authenticate with SAP S/4HANA Cloud (Client Credentials).
-2. Enter the **Subdomain**, **Region**, **API Server**, **Client ID** and **Client Secret** in their designated fields.
+2. Enter the **Subdomain**, **Region**, **API Server**, **Client ID**, and **Client Secret** in their designated fields.
 3. Submit the form, and you should be successfully authenticated.
 
 

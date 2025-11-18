@@ -7,9 +7,9 @@ sidebarTitle: SAP S/4HANA Cloud (Basic Auth)
 
 To authenticate with SAP S/4HANA using Basic Authentication, you will need the following:
 
-1. **API Server**: The API base URL of the SAP S/4HANA cloud API service you want to connect to.
-2. **Username**: The username of the Communication User for API access uisng Basic Authentication.
-3. **Password**: The password of the Communication User for API access uisng Basic Authentication.
+1. **API Server**: The base URL of the SAP S/4HANA Cloud API service you want to connect to.
+2. **Username**: The Communication User's username for API access using Basic Authentication.
+3. **Password**: The Communication User's password for API access using Basic Authentication.
 
 
 This guide will walk you through setting up OData services and obtaining these credentials for SAP S/4HANA Cloud.
@@ -26,7 +26,7 @@ This guide will walk you through setting up OData services and obtaining these c
 3. Select the service you plan to use and click **Add Selected Services**.
 <img src="/integrations/all/sap-odata-oauth2-cc/select_service.png" />
 4. Provide a custom name for the technical service, then click **Local Object** to save the service in the local package.
-5. Select **Communication Management** group from your main menu.
+5. Select the **Communication Management** group from your main menu.
 <img src="/integrations/all/sap-odata-basic/communication_management.png" />
 6. Select the **Maintain Communication Users** app and click **New**.
 7. Enter a **User Name**, **Description**, and **Password** for the communication user.
@@ -79,7 +79,7 @@ The Communication Arrangement is now successfully created, and your API is ready
 Once you have all the required information:
 
 1. Open the form where you need to authenticate with SAP S/4HANA Cloud (Basic Auth).
-2. Enter your **API Server**, **Username** and **Password** in their respective fields.
+2. Enter your **API Server**, **Username**, and **Password** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/sap-odata-basic/form.png" style={{maxWidth: "450px" }}/>
