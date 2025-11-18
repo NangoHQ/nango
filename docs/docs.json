@@ -394,6 +394,7 @@
               "integrations/all/confluence-data-center",
               "integrations/all/connectwise-psa",
               "integrations/all/connectwise-psa-staging",
+              "integrations/all/contactout",
               "integrations/all/contentful",
               "integrations/all/contentstack",
               "integrations/all/copper",

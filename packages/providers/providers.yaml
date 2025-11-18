@@ -4179,6 +4179,32 @@ dropbox-sign:
         base_url: https://api.hellosign.com
     docs: https://nango.dev/docs/integrations/all/dropbox-sign
 
+contactout:
+    display_name: ContactOut
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.contactout.com
+        headers:
+            authorization: basic
+            token: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/stats
+    docs: https://nango.dev/docs/integrations/all/contactout
+    docs_connect: https://nango.dev/docs/integrations/all/contactout/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            example: ab7KxYpR1qLmN9Zs3TvUeFgH
+            description: Your ContactOut API Key
+
 drupal:
     display_name: Drupal
     categories:
