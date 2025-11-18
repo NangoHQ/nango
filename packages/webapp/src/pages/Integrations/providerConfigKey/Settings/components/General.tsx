@@ -90,11 +90,6 @@ function defaultAwsSigV4Config() {
             username: '',
             password: ''
         },
-        instructions: {
-            label: '',
-            url: '',
-            description: ''
-        },
         templates: [] as AwsSigV4Template[]
     };
 }
@@ -108,13 +103,36 @@ const validateAwsSigV4Templates = (templates: AwsSigV4Template[]): string | null
         if (!id) {
             return `Template ${i + 1} is missing an ID`;
         }
-        const hasBody = Boolean(template.templateBody && template.templateBody.trim().length > 0);
         const hasUrl = Boolean(template.templateUrl && template.templateUrl.trim().length > 0);
-        if (!hasBody && !hasUrl) {
-            return `Template "${id}" needs either a template URL or a template body`;
+        if (!hasUrl) {
+            return `Template "${id}" needs a template URL`;
         }
     }
     return null;
+};
+
+const extractCloudFormationParameterKeys = (rawBody: string): string[] => {
+    try {
+        const parsed = JSON.parse(rawBody);
+        const parameters = parsed?.Parameters;
+        if (parameters && typeof parameters === 'object' && !Array.isArray(parameters)) {
+            return Object.keys(parameters).filter((key) => typeof key === 'string' && key.trim().length > 0);
+        }
+    } catch {
+        // Ignore parse errors; auto-hydration is best-effort.
+    }
+    return [];
+};
+
+const hydrateTemplateParameters = (template: AwsSigV4Template, body: string) => {
+    const keys = extractCloudFormationParameterKeys(body);
+    if (keys.length > 0) {
+        const existingKeys = new Set(template.parameters.map((p) => p.key));
+        const newParams = keys.filter((key) => !existingKeys.has(key)).map((key) => ({ key, value: '' }));
+        if (newParams.length > 0) {
+            template.parameters = [...template.parameters, ...newParams];
+        }
+    }
 };
 
 const deserializeAwsSigV4Config = (raw?: string | null) => {
@@ -142,13 +160,6 @@ const deserializeAwsSigV4Config = (raw?: string | null) => {
                 base.stsEndpoint.password = parsed.stsEndpoint.auth.password || '';
             }
         }
-        if (parsed.instructions) {
-            base.instructions = {
-                label: parsed.instructions.label || '',
-                url: parsed.instructions.url || '',
-                description: parsed.instructions.description || ''
-            };
-        }
         if (Array.isArray(parsed.templates)) {
             base.templates = parsed.templates
                 .map((template: any) => {
@@ -167,7 +178,7 @@ const deserializeAwsSigV4Config = (raw?: string | null) => {
                             .filter(([key, value]) => typeof key === 'string' && typeof value === 'string')
                             .map(([key, value]) => ({ key, value: value as string }));
                     }
-                    if (!normalized.id && !(normalized.templateBody || normalized.templateUrl)) {
+                    if (!normalized.id && !normalized.templateBody) {
                         return null;
                     }
                     return normalized;
@@ -206,6 +217,7 @@ export const SettingsGeneral: React.FC<{
     const [webhookSecret, setWebhookSecret] = useState(integration.custom?.webhookSecret || '');
     const [awsSigV4Config, setAwsSigV4Config] = useState<AwsSigV4Config | null>(() => deserializeAwsSigV4Config(integration.custom?.['aws_sigv4_config']));
     const [loading, setLoading] = useState(false);
+    const [loadingTemplateIndex, setLoadingTemplateIndex] = useState<number | null>(null);
     const [forwardWebhooks, setForwardWebhooks] = useState(integration.forward_webhooks);
 
     const onSaveDisplayName = async () => {
@@ -279,9 +291,6 @@ export const SettingsGeneral: React.FC<{
         if (config.stsEndpoint.authType === 'basic' && (config.stsEndpoint.username || config.stsEndpoint.password)) {
             return true;
         }
-        if (config.instructions?.label || config.instructions?.url || config.instructions?.description) {
-            return true;
-        }
         return config.templates.length > 0;
     };
 
@@ -316,14 +325,10 @@ export const SettingsGeneral: React.FC<{
             };
         }
 
-        if (config.instructions?.label || config.instructions?.url || config.instructions?.description) {
-            payload.instructions = config.instructions;
-        }
-
         if (config.templates && config.templates.length > 0) {
             const templates = config.templates
                 .map((template) => {
-                    if (!template.id || (!template.templateBody && !template.templateUrl)) {
+                    if (!template.id || !template.templateUrl) {
                         return null;
                     }
                     const normalized: Record<string, any> = {
@@ -331,7 +336,6 @@ export const SettingsGeneral: React.FC<{
                         label: template.label,
                         description: template.description,
                         stackName: template.stackName,
-                        templateBody: template.templateBody,
                         templateUrl: template.templateUrl
                     };
                     if (template.parameters && template.parameters.length > 0) {
@@ -461,6 +465,38 @@ export const SettingsGeneral: React.FC<{
             templates[templateIndex] = template;
             return { ...prev, templates };
         });
+    };
+
+    const loadAwsSigV4TemplateFromUrl = async (index: number) => {
+        const url = awsSigV4Config?.templates?.[index]?.templateUrl;
+        if (!url) {
+            toast({ title: 'Template URL is required', variant: 'error' });
+            return;
+        }
+        setLoadingTemplateIndex(index);
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch template (${response.status})`);
+            }
+            const body = await response.text();
+            setAwsSigV4Config((prev) => {
+                if (!prev) {
+                    return prev;
+                }
+                const templates = [...prev.templates];
+                const template = { ...(templates[index] || defaultAwsSigV4Template()) };
+                template.templateBody = body;
+                hydrateTemplateParameters(template, body);
+                templates[index] = template;
+                return { ...prev, templates };
+            });
+            toast({ title: 'Template loaded', variant: 'success' });
+        } catch (err: any) {
+            toast({ title: err?.message || 'Failed to load template', variant: 'error' });
+        } finally {
+            setLoadingTemplateIndex(null);
+        }
     };
 
     return (
@@ -662,20 +698,6 @@ export const SettingsGeneral: React.FC<{
                                         variant={'flat'}
                                     />
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-white font-semibold">Default Region (optional)</label>
-                                    <Input
-                                        value={awsSigV4Config?.defaultRegion || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                defaultRegion: e.target.value
-                                            }))
-                                        }
-                                        placeholder="e.g. us-east-1"
-                                        variant={'flat'}
-                                    />
-                                </div>
                             </div>
 
                             <div className="flex flex-col gap-1">
@@ -780,54 +802,6 @@ export const SettingsGeneral: React.FC<{
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-1">
-                                <label className="text-xs text-white font-semibold">End-user Instructions (optional)</label>
-                                <div className="grid grid-cols-3 gap-3">
-                                    <Input
-                                        value={awsSigV4Config?.instructions?.label || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                instructions: {
-                                                    ...(prev?.instructions || defaultAwsSigV4Config().instructions),
-                                                    label: e.target.value
-                                                }
-                                            }))
-                                        }
-                                        placeholder="Button label"
-                                        variant={'flat'}
-                                    />
-                                    <Input
-                                        value={awsSigV4Config?.instructions?.url || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                instructions: {
-                                                    ...(prev?.instructions || defaultAwsSigV4Config().instructions),
-                                                    url: e.target.value
-                                                }
-                                            }))
-                                        }
-                                        placeholder="https://..."
-                                        variant={'flat'}
-                                    />
-                                    <Input
-                                        value={awsSigV4Config?.instructions?.description || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                instructions: {
-                                                    ...(prev?.instructions || defaultAwsSigV4Config().instructions),
-                                                    description: e.target.value
-                                                }
-                                            }))
-                                        }
-                                        placeholder="Short description"
-                                        variant={'flat'}
-                                    />
-                                </div>
-                            </div>
-
                             <div className="flex flex-col gap-2">
                                 <div>
                                     <label className="text-xs text-white font-semibold">CloudFormation Templates (optional)</label>
@@ -839,10 +813,7 @@ export const SettingsGeneral: React.FC<{
                                 <div className="flex flex-col gap-4">
                                     {awsSigV4Config?.templates && awsSigV4Config.templates.length > 0 ? (
                                         awsSigV4Config.templates.map((template, index) => (
-                                            <div
-                                                key={`${template.id || 'template'}-${index}`}
-                                                className="border border-subtle rounded-md p-4 flex flex-col gap-3 bg-[#0f1117]"
-                                            >
+                                            <div key={`template-${index}`} className="border border-subtle rounded-md p-4 flex flex-col gap-3 bg-[#0f1117]">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-sm font-semibold text-white">{template.label || `Template ${index + 1}`}</p>
                                                     <Button variant="danger" size="xs" type="button" onClick={() => removeAwsSigV4Template(index)}>
@@ -889,32 +860,32 @@ export const SettingsGeneral: React.FC<{
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div className="flex flex-col gap-1">
-                                                        <label className="text-xs text-text-soft font-semibold">Template URL (optional)</label>
+                                                <div className="flex flex-col gap-1">
+                                                    <label className="text-xs text-text-soft font-semibold">Template URL</label>
+                                                    <div className="flex gap-2">
                                                         <Input
                                                             value={template.templateUrl}
                                                             onChange={(e) => updateAwsSigV4TemplateField(index, 'templateUrl', e.target.value)}
                                                             placeholder="https://..."
                                                             variant="flat"
                                                         />
+                                                        <Button
+                                                            variant="primary"
+                                                            size="sm"
+                                                            className="shrink-0"
+                                                            type="button"
+                                                            onClick={() => loadAwsSigV4TemplateFromUrl(index)}
+                                                            isLoading={loadingTemplateIndex === index}
+                                                        >
+                                                            Load template
+                                                        </Button>
                                                     </div>
-                                                    <div className="flex flex-col gap-1">
-                                                        <label className="text-xs text-text-soft font-semibold">Template Body (JSON or YAML)</label>
-                                                        <textarea
-                                                            className="bg-active-gray border border-neutral-800 text-white text-sm rounded-md px-3 py-2 min-h-[140px]"
-                                                            value={template.templateBody}
-                                                            onChange={(e) => updateAwsSigV4TemplateField(index, 'templateBody', e.target.value)}
-                                                            placeholder="Paste JSON or YAML template body"
-                                                        />
-                                                        <p className="text-[11px] text-text-soft">
-                                                            Provide either a public Template URL or paste the template body directly. Connect will embed
-                                                            whichever is supplied.
-                                                        </p>
-                                                    </div>
+                                                    <p className="text-[11px] text-text-soft">
+                                                        Provide a public template URL. We will fetch it, extract parameter keys, and pre-fill them below.
+                                                    </p>
                                                 </div>
                                                 <div className="flex flex-col gap-2">
-                                                    <label className="text-xs text-text-soft font-semibold">Default Parameters (optional)</label>
+                                                    <label className="text-xs text-text-soft font-semibold">Default Parameters</label>
                                                     <div className="flex flex-col gap-2">
                                                         {template.parameters.length === 0 && (
                                                             <p className="text-[11px] text-text-soft">No parameters configured.</p>
@@ -933,7 +904,7 @@ export const SettingsGeneral: React.FC<{
                                                                         onChange={(e) =>
                                                                             updateAwsSigV4TemplateParam(index, paramIndex, 'value', e.target.value)
                                                                         }
-                                                                        placeholder="my-shared-bucket"
+                                                                        placeholder=""
                                                                         variant="flat"
                                                                     />
                                                                 </div>
