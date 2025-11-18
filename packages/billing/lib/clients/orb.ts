@@ -10,11 +10,12 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingSubscription,
-    BillingUsageMetric,
+    BillingUsageMetrics,
     DBTeam,
     DBUser,
     GetBillingUsageOpts,
-    Result
+    Result,
+    UsageMetric
 } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
@@ -157,7 +158,7 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
+    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         try {
             const options: Orb.Subscriptions.SubscriptionFetchUsageParams = {};
             if (opts?.timeframe) {
@@ -182,33 +183,39 @@ export class OrbClient implements BillingClient {
                 }
             });
 
-            return Ok(
-                res.data.map((item) => {
-                    const group =
-                        'metric_group' in item
-                            ? {
-                                  group: {
-                                      key: item.metric_group.property_key,
-                                      value: item.metric_group.property_value
-                                  }
+            const entries: BillingUsageMetrics = {};
+
+            for (const item of res.data) {
+                const usageMetric = orbMetricToUsageMetric(item.billable_metric.name);
+                if (!usageMetric) {
+                    continue;
+                }
+
+                const group =
+                    'metric_group' in item
+                        ? {
+                              group: {
+                                  key: item.metric_group.property_key,
+                                  value: item.metric_group.property_value
                               }
-                            : {};
-                    return {
-                        id: item.billable_metric.id,
-                        name: item.billable_metric.name,
-                        ...group,
-                        total: item.usage.reduce((sum, u) => sum + u.quantity, 0),
-                        usage: item.usage.map((u) => {
-                            return {
-                                timeframeStart: new Date(u.timeframe_start),
-                                timeframeEnd: new Date(u.timeframe_end),
-                                quantity: u.quantity
-                            };
-                        }),
-                        view_mode: 'periodic'
-                    };
-                })
-            );
+                          }
+                        : {};
+
+                entries[usageMetric] = {
+                    ...group,
+                    total: item.usage.reduce((sum, u) => sum + u.quantity, 0),
+                    usage: item.usage.map((u) => {
+                        return {
+                            timeframeStart: new Date(u.timeframe_start),
+                            timeframeEnd: new Date(u.timeframe_end),
+                            quantity: u.quantity
+                        };
+                    }),
+                    view_mode: 'periodic'
+                };
+            }
+
+            return Ok(entries);
         } catch (err) {
             return Err(new Error('failed_to_get_usage', { cause: err }));
         }
@@ -344,4 +351,20 @@ function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
         timestamp: timestamp.toISOString(),
         properties
     };
+}
+
+function orbMetricToUsageMetric(name: string): UsageMetric | null {
+    // Not ideal to match on BillingMetric name but Orb only exposes the user friendly name or internal ids
+    const lowerName = name.toLowerCase();
+    // order matters here
+    if (lowerName.includes('legacy')) return null;
+    if (lowerName.includes('logs')) return 'function_logs';
+    if (lowerName.includes('proxy')) return 'proxy';
+    if (lowerName.includes('forward')) return 'webhook_forwards';
+    if (lowerName.includes('compute')) return 'function_compute_gbms';
+    if (lowerName.includes('function')) return 'function_executions';
+    if (lowerName.includes('connections')) return 'connections';
+    if (lowerName.includes('records')) return 'records';
+
+    return null;
 }

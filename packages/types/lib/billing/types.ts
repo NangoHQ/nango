@@ -1,5 +1,6 @@
 import type { Result } from '../result.js';
 import type { DBTeam } from '../team/db.js';
+import type { UsageMetric } from '../usage/index.js';
 import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
@@ -10,7 +11,7 @@ export interface BillingClient {
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
-    getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetric[]>>;
+    getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
     downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
     applyPendingChanges: (opts: {
@@ -49,8 +50,6 @@ export interface GetBillingUsageOpts {
 }
 
 export interface BillingUsageMetric {
-    id: string;
-    name: string;
     group?: {
         key: string;
         value: string;
@@ -63,6 +62,14 @@ export interface BillingUsageMetric {
     }[];
     view_mode: 'cumulative' | 'periodic';
 }
+
+export type BillingUsageMetrics = Partial<Record<UsageMetric, BillingUsageMetric | undefined>>;
+
+export interface ApiBillingUsageMetric extends BillingUsageMetric {
+    label: string;
+}
+
+export type ApiBillingUsageMetrics = Record<UsageMetric, ApiBillingUsageMetric>;
 
 export interface BillingPlan {
     id: string;
