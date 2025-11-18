@@ -148,7 +148,9 @@ export function getProxyConfiguration({
         return Err(new ProxyError('unknown_provider'));
     }
 
-    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride)) {
+    const isAwsSigV4 = provider.auth_mode === 'AWS_SIGV4';
+
+    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride && !isAwsSigV4)) {
         return Err(new ProxyError('unsupported_provider'));
     }
 
@@ -209,7 +211,17 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 
     let apiBase = config.baseUrlOverride || templateApiBase;
 
-    if (apiBase?.includes('${') && apiBase?.includes('||')) {
+    if (!apiBase && connection.credentials.type === 'AWS_SIGV4') {
+        const awsCreds = connection.credentials as AwsSigV4Credentials;
+        const awsRegion = awsCreds.region || (connection.connection_config?.['region'] as string | undefined);
+        const awsService = awsCreds.service || (connection.connection_config?.['service'] as string | undefined);
+
+        if (awsRegion && awsService) {
+            apiBase = `https://${awsService}.${awsRegion}.amazonaws.com`;
+        }
+    }
+
+    if (apiBase && apiBase?.includes('${') && apiBase?.includes('||')) {
         const connectionConfig = connection.connection_config;
         const splitApiBase = apiBase.split(/\s*\|\|\s*/);
 

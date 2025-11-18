@@ -98,7 +98,7 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
     }),
     AWS_SIGV4: z.object({
         role_arn: z.string().min(1),
-        region: z.string().min(1).optional()
+        region: z.string().min(1)
     }),
     CUSTOM: z.object({}),
     MCP_OAUTH2: z.object({}),
