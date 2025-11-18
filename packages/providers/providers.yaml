@@ -3204,7 +3204,6 @@ connectwise-psa-staging:
         - ticketing
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
-    
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
@@ -3468,6 +3467,35 @@ cursor:
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
             pattern: '^key_[a-f0-9]{64}$'
+
+cursor-admin:
+    display_name: Cursor Admin
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cursor.com
+        verification:
+            method: GET
+            endpoints:
+                - /teams/members
+    docs: https://nango.dev/docs/integrations/all/cursor-admin
+    docs_connect: https://nango.dev/docs/integrations/all/cursor-admin/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+            secret: true
+            doc_section: '#step-1-finding-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            default_value: ''
+            hidden: true
 
 databricks-account:
     display_name: Databricks (Account Level)
