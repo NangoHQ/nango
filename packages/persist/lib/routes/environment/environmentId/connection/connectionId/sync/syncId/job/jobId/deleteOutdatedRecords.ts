@@ -31,25 +31,24 @@ type DeleteOutdatedRecords = Endpoint<{
 const path = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/outdated';
 const method = 'DELETE';
 
+const bodySchema = z
+    .object({
+        model: z.string(),
+        activityLogId: operationIdRegex
+    })
+    .strict();
+const paramsSchema = z
+    .object({
+        environmentId: z.coerce.number().int().positive(),
+        nangoConnectionId: z.coerce.number().int().positive(),
+        syncId: z.string(),
+        syncJobId: z.coerce.number().int().positive()
+    })
+    .strict();
+
 const validate = validateRequest<DeleteOutdatedRecords>({
-    parseBody: (data: unknown) =>
-        z
-            .object({
-                model: z.string(),
-                activityLogId: operationIdRegex
-            })
-            .strict()
-            .parse(data),
-    parseParams: (data: unknown) =>
-        z
-            .object({
-                environmentId: z.coerce.number().int().positive(),
-                nangoConnectionId: z.coerce.number().int().positive(),
-                syncId: z.string(),
-                syncJobId: z.coerce.number().int().positive()
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data: unknown) => bodySchema.parse(data),
+    parseParams: (data: unknown) => paramsSchema.parse(data)
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
