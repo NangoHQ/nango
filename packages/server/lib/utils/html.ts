@@ -21,11 +21,9 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
     <noscript>JavaScript is required to proceed with the authentication.</noscript>
 
     <div id="content" style="display: flex; width: 100vw; height: 100vh; align-items: center; justify-content: center; font-size: 14px; opacity: 0">
-      <div>
-        ${error ? `<div style="color: #ef665b;">An error occurred during authorization, please reach out to the support (code: ${error}).</div>` : '<div>You are now connected</div>'}
-        <button id="closeButton" style="padding: 8px 16px; background-color: #161616; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
-          You can close this window
-        </button>
+      <div style="text-align: center">
+        ${error ? `<p style="color: #ef665b;">An error occurred during authorization, please reach out to support (code: ${error}).</p>` : '<p>You are now connected.</p>'}
+        <p>You can close this window.</p>
       </div>
     </div>
 

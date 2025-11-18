@@ -1,21 +1,18 @@
 import tracer from 'dd-trace';
-import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
-import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric, UsageMetric } from '@nangohq/types';
+import type { BillingUsageMetric, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { IRateLimiterRedisOptions } from 'rate-limiter-flexible';
 
 const cacheKeyPrefix = 'usageV2';
 
@@ -30,6 +27,7 @@ export interface IUsageTracker {
     getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number; forceRevalidation?: boolean }): Promise<Result<UsageStatus>>;
     revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>>;
+    getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>>;
 }
 
 export class UsageTrackerNoOps implements IUsageTracker {
@@ -68,22 +66,19 @@ export class UsageTrackerNoOps implements IUsageTracker {
     public async revalidate(): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }
+
+    public async getBillingUsage(): Promise<Result<BillingUsageMetric[]>> {
+        return Promise.resolve(Ok([]));
+    }
 }
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
-    private throttler: Throttler;
-    private billingClient: typeof billing;
+    public billingClient: UsageBillingClient;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
-        this.throttler = new Throttler({
-            storeClient: redis,
-            keyPrefix: 'billing',
-            points: envs.USAGE_BILLING_API_MAX_RPS,
-            duration: 1
-        });
-        this.billingClient = billing;
+        this.billingClient = new UsageBillingClient(redis);
     }
 
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
@@ -188,7 +183,7 @@ export class UsageTracker implements IUsageTracker {
                 case 'function_compute_gbms':
                 case 'webhook_forwards':
                 case 'function_logs': {
-                    const billingUsage = await this.getBillingUsage(accountId);
+                    const billingUsage = await this.getBillingMetrics(accountId);
                     if (billingUsage.isErr()) {
                         if (billingUsage.error.message === 'rate_limit_exceeded') {
                             span?.setTag('rate_limited', true);
@@ -218,6 +213,23 @@ export class UsageTracker implements IUsageTracker {
         }
     }
 
+    public async getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
+        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
+
+        if (billingUsageMetrics.isErr()) {
+            return billingUsageMetrics;
+        }
+
+        return Ok(
+            billingUsageMetrics.value.map((billingUsageMetric) => {
+                const usageMetric = billingMetricToUsageMetric(billingUsageMetric.name);
+                const shouldBeCumulative = usageMetric && ['connections', 'records'].includes(usageMetric);
+
+                return shouldBeCumulative ? toCumulativeUsage(billingUsageMetric) : billingUsageMetric;
+            })
+        );
+    }
+
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
         const cacheKey = `${cacheKeyPrefix}:${accountId}:${metric}`;
         if (usageMetrics[metric].reset === 'monthly') {
@@ -232,18 +244,15 @@ export class UsageTracker implements IUsageTracker {
         return { cacheKey };
     }
 
-    private async getBillingUsage(accountId: number): Promise<Result<Record<UsageMetric, number>>> {
-        const billingUsage: Result<BillingUsageMetric[]> = await this.throttler.execute('usage', async () => {
-            const plan = await getPlan(db.knex, { accountId });
-            if (plan.isErr()) {
-                return Err(plan.error);
-            }
-            if (!plan.value.orb_subscription_id) {
-                return Err(new Error('orb_subscription_id_missing'));
-            }
-            const subscriptionId = plan.value.orb_subscription_id;
-            return this.billingClient.getUsage(subscriptionId);
-        });
+    private async getBillingMetrics(accountId: number): Promise<Result<Record<UsageMetric, number>>> {
+        const plan = await getPlan(db.knex, { accountId });
+        if (plan.isErr()) {
+            return Err(plan.error);
+        }
+        if (!plan.value.orb_subscription_id) {
+            return Err(new Error('orb_subscription_id_missing'));
+        }
+        const billingUsage: Result<BillingUsageMetric[]> = await this.getBillingUsage(plan.value.orb_subscription_id);
         if (billingUsage.isErr()) {
             // Note: errors (including rate limit errors) are not being retried
             // revalidateAfter isn't being updated, so next incr will attempt to revalidate again
@@ -253,7 +262,7 @@ export class UsageTracker implements IUsageTracker {
         for (const billingMetric of billingUsage.value) {
             const usageMetric = billingMetricToUsageMetric(billingMetric.name);
             if (usageMetric) {
-                res[usageMetric] = billingMetric.quantity;
+                res[usageMetric] = billingMetric.total;
             }
         }
         return Ok(res);
@@ -293,26 +302,6 @@ export class UsageTracker implements IUsageTracker {
     }
 }
 
-class Throttler {
-    private throttler: RateLimiterRedis;
-
-    constructor(opts: IRateLimiterRedisOptions) {
-        this.throttler = new RateLimiterRedis(opts);
-    }
-
-    public async execute<T>(key: string, fn: () => Promise<T>): Promise<T> {
-        try {
-            await this.throttler.consume(key);
-            return await fn();
-        } catch (err) {
-            if (err instanceof RateLimiterRes) {
-                throw new Error('rate_limit_exceeded');
-            }
-            throw err;
-        }
-    }
-}
-
 function billingMetricToUsageMetric(name: string): UsageMetric | null {
     // Not ideal to match on BillingMetric name but Orb only exposes the user friendly name or internal ids
     const lowerName = name.toLowerCase();
@@ -323,6 +312,8 @@ function billingMetricToUsageMetric(name: string): UsageMetric | null {
     if (lowerName.includes('forward')) return 'webhook_forwards';
     if (lowerName.includes('compute')) return 'function_compute_gbms';
     if (lowerName.includes('function')) return 'function_executions';
+    if (lowerName.includes('connections')) return 'connections';
+    if (lowerName.includes('records')) return 'records';
 
     return null;
 }
@@ -338,3 +329,30 @@ const sources: Record<UsageMetric, string> = {
     webhook_forwards: 'billing:subscription:usage',
     function_logs: 'billing:subscription:usage'
 };
+
+function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {
+    const orderedPeriodicUsage = periodicUsage.usage.sort((a, b) => new Date(a.timeframeStart).getTime() - new Date(b.timeframeStart).getTime());
+    const cumulativeUsage: BillingUsageMetric['usage'] = [];
+    let previousQuantity = 0;
+
+    for (const usage of orderedPeriodicUsage) {
+        if (usage?.quantity === undefined) {
+            cumulativeUsage.push(usage);
+            continue;
+        }
+        const quantity = usage.quantity + previousQuantity;
+
+        cumulativeUsage.push({
+            timeframeStart: usage.timeframeStart,
+            timeframeEnd: usage.timeframeEnd,
+            quantity: quantity
+        });
+
+        previousQuantity = quantity;
+    }
+    return {
+        ...periodicUsage,
+        view_mode: 'cumulative',
+        usage: cumulativeUsage
+    };
+}

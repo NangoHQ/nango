@@ -183,12 +183,24 @@ Easily test your integration functions locally as you develop them with the `dry
 nango dryrun salesforce-contacts '<CONNECTION-ID>'
 ```
 
-To learn more about all the options for dryrun, run: `nango dryrun --help`
+You can also enable performance diagnostics to monitor memory usage and CPU metrics:
+
+```bash
+nango dryrun salesforce-contacts '<CONNECTION-ID>' --diagnostics
+```
+
+The `--diagnostics` flag displays detailed performance metrics including average and peak memory usage (RSS, heap, external) and CPU utilization, which is useful for performance tuning and identifying memory leaks.
+
+<Warning>
+Local diagnostics are indicative only and do not fully represent CPU/memory consumption when run by Nango Cloud. Performance characteristics may differ between local and cloud environments.
+</Warning>
+
+To learn more about all the options for the dryrun, run: `nango dryrun --help`.
 
 Because this is a dry run, syncs won't persist data in Nango. Instead, the retrieved data is printed to the console.
 
 <Tip>
-    By default, `dryrun` retrieves connections from your `dev` environment. You can change this with a CLI flag.
+    By default, `dryrun` retrieves connections from your `dev` environment. You can change this with the `-e` flag.
 </Tip>
 
 ### Step 6 - Deploy your sync

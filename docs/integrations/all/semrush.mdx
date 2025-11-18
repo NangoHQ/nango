@@ -1,0 +1,88 @@
+---
+title: 'Semrush (v3)'
+sidebarTitle: 'Semrush (v3)'
+description: 'Access the Semrush v3 API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Semrush (v3)_.
+      </Step>
+      <Step title="Authorize Semrush (v3)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Semrush API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Semrush (v3) API">
+        Let's make your first request to the Semrush (v3) API (get a list of projects). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/management/v1/projects" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              // https://developer.semrush.com/api/v3/projects/projects/#list-all-existing-projects/
+              endpoint: '/management/v1/projects',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Semrush (v3) accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Semrush (v3) using Connect UI](/integrations/all/semrush/connect) |
+    | General | [Semrush Website](https://www.semrush.com/) |
+    | Developer | [How to generate an API key in your Semrush account](https://developer.semrush.com/api/basics/how-to-get-api/) |
+    | | [Semrush API Documentation](https://developer.semrush.com/api/basics/introduction/) |
+    | | [v3 API Authentication](https://developer.semrush.com/api/v3/analytics/basic-docs/#auth) |
+    | | [How to get API](https://developer.semrush.com/api/basics/how-to-get-api/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/semrush.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Semrush API is available as an add-on to the Business tier of the SEO Toolkit subscription.
+    - API requests consume API units based on the type of data requested and API used.
+    - There is a limit of 10 inquiries per second per unique IP address.
+    - Semrush supports two different [API versions](https://developer.semrush.com/api/basics/introduction/#api-versions) (v3 and v4), and Nango currently supports v3.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/semrush.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
+

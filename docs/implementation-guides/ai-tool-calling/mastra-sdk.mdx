@@ -1,0 +1,82 @@
+---
+title: "Mastra"
+sidebarTitle: "Mastra"
+description: "End-to-end example of calling external tools with the Mastra SDK."
+---
+
+## Setup
+
+```bash
+npm i @mastra/core @nangohq/node
+```
+
+<Tip>
+This example uses the Node SDK, a lightweight wrapper over Nango’s REST API. The same flow works in any language by using the [API reference](https://nango.dev/docs/reference/api/authentication).
+</Tip>
+
+**Requirements:** 
+- A Nango account with a Hubspot integration configured and the `whoami` action enabled.
+- An OpenAI account (or another LLM provider).
+
+## Usage
+
+Example of a basic tool that calls an external API (Hubspot):
+
+```ts
+import { Agent } from "@mastra/core/agent";
+import { createTool } from "@mastra/core/tools";
+import { Nango } from "@nangohq/node";
+
+export async function runMastraAgent() {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log("Missing environment variable: OPENAI_API_KEY.")
+  }
+
+  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+  const userId = "user1", integrationId = "hubspot";
+
+  // Step 1: Ensure the user is authorized
+  console.log("🔒 Checking API authorization...")
+  let connectionId = (await nango.listConnections({ integrationId, userId })).connections[0]?.connection_id;
+
+  // Step 2: If the user is not authorized, redirect to the auth flow.
+  if (!connectionId) {
+    const session = await nango.createConnectSession({
+      allowed_integrations: [integrationId],
+      end_user: { id: userId },
+    });
+
+    console.log(`Please authorize the app by visiting this URL: ${session.data.connect_link}`);
+
+    const connection = await nango.waitForConnection(integrationId, userId);
+    connectionId = connection!.connection_id;
+  }
+
+  // Step 3: Send a prompt to your model.
+  const agent = new Agent({
+    name: "Hubspot Agent",
+    instructions: "You are a helpful assistant that can access Hubspot data.",
+    model: "openai/gpt-4o",
+    tools: {
+      who_am_i: createTool({
+        id: "who_am_i",
+        description: "Get the current user info.",
+        execute: async () => {
+          // Step 4: Execute the requested tool with Nango.
+          return await nango.triggerAction(integrationId, connectionId, "whoami");
+        },
+      }),
+    },
+  });
+
+  console.log("🤖 Agent running...")
+  const response = await agent.generate("Using the who_am_i tool, provide the current user info.");
+
+  console.log("✅ Agent retrieved your Hubspot user info:", response.text);
+}
+```
+
+<Tip>
+You can let agents or models introspect available tools and their specifications by calling this [endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
+</Tip>

@@ -160,9 +160,10 @@ export const connectionCreated = async (
             value: 1,
             properties: {
                 accountId: account.id,
-                connectionId: connection.id,
                 environmentId: connection.environment_id,
-                providerConfigKey: providerConfig.unique_key
+                environmentName: environment.name,
+                integrationId: providerConfig.unique_key,
+                connectionId: connection.connection_id
             }
         }
     });

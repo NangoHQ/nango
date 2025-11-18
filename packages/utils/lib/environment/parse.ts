@@ -216,14 +216,19 @@ export const ENVS = z.object({
     ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
     ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
     BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
-    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(2000),
-    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(50_000),
+    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
+    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
 
     // Usage
     USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),
     USAGE_REVALIDATE_AFTER_MS: z.coerce.number().optional().default(3_600_000), // 1 hour
     USAGE_BILLING_API_MAX_RPS: z.coerce.number().optional().default(5), // max requests per second to Orb API usage endpoint is 10, keeping some margin
+    USAGE_BILLING_API_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100), // max queued requests by rate limiter
+    USAGE_BILLING_API_CACHE_TTL_SECONDS: z.coerce
+        .number()
+        .optional()
+        .default(3600 * 6), // 6 hour
 
     // --- Third parties
     // AWS

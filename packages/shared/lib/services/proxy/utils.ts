@@ -56,10 +56,20 @@ export function getAxiosConfiguration({
     connection: ConnectionForProxy;
 }): AxiosRequestConfig {
     const url = buildProxyURL({ config: proxyConfig, connection });
+    const headers = buildProxyHeaders({ config: proxyConfig, url, connection });
+
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
         url,
-        headers: buildProxyHeaders({ config: proxyConfig, url, connection })
+        headers,
+        beforeRedirect: (options: Record<string, any>) => {
+            // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
+            Object.keys(headers).forEach((key) => {
+                if (headers[key]) {
+                    options['headers'][key] = headers[key];
+                }
+            });
+        }
     };
 
     if (proxyConfig.responseType) {

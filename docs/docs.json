@@ -191,12 +191,15 @@
             "group": "AI tool calling",
             "pages": [
               "implementation-guides/ai-tool-calling/openai-sdk",
-              "implementation-guides/ai-tool-calling/any-llm-sdk",
+              "implementation-guides/ai-tool-calling/anthropic-sdk",
+              "implementation-guides/ai-tool-calling/vercel-sdk",
+              "implementation-guides/ai-tool-calling/mastra-sdk",
+              "implementation-guides/ai-tool-calling/any-llm",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]
           },
           {
-            "group": "Requests Proxy",
+            "group": "Proxy",
             "pages": [
               "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
@@ -347,6 +350,7 @@
               "integrations/all/braintree",
               "integrations/all/braintree-sandbox",
               "integrations/all/braze",
+              "integrations/all/breezy-hr",
               "integrations/all/brevo-api-key",
               "integrations/all/brex",
               "integrations/all/brex-api-key",
@@ -398,6 +402,8 @@
               "integrations/all/coros",
               "integrations/all/coros-sandbox",
               "integrations/all/coupa-compass",
+              "integrations/all/crisp",
+              "integrations/all/crowdstrike",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
               "integrations/all/databricks-account",
@@ -480,6 +486,7 @@
               "integrations/all/github-app-oauth",
               "integrations/all/github-pat",
               "integrations/all/gitlab",
+              "integrations/all/gitlab-pat",
               "integrations/all/gong",
               "integrations/all/gong-oauth",
               "integrations/all/google",
@@ -610,6 +617,7 @@
               "integrations/all/momentum-io",
               "integrations/all/mural",
               "integrations/all/nationbuilder",
+              "integrations/all/ninjaone-rmm",
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/netsuite",
@@ -716,6 +724,7 @@
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
               "integrations/all/segment",
+              "integrations/all/semrush",
               "integrations/all/sendgrid",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
@@ -773,6 +782,7 @@
               "integrations/all/thrivecart-oauth",
               "integrations/all/ticktick",
               "integrations/all/tiktok-accounts",
+              "integrations/all/tiktok-personal",
               "integrations/all/tiktok-ads",
               "integrations/all/timely",
               "integrations/all/todoist",
@@ -804,6 +814,8 @@
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
               "integrations/all/unipile",
+              "integrations/all/valley",
+              "integrations/all/valley-api-key",
               "integrations/all/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",

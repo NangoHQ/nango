@@ -215,16 +215,16 @@ export async function getOrCreateMeta(db: Knex, accountId: number, currentEnviro
             return Ok(existingMeta.value);
         }
 
-        const googleCalendarIntegrationId = await getOrCreateGoogleCalendarIntegration(currentEnvironmentId);
+        const githubIntegrationId = await getOrCreateGithubIntegration(currentEnvironmentId);
 
-        if (googleCalendarIntegrationId.isErr()) {
-            return Err(googleCalendarIntegrationId.error);
+        if (githubIntegrationId.isErr()) {
+            return Err(githubIntegrationId.error);
         }
 
         const newMeta = await createMeta(trx, {
             account_id: accountId,
             environment_id: currentEnvironmentId,
-            integration_id: googleCalendarIntegrationId.value
+            integration_id: githubIntegrationId.value
         });
 
         if (newMeta.isErr()) {
@@ -235,27 +235,28 @@ export async function getOrCreateMeta(db: Knex, accountId: number, currentEnviro
     });
 }
 
-async function getOrCreateGoogleCalendarIntegration(environmentId: number): Promise<Result<number>> {
+async function getOrCreateGithubIntegration(environmentId: number): Promise<Result<number>> {
     try {
-        const existingIntegrationId = await configService.getIdByProviderConfigKey(environmentId, 'google-calendar-getting-started');
+        const existingIntegrationId = await configService.getIdByProviderConfigKey(environmentId, 'github-getting-started');
 
         if (existingIntegrationId) {
             return Ok(existingIntegrationId);
         }
 
-        const PROVIDER_NAME = 'google-calendar';
+        const PROVIDER_NAME = 'github';
 
         const provider = getProvider(PROVIDER_NAME);
         if (!provider) {
-            return Err('google_calendar_provider_not_found');
+            return Err('github_provider_not_found');
         }
 
         const newIntegration = await sharedCredentialsService.createPreprovisionedProvider({
             providerName: PROVIDER_NAME,
+            shared_credentials_name: 'github-getting-started',
             environment_id: environmentId,
             provider,
-            display_name: 'Google Calendar (Getting Started)',
-            unique_key: 'google-calendar-getting-started'
+            display_name: 'Github (Getting Started)',
+            unique_key: 'github-getting-started'
         });
 
         if (newIntegration.isErr()) {
@@ -265,12 +266,12 @@ async function getOrCreateGoogleCalendarIntegration(environmentId: number): Prom
         const id = newIntegration.value.id ?? null;
 
         if (!id) {
-            return Err('failed_to_create_google_calendar_integration');
+            return Err('failed_to_create_github_integration');
         }
 
         return Ok(id);
     } catch (err) {
-        return Err(new Error('failed_to_get_or_create_google_calendar_integration', { cause: err }));
+        return Err(new Error('failed_to_get_or_create_github_integration', { cause: err }));
     }
 }
 

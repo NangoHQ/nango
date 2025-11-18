@@ -223,6 +223,18 @@ export interface affinityWebhookResponse {
     sent_at: number;
 }
 
+export interface PagerDutyWebhookPayload {
+    event: {
+        id: string;
+        event_type: string;
+        resource_type: string;
+        occurred_at: string;
+        agent: object | null;
+        client: object | null;
+        data: object;
+    };
+}
+
 export interface ConnectWisePsaWebhookPayload {
     MessageId?: string;
     FromUrl?: string;
