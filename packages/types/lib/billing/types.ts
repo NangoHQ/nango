@@ -44,7 +44,7 @@ export interface GetBillingUsageOpts {
     granularity?: 'day';
     billingMetric?: {
         id: string;
-        group_by?: 'environmentId' | 'provider' | 'providerConfigKey' | 'connectionId' | 'type' | 'functionName' | 'model';
+        group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
     };
 }
 
@@ -61,6 +61,7 @@ export interface BillingUsageMetric {
         timeframeEnd: Date;
         quantity: number;
     }[];
+    view_mode: 'cumulative' | 'periodic';
 }
 
 export interface BillingPlan {
@@ -84,9 +85,9 @@ interface BillingEventBase<TType extends string, TProperties extends BillingProp
 export type MarBillingEvent = BillingEventBase<
     'monthly_active_records',
     {
-        connectionId: number;
         environmentId: number;
-        providerConfigKey: string;
+        environmentName: string;
+        integrationId: string;
         syncId: string;
         model: string;
     }
@@ -105,9 +106,9 @@ export type RecordsBillingEvent = BillingEventBase<
 export type ActionsBillingEvent = BillingEventBase<
     'billable_actions',
     {
-        connectionId: number;
         environmentId: number;
-        providerConfigKey: string;
+        environmentName: string;
+        integrationId: string;
         actionName: string;
     }
 >;
@@ -115,8 +116,11 @@ export type ActionsBillingEvent = BillingEventBase<
 export type FunctionExecutionsBillingEvent = BillingEventBase<
     'function_executions',
     {
+        environmentId: number;
+        environmentName: string;
+        integrationId: string;
         type: string;
-        connectionId: number;
+        functionName: string;
         telemetry: {
             successes: number;
             failures: number;
@@ -132,10 +136,9 @@ export type FunctionExecutionsBillingEvent = BillingEventBase<
 export type ProxyBillingEvent = BillingEventBase<
     'proxy',
     {
-        connectionId: number;
         environmentId: number;
-        providerConfigKey: string;
-        provider: string;
+        environmentName: string;
+        integrationId: string;
         telemetry: {
             successes: number;
             failures: number;
@@ -147,8 +150,8 @@ export type WebhookForwardBillingEvent = BillingEventBase<
     'webhook_forwards',
     {
         environmentId: number;
-        providerConfigKey: string;
-        provider: string;
+        environmentName: string;
+        integrationId: string;
         telemetry: {
             successes: number;
             failures: number;

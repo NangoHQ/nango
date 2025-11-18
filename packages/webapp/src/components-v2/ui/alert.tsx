@@ -34,7 +34,7 @@ function AlertDescription({ className, ...props }: React.ComponentProps<'div'>) 
     return (
         <div
             data-slot="alert-description"
-            className={cn('col-start-2 self-start inline-flex justify-items-start gap-1 text-sm leading-5', className)}
+            className={cn('col-start-2 self-start inline-flex justify-items-start gap-1 text-body-medium-regular', className)}
             {...props}
         />
     );

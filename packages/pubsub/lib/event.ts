@@ -40,7 +40,13 @@ interface UsageEventBase<TType extends string, TPayload extends Serializable> ex
     type: TType;
     payload: TPayload & {
         value: number;
-        properties: { accountId: number };
+        properties: {
+            accountId: number;
+            environmentId: number;
+            environmentName: string;
+            integrationId: string;
+            connectionId: string;
+        };
     };
 }
 
@@ -49,8 +55,6 @@ export type UsageRecordsEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            environmentId: number;
-            connectionId: number;
             syncId: string;
             model: string;
         };
@@ -62,9 +66,6 @@ export type UsageMarEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            environmentId: number;
-            providerConfigKey: string;
-            connectionId: number;
             syncId: string;
             model: string;
         };
@@ -76,9 +77,6 @@ export type UsageActionsEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            connectionId: number;
-            environmentId: number;
-            providerConfigKey: string;
             actionName: string;
         };
     }
@@ -88,11 +86,6 @@ export type UsageConnectionsEvent = UsageEventBase<
     'usage.connections',
     {
         value: number;
-        properties: {
-            environmentId: number;
-            providerConfigKey: string;
-            connectionId: number;
-        };
     }
 >;
 
@@ -103,8 +96,7 @@ export type UsageFunctionExecutionsEvent = UsageEventBase<
         properties: {
             type: 'sync' | 'action' | 'webhook' | 'on-event';
             success: boolean;
-            accountId: number;
-            connectionId: number;
+            functionName: string;
             telemetryBag:
                 | {
                       durationMs: number;
@@ -123,11 +115,6 @@ export type UsageProxyEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            accountId: number;
-            environmentId: number;
-            providerConfigKey: string;
-            connectionId: number;
-            provider: string;
             success: boolean;
         };
     }
@@ -138,9 +125,6 @@ export type UsageWebhookForwardEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            environmentId: number;
-            provider: string;
-            providerConfigKey: string;
             success: boolean;
         };
     }

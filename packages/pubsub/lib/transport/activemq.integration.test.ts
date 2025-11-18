@@ -48,9 +48,10 @@ describe('ActiveMQ Transport', () => {
                     value: 10,
                     properties: {
                         accountId: 1,
-                        connectionId: 2,
+                        connectionId: '2',
                         environmentId: 3,
-                        providerConfigKey: 'provider-a',
+                        environmentName: 'env',
+                        integrationId: 'provider-a',
                         actionName: 'action-x'
                     }
                 },
@@ -79,9 +80,10 @@ describe('ActiveMQ Transport', () => {
                     value: 20,
                     properties: {
                         accountId: 1,
-                        connectionId: 2,
+                        connectionId: '2',
                         environmentId: 3,
-                        providerConfigKey: 'provider-a',
+                        environmentName: 'env',
+                        integrationId: 'provider-a',
                         actionName: 'action-x'
                     }
                 },

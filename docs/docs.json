@@ -204,13 +204,14 @@
             "pages": [
               "implementation-guides/ai-tool-calling/openai-sdk",
               "implementation-guides/ai-tool-calling/anthropic-sdk",
+              "implementation-guides/ai-tool-calling/vercel-sdk",
               "implementation-guides/ai-tool-calling/mastra-sdk",
-              "implementation-guides/ai-tool-calling/any-llm-sdk",
+              "implementation-guides/ai-tool-calling/any-llm",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]
           },
           {
-            "group": "Requests Proxy",
+            "group": "Proxy",
             "pages": [
               "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
@@ -825,6 +826,8 @@
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
               "integrations/all/unipile",
+              "integrations/all/valley",
+              "integrations/all/valley-api-key",
               "integrations/all/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",

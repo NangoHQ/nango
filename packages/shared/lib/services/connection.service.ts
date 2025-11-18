@@ -936,10 +936,12 @@ class ConnectionService {
                 }
 
                 const tokenPath = template.token_response.token;
+                const refreshTokenPath = template.token_response.refresh_token;
                 const expirationPath = template.token_response?.token_expiration;
                 const expirationStrategy = template.token_response?.token_expiration_strategy ?? 'expireAt';
 
                 const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
+                const refreshToken = refreshTokenPath ? extractValueByPath(rawCreds, refreshTokenPath) : undefined;
                 const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
@@ -966,6 +968,7 @@ class ConnectionService {
                     type: 'TWO_STEP',
                     token: token,
                     expires_at: expiresAt,
+                    refresh_token: refreshToken,
                     raw: rawCreds
                 };
 
@@ -1203,7 +1206,13 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
+        // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
+        // In those cases, we need to use the refresh_url to refresh the token.
+        const isRefresh = provider.refresh_url && provider.refresh_token_params && dynamicCredentials['refresh_token'];
+        const tokenUrl = isRefresh ? provider.refresh_url : provider.token_url;
+        const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
+
+        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
         const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
         const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
         const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
@@ -1212,8 +1221,8 @@ class ConnectionService {
 
         let postBody: Record<string, any> | string = {};
 
-        if (provider.token_params) {
-            for (const [key, value] of Object.entries(provider.token_params)) {
+        if (tokenParams) {
+            for (const [key, value] of Object.entries(tokenParams)) {
                 const strippedValue = stripCredential(value);
 
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
@@ -1346,6 +1355,9 @@ class ConnectionService {
 
             if ('token' in dynamicCredentials) {
                 delete dynamicCredentials['token'];
+            }
+            if ('refresh_token' in dynamicCredentials) {
+                delete dynamicCredentials['refresh_token'];
             }
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
@@ -1531,57 +1543,29 @@ class ConnectionService {
             {
                 accountId: number;
                 count: number;
-                withActions: number;
-                withSyncs: number;
-                withWebhooks: number;
-            }[],
-            NangoError
+            }[]
         >
     > {
-        const res = await db.readOnly
-            .from('_nango_connections')
-            .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
-            .join('_nango_configs', function () {
-                this.on('_nango_configs.unique_key', '=', '_nango_connections.provider_config_key').andOn(
-                    '_nango_configs.environment_id',
-                    '=',
-                    '_nango_connections.environment_id'
-                );
-            })
-            .leftJoin('_nango_sync_configs', '_nango_sync_configs.nango_config_id', '_nango_configs.id')
-            .select<
-                {
-                    accountId: number;
-                    count: number;
-                    withActions: number;
-                    withSyncs: number;
-                    withWebhooks: number;
-                }[]
-            >(
-                db.knex.raw(`_nango_environments.account_id as "accountId"`),
-                db.knex.raw(`count(DISTINCT _nango_connections.id) AS "count"`),
-                db.knex.raw(
-                    `count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' AND _nango_sync_configs.enabled IS TRUE THEN _nango_connections.id ELSE NULL END) as "withActions"`
-                ),
-                db.knex.raw(
-                    `count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' AND _nango_sync_configs.enabled IS TRUE THEN _nango_connections.id ELSE NULL END) as "withSyncs"`
-                ),
-                db.knex.raw(
-                    `count(DISTINCT CASE WHEN _nango_sync_configs.webhook_subscriptions IS NOT NULL AND array_length(_nango_sync_configs.webhook_subscriptions, 1) > 0 THEN _nango_connections.id ELSE NULL END) as "withWebhooks"`
-                )
-            )
-            .whereNull('_nango_connections.deleted_at')
-            .whereNull('_nango_sync_configs.deleted_at')
-            .where(function () {
-                this.where('_nango_sync_configs.active', true).orWhereNull('_nango_sync_configs.active');
-            })
-            .groupBy('_nango_environments.account_id');
+        try {
+            const res = await db.readOnly
+                .from('_nango_connections')
+                .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
+                .select<
+                    {
+                        accountId: number;
+                        count: number;
+                    }[]
+                >(db.knex.raw(`_nango_environments.account_id as "accountId"`), db.knex.raw(`count(_nango_connections.id) AS "count"`))
+                .whereNull('_nango_connections.deleted_at')
+                .groupBy('_nango_environments.account_id');
 
-        if (res) {
-            return Ok(res);
+            if (res) {
+                return Ok(res);
+            }
+            return Err(new NangoError('failed_to_get_connections_count'));
+        } catch (err) {
+            return Err(new NangoError('failed_to_get_connections_count', { error: err }));
         }
-
-        return Err(new NangoError('failed_to_get_connections_count'));
     }
 
     // paginate through all connections

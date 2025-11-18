@@ -3701,6 +3701,10 @@ dayforce:
         client_id: Dayforce.HCMAnywhere.Client
     token_headers:
         content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
     docs: https://nango.dev/docs/integrations/all/dayforce
     docs_connect: https://nango.dev/docs/integrations/all/dayforce/connect
     connection_config:
@@ -8771,6 +8775,20 @@ mixpanel:
     docs: https://nango.dev/docs/integrations/all/mixpanel
     docs_connect: https://nango.dev/docs/integrations/all/mixpanel/connect
 
+mimecast:
+    display_name: Mimecast
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://api.services.mimecast.com/oauth/token
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.services.mimecast.com
+    docs: https://nango.dev/docs/integrations/all/mimecast
+    docs_connect: https://nango.dev/docs/integrations/all/mimecast/connect
+
 miro:
     display_name: Miro
     categories:
@@ -9503,8 +9521,12 @@ pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
+    webhook_routing_script: pagerdutyWebhookRouting
     proxy:
         base_url: https://api.pagerduty.com
+        retry:
+            after:
+                - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
 
 pandadoc:
@@ -13902,6 +13924,75 @@ vimeo-basic:
             endpoints:
                 - /
     docs: https://nango.dev/docs/integrations/all/vimeo-basic
+
+valley-api-key:
+    display_name: Valley (API Key)
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.joinvalley.co/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/auth/verify-api-key
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/integrations/all/valley-api-key
+    docs_connect: https://nango.dev/docs/integrations/all/valley-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            example: valley_a3f4c8d2e1b9a7**********************************************c5d8e2f1
+            pattern: '^valley_[a-f0-9]{64}$'
+            description: The API key for your Valley account
+            doc_section: '#step-1-verifying-your-api-key'
+
+valley:
+    display_name: Valley (OAuth)
+    categories:
+        - marketing
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.joinvalley.co/api/v1/auth/get-token
+    refresh_url: https://api.joinvalley.co/api/v1/auth/refresh-token
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    refresh_token_params:
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/json
+    proxy:
+        base_url: https://api.joinvalley.co/api/
+        headers:
+            authorization: Bearer ${accessToken}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+        refresh_token: refresh_token
+    docs: https://nango.dev/docs/integrations/all/valley
+    docs_connect: https://nango.dev/docs/integrations/all/valley/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: Your Valley email address
+            format: email
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Valley password
+            doc_section: '#step-1-getting-your-credentials'
 
 wakatime:
     display_name: Wakatime
