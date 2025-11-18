@@ -94,7 +94,9 @@ export enum Types {
 
     ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
 
-    USAGE_IS_CAPPED = 'nango.capping.isCapped'
+    USAGE_IS_CAPPED = 'nango.capping.isCapped',
+
+    PUBSUB_PUBLISH = 'nango.pubsub.publish'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
