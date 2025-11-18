@@ -51,8 +51,8 @@ export const ConnectUISettings = () => {
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
 
     // Matches backend logic, canDisableConnectUIWatermark(plan?: DBPlan | null): boolean
-    const canDisableWatermark =
-        !globalEnv.features.plan || !environment.plan
+    const noPlanAvailable = !globalEnv.features.plan || !environment.plan;
+    const canDisableWatermark = noPlanAvailable
             ? globalEnv.isHosted || globalEnv.isEnterprise
             : environment.plan.can_disable_connect_ui_watermark;
 
