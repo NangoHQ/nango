@@ -18,31 +18,30 @@ This guide walks you through creating an API 2.0 application in Mimecast Cloud G
 
 ### Instructions:
 
-#### Step 1: Navigate to API Applications
+#### Step 1: Create an API Application
 
-1. Log in to your Mimecast Administration Console.
-2. Navigate to **Administration** > **Services** > **Cloud Gateway**.
-3. Select **API and Platform Integrations** > **API 2.0 Applications**.
-
-#### Step 2: Generate API Keys
-
-1. In the Mimecast API 2.0 section, click **Generate Keys**.
+1. Log in to your Mimecast Administration Console and navigate to **Administration** > **Services** > **Cloud Gateway** > **API and Platform Integrations** > **API 2.0 Applications**.
+2. Click **Generate Keys**.
 <img src="/integrations/all/mimecast/mimecast_generate_keys.png"/>
-2. Configure your application:
+
+3. Configure your application:
    - **Application Name**: Enter a descriptive name for your integration
    - **Application Description**: Provide details about what this integration will do
    - **Authentication Type**: Select **Client Credentials** (OAuth 2.0)
-3. Select the appropriate **API permissions/scopes** that your integration requires based on the Mimecast APIs you plan to use.
-4. Click **Create** or **Save** to register the application.
+4. Select the appropriate **API permissions/scopes** that your integration requires based on the Mimecast APIs you plan to use.
+5. Click **Create** or **Save** to register the application.
 
-#### Step 3: Copy your credentials
+#### Step 2: Copy your credentials
 
 1. After creating the application, the **Client ID** and **Client Secret** will be displayed.
-<img src="/integrations/all/mimecast/mimecast_copy_keys.png"/>
-2. **Important**: Copy and securely store both values immediately in a credentials vault. The Client Secret is only displayed once during the registration/configuration process and cannot be retrieved later.
-3. If you lose the Client Secret, you will need to regenerate it or create a new application.
 
-#### Step 4: Enter credentials in the Connect UI
+<img src="/integrations/all/mimecast/mimecast_copy_keys.png"/>
+
+<Note>
+Copy and securely store both values immediately in a credentials vault. The Client Secret is only displayed once during the registration/configuration process and cannot be retrieved later. If you lose the Client Secret, you will need to regenerate it or create a new application.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
 
 Once you have your **Client ID** and **Client Secret**:
 1. Open the form where you need to authenticate with Mimecast.
@@ -59,8 +58,3 @@ You are now connected to Mimecast.
 
 - **Token Expiration**: Access tokens obtained through the Client Credentials flow have a Time To Live (TTL) of 30 minutes. Nango will automatically refresh the token when it expires.
 - **Security Best Practices**: Store your Client ID and Client Secret securely. Never commit these credentials to source control or expose them in client-side code.
-
-### Useful Links
-
-- [Managing Mimecast API 2.0 Applications](https://mimecastsupport.zendesk.com/hc/en-us/articles/34000360548755-API-Integrations-Managing-API-2-0-for-Cloud-Gateway#h_01JK62GWQ91FX2VPS7EWE3M9RX)
-- [Mimecast Developer Documentation](https://developer.services.mimecast.com/)
