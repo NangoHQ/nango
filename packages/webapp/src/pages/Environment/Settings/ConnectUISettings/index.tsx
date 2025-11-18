@@ -17,6 +17,7 @@ import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useCon
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { globalEnv } from '@/utils/env';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { ConnectUIColorPalette, Theme } from '@nangohq/types';
@@ -48,6 +49,12 @@ export const ConnectUISettings = () => {
     const { data: connectUISettings } = useConnectUISettings(env);
     const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
+
+    // Matches backend logic, canDisableConnectUIWatermark(plan?: DBPlan | null): boolean
+    const canDisableWatermark =
+        !globalEnv.features.plan || !environment.plan
+            ? globalEnv.isHosted || globalEnv.isEnterprise
+            : environment.plan.can_disable_connect_ui_watermark;
 
     const form = useForm({
         defaultValues: connectUISettings?.data,
@@ -152,11 +159,11 @@ export const ConnectUISettings = () => {
                                                     checked={field.state.value}
                                                     onCheckedChange={(checked) => field.handleChange(checked)}
                                                     onBlur={field.handleBlur}
-                                                    disabled={!environment.plan?.can_disable_connect_ui_watermark}
+                                                    disabled={!canDisableWatermark}
                                                 />
                                             </div>
                                         </TooltipTrigger>
-                                        {!environment.plan?.can_disable_connect_ui_watermark && (
+                                        {!canDisableWatermark && (
                                             <TooltipContent className="text-grayscale-300">
                                                 Disabling the watermark is only available for Growth plans.{' '}
                                                 <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
