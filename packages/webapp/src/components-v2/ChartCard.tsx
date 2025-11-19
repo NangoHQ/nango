@@ -96,7 +96,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timefr
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden">
                 {!isEmpty && (
                     <ChartContainer config={chartConfig} className="h-full w-full">
-                        <ChartComponent accessibilityLayer data={chartData}>
+                        <ChartComponent accessibilityLayer data={chartData} barCategoryGap={4}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border-muted)" />
                             <XAxis
                                 dataKey="date"
