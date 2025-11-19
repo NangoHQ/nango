@@ -852,8 +852,17 @@ class ConnectionService {
         return del;
     }
 
-    public async updateLastFetched(id: number) {
-        await db.knex.from<DBConnection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
+    public async updateLastFetched(id: number): Promise<void> {
+        // the query can be called concurrently
+        // we therefore first attempt to lock the row
+        // if lock can't be acquired, the update is skipped without waiting
+        // in order to avoid excessive db locking/waiting
+        await db
+            .knex('_nango_connections')
+            .whereIn('id', function () {
+                this.select('id').from('_nango_connections').where({ id, deleted: false }).forUpdate().skipLocked();
+            })
+            .update({ last_fetched_at: db.knex.fn.now() });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.

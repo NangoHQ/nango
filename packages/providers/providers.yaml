@@ -3289,7 +3289,6 @@ connectwise-psa-staging:
         - ticketing
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
-
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
@@ -3553,6 +3552,35 @@ cursor:
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
             pattern: '^key_[a-f0-9]{64}$'
+
+cursor-admin:
+    display_name: Cursor Admin
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cursor.com
+        verification:
+            method: GET
+            endpoints:
+                - /teams/members
+    docs: https://nango.dev/docs/integrations/all/cursor-admin
+    docs_connect: https://nango.dev/docs/integrations/all/cursor-admin/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+            secret: true
+            doc_section: '#step-1-finding-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            default_value: ''
+            hidden: true
 
 databricks-account:
     display_name: Databricks (Account Level)
@@ -4200,6 +4228,49 @@ dropbox-sign:
                 - 'x-ratelimit-reset'
         base_url: https://api.hellosign.com
     docs: https://nango.dev/docs/integrations/all/dropbox-sign
+
+drchrono:
+    display_name: DrChrono
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://app.drchrono.com/o/authorize/
+    token_url: https://app.drchrono.com/o/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.drchrono.com
+    docs: https://nango.dev/docs/integrations/all/drchrono
+
+contactout:
+    display_name: ContactOut
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.contactout.com
+        headers:
+            authorization: basic
+            token: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/stats
+    docs: https://nango.dev/docs/integrations/all/contactout
+    docs_connect: https://nango.dev/docs/integrations/all/contactout/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            example: ab7KxYpR1qLmN9Zs3TvUeFgH
+            description: Your ContactOut API Key
 
 drupal:
     display_name: Drupal
@@ -8796,6 +8867,20 @@ mixpanel:
     docs: https://nango.dev/docs/integrations/all/mixpanel
     docs_connect: https://nango.dev/docs/integrations/all/mixpanel/connect
 
+mimecast:
+    display_name: Mimecast
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://api.services.mimecast.com/oauth/token
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.services.mimecast.com
+    docs: https://nango.dev/docs/integrations/all/mimecast
+    docs_connect: https://nango.dev/docs/integrations/all/mimecast/connect
+
 miro:
     display_name: Miro
     categories:
@@ -9884,6 +9969,9 @@ pennylane:
     token_url: https://app.pennylane.com/oauth/token
     proxy:
         base_url: https://app.pennylane.com
+        retry:
+            at:
+                - 'ratelimit-reset'
     scope_separator: '+'
     authorization_params:
         response_type: code
@@ -9913,6 +10001,9 @@ pennylane-company-api:
                 accept: application/json
             endpoints:
                 - /api/external/v2/me
+        retry:
+            at:
+                - 'ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/pennylane-company-api
     docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
     credentials:
@@ -14143,6 +14234,33 @@ wildix-pbx:
             example: domain
             suffix: .wildixin.com
             prefix: https://
+
+wiza:
+    display_name: Wiza
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://wiza.co/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /meta/credits
+    docs: https://nango.dev/docs/integrations/all/wiza
+    docs_connect: https://nango.dev/docs/integrations/all/wiza/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Wiza API key
+            pattern: '^[a-f0-9]{64}$'
+            example: 6e0f838beb0a09d35f3f56b52b1344b262ecc713aab41456485d12c5f6edaef7
+            doc_section: '#step-1-getting-your-api-key'
 
 wordpress:
     display_name: WordPress
