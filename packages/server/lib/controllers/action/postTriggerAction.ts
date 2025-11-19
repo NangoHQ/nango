@@ -147,9 +147,10 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
                         value: 1,
                         properties: {
                             accountId: account.id,
-                            connectionId: connection.id,
-                            environmentId: connection.environment_id,
-                            providerConfigKey,
+                            connectionId: connection.connection_id,
+                            environmentId: environment.id,
+                            environmentName: environment.name,
+                            integrationId: providerConfigKey,
                             actionName: action_name
                         }
                     }

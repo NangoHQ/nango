@@ -200,7 +200,11 @@ export async function handleOnEventSuccess({
             value: 1,
             properties: {
                 accountId: nangoProps.team.id,
-                connectionId: nangoProps.nangoConnectionId,
+                environmentId: nangoProps.environmentId,
+                environmentName: nangoProps.environmentName,
+                integrationId: nangoProps.providerConfigKey,
+                connectionId: nangoProps.connectionId,
+                functionName: nangoProps.syncConfig.sync_name,
                 type: 'on-event',
                 success: true,
                 telemetryBag
@@ -299,7 +303,11 @@ function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
+                    functionName: syncName,
                     type: 'on-event',
                     success: false,
                     telemetryBag

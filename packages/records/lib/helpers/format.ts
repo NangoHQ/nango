@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto';
+
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import md5 from 'md5';
 import * as uuid from 'uuid';
 
 import { Err, Ok } from '@nangohq/utils';
@@ -34,7 +35,8 @@ export const formatRecords = ({
     const formattedRecords: FormattedRecord[] = [];
     const now = new Date();
     for (const datum of data) {
-        const data_hash = md5(JSON.stringify(datum));
+        const str = JSON.stringify(datum);
+        const data_hash = createHash('md5').update(str).digest('hex');
 
         if (!datum) {
             break;
