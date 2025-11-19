@@ -39,7 +39,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         }
     }
 
-    const [customerRes] = await Promise.all([await billing.getCustomer(account.id)]);
+    const customerRes = await billing.getCustomer(account.id);
     if (customerRes.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
         return;
