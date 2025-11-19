@@ -426,6 +426,7 @@
               "integrations/all/docusign",
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
+              "integrations/all/drchrono",
               "integrations/all/dropbox",
               "integrations/all/dropbox-sign",
               "integrations/all/drupal",
