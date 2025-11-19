@@ -4207,6 +4207,23 @@ dropbox-sign:
         base_url: https://api.hellosign.com
     docs: https://nango.dev/docs/integrations/all/dropbox-sign
 
+drchrono:
+    display_name: DrChrono
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://app.drchrono.com/o/authorize/
+    token_url: https://app.drchrono.com/o/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.drchrono.com
+    docs: https://nango.dev/docs/integrations/all/drchrono
+
 contactout:
     display_name: ContactOut
     categories:
