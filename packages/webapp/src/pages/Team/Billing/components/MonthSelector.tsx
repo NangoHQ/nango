@@ -69,7 +69,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
             <Button variant="ghost" size="icon" onClick={handlePreviousMonth}>
                 <ChevronLeft />
             </Button>
-            <span className="text-text-primary text-body-medium-medium">{monthDisplay}</span>
+            <span className="text-text-primary text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
             <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={!canGoNext}>
                 <ChevronRight />
             </Button>

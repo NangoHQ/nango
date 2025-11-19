@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 
@@ -12,11 +13,13 @@ export function formatQuantity(quantity: number): string {
 }
 
 interface ChartCardProps {
-    billingUsageMetric: ApiBillingUsageMetric;
+    isLoading: boolean;
+    label: string;
+    data?: ApiBillingUsageMetric;
     timeframe: { start: string; end: string };
 }
 
-export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timeframe }) => {
+export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, label, data, timeframe }) => {
     const chartConfig = {
         total: {
             label: 'Total',
@@ -26,10 +29,11 @@ export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timefr
 
     // Memoize chartData to avoid unnecessary calculations
     const chartData = useMemo(() => {
+        if (!data) return [];
         // Create a map of existing usage data by date
         // Note: timeframeStart is serialized as a string in the API response
         const usageMap = new Map<string, number>();
-        billingUsageMetric.usage.forEach((usage) => {
+        data.usage.forEach((usage) => {
             const dateStr = typeof usage.timeframeStart === 'string' ? usage.timeframeStart : usage.timeframeStart.toISOString();
             const dateKey = dateStr.split('T')[0]; // YYYY-MM-DD format
             usageMap.set(dateKey, usage.quantity);
@@ -56,7 +60,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timefr
         }
 
         return chartDataArr;
-    }, [billingUsageMetric.usage, timeframe.start, timeframe.end]);
+    }, [data?.usage, timeframe.start, timeframe.end]);
 
     // Calculate today's date in the same format as chart data (YYYY-MM-DD)
     const todayDateKey = useMemo(() => {
@@ -77,9 +81,9 @@ export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timefr
 
     const isEmpty = chartData.every((usage) => !usage.total || usage.total === 0);
 
-    const ChartComponent = billingUsageMetric.view_mode === 'cumulative' ? AreaChart : BarChart;
+    const ChartComponent = data?.view_mode === 'cumulative' ? AreaChart : BarChart;
     const ChartElement =
-        billingUsageMetric.view_mode === 'cumulative' ? (
+        data?.view_mode === 'cumulative' ? (
             <Area dataKey="total" fill="var(--color-total)" type="natural" strokeWidth={2} dot={false} />
         ) : (
             <Bar dataKey="total" fill="var(--color-total)" />
@@ -89,8 +93,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timefr
         <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0">
                 <div className="flex flex-col items-start justify-center h-11">
-                    <span className="text-text-primary text-body-large-semi">{billingUsageMetric.label}</span>
-                    {!isEmpty && <span className="text-text-secondary text-body-medium-regular">{formatQuantity(billingUsageMetric.total)}</span>}
+                    <span className="text-text-primary text-body-large-semi">{label}</span>
+                    {!isEmpty && data && <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>}
                 </div>
             </header>
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden">
@@ -124,6 +128,14 @@ export const ChartCard: React.FC<ChartCardProps> = ({ billingUsageMetric, timefr
                             {ChartElement}
                         </ChartComponent>
                     </ChartContainer>
+                )}
+
+                {isLoading && (
+                    <div className="flex flex-col items-center justify-center h-full">
+                        <span className="text-text-secondary text-body-medium-regular">
+                            <Loader2 className="animate-spin" />
+                        </span>
+                    </div>
                 )}
 
                 {isEmpty && (
