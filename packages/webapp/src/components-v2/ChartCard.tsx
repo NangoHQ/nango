@@ -27,7 +27,6 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         }
     };
 
-    // Memoize chartData to avoid unnecessary calculations
     const chartData = useMemo(() => {
         if (!data) return [];
         // Create a map of existing usage data by date
@@ -39,16 +38,15 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
             usageMap.set(dateKey, usage.quantity);
         });
 
-        // Generate all days in the timeframe, filling in missing days with undefined
+        // Generate all days in the timeframe. Fill in missing days with undefined total
         const start = new Date(timeframe.start);
         const end = new Date(timeframe.end);
         const chartDataArr: { date: string; total: number | undefined }[] = [];
 
-        // Iterate through each day in the timeframe
         const currentDate = new Date(start);
-        currentDate.setUTCHours(0, 0, 0, 0); // Normalize to start of day in UTC
+        currentDate.setUTCHours(0, 0, 0, 0);
         const endDate = new Date(end);
-        endDate.setUTCHours(0, 0, 0, 0); // Normalize to end of day in UTC
+        endDate.setUTCHours(0, 0, 0, 0);
 
         while (currentDate < endDate) {
             const dateKey = currentDate.toISOString().split('T')[0];
