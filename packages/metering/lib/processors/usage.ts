@@ -40,16 +40,16 @@ export class UsageProcessor {
         try {
             switch (event.type) {
                 case 'usage.monthly_active_records': {
-                    const { connectionId } = event.payload.properties;
-                    const connection = await connectionService.getConnectionById(connectionId);
-                    if (!connection) {
+                    const { connectionId, environmentId, environmentName, integrationId, accountId, syncId, model } = event.payload.properties;
+                    const connection = await connectionService.getConnection(connectionId, integrationId, environmentId);
+                    if (!connection.response) {
                         return Err(`Connection ${connectionId} not found`);
                     }
-                    if (connection.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
+                    if (connection.response.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
                         return Ok(undefined); // Skip MAR for connections younger than 30 days
                     }
                     const mar = event.payload.value;
-                    metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId: event.payload.properties.accountId });
+                    metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
 
                     return billing.add([
                         {
@@ -58,23 +58,30 @@ export class UsageProcessor {
                                 count: mar,
                                 idempotencyKey: event.idempotencyKey,
                                 timestamp: event.createdAt,
-                                ...event.payload.properties
+                                accountId,
+                                environmentId,
+                                environmentName,
+                                integrationId,
+                                syncId,
+                                model
                             }
                         }
                     ]);
                 }
                 case 'usage.records': {
+                    const { accountId } = event.payload.properties;
                     const incrRecords = await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'records',
                         delta: event.payload.value
                     });
                     if (incrRecords.isErr()) {
-                        logger.error(`Failed to increment records for account ${event.payload.properties.accountId}: ${incrRecords.error}`);
+                        logger.error(`Failed to increment records for account ${accountId}: ${incrRecords.error}`);
                     }
                     return Ok(undefined); // No billing action for records, just tracking usage
                 }
                 case 'usage.actions': {
+                    const { accountId, environmentId, environmentName, integrationId, actionName } = event.payload.properties;
                     return billing.add([
                         {
                             type: 'billable_actions',
@@ -82,13 +89,17 @@ export class UsageProcessor {
                                 count: event.payload.value,
                                 idempotencyKey: event.idempotencyKey,
                                 timestamp: event.createdAt,
-                                ...event.payload.properties
+                                accountId,
+                                environmentId,
+                                environmentName,
+                                integrationId,
+                                actionName
                             }
                         }
                     ]);
                 }
                 case 'usage.connections': {
-                    const accountId = event.payload.properties.accountId;
+                    const { accountId } = event.payload.properties;
                     const value = event.payload.value;
                     await this.usageTracker.incr({
                         accountId,
@@ -106,34 +117,35 @@ export class UsageProcessor {
                     return Ok(undefined);
                 }
                 case 'usage.function_executions': {
-                    const { accountId, type, telemetryBag, frequencyMs, success, ...rest } = event.payload.properties;
+                    const { accountId, environmentId, environmentName, integrationId, functionName, type, telemetryBag, frequencyMs, success } =
+                        event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
                     const customLogs = telemetryBag?.customLogs ?? 0;
 
                     // Usage tracking
                     const incrExecutions = await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'function_executions',
                         delta: event.payload.value
                     });
                     if (incrExecutions.isErr()) {
-                        logger.error(`Failed to increment function_executions for account ${event.payload.properties.accountId}: ${incrExecutions.error}`);
+                        logger.error(`Failed to increment function_executions for account ${accountId}: ${incrExecutions.error}`);
                     }
                     const incrCompute = await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId: accountId,
                         metric: 'function_compute_gbms',
                         delta: compute
                     });
                     if (incrCompute.isErr()) {
-                        logger.error(`Failed to increment function_compute_ms for account ${event.payload.properties.accountId}: ${incrCompute.error}`);
+                        logger.error(`Failed to increment function_compute_ms for account ${accountId}: ${incrCompute.error}`);
                     }
                     const incrLogs = await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId: accountId,
                         metric: 'function_logs',
                         delta: customLogs
                     });
                     if (incrLogs.isErr()) {
-                        logger.error(`Failed to increment logs for account ${event.payload.properties.accountId}: ${incrLogs.error}`);
+                        logger.error(`Failed to increment logs for account ${accountId}: ${incrLogs.error}`);
                     }
 
                     // Billing
@@ -154,7 +166,10 @@ export class UsageProcessor {
                                     customLogs,
                                     proxyCalls: telemetryBag?.proxyCalls ?? 0
                                 },
-                                ...rest,
+                                environmentId,
+                                environmentName,
+                                integrationId,
+                                functionName,
                                 ...(frequencyMs ? { frequencyMs } : {})
                             }
                         }
@@ -183,10 +198,10 @@ export class UsageProcessor {
                     return Ok(undefined);
                 }
                 case 'usage.proxy': {
-                    const { success, ...rest } = event.payload.properties;
+                    const { accountId, environmentId, environmentName, integrationId, success } = event.payload.properties;
                     // Usage tracking
                     await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'proxy',
                         delta: event.payload.value
                     });
@@ -198,7 +213,10 @@ export class UsageProcessor {
                                 count: event.payload.value,
                                 idempotencyKey: event.idempotencyKey,
                                 timestamp: event.createdAt,
-                                ...rest,
+                                accountId,
+                                environmentId,
+                                environmentName,
+                                integrationId,
                                 telemetry: {
                                     successes: success ? event.payload.value : 0,
                                     failures: success ? 0 : event.payload.value
@@ -209,14 +227,14 @@ export class UsageProcessor {
                     return Ok(undefined);
                 }
                 case 'usage.webhook_forward': {
-                    const { success, ...rest } = event.payload.properties;
+                    const { accountId, environmentId, environmentName, integrationId, success } = event.payload.properties;
                     const incrWebhook = await this.usageTracker.incr({
-                        accountId: event.payload.properties.accountId,
+                        accountId,
                         metric: 'webhook_forwards',
                         delta: event.payload.value
                     });
                     if (incrWebhook.isErr()) {
-                        logger.error(`Failed to increment webhook_forwards for account ${event.payload.properties.accountId}: ${incrWebhook.error}`);
+                        logger.error(`Failed to increment webhook_forwards for account ${accountId}: ${incrWebhook.error}`);
                     }
                     // Billing
                     billing.add([
@@ -226,7 +244,10 @@ export class UsageProcessor {
                                 count: event.payload.value,
                                 idempotencyKey: event.idempotencyKey,
                                 timestamp: event.createdAt,
-                                ...rest,
+                                accountId,
+                                environmentId,
+                                environmentName,
+                                integrationId,
                                 telemetry: {
                                     successes: success ? event.payload.value : 0,
                                     failures: success ? 0 : event.payload.value

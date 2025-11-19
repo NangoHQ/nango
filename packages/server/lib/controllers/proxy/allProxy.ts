@@ -235,10 +235,10 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 value: 1,
                 properties: {
                     accountId: account.id,
-                    connectionId: connection.id,
-                    environmentId: connection.environment_id,
-                    provider: integration.provider,
-                    providerConfigKey,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
                     success
                 }
             }
