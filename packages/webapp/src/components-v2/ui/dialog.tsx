@@ -80,7 +80,7 @@ function DialogTitle({ className, ...props }: React.ComponentProps<typeof Dialog
 }
 
 function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-    return <DialogPrimitive.Description data-slot="dialog-description" className={cn('text-text-secondary text-sm', className)} {...props} />;
+    return <DialogPrimitive.Description data-slot="dialog-description" className={cn('text-text-secondary text-body-medium-regular', className)} {...props} />;
 }
 
 export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger };

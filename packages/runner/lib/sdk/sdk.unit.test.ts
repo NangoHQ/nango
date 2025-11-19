@@ -178,15 +178,18 @@ describe('Pagination', () => {
 
         await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 }, connectionId: 'abc' }).next();
 
-        expect(spy).toHaveBeenCalledWith({
-            method: 'POST',
-            url: 'https://api.github.com/issues',
-            data: { limit: 2 },
-            headers: {
-                authorization: 'Bearer token',
-                'user-agent': expect.any(String)
-            }
-        });
+        expect(spy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                method: 'POST',
+                url: 'https://api.github.com/issues',
+                data: { limit: 2 },
+                headers: {
+                    authorization: 'Bearer token',
+                    'user-agent': expect.any(String)
+                },
+                beforeRedirect: expect.any(Function)
+            })
+        );
     });
 
     it('Overrides template pagination params with ones passed in the proxy config', async () => {
@@ -211,14 +214,17 @@ describe('Pagination', () => {
             expect(batch.length).toBe(3);
         }
 
-        expect(spy).toHaveBeenLastCalledWith({
-            method: 'GET',
-            url: 'https://api.github.com/issues?per_page=3&offset=3',
-            headers: {
-                authorization: 'Bearer token',
-                'user-agent': expect.any(String)
-            }
-        });
+        expect(spy).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues?per_page=3&offset=3',
+                headers: {
+                    authorization: 'Bearer token',
+                    'user-agent': expect.any(String)
+                },
+                beforeRedirect: expect.any(Function)
+            })
+        );
     });
 
     it('Paginates using offset', async () => {
@@ -345,21 +351,33 @@ describe('Pagination', () => {
             actualRecords.push(...batch);
         }
 
-        expect(spy).toHaveBeenNthCalledWith(1, {
-            method: 'GET',
-            url: 'https://api.github.com/issues',
-            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-        });
-        expect(spy).toHaveBeenNthCalledWith(2, {
-            method: 'GET',
-            url: 'https://api.github.com/issues?page=2',
-            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-        });
-        expect(spy).toHaveBeenNthCalledWith(3, {
-            method: 'GET',
-            url: 'https://api.github.com/issues?page=3',
-            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-        });
+        expect(spy).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues',
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
+                beforeRedirect: expect.any(Function)
+            })
+        );
+        expect(spy).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues?page=2',
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
+                beforeRedirect: expect.any(Function)
+            })
+        );
+        expect(spy).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues?page=3',
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
+                beforeRedirect: expect.any(Function)
+            })
+        );
         expect(spy).toHaveBeenCalledTimes(3);
 
         const expectedRecords = [...firstBatch, ...secondBatch, ...thirdBatch];

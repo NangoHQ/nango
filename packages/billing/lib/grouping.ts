@@ -64,8 +64,8 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
                         environmentId: b.properties.environmentId,
-                        connectionId: b.properties.connectionId,
-                        providerConfigKey: b.properties.providerConfigKey,
+                        environmentName: b.properties.environmentName,
+                        integrationId: b.properties.integrationId,
                         actionName: b.properties.actionName,
                         count: a.properties.count + b.properties.count
                     }
@@ -80,9 +80,8 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
                         environmentId: b.properties.environmentId,
-                        connectionId: b.properties.connectionId,
-                        providerConfigKey: b.properties.providerConfigKey,
-                        provider: b.properties.provider,
+                        environmentName: b.properties.environmentName,
+                        integrationId: b.properties.integrationId,
                         telemetry: {
                             successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
                             failures: _a.properties.telemetry.failures + b.properties.telemetry.failures
@@ -99,8 +98,8 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
                         environmentId: b.properties.environmentId,
-                        provider: b.properties.provider,
-                        providerConfigKey: b.properties.providerConfigKey,
+                        environmentName: b.properties.environmentName,
+                        integrationId: b.properties.integrationId,
                         count: a.properties.count + b.properties.count,
                         telemetry: {
                             successes: _a.properties.telemetry.successes + b.properties.telemetry.successes,
@@ -116,9 +115,9 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         timestamp: b.properties.timestamp,
                         idempotencyKey: b.properties.idempotencyKey,
                         accountId: b.properties.accountId,
-                        connectionId: b.properties.connectionId,
                         environmentId: b.properties.environmentId,
-                        providerConfigKey: b.properties.providerConfigKey,
+                        environmentName: b.properties.environmentName,
+                        integrationId: b.properties.integrationId,
                         syncId: b.properties.syncId,
                         model: b.properties.model,
                         count: a.properties.count + b.properties.count
@@ -148,8 +147,11 @@ export class BillingEventGrouping implements Grouping<BillingEvent> {
                         idempotencyKey: b.properties.idempotencyKey,
                         timestamp: b.properties.timestamp,
                         accountId: b.properties.accountId,
+                        environmentId: b.properties.environmentId,
+                        environmentName: b.properties.environmentName,
+                        integrationId: b.properties.integrationId,
+                        functionName: b.properties.functionName,
                         type: b.properties.type,
-                        connectionId: b.properties.connectionId,
                         count: a.properties.count + b.properties.count,
                         frequencyMs: b.properties.frequencyMs,
                         telemetry: {

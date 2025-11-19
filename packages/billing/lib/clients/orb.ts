@@ -204,7 +204,8 @@ export class OrbClient implements BillingClient {
                                 timeframeEnd: new Date(u.timeframe_end),
                                 quantity: u.quantity
                             };
-                        })
+                        }),
+                        view_mode: 'periodic'
                     };
                 })
             );

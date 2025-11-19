@@ -78,13 +78,13 @@ export const ProfileDropdown: React.FC = () => {
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-dropdown-bg-default hover:bg-dropdown-bg-hover active:bg-dropdown-bg-press border-t-[0.5px] border-border-muted">
-                        <div className="inline-flex gap-2">
+                        <div className="inline-flex gap-2 items-center">
                             <div className="size-10 flex items-center justify-center rounded bg-bg-surface border border-border-muted text-text-primary leading-5">
                                 {initials}
                             </div>
                             <div className="flex flex-col gap-1 items-start">
-                                <span className="text-sm font-semibold text-text-primary truncate max-w-28 ">{user?.name}</span>
-                                <span className="text-text-secondary text-s leading-3 pb-px truncate max-w-28">{user?.email}</span>
+                                <span className="text-body-medium-semi leading-4 text-text-primary truncate max-w-28 ">{user?.name}</span>
+                                <span className="text-body-small-regular leading-3 text-text-secondary pb-px truncate max-w-28">{user?.email}</span>
                             </div>
                         </div>
                         <ChevronsUpDown className="size-4.5 text-text-tertiary group-hover/profile:text-text-secondary group-active/profile:text-text-primary" />
