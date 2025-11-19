@@ -1,0 +1,592 @@
+---
+title: 'Testing integrations'
+sidebarTitle: 'Testing'
+description: 'How to test your Nango integrations using dry runs, mocks, and snapshots'
+---
+
+Nango provides a comprehensive testing framework that combines dry runs with mock-based snapshot testing. This guide will walk you through testing your integrations effectively.
+
+## Testing approach
+
+Nango's testing framework is built on three core concepts:
+
+1. **Dry runs**: Test your integrations against live API connections without affecting production data
+2. **Mocks**: Save API responses during dry runs to create reproducible test fixtures
+3. **Snapshot testing**: Automatically compare integration outputs against saved snapshots using Vitest
+
+This approach ensures your integrations work correctly while providing fast, reliable tests that don't depend on external APIs.
+
+## Quick start
+
+Generate tests for your integrations:
+
+```bash
+nango generate:tests
+```
+
+Run your tests:
+
+```bash
+npm test
+```
+
+## Dry run testing
+
+Dry runs allow you to execute your syncs and actions against real API connections without saving data to your database. This is essential for:
+
+- Testing integration logic before deployment
+- Debugging issues with live data
+- Generating test fixtures (mocks)
+- Validating data transformations
+
+### Basic dry run
+
+Execute a sync or action against an existing connection:
+
+```bash
+nango dryrun <sync-or-action-name> <connection-id>
+```
+
+**Example:**
+```bash
+nango dryrun fetch-tickets abc-123-connection
+```
+
+### Dry run options
+
+Common options for testing:
+
+```bash
+# Specify environment (dev or prod)
+nango dryrun fetch-tickets abc-123 -e prod
+
+# For actions: pass input data
+nango dryrun create-ticket abc-123 --input '{"title": "Test ticket"}'
+
+# For syncs: specify a last sync date for incremental syncs
+nango dryrun fetch-tickets abc-123 --lastSyncDate "2024-01-01"
+
+# Use a specific integration when sync names overlap
+nango dryrun fetch-tickets abc-123 --integration-id github
+
+# Execute a specific variant
+nango dryrun fetch-tickets abc-123 --variant premium
+```
+
+## Data validation
+
+Validation ensures your integration inputs and outputs match your defined schemas. This catches data transformation errors early.
+
+### Enable validation during dry runs
+
+Use the `--validate` (or `--validation`) flag to enforce validation:
+
+```bash
+nango dryrun fetch-tickets abc-123 --validate
+```
+
+When validation is enabled:
+- **Action inputs** are validated before execution
+- **Action outputs** are validated after execution
+- **Sync records** are validated before they would be saved
+- **Validation failures** halt execution and display detailed error messages
+
+### Validation with Zod
+
+You can also validate data directly in your integration code using Zod:
+
+```typescript
+import { z } from 'zod';
+
+const TicketSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  status: z.enum(['open', 'closed']),
+  createdAt: z.string().datetime(),
+});
+
+export default createSync({
+  exec: async (nango) => {
+    const response = await nango.get({ endpoint: '/tickets' });
+
+    // Validate the API response
+    const tickets = response.data.map(ticket => {
+      return TicketSchema.parse(ticket); // Throws if validation fails
+    });
+
+    await nango.batchSave(tickets, 'Ticket');
+  },
+});
+```
+
+### Validation error output
+
+When validation fails, you'll see detailed error information:
+
+```
+Invalid sync record. Use `--validation` option to see the details (invalid_sync_record)
+{
+  "validation": [
+    {
+      "path": "createdAt",
+      "message": "Invalid datetime string! Must be UTC.",
+      "code": "invalid_string"
+    }
+  ],
+  "model": "Ticket"
+}
+```
+
+## Saving mocks for tests
+
+Mocks are saved API responses that allow you to run tests without hitting external APIs. This makes tests faster and more reliable.
+
+### Generate mocks with dry run
+
+Use the `--save` (or `--save-responses`) flag to save all API responses:
+
+```bash
+nango dryrun fetch-tickets abc-123 --save
+```
+
+**Important**: When using `--save`, validation is automatically enabled. Mocks are only saved if validation passes, ensuring your test fixtures contain valid data.
+
+### Mock file structure
+
+Mocks are saved in the `tests/mocks` directory:
+
+```
+github/
+├── mocks/
+│   ├── fetch-tickets/
+│   │   ├── input.json              # Action input (for actions only)
+│   │   ├── output.json             # Action output (for actions only)
+│   │   ├── Ticket/
+│   │   │   ├── batchSave.json      # Records to be saved
+│   │   │   └── batchDelete.json    # Records to be deleted
+│   │   └── mocks/
+│   │       ├── GET-api-tickets-{hash}.json  # API response for GET /tickets
+│   │       └── POST-api-issues-{hash}.json  # API response for POST /issues
+│   └── nango/
+│       ├── getConnection.json      # Connection metadata
+│       └── getMetadata.json        # Stubbed metadata
+```
+
+### Using stubbed metadata
+
+For syncs that rely on connection metadata, you can provide test metadata:
+
+```bash
+nango dryrun fetch-tickets abc-123 --save --metadata '{"accountId": "test-123"}'
+```
+
+Or load from a file:
+
+```bash
+nango dryrun fetch-tickets abc-123 --save --metadata @fixtures/metadata.json
+```
+
+## Testing with Vitest
+
+Nango uses [Vitest](https://vitest.dev/) as its testing framework. Vitest is fast, has a great developer experience, and provides snapshot testing out of the box.
+
+### Auto-generated tests
+
+When you run `nango generate:tests`, Nango creates test files for all your integrations:
+
+**Sync test example:**
+```typescript
+import { vi, expect, it, describe } from 'vitest';
+import createSync from '../syncs/fetch-tickets.js';
+
+describe('github fetch-tickets tests', () => {
+  const nangoMock = new global.vitest.NangoSyncMock({
+    dirname: 'github',
+    name: "fetch-tickets",
+    Model: "Ticket"
+  });
+
+  const models = 'Ticket'.split(',');
+  const batchSaveSpy = vi.spyOn(nangoMock, 'batchSave');
+
+  it('should get, map correctly the data and batchSave the result', async () => {
+    await createSync.exec(nangoMock);
+
+    for (const model of models) {
+      const expectedBatchSaveData = await nangoMock.getBatchSaveData(model);
+      const spiedData = batchSaveSpy.mock.calls.flatMap(call => {
+        if (call[1] === model) {
+          return call[0];
+        }
+        return [];
+      });
+
+      const spied = JSON.parse(JSON.stringify(spiedData));
+      expect(spied).toStrictEqual(expectedBatchSaveData);
+    }
+  });
+
+  it('should get, map correctly the data and batchDelete the result', async () => {
+    await createSync.exec(nangoMock);
+
+    for (const model of models) {
+      const batchDeleteData = await nangoMock.getBatchDeleteData(model);
+      if (batchDeleteData && batchDeleteData.length > 0) {
+        expect(nangoMock.batchDelete).toHaveBeenCalledWith(batchDeleteData, model);
+      }
+    }
+  });
+});
+```
+
+**Action test example:**
+```typescript
+import { vi, expect, it, describe } from 'vitest';
+import createAction from '../actions/create-ticket.js';
+
+describe('github create-ticket tests', () => {
+  const nangoMock = new global.vitest.NangoActionMock({
+    dirname: 'github',
+    name: "create-ticket",
+    Model: "Ticket"
+  });
+
+  it('should output the action output that is expected', async () => {
+    const input = await nangoMock.getInput();
+    const response = await createAction.exec(nangoMock, input);
+    const output = await nangoMock.getOutput();
+
+    expect(response).toEqual(output);
+  });
+});
+```
+
+### How mocks work in tests
+
+The `NangoSyncMock` and `NangoActionMock` classes automatically load your saved mocks:
+
+1. **API requests** are intercepted and return saved mock responses
+2. **Input data** is loaded from `input.json` (for actions)
+3. **Expected outputs** are loaded from the appropriate mock files
+4. **Tests compare** actual outputs against expected outputs
+
+This means:
+- Tests run **instantly** (no API calls)
+- Tests are **deterministic** (same input = same output)
+- Tests work **offline**
+
+### Running tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests for a specific integration
+npm test github
+
+# Run a specific test file
+npm test github-fetch-tickets.test.ts
+
+# Run with coverage
+npm test -- --coverage
+```
+
+### Test configuration
+
+Vitest is configured via `vite.config.ts` in your project root:
+
+```typescript
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    setupFiles: ['./vitest.setup.ts'],
+  },
+});
+```
+
+The `vitest.setup.ts` file makes Nango mocks available globally:
+
+```typescript
+import { NangoActionMock, NangoSyncMock } from "nango/test";
+
+globalThis.vitest = {
+  NangoActionMock,
+  NangoSyncMock,
+};
+```
+
+## Customizing tests with business logic
+
+While auto-generated tests validate basic data flow, you often need custom tests for business logic.
+
+### Adding custom assertions
+
+Extend the generated tests with additional assertions:
+
+```typescript
+import { vi, expect, it, describe } from 'vitest';
+import createSync from '../syncs/fetch-tickets.js';
+
+describe('github fetch-tickets tests', () => {
+  const nangoMock = new global.vitest.NangoSyncMock({
+    dirname: 'github',
+    name: "fetch-tickets",
+    Model: "Ticket"
+  });
+
+  it('should correctly transform ticket priorities', async () => {
+    await createSync.exec(nangoMock);
+
+    const savedTickets = await nangoMock.getBatchSaveData('Ticket');
+
+    // Custom business logic validation
+    savedTickets.forEach(ticket => {
+      // Ensure priority is normalized
+      expect(['low', 'medium', 'high', 'critical']).toContain(ticket.priority);
+
+      // Ensure dates are ISO 8601
+      expect(ticket.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+
+      // Ensure ticket numbers are prefixed correctly
+      if (ticket.source === 'github') {
+        expect(ticket.id).toMatch(/^GH-\d+$/);
+      }
+    });
+  });
+
+  it('should filter out spam tickets', async () => {
+    await createSync.exec(nangoMock);
+
+    const savedTickets = await nangoMock.getBatchSaveData('Ticket');
+
+    // Verify spam filtering logic
+    const spamTickets = savedTickets.filter(t =>
+      t.title.toLowerCase().includes('spam')
+    );
+    expect(spamTickets).toHaveLength(0);
+  });
+});
+```
+
+### Testing error handling
+
+Test how your integration handles errors:
+
+```typescript
+it('should handle API errors gracefully', async () => {
+  // Create a mock that will throw an error
+  const errorMock = new global.vitest.NangoSyncMock({
+    dirname: 'github',
+    name: "fetch-tickets-error",
+    Model: "Ticket"
+  });
+
+  // Mock the get method to throw
+  vi.spyOn(errorMock, 'get').mockRejectedValue(
+    new Error('API rate limit exceeded')
+  );
+
+  // Verify error is logged
+  const logSpy = vi.spyOn(errorMock, 'log');
+
+  await expect(async () => {
+    await createSync.exec(errorMock);
+  }).rejects.toThrow('API rate limit exceeded');
+
+  expect(logSpy).toHaveBeenCalledWith(
+    expect.stringContaining('rate limit'),
+    { level: 'error' }
+  );
+});
+```
+
+### Testing pagination
+
+Verify pagination logic works correctly:
+
+```typescript
+it('should fetch all pages of results', async () => {
+  await createSync.exec(nangoMock);
+
+  const savedTickets = await nangoMock.getBatchSaveData('Ticket');
+
+  // Verify we got results from multiple pages
+  // (based on your pagination implementation)
+  expect(savedTickets.length).toBeGreaterThan(100); // Assuming page size is 100
+});
+```
+
+### Testing incremental syncs
+
+Test that incremental sync logic works:
+
+```typescript
+it('should only fetch tickets after last sync date', async () => {
+  const getSpy = vi.spyOn(nangoMock, 'get');
+
+  await createSync.exec(nangoMock);
+
+  // Verify the API request included the lastSyncDate parameter
+  expect(getSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      params: expect.objectContaining({
+        since: expect.any(String)
+      })
+    })
+  );
+});
+```
+
+### Parameterized tests
+
+Test multiple scenarios with different inputs:
+
+```typescript
+import { it, describe, expect } from 'vitest';
+
+describe.each([
+  { priority: 'P0', expected: 'critical' },
+  { priority: 'P1', expected: 'high' },
+  { priority: 'P2', expected: 'medium' },
+  { priority: 'P3', expected: 'low' },
+])('priority mapping for $priority', ({ priority, expected }) => {
+  it(`should map ${priority} to ${expected}`, async () => {
+    const nangoMock = new global.vitest.NangoSyncMock({
+      dirname: 'github',
+      name: `fetch-tickets-${priority}`,
+      Model: "Ticket"
+    });
+
+    await createSync.exec(nangoMock);
+
+    const savedTickets = await nangoMock.getBatchSaveData('Ticket');
+    const ticket = savedTickets.find(t => t.rawPriority === priority);
+
+    expect(ticket?.priority).toBe(expected);
+  });
+});
+```
+
+## Best practices
+
+### 1. Generate fresh mocks regularly
+
+API responses change over time. Regenerate mocks periodically:
+
+```bash
+# Regenerate mocks for all integrations
+nango dryrun fetch-tickets connection-1 --save
+nango dryrun create-ticket connection-1 --save --input @fixtures/test-input.json
+```
+
+### 2. Use realistic test data
+
+When testing actions, use realistic input data that represents actual use cases:
+
+```json
+// fixtures/create-ticket-input.json
+{
+  "title": "Customer reported login issue",
+  "description": "User unable to login after password reset",
+  "priority": "high",
+  "labels": ["bug", "authentication"]
+}
+```
+
+### 3. Test edge cases
+
+Don't just test the happy path:
+
+- Empty responses (no results)
+- Large datasets (pagination)
+- Missing or null fields
+- Unusual data formats
+- Rate limiting scenarios
+
+### 4. Keep tests focused
+
+Each test should verify one specific behavior:
+
+```typescript
+// ✅ Good - focused test
+it('should normalize priority values to lowercase', async () => {
+  // Test one thing
+});
+
+// ❌ Bad - testing multiple things
+it('should transform data correctly', async () => {
+  // Testing priority, dates, IDs, filtering, etc.
+});
+```
+
+### 5. Use descriptive test names
+
+Test names should describe what they verify:
+
+```typescript
+// ✅ Good
+it('should convert Unix timestamps to ISO 8601 format', async () => { });
+
+// ❌ Bad
+it('should work', async () => { });
+```
+
+### 6. Version your mocks
+
+Commit mock files to version control so tests are reproducible across environments:
+
+```bash
+git add github/mocks/
+git commit -m "Update test mocks for GitHub integration"
+```
+
+## Troubleshooting
+
+### Tests fail after regenerating mocks
+
+If tests fail after running `--save` again, your integration logic may have changed. Review the differences:
+
+```bash
+git diff github/mocks/fetch-tickets/Ticket/batchSave.json
+```
+
+Update your tests or fix your integration logic accordingly.
+
+### Mock files not loading
+
+Ensure your mock directory structure matches the expected format:
+- Directory name matches `dirname` in test
+- Sync/action name matches `name` in test
+- Model names match exactly (case-sensitive)
+
+### Validation errors in dry run
+
+If validation fails during dry run:
+
+1. Check the error output for specific field issues
+2. Verify your model definitions in your integration
+3. Ensure API responses match your expected schema
+4. Update your data transformation logic to fix validation errors
+
+### Tests work locally but fail in CI
+
+Ensure mock files are committed to version control:
+
+```bash
+git status github/mocks/
+```
+
+If mocks are gitignored, update your `.gitignore` to include them.
+
+## Related resources
+
+- [Data Validation](/implementation-guides/building-integrations/data-validation) - Learn more about schema validation
+- [Vitest Documentation](https://vitest.dev/) - Official Vitest docs
+- [Actions](/implementation-guides/actions/overview) - Building and testing actions
+- [Syncs](/implementation-guides/syncs/overview) - Building and testing syncs
