@@ -3267,7 +3267,6 @@ connectwise-psa-staging:
         - ticketing
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
-
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
@@ -3531,6 +3530,35 @@ cursor:
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
             pattern: '^key_[a-f0-9]{64}$'
+
+cursor-admin:
+    display_name: Cursor Admin
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.cursor.com
+        verification:
+            method: GET
+            endpoints:
+                - /teams/members
+    docs: https://nango.dev/docs/integrations/all/cursor-admin
+    docs_connect: https://nango.dev/docs/integrations/all/cursor-admin/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
+            pattern: '^key_[a-f0-9]{64}$'
+            secret: true
+            doc_section: '#step-1-finding-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            default_value: ''
+            hidden: true
 
 databricks-account:
     display_name: Databricks (Account Level)
@@ -4195,6 +4223,32 @@ drchrono:
     proxy:
         base_url: https://app.drchrono.com
     docs: https://nango.dev/docs/integrations/all/drchrono
+
+contactout:
+    display_name: ContactOut
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.contactout.com
+        headers:
+            authorization: basic
+            token: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/stats
+    docs: https://nango.dev/docs/integrations/all/contactout
+    docs_connect: https://nango.dev/docs/integrations/all/contactout/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            example: ab7KxYpR1qLmN9Zs3TvUeFgH
+            description: Your ContactOut API Key
 
 drupal:
     display_name: Drupal
@@ -14158,6 +14212,33 @@ wildix-pbx:
             example: domain
             suffix: .wildixin.com
             prefix: https://
+
+wiza:
+    display_name: Wiza
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://wiza.co/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /meta/credits
+    docs: https://nango.dev/docs/integrations/all/wiza
+    docs_connect: https://nango.dev/docs/integrations/all/wiza/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Wiza API key
+            pattern: '^[a-f0-9]{64}$'
+            example: 6e0f838beb0a09d35f3f56b52b1344b262ecc713aab41456485d12c5f6edaef7
+            doc_section: '#step-1-getting-your-api-key'
 
 wordpress:
     display_name: WordPress

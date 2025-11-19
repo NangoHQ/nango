@@ -1,0 +1,73 @@
+---
+title: 'ContactOut'
+sidebarTitle: 'ContactOut'
+description: 'Access the ContactOut API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ContactOut_.
+      </Step>
+      <Step title="Authorize ContactOut">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ContactOut API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the ContactOut API">
+        Let's make your first request to the ContactOut API (organization stats). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/stats" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+            <Tab title="Node">
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+                const res = await nango.get({
+                  endpoint: '/v1/stats',
+                  providerConfigKey: '<INTEGRATION-ID>',
+                  connectionId: '<CONNECTION-ID>'
+                });
+
+                console.log(JSON.stringify(res.data, null, 2));
+                ```
+            </Tab>
+        </Tabs>
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app so your users can add their ContactOut API keys themselves.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to ContactOut using Connect UI](/integrations/all/contactout/connect) |
+    | General | [ContactOut Website](https://contactout.com/) |
+    | Developer | [Request API access](https://contactout.com/meeting?utm_source=api_docs) |
+    | API docs | [API introduction](https://api.contactout.com/#introduction) |
+    | | [API Authentication](https://api.contactout.com/#authentication) |
+    | | [API Rate limiting](https://api.contactout.com/#rate-limits) |
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    _None yet, add yours!_
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/contactout.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
+
