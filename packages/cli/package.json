@@ -62,7 +62,7 @@
         "glob": "11.1.0",
         "import-meta-resolve": "4.1.0",
         "jscodeshift": "17.3.0",
-        "js-yaml": "4.1.0",
+        "js-yaml": "4.1.1",
         "npm-package-arg": "10.1.0",
         "ora": "8.2.0",
         "promptly": "3.2.0",

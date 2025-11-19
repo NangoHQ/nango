@@ -8,7 +8,7 @@
     "private": false,
     "scripts": {},
     "dependencies": {
-        "js-yaml": "4.1.0"
+        "js-yaml": "4.1.1"
     },
     "devDependencies": {
         "@nangohq/types": "0.69.13",
