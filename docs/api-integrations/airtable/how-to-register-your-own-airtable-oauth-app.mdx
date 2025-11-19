@@ -1,0 +1,59 @@
+---
+title: 'Set up Airtable with Nango'
+sidebarTitle: 'Airtable Setup'
+description: 'Register an OAuth app with Airtable and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Airtable to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Airtable account.
+
+<Steps>
+    <Step title="Create an Airtable account">
+    If you don't already have one, sign up for an [Airtable account](https://airtable.com/signup).
+    </Step>
+    <Step title="Register a new OAuth integration">
+    1. Go to the [OAuth integrations panel](https://airtable.com/create/oauth) in your Airtable account.
+    2. Click **Register new OAuth integration**.
+    3. Enter a unique name for your integration.
+    4. Add `https://api.nango.dev/oauth/callback` as your OAuth redirect URI.
+    5. Click **Register integration**.
+    </Step>
+    <Step title="Configure OAuth scopes and details">
+    1. Select the [scopes](https://airtable.com/developers/web/api/scopes) your application requires.
+    2. Add optional details like tagline, homepage URL, and logo.
+    3. For public integrations, add required fields: support email, privacy policy URL, and terms of service URL.
+    4. Click **Save changes**.
+    </Step>
+    <Step title="Generate credentials">
+    1. Click **Generate client secret** and confirm the action.
+    2. Copy the **Client Secret** (you'll only see it once).
+    3. Note your **Client ID** from the integration management page.
+    4. You'll need both when configuring your integration in Nango.
+    </Step>
+    <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+    </Step>
+</Steps>
+
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| `data.records:read` | Read records from bases. |
+| `data.records:write` | Create, update, and delete records. |
+| `schema.bases:read` | Read base schema (table/field names and types). |
+| `data.recordComments:read` | Read comments on records. |
+| `data.recordComments:write` | Create and delete record comments. |
+| `user.email:read` | Read the email of the authenticated user. |
+| `workspacesAndBases:read` | List the user's workspaces and bases to select from. |
+
+<Note>
+During the OAuth flow, users can decide which resources (Bases) your app should have access to. This means your app might not have access to all bases in their workspace.
+</Note>
+
+<Note>
+Airtable requires specific scopes for different operations. Make sure to request all necessary scopes during OAuth setup.
+</Note>
+
+For more details on Airtable's OAuth implementation, see [Airtable's OAuth Reference](https://airtable.com/developers/web/api/oauth-reference).
+
+---

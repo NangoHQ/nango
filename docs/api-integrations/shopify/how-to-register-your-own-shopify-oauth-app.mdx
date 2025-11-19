@@ -1,0 +1,47 @@
+---
+title: 'Set up Shopify with Nango'
+sidebarTitle: 'Shopify Setup'
+description: 'Register an OAuth app with Shopify and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Shopify to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Shopify stores.
+
+<Steps>
+    <Step title="Create a Shopify Partner account">
+    If you don't already have one, go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
+    </Step>
+    <Step title="Create a new app in your Dev Dashboard">
+    1. Navigate to the [Dev Dashboard](https://dev.shopify.com/dashboard/), then click **Create app** and provide a name for your app.
+    2. Click **Create** to proceed.
+    </Step>
+    <Step title="Configure OAuth settings">
+    You will be redirected to the **Versions** tab of your newly created app.
+    1. Click the **Select Scopes** button and select the scopes your integration requires from the list in the **Scopes** section.
+    2. Under **Redirect URLs**, add the following URL: `https://api.nango.dev/oauth/callback`.
+    3. Click the **Release** button at the bottom or top right.
+    4. Fill out the form and click **Release** to publish this version.
+    <Note>This version will automatically be marked as active. If you have multiple versions, ensure that it has the correct Redirect URL and scopes.</Note>
+    </Step>
+    <Step title="Obtain API credentials">
+    1. Navigate to the created app's **Home** tab. Under **Distribution**, click **Select distribution method** and select **Public distribution**.
+    2. Navigate to the created app's **Settings** tab.
+    3. Copy the **Client ID** and **Secret** from the **Credentials** section. You'll need these credentials when configuring your integration in Nango.
+    </Step>
+    <Step title="Create a development store for testing (optional)">
+    If you don't have a Shopify store already:
+    1. From the same **Dev Dashboard**, click **Dev stores**, then click **Create dev store**.
+    2. Fill out the **Create a dev store** form and click **Create store** to finish.
+    </Step>
+</Steps>
+
+## API Considerations
+
+When working with the Shopify API, keep these important points in mind:
+
+- **Shop-specific authentication**: Shopify's API requires a shop-specific subdomain in the authorization URL. Access tokens are shop-specific and cannot be used across different shops.
+- **Scope management**: You can skip adding scopes in Nango if you've already selected them when setting up your app in Shopify.
+- **Rate limits**: Some API endpoints have different rate limits than others. Check the [rate limits documentation](https://shopify.dev/docs/api/usage/rate-limits) for details.
+
+For more details on Shopify's OAuth implementation, see [Shopify's OAuth getting started guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant).
+
+---
