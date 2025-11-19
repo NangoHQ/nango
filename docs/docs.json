@@ -846,6 +846,7 @@
               "integrations/all/zapier-nla",
               "integrations/all/zapier-scim",
               "integrations/all/zendesk",
+              "integrations/all/zendesk-sell",
               "integrations/all/zenefits",
               "integrations/all/zoho",
               "integrations/all/zoho-bigin",
