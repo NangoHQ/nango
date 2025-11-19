@@ -8802,6 +8802,20 @@ mixpanel:
     docs: https://nango.dev/docs/integrations/all/mixpanel
     docs_connect: https://nango.dev/docs/integrations/all/mixpanel/connect
 
+mimecast:
+    display_name: Mimecast
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://api.services.mimecast.com/oauth/token
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.services.mimecast.com
+    docs: https://nango.dev/docs/integrations/all/mimecast
+    docs_connect: https://nango.dev/docs/integrations/all/mimecast/connect
+
 miro:
     display_name: Miro
     categories:
@@ -9890,6 +9904,9 @@ pennylane:
     token_url: https://app.pennylane.com/oauth/token
     proxy:
         base_url: https://app.pennylane.com
+        retry:
+            at:
+                - 'ratelimit-reset'
     scope_separator: '+'
     authorization_params:
         response_type: code
@@ -9919,6 +9936,9 @@ pennylane-company-api:
                 accept: application/json
             endpoints:
                 - /api/external/v2/me
+        retry:
+            at:
+                - 'ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/pennylane-company-api
     docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
     credentials:
