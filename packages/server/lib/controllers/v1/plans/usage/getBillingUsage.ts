@@ -1,5 +1,7 @@
+import z from 'zod';
+
 import { billing } from '@nangohq/billing';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { toApiBillingUsageMetrics } from '../../../../formatters/billingUsage.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -8,12 +10,27 @@ import { usageTracker } from '../../../../utils/usage.js';
 
 import type { GetBillingUsage } from '@nangohq/types';
 
+const querySchema = z.object({
+    timeframe: z.object({
+        start: z.iso.datetime(),
+        end: z.iso.datetime()
+    }),
+    env: z.string()
+});
+
 export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req, { withEnv: true });
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+    const parsedQuery = querySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(parsedQuery.error) } });
         return;
     }
+
+    if (parsedQuery.data.timeframe.start > parsedQuery.data.timeframe.end) {
+        res.status(400).send({ error: { code: 'invalid_query_params', message: 'From date must be before to date' } });
+        return;
+    }
+
+    const query: GetBillingUsage['Querystring'] = parsedQuery.data;
 
     const { account, user, plan } = res.locals;
     if (!plan) {
@@ -50,18 +67,12 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         return;
     }
 
-    const now = new Date();
-    const previousMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-    const previousMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-    const previousMonthUsage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
-        timeframe: { start: previousMonthStart, end: previousMonthEnd },
-        granularity: 'day'
-    });
-    const currentMonthUsage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+    const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+        timeframe: { start: new Date(query.timeframe.start), end: new Date(query.timeframe.end) },
         granularity: 'day'
     });
 
-    if (currentMonthUsage.isErr() || previousMonthUsage.isErr()) {
+    if (usage.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
         return;
     }
@@ -69,8 +80,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     res.status(200).send({
         data: {
             customer: customerRes.value,
-            current: toApiBillingUsageMetrics(currentMonthUsage.value),
-            previous: toApiBillingUsageMetrics(previousMonthUsage.value)
+            usage: toApiBillingUsageMetrics(usage.value)
         }
     });
 });
