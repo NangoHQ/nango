@@ -30,13 +30,13 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     }
     return (
         <div className="w-full flex flex-col gap-6">
-            <ChartCard label="Connections" data={usage?.data.usage.connections} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard label="Proxy requests" data={usage?.data.usage.proxy} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard label="Function time (ms)" data={usage?.data.usage.function_compute_gbms} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard label="Function runs" data={usage?.data.usage.function_executions} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard label="Function logs" data={usage?.data.usage.function_logs} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard label="Sync records" data={usage?.data.usage.records} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard label="Webhook forwarding" data={usage?.data.usage.webhook_forwards} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.connections} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.proxy} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.function_compute_gbms} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.function_executions} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.function_logs} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.records} isLoading={isLoading} timeframe={timeframe} />
+            <ChartCard data={usage?.data.usage.webhook_forwards} isLoading={isLoading} timeframe={timeframe} />
 
             {usage?.data.customer.portalUrl && (
                 <StyledLink icon to={usage.data.customer.portalUrl} type="external">

@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
+import { Skeleton } from './ui/skeleton';
 
 import type { ApiBillingUsageMetric } from '@nangohq/types';
 
@@ -14,12 +15,11 @@ export function formatQuantity(quantity: number): string {
 
 interface ChartCardProps {
     isLoading: boolean;
-    label: string;
     data?: ApiBillingUsageMetric;
     timeframe: { start: string; end: string };
 }
 
-export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, label, data, timeframe }) => {
+export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe }) => {
     const chartConfig = {
         total: {
             label: 'Total',
@@ -93,8 +93,14 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, label, data, ti
         <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0">
                 <div className="flex flex-col items-start justify-center h-11">
-                    <span className="text-text-primary text-body-large-semi">{label}</span>
-                    {!isEmpty && data && <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>}
+                    {isLoading || !data ? (
+                        <Skeleton className="bg-bg-subtle h-4 w-32" />
+                    ) : (
+                        <>
+                            <span className="text-text-primary text-body-large-semi">{data.label}</span>
+                            {!isEmpty && data && <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>}
+                        </>
+                    )}
                 </div>
             </header>
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden">
