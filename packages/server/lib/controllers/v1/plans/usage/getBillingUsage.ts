@@ -11,10 +11,12 @@ import { usageTracker } from '../../../../utils/usage.js';
 import type { GetBillingUsage } from '@nangohq/types';
 
 const querySchema = z.object({
-    timeframe: z.object({
-        start: z.iso.datetime(),
-        end: z.iso.datetime()
-    }),
+    timeframe: z
+        .object({
+            start: z.iso.datetime(),
+            end: z.iso.datetime()
+        })
+        .optional(),
     env: z.string()
 });
 
@@ -25,7 +27,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         return;
     }
 
-    if (parsedQuery.data.timeframe.start > parsedQuery.data.timeframe.end) {
+    if (parsedQuery.data.timeframe && parsedQuery.data.timeframe.start > parsedQuery.data.timeframe.end) {
         res.status(400).send({ error: { code: 'invalid_query_params', message: 'From date must be before to date' } });
         return;
     }
@@ -68,8 +70,8 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     }
 
     const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
-        timeframe: { start: new Date(query.timeframe.start), end: new Date(query.timeframe.end) },
-        granularity: 'day'
+        granularity: 'day',
+        ...(query.timeframe ? { timeframe: { start: new Date(query.timeframe.start), end: new Date(query.timeframe.end) } } : {})
     });
 
     if (usage.isErr()) {

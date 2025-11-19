@@ -67,12 +67,18 @@ export function useApiGetUsage(env: string) {
     });
 }
 
-export function useApiGetBillingUsage(env: string) {
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: ['plans', 'billing-usage'],
+        queryKey: ['plans', 'billing-usage', timeframe],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
-            const res = await apiFetch(`/api/v1/plans/billing-usage?env=${env}`, {
+            const params = new URLSearchParams({ env });
+            if (timeframe) {
+                params.append('timeframe[start]', timeframe.start);
+                params.append('timeframe[end]', timeframe.end);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
                 method: 'GET'
             });
 
