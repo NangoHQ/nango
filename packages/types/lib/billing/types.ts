@@ -50,6 +50,7 @@ export interface GetBillingUsageOpts {
 }
 
 export interface BillingUsageMetric {
+    externalId: string;
     group?: {
         key: string;
         value: string;

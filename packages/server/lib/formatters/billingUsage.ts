@@ -17,6 +17,7 @@ export function getMetricLabel(metric: UsageMetric): string {
 export function toApiBillingUsageMetric(usageMetric: BillingUsageMetric | undefined, metricName: UsageMetric): ApiBillingUsageMetric {
     if (!usageMetric) {
         return {
+            externalId: '',
             label: getMetricLabel(metricName),
             total: 0,
             usage: [],

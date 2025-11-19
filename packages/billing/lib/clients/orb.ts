@@ -203,6 +203,7 @@ export class OrbClient implements BillingClient {
 
                 entries[usageMetric] = {
                     ...group,
+                    externalId: item.billable_metric.id,
                     total: item.usage.reduce((sum, u) => sum + u.quantity, 0),
                     usage: item.usage.map((u) => {
                         return {
