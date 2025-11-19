@@ -18,7 +18,7 @@ description: 'Access the DrChrono API in 2 minutes 💨'
         <Tabs>
             <Tab title="cURL">
                 ```bash
-                curl "https://api.nango.dev/proxy/drchrono/api/patients?limit=10" \
+                curl "https://api.nango.dev/proxy/api/patients" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -32,7 +32,6 @@ description: 'Access the DrChrono API in 2 minutes 💨'
 
                 const res = await nango.get({
                     endpoint: '/api/patients',
-                    params: { limit: 10 },
                     providerConfigKey: '<INTEGRATION-ID>',
                     connectionId: '<CONNECTION-ID>'
                 });
