@@ -52,9 +52,7 @@ export const ConnectUISettings = () => {
 
     // Matches backend logic, canDisableConnectUIWatermark(plan?: DBPlan | null): boolean
     const noPlanAvailable = !globalEnv.features.plan || !environment.plan;
-    const canDisableWatermark = noPlanAvailable
-            ? globalEnv.isHosted || globalEnv.isEnterprise
-            : environment.plan.can_disable_connect_ui_watermark;
+    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (environment.plan?.can_disable_connect_ui_watermark ?? false);
 
     const form = useForm({
         defaultValues: connectUISettings?.data,
