@@ -13255,6 +13255,23 @@ timely:
         base_url: https://api.timelyapp.com
     docs: https://nango.dev/docs/integrations/all/timely
 
+timezest:
+    display_name: TimeZest
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.timezest.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/timezest
+    docs_connect: https://nango.dev/docs/integrations/all/timezest/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your TimeZest account
+
 thrivecart-oauth:
     display_name: ThriveCart (OAuth)
     categories:
