@@ -90,7 +90,7 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
         const [connection] = connections;
 
         // if there is no matching connection or if the connection config already has an installation_id, exit
-        if (!connection || (connection.connection_config['installation_id'] !== undefined && connection.connection_config['installation_id'] !== null)) {
+        if (!connection || connection.connection_config['installation_id']) {
             logger.error('no connection or existing installation_id');
             return Err(new NangoError('webhook_no_connection_or_existing_installation_id'));
         }
