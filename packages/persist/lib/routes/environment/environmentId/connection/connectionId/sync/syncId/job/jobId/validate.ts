@@ -12,27 +12,27 @@ const mergingStrategySchema = z.discriminatedUnion('strategy', [
     })
 ]);
 
+const recordsBodySchema = z
+    .object({
+        model: z.string(),
+        records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) }).catchall(z.unknown())).nonempty(),
+        providerConfigKey: z.string(),
+        connectionId: z.string(),
+        activityLogId: operationIdRegex,
+        merging: mergingStrategySchema.default({ strategy: 'override' })
+    })
+    .strict();
+
+const recordsParamsSchema = z
+    .object({
+        environmentId: z.coerce.number().int().positive(),
+        nangoConnectionId: z.coerce.number().int().positive(),
+        syncId: z.string(),
+        syncJobId: z.coerce.number().int().positive()
+    })
+    .strict();
+
 export const recordsRequestParser = {
-    parseBody: (data: unknown) =>
-        z
-            .object({
-                model: z.string(),
-                records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) }).catchall(z.unknown())).nonempty(),
-                providerConfigKey: z.string(),
-                connectionId: z.string(),
-                activityLogId: operationIdRegex,
-                merging: mergingStrategySchema.default({ strategy: 'override' })
-            })
-            .strict()
-            .parse(data),
-    parseParams: (data: unknown) =>
-        z
-            .object({
-                environmentId: z.coerce.number().int().positive(),
-                nangoConnectionId: z.coerce.number().int().positive(),
-                syncId: z.string(),
-                syncJobId: z.coerce.number().int().positive()
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data: unknown) => recordsBodySchema.parse(data),
+    parseParams: (data: unknown) => recordsParamsSchema.parse(data)
 };
