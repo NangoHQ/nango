@@ -163,8 +163,10 @@ export const ConnectUISettings = () => {
                                         </TooltipTrigger>
                                         {!canDisableWatermark && (
                                             <TooltipContent className="text-grayscale-300">
-                                                Disabling the watermark is only available for Growth plans.{' '}
-                                                <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
+                                                {globalEnv.isHosted || globalEnv.isEnterprise 
+                                                    ? 'Contact your administrator to enable watermark removal.' 
+                                                    : 'Disabling the watermark is only available for Growth plans. '}
+                                                {!globalEnv.isHosted && !globalEnv.isEnterprise && <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>}
                                             </TooltipContent>
                                         )}
                                     </Tooltip>
