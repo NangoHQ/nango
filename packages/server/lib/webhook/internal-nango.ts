@@ -36,18 +36,16 @@ export class InternalNango {
 
     async executeScriptForWebhooks({
         body,
-        headers,
         webhookType,
-        webhookHeader,
+        webhookHeaderValue,
         webhookTypeValue,
         connectionIdentifier,
         connectionIdentifierValue,
         propName
     }: {
         body: Record<string, any>;
-        headers?: Record<string, string>;
         webhookType?: string;
-        webhookHeader?: string;
+        webhookHeaderValue?: string;
         webhookTypeValue?: string;
         connectionIdentifier?: string;
         connectionIdentifierValue?: string;
@@ -108,7 +106,6 @@ export class InternalNango {
 
         // use webhookTypeValue if provided (direct value from headers), otherwise extract from body
         const type = webhookTypeValue || (webhookType ? get(body, webhookType) : undefined);
-        const webhookHeaderValue = webhookHeader && headers ? headers[webhookHeader] : undefined;
 
         const orchestrator = getOrchestrator();
 

@@ -34,8 +34,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        headers,
-        webhookHeader: headers['x-github-event'] as string,
+        webhookHeaderValue: headers['x-github-event'] as string,
         connectionIdentifier: 'installation.id',
         propName: 'installation_id'
     });
