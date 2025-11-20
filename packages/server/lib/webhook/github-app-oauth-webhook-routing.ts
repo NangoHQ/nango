@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 import get from 'lodash-es/get.js';
 
@@ -51,7 +51,8 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        webhookType: 'action',
+        headers,
+        webhookHeader: headers['x-github-event'] as string,
         connectionIdentifier: 'installation.id',
         propName: 'installation_id'
     });
@@ -90,7 +91,7 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
         const [connection] = connections;
 
         // if there is no matching connection or if the connection config already has an installation_id, exit
-        if (!connection || connection.connection_config['installation_id']) {
+        if (!connection || (connection.connection_config['installation_id'] !== undefined && connection.connection_config['installation_id'] !== null)) {
             logger.error('no connection or existing installation_id');
             return Err(new NangoError('webhook_no_connection_or_existing_installation_id'));
         }

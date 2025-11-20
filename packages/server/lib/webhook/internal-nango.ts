@@ -36,14 +36,18 @@ export class InternalNango {
 
     async executeScriptForWebhooks({
         body,
+        headers,
         webhookType,
+        webhookHeader,
         webhookTypeValue,
         connectionIdentifier,
         connectionIdentifierValue,
         propName
     }: {
         body: Record<string, any>;
+        headers?: Record<string, string>;
         webhookType?: string;
+        webhookHeader?: string;
         webhookTypeValue?: string;
         connectionIdentifier?: string;
         connectionIdentifierValue?: string;
@@ -53,7 +57,7 @@ export class InternalNango {
 
         const identifierValue = connectionIdentifierValue || (connectionIdentifier ? get(body, connectionIdentifier) : undefined);
 
-        if ((!connectionIdentifier || connectionIdentifier === '') && !identifierValue) {
+        if (!connectionIdentifier && !identifierValue) {
             connections = await connectionService.getConnectionsByEnvironmentAndConfig(this.environment.id, this.integration.unique_key);
         } else if (!identifierValue) {
             return { connectionIds: [], connectionMetadata: {} };
@@ -99,11 +103,12 @@ export class InternalNango {
                 acc[connection.connection_id] = 'metadata' in connection ? connection.metadata : null;
                 return acc;
             }, {});
-            return { connectionIds: connections?.map((connection) => connection.connection_id), connectionMetadata };
+            return { connectionIds: connections.map((connection) => connection.connection_id), connectionMetadata };
         }
 
         // use webhookTypeValue if provided (direct value from headers), otherwise extract from body
         const type = webhookTypeValue || (webhookType ? get(body, webhookType) : undefined);
+        const webhookHeaderValue = webhookHeader && headers ? headers[webhookHeader] : undefined;
 
         const orchestrator = getOrchestrator();
 
@@ -114,8 +119,14 @@ export class InternalNango {
                 continue;
             }
 
+            let triggered = false;
+
             for (const webhook of webhook_subscriptions) {
-                if (type === webhook || webhook === '*') {
+                if (triggered) {
+                    break;
+                }
+
+                if (type === webhook || webhookHeaderValue === webhook || webhook === '*') {
                     for (const connection of connections) {
                         await orchestrator.triggerWebhook({
                             account: this.team,
@@ -129,6 +140,8 @@ export class InternalNango {
                             logContextGetter: this.logContextGetter
                         });
                     }
+
+                    triggered = true;
 
                     if (webhook === '*') {
                         // Only trigger once since it will match all webhooks
