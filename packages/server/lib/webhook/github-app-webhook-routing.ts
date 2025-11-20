@@ -25,7 +25,6 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     if (signature) {
         const valid = validate(nango.integration, signature, body);
-        const valid = validate(nango.integration, signature, rawBody);
 
         if (!valid) {
             logger.error('Github App webhook signature invalid');
