@@ -227,6 +227,9 @@
                                 "limit_name_in_request": {
                                     "type": "string"
                                 },
+                                "limit": {
+                                    "type": "number"
+                                },
                                 "link_rel_in_response_header": {
                                     "type": "string"
                                 },

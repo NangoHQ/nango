@@ -817,6 +817,7 @@
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
               "integrations/all/unipile",
+              "integrations/all/vantage",
               "integrations/all/valley",
               "integrations/all/valley-api-key",
               "integrations/all/vercel",
