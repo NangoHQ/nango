@@ -14623,6 +14623,7 @@ zendesk-sell:
     auth_mode: OAUTH2
     authorization_url: https://api.getbase.com/oauth2/authorize
     token_url: https://api.getbase.com/oauth2/token
+    token_request_auth_method: basic
     authorization_params:
         response_type: code
     token_params:
@@ -14631,15 +14632,6 @@ zendesk-sell:
         grant_type: refresh_token
     proxy:
         base_url: https://api.getbase.com
-        headers:
-            accept: application/json
-            content-type: application/json
-        verification:
-            method: GET
-            headers:
-                content-type: application/json
-            endpoints:
-                - /v2/users/self
     docs: https://nango.dev/docs/integrations/all/zendesk-sell
 
 zenefits:
