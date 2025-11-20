@@ -1,0 +1,52 @@
+---
+title: DNSFilter - How do I link my account?
+sidebarTitle: DNSFilter
+---
+
+# Overview
+
+To authenticate with DNSFilter, you need:
+1. **API Key** - A key that grants Nango permission to interact with DNSFilter's API resources and services.
+
+This guide will walk you through generating this within DNSFilter.
+
+### Prerequisites:
+
+- You must have an account with DNSFilter.
+- You must have access to Account Settings to manage API keys.
+
+### Instructions:
+
+#### Step 1: Navigate to API Keys Settings
+
+1. Log in to your DNSFilter account.
+2. Click on **Account** in the left sidebar, then select **Account Settings**.
+
+<img src="/integrations/all/dnsfilter/navigation.png"/>
+
+3. Navigate to the **Security** section and scroll down to **API Keys**.
+
+<img src="/integrations/all/dnsfilter/api_keys.png"/>
+
+#### Step 2: Create a New API Key
+
+1. Click the **+ CREATE KEY** button.
+2. In the Create API Key modal, fill in the required information:
+   - **Name**: Enter a descriptive name for your API key (e.g., "Nango Integration")
+   - **Expiration**: Select an expiration period for the key (e.g., 6 Months)
+
+<img src="/integrations/all/dnsfilter/create_key.png"/>
+
+3. Click **GENERATE KEY** to create your API key.
+4. **Important**: Copy your API key immediately. You can only create a maximum of 5 keys at a time, and the key should be treated as securely as a password.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with DNSFilter.
+2. Enter your **API Key** in the provided field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/dnsfilter/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to DNSFilter.

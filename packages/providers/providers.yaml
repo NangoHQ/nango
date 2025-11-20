@@ -4064,6 +4064,20 @@ dixa:
             pattern: '^dev\|exports$'
             example: 'dev|exports'
 
+dnsfilter:
+    display_name: DNSFilter
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.dnsfilter.com
+    docs: https://nango.dev/docs/integrations/all/dnsfilter
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your DNSFilter account
+
 document360:
     display_name: Document360
     categories:
