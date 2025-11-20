@@ -179,7 +179,7 @@
         "anchor": "Implementation Guides",
         "icon": "pen",
         "groups": [
-          { 
+          {
             "group": "API Auth",
             "pages": [
               "implementation-guides/api-auth/configure-integration",
@@ -204,7 +204,7 @@
               "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
           },
-          { 
+          {
             "group": "Syncs",
             "pages": [
               "implementation-guides/syncs/implement-a-sync",
@@ -236,7 +236,8 @@
               "implementation-guides/building-integrations/unified-apis",
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
-              "implementation-guides/building-integrations/data-validation"
+              "implementation-guides/building-integrations/data-validation",
+              "implementation-guides/building-integrations/testing"
             ]
           },
           {

@@ -18,6 +18,12 @@ This approach ensures your integrations work correctly while providing fast, rel
 
 ## Quick start
 
+Install Vitest as a dev dependency:
+
+```bash
+npm install -D vitest
+```
+
 Generate tests for your integrations:
 
 ```bash
@@ -79,7 +85,7 @@ Validation ensures your integration inputs and outputs match your defined schema
 
 ### Enable validation during dry runs
 
-Use the `--validate` (or `--validation`) flag to enforce validation:
+Use the `--validate` flag to enforce validation:
 
 ```bash
 nango dryrun fetch-tickets abc-123 --validate
@@ -124,7 +130,7 @@ export default createSync({
 When validation fails, you'll see detailed error information:
 
 ```
-Invalid sync record. Use `--validation` option to see the details (invalid_sync_record)
+Invalid sync record. Use `--validate` option to see the details (invalid_sync_record)
 {
   "validation": [
     {
@@ -143,7 +149,7 @@ Mocks are saved API responses that allow you to run tests without hitting extern
 
 ### Generate mocks with dry run
 
-Use the `--save` (or `--save-responses`) flag to save all API responses:
+Use the `--save` flag to save all API responses:
 
 ```bash
 nango dryrun fetch-tickets abc-123 --save
@@ -472,117 +478,6 @@ describe.each([
   });
 });
 ```
-
-## Best practices
-
-### 1. Generate fresh mocks regularly
-
-API responses change over time. Regenerate mocks periodically:
-
-```bash
-# Regenerate mocks for all integrations
-nango dryrun fetch-tickets connection-1 --save
-nango dryrun create-ticket connection-1 --save --input @fixtures/test-input.json
-```
-
-### 2. Use realistic test data
-
-When testing actions, use realistic input data that represents actual use cases:
-
-```json
-// fixtures/create-ticket-input.json
-{
-  "title": "Customer reported login issue",
-  "description": "User unable to login after password reset",
-  "priority": "high",
-  "labels": ["bug", "authentication"]
-}
-```
-
-### 3. Test edge cases
-
-Don't just test the happy path:
-
-- Empty responses (no results)
-- Large datasets (pagination)
-- Missing or null fields
-- Unusual data formats
-- Rate limiting scenarios
-
-### 4. Keep tests focused
-
-Each test should verify one specific behavior:
-
-```typescript
-// ✅ Good - focused test
-it('should normalize priority values to lowercase', async () => {
-  // Test one thing
-});
-
-// ❌ Bad - testing multiple things
-it('should transform data correctly', async () => {
-  // Testing priority, dates, IDs, filtering, etc.
-});
-```
-
-### 5. Use descriptive test names
-
-Test names should describe what they verify:
-
-```typescript
-// ✅ Good
-it('should convert Unix timestamps to ISO 8601 format', async () => { });
-
-// ❌ Bad
-it('should work', async () => { });
-```
-
-### 6. Version your mocks
-
-Commit mock files to version control so tests are reproducible across environments:
-
-```bash
-git add github/mocks/
-git commit -m "Update test mocks for GitHub integration"
-```
-
-## Troubleshooting
-
-### Tests fail after regenerating mocks
-
-If tests fail after running `--save` again, your integration logic may have changed. Review the differences:
-
-```bash
-git diff github/mocks/fetch-tickets/Ticket/batchSave.json
-```
-
-Update your tests or fix your integration logic accordingly.
-
-### Mock files not loading
-
-Ensure your mock directory structure matches the expected format:
-- Directory name matches `dirname` in test
-- Sync/action name matches `name` in test
-- Model names match exactly (case-sensitive)
-
-### Validation errors in dry run
-
-If validation fails during dry run:
-
-1. Check the error output for specific field issues
-2. Verify your model definitions in your integration
-3. Ensure API responses match your expected schema
-4. Update your data transformation logic to fix validation errors
-
-### Tests work locally but fail in CI
-
-Ensure mock files are committed to version control:
-
-```bash
-git status github/mocks/
-```
-
-If mocks are gitignored, update your `.gitignore` to include them.
 
 ## Related resources
 
