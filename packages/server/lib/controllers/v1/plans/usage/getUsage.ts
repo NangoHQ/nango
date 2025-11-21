@@ -1,5 +1,6 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { getMetricLabel } from '../../../../formatters/billingUsage.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { usageTracker } from '../../../../utils/usage.js';
 
@@ -26,37 +27,37 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
 
     const data = {
         connections: {
-            label: 'Connections',
+            label: getMetricLabel('connections'),
             usage: usage.value.connections.current,
             limit: plan.connections_max
         },
         proxy: {
-            label: 'Proxy requests',
+            label: getMetricLabel('proxy'),
             usage: usage.value.proxy.current,
             limit: plan.proxy_max
         },
-        functionCompute: {
-            label: 'Function time (ms)',
+        function_compute_gbms: {
+            label: getMetricLabel('function_compute_gbms'),
             usage: usage.value.function_compute_gbms.current,
             limit: plan.function_compute_gbms_max
         },
-        functionExecutions: {
-            label: 'Function runs',
+        function_executions: {
+            label: getMetricLabel('function_executions'),
             usage: usage.value.function_executions.current,
             limit: plan.function_executions_max
         },
-        functionLogs: {
-            label: 'Function logs',
+        function_logs: {
+            label: getMetricLabel('function_logs'),
             usage: usage.value.function_logs.current,
             limit: plan.function_logs_max
         },
         records: {
-            label: 'Sync records',
+            label: getMetricLabel('records'),
             usage: usage.value.records.current,
             limit: plan.records_max
         },
-        webhookForwards: {
-            label: 'Webhook forwarding',
+        webhook_forwards: {
+            label: getMetricLabel('webhook_forwards'),
             usage: usage.value.webhook_forwards.current,
             limit: plan.webhook_forwards_max
         }
