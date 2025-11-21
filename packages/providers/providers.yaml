@@ -4072,11 +4072,15 @@ dnsfilter:
     proxy:
         base_url: https://api.dnsfilter.com
     docs: https://nango.dev/docs/integrations/all/dnsfilter
+    docs_connect: https://nango.dev/docs/integrations/all/dnsfilter/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your DNSFilter account
+            pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$'
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+            doc_section: '#step-1-generate-an-api-key'
 
 document360:
     display_name: Document360
