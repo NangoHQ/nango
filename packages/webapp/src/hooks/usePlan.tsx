@@ -74,8 +74,8 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
-                params.append('timeframe[start]', timeframe.start);
-                params.append('timeframe[end]', timeframe.end);
+                params.append('from', timeframe.start);
+                params.append('to', timeframe.end);
             }
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {

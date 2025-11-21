@@ -40,7 +40,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
             {usage?.data.customer.portalUrl && (
                 <StyledLink icon to={usage.data.customer.portalUrl} type="external">
-                    View usage details
+                    View invoice details
                 </StyledLink>
             )}
         </div>

@@ -19,14 +19,14 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     const selectedMonth = useMemo(() => {
         if (!monthParam) {
             const now = new Date();
-            return new Date(now.getFullYear(), now.getMonth(), 1);
+            return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
         }
         const [year, month] = monthParam.split('-').map(Number);
         if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
             const now = new Date();
-            return new Date(now.getFullYear(), now.getMonth(), 1);
+            return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
         }
-        return new Date(year, month - 1, 1);
+        return new Date(year, month - 1, 1, 0, 0, 0, 0);
     }, [monthParam]);
 
     // Notify parent when month changes
@@ -36,8 +36,8 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
 
     // Update URL param when month changes
     const setSelectedMonth = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
         void setMonthParam(`${year}-${month}`);
     };
 
@@ -47,20 +47,20 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
 
     const handlePreviousMonth = () => {
         const newDate = new Date(selectedMonth);
-        newDate.setMonth(selectedMonth.getMonth() - 1);
+        newDate.setUTCMonth(selectedMonth.getUTCMonth() - 1);
         setSelectedMonth(newDate);
     };
 
     const handleNextMonth = () => {
         const newDate = new Date(selectedMonth);
-        newDate.setMonth(selectedMonth.getMonth() + 1);
+        newDate.setUTCMonth(selectedMonth.getUTCMonth() + 1);
         setSelectedMonth(newDate);
     };
 
     // Disable next button if trying to go to future months
     const canGoNext = useMemo(() => {
         const now = new Date();
-        const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const currentMonth = new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
         return selectedMonth < currentMonth;
     }, [selectedMonth]);
 
