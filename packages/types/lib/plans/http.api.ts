@@ -62,12 +62,11 @@ export type GetUsage = Endpoint<{
 export type GetBillingUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
-    Querystring: { env: string };
+    Querystring: { env: string; from?: string | undefined; to?: string | undefined };
     Success: {
         data: {
             customer: BillingCustomer;
-            current: ApiBillingUsageMetrics;
-            previous: ApiBillingUsageMetrics;
+            usage: ApiBillingUsageMetrics;
         };
     };
 }>;
