@@ -181,6 +181,9 @@
                 "docs_connect": {
                     "type": "string"
                 },
+                "setup_guide_url": {
+                    "type": "string"
+                },
                 "post_connection_script": {
                     "type": "string"
                 },
