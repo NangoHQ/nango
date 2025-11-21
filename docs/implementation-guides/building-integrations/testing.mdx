@@ -16,26 +16,6 @@ Nango's testing framework is built on three core concepts:
 
 This approach ensures your integrations work correctly while providing fast, reliable tests that don't depend on external APIs.
 
-## Quick start
-
-Install Vitest as a dev dependency:
-
-```bash
-npm install -D vitest
-```
-
-Generate tests for your integrations:
-
-```bash
-nango generate:tests
-```
-
-Run your tests:
-
-```bash
-npm test
-```
-
 ## Dry run testing
 
 Dry runs allow you to execute your syncs and actions against real API connections without saving data to your database. This is essential for:
@@ -195,6 +175,26 @@ nango dryrun fetch-tickets abc-123 --save --metadata @fixtures/metadata.json
 ## Testing with Vitest
 
 Nango uses [Vitest](https://vitest.dev/) as its testing framework. Vitest is fast, has a great developer experience, and provides snapshot testing out of the box.
+
+### Setup
+
+Install Vitest as a dev dependency:
+
+```bash
+npm install -D vitest
+```
+
+Generate tests for your integrations:
+
+```bash
+nango generate:tests
+```
+
+Run your tests:
+
+```bash
+npm test
+```
 
 ### Auto-generated tests
 
