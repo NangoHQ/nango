@@ -34,26 +34,6 @@ This guide shows you how to register your own app with Airtable to obtain your O
     </Step>
 </Steps>
 
-## Common Scopes
-
-| Scope | Description |
-| ----- | ----------- |
-| `data.records:read` | Read records from bases. |
-| `data.records:write` | Create, update, and delete records. |
-| `schema.bases:read` | Read base schema (table/field names and types). |
-| `data.recordComments:read` | Read comments on records. |
-| `data.recordComments:write` | Create and delete record comments. |
-| `user.email:read` | Read the email of the authenticated user. |
-| `workspacesAndBases:read` | List the user's workspaces and bases to select from. |
-
-<Note>
-During the OAuth flow, users can decide which resources (Bases) your app should have access to. This means your app might not have access to all bases in their workspace.
-</Note>
-
-<Note>
-Airtable requires specific scopes for different operations. Make sure to request all necessary scopes during OAuth setup.
-</Note>
-
 For more details on Airtable's OAuth implementation, see [Airtable's OAuth Reference](https://airtable.com/developers/web/api/oauth-reference).
 
 ---
