@@ -72,38 +72,8 @@ When configuring your OAuth app, make sure to:
 - Select scopes from the scopes page based on the APIs you enabled earlier when setting up the app
 - Set the _Authorized JavaScript origins_ to your site URL (`https://app.nango.dev` if you're testing from the Nango UI)
 
-## Common Scopes
+For information on why Google refresh tokens expire, see our blog post: [Why is my Google refresh token expiring?](https://nango.dev/blog/why-is-my-google-refresh-token-expiring)
 
-Refer to [Google's OAuth 2.0 Scopes](https://developers.google.com/identity/protocols/oauth2/scopes) for the full list of available scopes. Common scopes for Google Sheets include:
-
-- `openid` - Access to basic profile information
-- `profile` - Access to user's basic profile information
-- `email` - Access to user's email address
-- `https://www.googleapis.com/auth/spreadsheets` - See, edit, create, and delete all your Google Sheets spreadsheets
-- `https://www.googleapis.com/auth/spreadsheets.readonly` - See all your Google Sheets spreadsheets
-
-## API Gotchas
-
-Be aware of these Google OAuth implementation details:
-
-- **Refresh token expiration:** Under certain circumstances, Google expires a user's refresh token. This can happen when:
-  - The user has [revoked your app's access](https://support.google.com/accounts/answer/3466521#remove-access)
-  - The user changed passwords and the refresh token contains Gmail scopes
-  - The user account has exceeded the maximum number of granted (live) refresh tokens
-  - The user granted [time-based access](https://developers.google.com/identity/protocols/oauth2/web-server#time-based-access) and it expired
-  - An admin [set services in your app's scopes to Restricted](https://support.google.com/a/answer/7281227#restrictaccess)
-  - For [Google Cloud Platform APIs](https://developers.google.com/identity/protocols/oauth2#gcp), the session length set by the admin was exceeded
-  - **Testing mode limitation:** In "Testing" mode with an external user type, refresh tokens expire in 7 days unless only basic scopes are used (userinfo.email, userinfo.profile, openid, or their [OpenID Connect equivalents](https://developers.google.com/identity/protocols/oauth2/scopes#openid-connect)). Switch from Testing to Production to remove this limitation.
-  - **Token limit:** Google allows up to 100 refresh tokens per account per OAuth client ID; new tokens overwrite the oldest without warning when the limit is reached
-
-- **Verification requirements:** For applications using sensitive or restricted scopes, Google requires verification and a security assessment. This process can take several weeks to complete.
-
-- **User types:** Google's OAuth consent screen has different configurations for "External" and "Internal" user types. Internal is only available for Google Workspace users and limits access to users within your organization.
-
-- **Incremental authorization:** Google implements incremental authorization, allowing you to request additional scopes over time without requiring users to re-authorize all previously granted scopes.
-
-- **Rate limits:** Google enforces [rate limits](https://developers.google.com/workspace/admin/reports/v1/limits) on API requests, which vary depending on the specific API being used.
-
-For more details, see the [Google OAuth 2.0 documentation](https://developers.google.com/identity/protocols/oauth2) and [Google Sheets API documentation](https://developers.google.com/sheets/api/reference/rest).
+For a complete list of available scopes, refer to [Google's OAuth 2.0 Scopes](https://developers.google.com/identity/protocols/oauth2/scopes). For details on verification requirements, user types, incremental authorization, and rate limits, consult [Google's OAuth 2.0 documentation](https://developers.google.com/identity/protocols/oauth2) and [Google Sheets API documentation](https://developers.google.com/sheets/api/reference/rest).
 
 ---
