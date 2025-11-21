@@ -1560,6 +1560,28 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+aws-sigv4:
+    display_name: AWS SigV4 Proxy
+    categories:
+        - storage
+    auth_mode: AWS_SIGV4
+    docs: https://nango.dev/docs/integrations/all/aws-sigv4
+    docs_connect: https://nango.dev/docs/integrations/all/aws-sigv4/connect
+    credentials:
+        role_arn:
+            type: string
+            title: IAM Role ARN
+            description: The ARN of the IAM role your customer creates via your onboarding template.
+            example: arn:aws:iam::123456789012:role/NangoAccessRole
+            doc_section: '#step-2-provide-the-role-arn'
+        region:
+            type: string
+            title: AWS Region (optional)
+            description: Override the region if it differs from the integration default set by the integration owner.
+            example: us-east-1
+            optional: true
+            doc_section: '#step-3-enter-connection-details'
+
 azure-blob-storage:
     categories:
         - storage

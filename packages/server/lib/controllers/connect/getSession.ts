@@ -78,7 +78,8 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
                 {
                     connection_config: value.connectionConfig,
                     // For debugging reason, it's enforced in the backend
-                    authorization_params: value.authorization_params
+                    authorization_params: value.authorization_params,
+                    credentials: value.credentials
                 }
             ])
         );
