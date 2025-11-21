@@ -474,26 +474,7 @@ await nango.patchConnection({
 
 <Expandable>
     <ResponseField name="body" type="PatchPublicConnection['Body']" required>
-        <Expandable title="body" defaultOpen>
-            The body of the connection.
-
-            <ResponseField name="end_user" type="object">
-                <Expandable title="end_user">
-                    <ResponseField name="id" type="string">
-                        Uniquely identifies the end user.
-                    </ResponseField>
-                    <ResponseField name="email" type="string">
-                        The email address of the end user.
-                    </ResponseField>
-                    <ResponseField name="display_name" type="string">
-                        The display name of the end user.
-                    </ResponseField>
-                    <ResponseField name="tags" type="object">
-                        Tags associated with the end user. Only accepts string values, up to 64 keys.
-                    </ResponseField>
-                </Expandable>
-            </ResponseField>
-        </Expandable>
+      The body of the connection (see [API Reference](/reference/api/connections/patch))
     </ResponseField>
 </Expandable>
 
