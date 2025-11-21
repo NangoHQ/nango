@@ -128,6 +128,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                                         }
                                     />
                                 }
+                                animationDuration={200}
                             />
                             {ChartElement}
                         </ChartComponent>
