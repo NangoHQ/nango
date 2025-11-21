@@ -229,11 +229,13 @@ program
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
-    .option('--validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
+    .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
+    .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
+        const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
@@ -266,7 +268,7 @@ program
             }
         }
 
-        const dryRun = new DryRunService({ fullPath, validation, isZeroYaml: precheck.isZeroYaml });
+        const dryRun = new DryRunService({ fullPath, validation: shouldValidate, isZeroYaml: precheck.isZeroYaml });
         await dryRun.run(
             {
                 ...this.opts(),
