@@ -474,7 +474,7 @@ await nango.patchConnection({
 
 <Expandable>
     <ResponseField name="body" type="PatchPublicConnection['Body']" required>
-       The body of the connection (see [API Reference](/reference/api/connections/patch))
+        The body of the connection (see [API Reference](/reference/api/connections/patch))
     </ResponseField>
 </Expandable>
 
@@ -1814,7 +1814,7 @@ const { data } = await nango.createConnectSession({
   <ResponseField name="end_user" type="object" required>
     <Expandable title="end_user" defaultOpen>
       <ResponseField name="id" type="string" required>
-        Uniquely identifies the end user.
+        The unique identifier for the end user.
       </ResponseField>
       <ResponseField name="email" type="string">
         The email address of the end user.
@@ -1831,7 +1831,7 @@ const { data } = await nango.createConnectSession({
   <ResponseField name="organization" type="object">
     <Expandable title="organization" defaultOpen>
       <ResponseField name="id" type="string" required>
-        Uniquely identifies the organization the end user belongs to. (Deprecated)
+        The unique identifier for the organization. (Deprecated)
       </ResponseField>
       <ResponseField name="display_name" type="string">
         The display name of the organization. (Deprecated)
@@ -1840,7 +1840,7 @@ const { data } = await nango.createConnectSession({
   </ResponseField>
 
   <ResponseField name="allowed_integrations" type="string[]">
-    Filters which integrations the end user can interact with.
+    An array of integration IDs that are allowed for this session.
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
@@ -1935,7 +1935,7 @@ const { data } = await nango.createReconnectSession({
   <ResponseField name="end_user" type="object">
     <Expandable title="end_user">
       <ResponseField name="id" type="string" required>
-        Uniquely identifies the end user.
+        The unique identifier for the end user.
       </ResponseField>
       <ResponseField name="email" type="string">
         The email address of the end user.
@@ -1952,7 +1952,7 @@ const { data } = await nango.createReconnectSession({
   <ResponseField name="organization" type="object">
     <Expandable title="organization">
       <ResponseField name="id" type="string" required>
-        Uniquely identifies the organization the end user belongs to. (Deprecated)
+        The unique identifier for the organization. (Deprecated)
       </ResponseField>
       <ResponseField name="display_name" type="string">
         The display name of the organization. (Deprecated)
