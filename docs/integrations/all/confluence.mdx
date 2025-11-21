@@ -114,9 +114,9 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
     | `read:confluence-content.all`     | Read all content                                  |
     | `read:confluence-content.summary` | Read content summaries                            |
     | `write:confluence-content`        | Create and update content                         |
-    | `delete:content:confluence`       | Delete content                                    |
+    | `delete:custom-content:confluence`| Delete content                                    |
     | `read:confluence-space.summary`   | Read space summaries                              |
-    | `write:confluence-space`          | Create or update spaces                           |
+    | `write:space:confluence`          | Create or update spaces                           |
     | `offline_access`                  | Access refresh tokens for offline use             |
     | `read:space:confluence`           | Read Confluence spaces (required for spaces sync) |
     | `read:page:confluence`            | Read Confluence pages (required for pages sync)   |
@@ -140,7 +140,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/confluence.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    - Refreshing tokens require the `offline_access` scope when creating the integration.
+    - Refreshing tokens requires the `offline_access` scope when creating the integration.
     - When connecting to Confluence, you have two options for specifying which Confluence site to connect to:
       1. Provide a `domain` during connection creation (recommended): This ensures you connect to the specific Confluence site you want.
       2. Let Nango auto-select the first available site (legacy behavior): If no baseUrl is specified, Nango will use the first site from the accessible resources api.
@@ -154,7 +154,7 @@ import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
       4. The selected site's `cloudId` and `domain` are stored in the connection configuration
 
     - When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
-    - Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+    - Refresh tokens will expire after 365 days of non-use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
     - Confluence's OAuth implementation uses rotating refresh tokens. Each time you refresh an access token, you'll receive a new refresh token that invalidates the previous one.
     - When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
     - The Confluence REST API has different versions. Make sure you're using the correct version for your needs.
