@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 
-import type { GetBillingUsage } from '@nangohq/types';
+import type { GetBillingUsage, UsageMetric } from '@nangohq/types';
 
 export const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined; isLoading: boolean }> = ({ data, isLoading }) => {
     const currentMonth = useMemo(() => {
@@ -18,19 +18,12 @@ export const UsageTable: React.FC<{ data: GetBillingUsage['Success'] | undefined
     const mergedUsage = useMemo(() => {
         if (!data) return [];
 
-        // Create a map of all unique IDs from both current and previous
-        const allIds = new Set([...data.data.current.map((item) => item.id), ...data.data.previous.map((item) => item.id)]);
-
-        // Create the merged list
-        return Array.from(allIds).map((id) => {
-            const currentUsage = data.data.current.find((item) => item.id === id);
-            const previousUsage = data.data.previous.find((item) => item.id === id);
-
+        return Object.entries(data.data.current).map(([metric, usage]) => {
             return {
-                id,
-                name: currentUsage?.name || previousUsage?.name || 'Unknown',
-                current: currentUsage?.total,
-                previous: previousUsage?.total
+                id: metric,
+                name: usage.label,
+                current: usage.total,
+                previous: data.data.previous[metric as UsageMetric]?.total
             };
         });
     }, [data]);

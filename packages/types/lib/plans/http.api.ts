@@ -1,5 +1,5 @@
-import type { BillingCustomer, BillingUsageMetric } from '../billing/types.js';
-import type { MetricUsageSummary } from '../usage/index.js';
+import type { ApiBillingUsageMetrics, BillingCustomer } from '../billing/types.js';
+import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
 import type { DBPlan } from './db.js';
 import type { Endpoint } from '../api.js';
@@ -55,7 +55,7 @@ export type GetUsage = Endpoint<{
     Path: '/api/v1/plans/usage';
     Querystring: { env: string };
     Success: {
-        data: Record<string, MetricUsageSummary>;
+        data: Record<UsageMetric, MetricUsageSummary>;
     };
 }>;
 
@@ -66,8 +66,8 @@ export type GetBillingUsage = Endpoint<{
     Success: {
         data: {
             customer: BillingCustomer;
-            current: BillingUsageMetric[];
-            previous: BillingUsageMetric[];
+            current: ApiBillingUsageMetrics;
+            previous: ApiBillingUsageMetrics;
         };
     };
 }>;

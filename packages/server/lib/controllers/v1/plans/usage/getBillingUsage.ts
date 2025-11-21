@@ -1,6 +1,7 @@
 import { billing } from '@nangohq/billing';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { toApiBillingUsageMetrics } from '../../../../formatters/billingUsage.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { usageTracker } from '../../../../utils/usage.js';
@@ -38,27 +39,27 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         }
     }
 
-    const [customerRes, subscriptionRes] = await Promise.all([
-        await billing.getCustomer(account.id),
-        // TODO: listen to webhook and store that subscription.id
-        await billing.getSubscription(account.id)
-    ]);
+    const customerRes = await billing.getCustomer(account.id);
     if (customerRes.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
         return;
     }
-    if (subscriptionRes.isErr() || !subscriptionRes.value) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get subscription' } });
+
+    if (!plan.orb_subscription_id) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Billing subscription not found' } });
         return;
     }
-
-    const sub = subscriptionRes.value;
 
     const now = new Date();
     const previousMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
     const previousMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-    const previousMonthUsage = await usageTracker.getBillingUsage(sub.id, { timeframe: { start: previousMonthStart, end: previousMonthEnd } });
-    const currentMonthUsage = await usageTracker.getBillingUsage(sub.id);
+    const previousMonthUsage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+        timeframe: { start: previousMonthStart, end: previousMonthEnd },
+        granularity: 'day'
+    });
+    const currentMonthUsage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+        granularity: 'day'
+    });
 
     if (currentMonthUsage.isErr() || previousMonthUsage.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
@@ -68,8 +69,8 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     res.status(200).send({
         data: {
             customer: customerRes.value,
-            current: currentMonthUsage.value,
-            previous: previousMonthUsage.value
+            current: toApiBillingUsageMetrics(currentMonthUsage.value),
+            previous: toApiBillingUsageMetrics(previousMonthUsage.value)
         }
     });
 });
