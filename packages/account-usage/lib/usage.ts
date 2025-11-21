@@ -325,7 +325,7 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
         cumulativeUsage.push({
             timeframeStart: usage.timeframeStart,
             timeframeEnd: usage.timeframeEnd,
-            quantity: quantity
+            quantity: Math.floor(quantity)
         });
 
         previousQuantity = quantity;
@@ -333,6 +333,7 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
     return {
         ...periodicUsage,
         view_mode: 'cumulative',
+        total: Math.floor(previousQuantity),
         usage: cumulativeUsage
     };
 }
