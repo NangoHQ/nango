@@ -526,7 +526,8 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
-    docs: https://nango.dev/docs/integrations/all/airtable
+    docs: https://nango.dev/docs/api-integrations/airtable
+    setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-oauth-app
 
 airtable-pat:
     display_name: Airtable (Personal Access Token)
@@ -4748,7 +4749,8 @@ facebook:
     token_url: https://graph.facebook.com/v22.0/oauth/access_token
     proxy:
         base_url: https://graph.facebook.com
-    docs: https://nango.dev/docs/integrations/all/facebook
+    docs: https://nango.dev/docs/api-integrations/facebook
+    setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-oauth-app
 
 fathom:
     display_name: Fathom
@@ -5563,7 +5565,8 @@ github:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-    docs: https://nango.dev/docs/integrations/all/github
+    docs: https://nango.dev/docs/api-integrations/github
+    setup_guide_url: https://nango.dev/docs/api-integrations/github/how-to-register-your-own-github-oauth-app
 
 github-app:
     display_name: GitHub (App)
@@ -5907,7 +5910,8 @@ google:
             limit_name_in_request: maxSize
             cursor_name_in_request: pageToken
             response_path: items
-    docs: https://nango.dev/docs/integrations/all/google
+    docs: https://nango.dev/docs/api-integrations/google
+    setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-oauth-app
 
 google-analytics:
     display_name: Google Analytics
@@ -5937,7 +5941,8 @@ google-calendar:
                 - '401'
                 - '429'
     webhook_routing_script: googleCalendarWebhookRouting
-    docs: https://nango.dev/docs/integrations/all/google-calendar
+    docs: https://nango.dev/docs/api-integrations/google-calendar
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-oauth-app
 
 google-chat:
     display_name: Google Chat
@@ -5966,7 +5971,8 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
-    docs: https://nango.dev/docs/integrations/all/google-mail
+    docs: https://nango.dev/docs/api-integrations/google-mail
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-oauth-app
 
 google-sheet:
     display_name: Google Sheet
@@ -5975,7 +5981,8 @@ google-sheet:
     alias: google
     proxy:
         base_url: https://sheets.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-sheet
+    docs: https://nango.dev/docs/api-integrations/google-sheet
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-oauth-app
 
 google-slides:
     display_name: Google Slides
@@ -5993,7 +6000,8 @@ google-drive:
         - popular
         - storage
     alias: google
-    docs: https://nango.dev/docs/integrations/all/google-drive
+    docs: https://nango.dev/docs/api-integrations/google-drive
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-oauth-app
 
 google-ads:
     display_name: Google Ads
@@ -7143,7 +7151,8 @@ jira:
             link_path_in_response_body: _links.next
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
-    docs: https://nango.dev/docs/integrations/all/jira
+    docs: https://nango.dev/docs/api-integrations/jira
+    setup_guide_url: https://nango.dev/docs/api-integrations/jira/how-to-register-your-own-jira-oauth-app
     connection_config:
         subdomain:
             type: string
@@ -9157,7 +9166,8 @@ notion:
             cursor_name_in_request: start_cursor
             limit_name_in_request: page_size
             response_path: results
-    docs: https://nango.dev/docs/integrations/all/notion
+    docs: https://nango.dev/docs/api-integrations/notion
+    setup_guide_url: https://nango.dev/docs/api-integrations/notion/how-to-register-your-own-notion-oauth-app
 
 notion-mcp:
     display_name: Notion (MCP)
@@ -9175,7 +9185,7 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/notion
+    docs: https://nango.dev/docs/api-integrations/notion
 
 notion-scim:
     display_name: Notion (SCIM API)
@@ -12231,8 +12241,9 @@ shopify:
         headers:
             x-shopify-access-token: ${accessToken}
     webhook_routing_script: shopifyWebhookRouting
-    docs: https://nango.dev/docs/integrations/all/shopify
-    docs_connect: https://nango.dev/docs/integrations/all/shopify/connect
+    docs: https://nango.dev/docs/api-integrations/shopify
+    setup_guide_url: https://nango.dev/docs/api-integrations/shopify/how-to-register-your-own-shopify-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/shopify/connect
     connection_config:
         subdomain:
             type: string
@@ -12393,7 +12404,8 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
-    docs: https://nango.dev/docs/integrations/all/slack
+    docs: https://nango.dev/docs/api-integrations/slack
+    setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-oauth-app
 
 smartlead-ai:
     display_name: Smartlead.ai

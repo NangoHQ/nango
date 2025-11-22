@@ -1,0 +1,39 @@
+---
+title: 'How to register your own Notion OAuth app'
+sidebarTitle: 'Notion Setup'
+description: 'Register an OAuth app with Notion and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Notion to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Notion account.
+
+<Steps>
+  <Step title="Create a Notion account">
+    If you don't already have one, sign up for a [Notion account](https://www.notion.so/signup).
+  </Step>
+  <Step title="Create a new integration">
+    1. Go to [My Integrations](https://www.notion.so/my-integrations) in your Notion account.
+    2. Click **+ New integration**.
+    3. Select **Public** as the integration type, then fill in the integration details. For the **Redirect URIs**, add `https://api.nango.dev/oauth/callback`.
+    4. Click **Save**.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. After saving, click **Configure integration settings**.
+    2. Under the **Configuration** tab, copy your **OAuth Client ID** and **OAuth Client Secret**. You'll need these when configuring your integration in Nango.
+    3. Under the **Capabilities** section, select the [capabilities](https://developers.notion.com/reference/capabilities) your integration requires.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Note>When creating a Notion OAuth app, it is set to **Internal** by default. You need to make it **Public** to initiate an OAuth flow with users. Only then will you be able to obtain the OAuth client ID/secret and register your callback URL.</Note>
+
+<Note>The Notion OAuth API doesn't support refreshing tokens, and so doesn't return a refresh token. The access token never expires.</Note>
+
+<Note>No OAuth scope is required by default for Notion integrations.</Note>
+
+<Note>After authorization, users need to explicitly share specific pages or databases with your integration before you can access them.</Note>
+
+For more details on Notion's OAuth implementation, see [Notion's authentication documentation](https://developers.notion.com/docs/authorization) and [OAuth setup guide](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up).
+
+---
