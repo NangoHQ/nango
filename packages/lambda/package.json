@@ -8,7 +8,7 @@
     "private": true,
     "scripts": {
         "ts-build": "tsc",
-        "build:docker": "docker buildx build --provenance=false --platform linux/amd64 -t $LAMBDA_FUNCTION_NAME .",
+        "build:docker": "cd ../.. && docker buildx build --provenance=false --platform linux/amd64 -f packages/lambda/Dockerfile -t $LAMBDA_FUNCTION_NAME .",
         "build:docker:tag": "docker tag $LAMBDA_FUNCTION_NAME $LAMBDA_FUNCTION_REPOSITORY/$LAMBDA_FUNCTION_NAME:latest",
         "build:docker:push": "docker push $LAMBDA_FUNCTION_REPOSITORY/$LAMBDA_FUNCTION_NAME:latest",
         "build:docker:all": "npm run build:docker && npm run build:docker:tag && npm run build:docker:push"
@@ -23,6 +23,7 @@
         "@nangohq/runner": "file:../runner",
         "@nangohq/node": "file:../node-client",
         "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/types": "file:../types",
         "botbuilder": "4.23.3",
         "soap": "1.6.0",
         "unzipper": "0.12.3",
