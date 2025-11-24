@@ -1,31 +1,19 @@
+### User Groups
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-user-group` | Assigns a user to a group with the OKTA_GROUP type | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/add-user-group.ts) |
+| `remove-user-group` | Unassigns a user from a group with the OKTA_GROUP type | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/remove-user-group.ts) |
 
-<AccordionGroup>
+### Users
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-user` | Creates a new user in your Okta org without credentials. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/create-user.ts) |
+| `users` | Fetches lists users in your org | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/syncs/users.ts) |
 
-<Accordion title="User Groups">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `PUT /user-groups` | Assigns a user to a group with the OKTA_GROUP type | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/add-user-group.md) |
-| `DELETE /user-groups` | Unassigns a user from a group with the OKTA_GROUP type | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/remove-user-group.md) |
-</Accordion>
+### Others
 
-
-<Accordion title="Users">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /users` | Creates a new user in your Okta org without credentials. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/create-user.md) |
-| `GET /users` | Fetches lists users in your org | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/syncs/users.md) |
-</Accordion>
-
-
-<Accordion title="Others">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /group` | Adds a new group with the OKTA_GROUP type to your org | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/add-group.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-group` | Adds a new group with the OKTA_GROUP type to your org | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/okta/actions/add-group.ts) |

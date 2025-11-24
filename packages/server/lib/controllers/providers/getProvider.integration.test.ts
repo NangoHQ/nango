@@ -31,7 +31,7 @@ describe(`GET ${route}`, () => {
         expect(res.json).toMatchObject<typeof res.json>({
             data: {
                 display_name: 'HubSpot',
-                docs: 'https://nango.dev/docs/integrations/all/hubspot',
+                docs: 'https://nango.dev/docs/api-integrations/hubspot',
                 name: 'hubspot',
                 auth_mode: 'OAUTH2'
             }

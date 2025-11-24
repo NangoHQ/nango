@@ -11,7 +11,7 @@ import type {
     BillingEvent,
     BillingPlan,
     BillingSubscription,
-    BillingUsageMetric,
+    BillingUsageMetrics,
     DBTeam,
     DBUser,
     GetBillingUsageOpts
@@ -92,7 +92,7 @@ export class Billing {
         return await this.client.getSubscription(accountId);
     }
 
-    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
+    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         return await this.client.getUsage(subscriptionId, opts);
     }
 
