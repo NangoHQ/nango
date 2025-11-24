@@ -254,6 +254,10 @@
               "implementation-guides/ai-tool-calling/anthropic-sdk",
               "implementation-guides/ai-tool-calling/vercel-sdk",
               "implementation-guides/ai-tool-calling/mastra-sdk",
+              "implementation-guides/ai-tool-calling/google-sdk",
+              "implementation-guides/ai-tool-calling/langchain-sdk",
+              "implementation-guides/ai-tool-calling/llamaindex-sdk",
+              "implementation-guides/ai-tool-calling/openai-agents-sdk",
               "implementation-guides/ai-tool-calling/any-llm",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]

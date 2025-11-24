@@ -1,18 +1,42 @@
-import { billing } from '@nangohq/billing';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import z from 'zod';
 
+import { billing } from '@nangohq/billing';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
+import { toApiBillingUsageMetrics } from '../../../../formatters/billingUsage.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { usageTracker } from '../../../../utils/usage.js';
 
 import type { GetBillingUsage } from '@nangohq/types';
 
+const querySchema = z
+    .object({
+        env: z.string(),
+        from: z.iso.datetime().optional(),
+        to: z.iso.datetime().optional()
+    })
+    .refine(
+        (data) => {
+            if (data.from && data.to) {
+                return new Date(data.from) <= new Date(data.to);
+            }
+            return true;
+        },
+        {
+            message: 'From date must be before to date',
+            path: ['from']
+        }
+    );
+
 export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req, { withEnv: true });
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+    const parsedQuery = querySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(parsedQuery.error) } });
         return;
     }
+
+    const query: GetBillingUsage['Querystring'] = parsedQuery.data;
 
     const { account, user, plan } = res.locals;
     if (!plan) {
@@ -38,29 +62,23 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         }
     }
 
-    const [customerRes, subscriptionRes] = await Promise.all([
-        await billing.getCustomer(account.id),
-        // TODO: listen to webhook and store that subscription.id
-        await billing.getSubscription(account.id)
-    ]);
+    const customerRes = await billing.getCustomer(account.id);
     if (customerRes.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
         return;
     }
-    if (subscriptionRes.isErr() || !subscriptionRes.value) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get subscription' } });
+
+    if (!plan.orb_subscription_id) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Billing subscription not found' } });
         return;
     }
 
-    const sub = subscriptionRes.value;
+    const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+        granularity: 'day',
+        ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {})
+    });
 
-    const now = new Date();
-    const previousMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
-    const previousMonthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-    const previousMonthUsage = await usageTracker.getBillingUsage(sub.id, { timeframe: { start: previousMonthStart, end: previousMonthEnd } });
-    const currentMonthUsage = await usageTracker.getBillingUsage(sub.id);
-
-    if (currentMonthUsage.isErr() || previousMonthUsage.isErr()) {
+    if (usage.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
         return;
     }
@@ -68,8 +86,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     res.status(200).send({
         data: {
             customer: customerRes.value,
-            current: currentMonthUsage.value,
-            previous: previousMonthUsage.value
+            usage: toApiBillingUsageMetrics(usage.value)
         }
     });
 });
