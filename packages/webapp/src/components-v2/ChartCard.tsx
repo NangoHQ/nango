@@ -113,7 +113,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                                 stroke="var(--color-bg-muted)"
                                 tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
                             />
-                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} />
+                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
                             {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
                             <ChartTooltip
                                 content={
