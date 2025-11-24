@@ -6,6 +6,10 @@ description: 'Learn the differences between GitHub Apps and OAuth Apps, and how 
 
 This guide covers how to set up a GitHub App with Nango. GitHub Apps provide more fine-grained permissions and better control over API access compared to OAuth Apps. Nango supports three GitHub App authentication methods: `github-app`, `github-app-oauth`, and standard `github` OAuth Apps.
 
+<Note>
+There are certain API methods that only work with an OAuth App that will not work with a GitHub App. Please check the GitHub documentation and look for a "Works with GitHub Apps" header under the endpoint.
+</Note>
+
 ## Understanding GitHub App authentication methods
 
 ### github-app (Installation-based)
@@ -30,15 +34,9 @@ When setting up a GitHub App OAuth in Nango:
 - **Request user authorization during installation**: The checkbox "Request user authorization (OAuth) during installation" should be checked
 - **Post installation settings**: The checkbox "Redirect on update" under "Post installation" should NOT be checked and the "Setup URL (optional)" should not be accessible
 
-## Important considerations
-
 <Warning>
 Nango supports initiating a connection with a GitHub App using the frontend SDK, but not directly from the [GitHub Marketplace](https://github.com/marketplace). Therefore, you should encourage users to install your GitHub App from your product, rather than from the GitHub Marketplace directly. This is a limitation we plan to fix in the future.
 </Warning>
-
-<Note>
-There are certain API methods that only work with an OAuth App that will not work with a GitHub App. Please check the GitHub documentation and look for a "Works with GitHub Apps" header under the endpoint.
-</Note>
 
 ## Additional resources
 
