@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.14] - 2025-11-21
+
+### Added
+
+- *(webhooks)* Add support for google calendar webhooks (#4994) by @hassan254-prog
+- *(integrations)* Add support for crisp (#5002) by @hassan254-prog
+- *(webhooks)* Add support for pagerduty webhooks (#4940) by @hassan254-prog
+- *(docs)* Add diagnostics info (#5003) by @khaliqgant
+- *(integrations)* Add support for valley (#4995) by @hassan254-prog
+- *(server)* Cumulative usage metrics (#5020) by @kaposke
+- *(integration)* Add mimecast support (#5019) by @gonzalde97
+- *(providers)* Add pennylane rate limit header to check (#5024) by @hassan254-prog
+- *(integrations)* Add support for wiza (#5022) by @hassan254-prog
+- *(integrations)* Add support for cursor admin (#5014) by @hassan254-prog
+- *(integrations)* Add support for contactout (#5023) by @hassan254-prog
+- *(integrations)* Add support for drchrono (#5035) by @hassan254-prog
+- *(nango-cli)* Command updates (#5034) by @khaliqgant
+- *(docs)* Add initial restructure integrations (#4982) by @khaliqgant
+- Map orb usage to local metrics (#5032) by @kaposke
+
+### Changed
+
+- *(webapp)* Use text utilities from figma (#5010) by @kaposke
+- Add dimensions to billing events (#5012) by @TBonnin
+- Use crypto md5 hashing (#5015) by @TBonnin
+- Add Vercel AI SDK implementation guide (#5017) by @bastienbeurier
+- Pubsub.publish metrics on failure (#5016) by @TBonnin
+
+### Fixed
+
+- *(proxy)* Resolve issue where authorization headers are getting dropped during redirects (#5009) by @hassan254-prog
+- Remove dimensions for records/conn billing events (#5018) by @TBonnin
+- Avoid excessive locking when updating connection last_fetched_at (#5026) by @TBonnin
+- *(runner)* Reset last idle tracking date whenever track is called (#5036) by @rossmcewan
+- *(persist)* Caching zod schemas (#5030) by @TBonnin
+- Upgrade glob (#5029) by @TBonnin
+- Upgrade vite (#5028) by @TBonnin
+- Upgrade js-yaml (#5027) by @TBonnin
+- *(webhook)* Use event-type header and minor clean up (#5043) by @khaliqgant
+
 ## [v0.69.13] - 2025-11-13
 
 ### Added
@@ -5346,6 +5386,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.14]: https://github.com/NangoHQ/nango/compare/v0.69.13..v0.69.14
 [v0.69.13]: https://github.com/NangoHQ/nango/compare/v0.69.12..v0.69.13
 [v0.69.12]: https://github.com/NangoHQ/nango/compare/v0.69.10..v0.69.12
 [v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10

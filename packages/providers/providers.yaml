@@ -6802,7 +6802,8 @@ hubspot:
             limit_name_in_request: limit
             cursor_name_in_request: after
             response_path: results
-    docs: https://nango.dev/docs/integrations/all/hubspot
+    docs: https://nango.dev/docs/api-integrations/hubspot
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-oauth-app
 
 incident-io:
     display_name: Incident.io
@@ -9074,7 +9075,8 @@ netsuite-tba:
         - accounting
         - erp
         - popular
-    docs: https://nango.dev/docs/integrations/all/netsuite-tba
+    docs: https://nango.dev/docs/api-integrations/netsuite-tba
+    setup_guide_url: https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango
 
 next-cloud-ocs:
     display_name: Next Cloud OCS
@@ -11421,7 +11423,8 @@ salesforce:
         base_url: ${connectionConfig.instance_url}
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
-    docs: https://nango.dev/docs/integrations/all/salesforce
+    docs: https://nango.dev/docs/api-integrations/salesforce
+    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-oauth-app
     connection_config:
         instance_url:
             type: string
@@ -11442,7 +11445,7 @@ salesforce-sandbox:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://nango.dev/docs/integrations/all/salesforce-sandbox
+    docs: https://nango.dev/docs/api-integrations/salesforce-sandbox
     connection_config:
         instance_url:
             type: string
@@ -11463,7 +11466,7 @@ salesforce-experience-cloud:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://nango.dev/docs/integrations/all/salesforce-experience-cloud
+    docs: https://nango.dev/docs/api-integrations/salesforce-experience-cloud
     connection_config:
         subdomain:
             type: string
@@ -11509,7 +11512,7 @@ salesforce-cdp:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/salesforce-cdp
+    docs: https://nango.dev/docs/api-integrations/salesforce-cdp
     docs_connect: https://nango.dev/docs/integrations/all/salesforce-cdp/connect
     credentials:
         jwt:

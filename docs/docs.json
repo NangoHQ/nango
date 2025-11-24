@@ -102,6 +102,18 @@
     {
       "source": "/guides/use-cases/mcp-server",
       "destination": "/guides/use-cases/ai-tool-calling"
+    },
+    {
+      "source": "/integrations/all/salesforce",
+      "destination": "/api-integrations/salesforce"
+    },
+    {
+      "source": "/integrations/all/hubspot",
+      "destination": "/api-integrations/hubspot"
+    },
+    {
+      "source": "/integrations/all/netsuite-tba",
+      "destination": "/api-integrations/netsuite-tba"
     }
   ],
   "navigation": {
@@ -179,7 +191,7 @@
         "anchor": "Implementation Guides",
         "icon": "pen",
         "groups": [
-          { 
+          {
             "group": "API Auth",
             "pages": [
               "implementation-guides/api-auth/configure-integration",
@@ -194,6 +206,10 @@
               "implementation-guides/ai-tool-calling/anthropic-sdk",
               "implementation-guides/ai-tool-calling/vercel-sdk",
               "implementation-guides/ai-tool-calling/mastra-sdk",
+              "implementation-guides/ai-tool-calling/google-sdk",
+              "implementation-guides/ai-tool-calling/langchain-sdk",
+              "implementation-guides/ai-tool-calling/llamaindex-sdk",
+              "implementation-guides/ai-tool-calling/openai-agents-sdk",
               "implementation-guides/ai-tool-calling/any-llm",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]
@@ -204,7 +220,7 @@
               "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
           },
-          { 
+          {
             "group": "Syncs",
             "pages": [
               "implementation-guides/syncs/implement-a-sync",
@@ -236,7 +252,8 @@
               "implementation-guides/building-integrations/unified-apis",
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
-              "implementation-guides/building-integrations/data-validation"
+              "implementation-guides/building-integrations/data-validation",
+              "implementation-guides/building-integrations/testing"
             ]
           },
           {
@@ -537,7 +554,7 @@
               "integrations/all/highlevel-white-label",
               "integrations/all/holded",
               "integrations/all/hover",
-              "integrations/all/hubspot",
+              "api-integrations/hubspot",
               "integrations/all/icypeas",
               "integrations/all/incident-io",
               "integrations/all/insightly",
@@ -624,7 +641,7 @@
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/netsuite",
-              "integrations/all/netsuite-tba",
+              "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
               "integrations/all/notion",
               "integrations/all/notion-scim",
@@ -714,7 +731,7 @@
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
-              "integrations/all/salesforce",
+              "api-integrations/salesforce",
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "integrations/all/salesforce-sandbox",
