@@ -82,7 +82,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
     const ChartComponent = data?.view_mode === 'cumulative' ? AreaChart : BarChart;
     const ChartElement =
         data?.view_mode === 'cumulative' ? (
-            <Area dataKey="total" fill="var(--color-total)" type="natural" strokeWidth={2} dot={false} />
+            <Area dataKey="total" fill="var(--color-total)" type="basis" strokeWidth={2} dot={false} />
         ) : (
             <Bar dataKey="total" fill="var(--color-total)" />
         );
@@ -104,7 +104,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden">
                 {!isEmpty && (
                     <ChartContainer config={chartConfig} className="h-full w-full">
-                        <ChartComponent accessibilityLayer data={chartData} barCategoryGap={4}>
+                        <ChartComponent accessibilityLayer data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={4}>
                             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border-muted)" />
                             <XAxis
                                 dataKey="date"
@@ -113,7 +113,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                                 stroke="var(--color-bg-muted)"
                                 tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
                             />
-                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} />
+                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
                             {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
                             <ChartTooltip
                                 content={
