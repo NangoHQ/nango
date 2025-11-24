@@ -6,7 +6,7 @@ import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { Locks } from './locks.js';
+import { MapLocks } from './locks.js';
 import { PersistClient } from './persist.js';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
@@ -39,7 +39,7 @@ const nangoProps: NangoProps = {
     logger: { level: 'info' }
 };
 
-const locks = new Locks();
+const locks = new MapLocks();
 
 describe('cache', () => {
     let nangoAction: NangoActionRunner;

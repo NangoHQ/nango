@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { Err, Ok } from '@nangohq/utils';
 
+import type { Locking } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
 
 interface Lock {
@@ -9,7 +10,50 @@ interface Lock {
     expiresAt: Date;
 }
 
-export class Locks {
+export interface Locks {
+    tryAcquireLock: ({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }) => Promise<Result<boolean>>;
+    releaseLock: ({ owner, key }: { owner: string; key: string }) => Promise<Result<boolean>>;
+    releaseAllLocks: ({ owner }: { owner: string }) => Promise<Result<void>>;
+    hasLock: ({ owner, key }: { owner: string; key: string }) => Promise<Result<boolean>>;
+}
+
+export class KVLocks implements Locks {
+    private locking: Locking;
+
+    constructor(locking: Locking) {
+        this.locking = locking;
+    }
+
+    private getLockKey(owner: string, key: string): string {
+        return `runner:${owner}:${key}`;
+    }
+
+    public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
+        const lockKey = this.getLockKey(owner, key);
+        await this.locking.tryAcquire(lockKey, ttlMs, 1000);
+        return Ok(true);
+    }
+
+    public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
+        const lockKey = this.getLockKey(owner, key);
+        await this.locking.release({ key: lockKey });
+        return Ok(true);
+    }
+
+    public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
+        const lockKey = this.getLockKey(owner, '*');
+        await this.locking.releaseAll(lockKey);
+        return Ok(undefined);
+    }
+
+    public async hasLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
+        const lockKey = this.getLockKey(owner, key);
+        const hasLock = await this.locking.hasLock(lockKey);
+        return Ok(hasLock);
+    }
+}
+
+export class MapLocks implements Locks {
     private store = new Map<string, Lock>();
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {

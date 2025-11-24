@@ -1,0 +1,31 @@
+{
+    "name": "@nangohq/lambda",
+    "version": "1.0.0",
+    "description": "Lambda functions for Nango",
+    "type": "module",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "private": true,
+    "scripts": {
+        "ts-build": "tsc",
+        "build:docker": "docker buildx build --provenance=false --platform linux/amd64 -t $LAMBDA_FUNCTION_NAME .",
+        "build:docker:tag": "docker tag $LAMBDA_FUNCTION_NAME $LAMBDA_FUNCTION_REPOSITORY/$LAMBDA_FUNCTION_NAME:latest",
+        "build:docker:push": "docker push $LAMBDA_FUNCTION_REPOSITORY/$LAMBDA_FUNCTION_NAME:latest",
+        "build:docker:all": "npm run build:docker && npm run build:docker:tag && npm run build:docker:push"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "8.10.158",
+        "@types/node": "24.10.0",
+        "@types/unzipper": "0.10.11",
+        "typescript": "5.9.3"
+    },
+    "dependencies": {
+        "@nangohq/runner": "file:../runner",
+        "@nangohq/node": "file:../node-client",
+        "@nangohq/kvstore": "file:../kvstore",
+        "botbuilder": "4.23.3",
+        "soap": "1.6.0",
+        "unzipper": "0.12.3",
+        "zod": "4.1.12"
+    }
+}

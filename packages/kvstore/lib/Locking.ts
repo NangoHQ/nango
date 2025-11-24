@@ -45,8 +45,18 @@ export class Locking {
         return { key };
     }
 
+    public async releaseAll(prefix: string): Promise<void> {
+        for await (const key of this.store.scan(`${prefix}:*`)) {
+            await this.store.delete(key);
+        }
+    }
+
     public async release(lock: Lock): Promise<void> {
         await this.store.delete(lock.key);
+    }
+
+    public async hasLock(key: string): Promise<boolean> {
+        return await this.store.exists(key);
     }
 
     public async withLock<T>(key: string, ttlMs: number, acquisitionTimeoutMs: number, fn: () => Promise<T>): Promise<T> {
