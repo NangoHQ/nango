@@ -10268,6 +10268,30 @@ pinterest:
         base_url: https://api.pinterest.com
     docs: https://nango.dev/docs/integrations/all/pinterest
 
+rocketlane:
+    display_name: Rocketlane
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.rocketlane.com/api
+        headers:
+            api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /1.0/users/?pageSize=1
+    docs: https://nango.dev/docs/integrations/all/rocketlane
+    docs_connect: https://nango.dev/docs/integrations/all/rocketlane/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Rocketlane API key
+            pattern: ^rl-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+            example: rl-3d2d4d87-1801-48ca-8948-8d5ed6f05df7
+            doc_section: '#step-1-generating-your-api-key'
+
 pipedrive:
     display_name: Pipedrive
     categories:
