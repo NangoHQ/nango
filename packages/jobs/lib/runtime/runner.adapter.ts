@@ -1,8 +1,8 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { getRunner } from './runner.js';
+import { getRunner } from '../runner/runner.js';
 
-import type { RuntimeAdapter } from '@nangohq/runtimes';
+import type { RuntimeAdapter } from './adapter.js';
 import type { NangoProps } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
