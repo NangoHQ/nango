@@ -222,6 +222,8 @@
     }
 
     /* Start of design system v2 */
+    --default-transition-duration: 100ms;
+
     /* Primitive colors */
     --color-black: #0b0b0c;
     --color-white: #ffffff;
