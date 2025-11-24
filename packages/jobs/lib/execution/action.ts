@@ -26,7 +26,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -106,6 +106,13 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             integration: task.connection.provider_config_key
         });
 
+        let sdkLogger: SdkLogger;
+        if (cappingFunctionLogsStatus.isCapped) {
+            sdkLogger = { level: 'off' };
+        } else {
+            sdkLogger = await environmentService.getSdkLogger(environment.id);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -124,10 +131,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            logger: sdkLogger,
+            runnerFlags: await getRunnerFlags(),
             startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
@@ -265,8 +270,12 @@ export async function handleActionSuccess({
             value: 1,
             properties: {
                 accountId: nangoProps.team.id,
-                connectionId: connection.id,
+                environmentId: nangoProps.environmentId,
+                environmentName: nangoProps.environmentName,
+                integrationId: nangoProps.providerConfigKey,
+                connectionId: connection.connection_id,
                 type: 'action',
+                functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag
             }
@@ -435,7 +444,11 @@ function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
+                    functionName: syncName,
                     type: 'action',
                     success: false,
                     telemetryBag

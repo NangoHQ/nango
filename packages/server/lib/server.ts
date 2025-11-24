@@ -24,6 +24,7 @@ import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
 import { pubsub } from './pubsub.js';
+import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import migrate from './utils/migrate.js';
 
@@ -137,5 +138,6 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
     logger.info('Received SIGTERM...');
-    close();
+    beginShutdown();
+    setTimeout(close, envs.SERVER_SHUTDOWN_DELAY_MS);
 });

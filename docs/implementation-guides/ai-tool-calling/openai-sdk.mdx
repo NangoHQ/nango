@@ -1,27 +1,30 @@
 ---
-title: "OpenAI SDK example"
-sidebarTitle: "OpenAI SDK example"
+title: "OpenAI"
+sidebarTitle: "OpenAI"
 description: "End-to-end example of calling external tools with the OpenAI SDK."
 ---
 
-This guide demonstrates how to combine **Nango** and the **OpenAI SDK** to consume external APIs via tool calling.
+## Setup
 
-In this example:
-- The OpenAI model defines a `who_am_i` tool and sends a prompt to OpenAI.  
-- When the model calls the tool, the script uses **Nango** to ensure the user’s connection is active and, if needed, walks them through the HubSpot auth flow.  
-- Once authorized, the script executes the model’s tool call by triggering the `whoami` action on **HubSpot** through Nango.  
-- Finally, it prints the resulting HubSpot user info in the console.  
+```bash
+npm i openai @nangohq/node
+```
 
 <Tip>
-**Requirements:** 
-- A Nango account with an integration for `hubspot` with the `whoami` action enabled.
-- A OpenAI account.
+This example uses the Node SDK, a lightweight wrapper over Nango’s REST API. The same flow works in any language by using the [API reference](https://nango.dev/docs/reference/api/authentication).
 </Tip>
+
+**Requirements:** 
+- A Nango account with a Hubspot integration configured and the `whoami` action enabled.
+- An OpenAI account.
+
+## Usage
+
+Example of a basic tool that calls an external API (Hubspot):
 
 ```ts
 import OpenAI from "openai";
 import { Nango } from "@nangohq/node";
-import readline from "readline";
 
 export async function runOpenAIAgent() {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
@@ -29,25 +32,24 @@ export async function runOpenAIAgent() {
 
   const userId = "user1", integrationId = "hubspot";
 
+  // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...")
-  let connectionId = (await nango.listConnections(undefined, undefined, { endUserId: userId })).connections[0]?.connection_id;
+  let connectionId = (await nango.listConnections({ integrationId, userId })).connections[0]?.connection_id;
 
+  // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
       end_user: { id: userId },
-    }); // Handle API auth via Nango.
+    });
 
     console.log(`Please authorize the app by visiting this URL: ${session.data.connect_link}`);
-    await waitForEnter("Press Enter once you've authorized the app...");
 
-    connectionId = (await nango.listConnections(undefined, undefined, { endUserId: userId })).connections[0]?.connection_id;
-    if (!connectionId) {
-      console.log("Connect flow failed.");
-      return;
-    }
+    const connection = await nango.waitForConnection(integrationId, userId);
+    connectionId = connection!.connection_id;
   }
 
+  // Step 3: Send a prompt to your model.
   console.log("🤖 Agent running...")
   const response = await client.responses.create({
     model: "gpt-5",
@@ -66,19 +68,15 @@ export async function runOpenAIAgent() {
   const functionCall = response.output.find((item) => item.type === "function_call") as any;
 
   if (functionCall?.name === "who_am_i") {
-    try {
-      const userInfo = await nango.triggerAction("hubspot", connectionId, "whoami"); // Call tools via Nango.
-      console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
-    } catch (error: any) {
-      console.error("Nango API error:", error.response?.data?.error || error);
-    }
+    // Step 4: Execute the requested tool with Nango.
+    const userInfo = await nango.triggerAction(integrationId, connectionId, "whoami"); // Call tool via Nango.
+    console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
   } else {
     console.log(response.output_text);
   }
 }
-
-function waitForEnter(prompt: string) {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise<void>((resolve) => rl.question(prompt, () => { rl.close(); resolve(); }));
-}
 ```
+
+<Tip>
+You can let agents or models introspect available tools and their specifications by calling this [endpoint](/reference/api/scripts/config). Your model can then automatically decide which tool to call.
+</Tip>

@@ -9,54 +9,54 @@ import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@na
 
 const MAX_LOG_CHAR = 10000;
 
-export const logBodySchema = z.object({
-    activityLogId: operationIdRegex,
-    log: z.object({
-        type: z.enum(['log', 'http']),
-        message: z.string(),
-        source: z.enum(['internal', 'user']).optional().default('internal'),
-        level: z.enum(['debug', 'info', 'warn', 'error']),
-        error: z
-            .object({
-                name: z.string(),
-                message: z.string(),
-                type: z.string().optional(),
-                payload: z.any().optional()
-            })
-            .optional(),
-        request: z
-            .object({
-                url: z.string(),
-                method: z.string(),
-                headers: z.record(z.string(), z.string())
-            })
-            .optional(),
-        response: z
-            .object({
-                code: z.number(),
-                headers: z.record(z.string(), z.string())
-            })
-            .optional(),
-        meta: z.record(z.string(), z.any()).optional().nullable(),
-        createdAt: z.string(),
-        endedAt: z.string().optional(),
-        durationMs: z.number().optional(),
-        context: z.enum(['script', 'proxy']).optional(),
-        retry: z.object({ max: z.number(), waited: z.number(), attempt: z.number() }).optional()
+const logBodySchema = z
+    .object({
+        activityLogId: operationIdRegex,
+        log: z.object({
+            type: z.enum(['log', 'http']),
+            message: z.string(),
+            source: z.enum(['internal', 'user']).optional().default('internal'),
+            level: z.enum(['debug', 'info', 'warn', 'error']),
+            error: z
+                .object({
+                    name: z.string(),
+                    message: z.string(),
+                    type: z.string().optional(),
+                    payload: z.any().optional()
+                })
+                .optional(),
+            request: z
+                .object({
+                    url: z.string(),
+                    method: z.string(),
+                    headers: z.record(z.string(), z.string())
+                })
+                .optional(),
+            response: z
+                .object({
+                    code: z.number(),
+                    headers: z.record(z.string(), z.string())
+                })
+                .optional(),
+            meta: z.record(z.string(), z.any()).optional().nullable(),
+            createdAt: z.string(),
+            endedAt: z.string().optional(),
+            durationMs: z.number().optional(),
+            context: z.enum(['script', 'proxy']).optional(),
+            retry: z.object({ max: z.number(), waited: z.number(), attempt: z.number() }).optional()
+        })
     })
-});
+    .strict();
+
+const logParamsSchema = z
+    .object({
+        environmentId: z.coerce.number().int().positive()
+    })
+    .strict();
 
 const validate = validateRequest<PostLog>({
-    parseBody: (data) => {
-        return logBodySchema.strict().parse(data);
-    },
-    parseParams: (data) =>
-        z
-            .object({
-                environmentId: z.coerce.number().int().positive()
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data) => logBodySchema.parse(data),
+    parseParams: (data) => logParamsSchema.parse(data)
 });
 
 const handler = (_req: EndpointRequest, res: EndpointResponse<PostLog, AuthLocals>) => {

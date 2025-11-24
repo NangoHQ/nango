@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { updateSyncJobResult } from '@nangohq/shared';
+import { connectionService, updateSyncJobResult } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
 
 import { pubsub } from '../../../../../../../../../pubsub.js';
@@ -31,25 +31,24 @@ type DeleteOutdatedRecords = Endpoint<{
 const path = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/outdated';
 const method = 'DELETE';
 
+const bodySchema = z
+    .object({
+        model: z.string(),
+        activityLogId: operationIdRegex
+    })
+    .strict();
+const paramsSchema = z
+    .object({
+        environmentId: z.coerce.number().int().positive(),
+        nangoConnectionId: z.coerce.number().int().positive(),
+        syncId: z.string(),
+        syncJobId: z.coerce.number().int().positive()
+    })
+    .strict();
+
 const validate = validateRequest<DeleteOutdatedRecords>({
-    parseBody: (data: unknown) =>
-        z
-            .object({
-                model: z.string(),
-                activityLogId: operationIdRegex
-            })
-            .strict()
-            .parse(data),
-    parseParams: (data: unknown) =>
-        z
-            .object({
-                environmentId: z.coerce.number().int().positive(),
-                nangoConnectionId: z.coerce.number().int().positive(),
-                syncId: z.string(),
-                syncJobId: z.coerce.number().int().positive()
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data: unknown) => bodySchema.parse(data),
+    parseParams: (data: unknown) => paramsSchema.parse(data)
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
@@ -74,6 +73,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
         };
         await updateSyncJobResult(syncJobId, syncJobResultUpdate, model);
         if (deleted > 0) {
+            const connection = await connectionService.getConnectionById(nangoConnectionId);
             void pubsub.publisher.publish({
                 subject: 'usage',
                 type: 'usage.records',
@@ -82,7 +82,9 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
                     properties: {
                         accountId: account.id,
                         environmentId: environment.id,
-                        connectionId: nangoConnectionId,
+                        environmentName: environment.name,
+                        integrationId: connection?.provider_config_key || 'unknown',
+                        connectionId: connection?.connection_id || 'unknown',
                         syncId,
                         model
                     }

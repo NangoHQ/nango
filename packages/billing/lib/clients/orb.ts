@@ -5,7 +5,18 @@ import { Err, Ok, metrics, retry } from '@nangohq/utils';
 
 import { envs } from '../envs.js';
 
-import type { BillingClient, BillingCustomer, BillingEvent, BillingSubscription, BillingUsageMetric, DBTeam, DBUser, Result } from '@nangohq/types';
+import type {
+    BillingClient,
+    BillingCustomer,
+    BillingEvent,
+    BillingSubscription,
+    BillingUsageMetrics,
+    DBTeam,
+    DBUser,
+    GetBillingUsageOpts,
+    Result,
+    UsageMetric
+} from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
     private orbSDK: Orb;
@@ -147,17 +158,21 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async getUsage(subscriptionId: string, period?: 'previous'): Promise<Result<BillingUsageMetric[]>> {
+    async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         try {
             const options: Orb.Subscriptions.SubscriptionFetchUsageParams = {};
-            if (period === 'previous') {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                start.setHours(0, 0, 0, 0);
-                const end = new Date(now.getFullYear(), now.getMonth(), 0);
-                end.setHours(23, 59, 59, 999);
-                options.timeframe_start = start.toISOString();
-                options.timeframe_end = end.toISOString();
+            if (opts?.timeframe) {
+                options.timeframe_start = opts.timeframe.start.toISOString();
+                options.timeframe_end = opts.timeframe.end.toISOString();
+            }
+            if (opts?.granularity) {
+                options.granularity = 'day';
+            }
+            if (opts?.billingMetric) {
+                options.billable_metric_id = opts.billingMetric.id;
+                if (opts.billingMetric.group_by) {
+                    options.group_by = opts.billingMetric.group_by;
+                }
             }
 
             const res = await this.orbSDK.subscriptions.fetchUsage(subscriptionId, options, {
@@ -168,15 +183,40 @@ export class OrbClient implements BillingClient {
                 }
             });
 
-            return Ok(
-                res.data.map((item) => {
-                    return {
-                        id: item.billable_metric.id,
-                        name: item.billable_metric.name,
-                        quantity: item.usage[0]?.quantity || 0
-                    };
-                })
-            );
+            const entries: BillingUsageMetrics = {};
+
+            for (const item of res.data) {
+                const usageMetric = orbMetricToUsageMetric(item.billable_metric.name);
+                if (!usageMetric) {
+                    continue;
+                }
+
+                const group =
+                    'metric_group' in item
+                        ? {
+                              group: {
+                                  key: item.metric_group.property_key,
+                                  value: item.metric_group.property_value
+                              }
+                          }
+                        : {};
+
+                entries[usageMetric] = {
+                    ...group,
+                    externalId: item.billable_metric.id,
+                    total: item.usage.reduce((sum, u) => sum + u.quantity, 0),
+                    usage: item.usage.map((u) => {
+                        return {
+                            timeframeStart: new Date(u.timeframe_start),
+                            timeframeEnd: new Date(u.timeframe_end),
+                            quantity: u.quantity
+                        };
+                    }),
+                    view_mode: 'periodic'
+                };
+            }
+
+            return Ok(entries);
         } catch (err) {
             return Err(new Error('failed_to_get_usage', { cause: err }));
         }
@@ -312,4 +352,20 @@ function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
         timestamp: timestamp.toISOString(),
         properties
     };
+}
+
+function orbMetricToUsageMetric(name: string): UsageMetric | null {
+    // Not ideal to match on BillingMetric name but Orb only exposes the user friendly name or internal ids
+    const lowerName = name.toLowerCase();
+    // order matters here
+    if (lowerName.includes('legacy')) return null;
+    if (lowerName.includes('logs')) return 'function_logs';
+    if (lowerName.includes('proxy')) return 'proxy';
+    if (lowerName.includes('forward')) return 'webhook_forwards';
+    if (lowerName.includes('compute')) return 'function_compute_gbms';
+    if (lowerName.includes('function')) return 'function_executions';
+    if (lowerName.includes('connections')) return 'connections';
+    if (lowerName.includes('records')) return 'records';
+
+    return null;
 }

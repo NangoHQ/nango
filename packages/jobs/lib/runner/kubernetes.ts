@@ -208,6 +208,9 @@ class Kubernetes {
                 }
             }
         };
+        if (node.isProfilingEnabled || node.isTracingEnabled) {
+            deploymentManifest.spec!.template.metadata!.labels!['nango.dev/apm'] = 'enabled';
+        }
 
         try {
             await this.appsApi.createNamespacedDeployment({
@@ -408,22 +411,19 @@ class Kubernetes {
             { name: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
             { name: 'RUNNER_NODE_ID', value: `${node.id}` },
             { name: 'RUNNER_URL', value: runnerUrl },
-            { name: 'IDLE_MAX_DURATION_MS', value: `${25 * 60 * 60 * 1000}` }, // 25 hours
+            { name: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` },
             { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
             { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
-            { name: 'DD_PROFILING_ENABLED', value: String(this.isProfilingEnabled(node)) },
+            { name: 'DD_PROFILING_ENABLED', value: String(node.isProfilingEnabled) },
+            { name: 'DD_APM_TRACING_ENABLED', value: String(node.isTracingEnabled) },
+            { name: 'DD_TRACE_ENABLED', value: String(node.isTracingEnabled || node.isProfilingEnabled) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
         ];
-    }
-
-    private isProfilingEnabled(node: Node): boolean {
-        const accountId = node.routingId.split('-')[3]; //this index is based on routing id being in the format {stage}-runner-account-{accountId}-{suffix}
-        return accountId ? envs.RUNNER_PROFILED_ACCOUNTS.includes(accountId) : false;
     }
 
     private MAX_REQUEST_CPU = envs.RUNNER_MAX_REQUEST_CPU;
@@ -455,7 +455,10 @@ export const kubernetesNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
         memoryMb: 512,
-        storageMb: 20000
+        storageMb: 20000,
+        isTracingEnabled: false,
+        isProfilingEnabled: false,
+        idleMaxDurationMs: 1_800_000 // 30 minutes
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();

@@ -9,7 +9,7 @@ import type { VariantProps } from 'class-variance-authority';
 import type { LinkProps } from 'react-router-dom';
 
 const buttonVariants = cva(
-    "w-fit inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-default",
+    "w-fit inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md !text-body-medium-medium transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-default",
     {
         variants: {
             variant: {
@@ -22,8 +22,8 @@ const buttonVariants = cva(
                 ghost: 'bg-transparent text-text-tertiary hover:text-text-primary'
             },
             size: {
-                sm: 'h-8 rounded gap-1.5 px-3 py-2 text-sm',
-                lg: 'h-10 rounded gap-2 px-4 py-2 font-medium',
+                sm: 'h-8 rounded gap-1.5 px-3 py-2',
+                lg: 'h-10 rounded gap-2 px-4 py-2',
                 icon: 'size-5 p-1'
             }
         },

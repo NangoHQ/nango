@@ -39,8 +39,8 @@ export class RunnerMonitor {
     }
 
     track(nangoProps: NangoProps, taskId: string): void {
+        this.lastIdleTrackingDate = Date.now();
         if (nangoProps.syncJobId) {
-            this.lastIdleTrackingDate = Date.now();
             this.tracked.set(nangoProps.syncJobId, { nangoProps, taskId });
         }
     }

@@ -41,7 +41,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -146,6 +146,13 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             executionId: task.id
         });
 
+        let sdkLogger: SdkLogger;
+        if (cappingFunctionLogsStatus.isCapped) {
+            sdkLogger = { level: 'off' };
+        } else {
+            sdkLogger = await environmentService.getSdkLogger(environment.id);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
@@ -168,10 +175,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig,
             debug: task.debug || false,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            logger: sdkLogger,
+            runnerFlags: await getRunnerFlags(),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
@@ -319,7 +324,9 @@ export async function handleSyncSuccess({
                         properties: {
                             accountId: nangoProps.team.id,
                             environmentId: nangoProps.environmentId,
-                            connectionId: nangoProps.nangoConnectionId,
+                            environmentName: nangoProps.environmentName,
+                            integrationId: nangoProps.providerConfigKey,
+                            connectionId: nangoProps.connectionId,
                             syncId: nangoProps.syncId,
                             model
                         }
@@ -513,8 +520,12 @@ export async function handleSyncSuccess({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: nangoProps.providerConfigKey,
+                    connectionId: connection.connection_id,
                     type: 'sync',
+                    functionName: nangoProps.syncConfig.sync_name,
                     success: true,
                     frequencyMs,
                     telemetryBag
@@ -915,7 +926,11 @@ async function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment ? environment.id : -1,
+                    environmentName: environment ? environment.name : 'unknown',
+                    integrationId: providerConfig?.unique_key || 'unknown',
+                    connectionId: connection.connection_id,
+                    functionName: syncName,
                     type: 'sync',
                     success: false,
                     telemetryBag

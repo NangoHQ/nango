@@ -51,6 +51,9 @@ interface DBNode {
     readonly cpu_milli: number;
     readonly memory_mb: number;
     readonly storage_mb: number;
+    readonly is_tracing_enabled: boolean;
+    readonly is_profiling_enabled: boolean;
+    readonly idle_max_duration_ms: number | null;
     readonly error: string | null;
     readonly created_at: Date;
     readonly last_state_transition_at: Date;
@@ -68,6 +71,9 @@ const DBNode = {
             cpu_milli: node.cpuMilli,
             memory_mb: node.memoryMb,
             storage_mb: node.storageMb,
+            is_tracing_enabled: node.isTracingEnabled,
+            is_profiling_enabled: node.isProfilingEnabled,
+            idle_max_duration_ms: node.idleMaxDurationMs,
             error: node.error,
             created_at: node.createdAt,
             last_state_transition_at: node.lastStateTransitionAt
@@ -84,6 +90,9 @@ const DBNode = {
             cpuMilli: dbNode.cpu_milli,
             memoryMb: dbNode.memory_mb,
             storageMb: dbNode.storage_mb,
+            isTracingEnabled: dbNode.is_tracing_enabled,
+            isProfilingEnabled: dbNode.is_profiling_enabled,
+            idleMaxDurationMs: dbNode.idle_max_duration_ms,
             error: dbNode.error,
             createdAt: dbNode.created_at,
             lastStateTransitionAt: dbNode.last_state_transition_at
@@ -104,6 +113,9 @@ export async function create(
         cpu_milli: nodeProps.cpuMilli,
         memory_mb: nodeProps.memoryMb,
         storage_mb: nodeProps.storageMb,
+        is_tracing_enabled: nodeProps.isTracingEnabled,
+        is_profiling_enabled: nodeProps.isProfilingEnabled,
+        idle_max_duration_ms: nodeProps.idleMaxDurationMs,
         error: null,
         created_at: now,
         last_state_transition_at: now

@@ -222,6 +222,8 @@
     }
 
     /* Start of design system v2 */
+    --default-transition-duration: 100ms;
+
     /* Primitive colors */
     --color-black: #0b0b0c;
     --color-white: #ffffff;
@@ -486,6 +488,84 @@
     @variant focus {
         box-shadow: 0 0 0 3px rgba(0, 178, 227, 0.2);
     }
+}
+
+@utility text-title-screen {
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 700;
+}
+
+@utility text-title-section {
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 700;
+}
+
+@utility text-title-subsection {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 700;
+}
+
+@utility text-title-group {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+}
+
+@utility text-title-body {
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+}
+
+@utility text-body-large-regular {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+}
+
+@utility text-body-large-semi {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+}
+
+@utility text-body-medium-regular {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+}
+
+@utility text-body-medium-medium {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
+@utility text-body-medium-semi {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+}
+
+@utility text-body-small-regular {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+}
+
+@utility text-body-small-semi {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+}
+
+@utility text-body-extra-small-semi {
+    font-size: 12px;
+    line-height: 14px;
+    font-weight: 600;
 }
 
 /*

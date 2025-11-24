@@ -1,34 +1,22 @@
+### Contacts
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-contact` | Creates a user in FreshDesk | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/create-contact.ts) |
+| `delete-contact` | Deletes a contact in FreshDesk | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/delete-contact.ts) |
+| `contacts` | Fetches the list of contacts. | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/contacts.ts) |
 
-<AccordionGroup>
+### Users
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-user` | Creates a user in FreshDesk | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/create-user.ts) |
+| `delete-user` | Deletes a user in FreshDesk | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/delete-user.ts) |
+| `users` | Fetches the list of users | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/users.ts) |
 
-<Accordion title="Contacts">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /contacts` | Creates a user in FreshDesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/create-contact.md) |
-| `DELETE /contacts` | Deletes a contact in FreshDesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/delete-contact.md) |
-| `GET /contacts` | Fetches the list of contacts. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/contacts.md) |
-</Accordion>
+### Others
 
-
-<Accordion title="Users">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /users` | Creates a user in FreshDesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/create-user.md) |
-| `DELETE /users` | Deletes a user in FreshDesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/actions/delete-user.md) |
-| `GET /users` | Fetches the list of users | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/users.md) |
-</Accordion>
-
-
-<Accordion title="Others">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /articles` | Recursively fetches a list of solution articles. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/articles.md) |
-| `GET /tickets` | Fetches the freshdesk tickets | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/tickets.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `articles` | Recursively fetches a list of solution articles. | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/articles.ts) |
+| `tickets` | Fetches the freshdesk tickets | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/freshdesk/syncs/tickets.ts) |

@@ -100,8 +100,68 @@
       "destination": "/reference/functions"
     },
     {
-      "source": "guides/use-cases/mcp-server",
-      "destination": "guides/use-cases/ai-tool-calling"
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/guides/use-cases/ai-tool-calling"
+    },
+    {
+      "source": "/integrations/all/salesforce",
+      "destination": "/api-integrations/salesforce"
+    },
+    {
+      "source": "/integrations/all/hubspot",
+      "destination": "/api-integrations/hubspot"
+    },
+    {
+      "source": "/integrations/all/netsuite-tba",
+      "destination": "/api-integrations/netsuite-tba"
+    },
+    {
+      "source": "/integrations/all/google",
+      "destination": "/api-integrations/google"
+    },
+    {
+      "source": "/integrations/all/google-mail",
+      "destination": "/api-integrations/google-mail"
+    },
+    {
+      "source": "/integrations/all/google-sheet",
+      "destination": "/api-integrations/google-sheet"
+    },
+    {
+      "source": "/integrations/all/slack",
+      "destination": "/api-integrations/slack"
+    },
+    {
+      "source": "/integrations/all/shopify",
+      "destination": "/api-integrations/shopify"
+    },
+    {
+      "source": "/integrations/all/notion",
+      "destination": "/api-integrations/notion"
+    },
+    {
+      "source": "/integrations/all/jira",
+      "destination": "/api-integrations/jira"
+    },
+    {
+      "source": "/integrations/all/google-calendar",
+      "destination": "/api-integrations/google-calendar"
+    },
+    {
+      "source": "/integrations/all/airtable",
+      "destination": "/api-integrations/airtable"
+    },
+    {
+      "source": "/integrations/all/facebook",
+      "destination": "/api-integrations/facebook"
+    },
+    {
+      "source": "/integrations/all/google-drive",
+      "destination": "/api-integrations/google-drive"
+    },
+    {
+      "source": "/integrations/all/github",
+      "destination": "/api-integrations/github"
     }
   ],
   "navigation": {
@@ -179,7 +239,7 @@
         "anchor": "Implementation Guides",
         "icon": "pen",
         "groups": [
-          { 
+          {
             "group": "API Auth",
             "pages": [
               "implementation-guides/api-auth/configure-integration",
@@ -191,16 +251,24 @@
             "group": "AI tool calling",
             "pages": [
               "implementation-guides/ai-tool-calling/openai-sdk",
+              "implementation-guides/ai-tool-calling/anthropic-sdk",
+              "implementation-guides/ai-tool-calling/vercel-sdk",
+              "implementation-guides/ai-tool-calling/mastra-sdk",
+              "implementation-guides/ai-tool-calling/google-sdk",
+              "implementation-guides/ai-tool-calling/langchain-sdk",
+              "implementation-guides/ai-tool-calling/llamaindex-sdk",
+              "implementation-guides/ai-tool-calling/openai-agents-sdk",
+              "implementation-guides/ai-tool-calling/any-llm",
               "implementation-guides/ai-tool-calling/implement-mcp-server"
             ]
           },
           {
-            "group": "Requests Proxy",
+            "group": "Proxy",
             "pages": [
               "implementation-guides/requests-proxy/implement-requests-proxy"
             ]
           },
-          { 
+          {
             "group": "Syncs",
             "pages": [
               "implementation-guides/syncs/implement-a-sync",
@@ -232,7 +300,8 @@
               "implementation-guides/building-integrations/unified-apis",
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
-              "implementation-guides/building-integrations/data-validation"
+              "implementation-guides/building-integrations/data-validation",
+              "implementation-guides/building-integrations/testing"
             ]
           },
           {
@@ -289,7 +358,7 @@
               "integrations/all/aimfox-oauth",
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
-              "integrations/all/airtable",
+              "api-integrations/airtable",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "integrations/all/amazon",
@@ -300,6 +369,7 @@
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
               "integrations/all/apaleo",
+              "integrations/all/apify",
               "integrations/all/apollo",
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
@@ -310,11 +380,13 @@
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
+              "integrations/all/atlassian-government-cloud",
               "integrations/all/attio",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
               "integrations/all/autotask",
+              "integrations/all/auvik",
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
@@ -343,6 +415,7 @@
               "integrations/all/braintree",
               "integrations/all/braintree-sandbox",
               "integrations/all/braze",
+              "integrations/all/breezy-hr",
               "integrations/all/brevo-api-key",
               "integrations/all/brex",
               "integrations/all/brex-api-key",
@@ -387,6 +460,7 @@
               "integrations/all/confluence-data-center",
               "integrations/all/connectwise-psa",
               "integrations/all/connectwise-psa-staging",
+              "integrations/all/contactout",
               "integrations/all/contentful",
               "integrations/all/contentstack",
               "integrations/all/copper",
@@ -394,8 +468,11 @@
               "integrations/all/coros",
               "integrations/all/coros-sandbox",
               "integrations/all/coupa-compass",
+              "integrations/all/crisp",
+              "integrations/all/crowdstrike",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
+              "integrations/all/cursor-admin",
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
@@ -417,6 +494,7 @@
               "integrations/all/docusign",
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
+              "integrations/all/drchrono",
               "integrations/all/dropbox",
               "integrations/all/dropbox-sign",
               "integrations/all/drupal",
@@ -438,7 +516,7 @@
               "integrations/all/exact-online",
               "integrations/all/exist",
               "integrations/all/expensify",
-              "integrations/all/facebook",
+              "api-integrations/facebook",
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
@@ -471,24 +549,25 @@
               "integrations/all/gerrit",
               "integrations/all/ghost-admin",
               "integrations/all/ghost-content",
-              "integrations/all/github",
+              "api-integrations/github",
               "integrations/all/github-app",
               "integrations/all/github-app-oauth",
               "integrations/all/github-pat",
               "integrations/all/gitlab",
+              "integrations/all/gitlab-pat",
               "integrations/all/gong",
               "integrations/all/gong-oauth",
-              "integrations/all/google",
+              "api-integrations/google",
               "integrations/all/google-ads",
               "integrations/all/google-analytics",
-              "integrations/all/google-calendar",
+              "api-integrations/google-calendar",
               "integrations/all/google-chat",
               "integrations/all/google-cloud-storage",
               "integrations/all/google-docs",
-              "integrations/all/google-drive",
-              "integrations/all/google-mail",
+              "api-integrations/google-drive",
+              "api-integrations/google-mail",
               "integrations/all/google-play",
-              "integrations/all/google-sheet",
+              "api-integrations/google-sheet",
               "integrations/all/google-slides",
               "integrations/all/google-workspace-admin",
               "integrations/all/google-service-account",
@@ -517,12 +596,14 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "integrations/all/highlevel",
               "integrations/all/highlevel-white-label",
               "integrations/all/holded",
               "integrations/all/hover",
-              "integrations/all/hubspot",
+              "api-integrations/hubspot",
+              "integrations/all/icypeas",
               "integrations/all/incident-io",
               "integrations/all/insightly",
               "integrations/all/instagram",
@@ -533,7 +614,7 @@
               "integrations/all/jamf",
               "integrations/all/jamf-basic",
               "integrations/all/jazzhr",
-              "integrations/all/jira",
+              "api-integrations/jira",
               "integrations/all/jira-basic",
               "integrations/all/jira-data-center-api-key",
               "integrations/all/jira-data-center",
@@ -558,6 +639,7 @@
               "integrations/all/lastpass",
               "integrations/all/lemlist",
               "integrations/all/lattice",
+              "integrations/all/leadmagic",
               "integrations/all/lessonly",
               "integrations/all/lever",
               "integrations/all/lever-basic",
@@ -603,12 +685,13 @@
               "integrations/all/momentum-io",
               "integrations/all/mural",
               "integrations/all/nationbuilder",
+              "integrations/all/ninjaone-rmm",
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "integrations/all/netsuite",
-              "integrations/all/netsuite-tba",
+              "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
-              "integrations/all/notion",
+              "api-integrations/notion",
               "integrations/all/notion-scim",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
@@ -617,6 +700,7 @@
               "integrations/all/one-drive",
               "integrations/all/one-drive-personal",
               "integrations/all/one-note",
+              "integrations/all/onelogin",
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
@@ -627,6 +711,7 @@
               "integrations/all/outlook",
               "integrations/all/outreach",
               "integrations/all/pagerduty",
+              "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
               "integrations/all/payfit",
@@ -660,6 +745,7 @@
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
+              "integrations/all/prospeo",
               "integrations/all/productboard",
               "integrations/all/qualtrics",
               "integrations/all/quickbase",
@@ -685,6 +771,7 @@
               "integrations/all/ring-central-sandbox",
               "integrations/all/rippling",
               "integrations/all/rippling-shop-app",
+              "integrations/all/rocketlane",
               "integrations/all/roam-scim",
               "integrations/all/rock-gym-pro",
               "integrations/all/rootly",
@@ -693,7 +780,7 @@
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
-              "integrations/all/salesforce",
+              "api-integrations/salesforce",
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "integrations/all/salesforce-sandbox",
@@ -706,6 +793,7 @@
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
               "integrations/all/segment",
+              "integrations/all/semrush",
               "integrations/all/sendgrid",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
@@ -718,7 +806,8 @@
               "integrations/all/sharepoint-online-v1",
               "integrations/all/sharepoint-online-oauth2-cc",
               "integrations/all/shipstation",
-              "integrations/all/shopify",
+              "integrations/all/shipstation-v2",
+              "api-integrations/shopify",
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
@@ -726,7 +815,7 @@
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
-              "integrations/all/slack",
+              "api-integrations/slack",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
               "integrations/all/smartsheet",
@@ -742,6 +831,7 @@
               "integrations/all/squareup",
               "integrations/all/squareup-sandbox",
               "integrations/all/stackexchange",
+              "integrations/all/statista",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "integrations/all/streak",
@@ -761,6 +851,7 @@
               "integrations/all/thrivecart-oauth",
               "integrations/all/ticktick",
               "integrations/all/tiktok-accounts",
+              "integrations/all/tiktok-personal",
               "integrations/all/tiktok-ads",
               "integrations/all/timely",
               "integrations/all/todoist",
@@ -792,6 +883,8 @@
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
               "integrations/all/unipile",
+              "integrations/all/valley",
+              "integrations/all/valley-api-key",
               "integrations/all/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
@@ -804,6 +897,7 @@
               "integrations/all/whatsapp-business",
               "integrations/all/whoop",
               "integrations/all/wildix-pbx",
+              "integrations/all/wiza",
               "integrations/all/woocommerce",
               "integrations/all/wordpress",
               "integrations/all/workable",
@@ -833,6 +927,7 @@
               "integrations/all/zoho-invoice",
               "integrations/all/zoho-mail",
               "integrations/all/zoho-people",
+              "integrations/all/zoho-recruit",
               "integrations/all/zoom",
               "integrations/all/zoominfo",
               "integrations/all/zuora"

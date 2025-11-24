@@ -80,7 +80,6 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         span.setTag('connectionId', props.connection.connection_id).setTag('authType', props.connection.credentials.type);
 
-        // TODO: remove this when cron is using other columns
         await connectionService.updateLastFetched(props.connection.id);
         props.connection = { ...props.connection, last_fetched_at: new Date() };
 

@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 import get from 'lodash-es/get.js';
 
@@ -51,7 +51,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        webhookType: 'action',
+        webhookHeaderValue: headers['x-github-event'] as string,
         connectionIdentifier: 'installation.id',
         propName: 'installation_id'
     });

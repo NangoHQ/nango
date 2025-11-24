@@ -35,7 +35,8 @@ const nangoProps: NangoProps = {
     runnerFlags: {} as any,
     startedAt: new Date(),
     endUser: null,
-    heartbeatTimeoutSecs: 30
+    heartbeatTimeoutSecs: 30,
+    logger: { level: 'info' }
 };
 
 const locks = new Locks();
@@ -177,15 +178,18 @@ describe('Pagination', () => {
 
         await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 }, connectionId: 'abc' }).next();
 
-        expect(spy).toHaveBeenCalledWith({
-            method: 'POST',
-            url: 'https://api.github.com/issues',
-            data: { limit: 2 },
-            headers: {
-                authorization: 'Bearer token',
-                'user-agent': expect.any(String)
-            }
-        });
+        expect(spy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                method: 'POST',
+                url: 'https://api.github.com/issues',
+                data: { limit: 2 },
+                headers: {
+                    authorization: 'Bearer token',
+                    'user-agent': expect.any(String)
+                },
+                beforeRedirect: expect.any(Function)
+            })
+        );
     });
 
     it('Overrides template pagination params with ones passed in the proxy config', async () => {
@@ -210,14 +214,17 @@ describe('Pagination', () => {
             expect(batch.length).toBe(3);
         }
 
-        expect(spy).toHaveBeenLastCalledWith({
-            method: 'GET',
-            url: 'https://api.github.com/issues?per_page=3&offset=3',
-            headers: {
-                authorization: 'Bearer token',
-                'user-agent': expect.any(String)
-            }
-        });
+        expect(spy).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues?per_page=3&offset=3',
+                headers: {
+                    authorization: 'Bearer token',
+                    'user-agent': expect.any(String)
+                },
+                beforeRedirect: expect.any(Function)
+            })
+        );
     });
 
     it('Paginates using offset', async () => {
@@ -344,21 +351,33 @@ describe('Pagination', () => {
             actualRecords.push(...batch);
         }
 
-        expect(spy).toHaveBeenNthCalledWith(1, {
-            method: 'GET',
-            url: 'https://api.github.com/issues',
-            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-        });
-        expect(spy).toHaveBeenNthCalledWith(2, {
-            method: 'GET',
-            url: 'https://api.github.com/issues?page=2',
-            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-        });
-        expect(spy).toHaveBeenNthCalledWith(3, {
-            method: 'GET',
-            url: 'https://api.github.com/issues?page=3',
-            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-        });
+        expect(spy).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues',
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
+                beforeRedirect: expect.any(Function)
+            })
+        );
+        expect(spy).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues?page=2',
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
+                beforeRedirect: expect.any(Function)
+            })
+        );
+        expect(spy).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                method: 'GET',
+                url: 'https://api.github.com/issues?page=3',
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
+                beforeRedirect: expect.any(Function)
+            })
+        );
         expect(spy).toHaveBeenCalledTimes(3);
 
         const expectedRecords = [...firstBatch, ...secondBatch, ...thirdBatch];
@@ -479,6 +498,22 @@ describe('Log', () => {
 
     it('should enforce type: log message + object', async () => {
         await nangoAction.log('hello', { foo: 'bar' });
+    });
+
+    it('should respect logger level', async () => {
+        const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'warn' } }, { persistClient, locks });
+        await nangoAction.log('hello', { level: 'info' });
+        expect(persistClient.saveLog).not.toHaveBeenCalled();
+    });
+    it('should allow setting logger level', () => {
+        const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'debug' } }, { persistClient, locks });
+        nangoAction.setLogger({ level: 'info' });
+        expect(nangoAction['logger'].level).toBe('info');
+    });
+    it('should prevent setting logger level if off', () => {
+        const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'off' } }, { persistClient, locks });
+        nangoAction.setLogger({ level: 'info' });
+        expect(nangoAction['logger'].level).toBe('off');
     });
 });
 
