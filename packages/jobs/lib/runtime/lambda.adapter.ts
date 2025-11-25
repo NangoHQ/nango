@@ -14,9 +14,9 @@ function getLambdaFunctionName(_nangoProps: NangoProps): string {
 }
 
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
-    canHandle(_nangoProps: NangoProps): boolean {
-        //return nangoProps.scriptType === 'action';
-        return false;
+    canHandle(nangoProps: NangoProps): boolean {
+        return nangoProps.scriptType === 'action';
+        //return false;
     }
 
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
