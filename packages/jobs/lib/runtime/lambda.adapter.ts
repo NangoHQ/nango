@@ -2,7 +2,7 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
+import { envs } from '../env.js';
 
 import type { RuntimeAdapter } from './adapter.js';
 import type { NangoProps, Result } from '@nangohq/types';
