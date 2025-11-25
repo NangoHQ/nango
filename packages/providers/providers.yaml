@@ -11969,6 +11969,9 @@ sellsy:
         grant_type: refresh_token
     proxy:
         base_url: https://api.sellsy.com
+    webhook_routing_script: sellsyWebhookRouting
+    webhook_user_defined_secret: true
+    post_connection_script: sellsyPostConnection
     docs: https://nango.dev/docs/integrations/all/sellsy
 
 sellsy-oauth2-cc:
@@ -11983,6 +11986,9 @@ sellsy-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://api.sellsy.com
+    webhook_routing_script: sellsyWebhookRouting
+    webhook_user_defined_secret: true
+    post_connection_script: sellsyPostConnection
     docs: https://nango.dev/docs/integrations/all/sellsy-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/sellsy-oauth2-cc/connect
     credentials:
