@@ -1,17 +1,53 @@
 import { getLocking } from '@nangohq/kvstore';
-import { KVLocks, exec } from '@nangohq/runner';
+import { KVLocks, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { getLogger } from '@nangohq/utils';
 
 import type { requestSchema } from './schemas.js';
 import type { NangoProps } from '@nangohq/types';
 import type { Context } from 'aws-lambda';
 import type * as zod from 'zod';
 
-export const handler = async (event: zod.infer<typeof requestSchema>, _context: Context) => {
-    const result = await exec({
-        nangoProps: event.nangoProps as unknown as NangoProps,
-        code: event.code,
-        codeParams: event.codeParams,
-        locks: new KVLocks(await getLocking())
-    });
-    return result;
+const logger = getLogger('lambda-function-runner');
+
+export const handler = async (event: zod.infer<typeof requestSchema>, context: Context) => {
+    context.callbackWaitsForEmptyEventLoop = false;
+    let lastSuccessHeartbeatAt: number | null = null;
+    const startTime = Date.now();
+    const abortController = new AbortController();
+    const heartbeatTimeoutMs = event.nangoProps.heartbeatTimeoutSecs ? event.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
+
+    const heartbeat = setInterval(async () => {
+        if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
+            // Jobs and orchestrator will kill the task if the heartbeat is not successful for too long
+            // This is to prevent the task from hanging indefinitely if we have trouble reaching orch or the opposite
+            logger.error('Heartbeat failed for too long, self killing task', { taskId: event.taskId });
+            abortController.abort();
+            clearInterval(heartbeat);
+            return;
+        }
+
+        const res = await jobsClient.postHeartbeat({ taskId: event.taskId });
+        if (res.isOk()) {
+            lastSuccessHeartbeatAt = Date.now();
+        }
+    }, heartbeatIntervalMs);
+    try {
+        const execRes = await exec({
+            nangoProps: event.nangoProps as unknown as NangoProps,
+            code: event.code,
+            codeParams: event.codeParams,
+            locks: new KVLocks(await getLocking()),
+            abortController: abortController
+        });
+        const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
+        telemetryBag.durationMs = Date.now() - startTime;
+        await jobsClient.putTask({
+            taskId: event.taskId,
+            nangoProps: event.nangoProps as unknown as NangoProps,
+            ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag })
+        });
+    } finally {
+        clearInterval(heartbeat);
+        logger.info(`Task ${event.taskId} completed`);
+    }
 };

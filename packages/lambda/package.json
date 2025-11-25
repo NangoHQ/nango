@@ -24,6 +24,7 @@
         "@nangohq/node": "file:../node-client",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/types": "file:../types",
+        "@nangohq/utils": "file:../utils",
         "botbuilder": "4.23.3",
         "soap": "1.6.0",
         "unzipper": "0.12.3",

@@ -17,9 +17,7 @@ COPY packages/records/package.json ./packages/records/package.json
 COPY packages/orchestrator/package.json ./packages/orchestrator/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json
 
-WORKDIR /usr/app/packages/lambda
-RUN npm install
-
+# Copy source code before installing so file: dependencies can be properly linked
 WORKDIR /usr/app
 COPY tsconfig.json ./tsconfig.json
 COPY packages/lambda/ ./packages/lambda/
@@ -38,7 +36,11 @@ COPY packages/records/ ./packages/records/
 COPY packages/orchestrator/ ./packages/orchestrator/
 COPY packages/scheduler/ ./packages/scheduler/
 
+# Now install dependencies (file: links will work properly with source code present)
 WORKDIR /usr/app/packages/lambda
+RUN npm install
+
+# Build lambda
 RUN npm run ts-build
 
 RUN npm prune --production

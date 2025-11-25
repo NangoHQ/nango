@@ -86,6 +86,7 @@ export const nangoPropsSchema = zod.object({
 });
 
 export const requestSchema = zod.object({
+    taskId: zod.string(),
     codeParams: zod.any().optional(),
     code: zod.base64().transform((val) => Buffer.from(val, 'base64').toString('utf8')),
     nangoProps: nangoPropsSchema
