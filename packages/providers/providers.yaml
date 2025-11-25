@@ -4215,6 +4215,7 @@ drchrono:
     auth_mode: OAUTH2
     authorization_url: https://app.drchrono.com/o/authorize/
     token_url: https://app.drchrono.com/o/token/
+    authorization_url_skip_empty: true
     authorization_params:
         response_type: code
     token_params:
