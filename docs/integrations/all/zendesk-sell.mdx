@@ -9,7 +9,7 @@ description: 'Access the Zendesk Sell API in 2 minutes 💨'
   <Tab title="🚀 Quickstart">
     <Steps>
       <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zendesk Sell_. You'll need to set up your own OAuth app by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zendesk Sell_. Nango doesn't provide a test OAuth app for Zendesk Sell yet. You'll need to set up your own OAuth app by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
       </Step>
       <Step title="Authorize Zendesk Sell">
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zendesk Sell. Later, you'll let your users do the same directly from your app.
@@ -90,18 +90,15 @@ description: 'Access the Zendesk Sell API in 2 minutes 💨'
     | - | - |
     | General | [Website](https://www.zendesk.com/sell/) |
     | | [Zendesk Sell Login](https://getbase.com/) |
-    | Developer | [API documentation](https://developers.getbase.com/docs/rest/overview) |
-    | | [Authentication guide](https://developers.getbase.com/docs/rest/articles/oauth2/requests) |
-    | | [API Reference](https://developers.getbase.com/docs/rest/reference) |
-    | | [Rate limits](https://developers.getbase.com/docs/rest/articles/requests#rate-limiting) |
-    | | [Scopes and permissions](https://developers.getbase.com/docs/rest/articles/oauth2/scopes) |
+    | Developer | [API documentation](https://developer.zendesk.com/api-reference/sales-crm/introduction/) |
+    | | [Authentication guide](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/) |
+    | | [Core API Reference](https://developer.zendesk.com/api-reference/sales-crm/resources/introduction/) |
+    | | [Rate limits](https://developer.zendesk.com/api-reference/sales-crm/rate-limits/) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zendesk-sell.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
     - **Rate limits**: Zendesk Sell has a rate limit of 600 requests per minute for most endpoints. Some endpoints have lower limits.
-    - **Pagination**: The API uses cursor-based pagination. Use the `page` and `per_page` parameters for list endpoints.
-    - **Field filtering**: Many endpoints support field filtering using the `fields` parameter to reduce response size.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zendesk-sell.mdx)</Note>
   </Tab>
