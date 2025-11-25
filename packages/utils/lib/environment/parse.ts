@@ -354,6 +354,10 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
+    // Lambda
+    LAMBDA_FUNCTION_NAME: z.string().optional().default('lambda-function'),
+    LAMBDA_FUNCTION_QUALIFIER: z.string().optional().default('7'),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: z.stringbool().optional().default(false),

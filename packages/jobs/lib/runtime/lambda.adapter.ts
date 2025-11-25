@@ -2,6 +2,8 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
+
 import type { RuntimeAdapter } from './adapter.js';
 import type { NangoProps, Result } from '@nangohq/types';
 
@@ -9,7 +11,7 @@ const client = new LambdaClient();
 
 function getLambdaFunctionName(_nangoProps: NangoProps): string {
     //return `nango-function-${nangoProps.scriptType}-128mb`;
-    return 'lambda-function';
+    return envs.LAMBDA_FUNCTION_NAME;
 }
 
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
@@ -22,7 +24,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         const functionName = getLambdaFunctionName(params.nangoProps);
         const command = new InvokeCommand({
             FunctionName: functionName,
-            Qualifier: '4',
+            Qualifier: envs.LAMBDA_FUNCTION_QUALIFIER,
             Payload: JSON.stringify({
                 taskId: params.taskId,
                 nangoProps: {
