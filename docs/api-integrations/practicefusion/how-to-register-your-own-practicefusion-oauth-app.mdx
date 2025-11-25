@@ -1,0 +1,46 @@
+---
+title: 'Set up PracticeFusion with Nango'
+sidebarTitle: 'PracticeFusion Setup'
+description: 'Register an OAuth app with PracticeFusion and connect it to Nango'
+---
+
+This guide shows you how to register your own app with PracticeFusion to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their PracticeFusion practices.
+
+<Steps>
+    <Step title="Complete PDS API Partner Registration">
+    Complete the [PDS API Partner Registration Form](https://pfpds.practicefusion.com/s/Registration) with your developer and company information. You must also agree to the Terms of Service to submit your registration as a third-party developer.
+    </Step>
+    <Step title="Receive portal access">
+    Upon approval, you will receive an email with login information to the Patient Data Sharing (PDS) API portal.
+    </Step>
+    <Step title="Complete PDS API Partner Application">
+    Log in to the PDS API portal, select **Application** from the navigation, and complete the PDS API Partner Application form with all required information. The information you enter will be displayed to EHR users.
+    
+    Key fields to note:
+    - **Application type**: Choose from Patient (applications that patients can use or as an alternative to Patient Fusion), Provider (applications that Practice Fusion users could use either as stand-alone applications or as a module within the platform using the SMART on FHIR standard), or System or Bulk export (third-party applications that may request large practice level data exports).
+    - **Redirect URL(s)**: Add `https://api.nango.dev/oauth/callback` as your redirect URL for Nango.
+    - **Launch URL(s)**: Required for provider applications which support SMART launch from within an EHR as specified in the [HL7 SMART App Launch guide](https://www.hl7.org/fhir/smart-app-launch/1.0.0/#ehr-launch-sequence). If your application uses EHR launch flow, you must provide a launch URL during registration and include the `launch` scope in your requested scopes. The EHR will redirect to this launch URL with `launch` and `iss` parameters that must be passed back during authorization.
+    - **JWKS (JSON Web Key Sets) URL**: You can skip this field as its not required.
+    
+    <Note>Any information not provided will surface to the provider as "Not provided by app developer".</Note>
+    </Step>
+    <Step title="Obtain API credentials">
+    After submitting your application, API credentials will be delivered to you via your PDS API Portal. You'll receive:
+    - **Client ID** (OAuth Client ID)
+    - **Client Secret** (OAuth Client Secret)
+    
+    You'll need these credentials when configuring your integration in Nango.
+    </Step>
+</Steps>
+
+## API Considerations
+
+When working with the PracticeFusion API, keep these important points in mind:
+
+-   **Base URL requirement**: Each PracticeFusion practice has a unique Base URL that must be provided when creating a connection. You can find your practice's Base URL by downloading the [ServiceBaseURLs.json](https://www.practicefusion.com/assets/static_files/ServiceBaseURLs.json) file and searching for your practice. Look for the endpoint with the name "Provider / System Access" and use its `fullUrl` value (omitting the `https://` prefix).
+-   **SMART on FHIR**: PracticeFusion uses the SMART on FHIR standard for authentication and authorization. For more details, see the [SMART App Launch guide](http://hl7.org/fhir/smart-app-launch/1.0.0/app-launch.html).
+-   **EHR Launch**: For provider applications using EHR launch flow, the EHR redirects to your registered launch URL with `launch` and `iss` query parameters. The `launch` parameter is an opaque identifier for the specific launch context and must be included in your authorization request. You must request the `launch` scope and have it approved during app registration to use EHR launch. The `iss` parameter identifies the EHR's FHIR endpoint.
+
+For more details on PracticeFusion's OAuth implementation, see [SMART on FHIR Documentation](http://hl7.org/fhir/smart-app-launch/) and [FHIR API Documentation](https://www.hl7.org/fhir/).
+
+---
