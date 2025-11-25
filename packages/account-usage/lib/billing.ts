@@ -9,7 +9,7 @@ import { Ok } from '@nangohq/utils';
 import { envs } from './env.js';
 
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric, GetBillingUsageOpts } from '@nangohq/types';
+import type { BillingUsageMetrics, GetBillingUsageOpts } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class UsageBillingClient {
@@ -32,12 +32,12 @@ export class UsageBillingClient {
         this.billingClient = billing;
     }
 
-    public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
+    public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
         const cached = await this.redis.get(cacheKey);
         if (cached) {
             try {
-                const parsed: BillingUsageMetric[] = JSON.parse(cached);
+                const parsed: BillingUsageMetrics = JSON.parse(cached);
                 return Ok(parsed);
             } catch {
                 // ignore parse errors and proceed to fetch from API

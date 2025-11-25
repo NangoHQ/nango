@@ -94,7 +94,7 @@ export const ProfileDropdown: React.FC = () => {
                             <DropdownMenuItem
                                 key={index}
                                 onSelect={() => navigate(item.href)}
-                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
                             >
                                 <item.icon className="size-4 text-text-secondary group-hover:text-text-primary" />
                                 <span>{item.label}</span>
@@ -102,7 +102,7 @@ export const ProfileDropdown: React.FC = () => {
                         ))}
                         <DropdownMenuItem
                             onSelect={() => signout()}
-                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
+                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
                         >
                             <LogOut className="size-4 text-text-secondary group-hover:text-text-primary" />
                             <span>Log Out</span>

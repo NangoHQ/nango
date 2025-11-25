@@ -1,0 +1,73 @@
+---
+title: 'How to register your own Jira OAuth app'
+sidebarTitle: 'Jira Setup'
+description: 'Register an OAuth app with Jira and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Jira to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Jira account.
+
+## Creating an OAuth 2.0 (3LO) app
+
+<Steps>
+  <Step title="Create an Atlassian developer account">
+    If you don't already have one, sign up for an [Atlassian developer account](https://id.atlassian.com/signup/).
+  </Step>
+  <Step title="Create a new OAuth 2.0 (3LO) app">
+    1. Go to the [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/).
+    2. Click **Create** and select **OAuth 2.0 integration**.
+    3. Enter a name, agree to Atlassian's developer terms by checking the agreement checkbox for your app and click **Create**.
+    4. Your app will be created and you'll be taken to the app management page.
+  </Step>
+  <Step title="Configure OAuth 2.0 (3LO)">
+    1. In the left sidebar, select **Authorization**.
+    2. Next to OAuth 2.0 (3LO), click **Add**.
+    3. Enter `https://api.nango.dev/oauth/callback` as the **Callback URL**.
+    4. Click **Save Changes** to save your changes.
+  </Step>
+  <Step title="Add API permissions">
+    1. In the left sidebar, select **Permissions**.
+    2. Find the Jira API and click **Add**, and then click **Configure**.
+    3. Click **Edit Scopes** then select the [scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#scopes) your application requires.
+    4. Click **Save** to save your changes.
+
+    <Note>Refreshing tokens requires the `offline_access` scope. Make sure to include it when configuring your integration in Nango.</Note>
+  </Step>
+  <Step title="Obtain your client credentials">
+    1. In the left sidebar, select **Settings**.
+    2. Note your **Client ID**.
+    3. Copy both the **Client ID** and **Secret** by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Make your app available to users">
+    1. In the left sidebar, select **Distribution**.
+    2. In **Distribution controls**, click the **Edit** button, select the **Sharing** radio button, enter a **Privacy Policy URL** and then click the **Save changes** button.
+   <Note>By default, your app is private and can only be used by you. Making it public allows other users to authorize your app. Learn more about [distributing OAuth 2.0 apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).</Note>
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For a complete list of available scopes, see [Jira's OAuth scopes reference](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#scopes).
+
+## Understanding Jira's connection model
+
+When connecting to Jira, you have two options for specifying which Jira site to connect to:
+
+1.  **Provide a `Subdomain` during connection creation (recommended)**: This ensures your users connect to a specific Jira site.
+2.  **Let Nango auto-select the first available site (legacy behavior)**: If no `Subdomain` is specified, Nango will use the first site from the accessible resources API.
+
+<Note>A single Jira OAuth token can be valid for multiple Atlassian sites. Specifying the `Subdomain` during connection creation is important if you need to connect to a specific site.</Note>
+
+## Making API requests
+
+The `cloudId` is required to make API requests to the Jira API `v3`. Nango handles getting this automatically by matching it to your specified `subdomain` if provided, or by selecting the first available site if it is not. Learn more about [making API requests with Jira and Nango](/reference/sdks/node#jira-api-requests).
+
+## Important notes
+
+- **Token expiration**: Refresh tokens will expire after 365 days of non-use and will expire within 90 days if the resource owner is inactive for 90 days. For more details, see [Atlassian's documentation on access token management](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+- **User permissions**: When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
+- **API versions**: The Jira REST API has different versions (v2 and v3). Make sure you're using the correct version for your needs.
+
+For more details on Jira's OAuth implementation, see [Atlassian's OAuth 2.0 (3LO) Apps Documentation](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/).
+
+---

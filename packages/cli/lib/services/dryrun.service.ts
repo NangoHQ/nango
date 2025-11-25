@@ -293,13 +293,6 @@ export class DryRunService {
                     throw new Error('Failed to parse --input');
                 }
             }
-
-            if (options.saveResponses) {
-                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
-                const filePath = `${saveResponsesSyncDir}/input.json`;
-                const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
-                fs.writeFileSync(filePath, dataToWrite);
-            }
         }
 
         if (rawStubbedMetadata) {
@@ -415,12 +408,6 @@ export class DryRunService {
                 };
             }
 
-            if (options.saveResponses && stubbedMetadata) {
-                responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
-                const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
-                fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
-            }
-
             const results = await this.runScript({
                 syncName,
                 nangoProps,
@@ -446,6 +433,22 @@ export class DryRunService {
 
                 console.error(err instanceof Error ? JSON.stringify(err, ['name', 'message'], 2) : JSON.stringify(err, null, 2));
                 return;
+            }
+
+            // Save input and metadata only after validation passes
+            if (options.saveResponses) {
+                if (normalizedInput) {
+                    responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                    const filePath = `${saveResponsesSyncDir}/input.json`;
+                    const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
+                    fs.writeFileSync(filePath, dataToWrite);
+                }
+
+                if (stubbedMetadata) {
+                    responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
+                    const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
+                    fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
+                }
             }
 
             const resultOutput = [];
