@@ -257,3 +257,17 @@ export interface ShipStationWebhook {
     resource_url: string;
     resource_type: string;
 }
+
+export interface SellsyWebhookPayload {
+    eventType: string;
+    relatedtype: string;
+    ownertype: string;
+    timestamp: string;
+    event: string;
+    ownerid: string;
+    relatedid: string;
+    thirdtype?: string;
+    corpid: string;
+    relatedobject: Record<string, any>;
+    individual: boolean;
+}
