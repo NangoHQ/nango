@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- White circular background -->
+  <circle cx="32" cy="32" r="32" fill="white"/>
+  <!-- Hightouch logo scaled down and centered -->
+  <g transform="translate(10, 10) scale(0.45)">
+    <path d="M33 3.75C33 2.7835 33.7835 2 34.75 2H93.25C94.2165 2 95 2.7835 95 3.75V62.25C95 63.2165 94.2165 64 93.25 64H33V3.75Z" fill="#101111"/>
+    <path d="M33 93.25C33 94.2165 32.2165 95 31.25 95L3.75 95C2.7835 95 2 94.2165 2 93.25L2 65.75C2 64.7835 2.7835 64 3.75 64L33 64L33 93.25Z" fill="#101111"/>
+  </g>
+</svg>

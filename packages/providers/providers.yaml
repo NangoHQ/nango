@@ -6742,6 +6742,33 @@ highlevel-white-label:
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/integrations/all/highlevel-white-label
 
+hightouch:
+    display_name: Hightouch
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hightouch.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v1/models
+    docs: https://nango.dev/docs/integrations/all/hightouch
+    docs_connect: https://nango.dev/docs/integrations/all/hightouch/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Hightouch workspace
+            example: 'eeeeef25-6fa6-eeea-a27c-b6cdfefbc470'
+            pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
+            secret: true
+            doc_section: '#step-1-create-an-api-key'
+
 holded:
     display_name: Holded
     categories:
