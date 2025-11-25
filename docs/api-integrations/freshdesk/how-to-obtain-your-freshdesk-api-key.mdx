@@ -1,0 +1,50 @@
+---
+title: 'Obtain your Freshdesk API key'
+sidebarTitle: 'Freshdesk Setup'
+description: 'Obtain your API key from Freshdesk to authenticate with Nango'
+---
+
+This guide shows you how to obtain your API key from Freshdesk. The API key is required to let your users connect their Freshdesk accounts through Nango.
+
+## Prerequisites
+
+You must have an Enterprise account with Freshdesk.
+
+## Obtaining your Freshdesk API key
+
+<Steps>
+    <Step title="Find your API key">
+    1. Log into your Freshdesk Enterprise account
+    2. Navigate to your profile in the top right corner
+    3. Click **Profile Settings**
+    4. Click **View API Key** to reveal your API key
+
+    <Note>Copy and store your API Key securely. It will not be visible again once you leave this page.</Note>
+    </Step>
+
+    <Step title="Find your Freshdesk domain">
+    Your Freshdesk Domain is visible in the browser address bar when you're logged into Freshdesk. It follows the format: `https://YOUR-DOMAIN.freshdesk.com`
+
+    The domain name is the subdomain portion (e.g., if your URL is `https://acme.freshdesk.com`, your domain is `acme`).
+    </Step>
+
+    <Step title="Configure connection in Nango">
+    When creating a connection in Nango, you'll need to provide:
+    - **FreshDesk API Key**: Your API Key from Step 1
+    - **FreshDesk Domain**: Your subdomain from Step 2 (without `.freshdesk.com`)
+    </Step>
+</Steps>
+
+## Connection configuration in Nango
+
+Freshdesk requires a user-specific subdomain for API requests. When configuring your connection in Nango, make sure to provide the correct subdomain.
+
+In your Nango integration functions, API calls will be automatically directed to your subdomain: `https://${connectionConfig.subdomain}.freshdesk.com`
+
+## Authentication details
+
+Freshdesk uses Basic Authentication with the API key as the username and dummy characters (typically 'X') as the password. Nango handles this authentication flow automatically when you provide your API key.
+
+For more details on Freshdesk's API authentication, see [Freshdesk's API documentation](https://developers.freshdesk.com/api/#introduction).
+
+---

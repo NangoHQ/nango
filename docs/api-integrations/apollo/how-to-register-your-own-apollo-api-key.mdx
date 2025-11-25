@@ -1,0 +1,42 @@
+---
+title: 'How to register your own Apollo API key'
+sidebarTitle: 'Apollo Setup'
+description: 'Register an API key with Apollo and connect it to Nango'
+---
+
+This guide shows you how to obtain an API key from Apollo to authenticate your integration with Nango. Apollo uses API key authentication with the `x-api-key` header to access various endpoints.
+
+## Prerequisites
+
+Apollo offers a free account with self-signup. You can create an account at [apollo.io/sign-up](https://www.apollo.io/sign-up).
+
+- No paid account required
+- No partnership required
+- No app review or security audit required
+
+## Obtaining your Apollo API key
+
+To generate an API key for your Apollo account:
+
+1. Sign up for a free Apollo account at [apollo.io/sign-up](https://www.apollo.io/sign-up) if you don't have one
+2. Follow the [Apollo API key generation guide](https://developer.apollo.io/keys/) to create your API key
+3. Test your API key using the [Apollo API documentation](https://docs.apollo.io/docs/test-api-key#test-apollo-apis-in-documentation)
+
+<Note>Apollo uses API_KEY auth mode with `x-api-key: API_KEY` in the request header to access various endpoints.</Note>
+
+## Using your API key with Nango
+
+Once you have your API key:
+
+1. Go to the [Integrations](https://app.nango.dev/dev/integrations) page in your Nango dashboard
+2. Find your Apollo integration and click to configure it
+3. Enter your API key in the credentials section
+4. Test the connection to verify it works
+
+## API rate limiting
+
+Be aware of Apollo's API rate limits when making requests. For details, see [Apollo's rate limiting documentation](https://docs.apollo.io/reference/rate-limits).
+
+For more information about Apollo's API, see the [Apollo API documentation](https://docs.apollo.io/reference).
+
+---
