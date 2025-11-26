@@ -27,10 +27,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             Qualifier: envs.LAMBDA_FUNCTION_QUALIFIER,
             Payload: JSON.stringify({
                 taskId: params.taskId,
-                nangoProps: {
-                    connectionId: params.nangoProps.connectionId,
-                    providerConfigKey: params.nangoProps.providerConfigKey
-                },
+                nangoProps: params.nangoProps,
                 code: Buffer.from(params.code).toString('base64'),
                 codeParams: params.codeParams
             }),

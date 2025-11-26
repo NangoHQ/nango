@@ -1,5 +1,4 @@
-import { getLocking } from '@nangohq/kvstore';
-import { KVLocks, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { MapLocks, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
 import { getLogger } from '@nangohq/utils';
 
 import type { requestSchema } from './schemas.js';
@@ -32,19 +31,39 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         }
     }, heartbeatIntervalMs);
     try {
-        const execRes = await exec({
+        const payload = {
             nangoProps: event.nangoProps as unknown as NangoProps,
             code: event.code,
             codeParams: event.codeParams,
-            locks: new KVLocks(await getLocking()),
+            locks: new MapLocks(), //new KVLocks(await getLocking()),
             abortController: abortController
-        });
+        };
+        logger.info('payload', JSON.stringify(payload));
+        const execRes = await exec(payload);
         const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
         telemetryBag.durationMs = Date.now() - startTime;
         await jobsClient.putTask({
             taskId: event.taskId,
             nangoProps: event.nangoProps as unknown as NangoProps,
             ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag })
+        });
+    } catch (err: any) {
+        logger.error('error', JSON.stringify(err));
+        await jobsClient.putTask({
+            taskId: event.taskId,
+            error: {
+                type: 'lambda_error',
+                payload: {
+                    message: err.message as string
+                },
+                status: 500
+            },
+            telemetryBag: {
+                customLogs: 0,
+                proxyCalls: 0,
+                durationMs: Date.now() - startTime,
+                memoryGb: Number(context.memoryLimitInMB) / 1024
+            }
         });
     } finally {
         clearInterval(heartbeat);
