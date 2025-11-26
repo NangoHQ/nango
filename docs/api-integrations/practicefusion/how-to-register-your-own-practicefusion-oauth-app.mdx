@@ -19,7 +19,7 @@ This guide shows you how to register your own app with PracticeFusion to obtain 
     Key fields to note:
     - **Application type**: Choose from Patient (applications that patients can use or as an alternative to Patient Fusion) or Provider (applications that Practice Fusion users could use either as stand-alone applications, or as a module within the platform using the SMART on FHIR standard).
     - **Redirect URL(s)**: Add `https://api.nango.dev/oauth/callback` as your redirect URL for Nango.
-    - **Launch URL(s)**: Required for provider applications which support SMART launch from within an EHR as specified in the [HL7 SMART App Launch guide](https://www.hl7.org/fhir/smart-app-launch/1.0.0/#ehr-launch-sequence). If your application uses EHR launch flow, you must provide a launch URL during registration and include the `launch` scope in your requested scopes. The EHR will redirect to this launch URL with `launch` parameters that must be passed back during authorization.
+    - **Launch URL(s)**: Required for provider applications that support SMART launch from within an EHR as specified in the [HL7 SMART App Launch guide](https://www.hl7.org/fhir/smart-app-launch/1.0.0/#ehr-launch-sequence). If your application uses EHR launch flow, you must provide a launch URL during registration and include the `launch` scope in your requested scopes. The EHR will redirect to this launch URL with `launch` parameters that must be passed back during authorization.
     - **JWKS (JSON Web Key Sets) URL**: You can skip this field as it's not required.
     
     <Note>Any information not provided will surface to the provider as "Not provided by app developer".</Note>
