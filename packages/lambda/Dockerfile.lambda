@@ -3,7 +3,7 @@
 # ------------------
 FROM badouralix/curl-jq AS precompile
 
-COPY tsconfig.build.json /tsconfig.build.json
+COPY packages/lambda/tsconfig.build.json /tsconfig.build.json
 RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build.json > tsconfig.docker.json
 
 # ------------------
