@@ -25,7 +25,7 @@ This guide shows you how to register your own app with PracticeFusion to obtain 
     <Note>Any information not provided will surface to the provider as "Not provided by app developer".</Note>
     </Step>
     <Step title="Obtain API credentials">
-    After submitting your application, API credentials will be delivered to you via your PDS API Portal. You'll receive:
+    After submitting your application, API credentials will be delivered to you via your PDS API portal. You'll receive:
     - **Client ID** (OAuth Client ID)
     - **Client Secret** (OAuth Client Secret)
     
@@ -37,7 +37,7 @@ This guide shows you how to register your own app with PracticeFusion to obtain 
 
 When working with the PracticeFusion API, keep these important points in mind:
 
--   **Base URL requirement**: Each PracticeFusion practice has a unique Base URL that must be provided when creating a connection. You can find your practice's Base URL by downloading the [ServiceBaseURLs.json](https://www.practicefusion.com/assets/static_files/ServiceBaseURLs.json) file and searching for your practice. Look for the endpoint with the name "Provider / System Access" and use its `fullUrl` value (omitting the `https://` prefix).
+-   **Base URL requirement**: Each PracticeFusion practice has a unique Base URL that must be provided when creating a connection. You can find your practice's Base URL by downloading the [ServiceBaseURLs.json](https://www.practicefusion.com/assets/static_files/ServiceBaseURLs.json) file and searching for your practice. Look for the endpoint with the `name` "Patient Access" to access patient records or "Provider / System Access" for system access records and use its `fullUrl` value (omitting the `https://` prefix).
 -   **EHR Launch**: For provider applications using EHR launch flow, the EHR redirects to your registered launch URL with `launch` and `iss` query parameters. The `launch` parameter is an opaque identifier for the specific launch context and must be included in your authorization request. You must request the `launch` scope and have it approved during app registration to use EHR launch.
 
 For more details on PracticeFusion's OAuth implementation, see the PracticeFusion documentation on [registering an application](https://www.practicefusion.com/fhir/get-started/) and [Authentication and Authorization](https://www.practicefusion.com/fhir/api-specifications/#authentication-and-authorization).

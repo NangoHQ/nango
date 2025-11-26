@@ -9,7 +9,7 @@ sidebarTitle: PracticeFusion
 To authenticate with PracticeFusion, you will need:
 1. **Base URL** - The PracticeFusion authorization server base URL for your practice.
 
-This guide will walk you through finding your **Base URL** from the PracticeFusion.
+This guide will walk you through finding your **Base URL** from PracticeFusion.
 
 ### Prerequisites:
 
@@ -21,7 +21,7 @@ This guide will walk you through finding your **Base URL** from the PracticeFusi
 
 1. Download the [ServiceBaseURLs.json](https://www.practicefusion.com/assets/static_files/ServiceBaseURLs.json) file which contains all available PracticeFusion practice endpoints.
 2. Open the downloaded JSON file and search for your practice by name or organization identifier. The file contains a FHIR Bundle with organization entries and their associated endpoints.
-3. For each practice, you'll find endpoint entries with `fullUrl` values. Look for the endpoint with the name **"Provider / System Access"** and copy its `fullUrl` value.
+3. For each practice, you'll find endpoint entries with `fullUrl` values. Look for the endpoint with the `name` **"Patient Access"** to access patient records or **"Provider / System Access"** for system access records and copy its `fullUrl` value.
 4. Omit the `https://` prefix from the URL - this is your **Base URL**.
 
 #### Step 2: Enter Base URL in the Connect UI

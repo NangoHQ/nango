@@ -10597,7 +10597,7 @@ practicefusion:
             type: string
             title: Base URL
             description: The base URL for your Practice authorization server
-            format: uri
+            pattern: '^[a-zA-Z0-9.-]+\.(practice|patient)fusion\.com/.*$'
             prefix: https://
             example: api.patientfusion.com/fhir/r4/v1/118b460b-8390-4754-8e4a-1dd5ee20f599/
             doc_section: '#step-1-find-your-base-url'
