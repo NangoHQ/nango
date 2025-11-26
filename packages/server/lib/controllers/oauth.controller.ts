@@ -184,6 +184,10 @@ class OAuthController {
                 if (defaults?.authorization_params) {
                     authorizationParams = defaults.authorization_params;
                 }
+
+                if (defaults?.connectionConfig) {
+                    Object.assign(connectionConfig, defaults.connectionConfig);
+                }
             }
 
             const session: OAuthSession = {
