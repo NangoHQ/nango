@@ -742,6 +742,7 @@
               "integrations/all/plain",
               "integrations/all/podium",
               "integrations/all/posthog",
+              "api-integrations/practicefusion",
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
