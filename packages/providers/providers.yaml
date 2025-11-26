@@ -951,9 +951,8 @@ apollo:
             x-api-key: ${apiKey}
         base_url: https://app.apollo.io/api
     docs: https://nango.dev/docs/api-integrations/apollo
-    setup_guide_url: https://nango.dev/docs/api-integrations/apollo/how-to-register-your-own-apollo-api-key
-    credentials_verification_script: apolloCredentialsVerification
     docs_connect: https://nango.dev/docs/api-integrations/apollo/connect
+    credentials_verification_script: apolloCredentialsVerification
     credentials:
         apiKey:
             type: string
@@ -5150,7 +5149,6 @@ freshdesk:
             endpoints:
                 - /api/v2/settings/helpdesk
     docs: https://nango.dev/docs/api-integrations/freshdesk
-    setup_guide_url: https://nango.dev/docs/api-integrations/freshdesk/how-to-obtain-your-freshdesk-api-key
     docs_connect: https://nango.dev/docs/api-integrations/freshdesk/connect
     credentials:
         username:
