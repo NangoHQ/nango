@@ -4777,6 +4777,41 @@ fathom:
             title: API Key
             description: The API key for your Fathom account
 
+fellow:
+    display_name: Fellow
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.fellow.app/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/fellow
+    docs_connect: https://nango.dev/docs/api-integrations/fellow/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Workspace Subdomain
+            description: The subdomain of your Fellow workspace
+            pattern: '^[a-z0-9_-]+$'
+            example: myworkspace
+            order: 1
+            doc_section: '#step-1-finding-your-workspace-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fellow API Key
+            example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-2-generating-your-api-key'
+
 figjam:
     display_name: FigJam
     categories:
