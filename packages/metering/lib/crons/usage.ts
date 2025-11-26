@@ -121,7 +121,7 @@ const observability = {
                                 .reduce(
                                     (acc, curr) => {
                                         acc.count += curr.count;
-                                        acc.size_bytes += curr.size_bytes;
+                                        acc.size_bytes += Number(curr.size_bytes);
                                         return acc;
                                     },
                                     { count: 0, size_bytes: 0 }
