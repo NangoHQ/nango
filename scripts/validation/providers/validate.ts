@@ -125,14 +125,17 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         console.error(`Expected file: ${svg}`);
         error = true;
     }
+    let connectMdxPath: string | null = null;
     if (provider.docs_connect) {
-        if (!fs.existsSync(connectMdx)) {
+        const updatedConnectMdx = path.join(updatedDocsPath, `${providerKey}/connect.mdx`);
+        if (!fs.existsSync(connectMdx) && !fs.existsSync(updatedConnectMdx)) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `Connect.mdx file not found`);
             console.error(`Expected file: ${connectMdx}`);
             error = true;
         } else {
             hasValidConnect = true;
-            const content = fs.readFileSync(connectMdx).toString();
+            connectMdxPath = fs.existsSync(updatedConnectMdx) ? updatedConnectMdx : connectMdx;
+            const content = fs.readFileSync(connectMdxPath).toString();
             const matched = content.matchAll(/^[#]+\sStep[a-zA-Z0-9:()._ -]+$/gim);
             for (const match of matched) {
                 headers.add(
