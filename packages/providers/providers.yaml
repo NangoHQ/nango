@@ -14760,6 +14760,24 @@ zendesk:
             prefix: https://
             doc_section: '#step-1-finding-your-subdomain'
 
+zendesk-sell:
+    display_name: Zendesk Sell
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://api.getbase.com/oauth2/authorize
+    token_url: https://api.getbase.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.getbase.com
+    docs: https://nango.dev/docs/integrations/all/zendesk-sell
+
 zenefits:
     display_name: Zenefits
     categories:
