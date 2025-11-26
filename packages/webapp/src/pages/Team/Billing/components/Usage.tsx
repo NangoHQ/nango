@@ -19,8 +19,8 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
-        const start = new Date(selectedMonth.getUTCFullYear(), selectedMonth.getUTCMonth(), 1);
-        const end = new Date(selectedMonth.getUTCFullYear(), selectedMonth.getUTCMonth() + 1, 0, 23, 59, 59, 999);
+        const start = new Date(Date.UTC(selectedMonth.getUTCFullYear(), selectedMonth.getUTCMonth(), 1));
+        const end = new Date(Date.UTC(selectedMonth.getUTCFullYear(), selectedMonth.getUTCMonth() + 1, 1));
         return {
             start: start.toISOString(),
             end: end.toISOString()
