@@ -50,7 +50,7 @@ accelo:
     proxy:
         base_url: https://${connectionConfig.subdomain}.api.accelo.com
     docs: https://nango.dev/docs/api-integrations/accelo
-    setup_guide_url: https://nango.dev/docs/api-integrations/accelo/how-to-register-your-own-accelo-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/accelo/how-to-register-your-own-accelo-api-oauth-app
     connection_config:
         subdomain:
             type: string
@@ -528,7 +528,7 @@ airtable:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
     docs: https://nango.dev/docs/api-integrations/airtable
-    setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app
 
 airtable-pat:
     display_name: Airtable (Personal Access Token)
@@ -673,7 +673,7 @@ amazon:
     proxy:
         base_url: https://api.amazon.com
     docs: https://nango.dev/docs/api-integrations/amazon
-    setup_guide_url: https://nango.dev/docs/api-integrations/amazon/how-to-register-your-own-amazon-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/amazon/how-to-register-your-own-amazon-api-oauth-app
     connection_config:
         extension:
             type: string
@@ -1040,7 +1040,7 @@ asana:
             response_path: data
             limit_name_in_request: limit
     docs: https://nango.dev/docs/api-integrations/asana
-    setup_guide_url: https://nango.dev/docs/api-integrations/asana/how-to-register-your-own-asana-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/asana/how-to-register-your-own-asana-api-oauth-app
 
 asana-mcp:
     display_name: Asana (MCP)
@@ -1240,7 +1240,7 @@ attio:
     webhook_routing_script: attioWebhookRouting
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/attio
-    setup_guide_url: https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app
 
 auth0:
     display_name: Auth0
@@ -2009,7 +2009,7 @@ box:
     proxy:
         base_url: https://api.box.com
     docs: https://nango.dev/docs/api-integrations/box
-    setup_guide_url: https://nango.dev/docs/api-integrations/box/how-to-register-your-own-box-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/box/how-to-register-your-own-box-api-oauth-app
 
 booking-com:
     display_name: Booking.com
@@ -2487,7 +2487,7 @@ calendly:
     post_connection_script: calendlyPostConnection
     webhook_routing_script: calendlyWebhookRouting
     docs: https://nango.dev/docs/api-integrations/calendly
-    setup_guide_url: https://nango.dev/docs/api-integrations/calendly/how-to-register-your-own-calendly-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/calendly/how-to-register-your-own-calendly-api-oauth-app
 
 callrail:
     display_name: Callrail
@@ -2929,7 +2929,7 @@ clickup:
     proxy:
         base_url: https://api.clickup.com
     docs: https://nango.dev/docs/api-integrations/clickup
-    setup_guide_url: https://nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-api-oauth-app
 
 clerk:
     display_name: Clerk
@@ -3298,7 +3298,7 @@ confluence:
         - popular
     alias: jira
     docs: https://nango.dev/docs/api-integrations/confluence
-    setup_guide_url: https://nango.dev/docs/api-integrations/confluence/how-to-register-your-own-confluence-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/confluence/how-to-register-your-own-confluence-api-oauth-app
 
 confluence-basic:
     display_name: Confluence (Basic Auth)
@@ -3978,7 +3978,7 @@ discord:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/discord
-    setup_guide_url: https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-api-oauth-app
 
 discourse:
     display_name: Discourse
@@ -4194,7 +4194,7 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://nango.dev/docs/api-integrations/dropbox
-    setup_guide_url: https://nango.dev/docs/api-integrations/dropbox/how-to-register-your-own-dropbox-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/dropbox/how-to-register-your-own-dropbox-api-oauth-app
 
 dropbox-sign:
     display_name: Dropbox Sign
@@ -4761,7 +4761,7 @@ facebook:
     proxy:
         base_url: https://graph.facebook.com
     docs: https://nango.dev/docs/api-integrations/facebook
-    setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app
 
 fathom:
     display_name: Fathom
@@ -5577,7 +5577,7 @@ github:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://nango.dev/docs/api-integrations/github
-    setup_guide_url: https://nango.dev/docs/api-integrations/github/how-to-register-your-own-github-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/github/how-to-register-your-own-github-api-oauth-app
 
 github-app:
     display_name: GitHub (App)
@@ -5591,7 +5591,7 @@ github-app:
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppWebhookRouting
     docs: https://nango.dev/docs/api-integrations/github-app
-    setup_guide_url: https://nango.dev/docs/api-integrations/github-app/how-to-register-your-own-github-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/github-app/how-to-register-your-own-github-app-api-app
     connection_config:
         appPublicLink:
             type: string
@@ -5623,7 +5623,7 @@ github-app-oauth:
     webhook_routing_script: githubAppOauthWebhookRouting
     post_connection_script: githubAppOauthPostConnection
     docs: https://nango.dev/docs/api-integrations/github-app-oauth
-    setup_guide_url: https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app
     connection_config:
         appPublicLink:
             type: string
@@ -5924,7 +5924,7 @@ google:
             cursor_name_in_request: pageToken
             response_path: items
     docs: https://nango.dev/docs/api-integrations/google
-    setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
 
 google-analytics:
     display_name: Google Analytics
@@ -5932,7 +5932,7 @@ google-analytics:
     categories:
         - analytics
     docs: https://nango.dev/docs/api-integrations/google-analytics
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-analytics/how-to-register-your-own-google-analytics-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-analytics/how-to-register-your-own-google-analytics-api-oauth-app
 
 google-calendar:
     display_name: Google Calendar
@@ -5956,7 +5956,7 @@ google-calendar:
                 - '429'
     webhook_routing_script: googleCalendarWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-calendar
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
 
 google-chat:
     display_name: Google Chat
@@ -5975,7 +5975,7 @@ google-docs:
     proxy:
         base_url: https://docs.googleapis.com
     docs: https://nango.dev/docs/api-integrations/google-docs
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-docs/how-to-register-your-own-google-docs-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-docs/how-to-register-your-own-google-docs-api-oauth-app
 
 google-mail:
     display_name: Gmail
@@ -5987,7 +5987,7 @@ google-mail:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-mail
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
 
 google-sheet:
     display_name: Google Sheet
@@ -5997,7 +5997,7 @@ google-sheet:
     proxy:
         base_url: https://sheets.googleapis.com
     docs: https://nango.dev/docs/api-integrations/google-sheet
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-api-oauth-app
 
 google-slides:
     display_name: Google Slides
@@ -6016,7 +6016,7 @@ google-drive:
         - storage
     alias: google
     docs: https://nango.dev/docs/api-integrations/google-drive
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
 google-ads:
     display_name: Google Ads
@@ -6033,7 +6033,7 @@ google-ads:
             cursor_name_in_request: pageToken
             response_path: results
     docs: https://nango.dev/docs/api-integrations/google-ads
-    setup_guide_url: https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-api-oauth-app
 
 google-play:
     display_name: Google Play
@@ -6827,7 +6827,7 @@ hubspot:
             cursor_name_in_request: after
             response_path: results
     docs: https://nango.dev/docs/api-integrations/hubspot
-    setup_guide_url: https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-api-oauth-app
 
 incident-io:
     display_name: Incident.io
@@ -6923,7 +6923,7 @@ instagram:
     proxy:
         base_url: https://graph.instagram.com
     docs: https://nango.dev/docs/api-integrations/instagram
-    setup_guide_url: https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app
 
 icypeas:
     display_name: Icypeas
@@ -7004,7 +7004,7 @@ intercom:
             at:
                 - 'x-ratelimit-reset'
     docs: https://nango.dev/docs/api-integrations/intercom
-    setup_guide_url: https://nango.dev/docs/api-integrations/intercom/how-to-register-your-own-intercom-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/intercom/how-to-register-your-own-intercom-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/intercom/connect
     pre_connection_deletion_script: intercomPreConnectionDeletion
     connection_config:
@@ -7170,7 +7170,7 @@ jira:
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
     docs: https://nango.dev/docs/api-integrations/jira
-    setup_guide_url: https://nango.dev/docs/api-integrations/jira/how-to-register-your-own-jira-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/jira/how-to-register-your-own-jira-api-oauth-app
     connection_config:
         subdomain:
             type: string
@@ -8030,7 +8030,7 @@ linear:
     pre_connection_deletion_script: linearPreConnectionDeletion
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/linear
-    setup_guide_url: https://nango.dev/docs/api-integrations/linear/how-to-register-your-own-linear-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/linear/how-to-register-your-own-linear-api-oauth-app
 
 linear-mcp:
     display_name: Linear (MCP)
@@ -8063,7 +8063,7 @@ linkedin:
     proxy:
         base_url: https://api.linkedin.com
     docs: https://nango.dev/docs/api-integrations/linkedin
-    setup_guide_url: https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-api-oauth-app
 
 linkhut:
     display_name: LinkHut
@@ -8532,7 +8532,7 @@ microsoft:
                 - 'retry-after'
         decompress: true
     docs: https://nango.dev/docs/api-integrations/microsoft
-    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app
 
 microsoft-admin:
     display_name: Microsoft (Admin)
@@ -8604,7 +8604,7 @@ microsoft-teams:
     webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
-    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
 
 microsoft-tenant-specific:
     display_name: Microsoft (Tenant)
@@ -9189,7 +9189,7 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://nango.dev/docs/api-integrations/notion
-    setup_guide_url: https://nango.dev/docs/api-integrations/notion/how-to-register-your-own-notion-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/notion/how-to-register-your-own-notion-api-oauth-app
 
 notion-mcp:
     display_name: Notion (MCP)
@@ -9365,7 +9365,7 @@ one-drive:
     alias: microsoft
     post_connection_script: onedrivePostConnection
     docs: https://nango.dev/docs/api-integrations/one-drive
-    setup_guide_url: https://nango.dev/docs/api-integrations/one-drive/how-to-register-your-own-onedrive-for-business-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/one-drive/how-to-register-your-own-onedrive-for-business-api-oauth-app
 
 one-drive-personal:
     display_name: OneDrive Personal
@@ -9600,7 +9600,7 @@ outlook:
         - communication
     alias: microsoft
     docs: https://nango.dev/docs/api-integrations/outlook
-    setup_guide_url: https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app
 
 outreach:
     display_name: Outreach
@@ -10334,7 +10334,7 @@ pipedrive:
             response_path: data
             limit_name_in_request: limit
     docs: https://nango.dev/docs/api-integrations/pipedrive
-    setup_guide_url: https://nango.dev/docs/api-integrations/pipedrive/how-to-register-your-own-pipedrive-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/pipedrive/how-to-register-your-own-pipedrive-api-oauth-app
     connection_config:
         api_domain:
             type: string
@@ -10614,7 +10614,7 @@ practicefusion:
     proxy:
         base_url: https://${connectionConfig.baseUrl}
     docs: https://nango.dev/docs/api-integrations/practicefusion
-    setup_guide_url: https://nango.dev/docs/api-integrations/practicefusion/how-to-register-your-own-practicefusion-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/practicefusion/how-to-register-your-own-practicefusion-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/practicefusion/connect
     connection_config:
         baseUrl:
@@ -10725,7 +10725,7 @@ quickbooks:
             realmId: ${connectionConfig.realmId}
         base_url: https://quickbooks.api.intuit.com
     docs: https://nango.dev/docs/api-integrations/quickbooks
-    setup_guide_url: https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/quickbooks/connect
     connection_config:
         realmId:
@@ -10745,7 +10745,7 @@ quickbooks-sandbox:
             realmId: ${connectionConfig.realmId}
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://nango.dev/docs/api-integrations/quickbooks-sandbox
-    setup_guide_url: https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/quickbooks-sandbox/connect
     connection_config:
         realmId:
@@ -11527,7 +11527,7 @@ salesforce:
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
-    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-api-oauth-app
     connection_config:
         instance_url:
             type: string
@@ -11549,7 +11549,7 @@ salesforce-sandbox:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://nango.dev/docs/api-integrations/salesforce-sandbox
-    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce-sandbox/how-to-register-your-own-salesforce-sandbox-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce-sandbox/how-to-register-your-own-salesforce-sandbox-api-oauth-app
     connection_config:
         instance_url:
             type: string
@@ -12182,7 +12182,7 @@ sharepoint-online:
     alias: microsoft
     post_connection_script: onedrivePostConnection
     docs: https://nango.dev/docs/api-integrations/sharepoint-online
-    setup_guide_url: https://nango.dev/docs/api-integrations/sharepoint-online/how-to-register-your-own-sharepoint-online-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/sharepoint-online/how-to-register-your-own-sharepoint-online-api-oauth-app
 
 sharepoint-online-oauth2-cc:
     display_name: SharePoint Online (Client Credentials V2)
@@ -12343,7 +12343,7 @@ shopify:
             x-shopify-access-token: ${accessToken}
     webhook_routing_script: shopifyWebhookRouting
     docs: https://nango.dev/docs/api-integrations/shopify
-    setup_guide_url: https://nango.dev/docs/api-integrations/shopify/how-to-register-your-own-shopify-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/shopify/how-to-register-your-own-shopify-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/shopify/connect
     connection_config:
         subdomain:
@@ -12506,7 +12506,7 @@ slack:
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
     docs: https://nango.dev/docs/api-integrations/slack
-    setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 
 smartlead-ai:
     display_name: Smartlead.ai
@@ -12929,7 +12929,7 @@ stripe:
     proxy:
         base_url: https://api.stripe.com
     docs: https://nango.dev/docs/api-integrations/stripe
-    setup_guide_url: https://nango.dev/docs/api-integrations/stripe/how-to-register-your-own-stripe-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/stripe/how-to-register-your-own-stripe-api-oauth-app
 
 stripe-express:
     display_name: Stripe Express
@@ -13666,7 +13666,7 @@ twitter-v2:
     proxy:
         base_url: https://api.twitter.com
     docs: https://nango.dev/docs/api-integrations/twitter-v2
-    setup_guide_url: https://nango.dev/docs/api-integrations/twitter-v2/how-to-register-your-own-twitter-v2-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/twitter-v2/how-to-register-your-own-twitter-v2-api-oauth-app
 twitter-oauth2-cc:
     display_name: Twitter (Client Credentials)
     categories:
@@ -14282,7 +14282,7 @@ whatsapp-business:
                 - /v21.0/me
             method: GET
     docs: https://nango.dev/docs/api-integrations/whatsapp-business
-    setup_guide_url: https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-api-oauth-app
     credentials:
         apiKey:
             type: string
@@ -14639,7 +14639,7 @@ xero:
     webhook_routing_script: xeroWebhookRouting
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/xero
-    setup_guide_url: https://nango.dev/docs/api-integrations/xero/how-to-register-your-own-xero-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/xero/how-to-register-your-own-xero-api-oauth-app
 
 xero-oauth2-cc:
     display_name: Xero (Client Credentials)
@@ -14738,7 +14738,7 @@ youtube:
     categories:
         - video
     docs: https://nango.dev/docs/api-integrations/youtube
-    setup_guide_url: https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-api-oauth-app
 
 zapier:
     display_name: Zapier
@@ -14823,7 +14823,7 @@ zendesk:
             limit_name_in_request: per_page
             link_path_in_response_body: next_page
     docs: https://nango.dev/docs/api-integrations/zendesk
-    setup_guide_url: https://nango.dev/docs/api-integrations/zendesk/how-to-register-your-own-zendesk-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/zendesk/how-to-register-your-own-zendesk-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/zendesk/connect
     connection_config:
         subdomain:
@@ -14929,7 +14929,7 @@ zoho-crm:
     display_name: Zoho CRM
     alias: zoho
     docs: https://nango.dev/docs/api-integrations/zoho-crm
-    setup_guide_url: https://nango.dev/docs/api-integrations/zoho-crm/how-to-register-your-own-zoho-crm-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/zoho-crm/how-to-register-your-own-zoho-crm-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/zoho-crm/connect
     connection_config:
         extension:
@@ -15115,7 +15115,7 @@ zoom:
             cursor_name_in_request: next_page_token
             limit_name_in_request: page_size
     docs: https://nango.dev/docs/api-integrations/zoom
-    setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app
 
 zoominfo:
     display_name: ZoomInfo
