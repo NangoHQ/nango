@@ -68,6 +68,7 @@ export interface AuthModes {
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
+    AwsSigV4: 'AWS_SIGV4';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {

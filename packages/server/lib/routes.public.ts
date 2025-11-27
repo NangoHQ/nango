@@ -10,6 +10,7 @@ import { postPublicTriggerAction } from './controllers/action/postTriggerAction.
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postPublicAwsSigV4Authorization } from './controllers/auth/postAwsSigV4.js';
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
@@ -140,6 +141,7 @@ publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth,
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
 publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
 publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
+publicAPI.route('/auth/aws-sigv4/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAwsSigV4Authorization);
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
