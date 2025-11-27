@@ -139,7 +139,7 @@ export const ENVS = z.object({
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
-    RUNNER_NODE_ID: z.coerce.number().optional(),
+    RUNNER_NODE_ID: z.coerce.number().default(1),
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
@@ -235,6 +235,11 @@ export const ENVS = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+
+    AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
+    AWS_INTEGRATIONS_REGION: z.string().optional(),
+    AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
@@ -348,6 +353,10 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+
+    // Lambda
+    LAMBDA_FUNCTION_NAME: z.string().optional().default('lambda-function'),
+    LAMBDA_FUNCTION_QUALIFIER: z.string().optional().default('7'),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
