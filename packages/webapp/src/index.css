@@ -312,6 +312,8 @@
     --color-bg-elevated: var(--color-gray-75);
     --color-bg-muted: var(--color-gray-300);
     --color-bg-subtle: var(--color-gray-150);
+    --color-bg-accent: var(--color-brand-100);
+    --color-bg-success: var(--color-mint-100);
 
     /* Nav */
     --color-nav-bg-hover: var(--color-gray-50);
@@ -403,6 +405,8 @@
             --color-bg-elevated: var(--color-gray-900);
             --color-bg-muted: var(--color-gray-700);
             --color-bg-subtle: var(--color-gray-825);
+            --color-bg-accent: var(--color-brand-1000);
+            --color-bg-success: var(--color-mint-900);
 
             /* Nav */
             --color-nav-bg-hover: var(--color-gray-850);
@@ -447,7 +451,7 @@
             --color-feedback-warning-fg: var(--color-yellow-300);
             --color-feedback-warning-bg: var(--color-yellow-900);
             --color-feedback-info-fg: var(--color-brand-500);
-            --color-feedback-info-bg: var(--color-brand-900);
+            --color-feedback-info-bg: var(--color-brand-1000);
             --color-feedback-error-fg: var(--color-red-500);
             --color-feedback-error-bg: var(--color-red-900);
             --color-feedback-error-border: var(--color-red-500);

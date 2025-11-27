@@ -35,15 +35,34 @@ export const AutoIdlingBanner: React.FC = () => {
         return null;
     }
 
+    if (isTrialOver) {
+        return (
+            <Alert variant="warning">
+                <Clock />
+                <AlertTitle>Endpoints idle</AlertTitle>
+                <AlertDescription>Actions and syncs endpoints automatically stop every 2 weeks on the free plan.</AlertDescription>
+                <AlertActions>
+                    <AlertButton variant={'warning-secondary'} onClick={onClickExtend} disabled={trialLoading}>
+                        {trialLoading && <Loader2 className="size-4 animate-spin" />}
+                        Restart
+                    </AlertButton>
+                    <AlertButtonLink variant={'warning'} to={`/${env}/team/billing`}>
+                        Upgrade
+                    </AlertButtonLink>
+                </AlertActions>
+            </Alert>
+        );
+    }
+
     return (
         <Alert variant="info">
             <Clock />
-            <AlertTitle>{isTrialOver ? 'Endpoints idle' : `Auto Idling in ${daysRemaining} days`}</AlertTitle>
+            <AlertTitle>Auto Idling in {daysRemaining} days</AlertTitle>
             <AlertDescription>Actions and syncs endpoints automatically stop every 2 weeks on the free plan.</AlertDescription>
             <AlertActions>
-                <AlertButton variant={'info'} onClick={onClickExtend} disabled={trialLoading}>
+                <AlertButton variant={'info-secondary'} onClick={onClickExtend} disabled={trialLoading}>
                     {trialLoading && <Loader2 className="size-4 animate-spin" />}
-                    {isTrialOver ? 'Restart' : 'Extend'}
+                    Extend
                 </AlertButton>
                 <AlertButtonLink variant={'info'} to={`/${env}/team/billing`}>
                     Upgrade
