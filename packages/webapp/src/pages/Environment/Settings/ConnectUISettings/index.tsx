@@ -52,7 +52,7 @@ export const ConnectUISettings = () => {
 
     // Matches backend logic, canDisableConnectUIWatermark(plan?: DBPlan | null): boolean
     const noPlanAvailable = !globalEnv.features.plan || !environment.plan;
-    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : environment.plan.can_disable_connect_ui_watermark;
+    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : environment.plan!.can_disable_connect_ui_watermark;
 
     const form = useForm({
         defaultValues: connectUISettings?.data,
@@ -166,7 +166,9 @@ export const ConnectUISettings = () => {
                                                 {globalEnv.isHosted || globalEnv.isEnterprise
                                                     ? 'Contact your administrator to enable watermark removal.'
                                                     : 'Disabling the watermark is only available for Growth plans. '}
-                                                {!globalEnv.isHosted && !globalEnv.isEnterprise && <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>}
+                                                {!globalEnv.isHosted && !globalEnv.isEnterprise && (
+                                                    <LinkWithIcon to={`/${env}/team/billing`}>Upgrade your plan</LinkWithIcon>
+                                                )}
                                             </TooltipContent>
                                         )}
                                     </Tooltip>
