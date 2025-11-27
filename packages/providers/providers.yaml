@@ -4777,6 +4777,41 @@ fathom:
             title: API Key
             description: The API key for your Fathom account
 
+fellow:
+    display_name: Fellow
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.fellow.app/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/fellow
+    docs_connect: https://nango.dev/docs/api-integrations/fellow/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Workspace Subdomain
+            description: The subdomain of your Fellow workspace
+            pattern: '^[a-z0-9_-]+$'
+            example: myworkspace
+            order: 1
+            doc_section: '#step-1-finding-your-workspace-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fellow API Key
+            example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-2-generating-your-api-key'
+
 figjam:
     display_name: FigJam
     categories:
@@ -10567,6 +10602,48 @@ precisefp:
         base_url: https://app.precisefp.com
     docs: https://nango.dev/docs/integrations/all/precisefp
 
+practicefusion:
+    display_name: PracticeFusion
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.baseUrl}/authorize
+    token_url: https://${connectionConfig.baseUrl}/token
+    authorization_url_skip_empty: true
+    authorization_params:
+        response_type: code
+        aud: https://${connectionConfig.baseUrl}
+        launch: ${connectionConfig.launch}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - patient
+        - need_patient_banner
+        - smart_style_url
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://nango.dev/docs/api-integrations/practicefusion
+    setup_guide_url: https://nango.dev/docs/api-integrations/practicefusion/how-to-register-your-own-practicefusion-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/practicefusion/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The base URL for your Practice authorization server
+            pattern: '^[a-zA-Z0-9.-]+\.(practice|patient)fusion\.com/.*$'
+            prefix: https://
+            example: api.patientfusion.com/fhir/r4/v1/118b460b-8390-4754-8e4a-1dd5ee20f599/
+            doc_section: '#step-1-find-your-base-url'
+            order: 1
+        launch:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 productboard:
     display_name: Productboard
     categories:
@@ -14759,6 +14836,24 @@ zendesk:
             suffix: .zendesk.com
             prefix: https://
             doc_section: '#step-1-finding-your-subdomain'
+
+zendesk-sell:
+    display_name: Zendesk Sell
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://api.getbase.com/oauth2/authorize
+    token_url: https://api.getbase.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.getbase.com
+    docs: https://nango.dev/docs/integrations/all/zendesk-sell
 
 zenefits:
     display_name: Zenefits
