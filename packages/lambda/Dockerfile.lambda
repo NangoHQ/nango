@@ -75,6 +75,8 @@ RUN true \
 
 RUN npm install -g npm@10.9.2
 
+COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
+
 # ------------------
 # Final runtime image
 # ------------------
