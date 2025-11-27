@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Accelo OAuth app'
+sidebarTitle: 'Accelo Setup'
+description: 'Register an OAuth app with Accelo and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Accelo to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Accelo account.
+
+## Registering your application
+
+To use Accelo's API with OAuth 2.0, you need to register your application with Accelo.
+
+Follow Accelo's official guide to register your application: [How to register an Application](https://api.accelo.com/docs/#registering-your-application)
+
+## Connection configuration in Nango
+
+Accelo [requires a user specific subdomain](https://api.accelo.com/docs/#oauth2-0-uri) to run OAuth. When creating connections in Nango, your users will need to provide their Accelo subdomain.
+
+The subdomain is the first part of your Accelo URL. For example, if your Accelo account is at `https://mycompany.api.accelo.com`, your subdomain is `mycompany`.
+
+## OAuth scopes
+
+When configuring your OAuth app, you'll need to specify which scopes your app requires. Scopes define what data and actions your app can access in a user's Accelo account.
+
+For a complete list of available OAuth scopes, see [Accelo's scope documentation](https://api.accelo.com/docs/#scope).
+
+## Additional resources
+
+- [OAuth authentication documentation](https://api.accelo.com/docs/#authentication)
+- [Accelo API documentation](https://api.accelo.com/docs/)
+
+---

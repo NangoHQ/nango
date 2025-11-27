@@ -1,0 +1,169 @@
+---
+title: 'How to use the Google Drive files sync'
+sidebarTitle: 'Files Sync Guide'
+description: 'Learn how to sync files and folders from Google Drive using Nango pre-built syncs'
+---
+
+This guide shows you how to use Nango's pre-built syncs to automatically sync files and folders from Google Drive into your application. The pre-built syncs handle authentication, pagination, and incremental updates so you can focus on building your product.
+
+## Available pre-built syncs
+
+Nango provides several pre-built syncs for Google Drive:
+
+- **`documents`**: Syncs the metadata of files and folders. Works with individual files or nested folders using the Google Picker API.
+- **`folders`**: Syncs root-level folders from Google Drive.
+- **`upload-document`**: Action to upload files to Google Drive.
+- **`list-drives`**: Action to list all shared drives.
+- **`folder-content`**: Action to fetch the contents of a specific folder.
+
+## Using the documents sync
+
+The `documents` sync is the most versatile option for syncing files from Google Drive. It syncs file metadata and supports filtering by specific files or folders.
+
+### Step 1: Enable the sync in Nango
+
+1. Go to your [Nango dashboard](https://app.nango.dev)
+2. Navigate to **Integrations** and select your Google Drive integration
+3. Go to the **Syncs** tab
+4. Enable the `documents` sync
+5. Configure the sync frequency (e.g., every 5 minutes, hourly, daily)
+
+### Step 2: Integrate the Google Picker API
+
+The `documents` sync works best with the [Google Picker API](https://developers.google.com/drive/picker/guides/overview), which provides a UI for users to select files or folders to sync.
+
+When a user selects files or folders using the Google Picker:
+1. Extract the file/folder IDs from the picker response
+2. Pass these IDs to the sync using metadata
+
+**Example metadata format:**
+
+```json
+{
+  "files": ["file-id-1", "file-id-2"]
+}
+```
+
+Or for folders:
+
+```json
+{
+  "folders": ["folder-id-1"]
+}
+```
+
+### Step 3: Start the sync with metadata
+
+Use the Nango SDK to start or update the sync with the selected file/folder IDs:
+
+```typescript
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+// Start sync with specific files
+await nango.triggerSync({
+  providerConfigKey: '<INTEGRATION-ID>',
+  connectionId: '<CONNECTION-ID>',
+  syncs: ['documents'],
+  metadata: {
+    files: ['file-id-from-picker']
+  }
+});
+```
+
+### Step 4: Access synced data
+
+Once the sync runs, access the synced file metadata:
+
+```typescript
+// Get synced documents
+const records = await nango.getRecords({
+  providerConfigKey: '<INTEGRATION-ID>',
+  connectionId: '<CONNECTION-ID>',
+  model: 'GoogleDriveFile'
+});
+
+console.log(records);
+```
+
+## Complete example: Nango Sample App
+
+For a complete, production-ready implementation of Google Drive file syncing with the Google Picker API, check out the [Nango Sample App](/getting-started/sample-app).
+
+The sample app demonstrates:
+- Full OAuth flow with Google Drive
+- Integration with the Google Picker API for file selection
+- Using the `documents` sync to sync selected files
+- Setting up webhooks for real-time updates
+- Downloading and displaying files in your application
+
+You can also:
+- Watch the [demo video walkthrough](https://youtu.be/oTpWlmnv7dM)
+- View the [GitHub repository](https://github.com/NangoHQ/sample-app)
+- Deploy your own instance to test
+
+## Using the folders sync
+
+The `folders` sync is simpler and syncs all root-level folders automatically without requiring metadata:
+
+```typescript
+// Enable and trigger the folders sync
+await nango.triggerSync({
+  providerConfigKey: '<INTEGRATION-ID>',
+  connectionId: '<CONNECTION-ID>',
+  syncs: ['folders']
+});
+
+// Access synced folders
+const folders = await nango.getRecords({
+  providerConfigKey: '<INTEGRATION-ID>',
+  connectionId: '<CONNECTION-ID>',
+  model: 'GoogleDriveFolder'
+});
+```
+
+## Setting up webhooks for real-time updates
+
+To receive real-time updates when files are synced, set up a webhook endpoint:
+
+1. In your Nango dashboard, go to **Settings** > **Webhooks**
+2. Add your webhook URL (e.g., `https://yourapp.com/webhooks/nango`)
+3. Subscribe to `sync.success` events
+
+When files are synced, Nango will send a webhook notification:
+
+```json
+{
+  "type": "sync.success",
+  "connectionId": "<CONNECTION-ID>",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "syncName": "documents",
+  "model": "GoogleDriveFile",
+  "responseResults": {
+    "added": 5,
+    "updated": 2,
+    "deleted": 0
+  }
+}
+```
+
+## Customizing the syncs
+
+All pre-built syncs can be extended and customized to fit your needs:
+
+1. View the [source code on GitHub](https://github.com/NangoHQ/integration-templates/tree/main/integrations/google-drive)
+2. Copy the sync to your project
+3. Modify the sync logic (add fields, change filters, etc.)
+4. Deploy your custom version
+
+See [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) for detailed instructions.
+
+## Additional resources
+
+- [Google Drive API Documentation](https://developers.google.com/workspace/drive/api/reference/rest/v3)
+- [Google Picker API Guide](https://developers.google.com/drive/picker/guides/overview)
+- [Nango Syncs Documentation](/guides/use-cases/syncs)
+- [Nango Actions Documentation](/guides/use-cases/actions)
+
+---
