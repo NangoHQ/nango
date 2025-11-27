@@ -8,7 +8,36 @@ description: "Updates and breaking changes for developers."
 [Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
 </Info>
 
-<Update label="Oct 29, 2025" description="Function custom logs" tags={["Breaking changes", "Functions"]}>
+<Update label="November 27, 2025">
+
+  ## Behavior change of webhooks from Nango to your app
+
+  New behavior: 
+  - Timeout: 20s (instead of 60s)
+  - Retries: 2 (instead of 7)
+
+  ### 🗓️ Timeline
+
+  - New behavior will go like on **December 3, 2025**. 
+
+  ### 🧐 Am I impacted?
+
+  Most likely. In particular, if you consume webhooks for auth, syncs, async actions, webhook forwards.
+
+  ### 💡 What should I do?
+
+  No action to take.
+
+  ### Why are we making this change?
+
+  The long timeout and many retries created incidents when webhook endpoints where unavailable. The new behavior is in line with other popular APIs (e.g. Stripe, Hubspot).
+
+
+  ---
+
+</Update>
+
+<Update label="October 29, 2025">
 
   ## Function custom logs won't be ingested by default for remote environments
 
@@ -71,7 +100,7 @@ description: "Updates and breaking changes for developers."
 
 </Update>
 
-<Update label="Sep 1, 2025"  tags={["Breaking changes", "API"]}>
+<Update label="September 1, 2025">
 
   ## End-user info is no longer shared between connections
 
@@ -114,7 +143,7 @@ Currently, if multiple connections share the same `end_user_id`, they also share
 
 </Update>
 
-<Update label="August 22, 2025" description="Action output limit" tags={["Breaking changes"]}>
+<Update label="August 22, 2025">
 
   ## Action payload output limit
 
@@ -149,7 +178,7 @@ Currently, if multiple connections share the same `end_user_id`, they also share
 </Update>
 
 
-<Update label="August 20, 2025" description="v0.66.2" tags={["Breaking changes", "API", "CLI"]}>
+<Update label="August 20, 2025">
 
   ## Deprecation of `/connection` endpoints
 
@@ -219,7 +248,7 @@ Currently, if multiple connections share the same `end_user_id`, they also share
 </Update>
 
 
-<Update label="July 21, 2025" description="v0.64.0" tags={["Breaking changes","CLI", "Scripts"]}>
+<Update label="July 21, 2025">
 
   ## Deprecation of `nango.yaml` configuration file
 
