@@ -126,6 +126,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         console.error(`Expected file: ${svg}`);
         error = true;
     }
+    let connectMdxPath: string | null = null;
     if (provider.docs_connect) {
         const connectMdxExists = fs.existsSync(connectMdx);
         const updatedConnectMdxExists = fs.existsSync(updatedConnectMdx);
@@ -135,8 +136,8 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
             error = true;
         } else {
             hasValidConnect = true;
-            const connectPath = connectMdxExists ? connectMdx : updatedConnectMdx;
-            const content = fs.readFileSync(connectPath).toString();
+            connectMdxPath = connectMdxExists ? connectMdx : updatedConnectMdx;
+            const content = fs.readFileSync(connectMdxPath).toString();
             const matched = content.matchAll(/^[#]+\sStep[a-zA-Z0-9:()._ -]+$/gim);
             for (const match of matched) {
                 headers.add(

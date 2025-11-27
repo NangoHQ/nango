@@ -4225,6 +4225,7 @@ drchrono:
     auth_mode: OAUTH2
     authorization_url: https://app.drchrono.com/o/authorize/
     token_url: https://app.drchrono.com/o/token/
+    authorization_url_skip_empty: true
     authorization_params:
         response_type: code
     token_params:
@@ -10590,6 +10591,48 @@ precisefp:
         base_url: https://app.precisefp.com
     docs: https://nango.dev/docs/integrations/all/precisefp
 
+practicefusion:
+    display_name: PracticeFusion
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.baseUrl}/authorize
+    token_url: https://${connectionConfig.baseUrl}/token
+    authorization_url_skip_empty: true
+    authorization_params:
+        response_type: code
+        aud: https://${connectionConfig.baseUrl}
+        launch: ${connectionConfig.launch}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - patient
+        - need_patient_banner
+        - smart_style_url
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://nango.dev/docs/api-integrations/practicefusion
+    setup_guide_url: https://nango.dev/docs/api-integrations/practicefusion/how-to-register-your-own-practicefusion-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/practicefusion/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The base URL for your Practice authorization server
+            pattern: '^[a-zA-Z0-9.-]+\.(practice|patient)fusion\.com/.*$'
+            prefix: https://
+            example: api.patientfusion.com/fhir/r4/v1/118b460b-8390-4754-8e4a-1dd5ee20f599/
+            doc_section: '#step-1-find-your-base-url'
+            order: 1
+        launch:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 productboard:
     display_name: Productboard
     categories:
@@ -11996,6 +12039,9 @@ sellsy:
         grant_type: refresh_token
     proxy:
         base_url: https://api.sellsy.com
+    webhook_routing_script: sellsyWebhookRouting
+    webhook_user_defined_secret: true
+    post_connection_script: sellsyPostConnection
     docs: https://nango.dev/docs/integrations/all/sellsy
 
 sellsy-oauth2-cc:
@@ -12010,6 +12056,9 @@ sellsy-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://api.sellsy.com
+    webhook_routing_script: sellsyWebhookRouting
+    webhook_user_defined_secret: true
+    post_connection_script: sellsyPostConnection
     docs: https://nango.dev/docs/integrations/all/sellsy-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/sellsy-oauth2-cc/connect
     credentials:
@@ -14786,6 +14835,24 @@ zendesk:
             suffix: .zendesk.com
             prefix: https://
             doc_section: '#step-1-finding-your-subdomain'
+
+zendesk-sell:
+    display_name: Zendesk Sell
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://api.getbase.com/oauth2/authorize
+    token_url: https://api.getbase.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.getbase.com
+    docs: https://nango.dev/docs/integrations/all/zendesk-sell
 
 zenefits:
     display_name: Zenefits
