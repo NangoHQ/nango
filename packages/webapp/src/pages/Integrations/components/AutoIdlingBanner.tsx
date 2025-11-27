@@ -1,13 +1,11 @@
-import { IconBolt, IconRefresh } from '@tabler/icons-react';
+import { Clock, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { ErrorCircle } from '../../../components/ErrorCircle';
-import { Button, ButtonLink } from '../../../components/ui/button/Button';
-import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
 
 export const AutoIdlingBanner: React.FC = () => {
     const { toast } = useToast();
@@ -38,25 +36,19 @@ export const AutoIdlingBanner: React.FC = () => {
     }
 
     return (
-        <div className="mb-7 rounded-md bg-grayscale-900 border border-grayscale-600 p-4 flex gap-2 justify-between items-center">
-            <div className="flex gap-2 items-center">
-                <div className="flex gap-3 items-center">
-                    <ErrorCircle icon="clock" variant="warning" />
-                    <Tag variant={'warning'}>{isTrialOver ? 'Endpoints idle' : 'Auto Idling'}</Tag>
-                    {!isTrialOver && <span className="text-white font-semibold">{daysRemaining} days left</span>}
-                </div>
-                <div className="text-grayscale-400 text-s">Actions and syncs endpoints automatically stop every 2 weeks on the free plan.</div>
-            </div>
-            <div className="flex gap-2">
-                <Button size={'sm'} variant={'tertiary'} onClick={onClickExtend} isLoading={trialLoading}>
-                    <IconRefresh stroke={1} size={18} />
+        <Alert variant="info">
+            <Clock />
+            <AlertTitle>{isTrialOver ? 'Endpoints idle' : `Auto Idling in ${daysRemaining} days`}</AlertTitle>
+            <AlertDescription>Actions and syncs endpoints automatically stop every 2 weeks on the free plan.</AlertDescription>
+            <AlertActions>
+                <AlertButton variant={'info'} onClick={onClickExtend} disabled={trialLoading}>
+                    {trialLoading && <Loader2 className="size-4 animate-spin" />}
                     {isTrialOver ? 'Restart' : 'Extend'}
-                </Button>
-                <ButtonLink to={`/${env}/team/billing`} size={'sm'} variant={'secondary'}>
-                    <IconBolt stroke={1} size={18} />
+                </AlertButton>
+                <AlertButtonLink variant={'info'} to={`/${env}/team/billing`}>
                     Upgrade
-                </ButtonLink>
-            </div>
-        </div>
+                </AlertButtonLink>
+            </AlertActions>
+        </Alert>
     );
 };

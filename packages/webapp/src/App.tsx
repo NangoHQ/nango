@@ -26,7 +26,7 @@ import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStar
 import { GettingStarted } from './pages/GettingStarted/Show';
 import { Homepage } from './pages/Homepage/Show';
 import CreateIntegration from './pages/Integrations/Create';
-import IntegrationList from './pages/Integrations/List';
+import { IntegrationsList } from './pages/Integrations/Show';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
 import { NotFound } from './pages/NotFound';
@@ -101,7 +101,7 @@ const App = () => {
                                 ) : (
                                     <Route path="/dev/getting-started" element={<ClassicGettingStarted />} />
                                 ))}
-                            <Route path="/:env/integrations" element={<IntegrationList />} />
+                            <Route path="/:env/integrations" element={<IntegrationsList />} />
                             <Route path="/:env/integrations/create" element={<CreateIntegration />} />
                             <Route path="/:env/integration/:providerConfigKey" element={<Navigate to={'/integrations'} />} />
                             <Route path="/:env/integrations/:providerConfigKey/*" element={<ShowIntegration />} />

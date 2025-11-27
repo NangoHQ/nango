@@ -32,7 +32,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     return (
         <tr
             data-slot="table-row"
-            className={cn('h-11 hover:bg-bg-elevated data-[state=selected]:bg-neutral-100 border-b border-border-muted transition-colors', className)}
+            className={cn('px-6 h-1 hover:bg-bg-elevated data-[state=selected]:bg-neutral-100 border-b border-border-muted transition-colors', className)}
             {...props}
         />
     );
@@ -43,7 +43,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
         <th
             data-slot="table-head"
             className={cn(
-                'h-11 px-2 text-left align-middle font-semibold whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                'px-6 h-11 text-left align-middle text-body-small-semi whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
                 className
             )}
             {...props}
@@ -55,7 +55,10 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
     return (
         <td
             data-slot="table-cell"
-            className={cn('px-6 py-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', className)}
+            className={cn(
+                'px-6 py-2 align-middle text-body-small-regular whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                className
+            )}
             {...props}
         />
     );
