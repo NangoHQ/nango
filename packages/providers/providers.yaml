@@ -9930,8 +9930,8 @@ paylocity:
     token_url: https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
     token_params:
         grant_type: client_credentials
-    docs: https://nango.dev/docs/integrations/all/paylocity
-    docs_connect: https://nango.dev/docs/integrations/all/paylocity/connect
+    docs: https://nango.dev/docs/api-integrations/paylocity
+    docs_connect: https://nango.dev/docs/api-integrations/all/paylocity/connect
     connection_config:
         environment:
             type: string
