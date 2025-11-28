@@ -6,7 +6,8 @@ import { Button } from './ui/button';
 export const CopyButton: React.FC<{ text: string }> = ({ text }) => {
     const [copied, setCopied] = useState(false);
 
-    const copyToClipboard = async () => {
+    const copyToClipboard = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         await navigator.clipboard.writeText(text);
         setCopied(true);
     };

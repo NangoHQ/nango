@@ -79,7 +79,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     return (
-        <DashboardLayout ref={ref}>
+        <DashboardLayout ref={ref} className="flex flex-col gap-11">
             <Helmet>
                 <title>{data.integration.unique_key} - Integration - Nango</title>
             </Helmet>
@@ -118,7 +118,7 @@ export const ShowIntegration: React.FC = () => {
                 </div>
             </div>
 
-            <nav className="flex gap-2 my-11">
+            <nav className="flex gap-2">
                 <ButtonLink to="./" variant={tab === 'home' ? 'active' : 'zombie'}>
                     Endpoints
                 </ButtonLink>
