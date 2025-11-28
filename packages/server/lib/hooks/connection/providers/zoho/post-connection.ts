@@ -7,15 +7,19 @@ const logger = getLogger('post-connection:zoho');
 
 function extractExtensionFromApiDomain(apiDomain: string): string | null {
     try {
-        const url = new URL(apiDomain);
-        const hostname = url.hostname;
+        const marker = 'zohoapis';
+        const index = apiDomain.indexOf(marker);
 
-        const parts = hostname.split('.');
-        if (parts.length >= 2) {
-            const extension = parts[parts.length - 1];
-            return extension || null;
+        if (index === -1) {
+            return null;
         }
-        return null;
+
+        // Get everything after "zohoapis" as this is returned as https://www.zohoapis.{extension}
+        const afterMarker = apiDomain.substring(index + marker.length);
+
+        const extension = afterMarker.replace(/^\./, '').split('/')[0];
+
+        return extension || null;
     } catch (err) {
         logger.info('Failed to parse api_domain URL', { apiDomain, error: err });
         return null;
