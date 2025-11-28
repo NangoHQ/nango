@@ -160,16 +160,8 @@
       "destination": "/api-integrations/google-drive"
     },
     {
-      "source": "/integrations/all/fellow",
-      "destination": "/api-integrations/fellow"
-    },
-    {
       "source": "/integrations/all/github",
       "destination": "/api-integrations/github"
-    },
-    {
-      "source": "/integrations/all/paylocity",
-      "destination": "/api-integrations/paylocity"
     }
   ],
   "navigation": {
@@ -723,9 +715,8 @@
               "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
-              "api-integrations/paylocity",
               "api-integrations/paylocity-nextgen",
-              "integrations/all/paylocity",
+              "api-integrations/paylocity",
               "integrations/all/payfit",
               "integrations/all/paypal",
               "integrations/all/paypal-sandbox",

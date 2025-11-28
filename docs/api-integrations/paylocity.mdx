@@ -13,7 +13,7 @@ Connect to Paylocity (Weblink) with Nango and see data flow in 2 minutes.
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Paylocity_.
     </Step>
     <Step title="Authorize Paylocity (Weblink)">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your environment, client ID, and client secret. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your environment, company ID, client ID, and client secret. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Paylocity (Weblink) API">
     Let's make your first request to the Paylocity (Weblink) API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -39,7 +39,7 @@ Connect to Paylocity (Weblink) with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/api/v2/companies/${connection_config.companyId}/employees',
+            endpoint: `/api/v2/companies/${connection_config.companyId}/employees`,
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -66,7 +66,7 @@ Connect to Paylocity (Weblink) with Nango and see data flow in 2 minutes.
 
 ## 📚 Paylocity (Weblink) Integration Guides
 
-Nango-maintained guides for common use cases.
+Nango maintained guides for common use cases.
 
 - [How do I link my account?](/api-integrations/paylocity/connect)  
 Connect your Paylocity (Weblink) account using the Connect UI

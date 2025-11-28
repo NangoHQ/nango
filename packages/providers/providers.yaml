@@ -9931,7 +9931,7 @@ paylocity:
     token_params:
         grant_type: client_credentials
     docs: https://nango.dev/docs/api-integrations/paylocity
-    docs_connect: https://nango.dev/docs/api-integrations/all/paylocity/connect
+    docs_connect: https://nango.dev/docs/api-integrations/paylocity/connect
     connection_config:
         environment:
             type: string
