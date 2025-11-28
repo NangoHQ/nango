@@ -382,6 +382,7 @@
               "integrations/all/atlassian-admin",
               "integrations/all/atlassian-government-cloud",
               "integrations/all/attio",
+              "api-integrations/availity",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
