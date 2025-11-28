@@ -1,0 +1,86 @@
+---
+title: 'Availity'
+sidebarTitle: 'Availity'
+description: 'Integrate your application with the Availity API'
+---
+
+## 🚀 Quickstart
+
+Connect to Availity with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Availity_.
+    </Step>
+    <Step title="Authorize Availity">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key (client ID), and client secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Availity API">
+    Let's make your first request to the Availity Payer List resource. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/availity-payer-list?limit=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/availity-payer-list',
+            params: {
+                limit: 10
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Availity Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/availity/connect)
+Connect your Availity account using the Connect UI
+
+Official docs: [Availity API docs](https://developer.availity.com/blog/2025/3/25/availity-api-guide)
+
+## 🧩 Pre-built syncs & actions for Availity
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/availity/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
+

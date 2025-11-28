@@ -1339,6 +1339,31 @@ auvik:
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
+availity:
+    display_name: Availity
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.availity.com/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.availity.com
+    docs: https://nango.dev/docs/api-integrations/availity
+    docs_connect: https://nango.dev/docs/api-integrations/availity/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: Your application API Key
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Secret
+            description: Your application Secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+
 avalara:
     display_name: Avalara
     categories:
