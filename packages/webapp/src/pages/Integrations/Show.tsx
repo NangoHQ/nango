@@ -24,7 +24,7 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout className="flex flex-col gap-10">
+        <DashboardLayout fullWidth className="flex flex-col gap-8">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>

@@ -53,20 +53,20 @@ const alertButtonVariants = cva(
         variants: {
             variant: {
                 success:
-                    'border border-transparent bg-feedback-success-fg text-feedback-success-bg hover:bg-transparent hover:text-feedback-success-fg hover:border-feedback-success-fg active:bg-feedback-success-bg active:border-bg-success active:text-feedback-success-fg',
+                    'border border-transparent bg-feedback-success-fg text-feedback-success-bg hover:bg-feedback-success-alt/30 hover:text-feedback-success-fg hover:border-feedback-success-fg active:bg-feedback-success-bg active:border-bg-success active:text-feedback-success-fg',
                 'success-secondary':
-                    'border border-feedback-success-fg bg-transparent text-feedback-success-fg hover:border-bg-success hover:bg-feedback-success-bg active:border-transparent active:text-feedback-success-bg active:bg-feedback-success-fg',
-                info: 'border border-transparent bg-feedback-info-fg text-feedback-info-bg hover:bg-transparent hover:text-feedback-info-fg hover:border-feedback-info-fg active:bg-feedback-info-bg active:border-transparent active:text-feedback-info-fg',
+                    'border border-feedback-success-fg bg-transparent text-feedback-success-fg hover:border-bg-success hover:bg-feedback-success-alt/30 active:border-transparent active:text-feedback-success-bg active:bg-feedback-success-fg',
+                info: 'border border-transparent bg-feedback-info-fg text-feedback-info-bg hover:bg-feedback-info-alt/30 hover:text-feedback-info-fg hover:border-feedback-info-fg active:bg-feedback-info-bg active:text-feedback-info-fg',
                 'info-secondary':
-                    'border border-feedback-info-fg bg-transparent text-feedback-info-fg hover:border-transparent hover:bg-feedback-info-bg active:border-transparent active:text-feedback-info-bg active:bg-feedback-info-fg',
+                    'border border-feedback-info-fg bg-transparent text-feedback-info-fg hover:bg-feedback-info-alt/30 active:border-transparent active:text-feedback-info-bg active:bg-feedback-info-fg',
                 destructive:
-                    'border border-transparent bg-feedback-error-fg text-feedback-error-bg hover:bg-transparent hover:text-feedback-error-fg hover:border-feedback-error-fg active:bg-feedback-error-bg active:border-transparent active:text-feedback-error-fg',
+                    'border border-transparent bg-feedback-error-fg text-feedback-error-bg hover:bg-feedback-error-alt/30 hover:text-feedback-error-fg hover:border-feedback-error-fg active:bg-feedback-error-bg active:text-feedback-error-fg',
                 'destructive-secondary':
-                    'border border-feedback-error-fg bg-transparent text-feedback-error-fg hover:border-transparent hover:bg-feedback-error-bg active:border-transparent active:text-feedback-error-bg active:bg-feedback-error-fg',
+                    'border border-feedback-error-fg bg-transparent text-feedback-error-fg hover:bg-feedback-error-alt/30 active:border-transparent active:text-feedback-error-bg active:bg-feedback-error-fg',
                 warning:
-                    'border border-transparent bg-feedback-warning-fg text-feedback-warning-bg hover:bg-transparent hover:text-feedback-warning-fg hover:border-feedback-warning-fg active:bg-feedback-warning-bg active:text-feedback-warning-fg',
+                    'border border-transparent bg-feedback-warning-fg text-feedback-warning-bg hover:bg-feedback-warning-alt/30 hover:text-feedback-warning-fg hover:border-feedback-warning-fg active:bg-feedback-warning-bg active:text-feedback-warning-fg',
                 'warning-secondary':
-                    'border border-feedback-warning-fg bg-transparent text-feedback-warning-fg hover:border-transparent hover:bg-feedback-warning-bg active:border-transparent active:text-feedback-warning-bg active:bg-feedback-warning-fg'
+                    'border border-feedback-warning-fg bg-transparent text-feedback-warning-fg hover:bg-feedback-warning-alt/30 active:border-transparent active:text-feedback-warning-bg active:bg-feedback-warning-fg'
             }
         },
         defaultVariants: {

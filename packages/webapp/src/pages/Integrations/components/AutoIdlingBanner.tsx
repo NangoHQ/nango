@@ -1,4 +1,4 @@
-import { Clock, Loader2 } from 'lucide-react';
+import { Clock, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import { useEnvironment } from '../../../hooks/useEnvironment';
@@ -38,9 +38,9 @@ export const AutoIdlingBanner: React.FC = () => {
     if (isTrialOver) {
         return (
             <Alert variant="warning">
-                <Clock />
-                <AlertTitle>Endpoints idle</AlertTitle>
-                <AlertDescription>Actions and syncs endpoints automatically stop every 2 weeks on the free plan.</AlertDescription>
+                <TriangleAlert />
+                <AlertTitle>Endpoints paused</AlertTitle>
+                <AlertDescription>Functions are paused every 2 weeks on the free plan.</AlertDescription>
                 <AlertActions>
                     <AlertButton variant={'warning-secondary'} onClick={onClickExtend} disabled={trialLoading}>
                         {trialLoading && <Loader2 className="size-4 animate-spin" />}
@@ -57,8 +57,8 @@ export const AutoIdlingBanner: React.FC = () => {
     return (
         <Alert variant="info">
             <Clock />
-            <AlertTitle>Auto Idling in {daysRemaining} days</AlertTitle>
-            <AlertDescription>Actions and syncs endpoints automatically stop every 2 weeks on the free plan.</AlertDescription>
+            <AlertTitle>Functions will pause in {daysRemaining} days</AlertTitle>
+            <AlertDescription>Functions are paused every 2 weeks on the free plan.</AlertDescription>
             <AlertActions>
                 <AlertButton variant={'info-secondary'} onClick={onClickExtend} disabled={trialLoading}>
                     {trialLoading && <Loader2 className="size-4 animate-spin" />}
