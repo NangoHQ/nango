@@ -14798,6 +14798,7 @@ zoho:
             response_path: data
             offset_name_in_request: page
             limit_name_in_request: per_page
+    post_connection_script: zohoPostConnection
     docs: https://nango.dev/docs/integrations/all/zoho
     connection_config:
         extension:
