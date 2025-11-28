@@ -34,3 +34,4 @@ export { default as onedrivePostConnection } from './providers/one-drive/post-co
 export { default as atlassianGovernmentCloudPostConnection } from './providers/jira/post-connection.js';
 export { default as oneloginPreConnectionDeletion } from './providers/onelogin/pre-connection-deletion.js';
 export { default as sellsyPostConnection } from './providers/sellsy/post-connection.js';
+export { default as zohoPostConnection } from './providers/zoho/post-connection.js';
