@@ -166,6 +166,10 @@
     {
       "source": "/integrations/all/github",
       "destination": "/api-integrations/github"
+    },
+    {
+      "source": "/integrations/all/paylocity",
+      "destination": "/api-integrations/paylocity"
     }
   ],
   "navigation": {
@@ -721,6 +725,7 @@
               "integrations/all/pandadoc-api-key",
               "api-integrations/paylocity",
               "api-integrations/paylocity-nextgen",
+              "integrations/all/paylocity",
               "integrations/all/payfit",
               "integrations/all/paypal",
               "integrations/all/paypal-sandbox",
