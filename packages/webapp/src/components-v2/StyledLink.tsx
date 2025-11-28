@@ -12,6 +12,7 @@ const styledLinkVariants = cva(
             variant: {
                 default:
                     'text-link-default [&_svg]:text-link-disabled hover:text-link-hover hover:[&_svg]:text-link-hover active:text-link-press active:[&_svg]:text-link-press disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
+                info: 'text-feedback-info-fg [&_svg]:text-feedback-info-fg',
                 error: 'text-feedback-error-fg [&_svg]:text-feedback-error-fg'
             },
             type: {

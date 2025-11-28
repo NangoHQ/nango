@@ -160,6 +160,10 @@
       "destination": "/api-integrations/google-drive"
     },
     {
+      "source": "/integrations/all/fellow",
+      "destination": "/api-integrations/fellow"
+    },
+    {
       "source": "/integrations/all/github",
       "destination": "/api-integrations/github"
     }
@@ -517,6 +521,7 @@
               "integrations/all/exist",
               "integrations/all/expensify",
               "api-integrations/facebook",
+              "api-integrations/fellow",
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
@@ -743,6 +748,7 @@
               "integrations/all/plain",
               "integrations/all/podium",
               "integrations/all/posthog",
+              "api-integrations/practicefusion",
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
@@ -917,6 +923,7 @@
               "integrations/all/zapier-nla",
               "integrations/all/zapier-scim",
               "integrations/all/zendesk",
+              "integrations/all/zendesk-sell",
               "integrations/all/zenefits",
               "integrations/all/zoho",
               "integrations/all/zoho-bigin",

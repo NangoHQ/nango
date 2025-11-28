@@ -10,6 +10,8 @@ export interface WindowEnv {
     publicLogoDevKey: string;
     publicStripeKey: string;
     isCloud: boolean;
+    isHosted: boolean;
+    isEnterprise: boolean;
     features: {
         logs: boolean;
         scripts: boolean;
