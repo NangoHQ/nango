@@ -11,8 +11,7 @@ import {
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncConfigRaw,
-    safeGetPlan
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
@@ -39,14 +38,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        account = accountAndEnv.account;
-        environment = accountAndEnv.environment;
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-        tagTraceUser({ ...accountAndEnv, plan });
+        account = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
+        tagTraceUser({ ...accountContext });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {

@@ -9,7 +9,7 @@ import { createPlan } from './plans/plans.js';
 import encryptionManager from '../utils/encryption.manager.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
 const hashLocalCache = new Map<string, string>();
 
@@ -171,7 +171,7 @@ class AccountService {
         return result || null;
     }
 
-    async getAccountContextBySecretKey(secretKey: string): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
+    async getAccountContextBySecretKey(secretKey: string): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
             if (environmentVariables.length > 0) {
@@ -202,7 +202,7 @@ class AccountService {
         return this.getAccountContext({ secretKey });
     }
 
-    async getAccountContextByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
+    async getAccountContextByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
             if (environmentVariables.length > 0) {
@@ -240,14 +240,20 @@ class AccountService {
             | { environmentId: number }
             | { environmentUuid: string }
             | { accountUuid: string; envName: string }
-    ): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
+    ): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
         const q = db.readOnly
             .select<{
                 account: DBTeam;
                 environment: DBEnvironment;
-            }>(db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'))
+                plan: DBPlan | null;
+            }>(
+                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan')
+            )
             .from<DBEnvironment>('_nango_environments')
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
             .where('_nango_environments.deleted', false)
             .first();
 
@@ -277,13 +283,35 @@ class AccountService {
         }
 
         if (hash && 'secretKey' in opts) {
-            // Store only successful attempt to not pollute the memory
+            // store only successful attempt to not pollute the memory
             hashLocalCache.set(opts.secretKey, hash);
         }
+
         return {
-            // Getting data with row_to_json breaks the automatic string to date parser
-            account: { ...res.account, created_at: new Date(res.account.created_at), updated_at: new Date(res.account.updated_at) },
-            environment: encryptionManager.decryptEnvironment(res.environment)
+            // getting data with row_to_json breaks the automatic string to date parser
+            account: {
+                ...res.account,
+                created_at: new Date(res.account.created_at),
+                updated_at: new Date(res.account.updated_at)
+            },
+            environment: {
+                ...encryptionManager.decryptEnvironment(res.environment),
+                created_at: new Date(res.environment.created_at),
+                updated_at: new Date(res.environment.updated_at),
+                deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
+            },
+            plan: res.plan
+                ? {
+                      ...res.plan,
+                      created_at: new Date(res.plan.created_at),
+                      updated_at: new Date(res.plan.updated_at),
+                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
+                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
+                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
+                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
+                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
+                  }
+                : null
         };
     }
 }
