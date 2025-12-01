@@ -4,6 +4,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
+    accountService,
     configService,
     environmentService,
     errorManager,
@@ -38,7 +39,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
@@ -185,7 +186,7 @@ export async function handleActionSuccess({
     telemetryBag: TelemetryBag;
 }): Promise<void> {
     const logCtx = getLogCtx(nangoProps);
-    const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
+    const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
         account: undefined
     };
@@ -294,7 +295,7 @@ export async function handleActionError({
     error: NangoError;
     telemetryBag: TelemetryBag;
 }): Promise<void> {
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }

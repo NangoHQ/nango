@@ -43,7 +43,7 @@ export class AccessMiddleware {
         if (!keyRegex.test(secret)) {
             return Err('invalid_secret_key_format');
         }
-        const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+        const result = await accountService.getAccountContextBySecretKey(secret);
         if (!result) {
             return Err('unknown_user_account');
         }
@@ -116,7 +116,7 @@ export class AccessMiddleware {
             return Err('invalid_secret_key_format');
         }
 
-        const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
+        const result = await accountService.getAccountContextByPublicKey(publicKey);
         if (!result) {
             return Err('unknown_user_account');
         }
@@ -213,7 +213,7 @@ export class AccessMiddleware {
             return Err('unknown_connect_session_token');
         }
 
-        const result = await environmentService.getAccountAndEnvironment({
+        const result = await accountService.getAccountContext({
             environmentId: getConnectSession.value.connectSession.environmentId
         });
         if (!result) {

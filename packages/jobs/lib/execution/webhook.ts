@@ -6,6 +6,7 @@ import {
     NangoError,
     SyncJobsType,
     SyncStatus,
+    accountService,
     configService,
     createSyncJob,
     environmentService,
@@ -42,7 +43,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
@@ -244,7 +245,7 @@ export async function handleWebhookSuccess({
 
     const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
 
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }
@@ -333,7 +334,7 @@ export async function handleWebhookError({
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (accountAndEnv) {
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;

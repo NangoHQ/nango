@@ -9,6 +9,7 @@ import {
     NangoError,
     SyncJobsType,
     SyncStatus,
+    accountService,
     configService,
     createSyncJob,
     environmentService,
@@ -76,7 +77,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Sync is disabled: ${task.id}`);
         }
 
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
@@ -263,7 +264,7 @@ export async function handleSyncSuccess({
     let providerConfig: Config | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
@@ -582,7 +583,7 @@ export async function handleSyncError({
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | null = null;
 
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (accountAndEnv) {
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
@@ -631,7 +632,7 @@ export async function handleSyncError({
 
 export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }

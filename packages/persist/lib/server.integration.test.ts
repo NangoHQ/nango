@@ -47,7 +47,7 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(environmentService, 'getAccountAndEnvironmentBySecretKey').mockImplementation((secretKey) => {
+        vi.spyOn(accountService, 'getAccountContextBySecretKey').mockImplementation((secretKey) => {
             if (secretKey === mockSecretKey) {
                 return Promise.resolve({ account: seed.account, environment: seed.env });
             }

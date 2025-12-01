@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { environmentService, getPlan } from '@nangohq/shared';
+import { accountService, getPlan } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
 import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
@@ -35,7 +35,7 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
 
     try {
         const accountAndEnv = await tracer.trace('persist.middleware.auth.getAccountAndEnvironmentBySecretKey', async () => {
-            return await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+            return await accountService.getAccountContextBySecretKey(secret);
         });
         if (!accountAndEnv || accountAndEnv.environment.id !== environmentId) {
             throw new Error('Cannot find matching environment');

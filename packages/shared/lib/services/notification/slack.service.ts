@@ -1,6 +1,7 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
 import { Err, Ok, basePublicUrl, getLogger, metrics, stringToHash, truncateJson } from '@nangohq/utils';
 
+import accountService from '../account.service.js';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
@@ -209,12 +210,12 @@ export class SlackService {
             return;
         }
 
-        const accountEnv = await environmentService.getAccountAndEnvironment({ environmentId: connection.environment_id });
-        if (!accountEnv) {
+        const accountRes = await accountService.getAccountContext({ environmentId: connection.environment_id });
+        if (!accountRes) {
             throw new Error('failed_to_get_account');
         }
 
-        const { account, environment } = accountEnv;
+        const { account, environment } = accountRes;
 
         let payloadContent = '';
 
@@ -586,12 +587,12 @@ export class SlackService {
         payload: NotificationPayload;
         lookupError?: NangoError | null;
     }): Promise<Result<PostSlackMessageResponse>> {
-        const admin = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
-        if (!admin) {
+        const adminRes = await accountService.getAccountContext({ accountUuid: this.nangoAdminUUID!, envName: this.env });
+        if (!adminRes) {
             return Err('failed_to_get_admin_env');
         }
 
-        const integration = await configService.getProviderConfig(this.integrationKey, admin.environment.id);
+        const integration = await configService.getProviderConfig(this.integrationKey, adminRes.environment.id);
         if (!integration) {
             return Err('failed_to_get_integration');
         }
@@ -603,7 +604,7 @@ export class SlackService {
             success: connectionSuccess,
             error: slackConnectionError,
             response: slackConnection
-        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, admin.environment.id);
+        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, adminRes.environment.id);
 
         if (!connectionSuccess || !slackConnection) {
             logger.error(slackConnectionError);
@@ -613,8 +614,8 @@ export class SlackService {
         const logCtx = await this.logContextGetter.create(
             { operation: { type: 'proxy', action: 'call' } },
             {
-                account: admin.account,
-                environment: admin.environment,
+                account: adminRes.account,
+                environment: adminRes.environment,
                 integration: { id: slackConnection.config_id, name: slackConnection.provider_config_key, provider: 'slack' },
                 connection: { id: slackConnection.id, name: slackConnection.connection_id },
                 meta: {
@@ -639,8 +640,8 @@ export class SlackService {
 
         const refreshedConnection = await refreshOrTestCredentials({
             connection: slackConnection,
-            account: admin.account,
-            environment: admin.environment,
+            account: adminRes.account,
+            environment: adminRes.environment,
             integration,
             instantRefresh: false,
             onRefreshSuccess: async () => {},

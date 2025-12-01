@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, configService, environmentService, getApiUrl, getEndUserByConnectionId, safeGetPlan } from '@nangohq/shared';
+import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, safeGetPlan } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';
@@ -23,7 +23,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
