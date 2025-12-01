@@ -72,6 +72,7 @@
         "cmdk": "1.0.4",
         "date-fns": "4.1.0",
         "env-cmd": "10.1.0",
+        "fuse.js": "7.1.0",
         "httpsnippet-lite": "3.0.5",
         "json-schema": "^0.4.0",
         "lodash": "4.17.21",
