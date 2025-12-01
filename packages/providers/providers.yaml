@@ -1634,16 +1634,21 @@ bamboohr:
     token_params:
         grant_type: authorization_code
         request: token
+    refresh_params:
+        grant_type: refresh_token
+        request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
     docs: https://nango.dev/docs/integrations/all/bamboohr
+    setup_guide_url: https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/bamboohr/connect
     connection_config:
         subdomain:
             type: string
-            title: BambooHR Domain
+            title: Subdomain
             description: The subdomain of your BambooHR account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: acme
             suffix: .bamboohr.com
             prefix: https://
             order: 1
