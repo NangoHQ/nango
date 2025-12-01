@@ -7,7 +7,7 @@ import { cn } from '@/utils/utils';
 import type { VariantProps } from 'class-variance-authority';
 
 const badgeVariants = cva(
-    'inline-flex items-center justify-center uppercase rounded px-2 py-0.5 text-body-extra-small-semi w-fit whitespace-nowrap shrink-0 [&>svg]:size-3.5 gap-1 [&>svg]:pointer-events-none',
+    'inline-flex items-center justify-center uppercase rounded px-2 py-0.5 !text-body-extra-small-semi w-fit whitespace-nowrap shrink-0 [&>svg]:size-3.5 gap-1 [&>svg]:pointer-events-none',
     {
         variants: {
             variant: {
@@ -15,7 +15,8 @@ const badgeVariants = cva(
                 mint: 'bg-badge-bg-mint text-badge-fg-mint',
                 pink: 'bg-badge-bg-pink text-badge-fg-pink',
                 yellow: 'bg-badge-bg-yellow text-badge-fg-yellow',
-                green: 'bg-badge-bg-green text-badge-fg-green'
+                green: 'bg-badge-bg-green text-badge-fg-green',
+                ghost: 'bg-transparent text-text-secondary border border-border-default'
             }
         },
         defaultVariants: {

@@ -6,6 +6,7 @@ import type { AuthModeType } from '@nangohq/types';
 
 interface AuthBadgeProps {
     authMode: AuthModeType;
+    className?: string;
 }
 
 /**
@@ -60,9 +61,9 @@ const getIcon = (authMode: AuthModeType) => {
     }
 };
 
-export const AuthBadge: React.FC<AuthBadgeProps> = ({ authMode }) => {
+export const AuthBadge: React.FC<AuthBadgeProps> = ({ authMode, className }) => {
     return (
-        <Badge variant="gray">
+        <Badge variant="gray" className={className}>
             {getIcon(authMode)} {getDisplayName(authMode)}
         </Badge>
     );

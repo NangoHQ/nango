@@ -25,7 +25,7 @@ import { EnvironmentSettings } from './pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from './pages/GettingStarted/Show';
 import { Homepage } from './pages/Homepage/Show';
-import CreateIntegration from './pages/Integrations/Create';
+import { CreateIntegration } from './pages/Integrations/Create';
 import { IntegrationsList } from './pages/Integrations/Show';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
