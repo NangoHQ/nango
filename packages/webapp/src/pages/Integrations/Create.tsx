@@ -1,6 +1,7 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import debounce from 'lodash/debounce';
 import { Info, Loader2, Search } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
@@ -19,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components-v
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 
 import type { AuthModeType } from '@nangohq/types';
+import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
 
 interface Provider {
     name: string;
@@ -159,11 +161,7 @@ export const CreateIntegration = () => {
                 </InputGroupAddon>
             </InputGroup>
 
-            <div className="flex flex-col gap-2">
-                {providers?.map((provider) => (
-                    <Provider key={provider.name} provider={provider} onClick={() => onSelectProvider(provider)} />
-                ))}
-            </div>
+            <ProviderList providers={providers} onSelectProvider={onSelectProvider} />
 
             <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
                 <DialogContent className="w-[570px] max-w-[570px]">
@@ -175,7 +173,7 @@ export const CreateIntegration = () => {
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center justify-between p-3 bg-bg-subtle rounded">
                                 <div className="flex items-center gap-2">
-                                    <IntegrationLogo provider={selectedProvider.name} size={10} />
+                                    <IntegrationLogo provider={selectedProvider.name} />
                                     <span className="text-white font-medium">{selectedProvider.displayName}</span>
                                 </div>
                                 <AuthBadge authMode={selectedProvider.authMode} className="py-2 px-4 !text-body-small-semi gap-2" />
@@ -225,11 +223,69 @@ export const CreateIntegration = () => {
     );
 };
 
-const Provider = ({ provider, onClick }: { provider: Provider; onClick: () => void }) => {
+const ProviderList = ({ providers, onSelectProvider }: { providers: Provider[] | null; onSelectProvider: (provider: Provider) => void }) => {
+    const parentRef = useRef<HTMLDivElement>(null);
+
+    const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
+        count: providers?.length ?? 0,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 74,
+        overscan: 5,
+        gap: 8
+    });
+
+    if (!providers || providers.length === 0) {
+        return null;
+    }
+
+    return (
+        <div ref={parentRef} className="h-full overflow-auto">
+            <div className="relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const provider = providers[virtualRow.index];
+                    return (
+                        <Provider
+                            key={virtualRow.key}
+                            provider={provider}
+                            onClick={() => onSelectProvider(provider)}
+                            virtualRow={virtualRow}
+                            rowVirtualizer={rowVirtualizer}
+                        />
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const Provider = ({
+    provider,
+    onClick,
+    virtualRow,
+    rowVirtualizer
+}: {
+    provider: Provider;
+    onClick: () => void;
+    virtualRow?: VirtualItem;
+    rowVirtualizer?: Virtualizer<HTMLDivElement, HTMLDivElement>;
+}) => {
     return (
         <div
             onClick={onClick}
             className="p-4 w-full inline-flex items-center justify-between bg-bg-elevated rounded border border-transparent cursor-pointer transition-colors hover:bg-bg-surface hover:border-border-disabled"
+            data-index={virtualRow?.index}
+            ref={rowVirtualizer ? (node) => rowVirtualizer.measureElement(node) : undefined}
+            style={
+                virtualRow
+                    ? {
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          transform: `translateY(${virtualRow.start}px)`
+                      }
+                    : undefined
+            }
         >
             <div className="inline-flex gap-1.5 items-center">
                 <IntegrationLogo provider={provider.name} />
