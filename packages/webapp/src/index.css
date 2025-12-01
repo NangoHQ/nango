@@ -351,6 +351,7 @@
     --color-badge-fg-yellow: var(--color-yellow-700);
 
     --color-focus-ring: var(--color-brand-500);
+    --shadow-focus: 0 0 0 3px rgba(0, 178, 227, 0.2);
 
     /* Feedback */
     --color-feedback-success-fg: var(--color-green-700);
@@ -602,7 +603,7 @@
 }
 
 @utility text-body-extra-small-semi {
-    font-size: 12px;
+    font-size: 10px;
     line-height: 14px;
     font-weight: 600;
 }
