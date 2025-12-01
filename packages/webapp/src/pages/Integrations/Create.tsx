@@ -1,4 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
+import Fuse from 'fuse.js';
 import debounce from 'lodash/debounce';
 import { Info, Loader2, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -91,21 +92,47 @@ export const CreateIntegration = () => {
         }
     };
 
+    const fuse = useMemo(() => {
+        if (!initialProviders || initialProviders.length === 0) {
+            return null;
+        }
+
+        return new Fuse(initialProviders, {
+            keys: [
+                { name: 'displayName', weight: 0.3 },
+                { name: 'name', weight: 0.3 },
+                { name: 'authMode', weight: 0.2 },
+                { name: 'categories', weight: 0.2 }
+            ],
+            threshold: 0.4, // 0.0 = exact match, 1.0 = match anything. 0.4 is a good balance
+            includeScore: true,
+            minMatchCharLength: 1,
+            ignoreLocation: true, // Search anywhere in the string
+            findAllMatches: true // Find all matches, not just the first
+        });
+    }, [initialProviders]);
+
     const filterProviders = useCallback(
         (value: string) => {
             if (!value.trim()) {
                 setProviders(initialProviders);
                 return;
             }
-            const lowercaseValue = value.toLowerCase();
-            const filtered = initialProviders?.filter(
-                (provider) =>
-                    provider.displayName.toLowerCase().includes(lowercaseValue) ||
-                    provider.categories?.some((category) => category.toLowerCase().includes(lowercaseValue))
-            );
-            setProviders(filtered as Provider[]);
+
+            if (!fuse) {
+                setProviders(initialProviders);
+                return;
+            }
+
+            // Perform fuzzy search
+            const results = fuse.search(value);
+
+            // Extract providers from results, sorted by relevance (lower score = better match)
+            const filtered = results.map((result) => result.item);
+
+            setProviders(filtered);
         },
-        [initialProviders]
+        [initialProviders, fuse]
     );
 
     const debouncedFilterProviders = useMemo(() => debounce(filterProviders, 300), [filterProviders]);
