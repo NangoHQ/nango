@@ -75,8 +75,6 @@ RUN true \
 
 RUN npm install -g npm@10.9.2
 
-COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
-
 # ------------------
 # Final runtime image
 # ------------------
@@ -89,9 +87,13 @@ FROM public.ecr.aws/lambda/nodejs:22-arm64
 
 WORKDIR ${LAMBDA_TASK_ROOT}
 
+# Copy Datadog Lambda Extension to final image
+COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
+
 # Code
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
-
-CMD ["packages/lambda/dist/index.handler"]
+ENV DD_LAMBDA_HANDLER="packages/lambda/dist/index.handler"
+RUN rm node_modules/datadog-lambda-js/dist/handler.js
+CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]
 
