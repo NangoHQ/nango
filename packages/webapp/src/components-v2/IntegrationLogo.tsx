@@ -3,14 +3,13 @@ import { useState } from 'react';
 
 interface IntegrationLogoProps {
     provider: string;
-    size?: number;
 }
 
-export const IntegrationLogo = ({ provider, size = 8 }: IntegrationLogoProps) => {
+export const IntegrationLogo = ({ provider }: IntegrationLogoProps) => {
     const [imgError, setImgError] = useState(false);
 
     return (
-        <div className={`size-${size} p-1 rounded-sm flex items-center justify-center bg-white border-[0.5px] border-border-muted`}>
+        <div className="p-1 size-8 rounded-sm flex items-center justify-center bg-white border-[0.5px] border-border-muted">
             {provider === 'unauthenticated' ? (
                 <LockOpenIcon className={`size-full text-black stroke-2`} />
             ) : !imgError ? (
