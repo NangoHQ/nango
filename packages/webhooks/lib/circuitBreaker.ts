@@ -2,6 +2,7 @@ import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
 import { Err } from '@nangohq/utils';
 
+import type { getRedis } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/types';
 
 type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
@@ -30,13 +31,13 @@ export class CircuitBreakerPassThrough implements CircuitBreaker {
 
 export class CircuitBreakerRedis implements CircuitBreaker {
     private readonly id: string;
-    private readonly redis: any; //TODO
+    private readonly redis: Awaited<ReturnType<typeof getRedis>>;
     private readonly failureLimiter: RateLimiterRedis;
     private readonly cooldownDurationMs: number;
     private readonly autoResetSecs: number;
     private readonly keyPrefix: string;
 
-    constructor({ id, redis, options }: { id: string; redis: any; options: CircuitBreakerOptions }) {
+    constructor({ id, redis, options }: { id: string; redis: Awaited<ReturnType<typeof getRedis>>; options: CircuitBreakerOptions }) {
         this.id = id;
         this.cooldownDurationMs = options.cooldownDurationSecs * 1000;
         this.redis = redis;
@@ -144,7 +145,7 @@ export class CircuitBreakerRedis implements CircuitBreaker {
 
     private async setState(key: string, state: CircuitStateData): Promise<void> {
         const ttlMs = this.autoResetSecs * 1000;
-        await this.redis.set(`${this.keyPrefix}:${key}`, JSON.stringify(state), 'PX', ttlMs);
+        await this.redis.set(`${this.keyPrefix}:${key}`, JSON.stringify(state), { PX: ttlMs });
     }
 
     private async removeState(key: string): Promise<void> {
