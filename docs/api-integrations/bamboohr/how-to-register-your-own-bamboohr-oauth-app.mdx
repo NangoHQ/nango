@@ -18,7 +18,7 @@ This guide shows you how to register your own OAuth application with BambooHR to
   <Step title="Configure OAuth settings">
     1. In your application settings, click on **App details** and add `https://api.nango.dev/oauth/callback` as the **Redirect URI**.
     2. Configure the **Scopes** your application needs by clicking **Select scopes** and selecting the appropriate permissions.
-    <Note> To obtain a refresh token that will be used to automatically refresh your access token by Nango, select **Miscellaneous** and grant the `offline_access` scope.</Note>
+    <Note> To obtain a refresh token that Nango will use to automatically refresh your access token, select **Miscellaneous** and grant the `offline_access` scope.</Note>
   </Step>
   <Step title="Get your credentials">
     After creating the application, you'll see your **Client ID**, **Client Secret**, and the list of **Scopes Assigned**. Copy these values as you'll need them when configuring the integration in Nango.
