@@ -255,6 +255,7 @@
     --color-brand-500: #00b2e3;
     --color-brand-700: #0089b0;
     --color-brand-900: #02485d;
+    --color-brand-1000: #002631;
 
     --color-orange-100: #ffe5d1;
     --color-orange-300: #fbb47a;
@@ -311,6 +312,8 @@
     --color-bg-elevated: var(--color-gray-75);
     --color-bg-muted: var(--color-gray-300);
     --color-bg-subtle: var(--color-gray-150);
+    --color-bg-accent: var(--color-brand-100);
+    --color-bg-success: var(--color-mint-100);
 
     /* Nav */
     --color-nav-bg-hover: var(--color-gray-50);
@@ -337,17 +340,31 @@
     --color-icon-disabled: var(--color-gray-500);
     --color-icon-brand: var(--color-brand-500);
 
+    /* Badge */
+    --color-badge-bg-gray: var(--color-gray-300);
+    --color-badge-fg-gray: var(--color-gray-750);
+    --color-badge-bg-mint: var(--color-mint-100);
+    --color-badge-fg-mint: var(--color-mint-700);
+    --color-badge-bg-pink: var(--color-pink-100);
+    --color-badge-fg-pink: var(--color-pink-700);
+    --color-badge-bg-yellow: var(--color-yellow-100);
+    --color-badge-fg-yellow: var(--color-yellow-700);
+
     --color-focus-ring: var(--color-brand-500);
 
     /* Feedback */
     --color-feedback-success-fg: var(--color-green-700);
     --color-feedback-success-bg: var(--color-green-100);
+    --color-feedback-success-alt: var(--color-green-100);
     --color-feedback-warning-fg: var(--color-yellow-700);
     --color-feedback-warning-bg: var(--color-yellow-500);
+    --color-feedback-warning-alt: var(--color-yellow-500);
     --color-feedback-info-fg: var(--color-brand-700);
     --color-feedback-info-bg: var(--color-brand-100);
+    --color-feedback-info-alt: var(--color-brand-100);
     --color-feedback-error-fg: var(--color-red-700);
     --color-feedback-error-bg: var(--color-red-100);
+    --color-feedback-error-alt: var(--color-red-100);
     --color-feedback-error-border: var(--color-red-300);
 
     /* Dropdown */
@@ -392,6 +409,8 @@
             --color-bg-elevated: var(--color-gray-900);
             --color-bg-muted: var(--color-gray-700);
             --color-bg-subtle: var(--color-gray-825);
+            --color-bg-accent: var(--color-brand-1000);
+            --color-bg-success: var(--color-mint-900);
 
             /* Nav */
             --color-nav-bg-hover: var(--color-gray-850);
@@ -418,17 +437,31 @@
             --color-icon-disabled: var(--color-gray-600);
             --color-icon-brand: var(--color-brand-500);
 
+            /* Badge */
+            --color-badge-bg-gray: var(--color-gray-700);
+            --color-badge-fg-gray: var(--color-gray-300);
+            --color-badge-bg-mint: var(--color-mint-900);
+            --color-badge-fg-mint: var(--color-mint-500);
+            --color-badge-bg-pink: var(--color-pink-900);
+            --color-badge-fg-pink: var(--color-pink-500);
+            --color-badge-bg-yellow: var(--color-yellow-900);
+            --color-badge-fg-yellow: var(--color-yellow-300);
+
             --color-focus-ring: var(--color-brand-500);
 
             /* Feedback */
             --color-feedback-success-fg: var(--color-green-500);
             --color-feedback-success-bg: var(--color-green-900);
+            --color-feedback-success-alt: var(--color-green-700);
             --color-feedback-warning-fg: var(--color-yellow-300);
             --color-feedback-warning-bg: var(--color-yellow-900);
+            --color-feedback-warning-alt: var(--color-yellow-700);
             --color-feedback-info-fg: var(--color-brand-500);
-            --color-feedback-info-bg: var(--color-brand-900);
+            --color-feedback-info-bg: var(--color-brand-1000);
+            --color-feedback-info-alt: var(--color-brand-700);
             --color-feedback-error-fg: var(--color-red-500);
             --color-feedback-error-bg: var(--color-red-900);
+            --color-feedback-error-alt: var(--color-red-700);
             --color-feedback-error-border: var(--color-red-500);
 
             /* Dropdown */
@@ -554,6 +587,12 @@
     font-size: 12px;
     line-height: 16px;
     font-weight: 400;
+}
+
+@utility text-body-small-medium {
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 500;
 }
 
 @utility text-body-small-semi {
