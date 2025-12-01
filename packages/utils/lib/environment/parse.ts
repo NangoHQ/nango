@@ -358,6 +358,14 @@ export const ENVS = z.object({
     LAMBDA_FUNCTION_NAME: z.string().optional().default('lambda-function'),
     LAMBDA_FUNCTION_QUALIFIER: z.string().optional().default('7'),
 
+    // WEBHOOK DELIVERY CIRCUIT BREAKER
+    NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),
+    NANGO_WEBHOOK_RETRY_ATTEMPTS: z.coerce.number().optional().default(2),
+    NANGO_WEBHOOK_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(5),
+    NANGO_WEBHOOK_CIRCUIT_BREAKER_WINDOW_SECS: z.coerce.number().optional().default(10),
+    NANGO_WEBHOOK_CIRCUIT_BREAKER_COOLDOWN_DURATION_SECS: z.coerce.number().optional().default(60),
+    NANGO_WEBHOOK_CIRCUIT_BREAKER_AUTO_RESET_SECS: z.coerce.number().optional().default(3600),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: z.stringbool().optional().default(false),
