@@ -568,6 +568,7 @@
               "api-integrations/google-mail",
               "integrations/all/google-play",
               "api-integrations/google-sheet",
+              "api-integrations/grist",
               "integrations/all/google-slides",
               "integrations/all/google-workspace-admin",
               "integrations/all/google-service-account",
