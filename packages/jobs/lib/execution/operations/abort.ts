@@ -1,4 +1,4 @@
-import { environmentService } from '@nangohq/shared';
+import { accountService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { orchestratorClient } from '../../clients.js';
@@ -9,11 +9,11 @@ import type { TaskAbort } from '@nangohq/nango-orchestrator';
 import type { Result } from '@nangohq/utils';
 
 export async function abortTask(task: TaskAbort): Promise<Result<void>> {
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-    if (!accountAndEnv) {
+    const accountRes = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+    if (!accountRes) {
         return Err(`Account and environment not found`);
     }
-    const { account: team } = accountAndEnv;
+    const { account: team } = accountRes;
 
     const abortedScript = await abortTaskWithId({ taskId: task.abortedTask.id, teamId: team.id });
 
