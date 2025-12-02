@@ -9889,25 +9889,73 @@ payfit:
         base_url: https://partner-api.payfit.com
     docs: https://nango.dev/docs/integrations/all/payfit
 
+paylocity-nextgen:
+    display_name: Paylocity (NextGen)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.environment}.paylocity.com/public/security/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.environment}.paylocity.com
+        connection_config:
+            companyId: ${connectionConfig.companyId}
+    docs: https://nango.dev/docs/api-integrations/paylocity-nextgen
+    docs_connect: https://nango.dev/docs/api-integrations/paylocity-nextgen/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: Your Paylocity NextGen environment
+            pattern: '^(dc1prodgwext|dc1demogwext)$'
+            example: dc1prodgwext
+            prefix: https://
+            suffix: .paylocity.com
+            order: 1
+            doc_section: '#step-1-select-the-correct-paylocity-environment'
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your Paylocity account
+            doc_section: '#step-2-find-your-company-id'
+            pattern: '^[a-zA-Z0-9]+$'
+            example: S2222
+            order: 2
+
 paylocity:
-    display_name: Paylocity
+    display_name: Paylocity (Weblink)
     categories:
         - hr
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.environment}.paylocity.com
+        connection_config:
+            companyId: ${connectionConfig.companyId}
     token_url: https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
-    scope_separator: ' '
     token_params:
         grant_type: client_credentials
-    docs: https://nango.dev/docs/integrations/all/paylocity
-    docs_connect: https://nango.dev/docs/integrations/all/paylocity/connect
+    docs: https://nango.dev/docs/api-integrations/paylocity
+    docs_connect: https://nango.dev/docs/api-integrations/paylocity/connect
     connection_config:
         environment:
             type: string
             title: Paylocity Environment
-            description: Select the Paylocity environment for this integration.
+            pattern: '^(dc1demogw|api)$'
+            example: dc1demogw
+            description: Your Paylocity Weblink environment
+            prefix: https://
+            suffix: .paylocity.com
+            order: 1
             doc_section: '#step-1-select-the-correct-paylocity-environment'
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your Paylocity account
+            doc_section: '#step-2-find-your-company-id'
+            pattern: '^[a-zA-Z0-9]+$'
+            example: S2222
+            order: 2
 
 paypal:
     display_name: Paypal
