@@ -1,5 +1,17 @@
 import { envs } from '@nangohq/logs';
-import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasPlan, flagHasScripts, flagHasSlack, isCloud } from '@nangohq/utils';
+import {
+    basePublicUrl,
+    baseUrl,
+    connectUrl,
+    flagHasAuth,
+    flagHasManagedAuth,
+    flagHasPlan,
+    flagHasScripts,
+    flagHasSlack,
+    isCloud,
+    isEnterprise,
+    isHosted
+} from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -18,6 +30,8 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicLogoDevKey: envs.PUBLIC_LOGODEV_KEY || '',
         publicStripeKey: envs.PUBLIC_STRIPE_KEY || '',
         isCloud,
+        isHosted,
+        isEnterprise,
         features: {
             logs: envs.NANGO_LOGS_ENABLED,
             scripts: flagHasScripts,

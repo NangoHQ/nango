@@ -184,6 +184,10 @@ class OAuthController {
                 if (defaults?.authorization_params) {
                     authorizationParams = defaults.authorization_params;
                 }
+
+                if (defaults?.connectionConfig) {
+                    Object.assign(connectionConfig, defaults.connectionConfig);
+                }
             }
 
             const session: OAuthSession = {
@@ -2007,6 +2011,37 @@ class OAuthController {
                 environmentId: session.environmentId
             });
 
+            if (!updatedConnection) {
+                void logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
+            }
+
+            let connectSession: ConnectSessionAndEndUser | undefined;
+
+            if (session.connectSessionId) {
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
+                    void logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    return;
+                }
+
+                connectSession = connectSessionRes.value;
+                await syncEndUserToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
+            }
+
             if (updatedConnection) {
                 void connectionCreatedHook(
                     {
@@ -2015,7 +2050,7 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
-                        endUser: undefined
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
