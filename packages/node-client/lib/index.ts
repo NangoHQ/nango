@@ -33,6 +33,7 @@ import type {
     GetPublicListIntegrations,
     GetPublicProvider,
     GetPublicProviders,
+    InstallPluginCredentials,
     JwtCredentials,
     NangoRecord,
     OAuth1Token,
@@ -381,6 +382,7 @@ export class Nango {
         | BillCredentials
         | TwoStepCredentials
         | SignatureCredentials
+        | InstallPluginCredentials
     > {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 
