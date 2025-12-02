@@ -1792,6 +1792,30 @@ beehiiv:
             example: pub_a3d1b49e-2a5d-4f4b-97c8-8f32e1d2f7b9
             pattern: '^(pub_[0-9a-fA-F\-]+)$'
 
+bettercontact:
+    display_name: BetterContact
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.bettercontact.rocks
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/account
+    docs: https://nango.dev/docs/api-integrations/bettercontact
+    docs_connect: https://nango.dev/docs/api-integrations/bettercontact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your BetterContact API key
+            example: f1a9b2c3d4e5f6g7h8i9j0
+            pattern: '^[a-z0-9]$'
+            doc_section: '#step-1-generating-your-api-key'
+
 bigcommerce:
     display_name: BigCommerce
     categories:
