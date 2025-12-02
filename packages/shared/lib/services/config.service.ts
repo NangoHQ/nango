@@ -207,7 +207,7 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
-        const encrypted = encryptionManager.encryptProviderConfig(config);
+        const encrypted = encryptionManager.encryptProviderConfig(config, provider);
         encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
         encrypted.updated_at = new Date();
 

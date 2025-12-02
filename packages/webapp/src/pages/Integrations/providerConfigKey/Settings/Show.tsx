@@ -2,6 +2,7 @@ import { SettingsApp } from './components/App';
 import { SettingsCustom } from './components/Custom';
 import { SettingsDefault } from './components/Default';
 import { SettingsGeneral } from './components/General';
+import { SettingsInstallPlugin } from './components/InstallPlugin';
 import { SettingsMcpGeneric } from './components/McpGeneric';
 import { SettingsMcpOAuth } from './components/McpOAuth';
 import { SettingsOAuth } from './components/OAuth';
@@ -37,7 +38,8 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
             return <SettingsMcpOAuth data={data} environment={environment} />;
         case 'MCP_OAUTH2_GENERIC':
             return <SettingsMcpGeneric data={data} environment={environment} />;
-
+        case 'INSTALL_PLUGIN':
+            return <SettingsInstallPlugin data={data} environment={environment} />;
         default:
             return <div>Unsupported</div>;
     }

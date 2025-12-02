@@ -469,6 +469,7 @@
               "integrations/all/coros-sandbox",
               "integrations/all/coupa-compass",
               "integrations/all/crisp",
+              "api-integrations/crisp-plugin-install",
               "integrations/all/crowdstrike",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",

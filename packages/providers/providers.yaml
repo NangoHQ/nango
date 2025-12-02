@@ -4035,6 +4035,26 @@ crisp:
             description: The key part of your Crisp token keypair
             doc_section: '#step-1-generating-your-token-keypair'
 
+crisp-plugin-install:
+    display_name: Crisp (Plugin Install)
+    categories:
+        - communication
+        - support
+    auth_mode: INSTALL_PLUGIN
+    auth_type: BASIC
+    redirect_uri_metadata:
+        - website_id
+    proxy:
+        base_url: https://api.crisp.chat
+        headers:
+            x-crisp-tier: plugin
+        verification:
+            method: GET
+            endpoints:
+                - /v1/plugin/connect/account
+    docs: https://nango.dev/docs/api-integrations/crisp-plugin-install
+    setup_guide_url: https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin
+
 dixa:
     display_name: Dixa
     categories:

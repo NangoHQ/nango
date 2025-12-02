@@ -59,12 +59,18 @@ const validationBody = z
                         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
                     })
                     .strict(),
+                z.object({
+                    authType: z.enum(['MCP_OAUTH2_GENERIC']),
+                    clientName: z.string().min(1).max(255).optional(),
+                    clientUri: z.url().max(255).optional(),
+                    clientLogoUri: z.url().max(255).optional()
+                }),
                 z
                     .object({
-                        authType: z.enum(['MCP_OAUTH2_GENERIC']),
-                        clientName: z.string().min(1).max(255).optional(),
-                        clientUri: z.url().max(255).optional(),
-                        clientLogoUri: z.url().max(255).optional()
+                        authType: z.enum(['INSTALL_PLUGIN']),
+                        appLink: z.url().max(255),
+                        username: z.string().min(1).max(255).optional(),
+                        password: z.string().min(1).max(255).optional()
                     })
                     .strict()
             ],
@@ -171,6 +177,15 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                     ...(clientName && { oauth_client_name: clientName }),
                     ...(clientUri && { oauth_client_uri: clientUri }),
                     ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
+                };
+            }
+        } else if (body.authType === 'INSTALL_PLUGIN') {
+            const { username, password, appLink } = body;
+            if (username || password || appLink) {
+                integration.app_link = appLink;
+                integration.custom = {
+                    ...(username && { username: username }),
+                    ...(password && { password: password })
                 };
             }
         }

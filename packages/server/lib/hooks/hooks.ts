@@ -31,6 +31,7 @@ import type {
     DBEnvironment,
     DBPlan,
     DBTeam,
+    InstallPluginCredentials,
     IntegrationConfig,
     InternalProxyConfiguration,
     JwtCredentials,
@@ -91,7 +92,7 @@ export async function testConnectionCredentials({
     config: Config;
     connectionConfig: ConnectionConfig;
     connectionId: string;
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials;
     provider: Provider;
     logCtx: LogContextStateless;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
@@ -290,7 +291,7 @@ export async function credentialsTest({
 }: {
     config: Config;
     provider: Provider;
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials;
     connectionId: string;
     connectionConfig: ConnectionConfig;
     logCtx: LogContextStateless;

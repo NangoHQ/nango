@@ -8,7 +8,7 @@ import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
+import type { DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable, Provider } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -139,23 +139,21 @@ export class EncryptionManager extends Encryption {
         return decryptedEnvironmentVariables;
     }
 
-    public encryptProviderConfig(config: ProviderConfig): ProviderConfig {
+    public encryptProviderConfig(config: ProviderConfig, provider?: Provider): ProviderConfig {
         if (!this.shouldEncrypt()) {
             return config;
         }
 
         const encryptedConfig: ProviderConfig = Object.assign({}, config);
 
-        if (!config.oauth_client_secret) {
-            return config;
+        if (config.oauth_client_secret) {
+            const [encryptedClientSecret, iv, authTag] = this.encryptSync(config.oauth_client_secret);
+            encryptedConfig.oauth_client_secret = encryptedClientSecret;
+            encryptedConfig.oauth_client_secret_iv = iv;
+            encryptedConfig.oauth_client_secret_tag = authTag;
         }
 
-        const [encryptedClientSecret, iv, authTag] = this.encryptSync(config.oauth_client_secret);
-        encryptedConfig.oauth_client_secret = encryptedClientSecret;
-        encryptedConfig.oauth_client_secret_iv = iv;
-        encryptedConfig.oauth_client_secret_tag = authTag;
-
-        if (config.custom) {
+        if (provider && provider.auth_mode === 'INSTALL_PLUGIN' && config.custom) {
             const [encryptedValue, iv, authTag] = this.encryptSync(JSON.stringify(config.custom));
             encryptedConfig.custom = { encryptedValue, iv: iv, authTag: authTag };
         }
@@ -164,8 +162,20 @@ export class EncryptionManager extends Encryption {
     }
 
     public decryptProviderConfig(config: ProviderConfig | null): ProviderConfig | null {
+        if (config == null) {
+            return config;
+        }
+
+        if (config.custom && typeof config.custom === 'object' && 'encryptedValue' in config.custom && config.oauth_client_secret_iv == null) {
+            const decryptedConfig: ProviderConfig = Object.assign({}, config);
+            decryptedConfig.custom = JSON.parse(
+                this.decryptSync(config.custom['encryptedValue'], config.custom['iv'] as string, config.custom['authTag'] as string)
+            );
+            return decryptedConfig;
+        }
+
         // Check if the individual row is encrypted.
-        if (config == null || config.oauth_client_secret_iv == null || config.oauth_client_secret_tag == null) {
+        if (config.oauth_client_secret_iv == null || config.oauth_client_secret_tag == null) {
             return config;
         }
 
