@@ -22,9 +22,9 @@ Here's an example of how your backend can retrieve a session token from Nango ([
   <Tab title="Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
-    
+
     api.post('/sessionToken', (req, res) => {
       // Ask Nango for a secure token
       const res = await nango.createConnectSession({
@@ -36,7 +36,7 @@ Here's an example of how your backend can retrieve a session token from Nango ([
         },
         allowed_integrations: ['<INTEGRATION-ID>'],
       });
-    
+
       // Send this token back to your frontend
       res.status(200).send({
         sessionToken: res.data.token
@@ -64,7 +64,7 @@ Here's an example of how your backend can retrieve a session token from Nango ([
           "<INTEGRATION-ID>"
         ]
       }'
-    
+
     ```
   </Tab>
 </Tabs>
@@ -152,7 +152,7 @@ You need to store the connection id on your side.
     **User level, organization level, project level connections**
 
     Nango doesn't have a concept of a user-level, or organization-level connection.
-    
+
     It is up to you to decide to which entity you attribute the connection in your application. For example: User, Organization, Project, Workspace, etc.
 
     We recommend creating a table that stores the association of `connection id` < - > `[owner object]` in your application.
@@ -180,6 +180,7 @@ Successful authorization webhooks sent by Nango are `POST` requests with the fol
     "connectionId": "<CONNECTION-ID>",
     "endUser": {
       "endUserId": "<END-USER-ID>",
+      "endUserEmail": "<END-USER-EMAIL>",
       "tags": { "organizationId": "<ORGANIZATION-ID>" }
     },
     ...
@@ -216,7 +217,7 @@ Setting up a custom callback URL lets you use `https://yourdomain.com/oauth-call
 
 There are cases where you need to re-authorize a connection, e.g. credentials have expired or the scopes/permissions have changed.
 
-**Re-Authorization vs. delete & re-create**  
+**Re-Authorization vs. delete & re-create**
 Re-authorization with the flow below updates the existing connection's credentials, while preserving all it's associated data, configuration, etc.
 
 Deleting and re-creating the connection does not. If you delete the connection, Nango will also delete all associated data and configuration.
