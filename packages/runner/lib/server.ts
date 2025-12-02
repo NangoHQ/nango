@@ -107,7 +107,7 @@ function startProcedure() {
                 } finally {
                     clearInterval(heartbeat);
                     abortControllers.delete(taskId);
-                    usage.untrack(nangoProps);
+                    usage.untrack(taskId);
                     logger.info(`Task ${taskId} completed`);
                 }
             });
