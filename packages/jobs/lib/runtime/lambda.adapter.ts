@@ -2,29 +2,52 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { envs } from '../env.js';
-
 import type { RuntimeAdapter } from './adapter.js';
+import type { Fleet } from '@nangohq/fleet';
 import type { NangoProps, Result } from '@nangohq/types';
 
 const client = new LambdaClient();
 
-function getLambdaFunctionName(_nangoProps: NangoProps): string {
-    //return `nango-function-${nangoProps.scriptType}-128mb`;
-    return envs.LAMBDA_FUNCTION_NAME;
+interface LambdaFunction {
+    arn: string;
+}
+
+function getSize(_nangoProps: NangoProps): number {
+    //based on memory return a memory size compatible with lambda
+    return 256;
+}
+
+function getFunctionName(nangoProps: NangoProps): string {
+    const size = getSize(nangoProps);
+    return `nango-function-${size}`;
 }
 
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
+    constructor(private readonly fleet: Fleet) {}
+
     canHandle(nangoProps: NangoProps): boolean {
         return nangoProps.scriptType === 'action';
         //return false;
     }
 
+    async getFunction(nangoProps: NangoProps): Promise<LambdaFunction> {
+        const routingId = getFunctionName(nangoProps);
+        const node = await this.fleet.getRunningNode(routingId);
+        if (node.isErr()) {
+            throw new Error(`Failed to get running node for routing id '${routingId}'`, { cause: node.error });
+        }
+        if (!node.value.url) {
+            throw new Error(`Running node for routing id '${routingId}' does not have a URL`);
+        }
+        return {
+            arn: node.value.url
+        };
+    }
+
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
-        const functionName = getLambdaFunctionName(params.nangoProps);
+        const func = await this.getFunction(params.nangoProps);
         const command = new InvokeCommand({
-            FunctionName: functionName,
-            Qualifier: envs.LAMBDA_FUNCTION_QUALIFIER,
+            FunctionName: func.arn,
             Payload: JSON.stringify({
                 taskId: params.taskId,
                 nangoProps: params.nangoProps,

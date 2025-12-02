@@ -355,8 +355,19 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // Lambda
-    LAMBDA_FUNCTION_NAME: z.string().optional().default('lambda-function'),
-    LAMBDA_FUNCTION_QUALIFIER: z.string().optional().default('7'),
+    LAMBDA_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
+    LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),
+    LAMBDA_PERSIST_SERVICE_URL: z.url().optional(),
+    LAMBDA_JOBS_SERVICE_URL: z.url().optional(),
+    LAMBDA_PROVIDERS_URL: z.url().optional(),
+    LAMBDA_SUBNET_IDS: z.array(z.string()).optional(),
+    LAMBDA_SECURITY_GROUP_IDS: z.array(z.string()).optional(),
+    LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
+    LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
+    LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
+    LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
+    LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
 
     // WEBHOOK DELIVERY CIRCUIT BREAKER
     NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),

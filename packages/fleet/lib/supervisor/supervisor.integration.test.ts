@@ -21,7 +21,9 @@ const mockNodeProvider = {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1_800_000
+        idleMaxDurationMs: 1_800_000,
+        executionTimeoutSecs: -1,
+        provisionedConcurrency: -1
     },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
@@ -144,7 +146,9 @@ describe('Supervisor', () => {
             memoryMb: 1234,
             storageMb: 567890,
             error: null,
-            idleMaxDurationMs: 1_800_000
+            idleMaxDurationMs: 1_800_000,
+            executionTimeoutSecs: -1,
+            provisionedConcurrency: -1
         });
     });
 
@@ -159,7 +163,9 @@ describe('Supervisor', () => {
             storageMb: node.storageMb,
             isTracingEnabled: node.isTracingEnabled,
             isProfilingEnabled: node.isProfilingEnabled,
-            idleMaxDurationMs: node.idleMaxDurationMs
+            idleMaxDurationMs: node.idleMaxDurationMs,
+            executionTimeoutSecs: node.executionTimeoutSecs,
+            provisionedConcurrency: node.provisionedConcurrency
         });
 
         await supervisor.tick();
@@ -180,7 +186,10 @@ describe('Supervisor', () => {
             storageMb: node.storageMb,
             error: null,
             isTracingEnabled: node.isTracingEnabled,
-            isProfilingEnabled: node.isProfilingEnabled
+            isProfilingEnabled: node.isProfilingEnabled,
+            idleMaxDurationMs: node.idleMaxDurationMs,
+            executionTimeoutSecs: node.executionTimeoutSecs,
+            provisionedConcurrency: node.provisionedConcurrency
         });
     });
 
