@@ -1,0 +1,76 @@
+---
+title: 'How to register your own Pipedrive OAuth app'
+sidebarTitle: 'Pipedrive Setup'
+description: 'Register an OAuth app with Pipedrive and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Pipedrive to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Pipedrive account.
+
+## Creating a Pipedrive OAuth app
+
+<Steps>
+   <Step title="Access the Pipedrive Marketplace">
+     Log in to your Pipedrive account and navigate to the [Pipedrive Marketplace Developer Hub](https://developers.pipedrive.com/).
+   </Step>
+
+   <Step title="Create a new app">
+     Click on "Create an app" or "New app" to start the registration process.
+   </Step>
+
+   <Step title="Configure your app settings">
+     Fill in the required information for your app:
+     - **App name**: Choose a name for your application
+     - **Description**: Provide a brief description of what your app does
+     - **OAuth & Access scopes**: Select the scopes your application needs
+   </Step>
+
+   <Step title="Set up OAuth redirect URI">
+     In the OAuth settings, add your Nango OAuth redirect URI:
+
+     ```
+     https://api.nango.dev/oauth/callback
+     ```
+
+     For local development, you may also need to add:
+
+     ```
+     http://localhost:3003/oauth/callback
+     ```
+   </Step>
+
+   <Step title="Save and obtain credentials">
+     After saving your app configuration, Pipedrive will generate:
+     - **Client ID**: Your OAuth client identifier
+     - **Client Secret**: Your OAuth client secret
+
+     Copy these credentials - you'll need them to configure your integration in Nango.
+   </Step>
+
+   <Step title="Configure the integration in Nango">
+     In the Nango dashboard:
+     1. Go to [Integrations](https://app.nango.dev/dev/integrations)
+     2. Find and select Pipedrive
+     3. Enter your Client ID and Client Secret
+     4. Save the configuration
+   </Step>
+</Steps>
+
+<Note>
+After creating your OAuth app, you may need to submit it for review before it can be used by users outside your organization. Check Pipedrive's [OAuth documentation](https://pipedrive.readme.io/docs/marketplace-oauth-api) for details on the app review process.
+</Note>
+
+## Understanding Pipedrive scopes
+
+Pipedrive uses OAuth scopes to control what data your application can access. When configuring your app, select only the scopes necessary for your use case.
+
+For a complete list of available scopes and their permissions, see [Pipedrive's scopes documentation](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations#list-of-scopes).
+
+## Connection configuration
+
+Pipedrive requires an `api_domain` parameter that is returned during the OAuth flow. Nango automatically extracts and stores this value from the token response, so you don't need to configure it manually.
+
+When making API calls through Nango's proxy, the correct API domain will be used automatically based on the connection.
+
+For more information on Pipedrive's OAuth implementation and API concepts, see [Pipedrive's API documentation](https://pipedrive.readme.io/docs/core-api-concepts-about-pipedrive-api).
+
+---

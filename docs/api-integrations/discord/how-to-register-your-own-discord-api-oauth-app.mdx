@@ -1,0 +1,70 @@
+---
+title: 'How to register your own Discord OAuth app'
+sidebarTitle: 'Discord Setup'
+description: 'Register an OAuth app with Discord and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Discord to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Discord account.
+
+## Creating a Discord Application
+
+<Steps>
+    <Step title="Sign in to Discord Developer Portal">
+    Go to the [Discord Developer Portal](https://discord.com/developers/applications) and sign in with your Discord account.
+    </Step>
+
+    <Step title="Create a new application">
+    Click the "New Application" button in the top right corner. Enter a name for your application and click "Create".
+    </Step>
+
+    <Step title="Navigate to OAuth2 settings">
+    In the left sidebar, click on "OAuth2" to access the OAuth2 configuration page.
+    </Step>
+
+    <Step title="Copy your credentials">
+    On the OAuth2 page, you'll find your:
+    - **Client ID**: Copy this value
+    - **Client Secret**: Click "Reset Secret" to generate a new secret (or use an existing one), then copy it
+
+    <Warning>Keep your client secret secure and never share it publicly.</Warning>
+    </Step>
+
+    <Step title="Add redirect URL">
+    Scroll down to the "Redirects" section and add your Nango callback URL:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    Click "Add Redirect" to save it.
+
+    <Tip>For local development, you can also add `http://localhost:3003/oauth/callback`</Tip>
+    </Step>
+
+    <Step title="Select OAuth2 scopes">
+    Scroll down to the "OAuth2 URL Generator" section to see available scopes. Common scopes include:
+    - `identify`: Access basic user information
+    - `email`: Access user's email address
+    - `guilds`: Access user's guilds (servers)
+    - `connections`: Access user's connected accounts
+
+    For a complete list of scopes, see [Discord's OAuth2 scopes documentation](https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes).
+    </Step>
+
+    <Step title="Add credentials to Nango">
+    In Nango, go to your Discord integration settings and add:
+    - **Client ID**: Paste the Client ID from step 4
+    - **Client Secret**: Paste the Client Secret from step 4
+    - **Scopes**: Add the scopes you need (e.g., `identify email guilds`)
+
+    Save your configuration.
+    </Step>
+</Steps>
+
+## Additional Resources
+
+For more details on Discord's OAuth2 implementation, see:
+- [Discord OAuth2 documentation](https://discord.com/developers/docs/topics/oauth2)
+- [Discord API reference](https://discord.com/developers/docs/reference)
+
+---

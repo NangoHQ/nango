@@ -1,0 +1,40 @@
+---
+title: 'How to register your own ClickUp OAuth app'
+sidebarTitle: 'ClickUp Setup'
+description: 'Register an OAuth app with ClickUp and connect it to Nango'
+---
+
+This guide shows you how to register your own app with ClickUp to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their ClickUp account.
+
+<Steps>
+  <Step title="Create a ClickUp account">
+    If you don't already have one, sign up for a [ClickUp account](https://app.clickup.com/signup).
+  </Step>
+
+  <Step title="Create a new OAuth app">
+    1. In the upper-right corner, click on your avatar and select **Settings**.
+    2. In the left sidebar, click **Apps**.
+    3. Click the **Create new app** button.
+
+    <Note>Only Workspace owners or admins can create OAuth apps.</Note>
+
+    4. Fill in all the required information. For the **Redirect URL**, add `https://api.nango.dev/oauth/callback`.
+    5. Click **Create App**.
+  </Step>
+
+  <Step title="Obtain OAuth credentials">
+    1. After creating your app, you'll receive a **Client ID** and **Client Secret**. Make a copy of these as you'll need them when configuring your integration in Nango.
+  </Step>
+
+  <Step title="Configure your integration in Nango">
+    Follow the [Quickstart](/getting-started/quickstart) to add your OAuth credentials to your ClickUp integration in Nango.
+  </Step>
+</Steps>
+
+<Note>ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty when configuring your integration in Nango.</Note>
+
+<Note>Users can authorize one or more Workspaces for your application. Use the [Get Authorized Teams (Workspaces)](https://developer.clickup.com/reference/getauthorizedteams) endpoint to see which Workspaces are authorized.</Note>
+
+For more details on ClickUp's OAuth implementation, see [ClickUp's OAuth Flow documentation](https://developer.clickup.com/docs/authentication#build-apps-for-others---oauth-flow).
+
+---

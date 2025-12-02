@@ -1,0 +1,52 @@
+---
+title: 'Set up WhatsApp Business with Nango'
+sidebarTitle: 'WhatsApp Business Setup'
+description: 'Register an OAuth app with WhatsApp Business and connect it to Nango'
+---
+
+This guide shows you how to obtain your WhatsApp Business API credentials (access token) to connect your application with the WhatsApp Business API through Nango.
+
+## Understanding WhatsApp Business Authentication
+
+WhatsApp Business uses API key authentication with access tokens. The access token is a JWT or OAuth2 token that authorizes requests to the WhatsApp Business API.
+
+## Generating Your Access Token
+
+To generate an access token for WhatsApp Business:
+
+<Steps>
+    <Step title="Create a Facebook Developer Account">
+    If you don't already have one, sign up for a [Facebook Developer account](https://developers.facebook.com/).
+    </Step>
+
+    <Step title="Create a WhatsApp Business App">
+    Create a new app in the Facebook Developer Portal and add the WhatsApp product to your app.
+    </Step>
+
+    <Step title="Generate Access Token">
+    Follow Facebook's guide to [generate an access token](https://developers.facebook.com/docs/whatsapp/solution-providers/get-started-for-solution-partners#get-access-token) for your WhatsApp Business app.
+    </Step>
+
+    <Step title="Configure in Nango">
+    Once you have your access token:
+    1. Go to the [Integrations](https://app.nango.dev/dev/integrations) page in Nango
+    2. Select your WhatsApp Business integration
+    3. Add your access token as the API key
+    </Step>
+</Steps>
+
+<Note>
+For production use, you'll need to complete the WhatsApp Business API setup process, which may include business verification and phone number registration.
+</Note>
+
+## Additional Resources
+
+- [WhatsApp Business API Overview](https://developers.facebook.com/docs/whatsapp)
+- [WhatsApp Business Authentication Guide](https://developers.facebook.com/blog/post/2022/12/05/auth-tokens/#:~:text=For%20any%20request%20to%20the,JWT%20or%20OAuth2%20tokens%20before.)
+- [How to generate an access token](https://developers.facebook.com/docs/whatsapp/solution-providers/get-started-for-solution-partners#get-access-token)
+
+<Tip>
+Need help getting started? Get help in the [community](https://nango.dev/slack).
+</Tip>
+
+---
