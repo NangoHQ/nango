@@ -400,6 +400,7 @@
               "integrations/all/basecamp",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
+              "api-integrations/bettercontact",
               "integrations/all/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
