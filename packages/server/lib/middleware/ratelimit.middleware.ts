@@ -6,6 +6,8 @@ import { createClient } from 'redis';
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
+import { envs } from '../env.js';
+
 import type { RequestLocals } from '../utils/express.js';
 import type { DBPlan } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -13,7 +15,7 @@ import type { RateLimiterAbstract } from 'rate-limiter-flexible';
 
 const logger = getLogger('RateLimiter');
 
-const defaultLimit = parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 3500;
+const defaultLimit = envs.DEFAULT_RATE_LIMIT_PER_MIN;
 const rateLimiterSize: Record<DBPlan['api_rate_limit_size'], number> = {
     s: defaultLimit / 2,
     m: defaultLimit,

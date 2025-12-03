@@ -4,14 +4,14 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
+    accountService,
     configService,
     environmentService,
     errorManager,
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncConfigRaw,
-    safeGetPlan
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
@@ -38,14 +38,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        account = accountAndEnv.account;
-        environment = accountAndEnv.environment;
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-        tagTraceUser({ ...accountAndEnv, plan });
+        account = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
+        tagTraceUser({ ...accountContext });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -185,7 +185,7 @@ export async function handleActionSuccess({
     telemetryBag: TelemetryBag;
 }): Promise<void> {
     const logCtx = getLogCtx(nangoProps);
-    const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
+    const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
         account: undefined
     };
@@ -294,7 +294,7 @@ export async function handleActionError({
     error: NangoError;
     telemetryBag: TelemetryBag;
 }): Promise<void> {
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }

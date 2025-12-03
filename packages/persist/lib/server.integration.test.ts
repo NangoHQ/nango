@@ -22,13 +22,14 @@ import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Job as SyncJob, Sync } from '@nangohq/shared';
-import type { AllAuthCredentials, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { AllAuthCredentials, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
 interface testSeed {
     account: DBTeam;
     env: DBEnvironment;
+    plan: DBPlan;
     activityLogId: string;
     connection: Exclude<Awaited<ReturnType<typeof connectionService.getConnectionById>>, null>;
     sync: Sync;
@@ -47,9 +48,9 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(environmentService, 'getAccountAndEnvironmentBySecretKey').mockImplementation((secretKey) => {
+        vi.spyOn(accountService, 'getAccountContextBySecretKey').mockImplementation((secretKey) => {
             if (secretKey === mockSecretKey) {
-                return Promise.resolve({ account: seed.account, environment: seed.env });
+                return Promise.resolve({ account: seed.account, environment: seed.env, plan: seed.plan });
             }
             return Promise.resolve(null);
         });
@@ -458,7 +459,7 @@ const initDb = async () => {
     const env = await environmentService.createEnvironment(0, 'testEnv');
     if (!env) throw new Error('Environment not created');
 
-    await createPlan(db.knex, { account_id: 0, name: 'free' });
+    const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },
@@ -538,6 +539,7 @@ const initDb = async () => {
     return {
         account: (await accountService.getAccountById(db.knex, 0))!,
         env,
+        plan,
         activityLogId: logCtx.id,
         connection,
         sync,

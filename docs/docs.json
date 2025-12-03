@@ -160,10 +160,6 @@
       "destination": "/api-integrations/google-drive"
     },
     {
-      "source": "/integrations/all/fellow",
-      "destination": "/api-integrations/fellow"
-    },
-    {
       "source": "/integrations/all/github",
       "destination": "/api-integrations/github"
     }
@@ -386,6 +382,7 @@
               "integrations/all/atlassian-admin",
               "integrations/all/atlassian-government-cloud",
               "integrations/all/attio",
+              "api-integrations/availity",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
@@ -399,11 +396,12 @@
               "integrations/all/avoma",
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
-              "integrations/all/bamboohr",
-              "integrations/all/bamboohr-basic",
+              "api-integrations/bamboohr",
+              "integrations/all/bamboohr-basic", 
               "integrations/all/basecamp",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
+              "api-integrations/bettercontact",
               "integrations/all/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
@@ -719,8 +717,9 @@
               "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
+              "api-integrations/paylocity-nextgen",
+              "api-integrations/paylocity",
               "integrations/all/payfit",
-              "integrations/all/paylocity",
               "integrations/all/paypal",
               "integrations/all/paypal-sandbox",
               "integrations/all/paycom",

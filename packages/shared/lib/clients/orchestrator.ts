@@ -7,7 +7,7 @@ import { Err, Ok, errorToObject, getFrequencyMs, stringifyError } from '@nangohq
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
-import environmentService from '../services/environment.service.js';
+import accountService from '../services/account.service.js';
 import { getSyncConfigBySyncId, getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
@@ -691,7 +691,7 @@ export class Orchestrator {
                 throw new Error(`Sync is disabled: ${sync.id}`);
             }
 
-            const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
+            const { account, environment } = (await accountService.getAccountContext({ environmentId: nangoConnection.environment_id }))!;
 
             logCtx = await logContextGetter.create(
                 { operation: { type: 'sync', action: 'init' } },

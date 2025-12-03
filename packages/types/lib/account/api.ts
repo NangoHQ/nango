@@ -32,7 +32,12 @@ export type ValidateEmailAndLogin = Endpoint<{
     Body: {
         token: string;
     };
-    Error: ApiError<'error_logging_in'> | ApiError<'error_validating_user'> | ApiError<'token_expired'> | ApiError<'error_refreshing_token'>;
+    Error:
+        | ApiError<'error_logging_in'>
+        | ApiError<'error_validating_user'>
+        | ApiError<'invalid_token'>
+        | ApiError<'token_expired'>
+        | ApiError<'error_refreshing_token'>;
     Success: {
         user: ApiUser;
     };

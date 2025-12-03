@@ -1339,6 +1339,31 @@ auvik:
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
+availity:
+    display_name: Availity
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.availity.com/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.availity.com
+    docs: https://nango.dev/docs/api-integrations/availity
+    docs_connect: https://nango.dev/docs/api-integrations/availity/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: Your application API Key
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Secret
+            description: Your application Secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+
 avalara:
     display_name: Avalara
     categories:
@@ -1634,16 +1659,21 @@ bamboohr:
     token_params:
         grant_type: authorization_code
         request: token
+    refresh_params:
+        grant_type: refresh_token
+        request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
     docs: https://nango.dev/docs/integrations/all/bamboohr
+    setup_guide_url: https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/bamboohr/connect
     connection_config:
         subdomain:
             type: string
-            title: BambooHR Domain
+            title: Subdomain
             description: The subdomain of your BambooHR account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: acme
             suffix: .bamboohr.com
             prefix: https://
             order: 1
@@ -1791,6 +1821,30 @@ beehiiv:
             description: The prefixed ID of the publication object
             example: pub_a3d1b49e-2a5d-4f4b-97c8-8f32e1d2f7b9
             pattern: '^(pub_[0-9a-fA-F\-]+)$'
+
+bettercontact:
+    display_name: BetterContact
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.bettercontact.rocks
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/account
+    docs: https://nango.dev/docs/api-integrations/bettercontact
+    docs_connect: https://nango.dev/docs/api-integrations/bettercontact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your BetterContact API key
+            example: f1a9b2c3d4e5f6g7h8i9j0
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 bigcommerce:
     display_name: BigCommerce
@@ -9884,25 +9938,73 @@ payfit:
         base_url: https://partner-api.payfit.com
     docs: https://nango.dev/docs/integrations/all/payfit
 
+paylocity-nextgen:
+    display_name: Paylocity (NextGen)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.environment}.paylocity.com/public/security/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.environment}.paylocity.com
+        connection_config:
+            companyId: ${connectionConfig.companyId}
+    docs: https://nango.dev/docs/api-integrations/paylocity-nextgen
+    docs_connect: https://nango.dev/docs/api-integrations/paylocity-nextgen/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: Your Paylocity NextGen environment
+            pattern: '^(dc1prodgwext|dc1demogwext)$'
+            example: dc1prodgwext
+            prefix: https://
+            suffix: .paylocity.com
+            order: 1
+            doc_section: '#step-1-select-the-correct-paylocity-environment'
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your Paylocity account
+            doc_section: '#step-2-find-your-company-id'
+            pattern: '^[a-zA-Z0-9]+$'
+            example: S2222
+            order: 2
+
 paylocity:
-    display_name: Paylocity
+    display_name: Paylocity (Weblink)
     categories:
         - hr
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.environment}.paylocity.com
+        connection_config:
+            companyId: ${connectionConfig.companyId}
     token_url: https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
-    scope_separator: ' '
     token_params:
         grant_type: client_credentials
-    docs: https://nango.dev/docs/integrations/all/paylocity
-    docs_connect: https://nango.dev/docs/integrations/all/paylocity/connect
+    docs: https://nango.dev/docs/api-integrations/paylocity
+    docs_connect: https://nango.dev/docs/api-integrations/paylocity/connect
     connection_config:
         environment:
             type: string
             title: Paylocity Environment
-            description: Select the Paylocity environment for this integration.
+            pattern: '^(dc1demogw|api)$'
+            example: dc1demogw
+            description: Your Paylocity Weblink environment
+            prefix: https://
+            suffix: .paylocity.com
+            order: 1
             doc_section: '#step-1-select-the-correct-paylocity-environment'
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your Paylocity account
+            doc_section: '#step-2-find-your-company-id'
+            pattern: '^[a-zA-Z0-9]+$'
+            example: S2222
+            order: 2
 
 paypal:
     display_name: Paypal

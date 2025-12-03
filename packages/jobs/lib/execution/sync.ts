@@ -9,6 +9,7 @@ import {
     NangoError,
     SyncJobsType,
     SyncStatus,
+    accountService,
     configService,
     createSyncJob,
     environmentService,
@@ -21,7 +22,6 @@ import {
     getLastSyncDate,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    safeGetPlan,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
@@ -76,14 +76,14 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Sync is disabled: ${task.id}`);
         }
 
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        team = accountAndEnv.account;
-        environment = accountAndEnv.environment;
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-        tagTraceUser({ ...accountAndEnv, plan });
+        team = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
+        tagTraceUser({ ...accountContext });
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
@@ -263,12 +263,12 @@ export async function handleSyncSuccess({
     let providerConfig: Config | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        team = accountAndEnv.account;
-        environment = accountAndEnv.environment;
+        team = accountContext.account;
+        environment = accountContext.environment;
 
         if (!nangoProps.syncJobId) {
             throw new Error('syncJobId is required to update sync status');
@@ -582,7 +582,7 @@ export async function handleSyncError({
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | null = null;
 
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (accountAndEnv) {
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
@@ -631,7 +631,7 @@ export async function handleSyncError({
 
 export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
