@@ -37,6 +37,12 @@ export const getProviderItem = asyncWrapper<GetProvider>(async (req, res) => {
         return;
     }
 
+    // Filter out MCP_OAUTH2 providers
+    if (provider.auth_mode === 'MCP_OAUTH2') {
+        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${params.providerConfigKey}` } });
+        return;
+    }
+
     try {
         const sharedCredentials = await sharedCredentialsService.getPreConfiguredProviderScopes();
         const preConfiguredInfo = sharedCredentials.isOk() ? sharedCredentials.value[params.providerConfigKey] : undefined;

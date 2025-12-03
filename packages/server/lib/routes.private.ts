@@ -6,7 +6,6 @@ import passport from 'passport';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
-import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
@@ -194,7 +193,6 @@ web.route('/integrations/:providerConfigKey').patch(webAuth, patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
-web.route('/provider').get(configController.listProvidersFromYaml.bind(configController));
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 
