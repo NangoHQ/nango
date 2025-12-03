@@ -165,12 +165,8 @@ export async function getRecords({
                 return Err(error);
             }
 
-            query = query.where(
-                (builder) =>
-                    void builder
-                        .where('updated_at', '>', decodedCursor.sort)
-                        .orWhere((builder) => void builder.where('updated_at', '=', decodedCursor.sort).andWhere('id', '>', decodedCursor.id))
-            );
+            // Tuple comparison for efficient index usage
+            query = query.whereRaw('(updated_at, id) > (?, ?)', [decodedCursor.sort, decodedCursor.id]);
         }
 
         if (externalIds) {
@@ -395,10 +391,7 @@ export async function upsert({
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                     const cursor = Cursor.from(merging.cursor);
                                     if (cursor) {
-                                        qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
-                                            `${RECORDS_TABLE}.updated_at = ? AND ${RECORDS_TABLE}.id <= ?`,
-                                            [cursor.sort, cursor.id]
-                                        );
+                                        qb.whereRaw(`(${RECORDS_TABLE}.updated_at, ${RECORDS_TABLE}.id) <= (?, ?)`, [cursor.sort, cursor.id]);
                                     }
                                 }
                             })
@@ -611,10 +604,7 @@ export async function update({
                             if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                 const cursor = Cursor.from(merging.cursor);
                                 if (cursor) {
-                                    qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
-                                        `${RECORDS_TABLE}.updated_at = ? AND ${RECORDS_TABLE}.id <= ?`,
-                                        [cursor.sort, cursor.id]
-                                    );
+                                    qb.whereRaw(`(${RECORDS_TABLE}.updated_at, ${RECORDS_TABLE}.id) <= (?, ?)`, [cursor.sort, cursor.id]);
                                 }
                             }
                         })
