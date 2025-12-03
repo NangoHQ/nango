@@ -11052,6 +11052,45 @@ recharge:
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
 
+recall-ai:
+    display_name: Recall.ai
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}.recall.ai
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/calendar-events
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/recall-ai
+    docs_connect: https://nango.dev/docs/api-integrations/recall-ai/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region where your Recall.ai account is hosted
+            example: us-east-1
+            pattern: '^(us-east-1|us-west-2|eu-central-1|ap-northeast-1)$'
+            order: 1
+            prefix: https://
+            suffix: .recall.ai
+            doc_section: '#step-1-determine-your-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Recall.ai account
+            example: 2d7843e2351dd4afa67eecfb5c723142fcb401b1
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-2-generating-your-api-key'
+
 recruitcrm:
     display_name: Recruitcrm
     categories:
