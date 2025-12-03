@@ -4226,6 +4226,23 @@ drchrono:
         base_url: https://app.drchrono.com
     docs: https://nango.dev/docs/integrations/all/drchrono
 
+drata:
+    display_name: Drata
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.drata.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/drata
+    docs_connect: https://nango.dev/docs/api-integrations/drata/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Drata API key
+
 contactout:
     display_name: ContactOut
     categories:
