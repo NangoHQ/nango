@@ -1783,6 +1783,54 @@ The response from the external API is passed back to you exactly as Nango gets i
 - response body
 </Expandable>
 
+## Uncontrolled Fetch
+
+Makes an HTTP request without retry logic or credentials injection. Use this method when you want to access resources that are unrelated to the current connection/provider.
+
+```js
+const response = await nango.uncontrolledFetch({
+    url: new URL('https://api.example.com/data'),
+    method: 'GET',
+    headers: {
+        'Authorization': 'Bearer your-token',
+        'Content-Type': 'application/json'
+    }
+});
+
+const data = await response.json();
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="options" type="object" required>
+        <Expandable title="options" defaultOpen>
+            <ResponseField name="url" type="URL" required>
+                The URL to make the request to. Must be a URL object.
+            </ResponseField>
+            <ResponseField name="method" type="string">
+                The HTTP method. Defaults to `GET`. Supported methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`.
+            </ResponseField>
+            <ResponseField name="headers" type="Record<string, string>">
+                The headers to include in the request.
+            </ResponseField>
+            <ResponseField name="body" type="string | null">
+                The request body. Should be a string (e.g., JSON.stringify'd object).
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+Returns a standard `Response` object from the Fetch API. You can call methods like `.json()`, `.text()`, `.blob()`, etc. on the response.
+</Expandable>
+
+<Warning>
+This method does not include automatic retry logic or credential injection. Use the [Proxy](#proxy) methods when making requests to the connected provider's API.
+</Warning>
+
 ## Connect
 
 ### Create a connect session
