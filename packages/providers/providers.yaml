@@ -14114,6 +14114,20 @@ valley:
             description: Your Valley password
             doc_section: '#step-1-getting-your-credentials'
 
+vanta:
+    display_name: Vanta
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://api.vanta.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    body_format: json
+    proxy:
+        base_url: https://api.vanta.com
+    docs: https://nango.dev/docs/api-integrations/vanta
+    docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
+
 wakatime:
     display_name: Wakatime
     categories:
