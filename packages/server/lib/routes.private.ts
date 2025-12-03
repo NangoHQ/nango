@@ -6,7 +6,6 @@ import passport from 'passport';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
-import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
@@ -71,6 +70,8 @@ import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
+import { getProviderItem } from './controllers/v1/providers/getProvider.js';
+import { getProvidersList } from './controllers/v1/providers/getProviders.js';
 import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
 import { postStripeCollectPayment } from './controllers/v1/stripe/payment_methods/postCollectPayment.js';
@@ -190,7 +191,8 @@ web.route('/integrations/:providerConfigKey').patch(webAuth, patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
-web.route('/provider').get(configController.listProvidersFromYaml.bind(configController));
+web.route('/providers').get(webAuth, getProvidersList);
+web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 
 web.route('/connections').get(webAuth, getConnections);
 web.route('/connections/count').get(webAuth, getConnectionsCount);
