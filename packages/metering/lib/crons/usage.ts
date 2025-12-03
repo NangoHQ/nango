@@ -10,6 +10,7 @@ import { flagHasUsage, getLogger, metrics } from '@nangohq/utils';
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
+import type { RecordsBillingEvent } from '@nangohq/types';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -68,7 +69,7 @@ const observability = {
                 if (counts.isErr()) {
                     throw counts.error;
                 }
-                for (const { accountId, count, withActions, withSyncs, withWebhooks } of counts.value) {
+                for (const { accountId, count } of counts.value) {
                     usageBilling.add([
                         {
                             type: 'billable_connections_v2' as const,
@@ -80,11 +81,7 @@ const observability = {
                             }
                         }
                     ]);
-
                     metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions);
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs);
-                    metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks);
                 }
             } catch (err) {
                 span.setTag('error', err);
@@ -95,15 +92,15 @@ const observability = {
     exportRecordsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.records', async (span) => {
             try {
-                const metricsByAccount = new Map<number, { count: number; sizeBytes: number }>();
+                const now = new Date();
+                const aggMetrics = new Map<number, RecordsBillingEvent>();
                 // records metrics are per environment, so we fetch the record counts first and then we need to:
                 // - get the account ids
-                // - filter out connections that have been deleted
                 // - aggregate per account
                 //
                 // Performance note: This nested pagination approach is necessary because records and connections
                 // are stored in separate databases, making SQL JOINs impossible.
-                // To reconsider when record counts table becomes very large (currently <10k entries)
+                // To reconsider when record counts table becomes very large
                 for await (const recordCounts of records.paginateRecordCounts()) {
                     if (recordCounts.isErr()) {
                         throw recordCounts.error;
@@ -117,17 +114,35 @@ const observability = {
                         if (res.isErr()) {
                             throw res.error;
                         }
-                        for (const value of res.value) {
-                            const recordCount = recordCounts.value.find((r) => r.connection_id === value.connection.id);
-                            if (recordCount) {
-                                const existing = metricsByAccount.get(value.account.id);
-                                if (existing) {
-                                    existing.count += recordCount.count;
-                                    existing.sizeBytes += recordCount.size_bytes;
+                        for (const entry of res.value) {
+                            // sum records data for this connection. There might be multiple models or variants for the same connection
+                            const sum = recordCounts.value
+                                .filter((r) => r.connection_id === entry.connection.id)
+                                .reduce(
+                                    (acc, curr) => {
+                                        acc.count += curr.count;
+                                        acc.size_bytes += Number(curr.size_bytes);
+                                        return acc;
+                                    },
+                                    { count: 0, size_bytes: 0 }
+                                );
+                            if (sum.count > 0) {
+                                // aggregate
+                                const key = entry.account.id;
+                                const existingAgg = aggMetrics.get(key);
+                                if (existingAgg) {
+                                    existingAgg.properties.count += sum.count;
+                                    existingAgg.properties.telemetry.sizeBytes += sum.size_bytes;
                                 } else {
-                                    metricsByAccount.set(value.account.id, {
-                                        count: recordCount.count,
-                                        sizeBytes: recordCount.size_bytes
+                                    aggMetrics.set(key, {
+                                        type: 'records' as const,
+                                        properties: {
+                                            count: sum.count,
+                                            accountId: entry.account.id,
+                                            timestamp: now,
+                                            frequencyMs: cronMinutes * 60 * 1000,
+                                            telemetry: { sizeBytes: sum.size_bytes }
+                                        }
                                     });
                                 }
                             }
@@ -135,24 +150,20 @@ const observability = {
                     }
                 }
 
-                for (const [accountId, { count, sizeBytes }] of metricsByAccount.entries()) {
-                    // to orb
-                    const toOrb = usageBilling.add([
-                        {
-                            type: 'records' as const,
-                            properties: {
-                                count,
-                                accountId,
-                                timestamp: new Date(),
-                                frequencyMs: cronMinutes * 60 * 1000,
-                                telemetry: { sizeBytes }
-                            }
-                        }
-                    ]);
-                    if (toOrb.isErr()) {
-                        logger.error(`Failed to ingest records metric for account ${accountId}: ${toOrb.error}`);
+                // ingest into billing
+                const toBilling = usageBilling.add(Array.from(aggMetrics.values()));
+                if (toBilling.isErr()) {
+                    logger.error(`Failed to ingest record billing events`);
+                }
+
+                // send to datadog
+                for (const {
+                    properties: {
+                        count,
+                        accountId,
+                        telemetry: { sizeBytes }
                     }
-                    // to datadog
+                } of aggMetrics.values()) {
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, count, { accountId });
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_SIZE_IN_BYTES, sizeBytes, { accountId });
                 }
@@ -175,7 +186,14 @@ const billing = {
                 }
 
                 const events = res.value.map(({ accountId, count }) => {
-                    return { type: 'billable_connections' as const, properties: { count, accountId, timestamp: now } };
+                    return {
+                        type: 'billable_connections' as const,
+                        properties: {
+                            count,
+                            accountId,
+                            timestamp: now
+                        }
+                    };
                 });
 
                 const sendRes = usageBilling.add(events);

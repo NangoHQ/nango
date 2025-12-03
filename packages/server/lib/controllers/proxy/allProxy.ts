@@ -21,7 +21,7 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { capping } from '../../utils/capping.js';
+import { capping } from '../../utils/usage.js';
 import { featureFlags } from '../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -235,10 +235,10 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 value: 1,
                 properties: {
                     accountId: account.id,
-                    connectionId: connection.id,
-                    environmentId: connection.environment_id,
-                    provider: integration.provider,
-                    providerConfigKey,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
                     success
                 }
             }

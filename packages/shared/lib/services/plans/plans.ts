@@ -1,23 +1,15 @@
 import ms from 'ms';
 
-import { Err, Ok, flagHasPlan } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
-import { freePlan, plansList } from './definitions.js';
+import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
 
-import type { DBPlan, DBTeam } from '@nangohq/types';
+import type { DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
-
-export async function safeGetPlan(db: Knex, { accountId }: { accountId: number }): Promise<DBPlan | null> {
-    if (!flagHasPlan) {
-        return null;
-    }
-    const planRes = await getPlan(db, { accountId });
-    return planRes.isOk() ? planRes.value : null;
-}
 
 export async function getPlan(db: Knex, { accountId }: { accountId: number }): Promise<Result<DBPlan>> {
     try {
@@ -148,6 +140,9 @@ export async function handlePlanChanged(
         return Ok(true);
     }
 
+    // Merge current plan flags with new plan defaults
+    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan });
+
     // Only update subscription date from free to paid (undefined = no update)
     const isCurrentFree = currentPlan.value.name === freePlan.code;
     const isNewPaid = newPlan.code !== freePlan.code;
@@ -160,7 +155,7 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
-        ...newPlan.flags
+        ...mergedFlags
     });
 
     if (updated.isErr()) {
@@ -174,4 +169,119 @@ export async function handlePlanChanged(
     });
 
     return Ok(true);
+}
+
+export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPlan; newPlanDefinition: PlanDefinition }): PlanDefinition['flags'] {
+    // Downgrades always use new plan defaults and reset any overrides
+    if (isPotentialDowngrade({ from: currentPlan.name, to: newPlanDefinition.code })) {
+        return newPlanDefinition.flags;
+    }
+
+    const overrides: Partial<PlanDefinition['flags']> = {};
+    const keys = Object.keys(currentPlan) as (keyof DBPlan)[];
+    for (const key of keys) {
+        const isFlagKey = ((key: keyof DBPlan): key is keyof PlanDefinition['flags'] & keyof DBPlan => {
+            return key in newPlanDefinition.flags;
+        })(key);
+
+        // Skip keys that are not plan flags
+        if (!isFlagKey) continue;
+
+        // Skip undefined values in new plan flags
+        if (newPlanDefinition.flags[key] === undefined) continue;
+
+        switch (key) {
+            // These are not plan flags, skip them
+            case 'stripe_customer_id':
+            case 'stripe_payment_id':
+            case 'orb_customer_id':
+            case 'orb_subscription_id':
+            case 'orb_future_plan':
+            case 'orb_future_plan_at':
+            case 'orb_subscribed_at':
+            case 'trial_start_at':
+            case 'trial_end_at':
+            case 'trial_extension_count':
+            case 'trial_end_notified_at':
+            case 'trial_expired':
+            case 'created_at':
+            case 'updated_at':
+                break;
+            // BOOLEAN FLAGS - keep override if false
+            case 'auto_idle': {
+                overrides[key] = !currentPlan[key] ? false : newPlanDefinition.flags[key];
+                break;
+            }
+            // BOOLEAN FLAGS - keep override if true
+            case 'has_otel':
+            case 'has_sync_variants':
+            case 'has_webhooks_script':
+            case 'has_webhooks_forward':
+            case 'can_disable_connect_ui_watermark':
+            case 'can_override_docs_connect_url':
+            case 'can_customize_connect_ui_theme': {
+                overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
+                break;
+            }
+            // NUMBER FLAGS - keep override if higher, null means unlimited
+            case 'webhook_forwards_max':
+            case 'monthly_actions_max':
+            case 'monthly_active_records_max':
+            case 'connections_max':
+            case 'records_max':
+            case 'proxy_max':
+            case 'function_executions_max':
+            case 'function_compute_gbms_max':
+            case 'function_logs_max': {
+                const currentValue = currentPlan[key];
+                const newValue = newPlanDefinition.flags[key] || 0;
+                if (currentValue === null || currentValue > newValue) {
+                    overrides[key] = null;
+                }
+                break;
+            }
+            // NUMBER FLAGS - keep override if higher
+            case 'environments_max': {
+                const currentValue = currentPlan[key];
+                const newValue = newPlanDefinition.flags[key] || 0;
+                if (currentValue > newValue) {
+                    overrides[key] = currentValue;
+                }
+                break;
+            }
+            // NUMBER FLAGS - keep override if lower
+            case 'sync_frequency_secs_min': {
+                const currentValue = currentPlan[key];
+                const newValue = newPlanDefinition.flags[key] || 0;
+                if (currentValue < newValue) {
+                    overrides[key] = currentValue;
+                }
+                break;
+            }
+            // SPECIAL CASES
+            case 'api_rate_limit_size': {
+                const sizeIndex: Record<DBPlan['api_rate_limit_size'], number> = {
+                    s: 1,
+                    m: 2,
+                    l: 3,
+                    xl: 4,
+                    '2xl': 5,
+                    '3xl': 6,
+                    '4xl': 7
+                };
+                const currentIndex = sizeIndex[currentPlan[key]];
+                const newIndex = sizeIndex[newPlanDefinition.flags[key]];
+                if (currentIndex > newIndex) {
+                    overrides[key] = currentPlan[key];
+                }
+                break;
+            }
+            default:
+                ((_exhaustiveCheck: never) => {
+                    throw new Error(`Unhandled plan flag key in mergeFlags: ${key}`);
+                })(key);
+        }
+    }
+
+    return { ...newPlanDefinition.flags, ...overrides };
 }

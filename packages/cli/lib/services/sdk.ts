@@ -26,6 +26,21 @@ const logLevelToColor = {
     warn: 'yellow'
 } as const;
 
+function showLoggerLevelWarning() {
+    // only show it once
+    let called = false;
+    return () => {
+        if (!called) {
+            called = true;
+            console.log(
+                chalk.yellow(
+                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
+                )
+            );
+        }
+    };
+}
+
 export class NangoActionCLI extends NangoActionBase {
     nango: Nango;
     dryRunService: DryRunService;
@@ -56,6 +71,8 @@ export class NangoActionCLI extends NangoActionBase {
             return;
         }
 
+        this.showLoggerLevelWarning();
+
         const lastArg = args[args.length - 1];
         const isUserDefinedLevel = (object: UserLogParameters): boolean => {
             return lastArg && typeof lastArg === 'object' && 'level' in object;
@@ -69,6 +86,10 @@ export class NangoActionCLI extends NangoActionBase {
         const level = userDefinedLevel?.level ?? 'info';
 
         const logLevel = logLevelToLogger[level] ?? 'info';
+
+        if (!this.shouldLog(logLevel)) {
+            return;
+        }
 
         if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
             console[logLevel](args[0], { status: args[1]?.response?.code || 'xxx' });
@@ -112,6 +133,8 @@ export class NangoActionCLI extends NangoActionBase {
     public override async releaseAllLocks(): Promise<void> {
         // Not applicable to CLI
     }
+
+    protected showLoggerLevelWarning = showLoggerLevelWarning();
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
@@ -148,6 +171,8 @@ export class NangoSyncCLI extends NangoSyncBase {
     tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
     releaseLock = NangoActionCLI['prototype']['releaseLock'];
     releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
+
+    protected showLoggerLevelWarning = showLoggerLevelWarning();
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {

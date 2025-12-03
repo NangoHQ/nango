@@ -181,6 +181,9 @@
                 "docs_connect": {
                     "type": "string"
                 },
+                "setup_guide_url": {
+                    "type": "string"
+                },
                 "post_connection_script": {
                     "type": "string"
                 },
@@ -514,6 +517,9 @@
                         "type": "string"
                     }
                 },
+                "refresh_token_params": {
+                    "type": "object"
+                },
                 "credentials_verification_script": {
                     "type": "string"
                 },
@@ -628,6 +634,9 @@
                                 },
                                 "automated": {
                                     "type": "boolean"
+                                },
+                                "default_value": {
+                                    "type": "string"
                                 },
                                 "hidden": {
                                     "type": "boolean"

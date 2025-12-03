@@ -15,6 +15,7 @@ import * as zod from 'zod';
 import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
 
 import { parse } from './config.service.js';
+import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
 import { loadSchemaJson } from './model.service.js';
 import * as responseSaver from './response-saver.service.js';
 import * as nangoScript from '../sdkScripts.js';
@@ -26,7 +27,7 @@ import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
 import type { NangoActionBase } from '@nangohq/runner-sdk';
-import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
+import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType, SdkLogger } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
@@ -40,6 +41,7 @@ interface RunArgs extends GlobalOptions {
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
     variant?: string;
+    diagnostics?: boolean;
 }
 
 const require = createRequire(import.meta.url);
@@ -291,13 +293,6 @@ export class DryRunService {
                     throw new Error('Failed to parse --input');
                 }
             }
-
-            if (options.saveResponses) {
-                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
-                const filePath = `${saveResponsesSyncDir}/input.json`;
-                const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
-                fs.writeFileSync(filePath, dataToWrite);
-            }
         }
 
         if (rawStubbedMetadata) {
@@ -356,6 +351,10 @@ export class DryRunService {
                 sync_type: lastSyncDate ? 'incremental' : 'full',
                 version: '0.0.1'
             };
+            const sdkLogger: SdkLogger = { level: 'debug' };
+            if (debug) {
+                printDebug(`Nango logger.level is set to '${sdkLogger.level}'`);
+            }
             const nangoProps: NangoProps = {
                 isCLI: true,
                 scriptType: scriptInfo?.type || 'sync',
@@ -374,12 +373,12 @@ export class DryRunService {
                 syncVariant,
                 debug,
                 team: { id: 1, name: 'team' },
+                logger: sdkLogger,
                 runnerFlags: {
                     validateActionInput: this.validation, // irrelevant for cli
                     validateActionOutput: this.validation, // irrelevant for cli
                     validateSyncRecords: this.validation,
-                    validateSyncMetadata: false,
-                    functionLogs: true
+                    validateSyncMetadata: false
                 },
                 startedAt: new Date(),
                 endUser: null,
@@ -409,18 +408,13 @@ export class DryRunService {
                 };
             }
 
-            if (options.saveResponses && stubbedMetadata) {
-                responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
-                const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
-                fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
-            }
-
             const results = await this.runScript({
                 syncName,
                 nangoProps,
                 loadLocation: './',
                 input: normalizedInput,
-                stubbedMetadata: stubbedMetadata
+                stubbedMetadata: stubbedMetadata,
+                ...(options.diagnostics && { diagnostics: options.diagnostics })
             });
 
             if (results.error) {
@@ -439,6 +433,22 @@ export class DryRunService {
 
                 console.error(err instanceof Error ? JSON.stringify(err, ['name', 'message'], 2) : JSON.stringify(err, null, 2));
                 return;
+            }
+
+            // Save input and metadata only after validation passes
+            if (options.saveResponses) {
+                if (normalizedInput) {
+                    responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                    const filePath = `${saveResponsesSyncDir}/input.json`;
+                    const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
+                    fs.writeFileSync(filePath, dataToWrite);
+                }
+
+                if (stubbedMetadata) {
+                    responseSaver.ensureDirectoryExists(`${saveResponsesDir}/mocks/nango`);
+                    const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
+                    fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
+                }
             }
 
             const resultOutput = [];
@@ -529,13 +539,15 @@ export class DryRunService {
         nangoProps,
         loadLocation,
         input,
-        stubbedMetadata
+        stubbedMetadata,
+        diagnostics
     }: {
         syncName: string;
         nangoProps: NangoProps;
         loadLocation: string;
         input: object;
         stubbedMetadata: Metadata | undefined;
+        diagnostics?: boolean;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
     > {
@@ -550,6 +562,8 @@ export class DryRunService {
             nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
                 ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata })
                 : new NangoActionCLI(nangoProps, { dryRunService: drs });
+
+        const monitor = diagnostics ? new DiagnosticsMonitor() : null;
 
         try {
             const variant = nangoProps.syncVariant === BASE_VARIANT ? '' : `variant:"${nangoProps.syncVariant}"`;
@@ -633,6 +647,9 @@ export class DryRunService {
                     const content = `Invalid default export for ${syncName}`;
                     return { success: false, error: new Error(content), response: null };
                 }
+
+                // Start diagnostics monitoring before script execution
+                monitor?.start();
 
                 if (isAction) {
                     // Validate action input against json schema
@@ -775,6 +792,13 @@ export class DryRunService {
             return { success: false, error: new Error(content, { cause: errorMessage }), response: null };
         } finally {
             nango.log(`Done`);
+
+            // Stop diagnostics monitoring and display results
+            if (monitor) {
+                const stats = monitor.stop();
+                console.log('');
+                console.log(formatDiagnostics(stats));
+            }
         }
     }
 }

@@ -5,32 +5,45 @@ import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { useStore } from '../../store.js';
 import { cn } from '../../utils/utils.js';
 
+const numberFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 /**
- * Formats multiples of 1000 to K or M
+ * Formats multiples of 1000 to K, M, B, or T
  * @example 1000 -> 1K
  * @example 2000 -> 2K
- * @example 2025 -> 2025
+ * @example 2025 -> 2,025
  * @example 1000000 -> 1M
- * @example 1234000 -> 1234K
+ * @example 1234000 -> 1,234K
  */
 function formatLimit(limit: number) {
+    if (limit >= 1_000_000_000_000 && limit % 1_000_000_000_000 === 0) {
+        return `${numberFormatter.format(limit / 1_000_000_000_000)}T`;
+    }
+    if (limit >= 1_000_000_000 && limit % 1_000_000_000 === 0) {
+        return `${numberFormatter.format(limit / 1_000_000_000)}B`;
+    }
     if (limit >= 1_000_000 && limit % 1_000_000 === 0) {
-        return `${(limit / 1_000_000).toFixed(0)}M`;
+        return `${numberFormatter.format(limit / 1_000_000)}M`;
     }
     if (limit >= 1000 && limit % 1000 === 0) {
-        return `${(limit / 1000).toFixed(0)}K`;
+        return `${numberFormatter.format(limit / 1000)}K`;
     }
-    return limit;
+    return numberFormatter.format(limit);
 }
 
 function formatUsage(usage: number) {
+    if (usage >= 1_000_000_000_000) {
+        return `${numberFormatter.format(usage / 1_000_000_000_000)}T`;
+    }
+    if (usage >= 1_000_000_000) {
+        return `${numberFormatter.format(usage / 1_000_000_000)}B`;
+    }
     if (usage >= 1_000_000) {
-        return `${(usage / 1_000_000).toFixed(0)}M`;
+        return `${numberFormatter.format(usage / 1_000_000)}M`;
     }
     if (usage >= 1000) {
-        return `${(usage / 1000).toFixed(0)}K`;
+        return `${numberFormatter.format(usage / 1000)}K`;
     }
-    return usage;
+    return numberFormatter.format(usage);
 }
 
 export default function UsageCard() {
@@ -40,7 +53,7 @@ export default function UsageCard() {
     return (
         <Link
             to={`/${env}/team/billing#usage`}
-            className="flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted cursor-pointer hover:bg-bg-elevated hover:border-transparent"
+            className="flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent"
         >
             {isLoading ? (
                 <>

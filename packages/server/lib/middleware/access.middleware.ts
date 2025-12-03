@@ -32,8 +32,6 @@ const logger = getLogger('AccessMiddleware');
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 const ignoreEnvPaths = ['/api/v1/environments', '/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
-const deprecatedPublicAuthenticationCutoffDate = new Date('2025-08-25');
-
 export class AccessMiddleware {
     private async validateSecretKey(secret: string): Promise<
         Result<{
@@ -45,21 +43,16 @@ export class AccessMiddleware {
         if (!keyRegex.test(secret)) {
             return Err('invalid_secret_key_format');
         }
-        const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
-        if (!result) {
+        const accountContext = await accountService.getAccountContextBySecretKey(secret);
+        if (!accountContext) {
             return Err('unknown_user_account');
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                return Err('plan_not_found');
-            }
-            plan = planRes.value;
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
         }
 
-        return Ok({ ...result, plan });
+        return Ok({ ...accountContext });
     }
 
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -118,21 +111,16 @@ export class AccessMiddleware {
             return Err('invalid_secret_key_format');
         }
 
-        const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
-        if (!result) {
+        const accountContext = await accountService.getAccountContextByPublicKey(publicKey);
+        if (!accountContext) {
             return Err('unknown_user_account');
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                return Err('plan_not_found');
-            }
-            plan = planRes.value;
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
         }
 
-        return Ok({ ...result, plan });
+        return Ok({ ...accountContext });
     }
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -215,28 +203,23 @@ export class AccessMiddleware {
             return Err('unknown_connect_session_token');
         }
 
-        const result = await environmentService.getAccountAndEnvironment({
+        const accountContext = await accountService.getAccountContext({
             environmentId: getConnectSession.value.connectSession.environmentId
         });
-        if (!result) {
+        if (!accountContext) {
             return Err('unknown_account');
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                return Err('plan_not_found');
-            }
-            plan = planRes.value;
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
         }
 
         return Ok({
-            account: result.account,
-            environment: result.environment,
+            account: accountContext.account,
+            environment: accountContext.environment,
             connectSession: getConnectSession.value.connectSession,
             endUser: getConnectSession.value.connectSession.endUser,
-            plan
+            plan: accountContext.plan
         });
     }
 
@@ -436,7 +419,7 @@ export class AccessMiddleware {
                     return;
                 }
 
-                if (result.value.account.created_at > deprecatedPublicAuthenticationCutoffDate) {
+                if (result.value.account.created_at > envs.PUBLIC_AUTHENTICATION_DEPRECATION_DATE) {
                     res.status(401).send({
                         error: {
                             code: 'deprecated_authentication',

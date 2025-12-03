@@ -3,8 +3,8 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, environmentService, getPlan } from '@nangohq/shared';
-import { flagHasPlan, metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { accountService, configService, getPlan } from '@nangohq/shared';
+import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -21,12 +21,6 @@ const paramValidation = z
     .strict();
 
 export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
-        return;
-    }
-
     const paramValue = paramValidation.safeParse(req.params);
     if (!paramValue.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramValue.error) } });
@@ -44,7 +38,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
-            const resEnv = await environmentService.getAccountAndEnvironment({ environmentUuid });
+            const resEnv = await accountService.getAccountContext({ environmentUuid });
             if (!resEnv) {
                 res.status(404).send({ error: { code: 'unknown_environment' } });
                 return;
@@ -86,6 +80,10 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
+            // Note that we do not pass on query parameters!
+            // Some providers send unverifiable query parameters
+            // we ignore them for security reasons, as they generally
+            // cannot be included in the webhook signatures.
             const response = await routeWebhook({
                 environment,
                 account,

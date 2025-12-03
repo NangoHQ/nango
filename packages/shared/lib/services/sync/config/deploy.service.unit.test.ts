@@ -4,13 +4,13 @@ import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 
 import * as SyncConfigService from './config.service.js';
+import * as DeployConfigService from './deploy.service.js';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import { getTestTeam } from '../../../seeders/account.seeder.js';
 import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
+import accountService from '../../account.service.js';
 import configService from '../../config.service.js';
-import environmentService from '../../environment.service.js';
 import * as SyncService from '../sync.service.js';
-import * as DeployConfigService from './deploy.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
@@ -41,7 +41,7 @@ describe('Sync config create', () => {
         const syncs: CleanedIncomingFlowConfig[] = [];
         const debug = true;
 
-        vi.spyOn(environmentService, 'getAccountFromEnvironment').mockImplementation(() => {
+        vi.spyOn(accountService, 'getAccountFromEnvironment').mockImplementation(() => {
             return Promise.resolve({ id: 1, name: '' } as DBTeam);
         });
 

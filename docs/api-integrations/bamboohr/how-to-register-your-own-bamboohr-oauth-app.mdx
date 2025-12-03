@@ -1,0 +1,31 @@
+---
+title: 'How to register your own BambooHR OAuth app'
+sidebarTitle: 'BambooHR Setup'
+description: 'Register an OAuth app with BambooHR and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with BambooHR to obtain your OAuth credentials (client ID and secret) and scopes. These are required to let your users grant your app access to their BambooHR account.
+
+<Steps>
+  <Step title="Create a BambooHR Developer account">
+    If you don't already have one, go to [BambooHR Developers](https://developers.bamboohr.com/) and create a developer account.
+  </Step>
+  <Step title="Create a new OAuth application">
+    1. Navigate to the [Applications page](https://developers.bamboohr.com/home/applications) and click the **+ Add application** button.
+    2. Fill in all the required details.
+    3. Submit the form to proceed.
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. In your application settings, click on **App details** and add `https://api.nango.dev/oauth/callback` as the **Redirect URI**.
+    2. Configure the **Scopes** your application needs by clicking **Select scopes** and selecting the appropriate permissions.
+    <Note> To obtain a refresh token that Nango will use to automatically refresh your access token, select **Miscellaneous** and grant the `offline_access` scope.</Note>
+  </Step>
+  <Step title="Get your credentials">
+    After creating the application, you'll see your **Client ID**, **Client Secret**, and the list of **Scopes Assigned**. Copy these values as you'll need them when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [BambooHR's OAuth documentation](https://documentation.bamboohr.com/docs/getting-started#oauth-flow) and [how to create an application](https://documentation.bamboohr.com/docs/getting-started#authentication).

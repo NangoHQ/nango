@@ -7,7 +7,7 @@ import { Err, Ok, errorToObject, getFrequencyMs, stringifyError } from '@nangohq
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
-import environmentService from '../services/environment.service.js';
+import accountService from '../services/account.service.js';
 import { getSyncConfigBySyncId, getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
@@ -55,7 +55,7 @@ export interface RecordsServiceInterface {
         environmentId: number;
         model: string;
         syncId: string;
-    }): Promise<{ totalDeletedRecords: number }>;
+    }): Promise<Result<{ totalDeletedRecords: number }>>;
     getRecordStatsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
@@ -594,8 +594,12 @@ export class Orchestrator {
                             if (syncVariant !== 'base') {
                                 model = `${model}::${syncVariant}`;
                             }
-                            const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                            void logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                            const deletion = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                            if (deletion.isErr()) {
+                                void logCtx.error(`Records for model ${model} failed to be deleted`, { error: deletion.error });
+                                return Err(deletion.error);
+                            }
+                            void logCtx.info(`Records for model ${model} were deleted successfully`, deletion.value);
                         }
                     }
 
@@ -687,7 +691,7 @@ export class Orchestrator {
                 throw new Error(`Sync is disabled: ${sync.id}`);
             }
 
-            const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id }))!;
+            const { account, environment } = (await accountService.getAccountContext({ environmentId: nangoConnection.environment_id }))!;
 
             logCtx = await logContextGetter.create(
                 { operation: { type: 'sync', action: 'init' } },

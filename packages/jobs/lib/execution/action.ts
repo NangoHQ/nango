@@ -4,14 +4,14 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
+    accountService,
     configService,
     environmentService,
     errorManager,
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncConfigRaw,
-    safeGetPlan
+    getSyncConfigRaw
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
@@ -26,7 +26,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -38,14 +38,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        account = accountAndEnv.account;
-        environment = accountAndEnv.environment;
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-        tagTraceUser({ ...accountAndEnv, plan });
+        account = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
+        tagTraceUser({ ...accountContext });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -106,6 +106,13 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             integration: task.connection.provider_config_key
         });
 
+        let sdkLogger: SdkLogger;
+        if (cappingFunctionLogsStatus.isCapped) {
+            sdkLogger = { level: 'off' };
+        } else {
+            sdkLogger = await environmentService.getSdkLogger(environment.id);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -124,10 +131,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            logger: sdkLogger,
+            runnerFlags: await getRunnerFlags(),
             startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
@@ -180,7 +185,7 @@ export async function handleActionSuccess({
     telemetryBag: TelemetryBag;
 }): Promise<void> {
     const logCtx = getLogCtx(nangoProps);
-    const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
+    const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
         account: undefined
     };
@@ -265,8 +270,12 @@ export async function handleActionSuccess({
             value: 1,
             properties: {
                 accountId: nangoProps.team.id,
-                connectionId: connection.id,
+                environmentId: nangoProps.environmentId,
+                environmentName: nangoProps.environmentName,
+                integrationId: nangoProps.providerConfigKey,
+                connectionId: connection.connection_id,
                 type: 'action',
+                functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag
             }
@@ -285,7 +294,7 @@ export async function handleActionError({
     error: NangoError;
     telemetryBag: TelemetryBag;
 }): Promise<void> {
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }
@@ -435,7 +444,11 @@ function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
+                    functionName: syncName,
                     type: 'action',
                     success: false,
                     telemetryBag

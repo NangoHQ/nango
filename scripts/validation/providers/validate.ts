@@ -69,6 +69,7 @@ console.log('✅ JSON schema valid');
 // Check if files exist
 console.log('Checking values...');
 const docsPath = path.join(__dirname, '../../../docs/integrations/all');
+const updatedDocsPath = path.join(__dirname, '../../../docs/api-integrations');
 const svgPath = path.join(__dirname, '../../../packages/webapp/public/images/template-logos');
 
 // store a global flag so we don't stop at first error
@@ -92,6 +93,7 @@ console.log('✅ All providers are valid');
 function validateProvider(providerKey: string, provider: ExtendedProvider) {
     const filename = provider.docs?.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
     const mdx = path.join(docsPath, `${filename}.mdx`);
+    const updatedMdx = path.join(updatedDocsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
     const connectMdx = path.join(docsPath, `${providerKey}/connect.mdx`);
     let hasValidConnect = false;
@@ -113,7 +115,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         }
     }
 
-    if (!fs.existsSync(mdx)) {
+    if (!fs.existsSync(mdx) && !fs.existsSync(updatedMdx)) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `Documentation file not found`);
         console.error(`Expected file: ${mdx}`);
         error = true;
@@ -123,14 +125,17 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         console.error(`Expected file: ${svg}`);
         error = true;
     }
+    let connectMdxPath: string | null = null;
     if (provider.docs_connect) {
-        if (!fs.existsSync(connectMdx)) {
+        const updatedConnectMdx = path.join(updatedDocsPath, `${providerKey}/connect.mdx`);
+        if (!fs.existsSync(connectMdx) && !fs.existsSync(updatedConnectMdx)) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `Connect.mdx file not found`);
             console.error(`Expected file: ${connectMdx}`);
             error = true;
         } else {
             hasValidConnect = true;
-            const content = fs.readFileSync(connectMdx).toString();
+            connectMdxPath = fs.existsSync(updatedConnectMdx) ? updatedConnectMdx : connectMdx;
+            const content = fs.readFileSync(connectMdxPath).toString();
             const matched = content.matchAll(/^[#]+\sStep[a-zA-Z0-9:()._ -]+$/gim);
             for (const match of matched) {
                 headers.add(

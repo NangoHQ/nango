@@ -1,0 +1,85 @@
+---
+title: 'LeadMagic'
+sidebarTitle: 'LeadMagic'
+description: 'Access the LeadMagic API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _LeadMagic_.
+      </Step>
+      <Step title="Authorize LeadMagic">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your LeadMagic API Key. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the LeadMagic API">
+        Let's make your first request to the LeadMagic API (check your credits). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/credits" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v1/credits',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their LeadMagic accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to LeadMagic using Connect UI](/integrations/all/leadmagic/connect) |
+    | General | [Website](https://leadmagic.io/) |
+    | Developer | [API Documentation](https://leadmagic.io/docs/v1/introduction) |
+    | | [Generate an API key in your LeadMagic account](https://app.leadmagic.io/settings/api) |
+    | | [API authentication guide](https://leadmagic.io/docs/v1/authentication#using-your-api-key) |
+    | | [API Reference](https://leadmagic.io/docs/v1/reference/check-credits) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/leadmagic.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Different endpoints have different rate limits. Check the specific endpoint documentation to learn more about rate limits.
+    - If you need to increase your rate limits, you can reach out to the LeadMagic team at [support@leadmagic.io](mailto:support@leadmagic.io).
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/leadmagic.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
+

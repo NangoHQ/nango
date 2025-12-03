@@ -1,20 +1,10 @@
+### Users
 
-## Pre-built integrations
-
-<AccordionGroup>
-
-
-<Accordion title="Users">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /users` | Creates a user in Metabase. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/create-user.md) |
-| `DELETE /users` | Disables a user in Metabase by id. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/disable-user.md) |
-| `PUT /users` | Updates an existing, active user in Metabase. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/update-user.md) |
-| `GET /users/single` | Fetches details of a specific user by ID. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/fetch-user.md) |
-| `PUT /users/enable` | Enables a disabled user. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/enable-user.md) |
-| `GET /users` | Fetches a list of users from Metabase, including active and inactive users. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/syncs/users.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-user` | Creates a user in Metabase. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/create-user.ts) |
+| `disable-user` | Disables a user in Metabase by id. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/disable-user.ts) |
+| `update-user` | Updates an existing, active user in Metabase. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/update-user.ts) |
+| `fetch-user` | Fetches details of a specific user by ID. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/fetch-user.ts) |
+| `enable-user` | Enables a disabled user. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/enable-user.ts) |
+| `users` | Fetches a list of users from Metabase, including active and inactive users. | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/syncs/users.ts) |

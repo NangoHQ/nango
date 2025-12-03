@@ -6,6 +6,7 @@ import {
     NangoError,
     SyncJobsType,
     SyncStatus,
+    accountService,
     configService,
     createSyncJob,
     environmentService,
@@ -14,7 +15,6 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
-    safeGetPlan,
     updateSyncJobStatus
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -29,7 +29,7 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -42,16 +42,15 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        team = accountAndEnv.account;
-        environment = accountAndEnv.environment;
+        team = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
 
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-
-        tagTraceUser({ ...accountAndEnv, plan });
+        tagTraceUser({ ...accountContext });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -119,6 +118,13 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             throw new Error(`Failed to create sync job for sync: ${sync.id}. TaskId: ${task.id}`);
         }
 
+        let sdkLogger: SdkLogger;
+        if (cappingFunctionLogsStatus.isCapped) {
+            sdkLogger = { level: 'off' };
+        } else {
+            sdkLogger = await environmentService.getSdkLogger(environment.id);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'webhook',
             host: getApiUrl(),
@@ -139,10 +145,8 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: {
-                ...(await getRunnerFlags()),
-                functionLogs: !cappingFunctionLogsStatus.isCapped
-            },
+            logger: sdkLogger,
+            runnerFlags: await getRunnerFlags(),
             endUser: endUser,
             startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
@@ -239,7 +243,7 @@ export async function handleWebhookSuccess({
 
     const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
 
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }
@@ -300,8 +304,12 @@ export async function handleWebhookSuccess({
             value: 1,
             properties: {
                 accountId: team.id,
-                connectionId: nangoProps.nangoConnectionId,
+                environmentId: environment.id,
+                environmentName: environment.name,
+                connectionId: nangoProps.connectionId,
+                integrationId: nangoProps.providerConfigKey,
                 type: 'webhook',
+                functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag
             }
@@ -324,7 +332,7 @@ export async function handleWebhookError({
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (accountAndEnv) {
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
@@ -478,8 +486,12 @@ async function onFailure({
                 value: 1,
                 properties: {
                     accountId: team.id,
-                    connectionId: connection.id,
+                    environmentId: environment.id,
+                    environmentName: environment.name,
+                    integrationId: providerConfigKey,
+                    connectionId: connection.connection_id,
                     type: 'webhook',
+                    functionName: syncName,
                     success: false,
                     telemetryBag
                 }

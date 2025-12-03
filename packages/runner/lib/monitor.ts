@@ -13,7 +13,7 @@ import type { NangoProps } from '@nangohq/types';
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
 export class RunnerMonitor {
     private runnerId: number;
-    private tracked = new Map<number, { nangoProps: NangoProps; taskId: string }>();
+    private tracked = new Map<string, { nangoProps: NangoProps }>();
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -39,25 +39,12 @@ export class RunnerMonitor {
     }
 
     track(nangoProps: NangoProps, taskId: string): void {
-        if (nangoProps.syncJobId) {
-            this.lastIdleTrackingDate = Date.now();
-            this.tracked.set(nangoProps.syncJobId, { nangoProps, taskId });
-        }
+        this.lastIdleTrackingDate = Date.now();
+        this.tracked.set(taskId, { nangoProps });
     }
 
-    untrack(nangoProps: NangoProps): void {
-        if (nangoProps.syncJobId) {
-            this.tracked.delete(nangoProps.syncJobId);
-        }
-    }
-
-    untrackByTaskId(taskId: string): void {
-        for (const [syncJobId, value] of this.tracked.entries()) {
-            if (value.taskId === taskId) {
-                this.tracked.delete(syncJobId);
-                break;
-            }
-        }
+    untrack(taskId: string): void {
+        this.tracked.delete(taskId);
     }
 
     resetIdleMaxDurationMs(): void {
@@ -151,6 +138,7 @@ export class RunnerMonitor {
     }
 }
 
+// TODO: revisit memory monitoring since runners are not running in Render anymore
 function getRenderTotalMemoryInBytes(): number {
     const memoryMaxFile = '/sys/fs/cgroup/memory.max';
     try {

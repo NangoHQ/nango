@@ -7,7 +7,7 @@ import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam } from '@nangohq/types';
+import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam, Metadata } from '@nangohq/types';
 
 export class InternalNango {
     readonly team: DBTeam;
@@ -37,6 +37,7 @@ export class InternalNango {
     async executeScriptForWebhooks({
         body,
         webhookType,
+        webhookHeaderValue,
         webhookTypeValue,
         connectionIdentifier,
         connectionIdentifierValue,
@@ -44,19 +45,20 @@ export class InternalNango {
     }: {
         body: Record<string, any>;
         webhookType?: string;
+        webhookHeaderValue?: string;
         webhookTypeValue?: string;
         connectionIdentifier?: string;
         connectionIdentifierValue?: string;
         propName?: string;
-    }): Promise<{ connectionIds: string[] }> {
+    }): Promise<{ connectionIds: string[]; connectionMetadata: Record<string, Metadata | null> }> {
         let connections: DBConnectionDecrypted[] | null | ConnectionInternal[] = null;
 
         const identifierValue = connectionIdentifierValue || (connectionIdentifier ? get(body, connectionIdentifier) : undefined);
 
-        if ((!connectionIdentifier || connectionIdentifier === '') && !identifierValue) {
+        if (!connectionIdentifier && !identifierValue) {
             connections = await connectionService.getConnectionsByEnvironmentAndConfig(this.environment.id, this.integration.unique_key);
         } else if (!identifierValue) {
-            return { connectionIds: [] };
+            return { connectionIds: [], connectionMetadata: {} };
         } else if (propName === 'connectionId') {
             const { success, response: connection } = await connectionService.getConnection(identifierValue, this.integration.unique_key, this.environment.id);
 
@@ -80,18 +82,26 @@ export class InternalNango {
         }
 
         if (!connections || connections.length === 0) {
-            return { connectionIds: [] };
+            return { connectionIds: [], connectionMetadata: {} };
         }
 
         // Disable executions of webhooks but we still need to return the connection ids
         if (this.plan && !this.plan.has_webhooks_script) {
-            return { connectionIds: connections.map((connection) => connection.connection_id) };
+            const connectionMetadata = connections.reduce<Record<string, Metadata | null>>((acc, connection) => {
+                acc[connection.connection_id] = 'metadata' in connection ? connection.metadata : null;
+                return acc;
+            }, {});
+            return { connectionIds: connections.map((connection) => connection.connection_id), connectionMetadata };
         }
 
         const syncConfigsWithWebhooks = await this.getWebhooks();
 
         if (syncConfigsWithWebhooks.length <= 0) {
-            return { connectionIds: connections?.map((connection) => connection.connection_id) };
+            const connectionMetadata = connections.reduce<Record<string, Metadata | null>>((acc, connection) => {
+                acc[connection.connection_id] = 'metadata' in connection ? connection.metadata : null;
+                return acc;
+            }, {});
+            return { connectionIds: connections.map((connection) => connection.connection_id), connectionMetadata };
         }
 
         // use webhookTypeValue if provided (direct value from headers), otherwise extract from body
@@ -106,8 +116,14 @@ export class InternalNango {
                 continue;
             }
 
+            let triggered = false;
+
             for (const webhook of webhook_subscriptions) {
-                if (type === webhook || webhook === '*') {
+                if (triggered) {
+                    break;
+                }
+
+                if (type === webhook || webhookHeaderValue === webhook || webhook === '*') {
                     for (const connection of connections) {
                         await orchestrator.triggerWebhook({
                             account: this.team,
@@ -122,6 +138,8 @@ export class InternalNango {
                         });
                     }
 
+                    triggered = true;
+
                     if (webhook === '*') {
                         // Only trigger once since it will match all webhooks
                         break;
@@ -130,6 +148,11 @@ export class InternalNango {
             }
         }
 
-        return { connectionIds: connections.map((connection) => connection.connection_id) };
+        const connectionMetadata = connections.reduce<Record<string, Metadata | null>>((acc, connection) => {
+            acc[connection.connection_id] = 'metadata' in connection ? connection.metadata : null;
+            return acc;
+        }, {});
+
+        return { connectionIds: connections.map((connection) => connection.connection_id), connectionMetadata };
     }
 }

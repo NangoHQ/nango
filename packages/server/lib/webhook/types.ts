@@ -222,3 +222,52 @@ export interface affinityWebhookResponse {
     body: object;
     sent_at: number;
 }
+
+export interface PagerDutyWebhookPayload {
+    event: {
+        id: string;
+        event_type: string;
+        resource_type: string;
+        occurred_at: string;
+        agent: object | null;
+        client: object | null;
+        data: object;
+    };
+}
+
+export interface ConnectWisePsaWebhookPayload {
+    MessageId?: string;
+    FromUrl?: string;
+    CompanyId?: string;
+    MemberId?: string;
+    Action?: string;
+    Type?: string;
+    ID?: number;
+    ProductInstanceId?: string;
+    PartnerId?: string;
+    Entity?: string | Record<string, any>;
+    Metadata?: {
+        key_url?: string;
+    };
+    CallbackObjectRecId?: number;
+    [key: string]: any;
+}
+
+export interface ShipStationWebhook {
+    resource_url: string;
+    resource_type: string;
+}
+
+export interface SellsyWebhookPayload {
+    eventType: string;
+    relatedtype: string;
+    ownertype: string;
+    timestamp: string;
+    event: string;
+    ownerid: string;
+    relatedid: string;
+    thirdtype?: string;
+    corpid: string;
+    relatedobject: Record<string, any>;
+    individual: boolean;
+}

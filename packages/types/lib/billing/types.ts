@@ -1,5 +1,6 @@
 import type { Result } from '../result.js';
 import type { DBTeam } from '../team/db.js';
+import type { UsageMetric } from '../usage/index.js';
 import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
@@ -10,7 +11,7 @@ export interface BillingClient {
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
-    getUsage: (subscriptionId: string, period?: 'previous') => Promise<Result<BillingUsageMetric[]>>;
+    getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
     downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
     applyPendingChanges: (opts: {
@@ -36,11 +37,40 @@ export interface BillingSubscription {
     planExternalId: string;
 }
 
-export interface BillingUsageMetric {
-    id: string;
-    name: string;
-    quantity: number;
+export interface GetBillingUsageOpts {
+    timeframe?: {
+        start: Date;
+        end: Date;
+    };
+    granularity?: 'day';
+    billingMetric?: {
+        id: string;
+        group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
+    };
 }
+
+export interface BillingUsageMetric {
+    externalId: string;
+    group?: {
+        key: string;
+        value: string;
+    };
+    total: number;
+    usage: {
+        timeframeStart: Date;
+        timeframeEnd: Date;
+        quantity: number;
+    }[];
+    view_mode: 'cumulative' | 'periodic';
+}
+
+export type BillingUsageMetrics = Partial<Record<UsageMetric, BillingUsageMetric | undefined>>;
+
+export interface ApiBillingUsageMetric extends BillingUsageMetric {
+    label: string;
+}
+
+export type ApiBillingUsageMetrics = Record<UsageMetric, ApiBillingUsageMetric>;
 
 export interface BillingPlan {
     id: string;
@@ -63,9 +93,9 @@ interface BillingEventBase<TType extends string, TProperties extends BillingProp
 export type MarBillingEvent = BillingEventBase<
     'monthly_active_records',
     {
-        connectionId: number;
         environmentId: number;
-        providerConfigKey: string;
+        environmentName: string;
+        integrationId: string;
         syncId: string;
         model: string;
     }
@@ -84,9 +114,9 @@ export type RecordsBillingEvent = BillingEventBase<
 export type ActionsBillingEvent = BillingEventBase<
     'billable_actions',
     {
-        connectionId: number;
         environmentId: number;
-        providerConfigKey: string;
+        environmentName: string;
+        integrationId: string;
         actionName: string;
     }
 >;
@@ -94,8 +124,11 @@ export type ActionsBillingEvent = BillingEventBase<
 export type FunctionExecutionsBillingEvent = BillingEventBase<
     'function_executions',
     {
+        environmentId: number;
+        environmentName: string;
+        integrationId: string;
         type: string;
-        connectionId: number;
+        functionName: string;
         telemetry: {
             successes: number;
             failures: number;
@@ -111,10 +144,9 @@ export type FunctionExecutionsBillingEvent = BillingEventBase<
 export type ProxyBillingEvent = BillingEventBase<
     'proxy',
     {
-        connectionId: number;
         environmentId: number;
-        providerConfigKey: string;
-        provider: string;
+        environmentName: string;
+        integrationId: string;
         telemetry: {
             successes: number;
             failures: number;
@@ -126,8 +158,8 @@ export type WebhookForwardBillingEvent = BillingEventBase<
     'webhook_forwards',
     {
         environmentId: number;
-        providerConfigKey: string;
-        provider: string;
+        environmentName: string;
+        integrationId: string;
         telemetry: {
             successes: number;
             failures: number;

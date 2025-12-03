@@ -2,6 +2,216 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.14] - 2025-11-21
+
+### Added
+
+- *(webhooks)* Add support for google calendar webhooks (#4994) by @hassan254-prog
+- *(integrations)* Add support for crisp (#5002) by @hassan254-prog
+- *(webhooks)* Add support for pagerduty webhooks (#4940) by @hassan254-prog
+- *(docs)* Add diagnostics info (#5003) by @khaliqgant
+- *(integrations)* Add support for valley (#4995) by @hassan254-prog
+- *(server)* Cumulative usage metrics (#5020) by @kaposke
+- *(integration)* Add mimecast support (#5019) by @gonzalde97
+- *(providers)* Add pennylane rate limit header to check (#5024) by @hassan254-prog
+- *(integrations)* Add support for wiza (#5022) by @hassan254-prog
+- *(integrations)* Add support for cursor admin (#5014) by @hassan254-prog
+- *(integrations)* Add support for contactout (#5023) by @hassan254-prog
+- *(integrations)* Add support for drchrono (#5035) by @hassan254-prog
+- *(nango-cli)* Command updates (#5034) by @khaliqgant
+- *(docs)* Add initial restructure integrations (#4982) by @khaliqgant
+- Map orb usage to local metrics (#5032) by @kaposke
+
+### Changed
+
+- *(webapp)* Use text utilities from figma (#5010) by @kaposke
+- Add dimensions to billing events (#5012) by @TBonnin
+- Use crypto md5 hashing (#5015) by @TBonnin
+- Add Vercel AI SDK implementation guide (#5017) by @bastienbeurier
+- Pubsub.publish metrics on failure (#5016) by @TBonnin
+
+### Fixed
+
+- *(proxy)* Resolve issue where authorization headers are getting dropped during redirects (#5009) by @hassan254-prog
+- Remove dimensions for records/conn billing events (#5018) by @TBonnin
+- Avoid excessive locking when updating connection last_fetched_at (#5026) by @TBonnin
+- *(runner)* Reset last idle tracking date whenever track is called (#5036) by @rossmcewan
+- *(persist)* Caching zod schemas (#5030) by @TBonnin
+- Upgrade glob (#5029) by @TBonnin
+- Upgrade vite (#5028) by @TBonnin
+- Upgrade js-yaml (#5027) by @TBonnin
+- *(webhook)* Use event-type header and minor clean up (#5043) by @khaliqgant
+
+## [v0.69.13] - 2025-11-13
+
+### Added
+
+- *(integrations)* Add support for crowdstrike (#5004) by @hassan254-prog
+- *(integrations)* Add support for tiktok personal (#4999) by @hassan254-prog
+
+### Changed
+
+- Add Anthropic SDK implementation guide (#5000) by @bastienbeurier
+- Add Mastra example and improve other examples (#5006) by @bastienbeurier
+
+### Fixed
+
+- *(zero-yaml)* Allow type imports (#5008) by @khaliqgant
+- Allow webhooks for free plans (#5007) by @kaposke
+- *(records)* Smaller batch size for records deletion (#5001) by @TBonnin
+- *(cli)* Make showLoggerLevelWarning accessible in NangoSyncCLI (#5013) by @hassan254-prog
+
+## [v0.69.12] - 2025-11-12
+
+### Added
+
+- *(integrations)* Add support for breezy-hr (#4981) by @hassan254-prog
+- *(integrations)* Add support for semrush (#4980) by @hassan254-prog
+- *(webapp)* Improve number formatting in usage card (#4988) by @kaposke
+- Switch getting started to Github (#4983) by @kaposke
+- *(dryrun-diagnostics)* Add diagnostics service for dryrun (#4987) by @khaliqgant
+- Add missing NANGO_SERVER_URL in env variables for nango-jobs co… (#4966) by @mesaugat
+
+### Changed
+
+- *(billing)* Refactor getUsage (#4973) by @TBonnin
+- *(usage)* Cache and throttle all calls to Orb usage endpoint (#4985) by @TBonnin
+- *(usage)* Replace rate limiter by queue when throttling (#4989) by @TBonnin
+
+### Fixed
+
+- *(server)* /ready endpoint checks for db connectivity at startup (#4977) by @TBonnin
+- *(providers)* Update shopify docs to mention the recommended flow after custom apps deprecation (#4968) by @hassan254-prog
+- *(integrations)* Add NinjaOne RMM (#4957) by @jeremydhoon
+- *(jobs)* Set correct env vars for dd (#4986) by @rossmcewan
+- Remove close button from popup (#4984) by @kaposke
+- *(records)* Retrying the entire transaction when deadlock detected in upsert (#4991) by @TBonnin
+- *(metering)* Cleanup (#4990) by @TBonnin
+- *(listConnections)* Fix param (#4997) by @khaliqgant
+
+## [v0.69.10] - 2025-11-10
+
+### Added
+
+- *(integrations)* Add support for shipstation webhooks and support for v2 (#4956) by @hassan254-prog
+- *(integrations)* Add support for Connectwise PSA webhooks (#4950) by @jeremydhoon
+- *(integrations)* Add support for leadmagic (#4974) by @hassan254-prog
+- *(integrations)* Add support for icypeas (#4971) by @hassan254-prog
+- *(integrations)* Add support for prospeo (#4970) by @hassan254-prog
+- *(cli)* Add normalized hash fallback for mock file lookup (#4962) by @hassan254-prog
+- *(integrations)* Add support for gitlab pat (#4976) by @hassan254-prog
+
+### Changed
+
+- Improve the OpenAI SDK implementation guide + add guide for any LLM provider (#4969) by @bastienbeurier
+
+### Fixed
+
+- *(server)* Include _MS in shutdown delay env var name (#4963) by @rossmcewan
+- *(providers)* Fix momentum-io verification by adding mandatory parameters (#4960) by @hassan254-prog
+- *(logs)* Allow configurable timeouts for elasticsearch query (#4967) by @rossmcewan
+- Create an billing subscription when signup via Google (#4955) by @TBonnin
+- Remove DEPRECATED functionLogs runner flag (#4961) by @TBonnin
+- *(self-hosted)* Allow env variable to change the deprecation date (#4965) by @khaliqgant
+- *(logs)* Global search bar not working consistently (#4972) by @rossmcewan
+- *(providers)* Fix zoho recruit domain extension (#4978) by @hassan254-prog
+- *(cli)* Make `NangoActionMock` and `NangoSyncMock` implement their base classes (#4945) by @hassan254-prog
+- *(runner)* Only label pods when trace or profiling enabled (#4975) by @rossmcewan
+
+## [v0.69.8] - 2025-11-05
+
+### Added
+
+- *(integrations)* Add support for atlassian-government-cloud (#4935) by @hassan254-prog
+- *(integrations)* Add statista provider (#4860) by @Diginut-GmbH
+- *(providers)* Add a default value for medallia gatewayUrl (#4947) by @hassan254-prog
+- *(server)* Add ready endpoint (#4931) by @rossmcewan
+- *(fleet)* Add metering and profiling controls to node and overrides (#4948) by @rossmcewan
+- *(node-sdk)* Node sdk connection creation detection for agentic flow (#4923) by @khaliqgant
+- *(fleet)* Add idle timeout to node config and overrides (#4952) by @rossmcewan
+- *(integrations)* Add support for zoho-recruit (#4958) by @hassan254-prog
+- *(integrations)* Add support for heyreach (#4951) by @hassan254-prog
+- *(runner-sdk)* Add logger level concept (default to warn in cloud) (#4954) by @TBonnin
+- *(connect-ui)* Add error event emission to notify parent on auth failures (#4953) by @hassan254-prog
+- *(integrations)* Add support for apify (#4930) by @hassan254-prog
+- *(agentic-sdk)* WaitForConnection (#4939) by @khaliqgant
+
+### Changed
+
+- Update screenshots to use new connect ui (#4839) by @hassan254-prog
+
+### Fixed
+
+- *(plan)* Xl api_rate_limit_size for growth plan (#4944) by @TBonnin
+- *(runner)* Error handling and retry in jobs client (#4927) by @TBonnin
+- Remove legacy usage table (#4949) by @TBonnin
+- *(integrations)* Add support for Auvik Networks (#4941) by @jeremydhoon
+- *(integrations)* Add Passportal integration (#4942) by @jeremydhoon
+
+## [v0.69.7] - 2025-10-31
+
+### Added
+
+- *(integrations)* Add support for onelogin (#4932) by @hassan254-prog
+
+### Changed
+
+- Sample app (#4920) by @hassan254-prog
+
+### Fixed
+
+- *(usage)* Account for deleted connections when revalidating records (#4928) by @TBonnin
+- *(deploy)* Ensure we filter on the type (#4937) by @khaliqgant
+- Keep feature flag overrides when upgrading (#4934) by @TBonnin
+- Record schema compilation caching (#4902) by @TBonnin
+- *(deploy-versions)* Dont force version (#4938) by @khaliqgant
+
+## [v0.69.6] - 2025-10-30
+
+### Added
+
+- *(oauth2)* Allow tokenurl interpolation from redirect url metadata (#4804) by @hassan254-prog
+- *(webapp)* Redesign UsageCard (#4884) by @kaposke
+- *(webhooks)* Add support for shopify-api-key webhooks (#4903) by @hassan254-prog
+- *(integrations)* Add support for pennylane-company-api (#4848) by @hassan254-prog
+- Add docs about retrieval of sharepoint specific access token (#4835) by @hassan254-prog
+- *(integrations)* Add support for aimfox oauth (#4888) by @hassan254-prog
+- *(integrations)* Add support for microsoft admin (#4904) by @hassan254-prog
+- *(server)* V2 plan definitions (#4906) by @kaposke
+- Hide usage for old plans (#4917) by @kaposke
+- *(cli-create-command)* New create command for zeroyaml in the cli (#4892) by @khaliqgant
+- *(integrations)* Add support for sap fieldglass (#4907) by @hassan254-prog
+- *(integrations)* Add support for sap business one (#4911) by @hassan254-prog
+- *(integrations)* Add support for momentum-io (#4914) by @hassan254-prog
+- *(ui-copy)* Add copy button and allow pasting (#4916) by @khaliqgant
+- Add breaking changelog entry about log ingestion (#4933) by @bastienbeurier
+
+### Changed
+
+- *(usage)* Revalidate connections and records usage metrics in cache (#4898) by @TBonnin
+- *(usage)* Revalidate billing metrics from orb (#4910) by @TBonnin
+- Delete old usage tracking / capping (#4918) by @kaposke
+- Slack api gotchas (#4921) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Add AI tool calling use case (#4909) by @bastienbeurier
+- Address OpenAI SDK implement guide PR comments + standardize page capitalization (#4936) by @bastienbeurier
+
+### Fixed
+
+- *(docs)* Status not status_code (#4899) by @khaliqgant
+- *(deploy)* Concurrency issue (#4894) by @khaliqgant
+- *(runner)* Optionally set datadog profiling for runners (#4900) by @rossmcewan
+- *(providers)* Use api_domain as zoho base_url fallback (#4901) by @hassan254-prog
+- *(runner)* Be more explicit with the runner sizing (#4905) by @rossmcewan
+- *(providers)* Fix intercom url (#4908) by @hassan254-prog
+- When a sync expires, webhook says type = INITIAL (#4912) by @TBonnin
+- *(record count)* Do not count records from deleted connections (#4919) by @TBonnin
+- *(usage)* Don't overwrite records/connections with orb metrics (#4924) by @TBonnin
+- *(server)* Set keep-alive and header timeouts (#4925) by @rossmcewan
+- Records count reporting logic to account for all models/variants (#4926) by @TBonnin
+- *(providers)* Use dynamic value for base_url in Medallia (#4922) by @hassan254-prog
+- Do not push self-hosted image on PR build (#4929) by @TBonnin
+
 ## [v0.69.5] - 2025-10-22
 
 ### Added
@@ -5176,6 +5386,13 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.14]: https://github.com/NangoHQ/nango/compare/v0.69.13..v0.69.14
+[v0.69.13]: https://github.com/NangoHQ/nango/compare/v0.69.12..v0.69.13
+[v0.69.12]: https://github.com/NangoHQ/nango/compare/v0.69.10..v0.69.12
+[v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10
+[v0.69.8]: https://github.com/NangoHQ/nango/compare/v0.69.7..v0.69.8
+[v0.69.7]: https://github.com/NangoHQ/nango/compare/v0.69.6..v0.69.7
+[v0.69.6]: https://github.com/NangoHQ/nango/compare/v0.69.5..v0.69.6
 [v0.69.5]: https://github.com/NangoHQ/nango/compare/v0.69.4..v0.69.5
 [v0.69.4]: https://github.com/NangoHQ/nango/compare/v0.69.3..v0.69.4
 [v0.69.3]: https://github.com/NangoHQ/nango/compare/v0.69.2..v0.69.3
