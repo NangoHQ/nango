@@ -12,6 +12,7 @@ import { getProvider } from '../providers.js';
 
 import type {
     ApplicationConstructedProxyConfiguration,
+    AwsSigV4Credentials,
     ConnectionForProxy,
     HTTP_METHOD,
     InternalProxyConfiguration,
