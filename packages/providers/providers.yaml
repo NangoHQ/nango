@@ -6577,6 +6577,38 @@ greenhouse-onboarding:
     docs: https://nango.dev/docs/integrations/all/greenhouse-onboarding
     docs_connect: https://nango.dev/docs/integrations/all/greenhouse-onboarding/connect
 
+grist:
+    display_name: Grist
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environment}.getgrist.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/orgs
+    docs: https://nango.dev/docs/api-integrations/grist
+    docs_connect: https://nango.dev/docs/api-integrations/grist/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Grist API key
+            pattern: '^[a-f0-9]{40}$'
+            example: 980cb267c8fa52ae5b6a0a5b4977ec915add8c07
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The environment you want to connect to
+            pattern: '^(team|docs)$'
+            example: docs
+            order: 1
+            doc_section: '#step-1-selecting-your-environment'
+
 gumroad:
     display_name: Gumroad
     categories:
