@@ -225,7 +225,7 @@ export default class Nango {
                     return;
                 }
 
-                if (this.win.modal.window && !this.win.modal.closed) {
+                if (!this.win.modal.closed) {
                     return;
                 }
 
