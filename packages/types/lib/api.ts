@@ -36,7 +36,11 @@ export type ResDefaultErrors =
     | ApiError<'invalid_cli_version'>
     | ApiError<'invalid_permissions'>
     | ApiError<'invalid_connect_session_token_format'>
-    | ApiError<'request_too_large'>;
+    | ApiError<'request_too_large'>
+    | ApiError<'missing_aws_sigv4_config'>
+    | ApiError<'invalid_aws_sigv4_config'>
+    | ApiError<'missing_aws_sigv4_service'>
+    | ApiError<'missing_aws_sigv4_sts_endpoint'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**
