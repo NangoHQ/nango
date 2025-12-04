@@ -354,7 +354,9 @@ export class Supervisor {
                 storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
                 isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
                 isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled,
-                idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs
+                idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs,
+                executionTimeoutSecs: nodeConfigOverrideValue.executionTimeoutSecs || newNodeConfig.executionTimeoutSecs,
+                provisionedConcurrency: nodeConfigOverrideValue.provisionedConcurrency || newNodeConfig.provisionedConcurrency
             };
         }
 
@@ -367,7 +369,9 @@ export class Supervisor {
             storageMb: newNodeConfig.storageMb,
             isTracingEnabled: newNodeConfig.isTracingEnabled,
             isProfilingEnabled: newNodeConfig.isProfilingEnabled,
-            idleMaxDurationMs: newNodeConfig.idleMaxDurationMs
+            idleMaxDurationMs: newNodeConfig.idleMaxDurationMs,
+            executionTimeoutSecs: newNodeConfig.executionTimeoutSecs,
+            provisionedConcurrency: newNodeConfig.provisionedConcurrency
         });
     }
 

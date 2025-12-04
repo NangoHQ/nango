@@ -9,7 +9,9 @@ export const noopNodeProvider: NodeProvider = {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1_800_000
+        idleMaxDurationMs: 1_800_000,
+        executionTimeoutSecs: -1,
+        provisionedConcurrency: -1
     },
     start: () => {
         return Promise.resolve(Ok(undefined));

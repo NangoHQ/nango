@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { Locks } from './locks.js';
+import { MapLocks } from './locks.js';
+
+import type { Locks } from './locks.js';
 
 describe('Locks', () => {
     let locks: Locks;
 
     beforeEach(() => {
-        locks = new Locks();
+        locks = new MapLocks();
     });
     describe('tryAcquireLock input validation', () => {
         it('should fail to acquire a lock with an empty key', async () => {

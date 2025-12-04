@@ -139,7 +139,7 @@ export const ENVS = z.object({
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
-    RUNNER_NODE_ID: z.coerce.number().optional(),
+    RUNNER_NODE_ID: z.coerce.number().default(1),
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
@@ -235,6 +235,11 @@ export const ENVS = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+
+    AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
+    AWS_INTEGRATIONS_REGION: z.string().optional(),
+    AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
@@ -348,6 +353,21 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+
+    // Lambda
+    LAMBDA_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
+    LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),
+    LAMBDA_PERSIST_SERVICE_URL: z.url().optional(),
+    LAMBDA_JOBS_SERVICE_URL: z.url().optional(),
+    LAMBDA_PROVIDERS_URL: z.url().optional(),
+    LAMBDA_SUBNET_IDS: z.array(z.string()).optional(),
+    LAMBDA_SECURITY_GROUP_IDS: z.array(z.string()).optional(),
+    LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
+    LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
+    LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
+    LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
+    LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
 
     // WEBHOOK DELIVERY CIRCUIT BREAKER
     NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),

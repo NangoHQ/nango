@@ -20,7 +20,9 @@ export const localNodeProvider: NodeProvider = {
         storageMb: 20000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 0 // No auto-shutdown for local runners
+        idleMaxDurationMs: 0, // No auto-shutdown for local runners
+        executionTimeoutSecs: -1,
+        provisionedConcurrency: -1
     },
     start: async (node) => {
         try {
