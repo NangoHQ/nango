@@ -158,13 +158,13 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                 const simulated = { ...integration, custom: { ...nextCustom, [key]: value } } as Parameters<typeof awsSigV4Client.getAwsSigV4Settings>[0];
                 const validation = awsSigV4Client.getAwsSigV4Settings(simulated);
                 if (validation.isErr()) {
-                    res.status(400).send({ error: { code: validation.error.type, message: validation.error.message } });
+                    res.status(400).send({ error: { code: validation.error.type, message: validation.error.message } } as PatchIntegration['Errors']);
                     return;
                 }
             }
             nextCustom[key] = value;
         }
-        integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : null;
+        integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : undefined;
     }
 
     // Credentials
