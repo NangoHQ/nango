@@ -496,6 +496,7 @@
               "integrations/all/docusign",
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
+              "api-integrations/drata",
               "integrations/all/drchrono",
               "integrations/all/dropbox",
               "integrations/all/dropbox-sign",
