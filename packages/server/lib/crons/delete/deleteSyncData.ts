@@ -43,11 +43,10 @@ export async function deleteSyncData(sync: Sync, syncConfig: DBSyncConfig, opts:
             limit,
             logger,
             deleteFn: async () => {
-                const res = await records.deleteRecordsBySyncId({
+                const res = await records.deleteRecords({
                     connectionId: sync.nango_connection_id,
                     environmentId: syncConfig.environment_id,
                     model,
-                    syncId: sync.id,
                     batchSize: limit
                 });
                 if (res.isOk() && res.value.totalDeletedRecords) {

@@ -306,7 +306,6 @@ export async function handleSyncSuccess({
                 const res = await records.deleteOutdatedRecords({
                     connectionId: nangoProps.nangoConnectionId,
                     model,
-                    syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
                 if (res.isErr()) {

@@ -772,17 +772,15 @@ export async function update({
     }
 }
 
-export async function deleteRecordsBySyncId({
+export async function deleteRecords({
     connectionId,
     environmentId,
     model,
-    syncId,
     batchSize = 1000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
-    syncId: string;
     batchSize?: number;
 }): Promise<Result<{ totalDeletedRecords: number }>> {
     const activeSpan = tracer.scope().active();
@@ -802,7 +800,7 @@ export async function deleteRecordsBySyncId({
                     .from(RECORDS_TABLE)
                     .where({ connection_id: connectionId, model })
                     .whereIn('id', function (sub) {
-                        sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
+                        sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model }).limit(batchSize);
                     })
                     .del()
                     .returning(['id', db.raw('tableoid::regclass as partition')]);
@@ -821,7 +819,7 @@ export async function deleteRecordsBySyncId({
         return Ok({ totalDeletedRecords });
     } catch (err) {
         span.setTag('error', err);
-        return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}, syncId ${syncId}`, { cause: err }));
+        return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}`, { cause: err }));
     } finally {
         span.finish();
     }
@@ -839,13 +837,11 @@ export async function deleteRecordCount(
 export async function deleteOutdatedRecords({
     connectionId,
     model,
-    syncId,
     generation,
     batchSize = 5000
 }: {
     connectionId: number;
     model: string;
-    syncId: string;
     generation: number;
     batchSize?: number;
 }): Promise<Result<string[]>> {
@@ -869,7 +865,6 @@ export async function deleteOutdatedRecords({
                             .where({
                                 connection_id: connectionId,
                                 model,
-                                sync_id: syncId,
                                 deleted_at: null
                             })
                             .where('sync_job_id', '<', generation)
@@ -917,10 +912,9 @@ export async function deleteOutdatedRecords({
             return Ok(deletedIds);
         });
     } catch (err) {
-        const e = new Error(
-            `Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, syncId ${syncId}, generation ${generation}`,
-            { cause: err }
-        );
+        const e = new Error(`Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, generation ${generation}`, {
+            cause: err
+        });
         span.setTag('error', err);
         return Err(e);
     } finally {
