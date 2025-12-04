@@ -20,13 +20,17 @@ To subscribe to Nango webhooks:
 
 You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both.
 
-To test webhooks locally, use a webhook forwarding service like [ngrok](https://dev.to/mmascioni/testing-and-debugging-webhooks-with-ngrok-4alp, or [webhook.site](https://webhook.site/).
+To test webhooks locally, use a webhook forwarding service like [ngrok](https://dev.to/mmascioni/testing-and-debugging-webhooks-with-ngrok-4alp), or [webhook.site](https://webhook.site/).
 
 ## Verifying webhooks from Nango
 
-Validate webhooks from Nango by looking at the `X-Nango-Signature` header.
+Validate webhooks from Nango by looking at the `X-Nango-Hmac-Sha256` header.
 
-It's a SHA-256 hash of the webhook payload with the secret key, found in the _Environment Settings_ in the Nango UI, prepended.
+It's an HMAC-SHA256 hash of the webhook payload, using the secret key found in the _Environment Settings_ in the Nango UI.
+
+<Warning>
+Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.
+</Warning>
 
 The webhook signature can be generated with the following code:
 
@@ -34,8 +38,7 @@ The webhook signature can be generated with the following code:
   <Tab title="Node SDK">
     ```typescript
     async (req, res) => {
-        const signature = req.headers['x-nango-signature'];
-        const isValid = nango.verifyWebhookSignature(signature, req.body);
+        const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
     }
     ```
   </Tab>
@@ -44,46 +47,52 @@ The webhook signature can be generated with the following code:
     import crypto from 'crypto';
     
     const secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-    const signature = `${secretKeyDev}${JSON.stringify(payload)}`;
-    const hash = crypto.createHash('sha256').update(signature).digest('hex');
+    const body = // raw request body as string
+    const hash = crypto.createHmac('sha256', secretKeyDev).update(body).digest('hex');
     ```
   </Tab>
   <Tab title="Python">
     ```python
+    import hmac
     import hashlib
     
     secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    signature = secret_key_dev + request.body.decode("utf-8")
-    hash = hashlib.sha256(signature.encode("utf-8")).hexdigest()
+    body = # raw request body as bytes
+    hash = hmac.new(secret_key_dev.encode('utf-8'), body, hashlib.sha256).hexdigest()
     ```
   </Tab>
   <Tab title="Java">
     ```java
-    import java.security.MessageDigest;
-    import java.security.NoSuchAlgorithmException;
-    import javax.xml.bind.DatatypeConverter;
+    import javax.crypto.Mac;
+    import javax.crypto.spec.SecretKeySpec;
+    import java.nio.charset.StandardCharsets;
     
     public class Main {
-        public static void main(String[] args) throws NoSuchAlgorithmException {
+        public static void main(String[] args) throws Exception {
             String secretKeyDev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-            String payloadString = // convert payload to JSON string
-            String signature = secretKeyDev + payloadString;
+            String body = // raw request body as string
     
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(signature.getBytes("UTF-8"));
-            String hash = DatatypeConverter.printHexBinary(hashBytes).toLowerCase();
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(secretKeyDev.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKey);
+            byte[] hashBytes = mac.doFinal(body.getBytes(StandardCharsets.UTF_8));
+            
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                hexString.append(String.format("%02x", b));
+            }
+            String hash = hexString.toString();
         }
     }
     ```
   </Tab>
   <Tab title="Ruby">
     ```ruby
-    require 'json'
-    require 'digest'
+    require 'openssl'
     
     secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    signature = "#{secret_key_dev}#{payload.to_json}"
-    hash = Digest::SHA256.hexdigest(signature)
+    body = # raw request body 
+    hash = OpenSSL::HMAC.hexdigest('SHA256', secret_key_dev, body)
     ```
   </Tab>
   <Tab title="Go">
@@ -91,45 +100,49 @@ The webhook signature can be generated with the following code:
     package main
     
     import (
+        "crypto/hmac"
         "crypto/sha256"
         "encoding/hex"
-        "encoding/json"
+        "io"
+        "net/http"
     )
     
     func main() {
         secretKeyDev := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        payloadString, _ := json.Marshal(payload) // Handle error in real code
-        signature := secretKeyDev + string(payloadString)
+        var body []byte // raw request body
     
-        hash := sha256.Sum256([]byte(signature))
-        hexHash := hex.EncodeToString(hash[:])
+        h := hmac.New(sha256.New, []byte(secretKeyDev))
+        h.Write(body)
+        hash := hex.EncodeToString(h.Sum(nil))
     }
     ```
   </Tab>
   <Tab title="Rust">
     ```rust
-    use sha2::{Sha256, Digest};
-    use serde_json::json; // Assuming use of serde_json for JSON serialization
+    use hmac::{Hmac, Mac};
+    use sha2::Sha256;
+    
+    type HmacSha256 = Hmac<Sha256>;
     
     let secret_key_dev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-    let signature = format!("{}{}", secret_key_dev, serde_json::to_string(&payload).unwrap());
-    let mut hasher = Sha256::new();
-    hasher.update(signature.as_bytes());
-    let hash = format!("{:x}", hasher.finalize());
+    let body = // raw request body as string or bytes
+    let mut mac = HmacSha256::new_from_slice(secret_key_dev.as_bytes()).unwrap();
+    mac.update(body.as_bytes());
+    let hash = format!("{:x}", mac.finalize().into_bytes());
     ```
   </Tab>
   <Tab title="PHP">
     ```php
     <?php
     $secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-    $signature = $secretKeyDev . json_encode($payload);
-    $hash = hash('sha256', $signature);
+    $body = // raw request body as string
+    $hash = hash_hmac('sha256', $body, $secretKeyDev);
     ?>
     ```
   </Tab>
 </Tabs>
 
-Only accept a webhook if the `X-Nango-Signature` header value matches the webhook signature.
+Only accept a webhook if the `X-Nango-Hmac-Sha256` header value matches the webhook signature.
 
 ## Types of Nango webhooks
 
