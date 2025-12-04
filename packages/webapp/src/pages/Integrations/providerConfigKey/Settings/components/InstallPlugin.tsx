@@ -98,7 +98,7 @@ export const SettingsInstallPlugin: React.FC<{ data: GetIntegration['Success']['
 
             <div className="flex justify-between">
                 {integration && <DeleteIntegrationButton env={env} integration={integration} />}
-                <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={isBasicAuth && (!username || !password)}>
+                <Button variant={'primary'} onClick={onSave} isLoading={loading} disabled={!appLink || (isBasicAuth && (!username || !password))}>
                     Save
                 </Button>
             </div>

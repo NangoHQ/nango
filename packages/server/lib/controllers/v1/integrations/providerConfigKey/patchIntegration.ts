@@ -59,12 +59,14 @@ const validationBody = z
                         scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
                     })
                     .strict(),
-                z.object({
-                    authType: z.enum(['MCP_OAUTH2_GENERIC']),
-                    clientName: z.string().min(1).max(255).optional(),
-                    clientUri: z.url().max(255).optional(),
-                    clientLogoUri: z.url().max(255).optional()
-                }),
+                z
+                    .object({
+                        authType: z.enum(['MCP_OAUTH2_GENERIC']),
+                        clientName: z.string().min(1).max(255).optional(),
+                        clientUri: z.url().max(255).optional(),
+                        clientLogoUri: z.url().max(255).optional()
+                    })
+                    .strict(),
                 z
                     .object({
                         authType: z.enum(['INSTALL_PLUGIN']),

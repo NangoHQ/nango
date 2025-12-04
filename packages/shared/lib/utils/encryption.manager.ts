@@ -8,7 +8,7 @@ import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable, Provider } from '@nangohq/types';
+import type { DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -139,7 +139,7 @@ export class EncryptionManager extends Encryption {
         return decryptedEnvironmentVariables;
     }
 
-    public encryptProviderConfig(config: ProviderConfig, provider?: Provider): ProviderConfig {
+    public encryptProviderConfig(config: ProviderConfig): ProviderConfig {
         if (!this.shouldEncrypt()) {
             return config;
         }
@@ -153,7 +153,7 @@ export class EncryptionManager extends Encryption {
             encryptedConfig.oauth_client_secret_tag = authTag;
         }
 
-        if (provider && provider.auth_mode === 'INSTALL_PLUGIN' && config.custom) {
+        if (config.custom) {
             const [encryptedValue, iv, authTag] = this.encryptSync(JSON.stringify(config.custom));
             encryptedConfig.custom = { encryptedValue, iv: iv, authTag: authTag };
         }
