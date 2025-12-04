@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
@@ -38,7 +39,8 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         num += 1;
 
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
-        const moduleContent = await import(modulePath);
+        const moduleUrl = pathToFileURL(modulePath).href;
+        const moduleContent = await import(moduleUrl);
         if (!moduleContent.default || !moduleContent.default.default) {
             return Err(new Error(`Script should have a default export ${modulePath}`));
         }
