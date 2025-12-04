@@ -231,7 +231,7 @@ if (flagHasUsage) {
     web.route('/stripe/payment_methods').delete(webAuth, deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
-    web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
+    web.route('/orb/webhooks').post(postOrbWebhooks);
 }
 
 web.route('/admin/impersonate').post(webAuth, postImpersonate);

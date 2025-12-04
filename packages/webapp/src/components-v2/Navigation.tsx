@@ -5,13 +5,26 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/utils/utils';
 
 export const NavigationList: React.FC<React.ComponentProps<typeof TabsPrimitive.List>> = (props) => {
-    return <TabsPrimitive.List className="w-46 h-fit shrink-0 p-2 bg-bg-elevated rounded" {...props} />;
+    return (
+        <TabsPrimitive.List
+            className={cn(
+                'w-46 h-fit shrink-0 p-2 bg-bg-elevated rounded',
+                // Horizontal
+                'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-10 data-[orientation=horizontal]:p-1'
+            )}
+            {...props}
+        />
+    );
 };
 
 export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {
     return (
         <TabsPrimitive.Trigger
-            className="w-full p-2.5 cursor-pointer text-text-secondary text-body-medium-medium text-start rounded transition-colors hover:bg-bg-surface hover:text-text-primary data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default"
+            className={cn(
+                'w-full p-2.5 cursor-pointer text-text-tertiary !text-body-medium-medium text-start rounded transition-colors hover:bg-bg-surface hover:text-text-primary data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default',
+                // Horizontal
+                'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-full data-[orientation=horizontal]:px-3 data-[orientation=horizontal]:py-0.5'
+            )}
             {...props}
         />
     );
@@ -21,7 +34,12 @@ export const NavigationContent: React.FC<React.ComponentProps<typeof TabsPrimiti
     return <TabsPrimitive.Content {...props} className={cn('focus:outline-none', props.className)} />;
 };
 
-export const Navigation: React.FC<React.ComponentProps<typeof TabsPrimitive.Root>> = ({ defaultValue, className, ...rest }) => {
+export const Navigation: React.FC<React.ComponentProps<typeof TabsPrimitive.Root> & { onTabChanged?: (value: string) => void }> = ({
+    defaultValue,
+    className,
+    onTabChanged,
+    ...rest
+}) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<string>(defaultValue || '');
@@ -35,6 +53,7 @@ export const Navigation: React.FC<React.ComponentProps<typeof TabsPrimitive.Root
     function handleValueChange(value: string) {
         setActiveTab(value);
         navigate(`#${value}`, { replace: true });
+        onTabChanged?.(value);
     }
 
     return (
@@ -43,7 +62,7 @@ export const Navigation: React.FC<React.ComponentProps<typeof TabsPrimitive.Root
             onValueChange={handleValueChange}
             orientation="vertical"
             {...rest}
-            className={cn('flex gap-11 w-full', className)}
+            className={cn('flex gap-11 w-full data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:gap-5', className)}
         />
     );
 };
