@@ -117,7 +117,11 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                 ? Object.fromEntries(
                       Object.entries(body.integrations_config_defaults).map(([key, value]) => [
                           key,
-                          { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
+                          {
+                              user_scopes: value.user_scopes,
+                              connectionConfig: value.connection_config,
+                              credentials: value.credentials
+                          }
                       ])
                   )
                 : null,
