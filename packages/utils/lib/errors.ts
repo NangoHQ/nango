@@ -25,7 +25,29 @@ export function errorToObject(err: unknown): ErrorObject {
  * Transform any Error or primitive to a string
  */
 export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
-    return JSON.stringify(serializeError(err), ['name', 'message', ...(opts?.stack ? ['stack', 'cause'] : [])], opts?.pretty ? 2 : undefined);
+    const serialized = serializeError(err);
+    const allowedErrorProperties = ['name', 'message', 'provider_error_payload', ...(opts?.stack ? ['stack', 'cause'] : [])];
+
+    const enriched: Record<string, unknown> = {
+        ...(serialized && typeof serialized === 'object' ? serialized : {})
+    };
+
+    if (typeof err === 'object' && err != null) {
+        const anyErr = err as any;
+
+        // handle axios response data
+        if (anyErr.response?.data) {
+            enriched['provider_error_payload'] = anyErr.response.data;
+        }
+
+        // handle Boom-style error objects
+        const payload = anyErr.data?.payload;
+        if (payload && typeof payload === 'object') {
+            enriched['provider_error_payload'] = payload;
+        }
+    }
+    const filtered: Record<string, unknown> = Object.fromEntries(Object.entries(enriched).filter(([key]) => allowedErrorProperties.includes(key)));
+    return JSON.stringify(filtered, null, opts?.pretty ? 2 : undefined);
 }
 
 let sentry = false;
