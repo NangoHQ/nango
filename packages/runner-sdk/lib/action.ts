@@ -17,6 +17,7 @@ import type {
     GetPublicConnection,
     GetPublicIntegration,
     HTTP_METHOD,
+    InstallPluginCredentials,
     JwtCredentials,
     MaybePromise,
     NangoProps,
@@ -211,6 +212,7 @@ export abstract class NangoActionBase<
         | BillCredentials
         | TwoStepCredentials
         | SignatureCredentials
+        | InstallPluginCredentials
     > {
         this.throwIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

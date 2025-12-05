@@ -10,6 +10,7 @@ import type {
     BasicApiCredentials,
     ConnectionConfig,
     DBConnectionDecrypted,
+    InstallPluginCredentials,
     InternalProxyConfiguration,
     JwtCredentials,
     SignatureCredentials,
@@ -32,7 +33,7 @@ export interface InternalNango {
 
 async function execute(
     config: Config,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials,
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
     connectionId: string,
     connectionConfig: ConnectionConfig
 ) {

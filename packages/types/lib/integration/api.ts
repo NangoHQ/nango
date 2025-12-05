@@ -167,6 +167,12 @@ export type PatchIntegration = Endpoint<{
               clientName?: string | undefined;
               clientUri?: string | undefined;
               clientLogoUri?: string | undefined;
+          }
+        | {
+              authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
+              appLink: string;
+              username?: string | undefined;
+              password?: string | undefined;
           };
     Success: {
         data: {
