@@ -46,8 +46,15 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
                     message: 'The token has expired. An email has been sent with a new token.'
                 }
             });
+        } else if (error.message === 'user_not_found') {
+            res.status(400).send({
+                error: {
+                    code: 'invalid_token',
+                    message: 'The token is invalid.'
+                }
+            });
         } else {
-            logger.error('Error validating user');
+            logger.error('Error validating user', error);
             res.status(500).send({
                 error: { code: 'error_validating_user', message: 'There was a problem validating the user. Please reach out to support.' }
             });

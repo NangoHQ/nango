@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 import get from 'lodash-es/get.js';
 
-import { NangoError, connectionService, environmentService, getProvider } from '@nangohq/shared';
+import { NangoError, accountService, connectionService, getProvider } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
@@ -77,14 +77,14 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return Ok(undefined);
     } else {
-        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: nango.environment.id });
+        const accountContext = await accountService.getAccountContext({ environmentId: nango.environment.id });
 
-        if (!environmentAndAccountLookup) {
+        if (!accountContext) {
             logger.error('Environment or account not found');
             return Ok(undefined);
         }
 
-        const { environment, account } = environmentAndAccountLookup;
+        const { environment, account } = accountContext;
 
         const installationId = get(body, 'installation.id');
         const [connection] = connections;

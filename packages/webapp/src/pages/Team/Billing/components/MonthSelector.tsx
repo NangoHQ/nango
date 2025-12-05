@@ -19,14 +19,14 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     const selectedMonth = useMemo(() => {
         if (!monthParam) {
             const now = new Date();
-            return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
+            return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         }
         const [year, month] = monthParam.split('-').map(Number);
         if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
             const now = new Date();
-            return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
+            return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         }
-        return new Date(year, month - 1, 1, 0, 0, 0, 0);
+        return new Date(Date.UTC(year, month - 1, 1));
     }, [monthParam]);
 
     // Notify parent when month changes
@@ -42,7 +42,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     };
 
     const monthDisplay = useMemo(() => {
-        return selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
     }, [selectedMonth]);
 
     const handlePreviousMonth = () => {
@@ -60,7 +60,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     // Disable next button if trying to go to future months
     const canGoNext = useMemo(() => {
         const now = new Date();
-        const currentMonth = new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
+        const currentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         return selectedMonth < currentMonth;
     }, [selectedMonth]);
 
