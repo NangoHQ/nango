@@ -14,11 +14,21 @@ This uses [prpm](https://prpm.dev), a package manager for AI prompts and skills 
 
 ### Quick Start
 
-Install the integration builder with:
+Install the integration builder for your preferred AI tool:
 
+**For Claude Code:**
 ```bash
-npx prpm install collections/nango-integration-builder
+npx prpm install collections/nango-integration-builder --as claude
 ```
+
+**For Gemini CLI:**
+```bash
+npx prpm install collections/nango-integration-builder --as gemini
+```
+
+<Note>
+For Gemini, you need to set `GEMINI_SANDBOX=true` in your `.env` file or export it in your environment before running the CLI.
+</Note>
 
 ### Using the Builder (Claude Code)
 
