@@ -229,7 +229,11 @@ if (flagHasUsage) {
     web.route('/stripe/payment_methods').delete(webAuth, deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
-    web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
+    web.route('/orb/webhooks').post((_req, _res, next) => {
+        // Skip rate limiting of Orb webhooks. Rate limit errors can accidentally disable the Orb
+        // webhook and there is no way to control the type or frequency of the webhooks from within Orb.
+        next();
+    }, postOrbWebhooks);
 }
 
 web.route('/admin/impersonate').post(webAuth, postImpersonate);
