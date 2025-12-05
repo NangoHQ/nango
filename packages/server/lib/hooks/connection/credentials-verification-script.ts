@@ -107,7 +107,12 @@ async function execute(
                     proxyConfig,
                     getConnection: () => {
                         return connection;
-                    }
+                    },
+                    getIntegrationConfig: () => ({
+                        oauth_client_id: null,
+                        oauth_client_secret: null
+                    }),
+                    getProvider: () => getProvider(providerName)
                 });
                 return (await proxy.request()).unwrap();
             }
