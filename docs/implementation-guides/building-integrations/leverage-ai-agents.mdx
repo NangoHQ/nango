@@ -6,6 +6,76 @@ description: 'How to use AI agents to build integrations in Nango'
 
 Building custom integrations for Nango is much faster when using AI tools. This guide shows you how to leverage Cursor or Claude Code to build high-quality integrations quickly.
 
+## Automated Integrations Building
+
+The fastest way to build Nango integrations is using our automated integration builder. With a single command, you can install everything needed to generate a fully working action through an interactive AI workflow.
+
+This uses [prpm](https://prpm.dev), a package manager for AI prompts and skills that lets you install pre-built workflows directly into your development environment.
+
+### Quick Start
+
+Install the integration builder with:
+
+```bash
+npx prpm install collections/nango-integration-builder
+```
+
+### Using the Builder (Claude Code)
+
+If you're using [Claude Code](https://docs.anthropic.com/en/docs/claude-code), start a session and run the `/build-actions` slash command:
+
+```bash
+claude
+```
+
+Then enter:
+```
+/build-actions
+```
+
+The builder will enter **Interactive Mode** and prompt you for:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| **Integration ID** | Yes | Which integration to build for (e.g., `hubspot`, `salesforce`, `slack`) |
+| **Connection ID** | No | A connection ID for testing. If not provided, one will be auto-discovered |
+| **Use Case Summary** | Recommended | Brief description of what the action does |
+| **Action Inputs** | Recommended | What data the action should accept as arguments |
+| **Action Outputs** | Recommended | What data the action should return |
+| **Action Name** | Optional | Suggested name for the action |
+| **API Reference** | Optional | Link to relevant API documentation |
+| **Test Input** | Optional | Sample JSON input for testing |
+
+### Example Input
+
+```
+Integration ID: hubspot
+Connection ID: my-hubspot-connection
+Use Case: Creates a new contact in the CRM
+Inputs: firstName, lastName, email
+Outputs: contactId, createdAt
+Action Name: create-contact
+API Reference: https://developers.hubspot.com/docs/api/crm/contacts
+Test Input: {"firstName": "John", "lastName": "Doe", "email": "john.doe@example.com"}
+```
+
+### What Gets Generated
+
+Once you provide your input, the Claude agent automatically:
+
+1. **Generates the action code** - Creates a complete, fully working action implementation
+2. **Creates a full test suite** - Writes comprehensive tests for your action
+3. **Validates with dry run** - Runs `nango dryrun` to verify the action works correctly against your connection
+4. **Iterates on failures** - If tests or dry run fail, the agent automatically debugs and fixes issues
+
+You'll end up with a fully tested, working action ready to deploy.
+
+<Tip>
+The more detail you provide, the better the generated action will be. Include API documentation links when available.
+</Tip>
+
+---
+
 ## Overview of recommended tools
 
 We recommend using one of these AI-powered development environments:
