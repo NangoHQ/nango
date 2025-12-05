@@ -6,6 +6,7 @@ import {
     connectionService,
     errorNotificationService,
     externalWebhookService,
+    getProvider,
     getProxyConfiguration,
     productTracking,
     syncManager
@@ -374,7 +375,12 @@ export async function credentialsTest({
                 proxyConfig,
                 getConnection: () => {
                     return connection;
-                }
+                },
+                getIntegrationConfig: () => ({
+                    oauth_client_id: config.oauth_client_id,
+                    oauth_client_secret: config.oauth_client_secret
+                }),
+                getProvider: () => getProvider(config.provider)
             });
 
             const response = (await proxy.request()).unwrap();

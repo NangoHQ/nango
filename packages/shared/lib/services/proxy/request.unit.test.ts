@@ -10,7 +10,9 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
-            getConnection: () => getTestConnection()
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            getProvider: () => null
         });
         const res = (await proxy.request()).unwrap();
         expect(res).toMatchObject({ status: 200 });
@@ -32,7 +34,9 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
-            getConnection: () => getTestConnection()
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            getProvider: () => null
         });
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
@@ -64,7 +68,9 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 }),
-            getConnection
+            getConnection,
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            getProvider: () => null
         });
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
