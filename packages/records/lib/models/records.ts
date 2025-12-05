@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
+import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
@@ -140,6 +141,11 @@ export async function getRecords({
     cursor?: string | undefined;
     externalIds?: string[] | undefined;
 }): Promise<Result<GetRecordsResponse>> {
+    const activeSpan = tracer.scope().active();
+    const span = tracer.startSpan('nango.records.getRecords', {
+        ...(activeSpan ? { childOf: activeSpan } : {}),
+        tags: { 'nango.connectionId': connectionId, 'nango.model': model }
+    });
     try {
         if (!model) {
             const error = new Error('missing_model');
@@ -233,6 +239,7 @@ export async function getRecords({
             // however, javascript date only supports milliseconds precision
             // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
             db.raw(`
+                tableoid::regclass as partition,
                 id,
                 json,
                 to_json(created_at) as first_seen_at,
@@ -267,6 +274,12 @@ export async function getRecords({
             });
         }
 
+        // all records for the same connection/model are in the same partition
+        const partition = rawResults[0]?.partition;
+        if (span && partition) {
+            span.setTag('nango.partition', partition);
+        }
+
         if (results.length > Number(limit || 100)) {
             results.pop();
             rawResults.pop();
@@ -277,10 +290,14 @@ export async function getRecords({
                 return Ok({ records: results, next_cursor: encodedCursorValue });
             }
         }
+
         return Ok({ records: results, next_cursor: null });
     } catch (err) {
         const e = new Error(`List records error for model ${model}`, { cause: err });
+        span.setTag('error', e);
         return Err(e);
+    } finally {
+        span.finish();
     }
 }
 
@@ -293,16 +310,22 @@ export async function getCursor({
     model: string;
     offset: CursorOffset;
 }): Promise<Result<string | undefined>> {
+    const activeSpan = tracer.scope().active();
+    const span = tracer.startSpan('nango.records.getCursor', {
+        ...(activeSpan ? { childOf: activeSpan } : {}),
+        tags: { 'nango.connectionId': connectionId, 'nango.model': model }
+    });
     try {
         const query = db
             .from(RECORDS_TABLE)
-            .select<{ id: string; last_modified_at: string }[]>(
+            .select<{ id: string; last_modified_at: string; partition: string }[]>(
                 // PostgreSQL stores timestamp with microseconds precision
                 // however, javascript date only supports milliseconds precision
                 // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
                 db.raw(`
                     id,
-                    to_json(updated_at) as last_modified_at
+                    to_json(updated_at) as last_modified_at,
+                    tableoid::regclass as partition
                 `)
             )
             .where({
@@ -316,12 +339,17 @@ export async function getCursor({
             .limit(1);
 
         const [record] = await query;
+
         if (!record) {
             return Ok(undefined);
         }
+        span.setTag('nango.partition', record.partition);
         return Ok(Cursor.new(record));
     } catch (err) {
+        span.setTag('error', err);
         return Err(new Error(`Error getting cursor for offset ${offset}`, { cause: err }));
+    } finally {
+        span.finish();
     }
 }
 
@@ -340,15 +368,20 @@ export async function upsert({
     softDelete?: boolean;
     merging?: MergingStrategy;
 }): Promise<Result<UpsertSummary>> {
+    const activeSpan = tracer.scope().active();
+    const span = tracer.startSpan('nango.records.upsert', {
+        ...(activeSpan ? { childOf: activeSpan } : {}),
+        tags: { 'nango.connectionId': connectionId, 'nango.model': model, 'nango.softDelete': softDelete }
+    });
+    let partition: string | undefined = undefined;
+
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
-
-    if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
-        return Err(
-            `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
-        );
-    }
-
     try {
+        if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
+            return Err(
+                `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
+            );
+        }
         return await retry(
             () => {
                 return db.transaction(async (trx) => {
@@ -374,7 +407,14 @@ export async function upsert({
                         const externalIds = chunk.map((r) => r.external_id);
                         const res = await trx
                             .with('existing', (qb) => {
-                                qb.select('external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes'))
+                                qb.select(
+                                    'external_id',
+                                    'data_hash',
+                                    'deleted_at',
+                                    'updated_at',
+                                    trx.raw('pg_column_size(json) as size_bytes'),
+                                    trx.raw('tableoid::regclass as partition')
+                                )
                                     .from(RECORDS_TABLE)
                                     .where({
                                         connection_id: connectionId,
@@ -385,7 +425,15 @@ export async function upsert({
                             .with('upsert', (qb) => {
                                 qb.insert(encryptedRecords)
                                     .into(RECORDS_TABLE)
-                                    .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at', trx.raw('pg_column_size(json) as size_bytes')])
+                                    .returning([
+                                        'id',
+                                        'external_id',
+                                        'data_hash',
+                                        'deleted_at',
+                                        'updated_at',
+                                        trx.raw('pg_column_size(json) as size_bytes'),
+                                        trx.raw('tableoid::regclass as partition')
+                                    ])
                                     .onConflict(['connection_id', 'external_id', 'model'])
                                     .merge();
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
@@ -395,27 +443,28 @@ export async function upsert({
                                     }
                                 }
                             })
-                            .select<UpsertResult[]>(
+                            .select<(UpsertResult & { partition: string })[]>(
                                 trx.raw(`
-                            upsert.id as id,
-                            upsert.external_id as external_id,
-                            to_json(upsert.updated_at) as last_modified_at,
-                            upsert.size_bytes as size_bytes,
-                            existing.size_bytes as previous_size_bytes,
-                            CASE
-                              WHEN existing.updated_at IS NULL THEN NULL
-                              ELSE to_json(existing.updated_at)
-                            END as previous_last_modified_at,
-                            CASE
-                                WHEN existing.external_id IS NULL THEN 'inserted'
-                                ELSE
+                                    coalesce(upsert.partition, existing.partition) as partition,
+                                    upsert.id as id,
+                                    upsert.external_id as external_id,
+                                    to_json(upsert.updated_at) as last_modified_at,
+                                    upsert.size_bytes as size_bytes,
+                                    existing.size_bytes as previous_size_bytes,
                                     CASE
-                                        WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
-                                        WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
-                                        WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
-                                        ELSE 'unchanged'
-                                    END
-                            END as status`)
+                                      WHEN existing.updated_at IS NULL THEN NULL
+                                      ELSE to_json(existing.updated_at)
+                                    END as previous_last_modified_at,
+                                    CASE
+                                        WHEN existing.external_id IS NULL THEN 'inserted'
+                                        ELSE
+                                            CASE
+                                                WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
+                                                WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
+                                                WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
+                                                ELSE 'unchanged'
+                                            END
+                                    END as status`)
                             )
                             .from('upsert')
                             .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
@@ -469,6 +518,11 @@ export async function upsert({
                             }
                         }
                         deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
+
+                        // all records for the same connection/model are in the same partition
+                        if (!partition && res[0]?.partition) {
+                            partition = res[0].partition;
+                        }
                     }
                     const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
                     if (delta !== 0 || deltaSizeInBytes !== 0) {
@@ -487,6 +541,9 @@ export async function upsert({
                                 size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes`),
                                 updated_at: trx.fn.now()
                             });
+                    }
+                    if (partition) {
+                        span.setTag('nango.partition', partition);
                     }
                     return Ok(summary);
                 });
@@ -525,7 +582,10 @@ export async function upsert({
 
         logger.error(`${errorMessage}${err}`);
 
+        span.setTag('error', err);
         return Err(errorMessage);
+    } finally {
+        span.finish();
     }
 }
 
@@ -540,16 +600,22 @@ export async function update({
     model: string;
     merging?: MergingStrategy;
 }): Promise<Result<UpsertSummary>> {
+    const activeSpan = tracer.scope().active();
+    const span = tracer.startSpan('nango.records.update', {
+        ...(activeSpan ? { childOf: activeSpan } : {}),
+        tags: { 'nango.connectionId': connectionId, 'nango.model': model }
+    });
+    let partition: string | undefined = undefined;
+
     let nextMerging = merging;
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
-    if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
-        return Err(
-            `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
-        );
-    }
-
     try {
+        if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
+            return Err(
+                `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${records.length} records received for the "${model}" model.`
+            );
+        }
         const updatedKeys: string[] = [];
         const activatedKeys: string[] = [];
         await db.transaction(async (trx) => {
@@ -584,7 +650,7 @@ export async function update({
                     const encryptedRecords = encryptRecords(recordsToUpdate);
                     const query = trx
                         .with('existing', (qb) => {
-                            qb.select('external_id', 'id', trx.raw('pg_column_size(json) as previous_size_bytes'))
+                            qb.select('external_id', 'id', trx.raw('pg_column_size(json) as previous_size_bytes'), trx.raw('tableoid::regclass as partition'))
                                 .from(RECORDS_TABLE)
                                 .where({
                                     connection_id: connectionId,
@@ -598,7 +664,13 @@ export async function update({
                         .with('upsert', (qb) => {
                             qb.from<{ external_id: string; id: string; last_modified_at: string }>(RECORDS_TABLE)
                                 .insert(encryptedRecords)
-                                .returning(['external_id', 'id', 'updated_at', trx.raw('pg_column_size(json) as size_bytes')])
+                                .returning([
+                                    'external_id',
+                                    'id',
+                                    'updated_at',
+                                    trx.raw('pg_column_size(json) as size_bytes'),
+                                    trx.raw('tableoid::regclass as partition')
+                                ])
                                 .onConflict(['connection_id', 'external_id', 'model'])
                                 .merge();
                             if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
@@ -610,6 +682,7 @@ export async function update({
                         })
                         .select<
                             {
+                                partition: string;
                                 external_id: string;
                                 id: string;
                                 last_modified_at: string;
@@ -618,11 +691,12 @@ export async function update({
                             }[]
                         >(
                             trx.raw(`
-                            upsert.id as id,
-                            upsert.external_id as external_id,
-                            to_json(upsert.updated_at) as last_modified_at,
-                            existing.previous_size_bytes as previous_size_bytes,
-                            upsert.size_bytes as size_bytes`)
+                                coalesce(upsert.partition, existing.partition) as partition,
+                                upsert.id as id,
+                                upsert.external_id as external_id,
+                                to_json(upsert.updated_at) as last_modified_at,
+                                existing.previous_size_bytes as previous_size_bytes,
+                                upsert.size_bytes as size_bytes`)
                         )
                         .from('upsert')
                         .join('existing', 'upsert.external_id', 'existing.external_id')
@@ -651,6 +725,10 @@ export async function update({
                         };
                     }
                     deltaSizeInBytes += updated.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
+                    // all records for the same connection/model are in the same partition
+                    if (!partition && updated[0]?.partition) {
+                        partition = updated[0].partition;
+                    }
                 }
             }
             if (deltaSizeInBytes !== 0) {
@@ -666,6 +744,9 @@ export async function update({
                     });
             }
         });
+        if (partition) {
+            span.setTag('nango.partition', partition);
+        }
         return Ok({
             addedKeys: [],
             updatedKeys,
@@ -684,7 +765,10 @@ export async function update({
         if ('detail' in err) errorMessage += `Detail: ${(err as { detail: string }).detail}.\n`;
         if ('message' in err) errorMessage += `Error Message: ${(err as { message: string }).message}`;
 
+        span.setTag('error', err);
         return Err(errorMessage);
+    } finally {
+        span.finish();
     }
 }
 
@@ -701,27 +785,45 @@ export async function deleteRecordsBySyncId({
     syncId: string;
     batchSize?: number;
 }): Promise<Result<{ totalDeletedRecords: number }>> {
+    const activeSpan = tracer.scope().active();
+    const span = tracer.startSpan('nango.records.deleteRecordsBySyncId', {
+        ...(activeSpan ? { childOf: activeSpan } : {}),
+        tags: { 'nango.connectionId': connectionId, 'nango.model': model }
+    });
+
+    let partition: string | undefined = undefined;
     let totalDeletedRecords = 0;
     let deletedRecords = 0;
 
     try {
         await db.transaction(async (trx) => {
             do {
-                deletedRecords = await trx
+                const res: { id: string; partition: string }[] = await trx
                     .from(RECORDS_TABLE)
                     .where({ connection_id: connectionId, model })
                     .whereIn('id', function (sub) {
                         sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(batchSize);
                     })
-                    .del();
+                    .del()
+                    .returning(['id', db.raw('tableoid::regclass as partition')]);
+                deletedRecords = res.length;
                 totalDeletedRecords += deletedRecords;
+                if (!partition && res[0]?.partition) {
+                    partition = res[0].partition;
+                }
             } while (deletedRecords > 0);
             await deleteRecordCount(trx, { connectionId, environmentId, model });
         });
 
+        if (partition) {
+            span.setTag('nango.partition', partition);
+        }
         return Ok({ totalDeletedRecords });
     } catch (err) {
+        span.setTag('error', err);
         return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}, syncId ${syncId}`, { cause: err }));
+    } finally {
+        span.finish();
     }
 }
 
@@ -747,13 +849,19 @@ export async function deleteOutdatedRecords({
     generation: number;
     batchSize?: number;
 }): Promise<Result<string[]>> {
+    const activeSpan = tracer.scope().active();
+    const span = tracer.startSpan('nango.records.deleteOutdatedRecords', {
+        ...(activeSpan ? { childOf: activeSpan } : {}),
+        tags: { 'nango.connectionId': connectionId, 'nango.model': model }
+    });
+    let partition: string | undefined = undefined;
     try {
         const now = db.fn.now(6);
         return await db.transaction(async (trx) => {
             const deletedIds: string[] = [];
             let hasMore = true;
             while (hasMore) {
-                const res = await trx
+                const res: { external_id: string; partition: string }[] = await trx
                     .from<FormattedRecord>(RECORDS_TABLE)
                     .whereIn('id', function (sub) {
                         sub.select('id')
@@ -778,10 +886,14 @@ export async function deleteOutdatedRecords({
                         connection_id: connectionId,
                         model
                     })
-                    .returning('external_id');
+                    .returning(['external_id', db.raw('tableoid::regclass as partition')]);
 
                 if (res.length < batchSize) {
                     hasMore = false;
+                }
+
+                if (!partition && res[0]?.partition) {
+                    partition = res[0].partition;
                 }
 
                 deletedIds.push(...res.map((r) => r.external_id));
@@ -799,6 +911,9 @@ export async function deleteOutdatedRecords({
                         count: trx.raw('GREATEST(0, count - ?)', [count])
                     });
             }
+            if (partition) {
+                span.setTag('nango.partition', partition);
+            }
             return Ok(deletedIds);
         });
     } catch (err) {
@@ -806,7 +921,10 @@ export async function deleteOutdatedRecords({
             `Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, syncId ${syncId}, generation ${generation}`,
             { cause: err }
         );
+        span.setTag('error', err);
         return Err(e);
+    } finally {
+        span.finish();
     }
 }
 
