@@ -9,10 +9,10 @@ import { useSWRConfig } from 'swr';
 
 import { AuthBadge } from './components/AuthBadge';
 import { apiPostIntegration, clearIntegrationsCache } from '../../hooks/useIntegration';
+import { useProviders } from '../../hooks/useProviders';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useGetProvidersAPI } from '../../utils/api';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
@@ -20,51 +20,33 @@ import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components-v2/ui/dialog';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 
-import type { AuthModeType } from '@nangohq/types';
+import type { ApiProviderListItem } from '@nangohq/types';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
 
-interface Provider {
-    name: string;
-    displayName: string;
-    defaultScopes: string[];
-    authMode: AuthModeType;
-    categories?: string[];
-    docs?: string;
-    preConfigured: boolean;
-    preConfiguredScopes: string[];
-}
+type Provider = ApiProviderListItem;
 
 export const CreateIntegration = () => {
     const { mutate, cache } = useSWRConfig();
     const { toast } = useToast();
     const env = useStore((state) => state.env);
 
-    const [loaded, setLoaded] = useState(false);
-    const [initialProviders, setInitialProviders] = useState<Provider[] | null>(null);
     const [providers, setProviders] = useState<Provider[] | null>(null);
     const [showConfigModal, setShowConfigModal] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
     const [isCreatingShared, setIsCreatingShared] = useState(false);
 
-    const getProvidersAPI = useGetProvidersAPI(env);
+    const { data: providersData } = useProviders(env);
     const navigate = useNavigate();
 
+    const initialProviders = useMemo(() => {
+        return providersData?.data ?? null;
+    }, [providersData]);
+
     useEffect(() => {
-        const getProviders = async () => {
-            const res = await getProvidersAPI();
-
-            if (res?.status === 200) {
-                const data = await res.json();
-                setProviders(data);
-                setInitialProviders(data);
-            }
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            getProviders();
+        if (initialProviders) {
+            setProviders(initialProviders);
         }
-    }, [getProvidersAPI, loaded, setLoaded]);
+    }, [initialProviders]);
 
     const onSelectProvider = (provider: Provider) => {
         if (provider.preConfigured) {
@@ -73,7 +55,7 @@ export const CreateIntegration = () => {
             setShowConfigModal(true);
         } else {
             // go directly to create integration for non-preconfigured providers
-            onCreateIntegrationDirect(provider.name);
+            void onCreateIntegrationDirect(provider.name);
         }
     };
 

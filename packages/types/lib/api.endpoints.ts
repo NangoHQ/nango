@@ -66,7 +66,7 @@ import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
 import type { PostPlanExtendTrial } from './plans/http.api.js';
-import type { GetPublicProvider, GetPublicProviders } from './providers/api.js';
+import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
@@ -179,7 +179,9 @@ export type PrivateApiEndpoints =
     | GetGettingStarted
     | PatchGettingStarted
     | GetConnectUISettings
-    | PutConnectUISettings;
+    | PutConnectUISettings
+    | GetProviders
+    | GetProvider;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
