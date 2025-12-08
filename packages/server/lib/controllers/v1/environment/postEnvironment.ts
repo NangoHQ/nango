@@ -58,17 +58,20 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
         return;
     }
 
-    const created = await environmentService.createEnvironment(accountId, body.name);
+    const created = await environmentService.createEnvironment(db.knex, { accountId: accountId, name: body.name });
     if (!created) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to create environment' } });
         return;
     }
 
-    await externalWebhookService.update(created.id, {
-        on_auth_creation: true,
-        on_auth_refresh_error: true,
-        on_sync_completion_always: true,
-        on_sync_error: true
+    await externalWebhookService.update(db.knex, {
+        environment_id: created.id,
+        data: {
+            on_auth_creation: true,
+            on_auth_refresh_error: true,
+            on_sync_completion_always: true,
+            on_sync_error: true
+        }
     });
 
     res.status(200).send({ data: { id: created.id, name: created.name } });
