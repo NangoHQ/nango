@@ -15,4 +15,6 @@ export interface NodeConfig {
     readonly isTracingEnabled: boolean;
     readonly isProfilingEnabled: boolean;
     readonly idleMaxDurationMs: number;
+    readonly executionTimeoutSecs: number;
+    readonly provisionedConcurrency: number;
 }

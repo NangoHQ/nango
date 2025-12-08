@@ -54,6 +54,8 @@ interface DBNode {
     readonly is_tracing_enabled: boolean;
     readonly is_profiling_enabled: boolean;
     readonly idle_max_duration_ms: number | null;
+    readonly execution_timeout_secs: number | null;
+    readonly provisioned_concurrency: number | null;
     readonly error: string | null;
     readonly created_at: Date;
     readonly last_state_transition_at: Date;
@@ -74,6 +76,8 @@ const DBNode = {
             is_tracing_enabled: node.isTracingEnabled,
             is_profiling_enabled: node.isProfilingEnabled,
             idle_max_duration_ms: node.idleMaxDurationMs,
+            execution_timeout_secs: node.executionTimeoutSecs,
+            provisioned_concurrency: node.provisionedConcurrency,
             error: node.error,
             created_at: node.createdAt,
             last_state_transition_at: node.lastStateTransitionAt
@@ -93,6 +97,8 @@ const DBNode = {
             isTracingEnabled: dbNode.is_tracing_enabled,
             isProfilingEnabled: dbNode.is_profiling_enabled,
             idleMaxDurationMs: dbNode.idle_max_duration_ms,
+            executionTimeoutSecs: dbNode.execution_timeout_secs,
+            provisionedConcurrency: dbNode.provisioned_concurrency,
             error: dbNode.error,
             createdAt: dbNode.created_at,
             lastStateTransitionAt: dbNode.last_state_transition_at
@@ -116,6 +122,8 @@ export async function create(
         is_tracing_enabled: nodeProps.isTracingEnabled,
         is_profiling_enabled: nodeProps.isProfilingEnabled,
         idle_max_duration_ms: nodeProps.idleMaxDurationMs,
+        execution_timeout_secs: nodeProps.executionTimeoutSecs,
+        provisioned_concurrency: nodeProps.provisionedConcurrency,
         error: null,
         created_at: now,
         last_state_transition_at: now

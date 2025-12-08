@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { exec } from './exec.js';
-import { Locks } from './sdk/locks.js';
+import { MapLocks } from './sdk/locks.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
@@ -345,7 +345,7 @@ describe('Exec', () => {
     });
     it('should release all locks when completing successfully', async () => {
         const nangoProps = getNangoProps();
-        const locks = new Locks();
+        const locks = new MapLocks();
         const owner = nangoProps.activityLogId;
         const code = `
         fn = async (nango) => {
@@ -368,7 +368,7 @@ describe('Exec', () => {
 
     it('should release all locks when failing', async () => {
         const nangoProps = getNangoProps();
-        const locks = new Locks();
+        const locks = new MapLocks();
         const owner = nangoProps.activityLogId;
         const code = `
         fn = async (nango) => {

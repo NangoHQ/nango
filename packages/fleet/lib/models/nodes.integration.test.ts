@@ -37,7 +37,9 @@ describe('Nodes', () => {
                 storageMb: 512,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             })
         ).unwrap();
         expect(node).toStrictEqual({
