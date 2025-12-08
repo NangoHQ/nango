@@ -1,4 +1,4 @@
-import { Box, Code, ExternalLink, Info } from 'lucide-react';
+import { Box, Code, ExternalLink, Info, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { getDisplayName } from '../utils';
@@ -7,7 +7,7 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Badge } from '@/components-v2/ui/badge';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Switch } from '@/components-v2/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
@@ -72,11 +72,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
                         <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                     </NavigationList>
                     {selectedTab === 'actions' ? (
-                        <ButtonLink to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                        <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
                             How to use Actions <ExternalLink />
                         </ButtonLink>
                     ) : (
-                        <ButtonLink to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                        <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
                             How to use Syncs <ExternalLink />
                         </ButtonLink>
                     )}
@@ -126,6 +126,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
 };
 
 const GroupedFunctionsTable: React.FC<{ groupedFunctions: Record<string, NangoSyncConfigWithEndpoint[]> }> = ({ groupedFunctions }) => {
+    if (Object.keys(groupedFunctions).length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-5 p-20 bg-bg-elevated rounded-md">
+                <span className="text-text-secondary text-body-medium-regular">You don&apos;t have any functions setup yet</span>
+                <Button variant="secondary" size="sm">
+                    <Plus />
+                    Create function
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <Table>
             {Object.entries(groupedFunctions).map(([groupName, group], index) => (

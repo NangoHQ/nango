@@ -491,7 +491,7 @@
             --color-btn-primary-hover: var(--color-brand-700);
             --color-btn-primary-press: var(--color-brand-900);
 
-            --color-btn-secondary-bg: var(--color-gray-800);
+            --color-btn-secondary-bg: var(--color-gray-700);
             --color-btn-secondary-fg: var(--color-gray-150);
             --color-btn-secondary-hover: var(--color-gray-650);
             --color-btn-secondary-press: var(--color-gray-500);

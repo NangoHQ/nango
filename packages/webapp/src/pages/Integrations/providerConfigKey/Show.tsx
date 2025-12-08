@@ -7,6 +7,7 @@ import { FunctionsTab } from '../components/FunctionsTab';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
+import { Button } from '@/components-v2/ui/button';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
@@ -40,9 +41,12 @@ export const ShowIntegration: React.FC = () => {
             <AutoIdlingBanner />
 
             <div className="flex flex-col gap-5 w-full">
-                <div className="inline-flex items-center gap-2">
-                    <IntegrationLogo provider={data.integration.provider} className="size-15" />
-                    <span className="text-text-primary text-body-large-semi">{data.integration.display_name ?? data.template.display_name}</span>
+                <div className="inline-flex justify-between">
+                    <div className="inline-flex items-center gap-2">
+                        <IntegrationLogo provider={data.integration.provider} className="size-15" />
+                        <span className="text-text-primary text-body-large-semi">{data.integration.display_name ?? data.template.display_name}</span>
+                    </div>
+                    <Button size="lg">Add test connection</Button>
                 </div>
                 <Tabs basePath={`/${env}/integrations/${providerConfigKey}`} defaultValue="functions">
                     <TabsList>
@@ -53,7 +57,7 @@ export const ShowIntegration: React.FC = () => {
                                 API setup guide <ExternalLink className="size-4" />
                             </Link>
                         </TabsTrigger>
-                        <TabsTrigger value="logs" asChild>
+                        <TabsTrigger value="logs" disabled asChild>
                             <Link
                                 to={`/${env}/logs?integrations=${data.integration.unique_key}`}
                                 target="_blank"
