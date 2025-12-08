@@ -1,14 +1,17 @@
 import db from '@nangohq/database';
-import { flagHasPlan, metrics, report } from '@nangohq/utils';
+import { flagHasPlan, isCloud, metrics, report } from '@nangohq/utils';
 
-import environmentService from './environment.service.js';
+import environmentService, { hashSecretKey } from './environment.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { plansList } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+
+const hashLocalCache = new Map<string, string>();
 
 const freeEmailDomains = new Set([
     'gmail.com',
@@ -155,6 +158,161 @@ class AccountService {
     async createAccountWithoutEnvironments(name: string): Promise<DBTeam | null> {
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
         return result[0] || null;
+    }
+
+    async getAccountFromEnvironment(environment_id: number): Promise<DBTeam | null> {
+        const result = await db.knex
+            .select<DBTeam>('_nango_accounts.*')
+            .from('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .where('_nango_environments.id', environment_id)
+            .first();
+
+        return result || null;
+    }
+
+    async getAccountContextBySecretKey(secretKey: string): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
+        if (!isCloud) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
+            if (environmentVariables.length > 0) {
+                for (const environmentVariable of environmentVariables) {
+                    const envSecretKey = process.env[environmentVariable] as string;
+
+                    if (envSecretKey !== secretKey) {
+                        continue;
+                    }
+
+                    const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+                    // This key is set dynamically and does not exist in database
+                    const env = await db.knex
+                        .select<Pick<DBEnvironment, 'account_id'>>('account_id')
+                        .from<DBEnvironment>('_nango_environments')
+                        .where({ name: envName, deleted: false })
+                        .first();
+
+                    if (!env) {
+                        return null;
+                    }
+
+                    return this.getAccountContext({ accountId: env.account_id, envName });
+                }
+            }
+        }
+
+        return this.getAccountContext({ secretKey });
+    }
+
+    async getAccountContextByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
+        if (!isCloud) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
+            if (environmentVariables.length > 0) {
+                for (const environmentVariable of environmentVariables) {
+                    const envPublicKey = process.env[environmentVariable] as string;
+
+                    if (envPublicKey !== publicKey) {
+                        continue;
+                    }
+                    const envName = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
+                    // This key is set dynamically and does not exist in database
+                    const env = await db.knex
+                        .select<Pick<DBEnvironment, 'account_id'>>('account_id')
+                        .from<DBEnvironment>('_nango_environments')
+                        .where({ name: envName, deleted: false })
+                        .first();
+                    if (!env) {
+                        return null;
+                    }
+
+                    return this.getAccountContext({ accountId: env.account_id, envName });
+                }
+            }
+        }
+
+        return this.getAccountContext({ publicKey });
+    }
+
+    async getAccountContext(
+        // TODO: fix this union type that is not discriminated
+        opts:
+            | { publicKey: string }
+            | { secretKey: string }
+            | { accountId: number; envName: string }
+            | { environmentId: number }
+            | { environmentUuid: string }
+            | { accountUuid: string; envName: string }
+    ): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
+        const q = db.readOnly
+            .select<{
+                account: DBTeam;
+                environment: DBEnvironment;
+                plan: DBPlan | null;
+            }>(
+                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan')
+            )
+            .from<DBEnvironment>('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        let hash: string | undefined;
+        if ('secretKey' in opts) {
+            // Hashing is slow by design so it's very slow to recompute this hash all the time
+            // We keep the hash in-memory to not compromise on security if the db leak
+            hash = hashLocalCache.get(opts.secretKey) || (await hashSecretKey(opts.secretKey));
+            q.where('secret_key_hashed', hash);
+        } else if ('publicKey' in opts) {
+            q.where('_nango_environments.public_key', opts.publicKey);
+        } else if ('environmentUuid' in opts) {
+            q.where('_nango_environments.uuid', opts.environmentUuid);
+        } else if ('accountUuid' in opts) {
+            q.where('_nango_accounts.uuid', opts.accountUuid).where('_nango_environments.name', opts.envName);
+        } else if ('accountId' in opts) {
+            q.where('_nango_environments.account_id', opts.accountId).where('_nango_environments.name', opts.envName);
+        } else if ('environmentId' in opts) {
+            q.where('_nango_environments.id', opts.environmentId);
+        } else {
+            return null;
+        }
+
+        const res = await q;
+        if (!res) {
+            return null;
+        }
+
+        if (hash && 'secretKey' in opts) {
+            // store only successful attempt to not pollute the memory
+            hashLocalCache.set(opts.secretKey, hash);
+        }
+
+        return {
+            // getting data with row_to_json breaks the automatic string to date parser
+            account: {
+                ...res.account,
+                created_at: new Date(res.account.created_at),
+                updated_at: new Date(res.account.updated_at)
+            },
+            environment: {
+                ...encryptionManager.decryptEnvironment(res.environment),
+                created_at: new Date(res.environment.created_at),
+                updated_at: new Date(res.environment.updated_at),
+                deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
+            },
+            plan: res.plan
+                ? {
+                      ...res.plan,
+                      created_at: new Date(res.plan.created_at),
+                      updated_at: new Date(res.plan.updated_at),
+                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
+                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
+                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
+                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
+                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
+                  }
+                : null
+        };
     }
 }
 

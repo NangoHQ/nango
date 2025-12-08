@@ -21,7 +21,7 @@ export interface FormattedRecord {
     deleted_at?: Date | null;
 }
 
-export type FormattedRecordWithMetadata = FormattedRecord & RecordMetadata;
+export type FormattedRecordWithMetadata = FormattedRecord & RecordMetadata & { partition: string };
 
 export interface EncryptedRecordData {
     iv: string;

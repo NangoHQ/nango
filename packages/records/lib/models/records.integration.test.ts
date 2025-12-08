@@ -792,7 +792,6 @@ describe('Records service', () => {
                 await Records.deleteOutdatedRecords({
                     connectionId,
                     model,
-                    syncId,
                     generation: 3
                 })
             ).unwrap();
@@ -829,41 +828,12 @@ describe('Records service', () => {
                 await Records.deleteOutdatedRecords({
                     connectionId,
                     model,
-                    syncId,
                     generation: 3
                 })
             ).unwrap();
 
             // Only the non-deleted record should be marked as deleted
             expect(deletedIds).toEqual(['2']);
-        });
-
-        it('should only affect records with matching connectionId, model, and syncId', async () => {
-            const connectionId = rnd.number();
-            const environmentId = rnd.number();
-            const model = rnd.string();
-            const syncId = uuid.v4();
-
-            const targetRecords = [{ id: '1', name: 'Target Record' }];
-            await upsertRecords({ records: targetRecords, connectionId, environmentId, model, syncId, syncJobId: 1 });
-
-            const otherSyncId = uuid.v4();
-            const otherRecords = [{ id: '2', name: 'Other Record' }];
-            await upsertRecords({ records: otherRecords, connectionId, environmentId, model, syncId: otherSyncId, syncJobId: 1 });
-
-            const otherModel = rnd.string();
-            const otherModelRecords = [{ id: '3', name: 'Other Model Record' }];
-            await upsertRecords({ records: otherModelRecords, connectionId, environmentId, model: otherModel, syncId, syncJobId: 1 });
-
-            const deletedIds = (
-                await Records.deleteOutdatedRecords({
-                    connectionId,
-                    model,
-                    syncId,
-                    generation: 2
-                })
-            ).unwrap();
-            expect(deletedIds).toEqual(['1']);
         });
 
         it('should process records in batches', async () => {
@@ -880,7 +850,6 @@ describe('Records service', () => {
                 await Records.deleteOutdatedRecords({
                     connectionId,
                     model,
-                    syncId,
                     generation: 2,
                     batchSize: 3 // small batch size
                 })
@@ -909,7 +878,6 @@ describe('Records service', () => {
                 await Records.deleteOutdatedRecords({
                     connectionId,
                     model,
-                    syncId,
                     generation: 2
                 })
             ).unwrap();
@@ -1003,8 +971,8 @@ describe('Records service', () => {
         });
     });
 
-    describe('deleteRecordsBySyncId', () => {
-        it('should delete records by sync ID', async () => {
+    describe('deleteRecords', () => {
+        it('should delete records for given connection/model', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
@@ -1022,7 +990,7 @@ describe('Records service', () => {
             let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(records.length);
 
-            const deletedCount = (await Records.deleteRecordsBySyncId({ connectionId, environmentId, model, syncId, batchSize: 2 })).unwrap();
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, batchSize: 2 })).unwrap();
             expect(deletedCount.totalDeletedRecords).toBe(records.length);
 
             stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();

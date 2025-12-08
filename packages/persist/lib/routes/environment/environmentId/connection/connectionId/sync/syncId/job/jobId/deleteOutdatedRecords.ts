@@ -58,9 +58,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     const result = await records.deleteOutdatedRecords({
         connectionId: nangoConnectionId,
-        syncId,
-        generation: syncJobId,
-        model
+        model,
+        generation: syncJobId
     });
     if (result.isOk()) {
         const deleted = result.value.length;

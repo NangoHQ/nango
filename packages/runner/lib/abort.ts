@@ -6,7 +6,7 @@ export const abort = (taskId: string): boolean => {
     if (ac) {
         ac.abort();
         abortControllers.delete(taskId);
-        usage.untrackByTaskId(taskId);
+        usage.untrack(taskId);
         logger.info('Aborted task', { taskId });
         return true;
     } else {

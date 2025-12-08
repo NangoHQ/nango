@@ -62,6 +62,12 @@ interface RefreshProps {
 
 const logger = getLogger('connectionRefresh');
 
+// In-memory cache for in-flight refresh operations to collapse concurrent requests
+const inFlightRefreshes = new Map<
+    string,
+    Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>>
+>();
+
 /**
  * Take a connection and try to refresh or test based on it's type
  * If instantRefresh === false, we will not refresh if not necessary
@@ -340,134 +346,161 @@ export async function refreshCredentialsIfNeeded({
     refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
-    const locking = await getLocking();
 
-    // fetch connection and return credentials if they are fresh
-    const getConnectionAndFreshCredentials = async (): Promise<{
-        connection: DBConnectionDecrypted;
-        shouldRefresh: { should: boolean; reason: string };
-        freshCredentials: RefreshableCredentials | null;
-    }> => {
-        const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+    const cacheKey = `${environment_id}:${providerConfigKey}:${connectionId}`;
 
-        if (!success || !connection) {
-            throw error as NangoError;
-        }
+    // if a refresh is already in-flight for this connection, return the existing promise
+    const existingPromise = inFlightRefreshes.get(cacheKey);
+    if (existingPromise) {
+        return existingPromise;
+    }
 
-        const shouldRefresh = await shouldRefreshCredentials({
-            connection,
-            credentials: connection.credentials as RefreshableCredentials,
-            providerConfig,
-            provider,
-            instantRefresh,
-            refreshGithubAppJwtToken
-        });
-
-        return {
-            connection,
-            shouldRefresh,
-            freshCredentials: shouldRefresh.should ? null : (connection.credentials as RefreshableCredentials)
-        };
-    };
-
-    // We must ensure that only one refresh is running at a time
-    // Using a simple redis entry as a lock with a TTL to ensure it is always released.
-    // NOTES:
-    // - This is not a distributed lock and will not work in a multi-redis environment.
-    // - It could also be unsafe in case of a Redis crash.
-    let lock: Lock | null = null;
-    try {
-        const ttlInMs = 10000;
-        const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
-
-        let connectionToRefresh: DBConnectionDecrypted;
+    // No existing refresh, create a new promise and store it in the cache
+    const refreshPromise = (async (): Promise<
+        Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>
+    > => {
         try {
-            const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
-            lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+            return await executeRefresh();
+        } finally {
+            inFlightRefreshes.delete(cacheKey);
+        }
+    })();
 
-            // Another refresh was running so we check if the credentials were refreshed
-            // If yes, we return the new credentials
-            // If not, we proceed with the refresh
-            const { connection, freshCredentials, shouldRefresh } = await getConnectionAndFreshCredentials();
-            if (freshCredentials) {
-                return Ok({ connection, refreshed: false, credentials: freshCredentials });
+    inFlightRefreshes.set(cacheKey, refreshPromise);
+    return refreshPromise;
+
+    async function executeRefresh(): Promise<
+        Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>
+    > {
+        const locking = await getLocking();
+
+        // fetch connection and return credentials if they are fresh
+        const getConnectionAndFreshCredentials = async (): Promise<{
+            connection: DBConnectionDecrypted;
+            shouldRefresh: { should: boolean; reason: string };
+            freshCredentials: RefreshableCredentials | null;
+        }> => {
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+            if (!success || !connection) {
+                throw error as NangoError;
             }
 
-            logger.info('Refreshing', connection.id, 'because', shouldRefresh.reason);
-            connectionToRefresh = connection;
+            const shouldRefresh = await shouldRefreshCredentials({
+                connection,
+                credentials: connection.credentials as RefreshableCredentials,
+                providerConfig,
+                provider,
+                instantRefresh,
+                refreshGithubAppJwtToken
+            });
+
+            return {
+                connection,
+                shouldRefresh,
+                freshCredentials: shouldRefresh.should ? null : (connection.credentials as RefreshableCredentials)
+            };
+        };
+
+        // We must ensure that only one refresh is running at a time
+        // Using a simple redis entry as a lock with a TTL to ensure it is always released.
+        // NOTES:
+        // - This is not a distributed lock and will not work in a multi-redis environment.
+        // - It could also be unsafe in case of a Redis crash.
+        let lock: Lock | null = null;
+        try {
+            const ttlInMs = 10000;
+            const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
+
+            let connectionToRefresh: DBConnectionDecrypted;
+            try {
+                const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
+                lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+
+                // Another refresh was potentially being executed so we check if the credentials were refreshed
+                // If yes, we return the new credentials
+                // If not, we proceed with the refresh
+                const { connection, freshCredentials, shouldRefresh } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return Ok({ connection, refreshed: false, credentials: freshCredentials });
+                }
+
+                logger.info('Refreshing', connection.id, 'because', shouldRefresh.reason);
+                connectionToRefresh = connection;
+            } catch (err) {
+                // lock acquisition might have timed out
+                // but refresh might have been successfully performed by another execution
+                // while we were waiting for the lock
+                // so we check if the credentials were refreshed
+                // if yes, we return the new credentials
+                // if not, we actually fail the refresh
+                const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return Ok({ connection, refreshed: false, credentials: freshCredentials });
+                }
+                throw err;
+            }
+
+            const {
+                success,
+                error,
+                response: newCredentials
+            } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
+            if (!success || !newCredentials) {
+                return Err(error!);
+            }
+
+            if ('user' in newCredentials && newCredentials.user && 'app' in newCredentials && newCredentials.app) {
+                connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
+                connectionToRefresh.credentials = newCredentials.app;
+            } else if ('user' in newCredentials && newCredentials.user) {
+                connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
+            } else if ('app' in newCredentials && newCredentials.app) {
+                connectionToRefresh.credentials = newCredentials.app;
+            } else {
+                // Use newCredentials as fallback when neither user nor app are specifically present
+                connectionToRefresh.credentials = newCredentials;
+            }
+
+            if (refreshGithubAppJwtToken) {
+                if (newCredentials.type === 'APP' && 'jwtToken' in newCredentials) {
+                    connectionToRefresh['connection_config']['jwtToken'] = newCredentials['jwtToken'];
+                }
+
+                if (newCredentials.type === 'CUSTOM' && 'app' in newCredentials && 'jwtToken' in newCredentials.app && newCredentials.app.jwtToken) {
+                    connectionToRefresh['connection_config']['jwtToken'] = newCredentials['app']['jwtToken'];
+                }
+            }
+
+            if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'sharepointAccessToken' in newCredentials.raw) {
+                connectionToRefresh['connection_config']['sharepointAccessToken'] = newCredentials.raw['sharepointAccessToken'];
+                delete newCredentials.raw['sharepointAccessToken'];
+            }
+
+            connectionToRefresh = await connectionService.updateConnection({
+                ...connectionToRefresh,
+                last_fetched_at: new Date(),
+                credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
+                last_refresh_failure: null,
+                last_refresh_success: new Date(),
+                refresh_attempts: null,
+                refresh_exhausted: false,
+                updated_at: new Date()
+            });
+
+            return Ok({
+                connection: connectionToRefresh,
+                refreshed: true,
+                credentials: newCredentials as RefreshableCredentials
+            });
         } catch (err) {
-            // lock acquisition might have timed out
-            // but refresh might have been successfully performed by another execution
-            // while we were waiting for the lock
-            // so we check if the credentials were refreshed
-            // if yes, we return the new credentials
-            // if not, we actually fail the refresh
-            const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
-            if (freshCredentials) {
-                return Ok({ connection, refreshed: false, credentials: freshCredentials });
+            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
+
+            return Err(error);
+        } finally {
+            if (lock) {
+                await locking.release(lock);
             }
-            throw err;
-        }
-
-        const {
-            success,
-            error,
-            response: newCredentials
-        } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
-        if (!success || !newCredentials) {
-            return Err(error!);
-        }
-
-        if ('user' in newCredentials && newCredentials.user && 'app' in newCredentials && newCredentials.app) {
-            connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
-            connectionToRefresh.credentials = newCredentials.app;
-        } else if ('user' in newCredentials && newCredentials.user) {
-            connectionToRefresh.connection_config['userCredentials'] = newCredentials.user;
-        } else if ('app' in newCredentials && newCredentials.app) {
-            connectionToRefresh.credentials = newCredentials.app;
-        } else {
-            // Use newCredentials as fallback when neither user nor app are specifically present
-            connectionToRefresh.credentials = newCredentials;
-        }
-
-        if (refreshGithubAppJwtToken) {
-            if (newCredentials.type === 'APP' && 'jwtToken' in newCredentials) {
-                connectionToRefresh['connection_config']['jwtToken'] = newCredentials['jwtToken'];
-            }
-
-            if (newCredentials.type === 'CUSTOM' && 'app' in newCredentials && 'jwtToken' in newCredentials.app && newCredentials.app.jwtToken) {
-                connectionToRefresh['connection_config']['jwtToken'] = newCredentials['app']['jwtToken'];
-            }
-        }
-
-        if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'sharepointAccessToken' in newCredentials.raw) {
-            connectionToRefresh['connection_config']['sharepointAccessToken'] = newCredentials.raw['sharepointAccessToken'];
-            delete newCredentials.raw['sharepointAccessToken'];
-        }
-
-        connectionToRefresh = await connectionService.updateConnection({
-            ...connectionToRefresh,
-            last_fetched_at: new Date(),
-            credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
-            last_refresh_failure: null,
-            last_refresh_success: new Date(),
-            refresh_attempts: null,
-            refresh_exhausted: false,
-            updated_at: new Date()
-        });
-
-        return Ok({
-            connection: connectionToRefresh,
-            refreshed: true,
-            credentials: newCredentials as RefreshableCredentials
-        });
-    } catch (err) {
-        const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
-
-        return Err(error);
-    } finally {
-        if (lock) {
-            await locking.release(lock);
         }
     }
 }
