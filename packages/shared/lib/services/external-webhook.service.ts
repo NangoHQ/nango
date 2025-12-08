@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 
 import type { DBExternalWebhook } from '@nangohq/types';
+import type { Knex } from 'knex';
 
 export async function get(id: number): Promise<DBExternalWebhook | null> {
     const result = await db.knex.select('*').from<DBExternalWebhook>('_nango_external_webhooks').where({ environment_id: id }).first();
@@ -21,9 +22,11 @@ export async function update(
             | 'on_sync_error'
             | 'on_async_action_completion'
         >
-    >
+    >,
+    trx?: Knex
 ): Promise<void> {
-    await db.knex
+    const q = trx || db.knex;
+    await q
         .from<DBExternalWebhook>('_nango_external_webhooks')
         .insert({
             environment_id,

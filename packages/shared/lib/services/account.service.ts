@@ -130,25 +130,28 @@ class AccountService {
      * @desc create a new account and assign to the default environments
      */
     async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
-        // TODO: use transaction
-        const emailTeamName = emailToTeamName({ email });
-        const teamName = `${emailTeamName || name}'s Team`;
-        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
+        return db.knex.transaction(async (trx) => {
+            const emailTeamName = emailToTeamName({ email });
+            const teamName = `${emailTeamName || name}'s Team`;
+            const result = await trx.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
-        if (!result[0]) {
-            return null;
-        }
-
-        await environmentService.createDefaultEnvironments(result[0].id);
-        if (flagHasPlan) {
-            const freePlan = plansList.find((plan) => plan.code === 'free');
-            const res = await createPlan(db.knex, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
-            if (res.isErr()) {
-                report(res.error);
+            if (!result[0]) {
+                return null;
             }
-        }
-        metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
-        return result[0];
+
+            await environmentService.createDefaultEnvironments(result[0].id, trx);
+            if (flagHasPlan) {
+                const freePlan = plansList.find((plan) => plan.code === 'free');
+                const res = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
+                if (res.isErr()) {
+                    report(res.error);
+                    // Rollback transaction
+                    throw res.error;
+                }
+            }
+            metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
+            return result[0];
+        });
     }
 
     /**
