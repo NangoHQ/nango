@@ -829,6 +829,7 @@
               "integrations/all/snapchat",
               "integrations/all/snowflake",
               "integrations/all/snowflake-jwt",
+              "api-integrations/sophos-central",
               "integrations/all/splitwise",
               "integrations/all/spotify",
               "integrations/all/spotify-oauth2-cc",

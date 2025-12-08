@@ -12647,6 +12647,35 @@ smartlead-ai:
             example: 12345678-1234-1234-1234-123456789012_abcdefg
             doc_section: '#step-1-generating-your-api-key'
 
+sophos-central:
+    display_name: Sophos Central
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://id.sophos.com/api/v2/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        scope: token
+    body_format: form
+    proxy:
+        base_url: ${connectionConfig.dataRegion}
+        headers:
+            x-tenant-id: ${connectionConfig.tenantId}
+    post_connection_script: sophosCentralPostConnection
+    docs: https://nango.dev/docs/api-integrations/sophos-central
+    docs_connect: https://nango.dev/docs/api-integrations/sophos-central/connect
+    connection_config:
+        dataRegion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        tenantId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 smartrecruiters-api-key:
     display_name: Smartrecruiters
     auth_mode: API_KEY
