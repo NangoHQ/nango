@@ -15639,6 +15639,37 @@ unipile:
             pattern: '^[0-9]+$'
             example: '13113'
 
+upsales:
+    display_name: Upsales
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://integration.upsales.com/api/v2
+        query:
+            token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: limit
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /users/self
+    docs: https://nango.dev/docs/integrations/all/upsales
+    docs_connect: https://nango.dev/docs/integrations/all/upsales/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Upsales API Token
+            doc_section: '#step-1-finding-your-api-token'
+
 vercel:
     display_name: Vercel
     categories:
