@@ -56,71 +56,6 @@ function getInactiveThisMonth(records: UpsertResult[]): UpsertResult[] {
     });
 }
 
-export async function getRecordStatsByModel({
-    connectionId,
-    environmentId
-}: {
-    connectionId: number;
-    environmentId: number;
-}): Promise<Result<Record<string, RecordCount>>> {
-    try {
-        const results = await db
-            .from(RECORD_COUNTS_TABLE)
-            .where({
-                connection_id: connectionId,
-                environment_id: environmentId
-            })
-            .select<RecordCount[]>('*');
-
-        const statsByModel: Record<string, RecordCount> = results.reduce(
-            (acc, result) => ({
-                ...acc,
-                [result.model]: {
-                    ...result,
-                    size_bytes: Number(result.size_bytes) // bigint is returned as string by pg
-                }
-            }),
-            {}
-        );
-        return Ok(statsByModel);
-    } catch {
-        const e = new Error(`Failed to fetch stats for connection ${connectionId} and environment ${environmentId}`);
-        return Err(e);
-    }
-}
-
-export async function* paginateRecordCounts({
-    environmentIds,
-    batchSize = 1000
-}: {
-    environmentIds?: number[];
-    batchSize?: number;
-} = {}): AsyncGenerator<Result<RecordCount[]>> {
-    let offset = 0;
-
-    try {
-        while (true) {
-            // TODO: optimize with cursor pagination
-            const query = db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
-            if (environmentIds && environmentIds.length > 0) {
-                query.whereIn('environment_id', environmentIds);
-            }
-            const results = await query;
-
-            if (results.length === 0) break;
-
-            yield Ok(results);
-            offset += results.length;
-
-            if (results.length < batchSize) break;
-        }
-        return Ok([]);
-    } catch (err) {
-        yield Err(new Error(`Failed to fetch record counts: ${String(err)}`));
-        return;
-    }
-}
-
 /**
  * Get Records is using the read replicas (when possible)
  */
@@ -525,23 +460,13 @@ export async function upsert({
                         }
                     }
                     const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
-                    if (delta !== 0 || deltaSizeInBytes !== 0) {
-                        await trx
-                            .from(RECORD_COUNTS_TABLE)
-                            .insert({
-                                connection_id: connectionId,
-                                model,
-                                environment_id: environmentId,
-                                count: delta,
-                                size_bytes: deltaSizeInBytes
-                            })
-                            .onConflict(['connection_id', 'environment_id', 'model'])
-                            .merge({
-                                count: trx.raw(`${RECORD_COUNTS_TABLE}.count + EXCLUDED.count`),
-                                size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes`),
-                                updated_at: trx.fn.now()
-                            });
-                    }
+                    await incrCount(trx, {
+                        connectionId,
+                        environmentId,
+                        model,
+                        delta,
+                        deltaSizeInBytes
+                    });
                     if (partition) {
                         span.setTag('nango.partition', partition);
                     }
@@ -591,12 +516,14 @@ export async function upsert({
 
 export async function update({
     records,
+    environmentId,
     connectionId,
     model,
     merging = { strategy: 'override' }
 }: {
     records: FormattedRecord[];
     connectionId: number;
+    environmentId: number;
     model: string;
     merging?: MergingStrategy;
 }): Promise<Result<UpsertSummary>> {
@@ -731,18 +658,13 @@ export async function update({
                     }
                 }
             }
-            if (deltaSizeInBytes !== 0) {
-                await trx
-                    .from(RECORD_COUNTS_TABLE)
-                    .where({
-                        connection_id: connectionId,
-                        model
-                    })
-                    .update({
-                        size_bytes: trx.raw(`${RECORD_COUNTS_TABLE}.size_bytes + ?`, [deltaSizeInBytes]),
-                        updated_at: trx.fn.now()
-                    });
-            }
+            await incrCount(trx, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 0,
+                deltaSizeInBytes
+            });
         });
         if (partition) {
             span.setTag('nango.partition', partition);
@@ -795,6 +717,9 @@ export async function deleteRecords({
 
     try {
         await db.transaction(async (trx) => {
+            // Lock to prevent concurrent deletions
+            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
+
             do {
                 const res: { id: string; partition: string }[] = await trx
                     .from(RECORDS_TABLE)
@@ -803,19 +728,25 @@ export async function deleteRecords({
                         sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model }).limit(batchSize);
                     })
                     .del()
-                    .returning(['id', db.raw('tableoid::regclass as partition')]);
+                    .returning(['id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
                 deletedRecords = res.length;
                 totalDeletedRecords += deletedRecords;
                 if (!partition && res[0]?.partition) {
                     partition = res[0].partition;
                 }
             } while (deletedRecords > 0);
-            await deleteRecordCount(trx, { connectionId, environmentId, model });
+
+            await deleteCount(trx, {
+                environmentId,
+                connectionId,
+                model
+            });
         });
 
         if (partition) {
             span.setTag('nango.partition', partition);
         }
+
         return Ok({ totalDeletedRecords });
     } catch (err) {
         span.setTag('error', err);
@@ -825,21 +756,16 @@ export async function deleteRecords({
     }
 }
 
-export async function deleteRecordCount(
-    trx: Knex,
-    { connectionId, environmentId, model }: { connectionId: number; environmentId: number; model: string }
-): Promise<void> {
-    await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
-}
-
 // Mark all non-deleted records from previous generations as deleted
 // returns the ids of records being deleted
 export async function deleteOutdatedRecords({
+    environmentId,
     connectionId,
     model,
     generation,
     batchSize = 5000
 }: {
+    environmentId: number;
     connectionId: number;
     model: string;
     generation: number;
@@ -857,7 +783,7 @@ export async function deleteOutdatedRecords({
             const deletedIds: string[] = [];
             let hasMore = true;
             while (hasMore) {
-                const res: { external_id: string; partition: string }[] = await trx
+                const res: { external_id: string; size_bytes: number; partition: string }[] = await trx
                     .from<FormattedRecord>(RECORDS_TABLE)
                     .whereIn('id', function (sub) {
                         sub.select('id')
@@ -881,7 +807,7 @@ export async function deleteOutdatedRecords({
                         connection_id: connectionId,
                         model
                     })
-                    .returning(['external_id', db.raw('tableoid::regclass as partition')]);
+                    .returning(['external_id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
 
                 if (res.length < batchSize) {
                     hasMore = false;
@@ -892,20 +818,21 @@ export async function deleteOutdatedRecords({
                 }
 
                 deletedIds.push(...res.map((r) => r.external_id));
+
+                // update records count and size
+                const deleted = deletedIds.length;
+                const sizeInBytes = res.reduce((acc, r) => acc + r.size_bytes, 0);
+                if (deleted > 0) {
+                    await incrCount(trx, {
+                        connectionId,
+                        environmentId,
+                        model,
+                        delta: -deleted,
+                        deltaSizeInBytes: -sizeInBytes
+                    });
+                }
             }
 
-            // update records count
-            const count = deletedIds.length;
-            if (count > 0) {
-                await trx(RECORD_COUNTS_TABLE)
-                    .where({
-                        connection_id: connectionId,
-                        model
-                    })
-                    .update({
-                        count: trx.raw('GREATEST(0, count - ?)', [count])
-                    });
-            }
             if (partition) {
                 span.setTag('nango.partition', partition);
             }
@@ -920,6 +847,122 @@ export async function deleteOutdatedRecords({
     } finally {
         span.finish();
     }
+}
+
+export async function getCountsByModel({
+    connectionId,
+    environmentId
+}: {
+    connectionId: number;
+    environmentId: number;
+}): Promise<Result<Record<string, RecordCount>>> {
+    try {
+        const results = await db
+            .from(RECORD_COUNTS_TABLE)
+            .where({
+                connection_id: connectionId,
+                environment_id: environmentId
+            })
+            .select<RecordCount[]>('*');
+
+        const statsByModel: Record<string, RecordCount> = results.reduce(
+            (acc, result) => ({
+                ...acc,
+                [result.model]: {
+                    ...result,
+                    size_bytes: Number(result.size_bytes) // bigint is returned as string by pg
+                }
+            }),
+            {}
+        );
+        return Ok(statsByModel);
+    } catch {
+        const e = new Error(`Failed to fetch stats for connection ${connectionId} and environment ${environmentId}`);
+        return Err(e);
+    }
+}
+
+export async function* paginateCounts({
+    environmentIds,
+    batchSize = 1000
+}: {
+    environmentIds?: number[];
+    batchSize?: number;
+} = {}): AsyncGenerator<Result<RecordCount[]>> {
+    let offset = 0;
+
+    try {
+        while (true) {
+            // TODO: optimize with cursor pagination
+            const query = db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
+            if (environmentIds && environmentIds.length > 0) {
+                query.whereIn('environment_id', environmentIds);
+            }
+            const results = await query;
+
+            if (results.length === 0) break;
+
+            yield Ok(results);
+            offset += results.length;
+
+            if (results.length < batchSize) break;
+        }
+        return Ok([]);
+    } catch (err) {
+        yield Err(new Error(`Failed to fetch record counts: ${String(err)}`));
+        return;
+    }
+}
+
+export async function incrCount(
+    trx: Knex,
+    {
+        connectionId,
+        environmentId,
+        model,
+        delta,
+        deltaSizeInBytes
+    }: {
+        connectionId: number;
+        environmentId: number;
+        model: string;
+        delta: number;
+        deltaSizeInBytes: number;
+    }
+): Promise<void> {
+    if (delta === 0 && deltaSizeInBytes === 0) {
+        return;
+    }
+    await trx
+        .from(RECORD_COUNTS_TABLE)
+        .insert({
+            connection_id: connectionId,
+            model,
+            environment_id: environmentId,
+            count: delta,
+            size_bytes: deltaSizeInBytes
+        })
+        .onConflict(['connection_id', 'environment_id', 'model'])
+        .merge({
+            count: trx.raw(`GREATEST(0, ${RECORD_COUNTS_TABLE}.count + EXCLUDED.count)`),
+            size_bytes: trx.raw(`GREATEST(0, ${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes)`),
+            updated_at: trx.fn.now()
+        });
+}
+
+export async function deleteCount(
+    trx: Knex,
+    {
+        connectionId,
+        environmentId,
+        model
+    }: {
+        connectionId: number;
+        environmentId: number;
+        model: string;
+    }
+): Promise<void> {
+    await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
 /**

@@ -101,7 +101,7 @@ const observability = {
                 // Performance note: This nested pagination approach is necessary because records and connections
                 // are stored in separate databases, making SQL JOINs impossible.
                 // To reconsider when record counts table becomes very large
-                for await (const recordCounts of records.paginateRecordCounts()) {
+                for await (const recordCounts of records.paginateCounts()) {
                     if (recordCounts.isErr()) {
                         throw recordCounts.error;
                     }
