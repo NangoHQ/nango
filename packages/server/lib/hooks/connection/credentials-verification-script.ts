@@ -111,8 +111,7 @@ async function execute(
                     getIntegrationConfig: () => ({
                         oauth_client_id: null,
                         oauth_client_secret: null
-                    }),
-                    getProvider: () => getProvider(providerName)
+                    })
                 });
                 return (await proxy.request()).unwrap();
             }

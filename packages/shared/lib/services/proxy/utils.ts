@@ -16,7 +16,6 @@ import type {
     IntegrationConfigForProxy,
     InternalProxyConfiguration,
     OAuth2ClientCredentials,
-    Provider,
     ProviderOAuth1,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
@@ -54,16 +53,14 @@ const providedHeaders: Lowercase<string>[] = ['user-agent'];
 export function getAxiosConfiguration({
     proxyConfig,
     connection,
-    integrationConfig,
-    provider
+    integrationConfig
 }: {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
-    provider?: Provider | null;
 }): AxiosRequestConfig {
     const url = buildProxyURL({ config: proxyConfig, connection });
-    const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig, provider: provider ?? null });
+    const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
@@ -275,14 +272,12 @@ export function buildProxyHeaders({
     config,
     url,
     connection,
-    integrationConfig,
-    provider
+    integrationConfig
 }: {
     config: ApplicationConstructedProxyConfiguration;
     url: string;
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
-    provider?: Provider | null;
 }): Record<string, string> {
     let headers: Record<Lowercase<string>, string> = {};
 
@@ -373,7 +368,7 @@ export function buildProxyHeaders({
 
             const oauth = new OAuth({
                 consumer: { key: consumerKey, secret: consumerSecret },
-                signature_method: provider ? (provider as ProviderOAuth1).signature_method : SIGNATURE_METHOD,
+                signature_method: config.provider ? (config.provider as ProviderOAuth1).signature_method : SIGNATURE_METHOD,
                 hash_function(baseString: string, key: string) {
                     return crypto.createHmac('sha1', key).update(baseString).digest('base64');
                 }

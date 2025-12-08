@@ -6,7 +6,6 @@ import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
 import environmentService from '../environment.service.js';
-import { getProvider } from '../providers.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
 
@@ -716,8 +715,7 @@ export class SlackService {
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
-                }),
-                getProvider: () => getProvider(integration.provider)
+                })
             });
             const join = await proxy.request();
             if (join.isErr()) {
@@ -790,8 +788,7 @@ export class SlackService {
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
-                }),
-                getProvider: () => getProvider(integration.provider)
+                })
             });
             const slackMessage = await proxy.request();
 

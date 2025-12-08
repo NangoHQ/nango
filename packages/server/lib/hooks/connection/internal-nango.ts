@@ -1,4 +1,4 @@
-import { ProxyRequest, configService, connectionService, getProvider, getProxyConfiguration } from '@nangohq/shared';
+import { ProxyRequest, configService, connectionService, getProxyConfiguration } from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
@@ -44,15 +44,14 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                 getConnection: () => connection,
                 getIntegrationConfig: async () => {
                     const integration = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
-                    if (!integration) {
-                        return { oauth_client_id: null, oauth_client_secret: null };
+                    if (integration) {
+                        return {
+                            oauth_client_id: integration.oauth_client_id,
+                            oauth_client_secret: integration.oauth_client_secret
+                        };
                     }
-                    return {
-                        oauth_client_id: integration.oauth_client_id,
-                        oauth_client_secret: integration.oauth_client_secret
-                    };
-                },
-                getProvider: () => getProvider(providerName)
+                    return { oauth_client_id: null, oauth_client_secret: null };
+                }
             });
             const response = (await proxyInstance.request()).unwrap();
             return response;
