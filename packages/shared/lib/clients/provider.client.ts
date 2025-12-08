@@ -510,7 +510,7 @@ class ProviderClient {
 
             throw new NangoError('stripe_app_token_request_error');
         } catch (err: any) {
-            throw new NangoError('stripe_app_token_request_error', stringifyError(err, { pretty: true }));
+            throw new NangoError('stripe_app_token_request_error', stringifyError(err));
         }
     }
 
@@ -542,7 +542,7 @@ class ProviderClient {
             }
             throw new NangoError('stripe_app_token_refresh_request_error');
         } catch (err: any) {
-            throw new NangoError('stripe_app_token_refresh_request_error', stringifyError(err, { pretty: true }));
+            throw new NangoError('stripe_app_token_refresh_request_error', stringifyError(err));
         }
     }
 

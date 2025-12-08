@@ -1379,7 +1379,7 @@ class ConnectionService {
 
             return { success: true, error: null, response: parsedCreds };
         } catch (err: any) {
-            const errorPayload = stringifyError(err, { pretty: true });
+            const errorPayload = stringifyError(err);
             logger.error(`Error fetching TwoStep credentials tokens ${errorPayload}`);
             const error = new NangoError('two_step_credentials_fetch_error', errorPayload);
 

@@ -6,6 +6,8 @@ import { NANGO_VERSION } from './version.js';
 
 import type { ErrorObject } from 'serialize-error';
 
+const PROVIDER_ERROR_MESSAGE_FIELDS = ['message', 'error', 'error_description', 'error_message', 'detail', 'details', 'reason', 'description'];
+
 /**
  * Transform any Error or primitive to a json object
  */
@@ -35,9 +37,20 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
     if (typeof err === 'object' && err != null) {
         const anyErr = err as any;
 
-        // handle axios response data
+        // handle axios response data - only extract error field if it exists
         if (anyErr.response?.data) {
-            enriched['provider_error_payload'] = anyErr.response.data;
+            const responseData = anyErr.response.data;
+
+            // If error field exists, filter it to only include message-related fields
+            if (responseData.error && typeof responseData.error === 'object') {
+                const filteredError: Record<string, unknown> = {};
+                for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
+                    if (field in responseData.error) {
+                        filteredError[field] = responseData.error[field];
+                    }
+                }
+                enriched['provider_error_payload'] = Object.keys(filteredError).length > 0 ? filteredError : responseData.error;
+            }
         }
 
         // handle Boom-style error objects
