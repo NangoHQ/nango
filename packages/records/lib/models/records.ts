@@ -694,60 +694,127 @@ export async function update({
     }
 }
 
+/**
+ * deleteRecords
+ * @desc Deletes records for a given connection and model up to a specified cursor and/or limit (whatever comes first).
+ * Deletes all records if neither limit nor toCursorIncluded is provided.
+ * @param environmentId - The id of the environment.
+ * @param connectionId - The id of the connection.
+ * @param model - The model name.
+ * @param limit - The maximum number of records to delete.
+ * @param toCursorIncluded - The cursor up to which records should be deleted (inclusive. ordered by updated_at, id).
+ * @param batchSize - The number of records to delete in each batch (default is 1000).
+ */
 export async function deleteRecords({
     connectionId,
     environmentId,
     model,
+    limit,
+    toCursorIncluded,
     batchSize = 1000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
+    limit?: number;
+    toCursorIncluded?: string;
     batchSize?: number;
-}): Promise<Result<{ totalDeletedRecords: number }>> {
+}): Promise<Result<{ totalDeletedRecords: number; lastDeletedCursor: string | null }>> {
     const activeSpan = tracer.scope().active();
-    const span = tracer.startSpan('nango.records.deleteRecordsBySyncId', {
+    const span = tracer.startSpan('nango.records.deletedRecords', {
         ...(activeSpan ? { childOf: activeSpan } : {}),
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
 
     let partition: string | undefined = undefined;
     let totalDeletedRecords = 0;
+    let totalDeletedSizeInBytes = 0;
     let deletedRecords = 0;
+    let lastDeletedCursor: string | null = null;
 
     try {
+        if (limit !== undefined && limit <= 0) {
+            return Err(new Error('limit must be greater than 0'));
+        }
+
+        let decodedCursor: { sort: string; id: string } | null = null;
+        if (toCursorIncluded) {
+            decodedCursor = Cursor.from(toCursorIncluded) || null;
+            if (!decodedCursor) {
+                return Err(new Error('invalid_cursor_value'));
+            }
+        }
+
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent deletions
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
 
             do {
-                const res: { id: string; partition: string }[] = await trx
+                const toDelete = limit ? Math.min(batchSize, limit - totalDeletedRecords) : batchSize;
+                if (toDelete <= 0) {
+                    break;
+                }
+                const res: { id: string; size_bytes: number; partition: string; updated_at: string }[] = await trx
                     .from(RECORDS_TABLE)
                     .where({ connection_id: connectionId, model })
                     .whereIn('id', function (sub) {
-                        sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model }).limit(batchSize);
+                        const subQuery = sub
+                            .select('id')
+                            .from(RECORDS_TABLE)
+                            .where({ connection_id: connectionId, model })
+                            .orderBy([
+                                { column: 'updated_at', order: 'asc' },
+                                { column: 'id', order: 'asc' }
+                            ])
+                            .limit(toDelete);
+
+                        if (decodedCursor) {
+                            // Delete records up to and including the cursor position
+                            subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
+                        }
                     })
                     .del()
-                    .returning(['id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
+                    .returning([
+                        'id',
+                        trx.raw('pg_column_size(json) as size_bytes'),
+                        trx.raw('tableoid::regclass as partition'),
+                        trx.raw('to_json(updated_at) as updated_at')
+                    ]);
                 deletedRecords = res.length;
                 totalDeletedRecords += deletedRecords;
+                totalDeletedSizeInBytes += res.reduce((acc, r) => acc + r.size_bytes, 0);
                 if (!partition && res[0]?.partition) {
                     partition = res[0].partition;
                 }
+
+                const lastDeletedRecord = res[res.length - 1];
+                if (lastDeletedRecord) {
+                    lastDeletedCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
+                }
             } while (deletedRecords > 0);
 
-            await deleteCount(trx, {
-                environmentId,
-                connectionId,
-                model
-            });
+            if (limit) {
+                await incrCount(trx, {
+                    environmentId,
+                    connectionId,
+                    model,
+                    delta: -totalDeletedRecords,
+                    deltaSizeInBytes: -totalDeletedSizeInBytes
+                });
+            } else {
+                await deleteCount(trx, {
+                    environmentId,
+                    connectionId,
+                    model
+                });
+            }
         });
 
         if (partition) {
             span.setTag('nango.partition', partition);
         }
 
-        return Ok({ totalDeletedRecords });
+        return Ok({ totalDeletedRecords, lastDeletedCursor });
     } catch (err) {
         span.setTag('error', err);
         return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}`, { cause: err }));
