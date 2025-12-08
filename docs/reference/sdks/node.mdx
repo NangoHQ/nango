@@ -1953,8 +1953,7 @@ Asserts that a Webhook is coming from Nango's backend.
 
 ```js
 async (req, res) => {
-    const signature = req.headers['x-nango-signature'];
-    const isValid = nango.verifyWebhookSignature(signature, req.body);
+    const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
 }
 ```
 

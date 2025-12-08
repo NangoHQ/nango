@@ -4280,6 +4280,23 @@ drchrono:
         base_url: https://app.drchrono.com
     docs: https://nango.dev/docs/integrations/all/drchrono
 
+drata:
+    display_name: Drata
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.drata.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/drata
+    docs_connect: https://nango.dev/docs/api-integrations/drata/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Drata API key
+
 contactout:
     display_name: ContactOut
     categories:
@@ -6576,6 +6593,38 @@ greenhouse-onboarding:
             doc_section: '#step-1-generating-your-access-and-secret-keys'
     docs: https://nango.dev/docs/integrations/all/greenhouse-onboarding
     docs_connect: https://nango.dev/docs/integrations/all/greenhouse-onboarding/connect
+
+grist:
+    display_name: Grist
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environment}.getgrist.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/orgs
+    docs: https://nango.dev/docs/api-integrations/grist
+    docs_connect: https://nango.dev/docs/api-integrations/grist/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Grist API key
+            pattern: '^[a-f0-9]{40}$'
+            example: 980cb267c8fa52ae5b6a0a5b4977ec915add8c07
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The environment you want to connect to
+            pattern: '^(team|docs)$'
+            example: docs
+            order: 1
+            doc_section: '#step-1-selecting-your-environment'
 
 gumroad:
     display_name: Gumroad
@@ -11052,6 +11101,45 @@ recharge:
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
 
+recall-ai:
+    display_name: Recall.ai
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}.recall.ai
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/calendar-events
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/recall-ai
+    docs_connect: https://nango.dev/docs/api-integrations/recall-ai/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region where your Recall.ai account is hosted
+            example: us-east-1
+            pattern: '^(us-east-1|us-west-2|eu-central-1|ap-northeast-1)$'
+            order: 1
+            prefix: https://
+            suffix: .recall.ai
+            doc_section: '#step-1-determine-your-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Recall.ai account
+            example: 2d7843e2351dd4afa67eecfb5c723142fcb401b1
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-2-generating-your-api-key'
+
 recruitcrm:
     display_name: Recruitcrm
     categories:
@@ -14322,6 +14410,20 @@ valley:
             description: Your Valley password
             doc_section: '#step-1-getting-your-credentials'
 
+vanta:
+    display_name: Vanta
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://api.vanta.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    body_format: json
+    proxy:
+        base_url: https://api.vanta.com
+    docs: https://nango.dev/docs/api-integrations/vanta
+    docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
+
 wakatime:
     display_name: Wakatime
     categories:
@@ -15024,6 +15126,7 @@ zoho:
             response_path: data
             offset_name_in_request: page
             limit_name_in_request: per_page
+    post_connection_script: zohoPostConnection
     docs: https://nango.dev/docs/integrations/all/zoho
     connection_config:
         extension:

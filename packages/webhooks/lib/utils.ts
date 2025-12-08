@@ -71,9 +71,21 @@ export const retry = (logCtx?: LogContext | null, error?: AxiosError, attemptNum
     return false;
 };
 
-export const getSignatureHeader = (secret: string, payload: string): string => {
+/**
+ * This version of generating a signature is vulnerable to length-extension attacks
+ */
+export const getSignatureHeaderUnsafe = (secret: string, payload: string): string => {
     const combinedSignature = `${secret}${payload}`;
     const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
+
+    return createdHash;
+};
+
+/**
+ * This version of generating a signature uses an HMAC to make it safe from length-extension attacks.
+ */
+export const getHmacSignatureHeader = (secret: string, payload: string): string => {
+    const createdHash = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
     return createdHash;
 };
@@ -163,7 +175,8 @@ export const deliver = async ({
 
         const headers = {
             ...filteredHeaders,
-            'X-Nango-Signature': getSignatureHeader(environment.secret_key, bodyString.value),
+            'X-Nango-Signature': getSignatureHeaderUnsafe(environment.secret_key, bodyString.value),
+            'X-Nango-Hmac-Sha256': getHmacSignatureHeader(environment.secret_key, bodyString.value),
             'content-type': 'application/json',
             'user-agent': userAgent
         };
