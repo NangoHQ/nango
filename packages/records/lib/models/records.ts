@@ -820,7 +820,7 @@ export async function deleteOutdatedRecords({
                 deletedIds.push(...res.map((r) => r.external_id));
 
                 // update records count and size
-                const deleted = deletedIds.length;
+                const deleted = res.length;
                 const sizeInBytes = res.reduce((acc, r) => acc + r.size_bytes, 0);
                 if (deleted > 0) {
                     await incrCount(trx, {

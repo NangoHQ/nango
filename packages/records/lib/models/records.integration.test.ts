@@ -850,6 +850,11 @@ describe('Records service', () => {
 
             const records = Array.from({ length: count }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            // Insert an additional record to ensure total count is correct
+            await upsertRecords({ records: [{ id: '99', name: '99' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
+
+            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(initialStats[model]?.count).toBe(11);
 
             const deletedIds = (
                 await Records.deleteOutdatedRecords({
@@ -861,6 +866,9 @@ describe('Records service', () => {
                 })
             ).unwrap();
             expect(deletedIds).toHaveLength(count);
+
+            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(1); // only the last record should remain
         });
 
         it('should update record counts correctly', async () => {
