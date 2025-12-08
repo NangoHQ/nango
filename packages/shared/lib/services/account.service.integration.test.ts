@@ -45,7 +45,7 @@ describe('Account service', () => {
 
     it('should retrieve account context by secretKey', async () => {
         const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid(), db.knex);
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
@@ -71,7 +71,7 @@ describe('Account service', () => {
 
     it('should retrieve account context by publicKey', async () => {
         const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid(), db.knex);
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byPublicKey = await accountService.getAccountContext({ publicKey: environment!.public_key });
@@ -97,7 +97,7 @@ describe('Account service', () => {
 
     it('should retrieve account context by environment uuid', async () => {
         const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid(), db.knex);
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byUuid = await accountService.getAccountContext({ environmentUuid: environment!.uuid });
@@ -123,7 +123,7 @@ describe('Account service', () => {
 
     it('should retrieve account context by account uuid', async () => {
         const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid(), db.knex);
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byAccountUuid = await accountService.getAccountContext({ accountUuid: account.uuid, envName: environment!.name });
@@ -149,7 +149,7 @@ describe('Account service', () => {
 
     it('should retrieve account context by accountId and envName', async () => {
         const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid(), db.knex);
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byAccountId = await accountService.getAccountContext({ accountId: account.id, envName: environment!.name });
@@ -175,7 +175,7 @@ describe('Account service', () => {
 
     it('should retrieve account context by environmentId', async () => {
         const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid(), db.knex);
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byEnvironmentId = await accountService.getAccountContext({ environmentId: environment!.id });

@@ -10,23 +10,28 @@ export async function get(id: number): Promise<DBExternalWebhook | null> {
 }
 
 export async function update(
-    environment_id: number,
-    data: Partial<
-        Pick<
-            DBExternalWebhook,
-            | 'primary_url'
-            | 'secondary_url'
-            | 'on_auth_creation'
-            | 'on_auth_refresh_error'
-            | 'on_sync_completion_always'
-            | 'on_sync_error'
-            | 'on_async_action_completion'
-        >
-    >,
-    trx?: Knex
+    trx: Knex,
+    {
+        environment_id,
+        data
+    }: {
+        trx?: Knex;
+        environment_id: number;
+        data: Partial<
+            Pick<
+                DBExternalWebhook,
+                | 'primary_url'
+                | 'secondary_url'
+                | 'on_auth_creation'
+                | 'on_auth_refresh_error'
+                | 'on_sync_completion_always'
+                | 'on_sync_error'
+                | 'on_async_action_completion'
+            >
+        >;
+    }
 ): Promise<void> {
-    const q = trx || db.knex;
-    await q
+    await trx
         .from<DBExternalWebhook>('_nango_external_webhooks')
         .insert({
             environment_id,

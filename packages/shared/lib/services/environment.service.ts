@@ -79,9 +79,8 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
-    async createEnvironment(accountId: number, name: string, trx?: Knex): Promise<DBEnvironment | null> {
-        const q = trx || db.knex;
-        const [environment] = await q.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
+    async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
+        const [environment] = await trx.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
         if (!environment) {
             return null;
@@ -91,26 +90,25 @@ class EnvironmentService {
             ...environment,
             secret_key_hashed: await hashSecretKey(environment.secret_key)
         });
-        await q.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
+        await trx.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
 
         const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
         return env;
     }
 
-    async createDefaultEnvironments(accountId: number, trx: Knex): Promise<void> {
+    async createDefaultEnvironments(trx: Knex, { accountId: accountId }: { accountId: number }): Promise<void> {
         for (const environment of defaultEnvironments) {
-            const newEnv = await this.createEnvironment(accountId, environment, trx);
+            const newEnv = await this.createEnvironment(trx, { accountId, name: environment });
             if (newEnv) {
-                await externalWebhookService.update(
-                    newEnv.id,
-                    {
+                await externalWebhookService.update(trx, {
+                    environment_id: newEnv.id,
+                    data: {
                         on_auth_creation: true,
                         on_auth_refresh_error: true,
                         on_sync_completion_always: true,
                         on_sync_error: true
-                    },
-                    trx
-                );
+                    }
+                });
             }
         }
     }

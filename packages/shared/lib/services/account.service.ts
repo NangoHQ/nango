@@ -139,7 +139,7 @@ class AccountService {
                 return null;
             }
 
-            await environmentService.createDefaultEnvironments(result[0].id, trx);
+            await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
             if (flagHasPlan) {
                 const freePlan = plansList.find((plan) => plan.code === 'free');
                 const res = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });

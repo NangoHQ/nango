@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { environmentService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -54,7 +55,7 @@ describe(`PATCH ${endpoint}`, () => {
 
     it('should not allow renaming to an existing environment name', async () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
-        await environmentService.createEnvironment(account.id, 'existing');
+        await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'existing' });
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
