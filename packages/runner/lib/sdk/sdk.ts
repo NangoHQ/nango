@@ -1,6 +1,6 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { ProxyRequest, configService, getProxyConfiguration } from '@nangohq/shared';
 import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 
 import { PersistClient } from './persist.js';
@@ -115,10 +115,16 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
                 }
                 return connection;
             },
-            getIntegrationConfig: () => ({
-                oauth_client_id: null,
-                oauth_client_secret: null
-            })
+            getIntegrationConfig: async () => {
+                const integration = await configService.getProviderConfig(this.providerConfigKey, this.environmentId);
+                if (integration) {
+                    return {
+                        oauth_client_id: integration.oauth_client_id,
+                        oauth_client_secret: integration.oauth_client_secret
+                    };
+                }
+                return { oauth_client_id: null, oauth_client_secret: null };
+            }
         });
         const response = (await proxy.request()).unwrap();
         this.telemetryBag.proxyCalls += 1;
