@@ -116,15 +116,8 @@ describe('stringifyError', () => {
             expect(result.split('\n').length).toBeGreaterThan(1);
         });
 
-        describe('stringifyError performance - NEW VERSION', () => {
-            it('should not significantly regress from baseline performance', () => {
-                // baseline from old implementation (measured in gh actions ci environment)
-                const baseline: Record<string, number> = {
-                    'Simple Error': 0.002882297399999993,
-                    'Axios Error': 0.004207618500000001,
-                    'Boom Error': 0.0029855881999999953
-                };
-
+        describe('stringifyError performance', () => {
+            it('should complete within acceptable time for 100,000 iterations', () => {
                 const testCases = [
                     // Simple error
                     { name: 'Simple Error', error: new Error('Simple error') },
@@ -162,10 +155,10 @@ describe('stringifyError', () => {
                     }
                 ];
 
-                const iterations = 10000;
-                const maxSlowdownFactor = 3; // allow up to 3x slower than baseline
+                const iterations = 100_000;
+                const maxAvgTimePerCall = 0.01;
 
-                for (const { name, error } of testCases) {
+                for (const { error } of testCases) {
                     const start = performance.now();
 
                     for (let i = 0; i < iterations; i++) {
@@ -175,11 +168,8 @@ describe('stringifyError', () => {
                     const end = performance.now();
                     const totalTime = end - start;
                     const avgTime = totalTime / iterations;
-                    const baselineTime = baseline[name];
 
-                    if (baselineTime !== undefined) {
-                        expect(avgTime).toBeLessThan(baselineTime * maxSlowdownFactor);
-                    }
+                    expect(avgTime).toBeLessThan(maxAvgTimePerCall);
                 }
             });
         });
