@@ -1049,6 +1049,25 @@ describe('Records service', () => {
             expect(res.records.length).toBe(2);
         });
 
+        it('should delete count entry when all records are deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, limit: 2 })).unwrap();
+            expect(deletedCount.totalDeletedRecords).toBe(2);
+
+            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]).toBeUndefined();
+        });
+
         it('should return error for invalid limit values', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
@@ -1150,7 +1169,7 @@ describe('Records service', () => {
                     environmentId,
                     model,
                     toCursorIncluded: twelfthRecordCursor!,
-                    batchSize: 3
+                    batchSize: 7
                 })
             ).unwrap();
 
@@ -1186,19 +1205,16 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            await db.transaction(async (trx) => {
-                await Records.incrCount(trx, {
-                    connectionId,
-                    environmentId,
-                    model,
-                    delta: 5,
-                    deltaSizeInBytes: 1000
-                });
+            const newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 5,
+                deltaSizeInBytes: 1000
             });
 
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(stats[model]?.count).toBe(5);
-            expect(stats[model]?.size_bytes).toBe(1000);
+            expect(newCount.count).toBe(5);
+            expect(newCount.size_bytes).toBe(1000);
         });
 
         it('should increment existing record count', async () => {
@@ -1206,39 +1222,35 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            await db.transaction(async (trx) => {
-                await Records.incrCount(trx, {
-                    connectionId,
-                    environmentId,
-                    model,
-                    delta: 10,
-                    deltaSizeInBytes: 1000
-                });
+            let newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 10,
+                deltaSizeInBytes: 1000
             });
+            expect(newCount.count).toBe(10);
+            expect(newCount.size_bytes).toBe(1000);
 
-            await db.transaction(async (trx) => {
-                await Records.incrCount(trx, {
-                    connectionId,
-                    environmentId,
-                    model,
-                    delta: 5,
-                    deltaSizeInBytes: 500
-                });
+            newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 5,
+                deltaSizeInBytes: 500
             });
+            expect(newCount.count).toBe(15);
+            expect(newCount.size_bytes).toBe(1500);
 
-            await db.transaction(async (trx) => {
-                await Records.incrCount(trx, {
-                    connectionId,
-                    environmentId,
-                    model,
-                    delta: -3,
-                    deltaSizeInBytes: -200
-                });
+            newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: -3,
+                deltaSizeInBytes: -200
             });
-
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(stats[model]?.count).toBe(12); // 10 + 5 - 3
-            expect(stats[model]?.size_bytes).toBe(1300); // 1000 + 500 - 200
+            expect(newCount.count).toBe(12);
+            expect(newCount.size_bytes).toBe(1300);
         });
 
         it('should handle decrement', async () => {
@@ -1258,22 +1270,19 @@ describe('Records service', () => {
             const initialCount = initialStats[model]?.count || 0;
             const initialSize = initialStats[model]?.size_bytes || 0;
 
-            await db.transaction(async (trx) => {
-                await Records.incrCount(trx, {
-                    connectionId,
-                    environmentId,
-                    model,
-                    delta: -2,
-                    deltaSizeInBytes: -200
-                });
+            const newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: -2,
+                deltaSizeInBytes: -200
             });
 
-            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(finalStats[model]?.count).toBe(initialCount - 2);
-            expect(finalStats[model]?.size_bytes).toBe(initialSize - 200);
+            expect(newCount.count).toBe(initialCount - 2);
+            expect(newCount.size_bytes).toBe(initialSize - 200);
         });
 
-        it('should do nothing when both delta and deltaSizeInBytes are zero', async () => {
+        it('should keep count and size unchanged when both delta and deltaSizeInBytes are zero', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
@@ -1283,23 +1292,16 @@ describe('Records service', () => {
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
             const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            const initialUpdatedAt = initialStats[model]?.updated_at;
 
-            // Call with zero deltas
-            await db.transaction(async (trx) => {
-                await Records.incrCount(trx, {
-                    connectionId,
-                    environmentId,
-                    model,
-                    delta: 0,
-                    deltaSizeInBytes: 0
-                });
+            const newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 0,
+                deltaSizeInBytes: 0
             });
-
-            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(finalStats[model]?.count).toBe(initialStats[model]?.count);
-            expect(finalStats[model]?.size_bytes).toBe(initialStats[model]?.size_bytes);
-            expect(finalStats[model]?.updated_at).toEqual(initialUpdatedAt);
+            expect(newCount.count).toBe(initialStats[model]?.count);
+            expect(newCount.size_bytes).toBe(initialStats[model]?.size_bytes);
         });
     });
 });

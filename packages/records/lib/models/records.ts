@@ -793,15 +793,16 @@ export async function deleteRecords({
                 }
             } while (deletedRecords > 0);
 
-            if (limit) {
-                await incrCount(trx, {
-                    environmentId,
-                    connectionId,
-                    model,
-                    delta: -totalDeletedRecords,
-                    deltaSizeInBytes: -totalDeletedSizeInBytes
-                });
-            } else {
+            const newCount = await incrCount(trx, {
+                environmentId,
+                connectionId,
+                model,
+                delta: -totalDeletedRecords,
+                deltaSizeInBytes: -totalDeletedSizeInBytes
+            });
+
+            // If all records are deleted, clean up the count entry
+            if (newCount?.count === 0) {
                 await deleteCount(trx, {
                     environmentId,
                     connectionId,
@@ -996,12 +997,9 @@ export async function incrCount(
         delta: number;
         deltaSizeInBytes: number;
     }
-): Promise<void> {
-    if (delta === 0 && deltaSizeInBytes === 0) {
-        return;
-    }
-    await trx
-        .from(RECORD_COUNTS_TABLE)
+): Promise<RecordCount> {
+    const res = await trx
+        .from<RecordCount>(RECORD_COUNTS_TABLE)
         .insert({
             connection_id: connectionId,
             model,
@@ -1014,7 +1012,17 @@ export async function incrCount(
             count: trx.raw(`GREATEST(0, ${RECORD_COUNTS_TABLE}.count + EXCLUDED.count)`),
             size_bytes: trx.raw(`GREATEST(0, ${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes)`),
             updated_at: trx.fn.now()
-        });
+        })
+        .returning('*');
+
+    const [updated] = res;
+    if (!updated) {
+        throw new Error('Failed to update record count');
+    }
+    return {
+        ...updated,
+        size_bytes: Number(updated.size_bytes)
+    };
 }
 
 export async function deleteCount(
