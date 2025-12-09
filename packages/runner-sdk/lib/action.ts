@@ -69,8 +69,7 @@ export abstract class NangoActionBase<
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
-    public oauth_client_id?: string;
-    public oauth_client_secret?: string;
+    public integrationConfig?: NangoProps['integrationConfig'];
 
     public ActionError = ActionError;
 
@@ -126,11 +125,8 @@ export abstract class NangoActionBase<
             this.syncConfig = config.syncConfig;
         }
 
-        if (config.oauth_client_id) {
-            this.oauth_client_id = config.oauth_client_id;
-        }
-        if (config.oauth_client_secret) {
-            this.oauth_client_secret = config.oauth_client_secret;
+        if (config.integrationConfig) {
+            this.integrationConfig = config.integrationConfig;
         }
 
         this.logger = config.logger || {
