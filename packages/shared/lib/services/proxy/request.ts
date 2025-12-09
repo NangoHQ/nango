@@ -6,7 +6,7 @@ import { getProxyRetryFromErr } from './retry.js';
 import { ProxyError, getAxiosConfiguration } from './utils.js';
 
 import type { RetryReason } from './utils.js';
-import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, MaybePromise, MessageRowInsert } from '@nangohq/types';
+import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, IntegrationConfigForProxy, MaybePromise, MessageRowInsert } from '@nangohq/types';
 import type { Result, RetryAttemptArgument } from '@nangohq/utils';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
@@ -15,6 +15,7 @@ interface Props {
     logger: (msg: MessageRowInsert) => MaybePromise<void>;
     onError?: (args: { err: unknown; max: number; attempt: number; retry: RetryReason }) => RetryReason;
     getConnection: () => MaybePromise<ConnectionForProxy>;
+    getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
 }
 
 /**
@@ -34,6 +35,11 @@ export class ProxyRequest {
     getConnection: Props['getConnection'];
 
     /**
+     * Called to get integration config only for Oauth1
+     */
+    getIntegrationConfig: Props['getIntegrationConfig'];
+
+    /**
      * Called on error, gives the ability to control the retry and wait time
      */
     onError?: Props['onError'];
@@ -48,11 +54,17 @@ export class ProxyRequest {
      */
     connection?: ConnectionForProxy;
 
+    /**
+     * Integration config only for Oauth1
+     */
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+
     constructor(props: Props) {
         this.config = props.proxyConfig;
         this.logger = props.logger;
         this.onError = props.onError;
         this.getConnection = props.getConnection;
+        this.getIntegrationConfig = props.getIntegrationConfig;
     }
 
     /**
@@ -65,7 +77,16 @@ export class ProxyRequest {
                     // Dynamically re-build proxy and axios config
                     // Useful for example to refresh connection's credentials
                     this.connection = await this.getConnection();
-                    this.axiosConfig = getAxiosConfiguration({ proxyConfig: this.config, connection: this.connection });
+
+                    if (this.connection.credentials.type === 'OAUTH1') {
+                        this.integrationConfig = await this.getIntegrationConfig();
+                    }
+
+                    this.axiosConfig = getAxiosConfiguration({
+                        integrationConfig: this.integrationConfig,
+                        proxyConfig: this.config,
+                        connection: this.connection
+                    });
 
                     const start = new Date();
                     try {

@@ -114,7 +114,11 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
                     prevConnection = connection;
                 }
                 return connection;
-            }
+            },
+            getIntegrationConfig: () => ({
+                oauth_client_id: null,
+                oauth_client_secret: null
+            })
         });
         const response = (await proxy.request()).unwrap();
         this.telemetryBag.proxyCalls += 1;
