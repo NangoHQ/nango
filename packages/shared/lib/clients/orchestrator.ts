@@ -54,7 +54,7 @@ export interface RecordsServiceInterface {
         connectionId: number;
         model: string;
     }): Promise<Result<{ totalDeletedRecords: number }>>;
-    getRecordStatsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
+    getCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
 // TODO: move to @nangohq/types (with the rest of the ochestrator public types)
