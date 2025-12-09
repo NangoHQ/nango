@@ -38,6 +38,8 @@ export interface NangoProps {
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
     heartbeatTimeoutSecs?: number | undefined;
     isCLI?: boolean | undefined;
+    oauth_client_id?: string;
+    oauth_client_secret?: string;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
