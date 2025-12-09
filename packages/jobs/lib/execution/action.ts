@@ -135,7 +135,11 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             runnerFlags: await getRunnerFlags(),
             startedAt: now,
             endUser,
-            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
+            integrationConfig: {
+                oauth_client_id: providerConfig.oauth_client_id,
+                oauth_client_secret: providerConfig.oauth_client_secret
+            }
         };
 
         const res = await startScript({

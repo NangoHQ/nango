@@ -180,7 +180,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
-            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
+            integrationConfig: {
+                oauth_client_id: providerConfig.oauth_client_id,
+                oauth_client_secret: providerConfig.oauth_client_secret
+            }
         };
 
         if (task.debug) {
