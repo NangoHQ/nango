@@ -1,6 +1,6 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { ProxyRequest, configService, getProxyConfiguration } from '@nangohq/shared';
+import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 
 import { PersistClient } from './persist.js';
@@ -116,11 +116,14 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
                 return connection;
             },
             getIntegrationConfig: async () => {
-                const integration = await configService.getProviderConfig(this.providerConfigKey, this.environmentId);
-                if (integration) {
+                const integration = await this.getIntegration({ include: ['credentials'] });
+                if (
+                    integration.credentials &&
+                    (integration.credentials.type === 'OAUTH1' || integration.credentials.type === 'OAUTH2' || integration.credentials.type === 'TBA')
+                ) {
                     return {
-                        oauth_client_id: integration.oauth_client_id,
-                        oauth_client_secret: integration.oauth_client_secret
+                        oauth_client_id: integration.credentials.client_id,
+                        oauth_client_secret: integration.credentials.client_secret
                     };
                 }
                 return { oauth_client_id: null, oauth_client_secret: null };
