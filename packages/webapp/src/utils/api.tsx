@@ -1,7 +1,6 @@
 import { toast } from 'react-toastify';
 
 import { globalEnv } from './env';
-import { useSignout } from './user';
 
 import type { ApiError, PostSignup } from '@nangohq/types';
 
@@ -119,29 +118,6 @@ export function useHostedSigninAPI() {
             if (res.status !== 200 && res.status !== 401) {
                 serverErrorToast();
                 return;
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetProvidersAPI(env: string) {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await apiFetch(`/api/v1/provider?env=${env}`);
-
-            if (res.status === 401) {
-                await signout();
-                return;
-            }
-
-            if (res.status !== 200) {
-                serverErrorToast();
             }
 
             return res;

@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { multipleMigrations } from '@nangohq/database';
+import db, { multipleMigrations } from '@nangohq/database';
 
 import environmentService, { hashSecretKey } from './environment.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
@@ -14,7 +14,7 @@ describe('Environment service', () => {
     it('should create a service with secrets', async () => {
         const account = await createAccount();
         const envName = uuid();
-        const env = await environmentService.createEnvironment(account.id, envName);
+        const env = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
         if (!env) {
             throw new Error('failed_to_create_env');
         }
@@ -53,7 +53,7 @@ describe('Environment service', () => {
 
     it('should rotate secretKey', async () => {
         const account = await createAccount();
-        const env = (await environmentService.createEnvironment(account.id, uuid()))!;
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
         expect(env.secret_key).toBeUUID();
 
         // Rotate
