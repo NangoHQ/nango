@@ -4,7 +4,7 @@ sidebarTitle: 'Leverage AI agents'
 description: 'How to use AI agents to build integrations in Nango'
 ---
 
-Building custom integrations for Nango is much faster when using AI tools. This guide shows you how to leverage Claude Code, Gemini CLI, Cursor, Gemini, or Codex to build high-quality integrations quickly.
+Building custom integrations for Nango is much faster when using AI tools. This guide shows you how to leverage AI tooling to build high-quality integrations quickly.
 
 ## Automated Integrations Building
 
@@ -13,7 +13,7 @@ The fastest way to build Nango integrations is using our automated integration b
 This uses [prpm](https://prpm.dev) to install pre-built workflows directly into your development environment.
 
 <Tip>
-[prpm](https://prpm.dev) (Prompt Package Manager) is a universal package manager for AI tool configurations. It lets you discover, install, and share prompts, skills, and agents across AI development platforms like Claude Code, Cursor, Gemini CLI, and Codex—all with a single CLI.
+[prpm](https://prpm.dev) (Prompt Package Manager) is a universal package manager for AI tool configurations. It lets you discover, install, and share prompts, skills, and agents across AI development platforms with a single CLI.
 </Tip>
 
 ## Quick Start
@@ -61,6 +61,13 @@ build-actions
 npx prpm install collections/nango-integration-builder --as copilot
 # open the VS Code Application
 build-actions
+```
+
+### Opencode
+```bash
+npx prpm install collections/nango-integration-builder --as opencode
+opencode
+/build-actions
 ```
 
 ### Using the Builder
