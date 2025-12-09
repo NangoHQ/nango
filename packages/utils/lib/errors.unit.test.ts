@@ -115,5 +115,73 @@ describe('stringifyError', () => {
             const result = stringifyError(new Error('Test'), { pretty: true });
             expect(result.split('\n').length).toBeGreaterThan(1);
         });
+
+        describe('stringifyError performance - NEW VERSION', () => {
+            it('should not significantly regress from baseline performance', () => {
+                // baseline from old implementation (measured in gh actions ci environment)
+                const baseline: Record<string, number> = {
+                    'Simple Error': 0.002882297399999993,
+                    'Axios Error': 0.004207618500000001,
+                    'Boom Error': 0.0029855881999999953
+                };
+
+                const testCases = [
+                    // Simple error
+                    { name: 'Simple Error', error: new Error('Simple error') },
+
+                    // Axios-style error
+                    {
+                        name: 'Axios Error',
+                        error: {
+                            name: 'AxiosError',
+                            message: 'Request failed',
+                            response: {
+                                data: {
+                                    error: {
+                                        message: 'Provider error',
+                                        error_description: 'Something went wrong',
+                                        code: 'INVALID_REQUEST'
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    // Boom-style error
+                    {
+                        name: 'Boom Error',
+                        error: {
+                            name: 'BoomError',
+                            message: 'Boom error',
+                            data: {
+                                payload: {
+                                    message: 'Payload error'
+                                }
+                            }
+                        }
+                    }
+                ];
+
+                const iterations = 10000;
+                const maxSlowdownFactor = 3; // allow up to 3x slower than baseline
+
+                for (const { name, error } of testCases) {
+                    const start = performance.now();
+
+                    for (let i = 0; i < iterations; i++) {
+                        stringifyError(error);
+                    }
+
+                    const end = performance.now();
+                    const totalTime = end - start;
+                    const avgTime = totalTime / iterations;
+                    const baselineTime = baseline[name];
+
+                    if (baselineTime !== undefined) {
+                        expect(avgTime).toBeLessThan(baselineTime * maxSlowdownFactor);
+                    }
+                }
+            });
+        });
     });
 });
