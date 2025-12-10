@@ -1197,6 +1197,33 @@ describe('Records service', () => {
                 expect(invalidCursorResult.error.message).toBe('invalid_cursor_value');
             }
         });
+
+        it('should prune records when mode = soft', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'soft' })).unwrap();
+
+            expect(prune.totalDeletedRecords).toBe(3);
+
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]).toBeUndefined();
+
+            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(res.records.length).toBe(3);
+            res.records.forEach((r) => {
+                expect(r._nango_metadata.last_action).toBe('DELETED');
+                expect(r._nango_metadata.deleted_at).not.toBeNull();
+            });
+        });
     });
 
     describe('incrCount', () => {

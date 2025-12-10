@@ -704,6 +704,7 @@ export async function update({
  * @param limit - The maximum number of records to delete.
  * @param toCursorIncluded - The cursor up to which records should be deleted (inclusive. ordered by updated_at, id).
  * @param batchSize - The number of records to delete in each batch (default is 1000).
+ * @param mode - The deletion mode: 'hard' (permanent deletion) or 'soft' (empty payload and set deleted_at). Default is 'hard'.
  */
 export async function deleteRecords({
     connectionId,
@@ -711,7 +712,8 @@ export async function deleteRecords({
     model,
     limit,
     toCursorIncluded,
-    batchSize = 1000
+    batchSize = 1000,
+    mode = 'hard'
 }: {
     connectionId: number;
     environmentId: number;
@@ -719,6 +721,7 @@ export async function deleteRecords({
     limit?: number;
     toCursorIncluded?: string;
     batchSize?: number;
+    mode?: 'hard' | 'soft';
 }): Promise<Result<{ totalDeletedRecords: number; lastDeletedCursor: string | null }>> {
     const activeSpan = tracer.scope().active();
     const span = tracer.startSpan('nango.records.deletedRecords', {
@@ -746,6 +749,7 @@ export async function deleteRecords({
         }
 
         await db.transaction(async (trx) => {
+            const now = trx.fn.now(6);
             // Lock to prevent concurrent deletions
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
 
@@ -754,7 +758,9 @@ export async function deleteRecords({
                 if (toDelete <= 0) {
                     break;
                 }
-                const res: { id: string; size_bytes: number; partition: string; updated_at: string }[] = await trx
+                // if soft mode, we update the deleted_at/updated_at fields and empty the payload
+                // if hard mode, we permanently delete the records
+                const query = trx
                     .from(RECORDS_TABLE)
                     .where({ connection_id: connectionId, model })
                     .whereIn('id', function (sub) {
@@ -767,19 +773,35 @@ export async function deleteRecords({
                                 { column: 'id', order: 'asc' }
                             ])
                             .limit(toDelete);
-
                         if (decodedCursor) {
                             // Delete records up to and including the cursor position
                             subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
                         }
+                        if (mode === 'soft') {
+                            subQuery.whereNull('deleted_at');
+                        }
                     })
-                    .del()
-                    .returning([
+                    .returning<{ id: string; size_bytes: number; partition: string; updated_at: string }[]>([
                         'id',
                         trx.raw('pg_column_size(json) as size_bytes'),
                         trx.raw('tableoid::regclass as partition'),
                         trx.raw('to_json(updated_at) as updated_at')
                     ]);
+                switch (mode) {
+                    case 'soft':
+                        query.update({
+                            deleted_at: now,
+                            updated_at: now,
+                            json: {}
+                        });
+                        break;
+                    case 'hard':
+                        query.del();
+                        break;
+                }
+
+                const res = await query;
+
                 deletedRecords = res.length;
                 totalDeletedRecords += deletedRecords;
                 totalDeletedSizeInBytes += res.reduce((acc, r) => acc + r.size_bytes, 0);
@@ -860,6 +882,7 @@ export async function deleteOutdatedRecords({
                                 connection_id: connectionId,
                                 model,
                                 deleted_at: null
+                                // NOTE: not emptying the record payload so we don't introduce a breaking change
                             })
                             .where('sync_job_id', '<', generation)
                             .limit(batchSize);
@@ -1011,7 +1034,7 @@ export async function incrCount(
         .merge({
             count: trx.raw(`GREATEST(0, ${RECORD_COUNTS_TABLE}.count + EXCLUDED.count)`),
             size_bytes: trx.raw(`GREATEST(0, ${RECORD_COUNTS_TABLE}.size_bytes + EXCLUDED.size_bytes)`),
-            updated_at: trx.fn.now()
+            updated_at: trx.fn.now(6)
         })
         .returning('*');
 
