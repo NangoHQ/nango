@@ -1385,6 +1385,91 @@ paths:
                 '401':
                     $ref: '#/components/responses/Unauthorized'
 
+        delete:
+            summary: Delete records
+            description: |-
+                Deletes synced records for a given connection and model using cursor-based pagination.
+
+                **Deletion modes:**
+                - `soft`: Empties the record payload and marks as deleted. The record metadata is preserved.
+                - `hard`: Permanently removes the record entries.
+
+                **Cursor behavior:**
+                Records are deleted up to and including the specified cursor.
+            parameters:
+                - name: model
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The data model to delete records from
+                - name: variant
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: The variant of the model
+                - name: mode
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                      enum: [soft, hard]
+                  description: The deletion mode - 'soft' empties the payload, 'hard' permanently deletes the records
+                - name: until_cursor
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: Delete all records up to and including this cursor. Use the cursor value from _nango_metadata.cursor of the record you want to delete up to.
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 10000
+                  description: The maximum number of records to delete in this request. Defaults to 1000.
+                - name: Connection-Id
+                  in: header
+                  required: true
+                  description: The connection ID used to create the connection.
+                  schema:
+                      type: string
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+
+            responses:
+                '200':
+                    description: Successfully deleted records
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - count
+                                    - has_more
+                                properties:
+                                    count:
+                                        type: integer
+                                        description: The number of records deleted in this request
+                                        example: 150
+                                    has_more:
+                                        type: boolean
+                                        description: |-
+                                            Indicates if there are potentially more records to delete.
+                                            - `true`: There may be more records that need deletion
+                                            - `false`: All records up to the cursor have been deleted
+                                        example: true
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
     /sync/trigger:
         post:
             summary: Trigger a sync
