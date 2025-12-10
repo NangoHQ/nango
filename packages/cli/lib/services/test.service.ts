@@ -16,6 +16,61 @@ import { buildDefinitions } from '../zeroYaml/definitions.js';
 
 const execAsync = promisify(exec);
 
+export interface IntegrationDefinition {
+    syncs: Record<string, { output: string | string[] }>;
+    actions: Record<string, { output: string | null }>;
+}
+
+export interface ValidateFiltersResult {
+    valid: boolean;
+    error?: string;
+    filteredIntegrations: Record<string, IntegrationDefinition>;
+}
+
+/**
+ * Validates and filters integrations based on provided filter criteria.
+ * This is a pure function that can be easily unit tested.
+ */
+export function validateAndFilterIntegrations({
+    integrations,
+    integrationId,
+    syncName,
+    actionName
+}: {
+    integrations: Record<string, IntegrationDefinition>;
+    integrationId?: string | undefined;
+    syncName?: string | undefined;
+    actionName?: string | undefined;
+}): ValidateFiltersResult {
+    let filtered = { ...integrations };
+
+    // Filter by integration ID
+    if (integrationId) {
+        if (!filtered[integrationId]) {
+            return { valid: false, error: `Integration "${integrationId}" not found`, filteredIntegrations: {} };
+        }
+        filtered = { [integrationId]: filtered[integrationId] };
+    }
+
+    // Validate sync name exists
+    if (syncName) {
+        const allSyncs = Object.values(filtered).flatMap((i) => Object.keys(i.syncs || {}));
+        if (!allSyncs.includes(syncName)) {
+            return { valid: false, error: `Sync "${syncName}" not found`, filteredIntegrations: {} };
+        }
+    }
+
+    // Validate action name exists
+    if (actionName) {
+        const allActions = Object.values(filtered).flatMap((i) => Object.keys(i.actions || {}));
+        if (!allActions.includes(actionName)) {
+            return { valid: false, error: `Action "${actionName}" not found`, filteredIntegrations: {} };
+        }
+    }
+
+    return { valid: true, filteredIntegrations: filtered };
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const VITE_CONFIG_TEMPLATE = path.resolve(__dirname, '../templates/vite.config.ejs');
@@ -388,31 +443,19 @@ export async function generateTests({
             }
         }
 
-        if (integrationId) {
-            if (!integrationsToProcess[integrationId]) {
-                console.error(chalk.red(`Integration "${integrationId}" not found`));
-                return { success: false, generatedFiles: [] };
-            }
-            integrationsToProcess = { [integrationId]: integrationsToProcess[integrationId] };
+        const filterResult = validateAndFilterIntegrations({
+            integrations: integrationsToProcess,
+            integrationId,
+            syncName,
+            actionName
+        });
+
+        if (!filterResult.valid) {
+            console.error(chalk.red(filterResult.error));
+            return { success: false, generatedFiles: [] };
         }
 
-        // Validate sync name exists
-        if (syncName) {
-            const allSyncs = Object.values(integrationsToProcess).flatMap((i) => Object.keys(i.syncs || {}));
-            if (!allSyncs.includes(syncName)) {
-                console.error(chalk.red(`Sync "${syncName}" not found`));
-                return { success: false, generatedFiles: [] };
-            }
-        }
-
-        // Validate action name exists
-        if (actionName) {
-            const allActions = Object.values(integrationsToProcess).flatMap((i) => Object.keys(i.actions || {}));
-            if (!allActions.includes(actionName)) {
-                console.error(chalk.red(`Action "${actionName}" not found`));
-                return { success: false, generatedFiles: [] };
-            }
-        }
+        integrationsToProcess = filterResult.filteredIntegrations;
 
         const generatedFiles: string[] = [];
 
