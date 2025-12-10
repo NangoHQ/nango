@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { FunctionsTab } from '../components/FunctionsTab';
+import { FunctionsTab } from './Functions/Tab';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';

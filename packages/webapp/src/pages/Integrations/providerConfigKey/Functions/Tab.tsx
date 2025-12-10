@@ -1,8 +1,9 @@
 import { Box, Code, ExternalLink, Info, Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { getDisplayName } from '../utils';
-import { StatusWidget } from './StatusWidget';
+import { StatusWidget } from '../../components/StatusWidget.js';
+import { getDisplayName } from '../../utils.js';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
@@ -14,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tool
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
 
-import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List';
+import type { NangoSyncConfigWithEndpoint } from '../Endpoints/components/List.js';
 import type { ApiIntegration, NangoSyncConfig, Provider } from '@nangohq/types';
 
 function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfigWithEndpoint[]> {
@@ -41,6 +42,7 @@ interface FunctionsTabProps {
 }
 
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provider }) => {
+    const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { data, loading } = useGetIntegrationFlows(env, integration.unique_key);
 
@@ -53,6 +55,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
         const syncsByGroup = groupByGroup(syncs);
         return { actionsByGroup, syncsByGroup };
     }, [data?.flows]);
+
+    const onFunctionClick = useCallback(
+        (func: NangoSyncConfigWithEndpoint) => {
+            navigate(`/${env}/integrations/${integration.unique_key}/functions/${func.name}`);
+        },
+        [env, integration.unique_key, navigate]
+    );
 
     if (loading) {
         return <div>Loading...</div>;
@@ -82,10 +91,10 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
                     )}
                 </div>
                 <NavigationContent value="actions">
-                    <GroupedFunctionsTable groupedFunctions={actionsByGroup} />
+                    <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} />
                 </NavigationContent>
                 <NavigationContent value="syncs">
-                    <GroupedFunctionsTable groupedFunctions={syncsByGroup} />
+                    <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} />
                 </NavigationContent>
             </Navigation>
 
@@ -113,7 +122,9 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
                     </span>
                 </InfoRow>
                 <InfoRow label="API status">
-                    <StatusWidget className="text-text-primary" service={integration.provider} />
+                    <div className="flex">
+                        <StatusWidget className="text-text-primary" service={integration.provider} />
+                    </div>
                 </InfoRow>
                 <InfoRow label="Created">
                     <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
@@ -125,7 +136,10 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
     );
 };
 
-const GroupedFunctionsTable: React.FC<{ groupedFunctions: Record<string, NangoSyncConfigWithEndpoint[]> }> = ({ groupedFunctions }) => {
+const GroupedFunctionsTable: React.FC<{
+    groupedFunctions: Record<string, NangoSyncConfigWithEndpoint[]>;
+    onFunctionClick?: (func: NangoSyncConfigWithEndpoint) => void;
+}> = ({ groupedFunctions, onFunctionClick }) => {
     if (Object.keys(groupedFunctions).length === 0) {
         return (
             <div className="flex flex-col items-center justify-center gap-5 p-20 bg-bg-elevated rounded-md">
@@ -140,7 +154,7 @@ const GroupedFunctionsTable: React.FC<{ groupedFunctions: Record<string, NangoSy
 
     return (
         <Table>
-            {Object.entries(groupedFunctions).map(([groupName, group], index) => (
+            {Object.entries(groupedFunctions).map(([groupName, functions], index) => (
                 <>
                     <TableHeader key={groupName} className="h-8">
                         <TableRow className="h-8">
@@ -151,8 +165,8 @@ const GroupedFunctionsTable: React.FC<{ groupedFunctions: Record<string, NangoSy
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {group.map((func) => (
-                            <TableRow key={func.id} className="cursor-pointer">
+                        {functions.map((func) => (
+                            <TableRow key={func.id} className="cursor-pointer" onClick={() => onFunctionClick?.(func)}>
                                 <TableCell>
                                     <div className="flex items-center gap-1.5">
                                         {func.name}
