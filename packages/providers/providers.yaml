@@ -11941,8 +11941,8 @@ sap-odata-oauth2-cc:
     scope_separator: ','
     proxy:
         base_url: https://${connectionConfig.apiServer}
-    docs: https://nango.dev/docs/integrations/all/sap-odata-oauth2-cc
-    docs_connect: https://nango.dev/docs/integrations/all/sap-odata-oauth2-cc/connect
+    docs: https://nango.dev/docs/api-integrations/sap-odata-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/sap-odata-oauth2-cc/connect
     connection_config:
         subdomain:
             type: string
@@ -11979,8 +11979,8 @@ sap-odata-basic:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.apiServer}
-    docs: https://nango.dev/docs/integrations/all/sap-odata-basic
-    docs_connect: https://nango.dev/docs/integrations/all/sap-odata-basic/connect
+    docs: https://nango.dev/docs/api-integrations/sap-odata-basic
+    docs_connect: https://nango.dev/docs/api-integrations/sap-odata-basic/connect
     connection_config:
         apiServer:
             type: string

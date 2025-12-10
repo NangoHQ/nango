@@ -23,26 +23,26 @@ This guide will walk you through enabling OAuth 2.0 and obtaining these credenti
 
 1. Log in to your SAP system and navigate to transaction code `/n/iwfnd/maint_service`.
 2. Click **Add Service**, enter `LOCAL` in the **System Alias** field, and press Enter.
-<img src="/integrations/all/sap-odata-oauth2-cc/add_service.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/add_service.png" />
 3. Select the service you plan to use and click **Add Selected Services**.
-<img src="/integrations/all/sap-odata-oauth2-cc/select_service.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/select_service.png" />
 4. Provide a custom name for the technical service, then click **Local Object** to save the service in the local package.
 5. Select the **Enable OAuth for Service** checkbox under **OAuth enablement**.
-<img src="/integrations/all/sap-odata-oauth2-cc/enable_oauth.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/enable_oauth.png" />
 6. Save the configuration.
 7. Double-click **Alias** and validate that the SAP System Alias is correct for the Service Doc Identifier.
-<img src="/integrations/all/sap-odata-oauth2-cc/service_alias.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/service_alias.png" />
 
 <Note>If the service already exists in the service catalog, you can navigate directly to the service and click **OAuth** to enable OAuth authentication.</Note>
-<img src="/integrations/all/sap-odata-oauth2-cc/oauth2_enabled.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/oauth2_enabled.png" />
 
 8. Go to transaction code `SICF`.
 9. Navigate to the service **authorize** under path: `default_host/sap/bc/sec/oauth2/`.
-<img src="/integrations/all/sap-odata-oauth2-cc/oauth_sicf.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/oauth_sicf.png" />
 10. Right-click the **authorize** service and select **Activate Link**.
 11. Right-click the service again and select **Test Link** to verify the URL: `https://<hostname>:<port>/sap/bc/sec/oauth2/authorize?sap-client=<XXX>`
 12. Navigate to the service **token** under path: `default_host/sap/bc/sec/oauth2/`.
-<img src="/integrations/all/sap-odata-oauth2-cc/oauth_sicf_token.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/oauth_sicf_token.png" />
 13. Right-click the **token** service and select **Activate Service**.
 14. Right-click the service again and select **Test Service** to verify the URL: `https://<hostname>:<port>/sap/bc/sec/oauth2/token?sap-client=<XXX>`
 15. Go to transaction code `SU01`.
@@ -56,7 +56,7 @@ This guide will walk you through enabling OAuth 2.0 and obtaining these credenti
 19. Click **Create** and enter the integration user details created in step 16. Fill in all other required details.
 20. Enable the **Client Credentials** grant type: Check the **Client Credentials** checkbox to activate it, and leave all other settings unchanged.
 21. Click **Add** and select the OAuth scope you plan to use from the list.
-<img src="/integrations/all/sap-odata-oauth2-cc/soauth2_scope.png" />
+<img src="/api-integrations/sap-odata-oauth2-cc/soauth2_scope.png" />
 
 22. Click **Next**, review the summary, and then click **Finish**.
 
@@ -94,7 +94,7 @@ Once you have all the required information:
 3. Submit the form, and you should be successfully authenticated.
 
 
-<img src="/integrations/all/sap-odata-oauth2-cc/form.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/sap-odata-oauth2-cc/form.png" style={{maxWidth: "450px" }}/>
 
 
 You are now connected to SAP S/4HANA Cloud (Client Credentials).
