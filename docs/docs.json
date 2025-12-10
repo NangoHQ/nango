@@ -702,6 +702,7 @@
               "integrations/all/odoo-cc",
               "integrations/all/okta",
               "integrations/all/okta-preview",
+              "api-integrations/onlogist",
               "integrations/all/one-drive",
               "integrations/all/one-drive-personal",
               "integrations/all/one-note",
