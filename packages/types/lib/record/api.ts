@@ -44,3 +44,24 @@ export type GetPublicRecords = Endpoint<{
         records: NangoRecord[];
     };
 }>;
+
+export type DeletePublicRecords = Endpoint<{
+    Method: 'DELETE';
+    Path: `/records`;
+    Headers: {
+        'connection-id': string;
+        'provider-config-key': string;
+    };
+    Error: ApiError<'unknown_connection'>;
+    Querystring: {
+        model: string;
+        variant?: string | undefined;
+        mode: 'soft' | 'hard';
+        until_cursor: string;
+        limit?: number | undefined;
+    };
+    Success: {
+        count: number;
+        has_more: boolean;
+    };
+}>;

@@ -68,7 +68,7 @@ import type { GetMeta } from './meta/api.js';
 import type { PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
-import type { GetPublicRecords } from './record/api.js';
+import type { DeletePublicRecords, GetPublicRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
 import type {
     GetSharedCredentialsProvider,
@@ -111,6 +111,7 @@ export type PublicApiEndpoints =
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook
     | GetPublicRecords
+    | DeletePublicRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
     | PutPublicSyncConnectionFrequency

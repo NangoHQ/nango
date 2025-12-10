@@ -176,6 +176,7 @@ export async function getRecords({
             db.raw(`
                 tableoid::regclass as partition,
                 id,
+                external_id,
                 json,
                 to_json(created_at) as first_seen_at,
                 to_json(updated_at) as last_modified_at,
@@ -199,6 +200,7 @@ export async function getRecords({
             const decryptedData = await decryptRecordData(item);
             results.push({
                 ...decryptedData,
+                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
                 _nango_metadata: {
                     first_seen_at: item.first_seen_at,
                     last_modified_at: item.last_modified_at,
@@ -791,8 +793,8 @@ export async function deleteRecords({
                     case 'soft':
                         query.update({
                             deleted_at: now,
-                            updated_at: now,
                             json: {}
+                            // IMPORTANT: updated_at isn't updated because it would cause the record cursor to also change
                         });
                         break;
                     case 'hard':
@@ -1088,6 +1090,7 @@ async function getRecordsToUpdate({
             connection_id: connectionId,
             model
         })
+        .whereNull('deleted_at') // only non-deleted records can be updated
         .whereIn('external_id', keys)
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
 }
