@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
+import { IntegrationSideInfo } from './Endpoints/components/IntegrationSideInfo';
 import { FunctionsTab } from './Functions/Tab';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
@@ -68,9 +69,17 @@ export const ShowIntegration: React.FC = () => {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="functions">
-                        <FunctionsTab integration={data.integration} provider={data.template} />
+                        <div className="flex w-full gap-11 justify-between">
+                            <FunctionsTab integration={data.integration} />
+                            <IntegrationSideInfo integration={data.integration} provider={data.template} />
+                        </div>
                     </TabsContent>
-                    <TabsContent value="settings">Settings</TabsContent>
+                    <TabsContent value="settings">
+                        <div className="flex w-full gap-11 justify-between">
+                            <p className="text-text-primary text-body-medium-regular">Coming soon</p>
+                            <IntegrationSideInfo integration={data.integration} provider={data.template} />
+                        </div>
+                    </TabsContent>
                 </Tabs>
             </div>
         </DashboardLayout>
