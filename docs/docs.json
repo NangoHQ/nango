@@ -533,6 +533,7 @@
               "integrations/all/fillout-api-key",
               "integrations/all/firefish",
               "integrations/all/fireflies",
+              "api-integrations/firstbase",
               "integrations/all/fiserv",
               "integrations/all/fiserv-api-key",
               "integrations/all/fitbit",

@@ -5027,6 +5027,28 @@ fireflies:
             title: API Key
             description: The API key for your Fireflies account
 
+firstbase:
+    display_name: Firstbase
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://apipub.firstbasehq.com
+        headers:
+            authorization: ApiKey ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/orders?size=1
+    docs: https://nango.dev/docs/api-integrations/firstbase
+    docs_connect: https://nango.dev/docs/api-integrations/firstbase/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Firstbase account
+            doc_section: '#step-1-generating-your-api-key'
+
 fiserv:
     display_name: Fiserv (OAuth)
     categories:
