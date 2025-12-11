@@ -77,9 +77,7 @@ jobs:
             - name: Upload Webapp to GCS
               if: inputs.stage == 'replit'
               run: |
-                  gcloud storage rsync --recursive --delete \
-                    packages/webapp/dist/ \
-                    gs://${{ vars.APP_UI_BUCKET }}
+                  gsutil -m rsync -r -d packages/webapp/dist/ gs://${{ vars.APP_UI_BUCKET }}
             - name: Invalidate Cloud CDN cache
               if: inputs.stage == 'replit'
               run: |
@@ -129,9 +127,7 @@ jobs:
             - name: Upload Webapp to GCS
               if: inputs.stage == 'replit'
               run: |
-                  gcloud storage rsync --recursive --delete \
-                    packages/webapp/dist/ \
-                    gs://${{ vars.CONNECT_UI_BUCKET }}
+                  gsutil -m rsync -r -d packages/connect-ui/dist/ gs://${{ vars.CONNECT_UI_BUCKET }}
             - name: Invalidate Cloud CDN cache
               if: inputs.stage == 'replit'
               run: |
