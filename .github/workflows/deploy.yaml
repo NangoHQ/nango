@@ -13,6 +13,7 @@ on:
                     - development
                     - staging
                     - production
+                    - replit
             service:
                 type: choice
                 description: 'Service to deploy, defaults to server'
