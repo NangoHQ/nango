@@ -1,0 +1,91 @@
+---
+title: Wise (API Key)
+sidebarTitle: Wise (API Key)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/wise-api-key/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/wise-api-key/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❌ | Not required |
+| Paid test account | ❌ | Not required |
+| Partnership | ❌ | Not required - Just need a Wise account |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+
+## Setup guide
+
+Use this integration if you're a small business user automating your own Wise account. No partnership required.
+
+### Step 1: Generate API Token
+
+1. Go to [wise.com](https://wise.com) and log in
+2. Select your **Business profile**
+3. Navigate to: **Your Account → Integrations and Tools → API tokens**
+4. Click **Add new Token**
+5. Complete 2-step verification
+6. Copy the generated token
+
+<Warning>
+Keep your API token secure. It provides access to your Wise account.
+</Warning>
+
+### Step 2: Configure Nango
+
+Use your Personal API Token to configure the Wise (API Key) integration in Nango.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
+
+
+## Useful links
+
+-   [Wise API Documentation](https://docs.wise.com/api-reference)
+-   [Personal Token Guide](https://docs.wise.com/guides/developer/auth-and-security)
+-   [API Status Page](https://status.transferwise.com/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
+
+## API gotchas
+
+-   **Business Account Required**: Personal API tokens are generated from a Wise Business profile.
+-   **Limited API Access**: Personal tokens have more limited API access compared to OAuth credentials.
+-   **PSD2 Restrictions (EU/UK)**: Due to PSD2 regulations, you **cannot** fund transfers or view balance statements via API with a personal token in the EU/UK.
+-   **Single User**: A personal token authenticates requests for a single Wise.com user only.
+-   **When to Use OAuth Instead**: If you're building for end customers or need full API access, you should use OAuth (requires Wise partnership).
+
+### Available with Personal Token
+
+- View profiles
+- Create quotes
+- Create recipients
+- View transfers
+- Basic account operations
+
+### Not Available with Personal Token (EU/UK)
+
+- Fund transfers via API
+- View balance statements
+- Some advanced operations
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
+
+
+## Going further
+
+<Card title="Connect to Wise (OAuth)" icon="link" href="/integrations/all/wise" horizontal>
+  Use OAuth for full API access (requires partnership)
+</Card>
+
+<Card title="Connect to Wise Sandbox" icon="flask" href="/integrations/all/wise-sandbox" horizontal>
+  Use the sandbox environment for testing OAuth
+</Card>
