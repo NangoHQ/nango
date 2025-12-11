@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
+import { isNullSchema } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
@@ -32,6 +33,9 @@ export const FunctionsOne: React.FC = () => {
         const { input, json_schema } = func;
 
         const inputSchema = json_schema.definitions?.[input] ?? null;
+        if (!inputSchema || isNullSchema(inputSchema as JSONSchema7)) {
+            return null;
+        }
         return inputSchema as JSONSchema7;
     }, [func]);
 
@@ -42,8 +46,13 @@ export const FunctionsOne: React.FC = () => {
         const { returns, json_schema } = func;
 
         const outputSchema = json_schema.definitions?.[returns[0]] ?? null;
+        if (!outputSchema || isNullSchema(outputSchema as JSONSchema7)) {
+            return null;
+        }
         return outputSchema as JSONSchema7;
     }, [func]);
+
+    const defaultTab = inputSchema ? 'inputs' : outputSchema ? 'outputs' : undefined;
 
     if (integrationLoading || flowsLoading) {
         // TODO: improve loading state
@@ -94,13 +103,21 @@ export const FunctionsOne: React.FC = () => {
                 </div>
 
                 <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
-                    <Navigation defaultValue="inputs" orientation="horizontal">
+                    <Navigation defaultValue={defaultTab} orientation="horizontal">
                         <NavigationList>
-                            <NavigationTrigger value="inputs">Inputs</NavigationTrigger>
-                            <NavigationTrigger value="outputs">Outputs</NavigationTrigger>
+                            {inputSchema && <NavigationTrigger value="inputs">Inputs</NavigationTrigger>}
+                            {outputSchema && <NavigationTrigger value="outputs">Outputs</NavigationTrigger>}
                         </NavigationList>
-                        <NavigationContent value="inputs">{inputSchema && <JsonSchemaTopLevelObject schema={inputSchema} />}</NavigationContent>
-                        <NavigationContent value="outputs">{outputSchema && <JsonSchemaTopLevelObject schema={outputSchema} />}</NavigationContent>
+                        {inputSchema && (
+                            <NavigationContent value="inputs">
+                                <JsonSchemaTopLevelObject schema={inputSchema} />
+                            </NavigationContent>
+                        )}
+                        {outputSchema && (
+                            <NavigationContent value="outputs">
+                                <JsonSchemaTopLevelObject schema={outputSchema} />
+                            </NavigationContent>
+                        )}
                     </Navigation>
                 </div>
             </header>
