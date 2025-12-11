@@ -8,7 +8,7 @@ import { IntegrationsBadge } from '../IntegrationsBadge';
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
 export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ schema }) => {
-    if (!isObjectSchema(schema) || !schema.properties) {
+    if (!isObjectSchema(schema)) {
         throw new Error('Expected object schema.');
     }
 
