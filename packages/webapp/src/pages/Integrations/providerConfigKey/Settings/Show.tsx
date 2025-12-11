@@ -32,6 +32,7 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'JWT':
         case 'SIGNATURE':
         case 'TWO_STEP':
+        case 'AWS_SIGV4':
             return <SettingsDefault data={data} environment={environment} />;
         case 'MCP_OAUTH2':
             return <SettingsMcpOAuth data={data} environment={environment} />;
