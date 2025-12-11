@@ -2,11 +2,8 @@ import { Box, Code, ExternalLink, Info, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { StatusWidget } from '../../components/StatusWidget.js';
-import { getDisplayName } from '../../utils.js';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { StyledLink } from '@/components-v2/StyledLink';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Switch } from '@/components-v2/ui/switch';
@@ -16,7 +13,7 @@ import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
 
 import type { NangoSyncConfigWithEndpoint } from '../Endpoints/components/List.js';
-import type { ApiIntegration, NangoSyncConfig, Provider } from '@nangohq/types';
+import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 
 function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfigWithEndpoint[]> {
     const groups = new Map<string, NangoSyncConfigWithEndpoint[]>();
@@ -38,10 +35,9 @@ function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfigW
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
-    provider: Provider;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provider }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { data, loading } = useGetIntegrationFlows(env, integration.unique_key);
@@ -68,71 +64,34 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, provide
     }
 
     return (
-        <div className="flex w-full gap-11 justify-between">
-            <Navigation
-                defaultValue="actions"
-                orientation="horizontal"
-                className="max-w-2xl"
-                onTabChanged={(value) => setSelectedTab(value as 'actions' | 'syncs')}
-            >
-                <div className="w-full inline-flex items-center gap-2 justify-between">
-                    <NavigationList>
-                        <NavigationTrigger value="actions">Actions</NavigationTrigger>
-                        <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
-                    </NavigationList>
-                    {selectedTab === 'actions' ? (
-                        <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
-                            How to use Actions <ExternalLink />
-                        </ButtonLink>
-                    ) : (
-                        <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
-                            How to use Syncs <ExternalLink />
-                        </ButtonLink>
-                    )}
-                </div>
-                <NavigationContent value="actions">
-                    <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} />
-                </NavigationContent>
-                <NavigationContent value="syncs">
-                    <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} />
-                </NavigationContent>
-            </Navigation>
-
-            <div className="flex flex-col min-w-30 w-60">
-                <InfoRow label="Auth method">
-                    <span className="text-text-primary text-body-medium-regular">{getDisplayName(provider.auth_mode)}</span>
-                </InfoRow>
-                <InfoRow label="Display name">
-                    <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
-                        <span>{integration.display_name || provider.display_name}</span>
-                        <CopyButton text={integration.display_name || provider.display_name} />
-                    </span>
-                </InfoRow>
-                <InfoRow label="Integration ID">
-                    <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
-                        <span>{integration.unique_key}</span>
-                        <CopyButton text={integration.unique_key} />
-                    </span>
-                </InfoRow>
-                <InfoRow label="API documentation">
-                    <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
-                        <StyledLink to={provider.docs} icon type="external">
-                            {provider.display_name}
-                        </StyledLink>
-                    </span>
-                </InfoRow>
-                <InfoRow label="API status">
-                    <div className="flex">
-                        <StatusWidget className="text-text-primary" service={integration.provider} />
-                    </div>
-                </InfoRow>
-                <InfoRow label="Created">
-                    <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
-                        {new Date(integration.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </span>
-                </InfoRow>
+        <Navigation
+            defaultValue="actions"
+            orientation="horizontal"
+            className="max-w-2xl"
+            onTabChanged={(value) => setSelectedTab(value as 'actions' | 'syncs')}
+        >
+            <div className="w-full inline-flex items-center gap-2 justify-between">
+                <NavigationList>
+                    <NavigationTrigger value="actions">Actions</NavigationTrigger>
+                    <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
+                </NavigationList>
+                {selectedTab === 'actions' ? (
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                        How to use Actions <ExternalLink />
+                    </ButtonLink>
+                ) : (
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                        How to use Syncs <ExternalLink />
+                    </ButtonLink>
+                )}
             </div>
-        </div>
+            <NavigationContent value="actions">
+                <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} />
+            </NavigationContent>
+            <NavigationContent value="syncs">
+                <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} />
+            </NavigationContent>
+        </Navigation>
     );
 };
 
@@ -202,19 +161,5 @@ const GroupedFunctionsTable: React.FC<{
                 </>
             ))}
         </Table>
-    );
-};
-
-interface InfoRowProps {
-    label: string;
-    children: React.ReactNode;
-}
-
-const InfoRow: React.FC<InfoRowProps> = ({ label, children }) => {
-    return (
-        <div className="flex flex-col gap-1 px-5 py-4.5 border-b border-border-muted">
-            <span className="text-text-tertiary text-body-medium-regular">{label}</span>
-            {children}
-        </div>
     );
 };

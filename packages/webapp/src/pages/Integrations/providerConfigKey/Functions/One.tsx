@@ -103,22 +103,26 @@ export const FunctionsOne: React.FC = () => {
                 </div>
 
                 <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
-                    <Navigation defaultValue={defaultTab} orientation="horizontal">
-                        <NavigationList>
-                            {inputSchema && <NavigationTrigger value="inputs">Inputs</NavigationTrigger>}
-                            {outputSchema && <NavigationTrigger value="outputs">Outputs</NavigationTrigger>}
-                        </NavigationList>
-                        {inputSchema && (
-                            <NavigationContent value="inputs">
-                                <JsonSchemaTopLevelObject schema={inputSchema} />
-                            </NavigationContent>
-                        )}
-                        {outputSchema && (
-                            <NavigationContent value="outputs">
-                                <JsonSchemaTopLevelObject schema={outputSchema} />
-                            </NavigationContent>
-                        )}
-                    </Navigation>
+                    {inputSchema || outputSchema ? (
+                        <Navigation defaultValue={defaultTab} orientation="horizontal">
+                            <NavigationList>
+                                {inputSchema && <NavigationTrigger value="inputs">Inputs</NavigationTrigger>}
+                                {outputSchema && <NavigationTrigger value="outputs">Outputs</NavigationTrigger>}
+                            </NavigationList>
+                            {inputSchema && (
+                                <NavigationContent value="inputs">
+                                    <JsonSchemaTopLevelObject schema={inputSchema} />
+                                </NavigationContent>
+                            )}
+                            {outputSchema && (
+                                <NavigationContent value="outputs">
+                                    <JsonSchemaTopLevelObject schema={outputSchema} />
+                                </NavigationContent>
+                            )}
+                        </Navigation>
+                    ) : (
+                        <p className="text-text-secondary text-body-medium-regular">This function does not have any inputs or outputs.</p>
+                    )}
                 </div>
             </header>
         </DashboardLayout>
