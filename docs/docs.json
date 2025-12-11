@@ -457,6 +457,7 @@
               "integrations/all/codegen",
               "integrations/all/commercetools",
               "integrations/all/companycam",
+              "api-integrations/conductorone",
               "integrations/all/confluence",
               "integrations/all/confluence-basic",
               "integrations/all/confluence-data-center",
