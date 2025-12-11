@@ -8323,7 +8323,7 @@ luma:
 lumos:
     display_name: Lumos
     categories:
-        - other
+        - productivity
     auth_mode: API_KEY
     proxy:
         base_url: https://api.lumos.com
