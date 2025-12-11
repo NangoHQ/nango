@@ -43,6 +43,7 @@ import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
+import { deletePublicRecords } from './controllers/records/deleteRecords.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
@@ -198,6 +199,7 @@ publicAPI.route('/sync/update-connection-frequency').put(apiAuth, putSyncConnect
 
 publicAPI.use('/records', jsonContentTypeMiddleware);
 publicAPI.route('/records').get(apiAuth, getPublicRecords);
+publicAPI.route('/records').delete(apiAuth, deletePublicRecords);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, postPublicTrigger);

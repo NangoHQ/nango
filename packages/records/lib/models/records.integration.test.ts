@@ -1210,18 +1210,37 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'soft' })).unwrap();
+            const recs = (await Records.getRecords({ connectionId, model })).unwrap();
+            const last = recs.records[recs.records.length - 1]!;
+            const cursor = last._nango_metadata.cursor;
 
-            expect(prune.totalDeletedRecords).toBe(3);
+            // update last record to ensure it is not deleted and correct cursor is returned
+            await upsertRecords({ records: [{ id: last.id, name: 'Maxwell Doe' }], connectionId, environmentId, model, syncId });
+
+            // prune all records but the last one that was just updated
+            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'soft', toCursorIncluded: cursor })).unwrap();
+            expect(prune.totalDeletedRecords).toBe(2);
+            expect(prune.lastDeletedCursor).toBe(recs.records[recs.records.length - 2]!._nango_metadata.cursor); // second last record's cursor since last record was updated and not deleted
+
+            // try to prune again, should not delete any records
+            const prune2 = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'soft', toCursorIncluded: cursor })).unwrap();
+            expect(prune2.totalDeletedRecords).toBe(0);
+            expect(prune2.lastDeletedCursor).toBeNull();
 
             const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(stats[model]).toBeUndefined();
+            expect(stats[model]?.count).toBe(1);
 
             const res = (await Records.getRecords({ connectionId, model })).unwrap();
             expect(res.records.length).toBe(3);
             res.records.forEach((r) => {
-                expect(r._nango_metadata.last_action).toBe('DELETED');
-                expect(r._nango_metadata.deleted_at).not.toBeNull();
+                if (r.id === last.id) {
+                    expect(r._nango_metadata.last_action).toBe('UPDATED');
+                    expect(r._nango_metadata.deleted_at).toBeNull();
+                } else {
+                    expect(r.id).toBeDefined();
+                    expect(r._nango_metadata.last_action).toBe('DELETED');
+                    expect(r._nango_metadata.deleted_at).not.toBeNull();
+                }
             });
         });
     });
