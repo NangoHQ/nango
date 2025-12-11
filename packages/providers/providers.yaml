@@ -13786,6 +13786,33 @@ todoist:
         base_url: https://api.todoist.com
     docs: https://nango.dev/docs/integrations/all/todoist
 
+torii:
+    display_name: Torii
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.toriihq.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1.0/orgs/my
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/torii
+    docs_connect: https://nango.dev/docs/api-integrations/torii/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Torii account
+            doc_section: '#step-1-generating-your-api-key'
+
 tumblr:
     display_name: Tumblr
     categories:

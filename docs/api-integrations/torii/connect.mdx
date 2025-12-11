@@ -1,0 +1,47 @@
+---
+title: Torii - How do I link my account?
+sidebarTitle: Torii
+---
+
+# Overview
+
+To authenticate with Torii, you will need:
+1. **API Key** - A key that grants secure access to the API, enabling authorized applications to interact with Torii resources and services.
+
+This guide will walk you through generating your **API Key** in Torii.
+
+### Prerequisites:
+
+- You must have a Torii account
+
+### Instructions:
+
+#### Step 1: Generating Your API Key
+
+1. Navigate to the [API Access page](https://app.toriihq.com/team/settings/apiAccess) in your Torii account.
+2. Click **Generate API Key**.
+<img src="/api-integrations/torii/settings.png"/>
+3. Select the permission type for your API key.
+4. Set an expiration date: For security purposes, Torii recommends setting an expiration date when generating a new API key.
+   - Set a longer period to avoid frequent key regeneration.
+   - The key will become inactive on the chosen expiration date.
+   - Torii will send an email reminder one month prior to the expiration date to remind you to generate a new **API Key**.
+5. Add a description for your **API Key** and click **Generate Key**.
+
+<img src="/api-integrations/torii/generate_key.png"/>
+
+<img src="/api-integrations/torii/generated_key.png"/>
+
+<Tip>Once your API Key is generated, ensure you copy it to a secure location as it won't be shown again.</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+
+1. Open the form where you need to authenticate with Torii.
+2. Enter your **API Key** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/torii/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Torii.
