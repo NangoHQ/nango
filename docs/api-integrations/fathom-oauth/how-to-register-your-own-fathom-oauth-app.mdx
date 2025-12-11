@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Fathom OAuth app'
+sidebarTitle: 'Fathom Setup'
+description: 'Register an OAuth app with Fathom and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Fathom to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Fathom account.
+
+<Steps>
+  <Step title="Create a Fathom account">
+    If you don't have a Fathom account, sign up for free account at [fathom.ai](https://www.fathom.ai/).
+  </Step>
+  <Step title="Register your application">
+    1. Navigate to the [create app form](https://fathom.video/marketplace_applications/new).
+    2. Fill in all the required details for your application.
+    3. For the **Redirect URLs** field, add: `https://api.nango.dev/oauth/callback`
+    4. Submit the form to create your application.
+    5. After creation, note your **Client ID** and **Client Secret** for both production and development environments. You'll need these when configuring the integration in Nango.
+    
+    <Note>Currently, the only available OAuth scope is `public_api`.</Note>
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Fathom's OAuth documentation](https://developers.fathom.ai/sdks/oauth).
+
+---
