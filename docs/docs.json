@@ -624,6 +624,7 @@
               "integrations/all/jira-data-center-api-key",
               "integrations/all/jira-data-center",
               "integrations/all/jira-data-center-basic",
+              "api-integrations/lumos",
               "integrations/all/jobadder",
               "integrations/all/jobber",
               "integrations/all/jobdiva",
