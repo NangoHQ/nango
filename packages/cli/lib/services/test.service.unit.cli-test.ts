@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import { validateAndFilterIntegrations } from './test.service.js';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { generateActionTest, generateSyncTest, validateAndFilterIntegrations } from './test.service.js';
 
 import type { IntegrationDefinition } from './test.service.js';
 
@@ -370,5 +374,122 @@ describe('validateAndFilterIntegrations', () => {
             expect(result.valid).toBe(false);
             expect(result.error).toBe('Action "Create-Issue" not found');
         });
+    });
+});
+
+describe('generateSyncTest', () => {
+    let tmpDir: string;
+
+    afterEach(async () => {
+        if (tmpDir) {
+            await fs.rm(tmpDir, { recursive: true, force: true });
+        }
+    });
+
+    it('should generate a sync test file with correct content', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-'));
+
+        const outputPath = await generateSyncTest({
+            integration: 'github',
+            syncName: 'fetch-issues',
+            modelName: 'GithubIssue',
+            writePath: tmpDir,
+            debug: false
+        });
+
+        expect(outputPath).toBe(path.join(tmpDir, 'github/tests/github-fetch-issues.test.ts'));
+
+        const content = await fs.readFile(outputPath, 'utf8');
+
+        // Check imports
+        expect(content).toContain("import { vi, expect, it, describe } from 'vitest'");
+        expect(content).toContain("import createSync from '../syncs/fetch-issues.js'");
+
+        // Check describe block
+        expect(content).toContain("describe('github fetch-issues tests'");
+
+        // Check NangoSyncMock configuration
+        expect(content).toContain("dirname: 'github'");
+        expect(content).toContain('name: "fetch-issues"');
+        expect(content).toContain('Model: "GithubIssue"');
+
+        // Check test cases exist
+        expect(content).toContain("it('should get, map correctly the data and batchSave the result'");
+        expect(content).toContain("it('should get, map correctly the data and batchDelete the result'");
+    });
+
+    it('should generate a sync test file with array model output', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-'));
+
+        const outputPath = await generateSyncTest({
+            integration: 'salesforce',
+            syncName: 'fetch-contacts',
+            modelName: ['Contact', 'Account'],
+            writePath: tmpDir,
+            debug: false
+        });
+
+        const content = await fs.readFile(outputPath, 'utf8');
+
+        // Array models should be joined as comma-separated string in the template
+        expect(content).toContain('Model: "Contact,Account"');
+    });
+});
+
+describe('generateActionTest', () => {
+    let tmpDir: string;
+
+    afterEach(async () => {
+        if (tmpDir) {
+            await fs.rm(tmpDir, { recursive: true, force: true });
+        }
+    });
+
+    it('should generate an action test file with correct content', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-'));
+
+        const outputPath = await generateActionTest({
+            integration: 'slack',
+            actionName: 'send-message',
+            output: 'SlackMessage',
+            writePath: tmpDir,
+            debug: false
+        });
+
+        expect(outputPath).toBe(path.join(tmpDir, 'slack/tests/slack-send-message.test.ts'));
+
+        const content = await fs.readFile(outputPath, 'utf8');
+
+        // Check imports
+        expect(content).toContain("import { vi, expect, it, describe } from 'vitest'");
+        expect(content).toContain("import createAction from '../actions/send-message.js'");
+
+        // Check describe block
+        expect(content).toContain("describe('slack send-message tests'");
+
+        // Check NangoActionMock configuration
+        expect(content).toContain("dirname: 'slack'");
+        expect(content).toContain('name: "send-message"');
+        expect(content).toContain('Model: "SlackMessage"');
+
+        // Check test case exists
+        expect(content).toContain("it('should output the action output that is expected'");
+    });
+
+    it('should generate an action test file with null output', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-'));
+
+        const outputPath = await generateActionTest({
+            integration: 'github',
+            actionName: 'delete-issue',
+            output: null,
+            writePath: tmpDir,
+            debug: false
+        });
+
+        const content = await fs.readFile(outputPath, 'utf8');
+
+        // Null output should be rendered as empty string or null
+        expect(content).toContain('Model: ""');
     });
 });

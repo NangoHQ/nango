@@ -235,7 +235,7 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
     }
 }
 
-async function generateSyncTest({
+export async function generateSyncTest({
     integration,
     syncName,
     modelName,
@@ -274,7 +274,7 @@ async function generateSyncTest({
     return outputPath;
 }
 
-async function generateActionTest({
+export async function generateActionTest({
     integration,
     actionName,
     output,
