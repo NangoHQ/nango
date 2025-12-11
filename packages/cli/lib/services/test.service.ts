@@ -52,20 +52,32 @@ export function validateAndFilterIntegrations({
         filtered = { [integrationId]: filtered[integrationId] };
     }
 
-    // Validate sync name exists
+    // Filter by sync name - only keep integrations that have this sync
     if (syncName) {
-        const allSyncs = Object.values(filtered).flatMap((i) => Object.keys(i.syncs || {}));
-        if (!allSyncs.includes(syncName)) {
+        const integrationsWithSync: Record<string, IntegrationDefinition> = {};
+        for (const [key, integration] of Object.entries(filtered)) {
+            if (integration.syncs && syncName in integration.syncs) {
+                integrationsWithSync[key] = integration;
+            }
+        }
+        if (Object.keys(integrationsWithSync).length === 0) {
             return { valid: false, error: `Sync "${syncName}" not found`, filteredIntegrations: {} };
         }
+        filtered = integrationsWithSync;
     }
 
-    // Validate action name exists
+    // Filter by action name - only keep integrations that have this action
     if (actionName) {
-        const allActions = Object.values(filtered).flatMap((i) => Object.keys(i.actions || {}));
-        if (!allActions.includes(actionName)) {
+        const integrationsWithAction: Record<string, IntegrationDefinition> = {};
+        for (const [key, integration] of Object.entries(filtered)) {
+            if (integration.actions && actionName in integration.actions) {
+                integrationsWithAction[key] = integration;
+            }
+        }
+        if (Object.keys(integrationsWithAction).length === 0) {
             return { valid: false, error: `Action "${actionName}" not found`, filteredIntegrations: {} };
         }
+        filtered = integrationsWithAction;
     }
 
     return { valid: true, filteredIntegrations: filtered };
