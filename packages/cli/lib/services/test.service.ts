@@ -16,6 +16,61 @@ import { buildDefinitions } from '../zeroYaml/definitions.js';
 
 const execAsync = promisify(exec);
 
+export interface IntegrationDefinition {
+    syncs: Record<string, { output: string | string[] }>;
+    actions: Record<string, { output: string | null }>;
+}
+
+export interface ValidateFiltersResult {
+    valid: boolean;
+    error?: string;
+    filteredIntegrations: Record<string, IntegrationDefinition>;
+}
+
+/**
+ * Validates and filters integrations based on provided filter criteria.
+ * This is a pure function that can be easily unit tested.
+ */
+export function validateAndFilterIntegrations({
+    integrations,
+    integrationId,
+    syncName,
+    actionName
+}: {
+    integrations: Record<string, IntegrationDefinition>;
+    integrationId?: string | undefined;
+    syncName?: string | undefined;
+    actionName?: string | undefined;
+}): ValidateFiltersResult {
+    let filtered = { ...integrations };
+
+    // Filter by integration ID
+    if (integrationId) {
+        if (!filtered[integrationId]) {
+            return { valid: false, error: `Integration "${integrationId}" not found`, filteredIntegrations: {} };
+        }
+        filtered = { [integrationId]: filtered[integrationId] };
+    }
+
+    // Validate sync name exists
+    if (syncName) {
+        const allSyncs = Object.values(filtered).flatMap((i) => Object.keys(i.syncs || {}));
+        if (!allSyncs.includes(syncName)) {
+            return { valid: false, error: `Sync "${syncName}" not found`, filteredIntegrations: {} };
+        }
+    }
+
+    // Validate action name exists
+    if (actionName) {
+        const allActions = Object.values(filtered).flatMap((i) => Object.keys(i.actions || {}));
+        if (!allActions.includes(actionName)) {
+            return { valid: false, error: `Action "${actionName}" not found`, filteredIntegrations: {} };
+        }
+    }
+
+    return { valid: true, filteredIntegrations: filtered };
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const VITE_CONFIG_TEMPLATE = path.resolve(__dirname, '../templates/vite.config.ejs');
@@ -180,7 +235,7 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
     }
 }
 
-async function generateSyncTest({
+export async function generateSyncTest({
     integration,
     syncName,
     modelName,
@@ -192,7 +247,7 @@ async function generateSyncTest({
     modelName: string | string[];
     writePath: string;
     debug: boolean;
-}) {
+}): Promise<string> {
     const data = {
         integration,
         syncName,
@@ -215,9 +270,11 @@ async function generateSyncTest({
     if (debug) {
         printDebug(`Test file created at ${outputPath}`);
     }
+
+    return outputPath;
 }
 
-async function generateActionTest({
+export async function generateActionTest({
     integration,
     actionName,
     output,
@@ -229,7 +286,7 @@ async function generateActionTest({
     output: string | null;
     writePath: string;
     debug: boolean;
-}) {
+}): Promise<string> {
     const data = {
         integration,
         actionName,
@@ -252,6 +309,8 @@ async function generateActionTest({
     if (debug) {
         printDebug(`Test file created at ${outputPath}`);
     }
+
+    return outputPath;
 }
 
 async function generateTestConfigs({ debug, force = false }: { debug: boolean; force?: boolean }): Promise<boolean> {
@@ -295,14 +354,18 @@ async function generateTestConfigs({ debug, force = false }: { debug: boolean; f
 export async function generateTests({
     absolutePath,
     integrationId,
+    syncName,
+    actionName,
     debug = false,
     autoConfirm = false
 }: {
     absolutePath: string;
     integrationId?: string;
+    syncName?: string;
+    actionName?: string;
     debug?: boolean;
     autoConfirm?: boolean;
-}): Promise<boolean> {
+}): Promise<{ success: boolean; generatedFiles: string[] }> {
     try {
         if (debug) {
             printDebug(`Generating test files in ${absolutePath}`);
@@ -315,7 +378,7 @@ export async function generateTests({
         } catch (err: any) {
             spinner.fail();
             console.error(chalk.red(`Failed to inject test dependencies: ${err}`));
-            return false;
+            return { success: false, generatedFiles: [] };
         }
 
         const rootPath = await getProjectRoot();
@@ -350,13 +413,13 @@ export async function generateTests({
         const compileResult = await compileAll({ fullPath: absolutePath, debug });
         if (compileResult.isErr()) {
             console.error(chalk.red(`Failed to compile TypeScript: ${compileResult.error}`));
-            return false;
+            return { success: false, generatedFiles: [] };
         }
 
         const defsResult = await buildDefinitions({ fullPath: absolutePath, debug });
         if (defsResult.isErr()) {
             console.error(chalk.red(`Failed to build definitions: ${defsResult.error}`));
-            return false;
+            return { success: false, generatedFiles: [] };
         }
 
         const parsed = defsResult.value;
@@ -380,13 +443,21 @@ export async function generateTests({
             }
         }
 
-        if (integrationId) {
-            if (!integrationsToProcess[integrationId]) {
-                console.error(chalk.red(`Integration "${integrationId}" not found`));
-                return false;
-            }
-            integrationsToProcess = { [integrationId]: integrationsToProcess[integrationId] };
+        const filterResult = validateAndFilterIntegrations({
+            integrations: integrationsToProcess,
+            integrationId,
+            syncName,
+            actionName
+        });
+
+        if (!filterResult.valid) {
+            console.error(chalk.red(filterResult.error));
+            return { success: false, generatedFiles: [] };
         }
+
+        integrationsToProcess = filterResult.filteredIntegrations;
+
+        const generatedFiles: string[] = [];
 
         for (const integration of Object.keys(integrationsToProcess)) {
             if (debug) {
@@ -395,44 +466,52 @@ export async function generateTests({
 
             const { syncs, actions } = integrationsToProcess[integration];
 
-            for (const syncName of Object.keys(syncs || {})) {
-                const sync = syncs[syncName];
-                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${syncName}`);
+            for (const currentSyncName of Object.keys(syncs || {})) {
+                if (syncName && currentSyncName !== syncName) {
+                    continue;
+                }
+                const sync = syncs[currentSyncName];
+                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${currentSyncName}`);
 
                 if (await pathExists(mockPath)) {
-                    await generateSyncTest({
+                    const filePath = await generateSyncTest({
                         integration,
-                        syncName,
+                        syncName: currentSyncName,
                         modelName: sync.output,
                         writePath: absolutePath,
                         debug
                     });
+                    generatedFiles.push(filePath);
                 } else if (debug) {
-                    printDebug(`No mocks found for sync ${syncName}, skipping test generation`);
+                    printDebug(`No mocks found for sync ${currentSyncName}, skipping test generation`);
                 }
             }
 
-            for (const actionName of Object.keys(actions || {})) {
-                const action = actions[actionName];
-                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${actionName}`);
+            for (const currentActionName of Object.keys(actions || {})) {
+                if (actionName && currentActionName !== actionName) {
+                    continue;
+                }
+                const action = actions[currentActionName];
+                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${currentActionName}`);
 
                 if (await pathExists(mockPath)) {
-                    await generateActionTest({
+                    const filePath = await generateActionTest({
                         integration,
-                        actionName,
+                        actionName: currentActionName,
                         output: action.output,
                         writePath: absolutePath,
                         debug
                     });
+                    generatedFiles.push(filePath);
                 } else if (debug) {
-                    printDebug(`No mocks found for action ${actionName}, skipping test generation`);
+                    printDebug(`No mocks found for action ${currentActionName}, skipping test generation`);
                 }
             }
         }
 
-        return true;
+        return { success: true, generatedFiles };
     } catch (err: any) {
         console.error(chalk.red(`Error generating tests: ${err}`));
-        return false;
+        return { success: false, generatedFiles: [] };
     }
 }
