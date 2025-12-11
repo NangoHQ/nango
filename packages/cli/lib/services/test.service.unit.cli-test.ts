@@ -92,7 +92,7 @@ describe('validateAndFilterIntegrations', () => {
             expect(result.error).toBe('Sync "fetch-messages" not found');
         });
 
-        it('should succeed when sync name exists across all integrations', () => {
+        it('should filter to only integrations containing the sync when no integrationId provided', () => {
             const integrations = createMockIntegrations();
             const result = validateAndFilterIntegrations({
                 integrations,
@@ -100,7 +100,8 @@ describe('validateAndFilterIntegrations', () => {
             });
 
             expect(result.valid).toBe(true);
-            expect(Object.keys(result.filteredIntegrations)).toEqual(['github', 'slack']);
+            // Should only include github, not slack (which doesn't have fetch-repos)
+            expect(Object.keys(result.filteredIntegrations)).toEqual(['github']);
         });
 
         it('should succeed when sync name exists within specified integration', () => {
@@ -142,7 +143,7 @@ describe('validateAndFilterIntegrations', () => {
             expect(result.error).toBe('Action "send-message" not found');
         });
 
-        it('should succeed when action name exists across all integrations', () => {
+        it('should filter to only integrations containing the action when no integrationId provided', () => {
             const integrations = createMockIntegrations();
             const result = validateAndFilterIntegrations({
                 integrations,
@@ -150,7 +151,8 @@ describe('validateAndFilterIntegrations', () => {
             });
 
             expect(result.valid).toBe(true);
-            expect(Object.keys(result.filteredIntegrations)).toEqual(['github', 'slack']);
+            // Should only include github, not slack (which doesn't have create-issue)
+            expect(Object.keys(result.filteredIntegrations)).toEqual(['github']);
         });
 
         it('should succeed when action name exists within specified integration', () => {
