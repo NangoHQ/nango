@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.16] - 2025-12-11
+
+### Added
+
+- *(records)* Add support for hard/soft delete to deleteRecords (#5123) by @TBonnin
+- *(generate:tests)* By sync or action name and output tests that were updated (#5126) by @khaliqgant
+
+### Changed
+
+- Manually fixing the managed-manifest - commit failed in workflow (#5127) by @rossmcewan
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/0c9611de5d0964e5d9c748ef688f3e3720c9e00a by Khaliq by @github-actions[bot]
+- Update version in manifest by @actions-user
+- Clarify CLI auth env variables (#5121) by @mintlify[bot]
+
+### Fixed
+
+- Override of glob package to not use vulnerable versions (#5130) by @rossmcewan
+- Npm also carries the vulnerable glob version (#5134) by @rossmcewan
+
 ## [v0.69.15] - 2025-12-10
 
 ### Added
@@ -5465,6 +5484,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.16]: https://github.com/NangoHQ/nango/compare/v0.69.15..v0.69.16
 [v0.69.15]: https://github.com/NangoHQ/nango/compare/v0.69.14..v0.69.15
 [v0.69.14]: https://github.com/NangoHQ/nango/compare/v0.69.13..v0.69.14
 [v0.69.13]: https://github.com/NangoHQ/nango/compare/v0.69.12..v0.69.13
