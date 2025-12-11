@@ -7303,6 +7303,25 @@ jira:
             suffix: .atlassian.net
             prefix: https://
 
+justworks:
+    display_name: Justworks
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://payroll.justworks.com/oauth/authorize
+    token_url: https://public-api.justworks.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    proxy:
+        base_url: https://public-api.justworks.com
+    docs: https://nango.dev/docs/api-integrations/justworks
+    setup_guide_url: https://nango.dev/docs/api-integrations/justworks/how-to-register-your-own-justworks-oauth-app
+
 jira-basic:
     display_name: Jira (Basic Auth)
     categories:
