@@ -40,7 +40,7 @@ export function typeToString(schema: JSONSchema7 | null, isArray: boolean): stri
     if (anyOf || oneOf) {
         const schemas = anyOf || oneOf || [];
         const types = schemas.map((s) => typeToString(s as JSONSchema7, false)).join(' | ');
-        return `(${types})${isArray ? '[]' : ''}`;
+        return isArray ? `(${types})[]` : types;
     }
 
     if (Array.isArray(type)) {
