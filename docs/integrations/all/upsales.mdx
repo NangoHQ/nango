@@ -1,0 +1,46 @@
+---
+title: Upsales
+sidebarTitle: Upsales
+---
+
+import Overview from '/snippets/overview.mdx'
+import PreBuiltTooling from '/snippets/generated/upsales/PreBuiltTooling.mdx'
+import PreBuiltUseCases from '/snippets/generated/upsales/PreBuiltUseCases.mdx'
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites    | Status | Comment |
+| ----------------- | ------ | ------- |
+| Paid dev account  | ❓     |         |
+| Paid test account | ❓     |         |
+| Partnership       | ❓     |         |
+| App review        | ❓     |         |
+| Security audit    | ❓     |         |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>
+    Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/upsales.mdx)
+</Note>
+
+## Useful links
+
+- [Upsales API Documentation](https://integration.upsales.com/docs/)
+- [Upsales Support](https://www.upsales.com/support)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/upsales.mdx)</Note>
+
+## API gotchas
+
+- Upsales uses API token authentication via query parameter (`token`), not in headers.
+- Rate limit is 200 requests per 10 seconds. The API returns `X-RateLimit-Reset` header when rate limited.
+- Pagination is offset-based using `offset` and `limit` query parameters.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/upsales.mdx)</Note>
