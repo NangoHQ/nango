@@ -1822,16 +1822,19 @@ const { data } = await nango.createConnectSession({
       <ResponseField name="display_name" type="string">
         The display name of the end user.
       </ResponseField>
+      <ResponseField name="tags" type="object">
+        Tags associated with the end user. Only accepts string values, up to 64 keys.
+      </ResponseField>
     </Expandable>
   </ResponseField>
 
   <ResponseField name="organization" type="object">
     <Expandable title="organization" defaultOpen>
       <ResponseField name="id" type="string" required>
-        The unique identifier for the organization.
+        The unique identifier for the organization. (Deprecated)
       </ResponseField>
       <ResponseField name="display_name" type="string">
-        The display name of the organization.
+        The display name of the organization. (Deprecated)
       </ResponseField>
     </Expandable>
   </ResponseField>
@@ -1841,7 +1844,35 @@ const { data } = await nango.createConnectSession({
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations.
+    <Expandable title="integrations_config_defaults" defaultOpen>
+      Default configuration for specific integrations. Keyed by integration ID.
+
+      <ResponseField name="user_scopes" type="string">
+        For Slack only.
+      </ResponseField>
+
+      <ResponseField name="authorization_params" type="object">
+        Query params passed to the OAuth flow (for OAuth2 only).
+      </ResponseField>
+
+      <ResponseField name="connection_config" type="object">
+        <Expandable title="connection_config">
+          <ResponseField name="oauth_scopes_override" type="string[]">
+            Override OAuth scopes for this integration.
+          </ResponseField>
+        </Expandable>
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="overrides" type="object">
+    <Expandable title="overrides" defaultOpen>
+      Override configuration for specific integrations. Keyed by integration ID.
+
+      <ResponseField name="docs_connect" type="string">
+        Override the URL of the docs we point to in the connect flow.
+      </ResponseField>
+    </Expandable>
   </ResponseField>
 </Expandable>
 
@@ -1912,22 +1943,53 @@ const { data } = await nango.createReconnectSession({
       <ResponseField name="display_name" type="string">
         The display name of the end user.
       </ResponseField>
+      <ResponseField name="tags" type="object">
+        Tags associated with the end user. Only accepts string values, up to 64 keys.
+      </ResponseField>
     </Expandable>
   </ResponseField>
 
   <ResponseField name="organization" type="object">
     <Expandable title="organization">
       <ResponseField name="id" type="string" required>
-        The unique identifier for the organization.
+        The unique identifier for the organization. (Deprecated)
       </ResponseField>
       <ResponseField name="display_name" type="string">
-        The display name of the organization.
+        The display name of the organization. (Deprecated)
       </ResponseField>
     </Expandable>
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations.
+    <Expandable title="integrations_config_defaults" defaultOpen>
+      Default configuration for specific integrations. Keyed by integration ID.
+
+      <ResponseField name="user_scopes" type="string">
+        For Slack only.
+      </ResponseField>
+
+      <ResponseField name="authorization_params" type="object">
+        Query params passed to the OAuth flow (for OAuth2 only).
+      </ResponseField>
+
+      <ResponseField name="connection_config" type="object">
+        <Expandable title="connection_config">
+          <ResponseField name="oauth_scopes_override" type="string[]">
+            Override OAuth scopes for this integration.
+          </ResponseField>
+        </Expandable>
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="overrides" type="object">
+    <Expandable title="overrides" defaultOpen>
+      Override configuration for specific integrations. Keyed by integration ID.
+
+      <ResponseField name="docs_connect" type="string">
+        Override the URL of the docs we point to in the connect flow.
+      </ResponseField>
+    </Expandable>
   </ResponseField>
 </Expandable>
 
