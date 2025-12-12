@@ -3222,6 +3222,41 @@ companycam:
             title: Access Token
             description: The Access Token for your CompanyCam company
 
+conductorone:
+    display_name: ConductorOne
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/auth/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://nango.dev/docs/api-integrations/conductorone
+    docs_connect: https://nango.dev/docs/api-integrations/conductorone/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname extracted from your Client ID
+            example: acme.conductor.one
+            format: hostname
+            order: 1
+            doc_section: '#step-2-obtaining-your-hostname'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your ConductorOne Client ID
+            example: strange-hydra-68836@acme.conductor.one/pcc
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your ConductorOne Client Secret
+            example: 'secret-token:conductorone.com:v1:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5IiwieCI6IkMySEx5Y0d6eUhfZDQwcjJvejZoNkpqdndvRVFBZ0FTRVc2eDB6emh6Y2MiLCJkIjoiLTgzVkxXUVUtZVhQY0ZCWVhDb2NpU29XVmhrYnRXUm9zdkZUZ3JqcXNVbyJ9'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+
 copper:
     display_name: Copper (OAuth)
     categories:
