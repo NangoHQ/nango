@@ -1,14 +1,14 @@
 import { Edit } from 'lucide-react';
 import { useState } from 'react';
 
-import { SimpleTooltip } from '../../../components/SimpleTooltip';
-import { CopyButton } from '../../../components/ui/button/CopyButton';
-import { Input } from '../../../components/ui/input/Input';
-import { useToast } from '../../../hooks/useToast';
-import { cn } from '../../../utils/utils';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
+import { CopyButton } from '@/components/ui/button/CopyButton';
+import { Input } from '@/components/ui/input/Input';
 import { Button } from '@/components-v2/ui/button';
+import { useToast } from '@/hooks/useToast';
+import { cn } from '@/utils/utils';
 
-import type { InputProps } from '../../../components/ui/input/Input';
+import type { InputProps } from '@/components/ui/input/Input';
 import type { ApiError } from '@nangohq/types';
 import type { ReactNode } from 'react';
 

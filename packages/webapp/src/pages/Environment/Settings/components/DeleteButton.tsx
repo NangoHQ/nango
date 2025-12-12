@@ -1,8 +1,8 @@
 import { IconTrash } from '@tabler/icons-react';
 
-import { DestructiveActionModal } from '../../../components/DestructiveActionModal';
-import { SimpleTooltip } from '../../../components/SimpleTooltip';
-import { Button } from '../../../components/ui/button/Button';
+import { DestructiveActionModal } from '@/components/DestructiveActionModal';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
+import { Button } from '@/components/ui/button/Button';
 
 interface DeleteButtonProps {
     environmentName: string;

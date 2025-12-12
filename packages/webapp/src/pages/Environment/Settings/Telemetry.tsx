@@ -2,7 +2,7 @@ import { IconExternalLink, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './EditableInput';
+import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { Input } from '../../../components/ui/input/Input';
@@ -13,7 +13,7 @@ import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
 import { Button } from '@/components-v2/ui/button';
 
-export const ExportSettings: React.FC = () => {
+export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { environmentAndAccount, mutate } = useEnvironment(env);
