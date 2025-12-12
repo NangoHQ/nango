@@ -44,7 +44,7 @@ const route: WebhookHandler<HighLevelWebhookResponse> = async (nango, headers, b
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        webhookType: type ?? '',
+        webhookTypeValue: type ?? '',
         connectionIdentifier,
         ...(connectionIdentifier && { propName: connectionIdentifier })
     });
