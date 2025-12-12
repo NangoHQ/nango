@@ -26,11 +26,18 @@ function parseCalendlySignature(signatureHeader: string): { timestamp: string; s
     return { timestamp, signature };
 }
 
-function validateCalendlySignature(webhookSecret: string, timestamp: string, headerSignature: string, body: any): boolean {
-    const data = timestamp + '.' + JSON.stringify(body);
+function validateCalendlySignature(webhookSecret: string, timestamp: string, headerSignature: string, rawBody: any): boolean {
+    const data = timestamp + '.' + rawBody;
     const expectedSignature = crypto.createHmac('sha256', webhookSecret).update(data, 'utf8').digest('hex');
 
-    return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(headerSignature, 'hex'));
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const headerBuffer = Buffer.from(headerSignature, 'hex');
+
+    if (expectedBuffer.length !== headerBuffer.length) {
+        return false;
+    }
+
+    return crypto.timingSafeEqual(expectedBuffer, headerBuffer);
 }
 
 function validateTimestamp(timestamp: string, toleranceMs: number = 180000): boolean {
@@ -40,7 +47,7 @@ function validateTimestamp(timestamp: string, toleranceMs: number = 180000): boo
     return timestampMilliseconds >= now - toleranceMs && timestampMilliseconds <= now + toleranceMs;
 }
 
-const route: WebhookHandler = async (nango, headers, body, _rawBody) => {
+const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     // https://developer.calendly.com/api-docs/4c305798a61d3-webhook-signatures
     const signatureHeader = headers['calendly-webhook-signature'];
 
@@ -62,7 +69,7 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody) => {
             return Err(new NangoError('webhook_invalid_signature'));
         }
 
-        if (!validateCalendlySignature(webhookSecret, timestamp, signature, body)) {
+        if (!validateCalendlySignature(webhookSecret, timestamp, signature, rawBody)) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
     }
