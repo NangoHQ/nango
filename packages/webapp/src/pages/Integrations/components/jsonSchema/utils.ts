@@ -28,6 +28,10 @@ export function isAnyOfSchema(schema: JSONSchema7 | null): boolean {
     return schema?.anyOf !== undefined;
 }
 
+export function isObjectWithNoProperties(schema: JSONSchema7 | null): boolean {
+    return isObjectSchema(schema) && !schema?.properties && !schema?.additionalProperties;
+}
+
 export function typeToString(schema: JSONSchema7 | null, isArray: boolean): string {
     if (!schema) {
         return 'unknown';

@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema } from '../../components/jsonSchema/utils';
+import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
@@ -33,7 +33,7 @@ export const FunctionsOne: React.FC = () => {
         const { input, json_schema } = func;
 
         const inputSchema = json_schema.definitions?.[input] ?? null;
-        if (!inputSchema || isNullSchema(inputSchema as JSONSchema7)) {
+        if (!inputSchema || isNullSchema(inputSchema as JSONSchema7) || isObjectWithNoProperties(inputSchema as JSONSchema7)) {
             return null;
         }
         return inputSchema as JSONSchema7;
@@ -46,13 +46,11 @@ export const FunctionsOne: React.FC = () => {
         const { returns, json_schema } = func;
 
         const outputSchema = json_schema.definitions?.[returns[0]] ?? null;
-        if (!outputSchema || isNullSchema(outputSchema as JSONSchema7)) {
+        if (!outputSchema || isNullSchema(outputSchema as JSONSchema7) || isObjectWithNoProperties(outputSchema as JSONSchema7)) {
             return null;
         }
         return outputSchema as JSONSchema7;
     }, [func]);
-
-    const defaultTab = inputSchema ? 'inputs' : outputSchema ? 'outputs' : undefined;
 
     if (integrationLoading || flowsLoading) {
         // TODO: improve loading state
@@ -62,6 +60,10 @@ export const FunctionsOne: React.FC = () => {
     if (!func || !integrationData) {
         return <PageNotFound />;
     }
+
+    const inputTab = func.type === 'action' ? 'inputs' : 'metadata';
+    const inputTabLabel = func.type === 'action' ? 'Inputs' : 'Metadata';
+    const defaultTab = inputSchema ? inputTab : outputSchema ? 'outputs' : undefined;
 
     return (
         <DashboardLayout>
@@ -85,44 +87,48 @@ export const FunctionsOne: React.FC = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-4 gap-y-2">
-                        <IntegrationsBadge label="Type" className="capitalize">
-                            {func.type}
+                        <IntegrationsBadge label="Type">
+                            <span className="capitalize-first">{func.type}</span>
                         </IntegrationsBadge>
-                        {func.sync_type && <IntegrationsBadge label="Sync type">{func.sync_type}</IntegrationsBadge>}
+                        {func.sync_type && (
+                            <IntegrationsBadge label="Sync type">
+                                <span className="capitalize-first">{func.sync_type}</span>
+                            </IntegrationsBadge>
+                        )}
                         {func.runs && (
-                            <IntegrationsBadge label="Frequency" className="capitalize">
-                                {func.runs}
+                            <IntegrationsBadge label="Frequency">
+                                <span className="capitalize-first">{func.runs}</span>
                             </IntegrationsBadge>
                         )}
                         {func.auto_start !== undefined && <IntegrationsBadge label="Auto start">{func.auto_start ? 'Yes' : 'No'}</IntegrationsBadge>}
                         <IntegrationsBadge label="Source">{func.pre_built ? 'Template' : 'Custom'}</IntegrationsBadge>
-                        {func.version && <IntegrationsBadge label="Version">{func.version}</IntegrationsBadge>}
+                        {func.version && <IntegrationsBadge label="Version">v{func.version}</IntegrationsBadge>}
                         {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
                     </div>
                     <span className="text-text-tertiary text-body-medium-medium">{func.description}</span>
                 </div>
 
                 <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
-                    {inputSchema || outputSchema ? (
-                        <Navigation defaultValue={defaultTab} orientation="horizontal">
-                            <NavigationList>
-                                {inputSchema && <NavigationTrigger value="inputs">Inputs</NavigationTrigger>}
-                                {outputSchema && <NavigationTrigger value="outputs">Outputs</NavigationTrigger>}
-                            </NavigationList>
-                            {inputSchema && (
-                                <NavigationContent value="inputs">
-                                    <JsonSchemaTopLevelObject schema={inputSchema} />
-                                </NavigationContent>
+                    <Navigation defaultValue={defaultTab} orientation="horizontal">
+                        <NavigationList>
+                            <NavigationTrigger value={inputTab}>{inputTabLabel}</NavigationTrigger>
+                            <NavigationTrigger value="outputs">Outputs</NavigationTrigger>
+                        </NavigationList>
+                        <NavigationContent value={inputTab}>
+                            {inputSchema ? (
+                                <JsonSchemaTopLevelObject schema={inputSchema} />
+                            ) : (
+                                <p className="text-text-secondary text-body-medium-regular">This function does not have any inputs.</p>
                             )}
-                            {outputSchema && (
-                                <NavigationContent value="outputs">
-                                    <JsonSchemaTopLevelObject schema={outputSchema} />
-                                </NavigationContent>
+                        </NavigationContent>
+                        <NavigationContent value="outputs">
+                            {outputSchema ? (
+                                <JsonSchemaTopLevelObject schema={outputSchema} />
+                            ) : (
+                                <p className="text-text-secondary text-body-medium-regular">This function does not have any outputs.</p>
                             )}
-                        </Navigation>
-                    ) : (
-                        <p className="text-text-secondary text-body-medium-regular">This function does not have any inputs or outputs.</p>
-                    )}
+                        </NavigationContent>
+                    </Navigation>
                 </div>
             </header>
         </DashboardLayout>
