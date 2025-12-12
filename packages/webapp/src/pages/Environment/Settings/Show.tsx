@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { AuthorizationSettings } from './Authorization';
 import { BackendSettings } from './Backend';
 import { ConnectUISettings } from './ConnectUISettings';
-import { ExportSettings } from './Export';
-import { MainSettings } from './Main';
-import { NotificationSettings } from './Notification';
+import { DeprecatedSettings } from './Deprecated';
+import { Functions } from './Functions';
+import { General } from './General';
+import { Logs } from './Logs';
+import { Notifications } from './Notifications';
 import { SlackAlertsSettings } from './SlackAlerts';
-import { VariablesSettings } from './Variables';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
@@ -87,7 +87,7 @@ export const EnvironmentSettings: React.FC = () => {
                         {canSeeDeprecatedAuthorization && <NavigationTrigger value={'deprecated'}>Deprecated</NavigationTrigger>}
                     </NavigationList>
                     <NavigationContent value={'general'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px]">
-                        <MainSettings />
+                        <General />
                     </NavigationContent>
                     <NavigationContent value={'backend'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px] flex-initial">
                         <BackendSettings />
@@ -96,20 +96,20 @@ export const EnvironmentSettings: React.FC = () => {
                         <ConnectUISettings />
                     </NavigationContent>
                     <NavigationContent value={'webhooks'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px] flex-initial">
-                        <NotificationSettings />
+                        <Notifications />
                     </NavigationContent>
                     <NavigationContent value={'slack-alerts'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px] flex-initial">
                         <SlackAlertsSettings />
                     </NavigationContent>
                     <NavigationContent value={'functions'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px] flex-initial">
-                        <VariablesSettings />
+                        <Functions />
                     </NavigationContent>
                     <NavigationContent value={'logs'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px] flex-initial">
-                        <ExportSettings />
+                        <Logs />
                     </NavigationContent>
                     {canSeeDeprecatedAuthorization && (
                         <NavigationContent value={'deprecated'} className="flex flex-col gap-6 w-[715px] 4xl:w-[900px] flex-initial">
-                            <AuthorizationSettings />
+                            <DeprecatedSettings />
                         </NavigationContent>
                     )}
                 </Navigation>
