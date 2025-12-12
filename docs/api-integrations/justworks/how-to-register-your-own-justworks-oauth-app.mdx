@@ -1,0 +1,36 @@
+---
+title: 'How to register your own Justworks OAuth app'
+sidebarTitle: 'Justworks Setup'
+description: 'Register an OAuth app with Justworks and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Justworks to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Justworks account.
+
+<Note>Creation of OAuth Applications for the Justworks API is not self-service. You'll need to contact the Justworks team to set one up.</Note>
+
+<Steps>
+  <Step title="Request OAuth application">
+    To obtain access to the API, contact [partner-api@justworks.com](mailto:partner-api@justworks.com) to request an OAuth application.
+    
+    Provide the following required information:
+    - **Name**: How you want your app identified to your customers (most likely your company/product name)
+    - **Redirect URI**: `https://api.nango.dev/oauth/callback`
+    - **Scopes**: The set of data your application needs access to. See the [available Scopes](https://public-api.justworks.com/v1/docs#section/OAuth-Scopes)
+    
+    <Tip>You can optionally provide a Logo URL, Terms of Service URL, and Privacy Policy URL, which will be shown to customers when they authorize your application.</Tip>
+  </Step>
+  <Step title="Receive your credentials">
+    Once your OAuth application is created, Justworks will provide you with:
+    - **Client ID**
+    - **Client Secret**
+
+   You’ll need these credentials when configuring the integration in Nango. Pass them along with the various scopes you previously requested.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Justworks' Integration With the API Documentation](https://public-api.justworks.com/v1/docs#section/Integration-With-the-API).
+
+---
