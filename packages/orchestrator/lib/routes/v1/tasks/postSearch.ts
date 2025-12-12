@@ -21,16 +21,16 @@ type PostSearch = Endpoint<{
     Success: Task[];
 }>;
 
+const bodySchema = z
+    .object({
+        groupKey: z.string().min(1).optional(),
+        limit: z.coerce.number().positive().optional(),
+        ids: z.array(z.string().uuid()).optional()
+    })
+    .strict();
+
 const validate = validateRequest<PostSearch>({
-    parseBody: (data) =>
-        z
-            .object({
-                groupKey: z.string().min(1).optional(),
-                limit: z.coerce.number().positive().optional(),
-                ids: z.array(z.string().uuid()).optional()
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data) => bodySchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {
