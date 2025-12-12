@@ -1,0 +1,29 @@
+---
+title: 'Delete records'
+sidebarTitle: 'Delete records'
+openapi: 'DELETE /records'
+---
+
+Deletes synced records for a given connection and model using cursor-based pagination.
+
+## Deletion modes
+
+- **`soft`**: Empties the record payload and marks as deleted. The record metadata is preserved, including `_nango_metadata` fields.
+- **`hard`**: Permanently removes the record entries from Nango.
+
+## Cursor behavior
+
+Records are deleted up to and including the specified `until_cursor` value. Use the `_nango_metadata.cursor` value from the record you want to delete up to.
+
+## Response
+
+<Tip>
+The `has_more` field indicates whether there are potentially more records to delete. When `true`, make another request with the same `until_cursor` to continue deletion. When `false`, all records up to the cursor have been deleted.
+</Tip>
+
+```json
+{
+  "count": 150,
+  "has_more": true
+}
+```
