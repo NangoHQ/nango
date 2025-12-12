@@ -1,5 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
+import { Loader } from 'lucide-react';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -14,7 +15,7 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 primary:
-                    'bg-btn-primary-bg text-btn-primary-fg hover:bg-btn-primary-hover active:bg-btn-primary-press focus:bg-btn-primary-hover disabled:bg-btn-secondary-bg',
+                    'bg-btn-primary-bg text-btn-primary-fg hover:bg-btn-primary-hover active:bg-btn-primary-press focus:bg-btn-primary-hover disabled:bg-btn-secondary-bg data-loading:bg-btn-primary-loading data-loading:opacity-100',
                 destructive:
                     'bg-btn-destructive-bg text-btn-destructive-fg hover:bg-btn-destructive-hover active:bg-btn-destructive-press focus:bg-btn-destructive-hover',
                 secondary: 'bg-btn-secondary-bg text-btn-secondary-fg hover:bg-btn-secondary-hover active:bg-btn-secondary-press focus:bg-btn-secondary-hover',
@@ -38,13 +39,24 @@ function Button({
     className,
     variant,
     size,
+    loading = false,
     asChild = false,
     ...props
 }: React.ComponentProps<'button'> &
     VariantProps<typeof buttonVariants> & {
+        loading?: boolean;
         asChild?: boolean;
     }) {
     const Comp = asChild ? Slot : 'button';
+
+    if (loading) {
+        return (
+            <Comp data-slot="button" data-loading className={cn(buttonVariants({ variant, size, className }))} {...{ ...props, disabled: true }}>
+                <Loader className="size-5 animate-spin" />
+                {props.children}
+            </Comp>
+        );
+    }
     return <Comp data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
 }
 

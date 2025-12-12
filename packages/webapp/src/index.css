@@ -18,6 +18,11 @@
     --font-mono: 'Source Code Pro', sans-serif;
     --font-code: 'Roboto Mono', 'Source Code Pro', system-ui, sans-serif;
 
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1440px;
+    --breakpoint-3xl: 1600px;
+    --breakpoint-4xl: 1920px;
+
     --color-bg-black: #0e1014;
     --color-pure-black: #05050a;
     --color-active-gray: #161720;
@@ -378,6 +383,7 @@
     --color-btn-primary-fg: var(--color-gray-50);
     --color-btn-primary-hover: var(--color-brand-700);
     --color-btn-primary-press: var(--color-brand-900);
+    --color-btn-primary-loading: var(--color-brand-900);
 
     --color-btn-secondary-bg: var(--color-gray-200);
     --color-btn-secondary-fg: var(--color-gray-600);
