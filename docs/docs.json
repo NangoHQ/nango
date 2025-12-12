@@ -662,6 +662,7 @@
               "integrations/all/loop-returns",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
+              "api-integrations/lumos",
               "integrations/all/mailchimp",
               "integrations/all/mailgun",
               "integrations/all/make",
