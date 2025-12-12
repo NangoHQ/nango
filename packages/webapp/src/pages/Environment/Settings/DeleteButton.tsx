@@ -17,7 +17,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
     const tooltipContent = disabled ? disabledTooltip : '';
     const trigger = (
         <SimpleTooltip tooltipContent={tooltipContent} className="text-text-light-gray pointer-events-none">
-            <Button variant="select" className="text-alert-400 flex gap-2 items-center text-sm" disabled={disabled}>
+            <Button variant="select" className="text-btn-destructive-fg bg-btn-destructive-bg flex gap-2 items-center text-sm" disabled={disabled}>
                 <IconTrash stroke={1} size={18} />
                 <span>Delete environment</span>
             </Button>
@@ -28,7 +28,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
         <DestructiveActionModal
             title="Proceed carefully!"
             description="This action is destructive & irreversible. It will delete all API credentials, connection metadata, synced records & various configurations linked to this environment."
-            inputLabel={`To confirm, type your current environment's (${environmentName}) name below:`}
+            inputLabel={`To confirm, type your current environment's name (${environmentName}) below:`}
             confirmationKeyword={environmentName}
             confirmButtonText="Delete Environment"
             trigger={trigger}

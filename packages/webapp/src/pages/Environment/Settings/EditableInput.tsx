@@ -1,25 +1,23 @@
-import { IconEdit, IconExternalLink } from '@tabler/icons-react';
+import { Edit } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { SimpleTooltip } from '../../../components/SimpleTooltip';
-import { Button } from '../../../components/ui/button/Button';
 import { CopyButton } from '../../../components/ui/button/CopyButton';
 import { Input } from '../../../components/ui/input/Input';
 import { useToast } from '../../../hooks/useToast';
 import { cn } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/button';
 
 import type { InputProps } from '../../../components/ui/input/Input';
 import type { ApiError } from '@nangohq/types';
 import type { ReactNode } from 'react';
 
 interface EditableInputProps extends InputProps {
-    title: string;
+    title?: string;
     subTitle?: boolean;
     secret?: boolean;
     name: string;
     originalValue: string;
-    docs?: string;
     editInfo?: ReactNode;
     blocked?: boolean;
     blockedTooltip?: string;
@@ -33,7 +31,6 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     secret,
     name,
     originalValue,
-    docs,
     editInfo,
     apiCall,
     onSuccess,
@@ -65,7 +62,6 @@ export const EditableInput: React.FC<EditableInputProps> = ({
             return;
         }
 
-        toast({ title: `${title} updated successfully!`, variant: 'success' });
         onSuccess(value);
 
         setEdit(false);
@@ -73,16 +69,9 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     };
 
     return (
-        <fieldset className={cn('flex flex-col gap-2.5')}>
-            {docs ? (
-                <Link to={docs} className="flex gap-2 items-center" target="_blank">
-                    <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s -mb-2')}>
-                        {title}
-                    </label>
-                    <IconExternalLink stroke={1} size={18} />
-                </Link>
-            ) : (
-                <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s -mb-2')}>
+        <fieldset className={cn('flex flex-col gap-3.5')}>
+            {title && (
+                <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-sm -mb-2')}>
                     {title}
                 </label>
             )}
@@ -97,16 +86,20 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 after={
                     !edit && (
                         <div className="flex">
-                            {secret && <CopyButton text={value} />}
+                            {secret && (
+                                <div className="py-1">
+                                    <CopyButton text={value} />
+                                </div>
+                            )}
                             {blocked ? (
                                 <SimpleTooltip tooltipContent={blockedTooltip} side="top" delay={0}>
-                                    <Button variant={'icon'} size={'xs'} disabled>
-                                        <IconEdit stroke={1} size={18} />
+                                    <Button variant={'ghost'} size={'sm'} disabled>
+                                        <Edit size={18} />
                                     </Button>
                                 </SimpleTooltip>
                             ) : (
-                                <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
-                                    <IconEdit stroke={1} size={18} />
+                                <Button variant={'ghost'} size={'sm'} onClick={() => setEdit(true)}>
+                                    <Edit size={18} />
                                 </Button>
                             )}
                         </div>
@@ -116,25 +109,23 @@ export const EditableInput: React.FC<EditableInputProps> = ({
             />
             {error && <div className="text-alert-400 text-s">{error}</div>}
             {edit && editInfo}
-            <div className="flex justify-end gap-3">
-                {edit && (
-                    <>
-                        <Button
-                            variant={'tertiary'}
-                            onClick={() => {
-                                setValue(originalValue);
-                                setEdit(false);
-                                setError(null);
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button variant={'primary'} onClick={onSave} isLoading={loading}>
-                            Save
-                        </Button>
-                    </>
-                )}
-            </div>
+            {edit && (
+                <div className="flex justify-start gap-2">
+                    <Button
+                        variant={'tertiary'}
+                        onClick={() => {
+                            setValue(originalValue);
+                            setEdit(false);
+                            setError(null);
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button variant={'primary'} onClick={onSave} disabled={loading}>
+                        Save
+                    </Button>
+                </div>
+            )}
         </fieldset>
     );
 };

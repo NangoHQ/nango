@@ -1,12 +1,17 @@
-import { IconSettings } from '@tabler/icons-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+import { DeleteButton } from './DeleteButton';
 import { EditableInput } from './EditableInput';
-import { Info } from '../../../components/Info';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
-import { apiPatchEnvironment } from '../../../hooks/useEnvironment';
+import { apiDeleteEnvironment, apiPatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
+import { AlertDescription } from '@/components/ui/Alert';
+import { Alert } from '@/components-v2/ui/alert';
+import { useToast } from '@/hooks/useToast';
 
 export const MainSettings: React.FC = () => {
     const navigate = useNavigate();
@@ -15,38 +20,71 @@ export const MainSettings: React.FC = () => {
     const setEnv = useStore((state) => state.setEnv);
     const { mutate: mutateMeta } = useMeta();
 
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    const { toast } = useToast();
+
+    const handleDelete = async () => {
+        const { res } = await apiDeleteEnvironment(env);
+        if (res.status >= 200 && res.status < 300) {
+            setShowDeleteAlert(false);
+            // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
+            navigate(`/${PROD_ENVIRONMENT_NAME}/environment-settings`);
+            await mutateMeta();
+            setEnv(PROD_ENVIRONMENT_NAME);
+        } else {
+            toast({
+                title: 'Failed to delete environment',
+                variant: 'error'
+            });
+        }
+    };
+
     return (
-        <div className="text-grayscale-100 flex flex-col gap-10">
-            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#main" id="main">
+        <SettingsContent title="General">
+            <SettingsGroup label="Environment name">
+                <EditableInput
+                    name="environmentName"
+                    originalValue={env}
+                    apiCall={(name) => apiPatchEnvironment(env, { name })}
+                    onSuccess={async (newName) => {
+                        // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
+                        navigate(`/${newName}/environment-settings`);
+                        await mutateMeta();
+                        setEnv(newName);
+                    }}
+                    blocked={env === PROD_ENVIRONMENT_NAME}
+                    blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
+                    editInfo={
+                        <>
+                            <span className="text-text-tertiary text-s -mt-2.5">&#42;Must be lowercase letters, numbers, underscores and/or dashes.</span>
+                            {env !== PROD_ENVIRONMENT_NAME && (
+                                <Alert variant="info">
+                                    <div />
+                                    <AlertDescription>
+                                        When using the CLI for custom functions, add this to your .env:{' '}
+                                        <code className="font-mono text-sm font-semibold">
+                                            NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
+                                        </code>
+                                        .
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                        </>
+                    }
+                />
+            </SettingsGroup>
+            <SettingsGroup label="Environment suppression" className="items-center">
                 <div>
-                    <IconSettings stroke={1} size={18} />
-                </div>
-                <h3 className="uppercase text-sm">Main</h3>
-            </Link>
-            <div className="px-8 flex flex-col gap-10 w-1/2">
-                <div className="flex flex-col gap-4 w-full">
-                    <EditableInput
-                        title="Environment Name"
-                        name="environmentName"
-                        originalValue={env}
-                        apiCall={(name) => apiPatchEnvironment(env, { name })}
-                        onSuccess={async (newName) => {
-                            // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
-                            navigate(`/${newName}/environment-settings`);
-                            await mutateMeta();
-                            setEnv(newName);
-                        }}
-                        blocked={env === PROD_ENVIRONMENT_NAME}
-                        blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
+                    <DeleteButton
+                        environmentName={env}
+                        onDelete={handleDelete}
+                        open={showDeleteAlert}
+                        onOpenChange={setShowDeleteAlert}
+                        disabled={env === PROD_ENVIRONMENT_NAME}
+                        disabledTooltip={`You cannot delete the ${PROD_ENVIRONMENT_NAME} environment`}
                     />
-                    {env !== PROD_ENVIRONMENT_NAME && (
-                        <Info>
-                            If you&apos;re using the CLI, make sure your .env file includes NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}. This variable
-                            name is based on your Nango environment name, update it if you rename the environment.
-                        </Info>
-                    )}
                 </div>
-            </div>
-        </div>
+            </SettingsGroup>
+        </SettingsContent>
     );
 };

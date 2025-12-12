@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/utils/utils';
 
 export const NavigationList: React.FC<React.ComponentProps<typeof TabsPrimitive.List>> = (props) => {
-    return <TabsPrimitive.List className="w-46 h-fit shrink-0 p-2 bg-bg-elevated rounded" {...props} />;
+    return <TabsPrimitive.List {...props} className={cn('w-46 h-fit shrink-0 p-2 bg-bg-elevated rounded', props.className)} />;
 };
 
 export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {

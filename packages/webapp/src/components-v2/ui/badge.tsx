@@ -7,7 +7,7 @@ import { cn } from '@/utils/utils';
 import type { VariantProps } from 'class-variance-authority';
 
 const badgeVariants = cva(
-    'inline-flex items-center justify-center uppercase rounded px-2 py-0.5 !text-body-extra-small-semi w-fit whitespace-nowrap shrink-0 [&>svg]:size-3.5 gap-1 [&>svg]:pointer-events-none',
+    'inline-flex items-center justify-center uppercase rounded px-2 py-0.5 w-fit whitespace-nowrap shrink-0 [&>svg]:size-3.5 gap-1 [&>svg]:pointer-events-none',
     {
         variants: {
             variant: {
@@ -17,18 +17,29 @@ const badgeVariants = cva(
                 yellow: 'bg-badge-bg-yellow text-badge-fg-yellow',
                 green: 'bg-badge-bg-green text-badge-fg-green',
                 ghost: 'bg-transparent text-text-secondary border border-border-default'
+            },
+            size: {
+                xs: '!text-body-extra-small-semi',
+                custom: ''
             }
         },
         defaultVariants: {
-            variant: 'gray'
+            variant: 'gray',
+            size: 'xs'
         }
     }
 );
 
-function Badge({ className, variant, asChild = false, ...props }: React.ComponentProps<'span'> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+function Badge({
+    className,
+    variant,
+    size,
+    asChild = false,
+    ...props
+}: React.ComponentProps<'span'> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
     const Comp = asChild ? Slot : 'span';
 
-    return <Comp data-slot="badge" className={cn(badgeVariants({ variant }), className)} {...props} />;
+    return <Comp data-slot="badge" className={cn(badgeVariants({ variant, size }), className)} {...props} />;
 }
 
 export { Badge, badgeVariants };

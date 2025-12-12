@@ -1,15 +1,17 @@
-import { IconEdit, IconExternalLink, IconPackageExport, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { EditableInput } from './EditableInput';
-import { Button } from '../../../components/ui/button/Button';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 import { Input } from '../../../components/ui/input/Input';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/button';
 
 export const ExportSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -66,7 +68,6 @@ export const ExportSettings: React.FC = () => {
             return;
         }
 
-        toast({ title: 'OTLP Headers updated successfully!', variant: 'success' });
         void mutate();
 
         setEditHeaders(false);
@@ -101,92 +102,96 @@ export const ExportSettings: React.FC = () => {
     }
 
     return (
-        <div className="text-grayscale-100 flex flex-col gap-10">
-            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#export" id="export">
-                <div>
-                    <IconPackageExport stroke={1} size={18} />
-                </div>
-                <h3 className="uppercase text-sm">Export Settings</h3>
-            </Link>
-            <div className="px-8 flex flex-col gap-4 w-1/2">
-                <Link to="https://nango.dev/docs/implementation-guides/platform/open-telemetry-export" className="flex gap-2 items-center" target="_blank">
-                    <label className="font-semibold">OpenTelemetry</label> <IconExternalLink stroke={1} size={18} />
-                </Link>
-
-                <EditableInput
-                    name="otlp_endpoint"
-                    title="Endpoint"
-                    subTitle
-                    originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
-                    apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
-                    onSuccess={() => void mutate()}
-                    placeholder="https://my.otlp.commector:4318"
-                />
-                <fieldset className="flex flex-col gap-1">
-                    <label htmlFor="otlp_headers" className="text-s">
-                        Headers
-                    </label>
-                    <div className="flex flex-col gap-2.5">
-                        {headers.map((header, i) => {
-                            const errorName = errors.find((err) => err.index === i && err.key === 'name');
-                            const errorValue = errors.find((err) => err.index === i && err.key === 'value');
-                            return (
-                                <div key={i} className="flex flex-col gap-0.5">
-                                    <div className="flex gap-4">
-                                        <Input
-                                            value={header.name}
-                                            onChange={(e) => onUpdate('name', e.target.value, i)}
-                                            inputSize={'lg'}
-                                            variant={'black'}
-                                            className={cn('w-[200px]', errorName && 'border-alert-400')}
-                                            placeholder="MY_HEADER"
-                                            disabled={!editHeaders || loading}
-                                        />
-                                        <SecretInput
-                                            value={header.value}
-                                            onChange={(e) => onUpdate('value', e.target.value, i)}
-                                            inputSize={'lg'}
-                                            variant={'black'}
-                                            className={cn('w-[200px] grow', errorValue && 'border-alert-400')}
-                                            placeholder="value"
-                                            disabled={!editHeaders || loading}
-                                        />
-                                        {editHeaders && (
-                                            <Button variant={'danger'} size="lg" onClick={() => !loading && onRemove(i)}>
-                                                <IconTrash stroke={1} />
-                                            </Button>
+        <SettingsContent title="Telemetry">
+            <SettingsGroup
+                label={
+                    <div className="flex gap-1.5">
+                        OTel real-time export
+                        <Link
+                            className="flex gap-2 items-center"
+                            target="_blank"
+                            to="https://nango.dev/docs/implementation-guides/platform/open-telemetry-export"
+                        >
+                            <IconExternalLink stroke={1} size={18} />
+                        </Link>
+                    </div>
+                }
+            >
+                <div className="flex flex-col gap-7">
+                    <EditableInput
+                        name="otlp_endpoint"
+                        title="Endpoint"
+                        subTitle
+                        originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
+                        apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
+                        onSuccess={() => void mutate()}
+                        placeholder="https://my.otlp.commector:4318"
+                    />
+                    <fieldset className="flex flex-col gap-4">
+                        <label htmlFor="otlp_headers" className="text-sm">
+                            Headers
+                        </label>
+                        <div className="flex flex-col gap-2.5">
+                            {headers.map((header, i) => {
+                                const errorName = errors.find((err) => err.index === i && err.key === 'name');
+                                const errorValue = errors.find((err) => err.index === i && err.key === 'value');
+                                return (
+                                    <div key={i} className="flex flex-col gap-0.5">
+                                        <div className="flex gap-4">
+                                            <Input
+                                                value={header.name}
+                                                onChange={(e) => onUpdate('name', e.target.value, i)}
+                                                inputSize={'lg'}
+                                                variant={'black'}
+                                                className={cn('w-[200px]', errorName && 'border-alert-400')}
+                                                placeholder="MY_HEADER"
+                                                disabled={!editHeaders || loading}
+                                            />
+                                            <SecretInput
+                                                value={header.value}
+                                                onChange={(e) => onUpdate('value', e.target.value, i)}
+                                                inputSize={'lg'}
+                                                variant={'black'}
+                                                className={cn('w-[200px] grow', errorValue && 'border-alert-400')}
+                                                placeholder="value"
+                                                disabled={!editHeaders || loading}
+                                            />
+                                            {editHeaders && (
+                                                <Button variant="destructive" size="lg" onClick={() => !loading && onRemove(i)}>
+                                                    <IconTrash stroke={1} />
+                                                </Button>
+                                            )}
+                                        </div>
+                                        {(errorName || errorValue) && (
+                                            <div className="flex gap-2">
+                                                <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
+                                                <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
+                                            </div>
                                         )}
                                     </div>
-
-                                    {(errorName || errorValue) && (
-                                        <div className="flex gap-2">
-                                            <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
-                                            <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="flex justify-end gap-3 mt-1.5">
-                        {!editHeaders && (
-                            <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
-                                <IconEdit stroke={1} size={18} /> Edit
-                            </Button>
-                        )}
-                        {editHeaders && (
-                            <>
-                                <Button variant={'tertiary'} onClick={onCancelHeaders}>
-                                    Cancel
+                                );
+                            })}
+                        </div>
+                        <div className="flex justify-start gap-3 mt-1.5">
+                            {!editHeaders && (
+                                <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
+                                    Edit
                                 </Button>
-                                <Button variant={'primary'} onClick={onSaveHeaders} isLoading={loading}>
-                                    Save
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </fieldset>
-            </div>
-        </div>
+                            )}
+                            {editHeaders && (
+                                <>
+                                    <Button variant="tertiary" onClick={onCancelHeaders}>
+                                        Cancel
+                                    </Button>
+                                    <Button variant="primary" onClick={onSaveHeaders} loading={loading}>
+                                        Save
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    </fieldset>
+                </div>
+            </SettingsGroup>
+        </SettingsContent>
     );
 };
