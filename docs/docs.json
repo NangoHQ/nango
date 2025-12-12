@@ -741,7 +741,7 @@
               "integrations/all/pinterest",
               "integrations/all/pingone",
               "integrations/all/pingone-cc",
-              "integrations/all/pipedrive",
+              "api-integrations/pipedrive",
               "integrations/all/pipedream",
               "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
