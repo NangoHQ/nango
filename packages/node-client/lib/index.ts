@@ -538,6 +538,7 @@ export class Nango {
      * =======
      * SYNCS
      *      GET RECORDS
+     *      DELETE RECORDS
      *      TRIGGER
      *      START
      *      PAUSE
@@ -591,6 +592,54 @@ export class Nango {
         };
 
         const response = await this.http.get(url, options);
+
+        return response.data;
+    }
+
+    /**
+     * Deletes records for a given model and connection up to a specified cursor
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to delete records
+     * @param model - The model from which to delete records
+     * @param variant - An optional variant of the model from which to delete records
+     * @param mode - The deletion mode, either 'soft' or 'hard'. Soft deletion marks records as deleted, while hard deletion permanently removes them
+     * @param untilCursor - The cursor up to which records should be deleted
+     * @param limit - An optional limit on the number of records to delete in this operation
+     * @returns A promise that resolves with an object containing the count of deleted records and a flag indicating if more records are available for deletion
+     */
+    public async deleteRecords({
+        providerConfigKey,
+        connectionId,
+        model,
+        variant,
+        mode,
+        untilCursor,
+        limit
+    }: {
+        providerConfigKey: string;
+        connectionId: string;
+        model: string;
+        variant?: string;
+        mode: 'soft' | 'hard';
+        untilCursor: string;
+        limit?: number;
+    }): Promise<{ count: number; has_more: boolean }> {
+        const usp = new URLSearchParams({ model, mode, untilCursor });
+        if (variant) {
+            usp.set('variant', variant);
+        }
+        if (limit) {
+            usp.set('limit', String(limit));
+        }
+
+        const url = `${this.serverUrl}/records?${usp.toString()}`;
+        const options = {
+            headers: this.enrichHeaders({
+                'Connection-Id': connectionId,
+                'Provider-Config-Key': providerConfigKey
+            })
+        };
+        const response = await this.http.delete(url, options);
 
         return response.data;
     }

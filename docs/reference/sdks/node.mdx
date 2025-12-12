@@ -1262,6 +1262,79 @@ This endpoint returns a list of records, ordered by modification date ascending.
 ```
 </Expandable>
 
+### Delete records
+
+Deletes records for a given model and connection up to a specified cursor. Supports both soft deletion (marks records as deleted) and hard deletion (permanently removes records).
+
+```ts
+const result = await nango.deleteRecords({
+    providerConfigKey: '<INTEGRATION-ID>',
+    connectionId: '<CONNECTION-ID>',
+    model: '<MODEL-NAME>',
+    mode: 'soft',
+    untilCursor: '<CURSOR>'
+});
+
+console.log(`Deleted ${result.count} records. More records available: ${result.has_more}`);
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="config" type="object" required>
+    <Expandable title="config" defaultOpen>
+      <ResponseField name="providerConfigKey" type="string" required>
+        The integration ID.
+      </ResponseField>
+
+      <ResponseField name="connectionId" type="string" required>
+        The connection ID.
+      </ResponseField>
+
+      <ResponseField name="model" type="string" required>
+        The name of the model from which to delete records.
+      </ResponseField>
+
+      <ResponseField name="variant" type="string">
+        The variant of the model. When omitted, the default base variant is used.
+      </ResponseField>
+
+      <ResponseField name="mode" type="'soft' | 'hard'" required>
+        The deletion mode:
+        - `soft`: Marks records as deleted.
+        - `hard`: Permanently removes records from the database
+      </ResponseField>
+
+      <ResponseField name="untilCursor" type="string" required>
+        The cursor up to which records should be deleted. Only records with a cursor less than or equal to this value will be deleted.
+      </ResponseField>
+
+      <ResponseField name="limit" type="number">
+        The maximum number of records to delete in this operation.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "count": 150,
+    "has_more": true
+}
+```
+
+<ResponseField name="count" type="number">
+  The number of records that were deleted in this operation.
+</ResponseField>
+
+<ResponseField name="has_more" type="boolean">
+  Indicates whether there are more records available for deletion that match the criteria. If `true`, you must call the method again to continue deleting records.
+</ResponseField>
+</Expandable>
+
 ### Trigger sync(s)
 
 Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified.
