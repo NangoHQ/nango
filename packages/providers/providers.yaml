@@ -9555,6 +9555,24 @@ okta-preview:
             suffix: .oktapreview.com
             prefix: https://
 
+onlogist:
+    display_name: Onlogist
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://dev.portal.onlogist.com/api
+        headers:
+            authorization: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/onlogist
+    docs_connect: https://nango.dev/docs/api-integrations/onlogist/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your OnLogist account
+            doc_section: '#step-1-finding-your-api-key'
+
 one-drive:
     display_name: OneDrive for Business
     categories:
