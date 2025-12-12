@@ -2,7 +2,7 @@ import { IconExternalLink } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './EditableInput';
+import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import Spinner from '../../../components/ui/Spinner';
@@ -12,7 +12,7 @@ import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { Switch } from '@/components-v2/ui/switch';
 
-export const AuthorizationSettings: React.FC = () => {
+export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);

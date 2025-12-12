@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import Spinner from '../../../components/ui/Spinner';
-import { apiPatchWebhook } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
+import Spinner from '../../../../components/ui/Spinner';
+import { apiPatchWebhook } from '../../../../hooks/useEnvironment';
+import { useToast } from '../../../../hooks/useToast';
 import { Switch } from '@/components-v2/ui/switch';
 
 import type { ApiWebhooks } from '@nangohq/types';

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DeleteButton } from './DeleteButton';
-import { EditableInput } from './EditableInput';
+import { DeleteButton } from './components/DeleteButton';
+import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
@@ -13,7 +13,7 @@ import { AlertDescription } from '@/components/ui/Alert';
 import { Alert } from '@/components-v2/ui/alert';
 import { useToast } from '@/hooks/useToast';
 
-export const MainSettings: React.FC = () => {
+export const General: React.FC = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);

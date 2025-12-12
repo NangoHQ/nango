@@ -2,7 +2,7 @@ import { IconExternalLink, IconKey } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './EditableInput';
+import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
@@ -76,7 +76,6 @@ export const BackendSettings: React.FC = () => {
 
     const hasNewSecretKey = environmentAndAccount.environment.pending_secret_key;
     return (
-        // <div className="text-grayscale-100 flex flex-col gap-10">
         <SettingsContent title="Backend">
             <SettingsGroup label="Secret key">
                 <fieldset className="flex flex-col gap-7">
