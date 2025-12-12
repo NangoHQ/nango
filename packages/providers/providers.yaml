@@ -4848,6 +4848,29 @@ fathom:
             title: API Key
             description: The API key for your Fathom account
 
+fathom-oauth:
+    display_name: Fathom (OAuth)
+    categories:
+        - communication
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://fathom.video/external/v1/oauth2/authorize
+    token_url: https://fathom.video/external/v1/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.fathom.ai
+        retry:
+            at:
+                - 'ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/fathom-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/fathom-oauth/how-to-register-your-own-fathom-oauth-app
+
 fellow:
     display_name: Fellow
     categories:
