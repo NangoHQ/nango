@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.17] - 2025-12-12
+
+### Added
+
+- Add /DELETE records endpoint (#5128) by @TBonnin
+
+### Fixed
+
+- *(mcp-generic)* Metadata discovery (#5129) by @omar-inkeep
+- *(cli-generate-tests)* Filtering follow up (#5141) by @khaliqgant
+
 ## [v0.69.16] - 2025-12-11
 
 ### Added
@@ -5484,6 +5495,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.17]: https://github.com/NangoHQ/nango/compare/v0.69.16..v0.69.17
 [v0.69.16]: https://github.com/NangoHQ/nango/compare/v0.69.15..v0.69.16
 [v0.69.15]: https://github.com/NangoHQ/nango/compare/v0.69.14..v0.69.15
 [v0.69.14]: https://github.com/NangoHQ/nango/compare/v0.69.13..v0.69.14
