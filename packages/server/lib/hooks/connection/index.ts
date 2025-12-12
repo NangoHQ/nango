@@ -35,3 +35,4 @@ export { default as atlassianGovernmentCloudPostConnection } from './providers/j
 export { default as oneloginPreConnectionDeletion } from './providers/onelogin/pre-connection-deletion.js';
 export { default as sellsyPostConnection } from './providers/sellsy/post-connection.js';
 export { default as zohoPostConnection } from './providers/zoho/post-connection.js';
+export { default as sophosCentralPostConnection } from './providers/sophos-central/post-connection.js';
