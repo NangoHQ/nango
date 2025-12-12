@@ -19,24 +19,23 @@ export type PutRecurring = Endpoint<{
     Success: { scheduleId: string };
 }>;
 
-const validate = validateRequest<PutRecurring>({
-    parseBody: (data: any) => {
-        return z
-            .object({
-                schedule: z.union([
-                    z.object({
-                        name: z.string().min(1),
-                        state: z.union([z.literal('STARTED'), z.literal('PAUSED'), z.literal('DELETED')])
-                    }),
-                    z.object({
-                        name: z.string().min(1),
-                        frequencyMs: z.number().int().positive()
-                    })
-                ])
+const bodySchema = z
+    .object({
+        schedule: z.union([
+            z.object({
+                name: z.string().min(1),
+                state: z.union([z.literal('STARTED'), z.literal('PAUSED'), z.literal('DELETED')])
+            }),
+            z.object({
+                name: z.string().min(1),
+                frequencyMs: z.number().int().positive()
             })
-            .strict()
-            .parse(data);
-    }
+        ])
+    })
+    .strict();
+
+const validate = validateRequest<PutRecurring>({
+    parseBody: (data: any) => bodySchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {
