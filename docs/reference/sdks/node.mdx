@@ -1262,6 +1262,72 @@ This endpoint returns a list of records, ordered by modification date ascending.
 ```
 </Expandable>
 
+### Prune records
+
+Prunes record payloads from Nango's cache for a given model and connection up to a specified cursor. The payload is emptied but record metadata is retained. Payload can be restored by re-syncing the data.
+
+```ts
+const result = await nango.pruneRecords({
+    providerConfigKey: '<INTEGRATION-ID>',
+    connectionId: '<CONNECTION-ID>',
+    model: '<MODEL-NAME>',
+    untilCursor: '<CURSOR>'
+});
+
+console.log(`Pruned ${result.count} records. More records available: ${result.has_more}`);
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="config" type="object" required>
+    <Expandable title="config" defaultOpen>
+      <ResponseField name="providerConfigKey" type="string" required>
+        The integration ID.
+      </ResponseField>
+
+      <ResponseField name="connectionId" type="string" required>
+        The connection ID.
+      </ResponseField>
+
+      <ResponseField name="model" type="string" required>
+        The name of the model from which to prune records.
+      </ResponseField>
+
+      <ResponseField name="variant" type="string">
+        The variant of the model. When omitted, the default base variant is used.
+      </ResponseField>
+
+      <ResponseField name="untilCursor" type="string" required>
+        The cursor up to which records should be pruned. Only records with a cursor less than or equal to this value will be pruned.
+      </ResponseField>
+
+      <ResponseField name="limit" type="number">
+        The maximum number of records to prune in this operation.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+</Expandable>
+
+**Response**
+
+<Expandable>
+```json
+{
+    "count": 150,
+    "has_more": true
+}
+```
+
+<ResponseField name="count" type="number">
+  The number of records that were pruned in this operation.
+</ResponseField>
+
+<ResponseField name="has_more" type="boolean">
+  Indicates whether there are more records available for pruning that match the criteria. If `true`, you must call the method again to continue pruning records.
+</ResponseField>
+</Expandable>
+
 ### Trigger sync(s)
 
 Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified.
