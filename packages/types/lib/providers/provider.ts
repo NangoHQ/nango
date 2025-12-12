@@ -232,6 +232,11 @@ export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
 
+export interface ProviderInstallPlugin extends BaseProvider {
+    auth_mode: 'INSTALL_PLUGIN';
+    auth_type: 'BASIC';
+}
+
 export type Provider =
     | BaseProvider
     | ProviderOAuth1
@@ -245,7 +250,8 @@ export type Provider =
     | ProviderAppleAppStore
     | ProviderCustom
     | ProviderMcpOAUTH2
-    | ProviderMcpOAuth2Generic;
+    | ProviderMcpOAuth2Generic
+    | ProviderInstallPlugin;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

@@ -2678,7 +2678,8 @@ components:
                             'JWT',
                             'BILL',
                             'TWO_STEP',
-                            'SIGNATURE'
+                            'SIGNATURE',
+                            'INSTALL_PLUGIN'
                         ]
                 proxy:
                     properties:

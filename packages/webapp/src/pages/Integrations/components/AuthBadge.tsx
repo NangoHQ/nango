@@ -29,7 +29,8 @@ const getDisplayName = (authMode: AuthModeType): string => {
         CUSTOM: 'Custom',
         TBA: 'TBA',
         JWT: 'JWT',
-        BILL: 'Bill'
+        BILL: 'Bill',
+        INSTALL_PLUGIN: 'Install Plugin'
     };
 
     return displayNames[authMode] || authMode.replaceAll('_', ' ').toUpperCase();

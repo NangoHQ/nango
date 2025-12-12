@@ -17,6 +17,7 @@ export interface AuthModes {
     Signature: 'SIGNATURE';
     MCP_OAUTH2: 'MCP_OAUTH2';
     MCP_OAUTH2_GENERIC: 'MCP_OAUTH2_GENERIC';
+    InstallPlugin: 'INSTALL_PLUGIN';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -175,6 +176,12 @@ export interface SignatureCredentials {
     expires_at?: Date | undefined;
 }
 
+export interface InstallPluginCredentials {
+    type: 'BASIC'; // we will have this for now, open to others like API_KEY if its implemented
+    username?: string | undefined;
+    password?: string | undefined;
+}
+
 export interface CombinedOauth2AppCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
     app: AppCredentials;
@@ -215,4 +222,5 @@ export type AllAuthCredentials =
     | BillCredentials
     | TwoStepCredentials
     | CombinedOauth2AppCredentials
-    | SignatureCredentials;
+    | SignatureCredentials
+    | InstallPluginCredentials;
