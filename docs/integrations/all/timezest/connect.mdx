@@ -1,0 +1,60 @@
+---
+title: TimeZest - How do I link my account?
+sidebarTitle: TimeZest
+---
+
+# Overview
+
+To authenticate with TimeZest, you need:
+1. **API Key** - A key that grants Nango permission to interact with TimeZest's API resources and services.
+
+This guide will walk you through generating this within TimeZest.
+
+### Prerequisites:
+
+- You must have an administrator account with TimeZest.
+- You must have access to Account Settings to manage API keys.
+
+### Instructions:
+
+#### Step 1: Navigate to API Keys Settings
+
+1. Log in to your TimeZest account.
+2. Click on the **Settings** icon in the left sidebar.
+
+<img src="/integrations/all/timezest/settings.png"/>
+
+3. Navigate to **Account Settings**, then click on **API Keys**.
+
+<img src="/integrations/all/timezest/api_keys.png"/>
+
+#### Step 2: Create a New API Key
+
+1. Click the **+ Create New API Key** button.
+2. In the Create New API Key modal, fill in the required information:
+   - **Name**: Enter a clear, recognizable name for your API key (e.g., "Nango Integration")
+   - **Permissions**: Select the appropriate access level:
+     - **Read Only**: Allows API access to view data but not modify it
+     - **Read & Write**: Grants API access to both read and modify data (recommended for full integration)
+
+<img src="/integrations/all/timezest/create_key.png"/>
+
+3. Click **Add API Key** to create your API key.
+4. **Important**: Copy your API key immediately and store it securely. The key should be treated as a password.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with TimeZest.
+2. Enter your **API Key** in the provided field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/timezest/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to TimeZest.
+
+### Additional Notes
+
+- TimeZest recommends generating a separate API key for each integration to limit exposure if credentials are compromised
+- API keys can be revoked immediately by deleting them from the API Keys settings page
+- Authentication is done using Bearer token format: `Authorization: Bearer <API Key>`
