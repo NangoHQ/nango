@@ -10623,6 +10623,9 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+    authorization_url_skip_empty: true
+    token_request_auth_method: basic
+    disable_pkce: true
     token_response_metadata:
         - api_domain
     proxy:
@@ -10633,7 +10636,8 @@ pipedrive:
             offset_name_in_request: start
             response_path: data
             limit_name_in_request: limit
-    docs: https://nango.dev/docs/integrations/all/pipedrive
+    docs: https://nango.dev/docs/api-integrations/pipedrive
+    setup_guide_url: https://nango.dev/docs/api-integrations/pipedrive/how-to-register-your-own-pipedrive-oauth-app
     connection_config:
         api_domain:
             type: string

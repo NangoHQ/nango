@@ -1,0 +1,40 @@
+---
+title: 'Set up Pipedrive with Nango'
+sidebarTitle: 'Pipedrive Setup'
+description: 'Register an OAuth app with Pipedrive and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Pipedrive to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Pipedrive account.
+
+<Steps>
+    <Step title="Create an application">
+    1. Sign up for a sandbox account at [https://developers.pipedrive.com/](https://developers.pipedrive.com/).
+    2. Click your profile, then navigate to the developer hub page.
+    3. Click the **Create an app** button.
+    4. You can create two different types of applications:
+    - **Public Application**: This is public and can be used by anyone who uses Pipedrive. It needs to be approved by the Pipedrive team before you start using it.
+    - **Private Application**: This is private and can only be used by selected users. You don't need to go through the application approval process.
+    
+    For more information on this, check out the [Pipedrive documentation](https://pipedrive.readme.io/docs/marketplace-creating-a-proper-app#types-of-apps).
+    
+    For this guide, we'll use a private application, but you can choose public if your use case requires it.
+    </Step>
+    <Step title="Configure Basic Info">
+    1. Go to the **Basic Info** tab of the application.
+    2. Fill out the required fields:
+    - **App name**: Enter a name for your application.
+    - **Callback URL**: Enter `https://api.nango.dev/oauth/callback`
+    
+    3. Click **Save** to save your changes.
+    </Step>
+    <Step title="Configure OAuth and access scopes">
+    1. Navigate to the **OAuth and access scopes** tab.
+    2. Configure the **Access Scopes** of the application based on your integration requirements.
+    3. Scroll down to find the OAuth credentials: **Client ID** and **Client Secret**.
+    </Step>
+    <Step title="Obtain API credentials">
+    Copy the **Client ID** and **Client Secret** from the OAuth credentials section. You'll need these credentials when configuring your integration in Nango. You can omit the scopes field in Nango, as it's not required when setting up your integration.
+     
+    <Note>If you're using a private application, you can skip the app review process. For public applications, go to the **App review info** tab to submit the application for review. Once approved, you'll be all set.</Note>
+    </Step>
+</Steps>
