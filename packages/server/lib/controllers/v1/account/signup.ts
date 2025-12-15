@@ -86,7 +86,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         await acceptInvitation(token);
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Signup is disabled.' } });
+            res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
             return;
         }
 

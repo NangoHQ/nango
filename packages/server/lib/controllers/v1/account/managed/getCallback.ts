@@ -99,7 +99,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         } else {
             // Regular signup
             if (!envs.AUTH_ALLOW_SIGNUP) {
-                res.status(500).send({ error: { code: 'server_error', message: 'Signup is disabled.' } });
+                res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
                 return;
             }
             const resAccount = await accountService.createAccount({ name, email: authorizedUser.email });
