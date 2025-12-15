@@ -155,6 +155,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>
                     ))}
+                    {schema.additionalProperties && <JsonSchema name="{key}" schema={schema.additionalProperties as JSONSchema7} depth={depth} />}
                 </div>
             </Collapsible.Content>
         </Collapsible.Root>
