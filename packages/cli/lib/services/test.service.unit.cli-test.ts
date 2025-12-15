@@ -382,22 +382,22 @@ describe('validateAndFilterIntegrations', () => {
 describe('shouldProcessSync', () => {
     describe('when no filters are provided', () => {
         it('should return true for any sync', () => {
-            expect(shouldProcessSync({ currentSyncName: 'fetch-users' })).toBe(true);
-            expect(shouldProcessSync({ currentSyncName: 'fetch-repos' })).toBe(true);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users', syncName: undefined, actionName: undefined })).toBe(true);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', syncName: undefined, actionName: undefined })).toBe(true);
         });
     });
 
     describe('when actionName is provided', () => {
         it('should return false for all syncs (user only wants action tests)', () => {
-            expect(shouldProcessSync({ currentSyncName: 'fetch-users', actionName: 'create-user' })).toBe(false);
-            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', actionName: 'create-user' })).toBe(false);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users', syncName: undefined, actionName: 'create-user' })).toBe(false);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', syncName: undefined, actionName: 'create-user' })).toBe(false);
         });
     });
 
     describe('when syncName is provided', () => {
         it('should return true only for the matching sync', () => {
-            expect(shouldProcessSync({ currentSyncName: 'fetch-users', syncName: 'fetch-users' })).toBe(true);
-            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', syncName: 'fetch-users' })).toBe(false);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users', syncName: 'fetch-users', actionName: undefined })).toBe(true);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', syncName: 'fetch-users', actionName: undefined })).toBe(false);
         });
     });
 
@@ -411,22 +411,22 @@ describe('shouldProcessSync', () => {
 describe('shouldProcessAction', () => {
     describe('when no filters are provided', () => {
         it('should return true for any action', () => {
-            expect(shouldProcessAction({ currentActionName: 'create-user' })).toBe(true);
-            expect(shouldProcessAction({ currentActionName: 'delete-user' })).toBe(true);
+            expect(shouldProcessAction({ currentActionName: 'create-user', syncName: undefined, actionName: undefined })).toBe(true);
+            expect(shouldProcessAction({ currentActionName: 'delete-user', syncName: undefined, actionName: undefined })).toBe(true);
         });
     });
 
     describe('when syncName is provided', () => {
         it('should return false for all actions (user only wants sync tests)', () => {
-            expect(shouldProcessAction({ currentActionName: 'create-user', syncName: 'fetch-users' })).toBe(false);
-            expect(shouldProcessAction({ currentActionName: 'delete-user', syncName: 'fetch-users' })).toBe(false);
+            expect(shouldProcessAction({ currentActionName: 'create-user', syncName: 'fetch-users', actionName: undefined })).toBe(false);
+            expect(shouldProcessAction({ currentActionName: 'delete-user', syncName: 'fetch-users', actionName: undefined })).toBe(false);
         });
     });
 
     describe('when actionName is provided', () => {
         it('should return true only for the matching action', () => {
-            expect(shouldProcessAction({ currentActionName: 'create-user', actionName: 'create-user' })).toBe(true);
-            expect(shouldProcessAction({ currentActionName: 'delete-user', actionName: 'create-user' })).toBe(false);
+            expect(shouldProcessAction({ currentActionName: 'create-user', syncName: undefined, actionName: 'create-user' })).toBe(true);
+            expect(shouldProcessAction({ currentActionName: 'delete-user', syncName: undefined, actionName: 'create-user' })).toBe(false);
         });
     });
 

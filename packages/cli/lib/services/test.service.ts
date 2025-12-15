@@ -88,7 +88,15 @@ export function validateAndFilterIntegrations({
  * When actionName is specified, syncs should be skipped (user only wants action tests).
  * When syncName is specified, only the matching sync should be processed.
  */
-export function shouldProcessSync({ currentSyncName, syncName, actionName }: { currentSyncName: string; syncName?: string; actionName?: string }): boolean {
+export function shouldProcessSync({
+    currentSyncName,
+    syncName,
+    actionName
+}: {
+    currentSyncName: string;
+    syncName: string | undefined;
+    actionName: string | undefined;
+}): boolean {
     // Skip all syncs if actionName is specified (user only wants action tests)
     if (actionName) {
         return false;
@@ -111,8 +119,8 @@ export function shouldProcessAction({
     actionName
 }: {
     currentActionName: string;
-    syncName?: string;
-    actionName?: string;
+    syncName: string | undefined;
+    actionName: string | undefined;
 }): boolean {
     // Skip all actions if syncName is specified (user only wants sync tests)
     if (syncName) {
