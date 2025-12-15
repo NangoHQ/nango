@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700&display=swap') layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap')
+layer(base);
 
 @import 'tailwindcss';
 
@@ -15,7 +17,7 @@
 @theme {
     --font-*: initial;
     --font-sans: Inter, sans-serif;
-    --font-mono: 'Source Code Pro', sans-serif;
+    --font-mono: 'Roboto Mono', 'Source Code Pro', sans-serif;
     --font-code: 'Roboto Mono', 'Source Code Pro', system-ui, sans-serif;
 
     --breakpoint-xl: 1280px;
@@ -337,6 +339,7 @@
     --color-border-default: var(--color-gray-300);
     --color-border-muted: var(--color-gray-200);
     --color-border-strong: var(--color-gray-300);
+    --color-border-extra-strong: var(--color-gray-50);
     --color-border-disabled: var(--color-gray-150);
     --color-border-brand: var(--color-brand-500);
 
@@ -443,6 +446,7 @@
             --color-border-default: var(--color-gray-700);
             --color-border-muted: var(--color-gray-800);
             --color-border-strong: var(--color-gray-500);
+            --color-border-extra-strong: var(--color-gray-1000);
             --color-border-disabled: var(--color-gray-900);
             --color-border-brand: var(--color-brand-500);
 

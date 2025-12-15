@@ -81,7 +81,7 @@ export const FunctionsOne: React.FC = () => {
                                 {integrationData.integration.display_name ?? integrationData.template.display_name}
                             </span>
                             <div className="inline-flex gap-1">
-                                <span className="text-text-secondary text-body-medium-regular">{func.name}</span>
+                                <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
@@ -89,20 +89,20 @@ export const FunctionsOne: React.FC = () => {
 
                     <div className="flex flex-wrap gap-4 gap-y-2">
                         <IntegrationsBadge label="Type">
-                            <span className="capitalize-first">{func.type}</span>
+                            <span>{func.type}</span>
                         </IntegrationsBadge>
                         {func.sync_type && (
                             <IntegrationsBadge label="Sync type">
-                                <span className="capitalize-first">{func.sync_type}</span>
+                                <span>{func.sync_type}</span>
                             </IntegrationsBadge>
                         )}
                         {func.runs && (
                             <IntegrationsBadge label="Frequency">
-                                <span className="capitalize-first">{func.runs}</span>
+                                <span>{func.runs}</span>
                             </IntegrationsBadge>
                         )}
-                        {func.auto_start !== undefined && <IntegrationsBadge label="Auto start">{func.auto_start ? 'Yes' : 'No'}</IntegrationsBadge>}
-                        <IntegrationsBadge label="Source">{func.pre_built ? 'Template' : 'Custom'}</IntegrationsBadge>
+                        {func.auto_start !== undefined && <IntegrationsBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</IntegrationsBadge>}
+                        <IntegrationsBadge label="Source">{func.pre_built ? 'template' : 'custom'}</IntegrationsBadge>
                         {func.version && <IntegrationsBadge label="Version">v{func.version}</IntegrationsBadge>}
                         {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
                     </div>
