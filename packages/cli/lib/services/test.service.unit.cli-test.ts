@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { generateActionTest, generateSyncTest, validateAndFilterIntegrations } from './test.service.js';
+import { generateActionTest, generateSyncTest, shouldProcessAction, shouldProcessSync, validateAndFilterIntegrations } from './test.service.js';
 
 import type { IntegrationDefinition } from './test.service.js';
 
@@ -375,6 +375,64 @@ describe('validateAndFilterIntegrations', () => {
 
             expect(result.valid).toBe(false);
             expect(result.error).toBe('Action "Create-Issue" not found');
+        });
+    });
+});
+
+describe('shouldProcessSync', () => {
+    describe('when no filters are provided', () => {
+        it('should return true for any sync', () => {
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users' })).toBe(true);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-repos' })).toBe(true);
+        });
+    });
+
+    describe('when actionName is provided', () => {
+        it('should return false for all syncs (user only wants action tests)', () => {
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users', actionName: 'create-user' })).toBe(false);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', actionName: 'create-user' })).toBe(false);
+        });
+    });
+
+    describe('when syncName is provided', () => {
+        it('should return true only for the matching sync', () => {
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users', syncName: 'fetch-users' })).toBe(true);
+            expect(shouldProcessSync({ currentSyncName: 'fetch-repos', syncName: 'fetch-users' })).toBe(false);
+        });
+    });
+
+    describe('when both syncName and actionName are provided', () => {
+        it('should return false because actionName takes precedence (skips all syncs)', () => {
+            expect(shouldProcessSync({ currentSyncName: 'fetch-users', syncName: 'fetch-users', actionName: 'create-user' })).toBe(false);
+        });
+    });
+});
+
+describe('shouldProcessAction', () => {
+    describe('when no filters are provided', () => {
+        it('should return true for any action', () => {
+            expect(shouldProcessAction({ currentActionName: 'create-user' })).toBe(true);
+            expect(shouldProcessAction({ currentActionName: 'delete-user' })).toBe(true);
+        });
+    });
+
+    describe('when syncName is provided', () => {
+        it('should return false for all actions (user only wants sync tests)', () => {
+            expect(shouldProcessAction({ currentActionName: 'create-user', syncName: 'fetch-users' })).toBe(false);
+            expect(shouldProcessAction({ currentActionName: 'delete-user', syncName: 'fetch-users' })).toBe(false);
+        });
+    });
+
+    describe('when actionName is provided', () => {
+        it('should return true only for the matching action', () => {
+            expect(shouldProcessAction({ currentActionName: 'create-user', actionName: 'create-user' })).toBe(true);
+            expect(shouldProcessAction({ currentActionName: 'delete-user', actionName: 'create-user' })).toBe(false);
+        });
+    });
+
+    describe('when both syncName and actionName are provided', () => {
+        it('should return false because syncName takes precedence (skips all actions)', () => {
+            expect(shouldProcessAction({ currentActionName: 'create-user', syncName: 'fetch-users', actionName: 'create-user' })).toBe(false);
         });
     });
 });

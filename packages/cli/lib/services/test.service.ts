@@ -83,6 +83,48 @@ export function validateAndFilterIntegrations({
     return { valid: true, filteredIntegrations: filtered };
 }
 
+/**
+ * Determines if a sync should be processed for test generation.
+ * When actionName is specified, syncs should be skipped (user only wants action tests).
+ * When syncName is specified, only the matching sync should be processed.
+ */
+export function shouldProcessSync({ currentSyncName, syncName, actionName }: { currentSyncName: string; syncName?: string; actionName?: string }): boolean {
+    // Skip all syncs if actionName is specified (user only wants action tests)
+    if (actionName) {
+        return false;
+    }
+    // Skip non-matching syncs if syncName is specified
+    if (syncName && currentSyncName !== syncName) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Determines if an action should be processed for test generation.
+ * When syncName is specified, actions should be skipped (user only wants sync tests).
+ * When actionName is specified, only the matching action should be processed.
+ */
+export function shouldProcessAction({
+    currentActionName,
+    syncName,
+    actionName
+}: {
+    currentActionName: string;
+    syncName?: string;
+    actionName?: string;
+}): boolean {
+    // Skip all actions if syncName is specified (user only wants sync tests)
+    if (syncName) {
+        return false;
+    }
+    // Skip non-matching actions if actionName is specified
+    if (actionName && currentActionName !== actionName) {
+        return false;
+    }
+    return true;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const VITE_CONFIG_TEMPLATE = path.resolve(__dirname, '../templates/vite.config.ejs');
@@ -479,7 +521,7 @@ export async function generateTests({
             const { syncs, actions } = integrationsToProcess[integration];
 
             for (const currentSyncName of Object.keys(syncs || {})) {
-                if (syncName && currentSyncName !== syncName) {
+                if (!shouldProcessSync({ currentSyncName, syncName, actionName })) {
                     continue;
                 }
                 const sync = syncs[currentSyncName];
@@ -500,7 +542,7 @@ export async function generateTests({
             }
 
             for (const currentActionName of Object.keys(actions || {})) {
-                if (actionName && currentActionName !== actionName) {
+                if (!shouldProcessAction({ currentActionName, syncName, actionName })) {
                     continue;
                 }
                 const action = actions[currentActionName];
