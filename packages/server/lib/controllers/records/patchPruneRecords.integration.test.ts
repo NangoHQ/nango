@@ -5,9 +5,9 @@ import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-const route = '/records';
+const route = '/records/prune';
 let api: Awaited<ReturnType<typeof runServer>>;
-describe(`DELETE ${route}`, () => {
+describe(`PATCH ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
         await migrateRecords();
@@ -18,8 +18,8 @@ describe(`DELETE ${route}`, () => {
 
     it('should be protected', async () => {
         const res = await api.fetch(route, {
-            method: 'DELETE',
-            query: { model: 'Ticket', mode: 'soft', until_cursor: 'abc' },
+            method: 'PATCH',
+            body: { model: 'Ticket', until_cursor: 'abc' },
             headers: { 'connection-id': 't', 'provider-config-key': '' }
         });
 
@@ -30,18 +30,17 @@ describe(`DELETE ${route}`, () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error on purpose
         const res = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {} as { model: string; mode: 'soft' | 'hard'; until_cursor: string }
+            body: {} as { model: string; until_cursor: string }
         });
         isError(res.json);
         expect(res.res.status).toBe(400);
         expect(res.json).toStrictEqual({
             error: {
-                code: 'invalid_query_params',
+                code: 'invalid_body',
                 errors: [
                     { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['model'] },
-                    { code: 'invalid_value', message: 'Invalid option: expected one of "soft"|"hard"', path: ['mode'] },
                     { code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['until_cursor'] }
                 ]
             }
@@ -52,9 +51,9 @@ describe(`DELETE ${route}`, () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error on purpose
         const res = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: { model: 'Ticket', mode: 'soft', until_cursor: 'abc' }
+            body: { model: 'Ticket', until_cursor: 'abc' }
         });
         isError(res.json);
         expect(res.res.status).toBe(400);
@@ -72,9 +71,9 @@ describe(`DELETE ${route}`, () => {
     it('should complain about unknown connection', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: { model: 'Ticket', mode: 'soft', until_cursor: 'abc' },
+            body: { model: 'Ticket', until_cursor: 'abc' },
             headers: { 'connection-id': 't', 'provider-config-key': 'a' }
         });
         isError(res.json);
@@ -84,7 +83,7 @@ describe(`DELETE ${route}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    it('should delete page of records', async () => {
+    it('should prune page of records', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -117,13 +116,12 @@ describe(`DELETE ${route}`, () => {
         const cursor = recs.records[1]?._nango_metadata.cursor;
         const cursorLast = recs.records[recs.records.length - 1]?._nango_metadata.cursor;
 
-        // Delete one record (limit 1)
+        // prune one record (limit 1)
         const res1 = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {
+            body: {
                 model: 'Ticket',
-                mode: 'soft',
                 until_cursor: cursor!,
                 limit: 1
             },
@@ -136,13 +134,12 @@ describe(`DELETE ${route}`, () => {
         });
         expect(res1.res.status).toBe(200);
 
-        // Delete until the cursor (2nd record - inclusive)
+        // Prune until the cursor (2nd record - inclusive)
         const res2 = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {
+            body: {
                 model: 'Ticket',
-                mode: 'soft',
                 until_cursor: cursor!
             },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
@@ -154,13 +151,12 @@ describe(`DELETE ${route}`, () => {
         });
         expect(res2.res.status).toBe(200);
 
-        // Delete the last record
+        // Prune the last record
         const res3 = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {
+            body: {
                 model: 'Ticket',
-                mode: 'soft',
                 until_cursor: cursorLast!
             },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
@@ -173,13 +169,12 @@ describe(`DELETE ${route}`, () => {
         });
         expect(res3.res.status).toBe(200);
 
-        // Try to delete more records (none left)
+        // Try to prune more records (none left)
         const res4 = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {
+            body: {
                 model: 'Ticket',
-                mode: 'soft',
                 until_cursor: cursorLast!
             },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
@@ -246,11 +241,10 @@ describe(`DELETE ${route}`, () => {
         });
 
         const res1 = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {
+            body: {
                 model: 'Ticket',
-                mode: 'soft',
                 until_cursor: cursorLast!,
                 limit: 1
             },
@@ -263,13 +257,12 @@ describe(`DELETE ${route}`, () => {
         });
         expect(res1.res.status).toBe(200);
 
-        // Try to delete more records (none left)
+        // Try to prune more records (none left)
         const res2 = await api.fetch(route, {
-            method: 'DELETE',
+            method: 'PATCH',
             token: env.secret_key,
-            query: {
+            body: {
                 model: 'Ticket',
-                mode: 'soft',
                 until_cursor: cursorLast!
             },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }

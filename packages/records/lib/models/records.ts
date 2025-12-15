@@ -181,6 +181,7 @@ export async function getRecords({
                 to_json(created_at) as first_seen_at,
                 to_json(updated_at) as last_modified_at,
                 to_json(deleted_at) as deleted_at,
+                to_json(pruned_at) as pruned_at,
                 CASE
                     WHEN deleted_at IS NOT NULL THEN 'DELETED'
                     WHEN created_at = updated_at THEN 'ADDED'
@@ -206,6 +207,7 @@ export async function getRecords({
                     last_modified_at: item.last_modified_at,
                     last_action: item.last_action,
                     deleted_at: item.deleted_at,
+                    pruned_at: item.pruned_at,
                     cursor: Cursor.new(item)
                 }
             });
@@ -703,39 +705,39 @@ export async function update({
  * @param environmentId - The id of the environment.
  * @param connectionId - The id of the connection.
  * @param model - The model name.
+ * @param mode - The deletion mode: 'hard' (permanent deletion), 'soft' (empty payload and set deleted_at) or 'prune' (empty payload only).
  * @param limit - The maximum number of records to delete.
  * @param toCursorIncluded - The cursor up to which records should be deleted (inclusive. ordered by updated_at, id).
  * @param batchSize - The number of records to delete in each batch (default is 1000).
- * @param mode - The deletion mode: 'hard' (permanent deletion) or 'soft' (empty payload and set deleted_at). Default is 'hard'.
  */
 export async function deleteRecords({
     connectionId,
     environmentId,
     model,
+    mode,
     limit,
     toCursorIncluded,
-    batchSize = 1000,
-    mode = 'hard'
+    batchSize = 1000
 }: {
     connectionId: number;
     environmentId: number;
     model: string;
+    mode: 'hard' | 'soft' | 'prune';
     limit?: number;
     toCursorIncluded?: string;
     batchSize?: number;
-    mode?: 'hard' | 'soft';
-}): Promise<Result<{ totalDeletedRecords: number; lastDeletedCursor: string | null }>> {
+}): Promise<Result<{ count: number; lastCursor: string | null }>> {
     const activeSpan = tracer.scope().active();
     const span = tracer.startSpan('nango.records.deletedRecords', {
         ...(activeSpan ? { childOf: activeSpan } : {}),
-        tags: { 'nango.connectionId': connectionId, 'nango.model': model }
+        tags: { 'nango.environmentId': environmentId, 'nango.connectionId': connectionId, 'nango.model': model, 'nango.deletionMode': mode }
     });
 
     let partition: string | undefined = undefined;
-    let totalDeletedRecords = 0;
-    let totalDeletedSizeInBytes = 0;
-    let deletedRecords = 0;
-    let lastDeletedCursor: string | null = null;
+    let totatRecords = 0;
+    let totalSizeInBytes = 0;
+    let paginatedRecords = 0;
+    let lastCursor: string | null = null;
 
     try {
         if (limit !== undefined && limit <= 0) {
@@ -756,12 +758,13 @@ export async function deleteRecords({
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
 
             do {
-                const toDelete = limit ? Math.min(batchSize, limit - totalDeletedRecords) : batchSize;
+                const toDelete = limit ? Math.min(batchSize, limit - totatRecords) : batchSize;
                 if (toDelete <= 0) {
                     break;
                 }
-                // if soft mode, we update the deleted_at/updated_at fields and empty the payload
                 // if hard mode, we permanently delete the records
+                // if soft mode, we update the deleted_at/updated_at fields
+                // if prune mode, we empty the record payload
                 const query = trx
                     .from(RECORDS_TABLE)
                     .where({ connection_id: connectionId, model })
@@ -780,7 +783,11 @@ export async function deleteRecords({
                             subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
                         }
                         if (mode === 'soft') {
+                            // only soft delete non-deleted records
                             subQuery.whereNull('deleted_at');
+                        } else if (mode === 'prune') {
+                            // only prune non-pruned records
+                            subQuery.whereNull('pruned_at');
                         }
                     })
                     .returning<{ id: string; size_bytes: number; partition: string; updated_at: string }[]>([
@@ -789,12 +796,19 @@ export async function deleteRecords({
                         trx.raw('tableoid::regclass as partition'),
                         trx.raw('to_json(updated_at) as updated_at')
                     ]);
+
                 switch (mode) {
+                    case 'prune':
+                        query.update({
+                            pruned_at: now,
+                            json: {} // empty the record payload
+                            // IMPORTANT: updated_at isn't updated because it would cause the record cursor to also change
+                        });
+                        break;
                     case 'soft':
                         query.update({
                             deleted_at: now,
-                            json: {}
-                            // IMPORTANT: updated_at isn't updated because it would cause the record cursor to also change
+                            updated_at: now
                         });
                         break;
                     case 'hard':
@@ -804,34 +818,36 @@ export async function deleteRecords({
 
                 const res = await query;
 
-                deletedRecords = res.length;
-                totalDeletedRecords += deletedRecords;
-                totalDeletedSizeInBytes += res.reduce((acc, r) => acc + r.size_bytes, 0);
+                paginatedRecords = res.length;
+                totatRecords += paginatedRecords;
+                totalSizeInBytes += res.reduce((acc, r) => acc + r.size_bytes, 0);
                 if (!partition && res[0]?.partition) {
                     partition = res[0].partition;
                 }
 
                 const lastDeletedRecord = res[res.length - 1];
                 if (lastDeletedRecord) {
-                    lastDeletedCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
+                    lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
                 }
-            } while (deletedRecords > 0);
+            } while (paginatedRecords > 0);
 
-            const newCount = await incrCount(trx, {
-                environmentId,
-                connectionId,
-                model,
-                delta: -totalDeletedRecords,
-                deltaSizeInBytes: -totalDeletedSizeInBytes
-            });
-
-            // If all records are deleted, clean up the count entry
-            if (newCount?.count === 0) {
-                await deleteCount(trx, {
+            if (mode !== 'prune') {
+                const newCount = await incrCount(trx, {
                     environmentId,
                     connectionId,
-                    model
+                    model,
+                    delta: -totatRecords,
+                    deltaSizeInBytes: -totalSizeInBytes
                 });
+
+                // If all records are deleted, clean up the count entry
+                if (newCount?.count === 0) {
+                    await deleteCount(trx, {
+                        environmentId,
+                        connectionId,
+                        model
+                    });
+                }
             }
         });
 
@@ -839,7 +855,7 @@ export async function deleteRecords({
             span.setTag('nango.partition', partition);
         }
 
-        return Ok({ totalDeletedRecords, lastDeletedCursor });
+        return Ok({ count: totatRecords, lastCursor });
     } catch (err) {
         span.setTag('error', err);
         return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}`, { cause: err }));
