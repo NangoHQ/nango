@@ -1,59 +1,93 @@
 ---
-title: Wise (API Key)
-sidebarTitle: Wise (API Key)
+title: 'Wise (API Key)'
+sidebarTitle: 'Wise (API Key)'
+description: 'Integrate your application with the Wise API using a Personal API Token'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/wise-api-key/PreBuiltTooling.mdx"
+## 🚀 Quickstart
+
+Connect to Wise with Nango.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Wise (API Key)_.
+    </Step>
+    <Step title="Generate your API Token">
+    1. Go to [wise.com](https://wise.com) and log in
+    2. Select your **Business profile**
+    3. Navigate to: **Your Account → Integrations and Tools → API tokens**
+    4. Click **Add new Token**
+    5. Complete 2-step verification
+    6. Copy the generated token
+    </Step>
+    <Step title="Authorize Wise">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Wise API">
+    Let's make your first request to the Wise API (get your profiles). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/profiles" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/profiles',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Wise (API Key) Integration Guides
+
+Official docs: [Wise API Documentation](https://docs.wise.com/api-reference)
+
+## 🧩 Pre-built syncs & actions for Wise (API Key)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
 import PreBuiltUseCases from "/snippets/generated/wise-api-key/PreBuiltUseCases.mdx"
 
-<Overview />
-<PreBuiltTooling />
 <PreBuiltUseCases />
 
+---
+
 ## Access requirements
-| Pre-Requisites | Status | Comment|
+| Prerequisites | Status | Comment|
 | - | - | - |
 | Paid dev account | ❌ | Not required |
 | Paid test account | ❌ | Not required |
 | Partnership | ❌ | Not required - Just need a Wise account |
 | App review | ❌ | Not required |
 | Security audit | ❌ | Not required |
-
-
-## Setup guide
-
-Use this integration if you're a small business user automating your own Wise account. No partnership required.
-
-### Step 1: Generate API Token
-
-1. Go to [wise.com](https://wise.com) and log in
-2. Select your **Business profile**
-3. Navigate to: **Your Account → Integrations and Tools → API tokens**
-4. Click **Add new Token**
-5. Complete 2-step verification
-6. Copy the generated token
-
-<Warning>
-Keep your API token secure. It provides access to your Wise account.
-</Warning>
-
-### Step 2: Configure Nango
-
-Use your Personal API Token to configure the Wise (API Key) integration in Nango.
-
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
-
-
-## Useful links
-
--   [Wise API Documentation](https://docs.wise.com/api-reference)
--   [Personal Token Guide](https://docs.wise.com/guides/developer/auth-and-security)
--   [API Status Page](https://status.transferwise.com/)
-
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
 
 ## API gotchas
 
@@ -79,6 +113,11 @@ Use your Personal API Token to configure the Wise (API Key) integration in Nango
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
 
+## Useful links
+
+-   [Wise API Documentation](https://docs.wise.com/api-reference)
+-   [Personal Token Guide](https://docs.wise.com/guides/developer/auth-and-security)
+-   [API Status Page](https://status.transferwise.com/)
 
 ## Going further
 
