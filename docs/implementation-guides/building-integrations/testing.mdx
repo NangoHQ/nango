@@ -139,24 +139,61 @@ nango dryrun fetch-tickets abc-123 --save
 
 ### Mock file structure
 
-Mocks are saved in the `tests/mocks` directory:
+Mocks are saved in a single `.test.json` file alongside your test file:
 
 ```
 github/
-├── mocks/
-│   ├── fetch-tickets/
-│   │   ├── input.json              # Action input (for actions only)
-│   │   ├── output.json             # Action output (for actions only)
-│   │   ├── Ticket/
-│   │   │   ├── batchSave.json      # Records to be saved
-│   │   │   └── batchDelete.json    # Records to be deleted
-│   │   └── mocks/
-│   │       ├── GET-api-tickets-{hash}.json  # API response for GET /tickets
-│   │       └── POST-api-issues-{hash}.json  # API response for POST /issues
-│   └── nango/
-│       ├── getConnection.json      # Connection metadata
-│       └── getMetadata.json        # Stubbed metadata
+├── tests/
+│   ├── fetch-tickets.test.ts
+│   └── fetch-tickets.test.json
 ```
+
+The `test.json` file contains all the necessary mock data for a given test:
+
+```json
+{
+  "input": { "title": "Test ticket" }, // Action input
+  "output": { "id": "TKT-123", "status": "created" }, // Action output
+  "nango": {
+    "getConnection": { "connectionId": "abc-123", "provider": "github" },
+    "getMetadata": { "accountId": "test-123" },
+    "batchSave": {
+      "Ticket": [{ "id": "TKT-123", "title": "Test ticket" }]
+    },
+    "batchDelete": {
+      "Ticket": [{ "_nango_id": "del-456" }]
+    }
+  },
+  "api": {
+    "GET": {
+      "/tickets": {
+        "response": [{ "id": "TKT-123", "title": "Test ticket" }]
+      }
+    },
+    "POST": {
+      "/issues": {
+        "response": { "id": "ISS-789" }
+      }
+    }
+  }
+}
+```
+
+### Migrating from the old format
+
+If you have tests using the old multi-file mock format, you can automatically migrate them to the new unified format.
+
+Set the `MIGRATE_MOCKS` environment variable to `true` and run your tests:
+
+```bash
+MIGRATE_MOCKS=true npm test
+```
+
+This will:
+1. Run your tests using the old mock files.
+2. Intercept all mock data accessed during the test run.
+3. Save the data into a new `.test.json` file.
+4. The old mock directory can then be safely deleted.
 
 ### Using stubbed metadata
 
@@ -218,14 +255,18 @@ When you run `nango generate:tests`, Nango creates test files for all your integ
 
 **Sync test example:**
 ```typescript
-import { vi, expect, it, describe } from 'vitest';
+import { vi, expect, it, describe, beforeAll } from 'vitest';
 import createSync from '../syncs/fetch-tickets.js';
 
 describe('github fetch-tickets tests', () => {
-  const nangoMock = new global.vitest.NangoSyncMock({
-    dirname: 'github',
-    name: "fetch-tickets",
-    Model: "Ticket"
+  let nangoMock;
+
+  beforeAll(async () => {
+    nangoMock = new global.vitest.NangoSyncMock({
+      dirname: __dirname,
+      name: "fetch-tickets",
+      Model: "Ticket"
+    });
   });
 
   const models = 'Ticket'.split(',');
@@ -263,14 +304,18 @@ describe('github fetch-tickets tests', () => {
 
 **Action test example:**
 ```typescript
-import { vi, expect, it, describe } from 'vitest';
+import { vi, expect, it, describe, beforeAll } from 'vitest';
 import createAction from '../actions/create-ticket.js';
 
 describe('github create-ticket tests', () => {
-  const nangoMock = new global.vitest.NangoActionMock({
-    dirname: 'github',
-    name: "create-ticket",
-    Model: "Ticket"
+  let nangoMock;
+
+  beforeAll(async () => {
+    nangoMock = new global.vitest.NangoActionMock({
+      dirname: __dirname,
+      name: "create-ticket",
+      Model: "Ticket"
+    });
   });
 
   it('should output the action output that is expected', async () => {
@@ -335,7 +380,7 @@ export default defineConfig({
 The `vitest.setup.ts` file makes Nango mocks available globally:
 
 ```typescript
-import { NangoActionMock, NangoSyncMock } from "nango/test";
+import { NangoActionMock, NangoSyncMock } from './path/to/your/vitest/setup';
 
 globalThis.vitest = {
   NangoActionMock,
@@ -352,14 +397,18 @@ While auto-generated tests validate basic data flow, you often need custom tests
 Extend the generated tests with additional assertions:
 
 ```typescript
-import { vi, expect, it, describe } from 'vitest';
+import { vi, expect, it, describe, beforeAll } from 'vitest';
 import createSync from '../syncs/fetch-tickets.js';
 
 describe('github fetch-tickets tests', () => {
-  const nangoMock = new global.vitest.NangoSyncMock({
-    dirname: 'github',
-    name: "fetch-tickets",
-    Model: "Ticket"
+  let nangoMock;
+
+  beforeAll(async () => {
+    nangoMock = new global.vitest.NangoSyncMock({
+      dirname: __dirname,
+      name: "fetch-tickets",
+      Model: "Ticket"
+    });
   });
 
   it('should correctly transform ticket priorities', async () => {
@@ -404,7 +453,7 @@ Test how your integration handles errors:
 it('should handle API errors gracefully', async () => {
   // Create a mock that will throw an error
   const errorMock = new global.vitest.NangoSyncMock({
-    dirname: 'github',
+    dirname: __dirname,
     name: "fetch-tickets-error",
     Model: "Ticket"
   });
@@ -470,7 +519,7 @@ it('should only fetch tickets after last sync date', async () => {
 Test multiple scenarios with different inputs:
 
 ```typescript
-import { it, describe, expect } from 'vitest';
+import { it, describe, expect, beforeAll } from 'vitest';
 
 describe.each([
   { priority: 'P0', expected: 'critical' },
@@ -478,13 +527,17 @@ describe.each([
   { priority: 'P2', expected: 'medium' },
   { priority: 'P3', expected: 'low' },
 ])('priority mapping for $priority', ({ priority, expected }) => {
-  it(`should map ${priority} to ${expected}`, async () => {
-    const nangoMock = new global.vitest.NangoSyncMock({
-      dirname: 'github',
+  let nangoMock;
+
+  beforeAll(async () => {
+    nangoMock = new global.vitest.NangoSyncMock({
+      dirname: __dirname,
       name: `fetch-tickets-${priority}`,
       Model: "Ticket"
     });
+  });
 
+  it(`should map ${priority} to ${expected}`, async () => {
     await createSync.exec(nangoMock);
 
     const savedTickets = await nangoMock.getBatchSaveData('Ticket');
