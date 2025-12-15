@@ -113,6 +113,19 @@ import PreBuiltUseCases from "/snippets/generated/wise-api-key/PreBuiltUseCases.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/wise-api-key.mdx)</Note>
 
+## Security best practices
+
+<Warning>
+Your Wise API token provides direct access to your business account. Handle it with care.
+</Warning>
+
+- **Never commit tokens to version control** - Use environment variables or a secrets manager instead
+- **Rotate tokens periodically** - Generate new tokens regularly and revoke old ones
+- **Monitor API usage** - Review your Wise account activity for unauthorized access
+- **Use Nango's secure storage** - Nango encrypts and securely stores your credentials
+- **Limit token permissions** - Only grant the scopes your integration requires
+- **Revoke unused tokens** - Delete tokens for integrations you no longer use
+
 ## Useful links
 
 -   [Wise API Documentation](https://docs.wise.com/api-reference)
