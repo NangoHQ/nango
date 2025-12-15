@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.18] - 2025-12-15
+
+### Added
+
+- *(deploy)* Add deploy for replit (#5137) by @rossmcewan
+- *(integrations)* Add support for sophos-central (#5111) by @hassan254-prog
+- *(integrations)* Add support for fathom oauth (#5140) by @hassan254-prog
+- *(integrations)* Add support for conductorone (#5136) by @hassan254-prog
+- *(webhooks)* Add webhook verification for calendly webhooks (#5138) by @hassan254-prog
+- *(integrations)* Add support for firstbase (#5135) by @hassan254-prog
+- *(integrations)* Add support for onlogist (#5125) by @hassan254-prog
+- *(integrations)* Add support for lumos (#5131) by @hassan254-prog
+- *(integrations)* Add support for torii (#5132) by @hassan254-prog
+- *(integrations)* Add support for justworks (#5133) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3c264c5cb838145a92f3a80fd71d98602b87a74a by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(records)* Remove sync_id from mark_previous_generation_as_deleted index (#5144) by @TBonnin
+- Cache zod schema when possible (#5143) by @TBonnin
+- *(auth)* Allow/disallow regular signup based on environment variable (#5149) by @rossmcewan
+- *(cli)* Don't generate for sync if an action is passed in (#5150) by @khaliqgant
+
 ## [v0.69.17] - 2025-12-12
 
 ### Added
@@ -5495,6 +5521,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.18]: https://github.com/NangoHQ/nango/compare/v0.69.17..v0.69.18
 [v0.69.17]: https://github.com/NangoHQ/nango/compare/v0.69.16..v0.69.17
 [v0.69.16]: https://github.com/NangoHQ/nango/compare/v0.69.15..v0.69.16
 [v0.69.15]: https://github.com/NangoHQ/nango/compare/v0.69.14..v0.69.15
