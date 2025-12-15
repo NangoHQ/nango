@@ -12,7 +12,7 @@ import { apiFlowUpdateFrequency, apiPreBuiltUpgrade } from '../../../../../hooks
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { githubIntegrationTemplates } from '../../../../../utils/utils';
-import { ScriptToggle } from '../../../components/ScriptToggle';
+import { FunctionSwitch } from '../../../components/FunctionSwitch';
 
 import type { NangoSyncConfigWithEndpoint } from './List';
 import type { GetIntegration } from '@nangohq/types';
@@ -129,7 +129,7 @@ export const ScriptSettings: React.FC<{
 
             <div className="flex flex-col gap-8 pt-10">
                 <InfoBloc title="Enabled" horizontal>
-                    <ScriptToggle flow={flow} integration={integration} />
+                    <FunctionSwitch flow={flow} integration={integration.integration} />
                 </InfoBloc>
                 {flow.is_public ? (
                     <InfoBloc title="Source" horizontal>

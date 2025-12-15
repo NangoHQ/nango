@@ -1,11 +1,14 @@
 import { CopyButton } from '@/components-v2/CopyButton';
 import { StyledLink } from '@/components-v2/StyledLink';
+import { useApiDownWatch } from '@/hooks/useApiDownWatch';
 import { StatusWidget } from '@/pages/Integrations/components/StatusWidget';
 import { getDisplayName } from '@/pages/Integrations/utils';
 
 import type { ApiIntegration, Provider } from '@nangohq/types';
 
 export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provider: Provider }> = ({ integration, provider }) => {
+    const { data: apiDownWatchStatus } = useApiDownWatch(integration.provider);
+
     return (
         <div className="flex flex-col min-w-30 w-60">
             <InfoRow label="Auth method">
@@ -30,11 +33,13 @@ export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provid
                     </StyledLink>
                 </span>
             </InfoRow>
-            <InfoRow label="API status">
-                <div className="flex">
-                    <StatusWidget className="text-text-primary" service={integration.provider} />
-                </div>
-            </InfoRow>
+            {apiDownWatchStatus?.status && (
+                <InfoRow label="API status">
+                    <div className="flex">
+                        <StatusWidget className="text-text-primary" status={apiDownWatchStatus?.status} />
+                    </div>
+                </InfoRow>
+            )}
             <InfoRow label="Created">
                 <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
                     {new Date(integration.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}

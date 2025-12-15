@@ -12,8 +12,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../../../../componen
 import { useEnvironment } from '../../../../../hooks/useEnvironment';
 import { useTrial } from '../../../../../hooks/usePlan';
 import { useStore } from '../../../../../store';
+import { FunctionSwitch } from '../../../components/FunctionSwitch';
 import { HelpFooter } from '../../../components/HelpFooter';
-import { ScriptToggle } from '../../../components/ScriptToggle';
 
 import type { GetIntegration, NangoSyncConfig, NangoSyncEndpointV2 } from '@nangohq/types';
 
@@ -92,7 +92,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                                                     <ErrorCircle icon="clock" variant="warning" />
                                                                 </SimpleTooltip>
                                                             )}
-                                                            <ScriptToggle flow={flow} integration={integration} />
+                                                            <FunctionSwitch flow={flow} integration={integration.integration} />
                                                         </div>
                                                     </Table.Cell>
                                                 </Table.Row>

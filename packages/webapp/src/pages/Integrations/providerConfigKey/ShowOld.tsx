@@ -15,7 +15,7 @@ import DashboardLayout from '../../../layout/DashboardLayout.js';
 import { useStore } from '../../../store.js';
 import PageNotFound from '../../PageNotFound.js';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner.js';
-import { StatusWidget } from '../components/StatusWidget.js';
+// import { StatusWidget } from '../components/StatusWidget.js';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -104,9 +104,7 @@ export const ShowIntegration: React.FC = () => {
                                     </ButtonLink>
                                 )}
                             </div>
-                            <div className="flex">
-                                <StatusWidget className="text-white" service={data.integration.provider} />
-                            </div>
+                            <div className="flex">{/* <StatusWidget className="text-white" service={data.integration.provider} /> */}</div>
                         </div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
+import { EmptyCard } from '../../components/EmptyCard';
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
@@ -115,18 +116,10 @@ export const FunctionsOne: React.FC = () => {
                             <NavigationTrigger value="outputs">Outputs</NavigationTrigger>
                         </NavigationList>
                         <NavigationContent value={inputTab}>
-                            {inputSchema ? (
-                                <JsonSchemaTopLevelObject schema={inputSchema} />
-                            ) : (
-                                <p className="text-text-secondary text-body-medium-regular">This function does not have any inputs.</p>
-                            )}
+                            {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No ${inputTabLabel.toLowerCase()}.`} />}
                         </NavigationContent>
                         <NavigationContent value="outputs">
-                            {outputSchema ? (
-                                <JsonSchemaTopLevelObject schema={outputSchema} />
-                            ) : (
-                                <p className="text-text-secondary text-body-medium-regular">This function does not have any outputs.</p>
-                            )}
+                            {outputSchema ? <JsonSchemaTopLevelObject schema={outputSchema} /> : <EmptyCard content="No outputs." />}
                         </NavigationContent>
                     </Navigation>
                 </div>

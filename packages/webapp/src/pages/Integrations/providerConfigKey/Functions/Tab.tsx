@@ -1,12 +1,13 @@
-import { Box, Code, ExternalLink, Info, Plus } from 'lucide-react';
+import { Box, Code, ExternalLink, Info } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { EmptyCard } from '../../components/EmptyCard.js';
+import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { Switch } from '@/components-v2/ui/switch';
+import { ButtonLink } from '@/components-v2/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
@@ -44,12 +45,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const [selectedTab, setSelectedTab] = useState<'actions' | 'syncs'>('actions');
 
-    const { actionsByGroup, syncsByGroup } = useMemo(() => {
+    const { actions, actionsByGroup, syncs, syncsByGroup } = useMemo(() => {
         const actions = data?.flows.filter((flow) => flow.type === 'action') ?? [];
         const syncs = data?.flows.filter((flow) => flow.type === 'sync') ?? [];
         const actionsByGroup = groupByGroup(actions);
         const syncsByGroup = groupByGroup(syncs);
-        return { actionsByGroup, syncsByGroup };
+        return { actions, actionsByGroup, syncs, syncsByGroup };
     }, [data?.flows]);
 
     const onFunctionClick = useCallback(
@@ -86,10 +87,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 )}
             </div>
             <NavigationContent value="actions">
-                <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} />
+                {actions.length > 0 ? (
+                    <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} integration={integration} />
+                ) : (
+                    <EmptyCard content="You don't have any actions setup yet." />
+                )}
             </NavigationContent>
             <NavigationContent value="syncs">
-                <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} />
+                {syncs.length > 0 ? (
+                    <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} integration={integration} />
+                ) : (
+                    <EmptyCard content="You don't have any syncs setup yet." />
+                )}
             </NavigationContent>
         </Navigation>
     );
@@ -98,19 +107,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 const GroupedFunctionsTable: React.FC<{
     groupedFunctions: Record<string, NangoSyncConfigWithEndpoint[]>;
     onFunctionClick?: (func: NangoSyncConfigWithEndpoint) => void;
-}> = ({ groupedFunctions, onFunctionClick }) => {
-    if (Object.keys(groupedFunctions).length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center gap-5 p-20 bg-bg-elevated rounded-md">
-                <span className="text-text-secondary text-body-medium-regular">You don&apos;t have any functions setup yet</span>
-                <Button variant="secondary" size="sm">
-                    <Plus />
-                    Create function
-                </Button>
-            </div>
-        );
-    }
-
+    integration: ApiIntegration;
+}> = ({ groupedFunctions, onFunctionClick, integration }) => {
     return (
         <Table>
             {Object.entries(groupedFunctions).map(([groupName, functions], index) => (
@@ -124,8 +122,8 @@ const GroupedFunctionsTable: React.FC<{
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {functions.map((func) => (
-                            <TableRow key={func.id} className="cursor-pointer" onClick={() => onFunctionClick?.(func)}>
+                        {functions.map((func, index) => (
+                            <TableRow key={index} className="cursor-pointer" onClick={() => onFunctionClick?.(func)}>
                                 <TableCell>
                                     <div className="flex items-center gap-1.5">
                                         {func.name}
@@ -153,7 +151,7 @@ const GroupedFunctionsTable: React.FC<{
                                     )}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    <Switch checked={func.enabled} onCheckedChange={() => {}} />
+                                    <FunctionSwitch flow={func} integration={integration} />
                                 </TableCell>
                             </TableRow>
                         ))}
