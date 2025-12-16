@@ -139,7 +139,7 @@ nango dryrun fetch-tickets abc-123 --save
 
 ### Mock file structure
 
-Mocks are saved in a single `.test.json` file alongside your test file:
+Mocks are saved in a single `.test.json` file that can be used alongside your test file:
 
 ```
 github/
@@ -152,8 +152,8 @@ The `test.json` file contains all the necessary mock data for a given test:
 
 ```json
 {
-  "input": { "title": "Test ticket" }, // Action input
-  "output": { "id": "TKT-123", "status": "created" }, // Action output
+  "input": { "title": "Test ticket" },
+  "output": { "id": "TKT-123", "status": "created" },
   "nango": {
     "getConnection": { "connectionId": "abc-123", "provider": "github" },
     "getMetadata": { "accountId": "test-123" },
@@ -178,22 +178,6 @@ The `test.json` file contains all the necessary mock data for a given test:
   }
 }
 ```
-
-### Migrating from the old format
-
-If you have tests using the old multi-file mock format, you can automatically migrate them to the new unified format.
-
-Set the `MIGRATE_MOCKS` environment variable to `true` and run your tests:
-
-```bash
-MIGRATE_MOCKS=true npm test
-```
-
-This will:
-1. Run your tests using the old mock files.
-2. Intercept all mock data accessed during the test run.
-3. Save the data into a new `.test.json` file.
-4. The old mock directory can then be safely deleted.
 
 ### Using stubbed metadata
 
@@ -330,17 +314,35 @@ describe('github create-ticket tests', () => {
 
 ### How mocks work in tests
 
-The `NangoSyncMock` and `NangoActionMock` classes automatically load your saved mocks:
+The `NangoSyncMock` and `NangoActionMock` classes automatically load your saved mocks from the `.test.json` file:
 
-1. **API requests** are intercepted and return saved mock responses
-2. **Input data** is loaded from `input.json` (for actions)
-3. **Expected outputs** are loaded from the appropriate mock files
-4. **Tests compare** actual outputs against expected outputs
+1. **API requests** are intercepted and return saved mock responses from the `api` section.
+2. **Input data** is loaded from the `input` property (for actions).
+3. **Expected outputs** are loaded from the `output` property.
+4. **Tests compare** actual outputs against expected outputs.
 
 This means:
 - Tests run **instantly** (no API calls)
 - Tests are **deterministic** (same input = same output)
 - Tests work **offline**
+
+### Migrating from the old format
+
+If you have tests using the old multi-file mock format, you can automatically migrate them to the new unified format.
+
+Set the `MIGRATE_MOCKS` environment variable to `true` and run your tests:
+
+```bash
+MIGRATE_MOCKS=true npm test
+```
+
+This will:
+1. Run your tests using the old mock files.
+2. Intercept all mock data accessed during the test run.
+3. Save the data into a new `.test.json` file.
+4. The old mock directory can then be safely deleted.
+
+> **Note:** This migration tool works by intercepting the mock data loaded by your existing tests. It requires that your tests are using the standard Nango mock utilities (`NangoSyncMock` or `NangoActionMock`) imported from `nango/test`.
 
 ### Running tests
 
@@ -380,7 +382,7 @@ export default defineConfig({
 The `vitest.setup.ts` file makes Nango mocks available globally:
 
 ```typescript
-import { NangoActionMock, NangoSyncMock } from './path/to/your/vitest/setup';
+import { NangoActionMock, NangoSyncMock } from "nango/test";
 
 globalThis.vitest = {
   NangoActionMock,
