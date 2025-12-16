@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.19] - 2025-12-16
+
+### Added
+
+- *(providers-logo)* Add logo_url (#5154) by @khaliqgant
+- *(records)* Add pruned_at column to records table (#5152) by @TBonnin
+- Add docs for records pruning feature (#5159) by @TBonnin
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bad174fa1f79a614b3c992b6551abb1f23d3c6e3 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/abbf6b3a7a1b889df8dd45153445533f88188134 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f0b7ef33849d967fb6e224d698f8e8bb98900911 by Khaliq by @github-actions[bot]
+
 ## [v0.69.18] - 2025-12-15
 
 ### Added
@@ -5521,6 +5535,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.19]: https://github.com/NangoHQ/nango/compare/v0.69.18..v0.69.19
 [v0.69.18]: https://github.com/NangoHQ/nango/compare/v0.69.17..v0.69.18
 [v0.69.17]: https://github.com/NangoHQ/nango/compare/v0.69.16..v0.69.17
 [v0.69.16]: https://github.com/NangoHQ/nango/compare/v0.69.15..v0.69.16
