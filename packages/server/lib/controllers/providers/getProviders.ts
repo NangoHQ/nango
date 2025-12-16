@@ -38,13 +38,13 @@ export const getPublicProviders = asyncWrapper<GetPublicProviders>((req, res) =>
                 filtered.push({
                     ...providers[providerName]!,
                     name: providerName,
-                    logoUrl: `${basePublicUrl}/images/template-logos/${providerName}.svg`
+                    logo_url: `${basePublicUrl}/images/template-logos/${providerName}.svg`
                 });
             }
         }
     } else {
         filtered = Object.entries(providers).map(([name, provider]) => {
-            return { ...provider, name, logoUrl: `${basePublicUrl}/images/template-logos/${name}.svg` };
+            return { ...provider, name, logo_url: `${basePublicUrl}/images/template-logos/${name}.svg` };
         });
     }
 

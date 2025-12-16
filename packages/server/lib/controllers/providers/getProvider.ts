@@ -36,5 +36,5 @@ export const getPublicProvider = asyncWrapper<GetPublicProvider>((req, res) => {
         return;
     }
 
-    res.status(200).send({ data: { ...provider, name: params.provider, logoUrl: `${basePublicUrl}/images/template-logos/${params.provider}.svg` } });
+    res.status(200).send({ data: { ...provider, name: params.provider, logo_url: `${basePublicUrl}/images/template-logos/${params.provider}.svg` } });
 });

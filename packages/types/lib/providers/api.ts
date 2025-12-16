@@ -10,7 +10,7 @@ export type GetPublicProviders = Endpoint<{
         data: ApiProvider[];
     };
 }>;
-export type ApiProvider = Provider & { name: string; logoUrl: string };
+export type ApiProvider = Provider & { name: string; logo_url: string };
 
 export type GetPublicProvider = Endpoint<{
     Method: 'GET';
