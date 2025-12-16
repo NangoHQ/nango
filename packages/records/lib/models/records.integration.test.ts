@@ -1009,8 +1009,8 @@ describe('Records service', () => {
             let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(records.length);
 
-            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, batchSize: 2 })).unwrap();
-            expect(deletedCount.totalDeletedRecords).toBe(records.length);
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', batchSize: 2 })).unwrap();
+            expect(deletedCount.count).toBe(records.length);
 
             stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBe(undefined);
@@ -1038,8 +1038,8 @@ describe('Records service', () => {
             expect(initialStats[model]?.count).toBe(5);
             const initialSize = initialStats[model]?.size_bytes || 0;
 
-            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, limit: 3 })).unwrap();
-            expect(deletedCount.totalDeletedRecords).toBe(3);
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 3 })).unwrap();
+            expect(deletedCount.count).toBe(3);
 
             const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]?.count).toBe(2);
@@ -1061,8 +1061,8 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, limit: 2 })).unwrap();
-            expect(deletedCount.totalDeletedRecords).toBe(2);
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 2 })).unwrap();
+            expect(deletedCount.count).toBe(2);
 
             const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]).toBeUndefined();
@@ -1073,13 +1073,13 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            const zeroResult = await Records.deleteRecords({ connectionId, environmentId, model, limit: 0 });
+            const zeroResult = await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 0 });
             expect(zeroResult.isErr()).toBe(true);
             if (zeroResult.isErr()) {
                 expect(zeroResult.error.message).toBe('limit must be greater than 0');
             }
 
-            const negativeResult = await Records.deleteRecords({ connectionId, environmentId, model, limit: -5 });
+            const negativeResult = await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: -5 });
             expect(negativeResult.isErr()).toBe(true);
             if (negativeResult.isErr()) {
                 expect(negativeResult.error.message).toBe('limit must be greater than 0');
@@ -1118,13 +1118,14 @@ describe('Records service', () => {
                     connectionId,
                     environmentId,
                     model,
+                    mode: 'hard',
                     toCursorIncluded: someRecordCursor!,
                     limit: 100
                 })
             ).unwrap();
 
-            expect(deletion.totalDeletedRecords).toBe(toDelete);
-            expect(deletion.lastDeletedCursor).toBe(someRecordCursor);
+            expect(deletion.count).toBe(toDelete);
+            expect(deletion.lastCursor).toBe(someRecordCursor);
 
             const remaining = (await Records.getRecords({ connectionId, model })).unwrap();
             expect(remaining.records.length).toBe(records.length - toDelete);
@@ -1136,15 +1137,15 @@ describe('Records service', () => {
             expect(stats[model]?.count).toBe(records.length - toDelete);
         });
 
-        it('should return null lastDeletedCursor when no records deleted', async () => {
+        it('should return null lastCursor when no records deleted', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            const deleteResult = (await Records.deleteRecords({ connectionId, environmentId, model })).unwrap();
+            const deleteResult = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
 
-            expect(deleteResult.totalDeletedRecords).toBe(0);
-            expect(deleteResult.lastDeletedCursor).toBeNull();
+            expect(deleteResult.count).toBe(0);
+            expect(deleteResult.lastCursor).toBeNull();
         });
 
         it('should respect cursor boundary when deleting in batches', async () => {
@@ -1168,13 +1169,14 @@ describe('Records service', () => {
                     connectionId,
                     environmentId,
                     model,
+                    mode: 'hard',
                     toCursorIncluded: twelfthRecordCursor!,
                     batchSize: 7
                 })
             ).unwrap();
 
-            expect(deleteResult.totalDeletedRecords).toBe(12);
-            expect(deleteResult.lastDeletedCursor).toBe(twelfthRecordCursor);
+            expect(deleteResult.count).toBe(12);
+            expect(deleteResult.lastCursor).toBe(twelfthRecordCursor);
 
             const remainingRecords = (await Records.getRecords({ connectionId, model })).unwrap();
             expect(remainingRecords.records.length).toBe(8);
@@ -1189,6 +1191,7 @@ describe('Records service', () => {
                 connectionId,
                 environmentId,
                 model,
+                mode: 'hard',
                 toCursorIncluded: 'invalid-cursor-value'
             });
 
@@ -1198,7 +1201,7 @@ describe('Records service', () => {
             }
         });
 
-        it('should prune records when mode = soft', async () => {
+        it('should prune records when mode = prune', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
@@ -1210,38 +1213,42 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
             const recs = (await Records.getRecords({ connectionId, model })).unwrap();
             const last = recs.records[recs.records.length - 1]!;
             const cursor = last._nango_metadata.cursor;
 
-            // update last record to ensure it is not deleted and correct cursor is returned
+            // update last record to ensure it is not pruned and correct cursor is returned
             await upsertRecords({ records: [{ id: last.id, name: 'Maxwell Doe' }], connectionId, environmentId, model, syncId });
 
             // prune all records but the last one that was just updated
-            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'soft', toCursorIncluded: cursor })).unwrap();
-            expect(prune.totalDeletedRecords).toBe(2);
-            expect(prune.lastDeletedCursor).toBe(recs.records[recs.records.length - 2]!._nango_metadata.cursor); // second last record's cursor since last record was updated and not deleted
+            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
+            expect(prune.count).toBe(2);
+            expect(prune.lastCursor).toBe(recs.records[recs.records.length - 2]!._nango_metadata.cursor); // second last record's cursor since last record was updated and not deleted
 
-            // try to prune again, should not delete any records
-            const prune2 = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'soft', toCursorIncluded: cursor })).unwrap();
-            expect(prune2.totalDeletedRecords).toBe(0);
-            expect(prune2.lastDeletedCursor).toBeNull();
-
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
-            expect(stats[model]?.count).toBe(1);
+            // try to prune again, should not do anything
+            const prune2 = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
+            expect(prune2.count).toBe(0);
+            expect(prune2.lastCursor).toBeNull();
 
             const res = (await Records.getRecords({ connectionId, model })).unwrap();
             expect(res.records.length).toBe(3);
             res.records.forEach((r) => {
                 if (r.id === last.id) {
                     expect(r._nango_metadata.last_action).toBe('UPDATED');
-                    expect(r._nango_metadata.deleted_at).toBeNull();
+                    expect(r._nango_metadata.pruned_at).toBeNull();
                 } else {
                     expect(r.id).toBeDefined();
-                    expect(r._nango_metadata.last_action).toBe('DELETED');
-                    expect(r._nango_metadata.deleted_at).not.toBeNull();
+                    expect(r._nango_metadata.last_action).toBe('ADDED');
+                    expect(r._nango_metadata.pruned_at).not.toBeNull();
                 }
             });
+
+            // count should remain the same but size should be reduced
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(3);
+            expect(stats[model]?.size_bytes).toBeLessThan(statsBefore[model]?.size_bytes || 0);
         });
     });
 

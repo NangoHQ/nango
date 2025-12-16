@@ -47,11 +47,12 @@ export async function deleteSyncData(sync: Sync, syncConfig: DBSyncConfig, opts:
                     connectionId: sync.nango_connection_id,
                     environmentId: syncConfig.environment_id,
                     model,
+                    mode: 'hard',
                     batchSize: limit
                 });
-                if (res.isOk() && res.value.totalDeletedRecords) {
-                    logger.info('deleted', res.value.totalDeletedRecords, 'records for model', model);
-                    return res.value.totalDeletedRecords;
+                if (res.isOk() && res.value.count) {
+                    logger.info('deleted', res.value.count, 'records for model', model);
+                    return res.value.count;
                 }
 
                 return 0;
