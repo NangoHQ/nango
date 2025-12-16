@@ -32,7 +32,7 @@ describe(`GET ${route}`, () => {
             data: {
                 display_name: 'HubSpot',
                 docs: 'https://nango.dev/docs/api-integrations/hubspot',
-                logo_url: 'https://app.nango.dev/images/template-logos/hubspot.svg',
+                logo_url: 'http://localhost:3003/images/template-logos/hubspot.svg',
                 name: 'hubspot',
                 auth_mode: 'OAUTH2'
             }
