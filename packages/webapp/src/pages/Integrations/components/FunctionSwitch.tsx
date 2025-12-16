@@ -10,11 +10,10 @@ import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Switch } from '@/components-v2/ui/switch';
 
-import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List.js';
-import type { ApiIntegration } from '@nangohq/types';
+import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
-    flow: NangoSyncConfigWithEndpoint;
+    flow: NangoSyncConfig;
     integration: ApiIntegration;
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
@@ -135,7 +134,7 @@ export const FunctionSwitch: React.FC<{
                                 <DialogClose asChild>
                                     <Button variant="secondary">Cancel</Button>
                                 </DialogClose>
-                                <Button variant={'primary'} disabled={loading} className="disabled:bg-pure-black" onClick={() => onEnable()}>
+                                <Button variant={'primary'} disabled={loading} onClick={() => onEnable()}>
                                     {loading && <Loader2 className="animate-spin" />}
                                     Enable
                                 </Button>
@@ -153,7 +152,7 @@ export const FunctionSwitch: React.FC<{
                                 <DialogClose asChild>
                                     <Button variant="secondary">Cancel</Button>
                                 </DialogClose>
-                                <Button variant="destructive" disabled={loading} className="disabled:bg-pure-black" onClick={() => onDisable()}>
+                                <Button variant="destructive" disabled={loading} onClick={() => onDisable()}>
                                     {loading && <Loader2 className="animate-spin" />}
                                     Disable
                                 </Button>
@@ -162,7 +161,7 @@ export const FunctionSwitch: React.FC<{
                     )}
                 </DialogContent>
             </Dialog>
-            <div className="w-[20px]">{flow.type === 'action' && loading && <Loader2 size={1} />}</div>
+            {flow.type === 'action' && loading && <Loader2 className="animate-spin size-4" />}
         </div>
     );
 };

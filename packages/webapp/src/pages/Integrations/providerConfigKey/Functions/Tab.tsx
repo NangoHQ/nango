@@ -1,5 +1,5 @@
 import { Box, Code, ExternalLink, Info } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { EmptyCard } from '../../components/EmptyCard.js';
@@ -10,26 +10,24 @@ import { Badge } from '@/components-v2/ui/badge';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
 
-import type { NangoSyncConfigWithEndpoint } from '../Endpoints/components/List.js';
 import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 
-function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfigWithEndpoint[]> {
-    const groups = new Map<string, NangoSyncConfigWithEndpoint[]>();
+function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfig[]> {
+    const groups = new Map<string, NangoSyncConfig[]>();
     for (const flow of flows) {
-        for (const endpoint of flow.endpoints) {
-            const groupName = endpoint.group || 'others';
+        const groupName = flow.endpoints[0].group || 'others';
 
-            const existingGroup = groups.get(groupName);
-            if (!existingGroup) {
-                groups.set(groupName, [{ ...flow, endpoint }]);
-                continue;
-            }
-
-            existingGroup.push({ ...flow, endpoint });
+        const existingGroup = groups.get(groupName);
+        if (!existingGroup) {
+            groups.set(groupName, [flow]);
+            continue;
         }
+
+        existingGroup.push(flow);
     }
     return Object.fromEntries(groups);
 }
@@ -43,7 +41,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { data, loading } = useGetIntegrationFlows(env, integration.unique_key);
 
-    const [selectedTab, setSelectedTab] = useState<'actions' | 'syncs'>('actions');
+    const [activeTab, setActiveTab] = useHashNavigation('actions');
 
     const { actions, actionsByGroup, syncs, syncsByGroup } = useMemo(() => {
         const actions = data?.flows.filter((flow) => flow.type === 'action') ?? [];
@@ -54,7 +52,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }, [data?.flows]);
 
     const onFunctionClick = useCallback(
-        (func: NangoSyncConfigWithEndpoint) => {
+        (func: NangoSyncConfig) => {
             navigate(`/${env}/integrations/${integration.unique_key}/functions/${func.name}`);
         },
         [env, integration.unique_key, navigate]
@@ -65,18 +63,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }
 
     return (
-        <Navigation
-            defaultValue="actions"
-            orientation="horizontal"
-            className="max-w-2xl"
-            onTabChanged={(value) => setSelectedTab(value as 'actions' | 'syncs')}
-        >
+        <Navigation value={activeTab} onValueChange={setActiveTab} orientation="horizontal" className="max-w-2xl">
             <div className="w-full inline-flex items-center gap-2 justify-between">
                 <NavigationList>
                     <NavigationTrigger value="actions">Actions</NavigationTrigger>
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
-                {selectedTab === 'actions' ? (
+                {activeTab === 'actions' ? (
                     <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
                         How to use Actions <ExternalLink />
                     </ButtonLink>
@@ -105,8 +98,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 };
 
 const GroupedFunctionsTable: React.FC<{
-    groupedFunctions: Record<string, NangoSyncConfigWithEndpoint[]>;
-    onFunctionClick?: (func: NangoSyncConfigWithEndpoint) => void;
+    groupedFunctions: Record<string, NangoSyncConfig[]>;
+    onFunctionClick?: (func: NangoSyncConfig) => void;
     integration: ApiIntegration;
 }> = ({ groupedFunctions, onFunctionClick, integration }) => {
     return (
@@ -150,8 +143,10 @@ const GroupedFunctionsTable: React.FC<{
                                         </Badge>
                                     )}
                                 </TableCell>
-                                <TableCell className="text-center">
-                                    <FunctionSwitch flow={func} integration={integration} />
+                                <TableCell>
+                                    <div className="flex justify-center items-center">
+                                        <FunctionSwitch flow={func} integration={integration} />
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

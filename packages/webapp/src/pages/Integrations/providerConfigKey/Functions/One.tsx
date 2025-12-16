@@ -3,12 +3,14 @@ import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
 import { EmptyCard } from '../../components/EmptyCard';
+import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -27,7 +29,7 @@ export const FunctionsOne: React.FC = () => {
         return data?.flows.find((flow) => flow.name === functionName);
     }, [data, functionName]);
 
-    const inputSchema = useMemo(() => {
+    const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
             return null;
         }
@@ -40,18 +42,25 @@ export const FunctionsOne: React.FC = () => {
         return inputSchema as JSONSchema7;
     }, [func]);
 
-    const outputSchema = useMemo(() => {
+    const outputSchemas: { name: string; schema: JSONSchema7 }[] | null = useMemo(() => {
         if (!func || !func.returns || !func.json_schema) {
             return null;
         }
         const { returns, json_schema } = func;
 
-        const outputSchema = json_schema.definitions?.[returns[0]] ?? null;
-        if (!outputSchema || isNullSchema(outputSchema as JSONSchema7) || isObjectWithNoProperties(outputSchema as JSONSchema7)) {
-            return null;
-        }
-        return outputSchema as JSONSchema7;
+        const outputSchemas = returns
+            .map((returnsName) => {
+                const outputSchema = json_schema.definitions?.[returnsName] ?? null;
+                if (!outputSchema || isNullSchema(outputSchema as JSONSchema7) || isObjectWithNoProperties(outputSchema as JSONSchema7)) {
+                    return null;
+                }
+                return { name: returnsName, schema: outputSchema as JSONSchema7 };
+            })
+            .filter((outputSchema) => outputSchema !== null);
+        return outputSchemas;
     }, [func]);
+
+    const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
     if (integrationLoading || flowsLoading) {
         // TODO: improve loading state
@@ -62,10 +71,6 @@ export const FunctionsOne: React.FC = () => {
         return <PageNotFound />;
     }
 
-    const inputTab = func.type === 'action' ? 'inputs' : 'metadata';
-    const inputTabLabel = func.type === 'action' ? 'Inputs' : 'Metadata';
-    const defaultTab = inputSchema ? inputTab : outputSchema ? 'outputs' : undefined;
-
     return (
         <DashboardLayout>
             <Helmet>
@@ -74,17 +79,20 @@ export const FunctionsOne: React.FC = () => {
 
             <header className="flex flex-col">
                 <div className="flex flex-col gap-6 px-11 py-8 bg-bg-elevated border border-b-0 border-border-muted rounded-t-md">
-                    <div className="inline-flex gap-2">
-                        <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
-                        <div className="flex flex-col gap-0.5">
-                            <span className="text-text-primary text-body-medium-semi">
-                                {integrationData.integration.display_name ?? integrationData.template.display_name}
-                            </span>
-                            <div className="inline-flex gap-1">
-                                <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
-                                <CopyButton text={func.name} />
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="inline-flex gap-2">
+                            <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-text-primary text-body-medium-semi">
+                                    {integrationData.integration.display_name ?? integrationData.template.display_name}
+                                </span>
+                                <div className="inline-flex gap-1">
+                                    <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
+                                    <CopyButton text={func.name} />
+                                </div>
                             </div>
                         </div>
+                        <FunctionSwitch flow={func} integration={integrationData.integration} />
                     </div>
 
                     <div className="flex flex-wrap gap-4 gap-y-2">
@@ -110,16 +118,33 @@ export const FunctionsOne: React.FC = () => {
                 </div>
 
                 <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
-                    <Navigation defaultValue={defaultTab} orientation="horizontal">
+                    <Navigation value={activeTab} onValueChange={setActiveTab} orientation="horizontal">
                         <NavigationList>
-                            <NavigationTrigger value={inputTab}>{inputTabLabel}</NavigationTrigger>
-                            <NavigationTrigger value="outputs">Outputs</NavigationTrigger>
+                            <NavigationTrigger value="input">Input</NavigationTrigger>
+                            <NavigationTrigger value="output">Output</NavigationTrigger>
                         </NavigationList>
-                        <NavigationContent value={inputTab}>
-                            {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No ${inputTabLabel.toLowerCase()}.`} />}
+                        <NavigationContent value="input">
+                            {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No inputs.`} />}
                         </NavigationContent>
-                        <NavigationContent value="outputs">
-                            {outputSchema ? <JsonSchemaTopLevelObject schema={outputSchema} /> : <EmptyCard content="No outputs." />}
+                        <NavigationContent value="output">
+                            {outputSchemas && outputSchemas.length > 0 ? (
+                                <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
+                                    <NavigationList>
+                                        {outputSchemas.map((outputSchema) => (
+                                            <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
+                                                {outputSchema.name}
+                                            </NavigationTrigger>
+                                        ))}
+                                    </NavigationList>
+                                    {outputSchemas.map((outputSchema) => (
+                                        <NavigationContent key={outputSchema.name} value={outputSchema.name}>
+                                            <JsonSchemaTopLevelObject schema={outputSchema.schema} />
+                                        </NavigationContent>
+                                    ))}
+                                </Navigation>
+                            ) : (
+                                <EmptyCard content="No outputs." />
+                            )}
                         </NavigationContent>
                     </Navigation>
                 </div>

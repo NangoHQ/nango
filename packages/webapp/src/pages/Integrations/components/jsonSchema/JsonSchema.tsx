@@ -75,7 +75,7 @@ const JsonSchemaGenericInfo: React.FC<{
             </div>
             <div className="flex gap-1 5">
                 <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
-                {isRequired && <CatalogBadge variant="red">Required</CatalogBadge>}
+                {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
             </div>
         </div>
     );
@@ -85,10 +85,12 @@ const JsonSchemaObject: React.FC<{ name: string; schema: JSONSchema7; isArray?: 
         throw new Error('Expected object schema.');
     }
 
+    const hasProperties = Object.keys(schema.properties || {}).length > 0 || schema.additionalProperties;
+
     return (
         <div className="flex flex-col gap-3">
             <JsonSchemaGenericInfo name={name} type={typeToString(schema, isArray)} description={schema.description} depth={depth} />
-            <CollapsibleProperties schema={schema} depth={depth + 1} />
+            {hasProperties && <CollapsibleProperties schema={schema} depth={depth + 1} />}
         </div>
     );
 };
@@ -155,7 +157,12 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>
                     ))}
-                    {schema.additionalProperties && <JsonSchema name="{key}" schema={schema.additionalProperties as JSONSchema7} depth={depth} />}
+                    {schema.additionalProperties &&
+                        (typeof schema.additionalProperties === 'object' ? (
+                            <JsonSchema name="{key}" schema={schema.additionalProperties} depth={depth} />
+                        ) : (
+                            <JsonSchemaGenericInfo name="{key}" type="any" depth={depth} />
+                        ))}
                 </div>
             </Collapsible.Content>
         </Collapsible.Root>
