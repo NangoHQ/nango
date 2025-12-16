@@ -14651,6 +14651,57 @@ vanta:
     docs: https://nango.dev/docs/api-integrations/vanta
     docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
 
+veeva-vault:
+    display_name: Veeva Vault
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.subdomain}.veevavault.com/api/${connectionConfig.version}/auth
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: sessionId
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.veevavault.com/api/${connectionConfig.version}
+        headers:
+            authorization: ${accessToken}
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/veeva-vault
+    docs_connect: https://nango.dev/docs/api-integrations/veeva-vault/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Vault user name assigned by your administrator
+            doc_section: '#step-2-obtaining-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Vault password associated with your assigned Vault user name
+            secret: true
+            doc_section: '#step-2-obtaining-your-credentials'
+    connection_config:
+        subdomain:
+            type: string
+            title: Vault DNS (subdomain)
+            description: The Vault DNS subdomain of the Veeva Vault you want to connect to
+            example: myvault
+            prefix: https://
+            suffix: veevavault.com
+            order: 1
+            doc_section: '#step-1-finding-your-vault-dns-subdomain'
+        version:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 wakatime:
     display_name: Wakatime
     categories:

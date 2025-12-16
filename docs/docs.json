@@ -904,6 +904,7 @@
               "integrations/all/valley",
               "integrations/all/valley-api-key",
               "api-integrations/vanta",
+              "api-integrations/veeva-vault",
               "integrations/all/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
