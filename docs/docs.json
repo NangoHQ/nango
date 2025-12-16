@@ -715,6 +715,7 @@
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
+              "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
               "integrations/all/ory",
               "integrations/all/osu",
