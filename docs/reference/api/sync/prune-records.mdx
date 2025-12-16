@@ -1,0 +1,36 @@
+---
+title: 'Prune records'
+sidebarTitle: 'Prune records'
+openapi: 'PATCH /records/prune'
+---
+
+Prunes synced records for a given connection and model using cursor-based pagination.
+
+## What is pruning?
+
+Pruning empties the record payload while preserving the record metadata.
+This is useful for compliance requirements, ensuring Nango doesn't hold onto your records data while maintaining the ability to track record state. The payload can be restored by re-syncing the data.
+
+<Tip>
+Pruning is not the same as marking a record as deleted from the external API.
+This endpoint prunes data from Nango’s cache only. It does not delete anything on the external API, and it is not the same as [detecting a deletion from the source](/guides/use-cases/syncs#deletion-detection).
+
+If you need to tell your customers that a record was deleted on the external API while keeping its last-known payload in cache, use `batchDelete` or `deleteRecordsFromPreviousExecutions` in your sync functions instead.
+</Tip>
+
+## Cursor behavior
+
+Records are pruned up to and including the specified `until_cursor` value. Use the `_nango_metadata.cursor` value from the record you want to prune up to.
+
+## Response
+
+<Tip>
+The `has_more` field indicates whether there are potentially more records to prune. When `true`, make another request with the same `until_cursor` to continue pruning. When `false`, all records up to the cursor have been pruned.
+</Tip>
+
+```json
+{
+  "count": 150,
+  "has_more": true
+}
+```
