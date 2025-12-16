@@ -1,3 +1,4 @@
+import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
@@ -10,6 +11,9 @@ import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSch
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { ButtonLink } from '@/components-v2/ui/button';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -119,14 +123,27 @@ export const FunctionsOne: React.FC = () => {
 
                 <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
                     <Navigation value={activeTab} onValueChange={setActiveTab} orientation="horizontal">
-                        <NavigationList>
-                            <NavigationTrigger value="input">Input</NavigationTrigger>
-                            <NavigationTrigger value="output">Output</NavigationTrigger>
-                        </NavigationList>
-                        <NavigationContent value="input">
+                        <div className="flex items-center justify-between gap-2">
+                            <NavigationList>
+                                <NavigationTrigger value="input">Input</NavigationTrigger>
+                                <NavigationTrigger value="output">Output</NavigationTrigger>
+                            </NavigationList>
+                            {func.type === 'action' ? (
+                                <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                                    How to use Actions <ExternalLink />
+                                </ButtonLink>
+                            ) : (
+                                <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                                    How to use Syncs <ExternalLink />
+                                </ButtonLink>
+                            )}
+                        </div>
+                        <NavigationContent value="input" className="flex flex-col gap-4">
+                            <InfoCallout type={func.type as 'action' | 'sync'} variant="input" />
                             {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No inputs.`} />}
                         </NavigationContent>
-                        <NavigationContent value="output">
+                        <NavigationContent value="output" className="flex flex-col gap-4">
+                            <InfoCallout type={func.type as 'action' | 'sync'} variant="output" />
                             {outputSchemas && outputSchemas.length > 0 ? (
                                 <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
                                     <NavigationList>
@@ -150,5 +167,92 @@ export const FunctionsOne: React.FC = () => {
                 </div>
             </header>
         </DashboardLayout>
+    );
+};
+
+interface FunctionTabAlertProps {
+    type: 'action' | 'sync';
+    variant: 'input' | 'output';
+}
+
+const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
+    return (
+        <Alert variant="info">
+            <Info />
+            <AlertDescription>
+                {type === 'action' && (
+                    <>
+                        {variant === 'input' && (
+                            <p>
+                                Actions accept parameters passed directly when calling the{' '}
+                                <StyledLink
+                                    to="https://nango.dev/docs/implementation-guides/actions/implement-an-action#triggering-an-action-synchronously"
+                                    type="external"
+                                    variant="info"
+                                >
+                                    Nango API
+                                </StyledLink>
+                                .
+                            </p>
+                        )}
+                        {variant === 'output' && (
+                            <p>
+                                Actions return a response returned synchronously from the{' '}
+                                <StyledLink
+                                    to="https://nango.dev/docs/implementation-guides/actions/implement-an-action#triggering-an-action-synchronously"
+                                    type="external"
+                                    variant="info"
+                                >
+                                    Nango API
+                                </StyledLink>
+                                , or delivered via webhook for{' '}
+                                <StyledLink to="https://nango.dev/docs/implementation-guides/actions/async-actions" type="external" variant="info">
+                                    async actions
+                                </StyledLink>
+                                .
+                            </p>
+                        )}
+                    </>
+                )}
+                {type === 'sync' && (
+                    <>
+                        {variant === 'input' && (
+                            <p>
+                                Syncs read input from connection metadata, which must be set via the{' '}
+                                <StyledLink
+                                    to="https://nango.dev/docs/implementation-guides/building-integrations/customer-configuration#store-customer-specific-data"
+                                    type="external"
+                                    variant="info"
+                                >
+                                    Nango API
+                                </StyledLink>{' '}
+                                before the sync runs.
+                            </p>
+                        )}
+                        {variant === 'output' && (
+                            <p>
+                                Syncs write records to the Nango cache, which you fetch via the{' '}
+                                <StyledLink
+                                    to="https://nango.dev/docs/implementation-guides/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
+                                    type="external"
+                                    variant="info"
+                                >
+                                    Nango API
+                                </StyledLink>
+                                .{' '}
+                                <StyledLink
+                                    to="https://nango.dev/docs/implementation-guides/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
+                                    type="external"
+                                    variant="info"
+                                >
+                                    Webhooks
+                                </StyledLink>{' '}
+                                can notify you when new data is available.
+                            </p>
+                        )}
+                    </>
+                )}
+            </AlertDescription>
+        </Alert>
     );
 };
