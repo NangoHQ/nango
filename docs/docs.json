@@ -574,6 +574,7 @@
               "api-integrations/google-drive",
               "api-integrations/google-mail",
               "integrations/all/google-play",
+              "api-integrations/google-search-console",
               "api-integrations/google-sheet",
               "api-integrations/grist",
               "integrations/all/google-slides",
