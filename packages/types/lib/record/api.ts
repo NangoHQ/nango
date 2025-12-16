@@ -8,6 +8,7 @@ export interface RecordMetadata {
     last_modified_at: string;
     last_action: RecordLastAction;
     deleted_at: string | null;
+    pruned_at: string | null;
     cursor: string;
 }
 
@@ -45,18 +46,17 @@ export type GetPublicRecords = Endpoint<{
     };
 }>;
 
-export type DeletePublicRecords = Endpoint<{
-    Method: 'DELETE';
-    Path: `/records`;
+export type PatchPublicPruneRecords = Endpoint<{
+    Method: 'PATCH';
+    Path: `/records/prune`;
     Headers: {
         'connection-id': string;
         'provider-config-key': string;
     };
     Error: ApiError<'unknown_connection'>;
-    Querystring: {
+    Body: {
         model: string;
         variant?: string | undefined;
-        mode: 'soft' | 'hard';
         until_cursor: string;
         limit?: number | undefined;
     };

@@ -2,18 +2,17 @@ import * as z from 'zod';
 
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { DeletePublicRecords } from '@nangohq/types';
+import type { PatchPublicPruneRecords } from '@nangohq/types';
 
-export const validationQuery = z
+export const validationBody = z
     .object({
         model: modelSchema,
         variant: variantSchema.optional(),
-        mode: z.enum(['soft', 'hard']),
         until_cursor: z.string().min(1).max(1000),
         limit: z.coerce.number().min(1).max(10_000).optional()
     })
@@ -25,10 +24,16 @@ export const validationHeaders = z
     })
     .strict();
 
-export const deletePublicRecords = asyncWrapper<DeletePublicRecords>(async (req, res) => {
-    const valQuery = validationQuery.safeParse(req.query);
-    if (!valQuery.success) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
+export const patchPublicPruneRecords = asyncWrapper<PatchPublicPruneRecords>(async (req, res) => {
+    const emptyQuery = requireEmptyQuery(req);
+    if (emptyQuery) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+        return;
+    }
+
+    const valBody = validationBody.safeParse(req.body);
+    if (!valBody.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
     }
 
@@ -39,8 +44,8 @@ export const deletePublicRecords = asyncWrapper<DeletePublicRecords>(async (req,
     }
 
     const { environment } = res.locals;
-    const headers: DeletePublicRecords['Headers'] = valHeaders.data;
-    const query: DeletePublicRecords['Querystring'] = valQuery.data;
+    const headers: PatchPublicPruneRecords['Headers'] = valHeaders.data;
+    const body: PatchPublicPruneRecords['Body'] = valBody.data;
 
     const { error, response: connection } = await connectionService.getConnection(headers['connection-id'], headers['provider-config-key'], environment.id);
 
@@ -51,33 +56,33 @@ export const deletePublicRecords = asyncWrapper<DeletePublicRecords>(async (req,
         return;
     }
 
-    const model = query.variant && query.variant !== 'base' ? `${query.model}::${query.variant}` : query.model;
+    const model = body.variant && body.variant !== 'base' ? `${body.model}::${body.variant}` : body.model;
     const result = await records.deleteRecords({
         environmentId: environment.id,
         connectionId: connection.id,
         model,
-        mode: query.mode,
-        limit: query.limit || 1000,
+        mode: 'prune',
+        limit: body.limit || 1000,
         batchSize: 1000,
-        toCursorIncluded: query.until_cursor
+        toCursorIncluded: body.until_cursor
     });
 
     if (result.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete records' } });
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to prune records' } });
         return;
     }
 
     // IMPORTANT:
     // if until_cursor doesn't exist anymore (e.g. records was updated or deleted)
-    // we can't be sure if there are more records to delete
+    // we can't be sure if there are more records to prune
     // so we optimistically return has_more = true in that case
     // This may lead to one extra call to this endpoint
-    // but ensures all records are deleted as expected
+    // but ensures all records are pruned as expected
     // without extra code/query to maintain and execute on every request
-    const hasMore = result.value.totalDeletedRecords > 0 && query.until_cursor !== result.value.lastDeletedCursor;
+    const hasMore = result.value.count > 0 && body.until_cursor !== result.value.lastCursor;
 
     res.send({
-        count: result.value.totalDeletedRecords,
+        count: result.value.count,
         has_more: hasMore
     });
 });
