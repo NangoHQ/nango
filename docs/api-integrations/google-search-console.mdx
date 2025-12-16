@@ -18,7 +18,7 @@ Connect to Google Search Console with Nango and see data flow in 2 minutes.
 
     </Step>
     <Step title="Authorize Google Search Console">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Search Console. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google account. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Google Search Console API">
     Let's make your first request to the Google Search Console API (fetch a list of sites). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -49,7 +49,7 @@ Connect to Google Search Console with Nango and see data flow in 2 minutes.
             connectionId: '<CONNECTION-ID>'
         });
 
-        console.log(JSON.stringify(res.data, 2, null));
+            console.log(JSON.stringify(res.data, 2, null));
         ```
         </Tab>
 
@@ -70,12 +70,12 @@ Connect to Google Search Console with Nango and see data flow in 2 minutes.
 
 ## 📚 Google Search Console Integration Guides
 
-Nango maintained guides for common use cases.
+Nango-maintained guides for common use cases.
 
 - [How to register your own Google Search Console OAuth app](/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app)  
 Register an OAuth app with Google and obtain credentials to connect it to Nango
 
-Official docs: [Google Search Console API](https://developers.google.com/webmaster-tools/search-console-api-original)
+Official docs: [Google Search Console API](https://developers.google.com/webmaster-tools)
 
 ## 🧩 Pre-built syncs & actions for Google Search Console
 
