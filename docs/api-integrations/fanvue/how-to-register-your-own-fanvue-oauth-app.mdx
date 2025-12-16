@@ -1,0 +1,28 @@
+---
+title: 'How to register your own Fanvue OAuth app'
+sidebarTitle: 'Fanvue Setup'
+description: 'Register an OAuth app with Fanvue and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with Fanvue to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Fanvue account.
+
+<Steps>
+  <Step title="Create a Fanvue Account">
+    If you don't already have one, go to the [Fanvue](https://www.fanvue.com/) and create an account.
+  </Step>
+  <Step title="Create a new OAuth application">
+    1. Navigate to the [developer portal](https://www.fanvue.com/developers/apps) and click **Create App**.
+    2. Enter a name for your application, accept the terms, and click the **Create** button.
+    3. Your **Client ID** and **Client Secret** will be generated. **Note these down** as you will need them when configuring your integration in Nango.
+    4. Select the application you have just created and navigate to the **OAuth** tab.
+    5. In the **Redirects** section, add `https://api.nango.dev/oauth/callback`.
+    6. Select the scopes your app will need and copy them, as you will also need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to start building your integration.
+  </Step>
+</Steps>
+
+For more details, see [Fanvue's OAuth documentation](https://api.fanvue.com/docs/authentication/implementation-guide).
+
+---

@@ -525,6 +525,7 @@
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
+              "api-integrations/fanvue",
               "integrations/all/fathom",
               "api-integrations/fathom-oauth",
               "integrations/all/figjam",
