@@ -734,7 +734,7 @@ export async function deleteRecords({
     });
 
     let partition: string | undefined = undefined;
-    let totatRecords = 0;
+    let totalRecords = 0;
     let totalSizeInBytes = 0;
     let paginatedRecords = 0;
     let lastCursor: string | null = null;
@@ -758,7 +758,7 @@ export async function deleteRecords({
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
 
             do {
-                const toDelete = limit ? Math.min(batchSize, limit - totatRecords) : batchSize;
+                const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
                 if (toDelete <= 0) {
                     break;
                 }
@@ -819,7 +819,7 @@ export async function deleteRecords({
                 const res = await query;
 
                 paginatedRecords = res.length;
-                totatRecords += paginatedRecords;
+                totalRecords += paginatedRecords;
                 totalSizeInBytes += res.reduce((acc, r) => acc + r.size_bytes, 0);
                 if (!partition && res[0]?.partition) {
                     partition = res[0].partition;
@@ -831,23 +831,23 @@ export async function deleteRecords({
                 }
             } while (paginatedRecords > 0);
 
-            if (mode !== 'prune') {
-                const newCount = await incrCount(trx, {
+            // Update counts
+            const delta = mode === 'prune' ? 0 : -totalRecords; // pruning doesn't affect the records count
+            const newCount = await incrCount(trx, {
+                environmentId,
+                connectionId,
+                model,
+                delta,
+                deltaSizeInBytes: -totalSizeInBytes
+            });
+
+            // If all records are deleted, clean up the count entry
+            if (newCount?.count === 0) {
+                await deleteCount(trx, {
                     environmentId,
                     connectionId,
-                    model,
-                    delta: -totatRecords,
-                    deltaSizeInBytes: -totalSizeInBytes
+                    model
                 });
-
-                // If all records are deleted, clean up the count entry
-                if (newCount?.count === 0) {
-                    await deleteCount(trx, {
-                        environmentId,
-                        connectionId,
-                        model
-                    });
-                }
             }
         });
 
@@ -855,7 +855,7 @@ export async function deleteRecords({
             span.setTag('nango.partition', partition);
         }
 
-        return Ok({ count: totatRecords, lastCursor });
+        return Ok({ count: totalRecords, lastCursor });
     } catch (err) {
         span.setTag('error', err);
         return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}`, { cause: err }));

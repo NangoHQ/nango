@@ -1213,6 +1213,8 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
             const recs = (await Records.getRecords({ connectionId, model })).unwrap();
             const last = recs.records[recs.records.length - 1]!;
             const cursor = last._nango_metadata.cursor;
@@ -1242,6 +1244,11 @@ describe('Records service', () => {
                     expect(r._nango_metadata.pruned_at).not.toBeNull();
                 }
             });
+
+            // count should remain the same but size should be reduced
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(3);
+            expect(stats[model]?.size_bytes).toBeLessThan(statsBefore[model]?.size_bytes || 0);
         });
     });
 
