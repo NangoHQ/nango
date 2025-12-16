@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { getProviders } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { basePublicUrl, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -35,12 +35,16 @@ export const getPublicProviders = asyncWrapper<GetPublicProviders>((req, res) =>
         const reg = new RegExp(queries.search, 'i');
         for (const providerName of Object.keys(providers)) {
             if (reg.test(providerName)) {
-                filtered.push({ ...providers[providerName]!, name: providerName });
+                filtered.push({
+                    ...providers[providerName]!,
+                    name: providerName,
+                    logoUrl: `${basePublicUrl}/images/template-logos/${providerName}.svg`
+                });
             }
         }
     } else {
         filtered = Object.entries(providers).map(([name, provider]) => {
-            return { ...provider, name };
+            return { ...provider, name, logoUrl: `${basePublicUrl}/images/template-logos/${name}.svg` };
         });
     }
 
