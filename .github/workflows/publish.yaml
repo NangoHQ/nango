@@ -10,6 +10,10 @@ on:
                 required: true
                 default: '0.0.0'
 
+permissions:
+    contents: write
+    id-token: write
+
 jobs:
     npm-publish:
         if: github.ref == 'refs/heads/master'
@@ -35,9 +39,10 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Update npm to latest
+              run: npm install -g npm@latest
+
             - name: Publish npm packages
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               shell: bash
               run: |
                   npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"
