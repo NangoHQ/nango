@@ -5,7 +5,7 @@ sidebarTitle: Oracle Cloud Identity
 
 # Overview
 
-To authenticate with Oracle Cloud Identity using the Client Credentials grant type, you will need:
+To authenticate with Oracle Cloud Identity, you will need:
 1. **IDCS Service Instance** - Your Oracle Identity Cloud Service instance identifier.
 2. **Client ID** - A key that is used to identify your Oracle Cloud Identity application.
 3. **Client Secret** - A secret key used in conjunction with the Client ID to grant Nango permission to access Oracle Cloud Identity's API resources and services.
@@ -20,20 +20,6 @@ This guide will walk you through finding these within Oracle Cloud Identity.
 ### Instructions:
 
 ### Step 1: Finding Your Service Instance
-
-Your Oracle Identity Cloud Service instance identifier is part of your IDCS URL. It typically follows the format:
-
-```
-https://<service-instance>.identity.oraclecloud.com
-```
-
-For example, if your IDCS URL is:
-```
-https://idcs-1234567890abcdef1234567890abcdef.identity.oraclecloud.com
-```
-
-Then your service instance is: `idcs-1234567890abcdef1234567890abcdef`
-
 1. Log in to your Oracle Identity Cloud Service (IDCS).
 
 2. Access the IDCS Admin console.
@@ -44,6 +30,8 @@ Then your service instance is: `idcs-1234567890abcdef1234567890abcdef`
 
 <img src="/api-integrations/oracle-cloud-identity/about.webp"/>
 
+You can locate your **IDCS Service Instance** in the **Instance GUID** field.
+
 ### Step 2: Get the OAuth Client ID and Client Secret
 
 1. From your account, select the **Navigation** icon (☰) to view a list of available functions.
@@ -53,7 +41,7 @@ Then your service instance is: `idcs-1234567890abcdef1234567890abcdef`
 3. From the Oracle Cloud Services window, select the required **FCCM Internal Application Service** (in `AMLCS <tenant-id>` format) from the list.
 
    <Note>
-   If you are retrieving the ERP ESS Job Details API, select the required **AMLCS Application Service** (in `AMLCS <tenant-id>` format) from the list. Ensure you use the same `AMLCS <tenant-id>` when generating the access token.
+   If you are retrieving the ERP ESS Job Details API, select the required **AMLCS Application Service** (in `AMLCS <tenant-id>` format) from the list. Ensure you use the same `AMLCS <tenant-id>` when creating a connection in Nango.
    </Note>
 
 4. Click the **Configuration** tab.
