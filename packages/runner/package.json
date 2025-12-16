@@ -24,7 +24,7 @@
         "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "10.45.1",
-        "@trpc/server": "10.45.1",
+        "@trpc/server": "10.45.3",
         "axios": "1.12.0",
         "botbuilder": "4.23.2",
         "connect-timeout": "1.9.1",
