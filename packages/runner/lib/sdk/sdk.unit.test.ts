@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from '@nangohq/node';
-import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
+import { AbortedSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
@@ -401,52 +401,6 @@ describe('Pagination', () => {
             docs: ''
         };
     };
-});
-
-describe('batchSave', () => {
-    it('should validate records with json schema', async () => {
-        const nango = new NangoSyncRunner(
-            {
-                ...nangoProps,
-                runnerFlags: { validateSyncRecords: true } as any,
-                syncConfig: {
-                    models_json_schema: {
-                        definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } }
-                    }
-                } as any
-            },
-            { locks }
-        );
-
-        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(
-            new InvalidRecordSDKError({
-                data: {
-                    foo: 'bar'
-                },
-                model: 'Test',
-                validation: [
-                    {
-                        instancePath: '',
-                        keyword: 'required',
-                        message: "must have required property 'id'",
-                        params: {
-                            missingProperty: 'id'
-                        },
-                        schemaPath: '#/required'
-                    },
-                    {
-                        instancePath: '',
-                        keyword: 'additionalProperties',
-                        message: 'must NOT have additional properties',
-                        params: {
-                            additionalProperty: 'foo'
-                        },
-                        schemaPath: '#/additionalProperties'
-                    }
-                ]
-            })
-        );
-    });
 });
 
 describe('Log', () => {

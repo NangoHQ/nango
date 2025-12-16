@@ -1,22 +1,52 @@
 import { v4 as uuid } from 'uuid';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
 import accountService from './account.service.js';
-import environmentService from './environment.service.js';
-import { createPlan } from './plans/plans.js';
-import { createAccount } from '../seeders/account.seeder.js';
+import environmentService, { defaultEnvironments } from './environment.service.js';
+import * as plans from './plans/plans.js';
+import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
 describe('Account service', () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('should create an account with default environments and a free plan', async () => {
+        const accountName = uuid();
+        const account = await accountService.createAccount({ name: accountName });
+        expect(account).toBeDefined();
+        expect(account!.name).toBe(`${accountName}'s Team`);
+
+        const environments = await environmentService.getEnvironmentsByAccountId(account!.id);
+        expect(environments).toHaveLength(defaultEnvironments.length);
+
+        const plan = await db.knex.select('*').from('plans').where({ account_id: account!.id }).first();
+        expect(plan).toBeDefined();
+        expect(plan.name).toBe('free');
+    });
+
+    it('should rollback the transaction if creating the plan fails', async () => {
+        vi.spyOn(plans, 'createPlan').mockRejectedValueOnce(new Error('PLAN_CREATION_FAILED'));
+
+        const accountName = uuid();
+        const teamName = `${accountName}'s Team`;
+
+        await expect(accountService.createAccount({ name: accountName })).rejects.toThrow('PLAN_CREATION_FAILED');
+
+        const account = await db.knex.select('*').from('_nango_accounts').where({ name: teamName }).first();
+        expect(account).toBeUndefined();
+    });
+
     it('should retrieve account context by secretKey', async () => {
-        const account = await createAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid());
-        const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
 
@@ -40,9 +70,9 @@ describe('Account service', () => {
     });
 
     it('should retrieve account context by publicKey', async () => {
-        const account = await createAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid());
-        const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byPublicKey = await accountService.getAccountContext({ publicKey: environment!.public_key });
 
@@ -66,9 +96,9 @@ describe('Account service', () => {
     });
 
     it('should retrieve account context by environment uuid', async () => {
-        const account = await createAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid());
-        const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byUuid = await accountService.getAccountContext({ environmentUuid: environment!.uuid });
 
@@ -92,9 +122,9 @@ describe('Account service', () => {
     });
 
     it('should retrieve account context by account uuid', async () => {
-        const account = await createAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid());
-        const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byAccountUuid = await accountService.getAccountContext({ accountUuid: account.uuid, envName: environment!.name });
 
@@ -118,9 +148,9 @@ describe('Account service', () => {
     });
 
     it('should retrieve account context by accountId and envName', async () => {
-        const account = await createAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid());
-        const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byAccountId = await accountService.getAccountContext({ accountId: account.id, envName: environment!.name });
 
@@ -144,9 +174,9 @@ describe('Account service', () => {
     });
 
     it('should retrieve account context by environmentId', async () => {
-        const account = await createAccount();
-        const environment = await environmentService.createEnvironment(account.id, uuid());
-        const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
         const byEnvironmentId = await accountService.getAccountContext({ environmentId: environment!.id });
 

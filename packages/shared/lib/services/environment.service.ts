@@ -10,6 +10,7 @@ import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 import type { Orchestrator } from '../index.js';
+import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
@@ -78,8 +79,8 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
-    async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
-        const [environment] = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
+    async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
+        const [environment] = await trx.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
         if (!environment) {
             return null;
@@ -89,21 +90,24 @@ class EnvironmentService {
             ...environment,
             secret_key_hashed: await hashSecretKey(environment.secret_key)
         });
-        await db.knex.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
+        await trx.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
 
         const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
         return env;
     }
 
-    async createDefaultEnvironments(accountId: number): Promise<void> {
+    async createDefaultEnvironments(trx: Knex, { accountId: accountId }: { accountId: number }): Promise<void> {
         for (const environment of defaultEnvironments) {
-            const newEnv = await this.createEnvironment(accountId, environment);
+            const newEnv = await this.createEnvironment(trx, { accountId, name: environment });
             if (newEnv) {
-                await externalWebhookService.update(newEnv.id, {
-                    on_auth_creation: true,
-                    on_auth_refresh_error: true,
-                    on_sync_completion_always: true,
-                    on_sync_error: true
+                await externalWebhookService.update(trx, {
+                    environment_id: newEnv.id,
+                    data: {
+                        on_auth_creation: true,
+                        on_auth_refresh_error: true,
+                        on_sync_completion_always: true,
+                        on_sync_error: true
+                    }
                 });
             }
         }

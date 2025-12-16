@@ -33,7 +33,7 @@ describe(`DELETE ${endpoint}`, () => {
 
     it('should not allow deleting prod environment', async () => {
         const { account } = await seeders.seedAccountEnvAndUser();
-        const prodEnv = await environmentService.createEnvironment(account.id, PROD_ENVIRONMENT_NAME);
+        const prodEnv = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: PROD_ENVIRONMENT_NAME });
         if (!prodEnv) {
             throw new Error('Failed to create prod environment');
         }
@@ -57,7 +57,7 @@ describe(`DELETE ${endpoint}`, () => {
 
     it('should successfully delete a non-prod environment', async () => {
         const { account } = await seeders.seedAccountEnvAndUser();
-        const testEnv = await environmentService.createEnvironment(account.id, 'test-delete');
+        const testEnv = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' });
         if (!testEnv) {
             throw new Error('Failed to create test environment');
         }
@@ -79,7 +79,7 @@ describe(`DELETE ${endpoint}`, () => {
     it('should soft delete configs, syncConfigs and syncs when environment is deleted', async () => {
         // Seed account, environment, and user
         const { account } = await seeders.seedAccountEnvAndUser();
-        const testEnv = await environmentService.createEnvironment(account.id, 'test-delete-related');
+        const testEnv = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' });
         if (!testEnv) {
             throw new Error('Failed to create test environment');
         }

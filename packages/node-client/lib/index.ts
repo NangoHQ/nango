@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import https from 'node:https';
+import util from 'node:util';
 
 import axios from 'axios';
 
@@ -537,6 +538,7 @@ export class Nango {
      * =======
      * SYNCS
      *      GET RECORDS
+     *      DELETE RECORDS
      *      TRIGGER
      *      START
      *      PAUSE
@@ -591,6 +593,47 @@ export class Nango {
 
         const response = await this.http.get(url, options);
 
+        return response.data;
+    }
+
+    /**
+     * Prunes records payload from Nango’s cache only, for a given model and connection, up to a specified cursor
+     * Payload is emptied but record metadata is retained. Payload can be restored by re-syncing the data.
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to prune records
+     * @param model - The model from which to prune records
+     * @param variant - An optional variant of the model from which to prune records
+     * @param untilCursor - The cursor up to which records should be prune
+     * @param limit - An optional limit on the number of records to prune in this operation
+     * @returns A promise that resolves with an object containing the count of pruned records and a flag indicating if more records are available for pruning
+     */
+    public async pruneRecords({
+        providerConfigKey,
+        connectionId,
+        model,
+        variant,
+        untilCursor,
+        limit
+    }: {
+        providerConfigKey: string;
+        connectionId: string;
+        model: string;
+        variant?: string;
+        untilCursor: string;
+        limit?: number;
+    }): Promise<{ count: number; has_more: boolean }> {
+        const url = `${this.serverUrl}/records/prune`;
+        const headers = this.enrichHeaders({
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        });
+        const body = {
+            model,
+            until_cursor: untilCursor,
+            ...(limit ? { limit } : {}),
+            ...(variant ? { variant } : {})
+        };
+        const response = await this.http.patch(url, body, { headers });
         return response.data;
     }
 
@@ -1136,17 +1179,57 @@ export class Nango {
      *
      * Verify incoming webhooks signature
      *
+     * @deprecated **SECURITY WARNING**: This method is vulnerable to length-extension attacks and should NOT be used.
+     * Use `verifyIncomingWebhookRequest` instead for secure webhook signature verification.
+     *
      * @param signatureInHeader - The value in the header X-Nango-Signature
      * @param jsonPayload - The HTTP body as JSON
      * @returns Whether the signature is valid
      */
     public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
+        return this._verifyWebhookSignatureImpl(signatureInHeader, jsonPayload);
+    }
+
+    private _verifyWebhookSignatureImpl(signatureInHeader: string, jsonPayload: unknown): boolean {
         return (
             crypto
                 .createHash('sha256')
                 .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
                 .digest('hex') === signatureInHeader
         );
+    }
+
+    /**
+     *
+     * Verify incoming webhooks request
+     *
+     * @param body - The raw HTTP body as a string
+     * @param headers - The HTTP headers including X-Nango-Hmac-Sha256
+     * @returns Whether the signature is valid
+     */
+    public verifyIncomingWebhookRequest(body: string, headers: Record<string, unknown>): boolean {
+        const signatureInHeader = Object.keys(headers).find((key) => key.toLowerCase() === 'x-nango-hmac-sha256');
+        if (!signatureInHeader) {
+            return false;
+        }
+
+        const expectedSignature = crypto.createHmac('sha256', this.secretKey).update(body).digest('hex');
+        const actualSignature = headers[signatureInHeader];
+
+        if (typeof actualSignature !== 'string') {
+            return false;
+        }
+
+        // Check if signatures have the same length before comparing (required for timingSafeEqual)
+        if (expectedSignature.length !== actualSignature.length) {
+            return false;
+        }
+
+        try {
+            return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(actualSignature, 'hex'));
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -1235,3 +1318,10 @@ export class Nango {
         return headers;
     }
 }
+
+Nango.prototype.verifyWebhookSignature = util.deprecate(
+    // util.deprecate correctly binds this, the eslint warning below is a false positive
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    Nango.prototype.verifyWebhookSignature,
+    'verifyWebhookSignature() is deprecated and vulnerable to length-extension attacks. Use verifyIncomingWebhookRequest() instead.'
+);

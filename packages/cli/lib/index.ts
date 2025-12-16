@@ -468,9 +468,11 @@ program
 program
     .command('generate:tests')
     .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
+    .option('-s, --sync <syncName>', 'Generate tests only for a specific sync')
+    .option('-a, --action <actionName>', 'Generate tests only for a specific action')
     .description('Generate tests for integration scripts and config files')
     .action(async function (this: Command) {
-        const { debug, integration: integrationId, autoConfirm } = this.opts();
+        const { debug, integration: integrationId, sync: syncName, action: actionName, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
@@ -479,15 +481,24 @@ program
             return;
         }
 
-        const ok = await generateTests({
+        const { success, generatedFiles } = await generateTests({
             absolutePath,
             integrationId,
+            syncName,
+            actionName,
             debug: Boolean(debug),
             autoConfirm: Boolean(autoConfirm)
         });
 
-        if (ok) {
-            console.log(chalk.green(`Tests have been generated successfully!`));
+        if (success) {
+            if (generatedFiles.length > 0) {
+                console.log(chalk.green(`Generated ${generatedFiles.length} test file(s):`));
+                for (const file of generatedFiles) {
+                    console.log(chalk.cyan(`  ${path.relative(process.cwd(), file)}`));
+                }
+            } else {
+                console.log(chalk.yellow(`No test files were generated. Make sure you have mocks in place.`));
+            }
         } else {
             console.log(chalk.red(`Failed to generate tests`));
         }

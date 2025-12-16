@@ -1,0 +1,47 @@
+---
+title: Sophos Central - How do I link my account?
+sidebarTitle: Sophos Central
+---
+
+# Overview
+
+To authenticate with Sophos Central, you will need:
+1. **Client ID** - The Client ID from your API credentials in Sophos Central.
+2. **Client Secret** - The Client Secret associated with your API credentials.
+
+This guide will walk you through generating these credentials from your Sophos Central account.
+
+### Prerequisites:
+
+- You must have admin access to your Sophos Central account.
+
+### Instructions:
+
+#### Step 1: Generate Client Credentials
+
+1. Sign in to [Sophos Central Admin](https://central.sophos.com/manage).
+2. Click **Global Settings** and then click the **API Credentials** link.
+
+<img src="/api-integrations/sophos-central/settings.png"/>
+
+3. Click **Add Credential** to create a new set of credentials.
+<img src="/api-integrations/sophos-central/add_credential.png"/>
+4. Supply a name for your credential set and a description, then click **Add**.
+<img src="/api-integrations/sophos-central/add_credential_form.png"/>
+
+5. Click **Copy** to note down the **Client ID**.
+6. Click **Show Client Secret** to reveal the **Client Secret**, then click **Copy** to note it down.
+<img src="/api-integrations/sophos-central/client_secret.png"/>
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Client Secret**:
+
+1. Open the form where you need to authenticate with Sophos Central.
+2. Enter your **Client ID** and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/sophos-central/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Sophos Central.

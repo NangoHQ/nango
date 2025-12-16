@@ -374,7 +374,11 @@ export async function credentialsTest({
                 proxyConfig,
                 getConnection: () => {
                     return connection;
-                }
+                },
+                getIntegrationConfig: () => ({
+                    oauth_client_id: config.oauth_client_id,
+                    oauth_client_secret: config.oauth_client_secret
+                })
             });
 
             const response = (await proxy.request()).unwrap();
