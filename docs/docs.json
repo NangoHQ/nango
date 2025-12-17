@@ -310,7 +310,7 @@
               "implementation-guides/platform/webhooks-from-nango",
               "implementation-guides/platform/contribute-new-api",
               "implementation-guides/platform/implement-event-handler",
-              "implementation-guides/platform/open-telemetry-logs-export",
+              "implementation-guides/platform/open-telemetry-export",
               "implementation-guides/platform/common-issues"
             ]
           },
