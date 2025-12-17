@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { EditableInput } from './EditableInput';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 import Spinner from '../../../components/ui/Spinner';
-import { Switch } from '../../../components/ui/Switch';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { Switch } from '@/components-v2/ui/switch';
 
 export const AuthorizationSettings: React.FC = () => {
     const { toast } = useToast();
@@ -31,8 +33,6 @@ export const AuthorizationSettings: React.FC = () => {
         }
 
         void mutate();
-
-        toast({ title: 'HMAC updated successfully!', variant: 'success' });
     };
 
     if (!environmentAndAccount) {
@@ -40,19 +40,22 @@ export const AuthorizationSettings: React.FC = () => {
     }
 
     return (
-        <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="px-8 flex flex-col gap-10 w-1/2">
+        <SettingsContent title="Deprecated authorization">
+            <SettingsGroup
+                label={
+                    <div className="flex gap-1.5">
+                        Public key
+                        <Link
+                            className="flex gap-2 items-center"
+                            target="_blank"
+                            to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
+                        >
+                            <IconExternalLink stroke={1} size={18} />
+                        </Link>
+                    </div>
+                }
+            >
                 <fieldset className="flex flex-col gap-4">
-                    <Link
-                        to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
-                        className="flex gap-2 items-center"
-                        target="_blank"
-                    >
-                        <label htmlFor="publicKey" className="font-semibold">
-                            Public Key
-                        </label>
-                        <IconExternalLink stroke={1} size={18} />
-                    </Link>
                     <SecretInput
                         inputSize={'lg'}
                         view={false}
@@ -62,21 +65,24 @@ export const AuthorizationSettings: React.FC = () => {
                         value={environmentAndAccount.environment.public_key}
                     />
                 </fieldset>
-
-                <div className="flex flex-col gap-4">
-                    <Link
-                        to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
-                        className="flex gap-2 items-center"
-                        target="_blank"
-                    >
-                        <label htmlFor="hmac_enabled" className="font-semibold">
-                            HMAC
-                        </label>
-                        <IconExternalLink stroke={1} size={18} />
-                    </Link>
-
-                    <div className="flex items-center justify-between">
-                        <label htmlFor={'hmac_enabled'} className={`text-s`}>
+            </SettingsGroup>
+            <SettingsGroup
+                label={
+                    <div className="flex gap-1.5">
+                        HMAC
+                        <Link
+                            className="flex gap-2 items-center"
+                            target="_blank"
+                            to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
+                        >
+                            <IconExternalLink stroke={1} size={18} />
+                        </Link>
+                    </div>
+                }
+            >
+                <div className="flex flex-col gap-7">
+                    <div className="flex items-start justify-between">
+                        <label htmlFor={'hmac_enabled'} className={`text-sm`}>
                             Enabled
                         </label>
                         <div className="flex gap-2 items-center">
@@ -100,7 +106,7 @@ export const AuthorizationSettings: React.FC = () => {
                         onSuccess={() => void mutate()}
                     />
                 </div>
-            </div>
-        </div>
+            </SettingsGroup>
+        </SettingsContent>
     );
 };

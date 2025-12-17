@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 
-import { Input } from '@/components/ui/input/Input';
+import { Input as _Input } from '@/components-v2/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { cn } from '@/utils/utils';
 
 import type { InputHTMLAttributes } from 'react';
@@ -29,29 +30,16 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
         const previewColor = value && isValidCSSColor(value) ? value : '#000000';
 
         return (
-            <div className={cn('flex flex-col items-start gap-2', className)}>
-                {label && (
-                    <label htmlFor={props.id} className="text-sm font-medium text-grayscale-300">
-                        {label}
-                    </label>
-                )}
-                <Input
-                    ref={ref}
-                    type="text"
-                    variant="border"
-                    value={value}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    before={
-                        <div
-                            className={cn('w-5 h-5 rounded-sm border-2 border-grayscale-600', disabled && 'opacity-50')}
-                            style={{ backgroundColor: previewColor }}
-                            title={`Color preview: ${previewColor}`}
-                        />
-                    }
-                    {...props}
-                />
-            </div>
+            <InputGroup>
+                <InputGroupInput value={value} ref={ref} type="text" placeholder={placeholder} disabled={disabled} {...props} />
+                <InputGroupAddon>
+                    <div
+                        className={cn('w-5 h-5 rounded-sm border-2 border-bg-muted', disabled && 'opacity-50')}
+                        style={{ backgroundColor: previewColor }}
+                        title={`Color preview: ${previewColor}`}
+                    />
+                </InputGroupAddon>
+            </InputGroup>
         );
     }
 );

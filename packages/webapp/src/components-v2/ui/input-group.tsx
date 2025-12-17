@@ -25,8 +25,6 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
 
                 // Focus state.
                 'has-[[data-slot=input-group-control]:focus-visible]:shadow-focus has-[[data-slot=input-group-control]:focus-visible]:border-border-default',
-                // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
-                'has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-border-strong',
 
                 // Error state.
                 'has-[[data-slot][aria-invalid=true]]:focus-error has-[[data-slot][aria-invalid=true]]:border-feedback-error-border',

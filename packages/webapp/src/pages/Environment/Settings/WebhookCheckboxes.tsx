@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 import Spinner from '../../../components/ui/Spinner';
-import { Switch } from '../../../components/ui/Switch';
 import { apiPatchWebhook } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
+import { Switch } from '@/components-v2/ui/switch';
 
 import type { ApiWebhooks } from '@nangohq/types';
 
@@ -74,12 +74,10 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
         }
 
         mutate();
-
-        toast({ title: 'Webhook settings updated successfully!', variant: 'success' });
     };
 
     return (
-        <div className="flex flex-col gap-5 mt-1">
+        <div className="flex flex-col gap-10">
             {checkboxesConfig.map(({ label, stateKey }) => (
                 <div className="flex items-center justify-between" key={stateKey}>
                     <label htmlFor={stateKey} className={`text-sm font-medium`}>

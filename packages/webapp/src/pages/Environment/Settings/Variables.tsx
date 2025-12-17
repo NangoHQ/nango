@@ -1,14 +1,16 @@
-import { IconCode, IconEdit, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink } from '@tabler/icons-react';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Button } from '../../../components/ui/button/Button';
+import SettingsContent from './components/SettingsContent';
 import { Input } from '../../../components/ui/input/Input';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import { apiPostVariables, useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/button';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 
@@ -97,7 +99,6 @@ export const VariablesSettings: React.FC = () => {
             return;
         }
 
-        toast({ title: 'Environment settings updated successfully!', variant: 'success' });
         void mutate();
 
         setEdit(false);
@@ -116,82 +117,84 @@ export const VariablesSettings: React.FC = () => {
     }
 
     return (
-        <div className="text-grayscale-100 flex flex-col gap-10">
-            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#script" id="script">
-                <div>
-                    <IconCode stroke={1} size={18} />
+        <SettingsContent title="Functions">
+            <div className="flex flex-col gap-2.5">
+                <div className="flex">
+                    Environment variables
+                    <Link className="flex items-center px-1.5" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
+                        <IconExternalLink stroke={1} size={18} />
+                    </Link>
                 </div>
-                <h3 className="uppercase text-sm">Script Settings</h3>
-            </Link>
-            <div className="px-8 flex flex-col gap-10 w-1/2">
-                <fieldset className="flex flex-col gap-2.5">
-                    <label htmlFor="envvar" className="font-semibold">
-                        Environment variables
-                    </label>
+                <div className="flex flex-col gap-5">
+                    <fieldset className="flex flex-col gap-3">
+                        {vars.map((envVar, i) => {
+                            const errorName = errors.find((err) => err.index === i && err.key === 'name');
+                            const errorValue = errors.find((err) => err.index === i && err.key === 'value');
+                            return (
+                                <div key={i} className="flex flex-col gap-0.5">
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <Input
+                                                value={envVar.name}
+                                                onChange={(e) => onUpdate('name', e.target.value, i)}
+                                                inputSize={'lg'}
+                                                variant={'black'}
+                                                onPaste={(e) => onPaste(e)}
+                                                className={cn(errorName && 'border-alert-400')}
+                                                placeholder="MY_ENV_VAR"
+                                                disabled={!edit || loading}
+                                            />
+                                        </div>
+                                        <div className="flex flex-1">
+                                            <SecretInput
+                                                value={envVar.value}
+                                                onChange={(e) => onUpdate('value', e.target.value, i)}
+                                                copy={true}
+                                                inputSize={'lg'}
+                                                variant={'black'}
+                                                onPaste={(e) => onPaste(e)}
+                                                className={cn(errorValue && 'border-alert-400')}
+                                                placeholder="value"
+                                                disabled={!edit || loading}
+                                            />
+                                            {edit && (
+                                                <Button variant="ghost" size="lg" className="py-2 px-2 h-full w-11" onClick={() => !loading && onRemove(i)}>
+                                                    <Trash2 className="text-fg-error" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
 
-                    {vars.map((envVar, i) => {
-                        const errorName = errors.find((err) => err.index === i && err.key === 'name');
-                        const errorValue = errors.find((err) => err.index === i && err.key === 'value');
-                        return (
-                            <div key={i} className="flex flex-col gap-0.5">
-                                <div className="flex gap-4">
-                                    <Input
-                                        value={envVar.name}
-                                        onChange={(e) => onUpdate('name', e.target.value, i)}
-                                        inputSize={'lg'}
-                                        variant={'black'}
-                                        onPaste={(e) => onPaste(e)}
-                                        className={cn('w-[200px]', errorName && 'border-alert-400')}
-                                        placeholder="MY_ENV_VAR"
-                                        disabled={!edit || loading}
-                                    />
-                                    <SecretInput
-                                        value={envVar.value}
-                                        onChange={(e) => onUpdate('value', e.target.value, i)}
-                                        copy={true}
-                                        inputSize={'lg'}
-                                        variant={'black'}
-                                        onPaste={(e) => onPaste(e)}
-                                        className={cn('w-[200px] grow', errorValue && 'border-alert-400')}
-                                        placeholder="value"
-                                        disabled={!edit || loading}
-                                    />
-                                    {edit && (
-                                        <Button variant={'danger'} size="lg" onClick={() => !loading && onRemove(i)}>
-                                            <IconTrash stroke={1} />
-                                        </Button>
+                                    {(errorName || errorValue) && (
+                                        <div className="flex gap-2">
+                                            <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
+                                            <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
+                                        </div>
                                     )}
                                 </div>
-
-                                {(errorName || errorValue) && (
-                                    <div className="flex gap-2">
-                                        <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
-                                        <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                    <div className="flex justify-end gap-3">
+                            );
+                        })}
+                    </fieldset>
+                    <div className="flex justify-start gap-2">
                         {!edit && (
-                            <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
-                                <IconEdit stroke={1} size={18} /> Edit
+                            <Button variant="secondary" onClick={() => onEnabledEdit()}>
+                                Edit
                             </Button>
                         )}
                         {edit && (
                             <>
-                                <Button variant={'tertiary'} onClick={onCancel}>
+                                <Button variant="tertiary" onClick={onCancel}>
                                     Cancel
                                 </Button>
-                                <Button variant={'primary'} onClick={onSave} isLoading={loading}>
+                                <Button variant="primary" onClick={onSave} disabled={loading}>
                                     Save
                                 </Button>
                             </>
                         )}
                     </div>
-                </fieldset>
+                </div>
             </div>
-        </div>
+        </SettingsContent>
     );
 };
 
