@@ -12851,6 +12851,26 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+slab:
+    display_name: Slab
+    categories:
+        - productivity
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.slab.com
+        headers:
+            authorization: ${apiKey}
+            content-type: application/json
+    docs: https://nango.dev/docs/api-integrations/slab
+    docs_connect: https://nango.dev/docs/api-integrations/slab/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Slab API token
+            doc_section: '#step-1-generating-your-slab-api-token'
+
 shortcut:
     display_name: Shortcut
     categories:
