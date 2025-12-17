@@ -79,43 +79,45 @@ droid
 
 ### Using the Builder
 
-The builder will enter **Interactive Mode** and prompt you for:
+The builder will first ask what you want to build:
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| **Integration ID** | Yes | Which integration to build for (e.g., `hubspot`, `salesforce`, `slack`) |
-| **Connection ID** | Yes | A valid connection ID for testing |
-| **Use Case Summary** | Recommended | Brief description of what the action does |
-| **Action Inputs** | Recommended | What data the action should accept as arguments |
-| **Action Outputs** | Recommended | What data the action should return |
-| **Action Name** | Optional | Suggested name for the action |
-| **API Reference** | Optional | Link to relevant API documentation |
-| **Test Input** | Optional | Sample JSON input for testing |
+1. **Action** - One-time operations (create, update, delete, get)
+2. **Sync** - Continuous data synchronization (fetch records periodically)
 
-### Example Input
+### Example Inputs
 
+**Action Example:**
 ```
-Integration ID: hubspot
-Connection ID: my-hubspot-connection
-Use Case: Creates a new contact in the CRM
-Inputs: firstName, lastName, email
-Outputs: contactId, createdAt
-Action Name: create-contact
-API Reference: https://developers.hubspot.com/docs/api/crm/contacts
-Test Input: {"firstName": "John", "lastName": "Doe", "email": "john.doe@example.com"}
+Integration ID: slack
+Connection ID: my-slack-connection
+Use Case: Gets channel information
+Inputs: channel_id
+Outputs: id, name, is_private
+API Reference: https://api.slack.com/methods/conversations.info
+```
+
+**Sync Example:**
+```
+Integration ID: figma
+Connection ID: my-figma-connection
+Model Name: Project
+Frequency: every hour
+Sync Type: full
+Metadata: {"team_id": "1234567890"}
+API Reference: https://www.figma.com/developers/api#projects-endpoints
 ```
 
 ### What Gets Generated
 
 Once you provide your input, the agent automatically:
 
-1. **Generates the action code** - Creates a complete, fully working action implementation
-2. **Creates a full test suite** - Writes comprehensive tests for your action
-3. **Validates with dry run** - Runs `nango dryrun` to verify the action works correctly against your connection
-4. **Iterates on failures** - If tests or dry run fail, the agent automatically debugs and fixes issues
+1. **Generates the function code** - Creates a complete action or sync implementation
+2. **Creates a full test suite** - Writes comprehensive tests
+3. **Validates with dry run** - Runs `nango dryrun` to verify against your connection
+4. **Iterates on failures** - Automatically debugs and fixes issues
 
-You'll end up with a fully tested, working action ready to deploy.
+You'll end up with a fully tested, working function ready to deploy.
 
 <Tip>
-The more detail you provide, the better the generated action will be. Include API documentation links when available.
+The more detail you provide, the better the generated function will be. Include API documentation links when available.
 </Tip>
