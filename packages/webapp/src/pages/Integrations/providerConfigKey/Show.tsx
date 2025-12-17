@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { IntegrationSideInfo } from './Endpoints/components/IntegrationSideInfo';
 import { FunctionsTab } from './Functions/Tab';
+import { SettingsTab } from './Settings/Tab';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
@@ -76,7 +77,7 @@ export const ShowIntegration: React.FC = () => {
                     </TabsContent>
                     <TabsContent value="settings">
                         <div className="flex w-full gap-11 justify-between">
-                            <p className="text-text-primary text-body-medium-regular">Coming soon</p>
+                            <SettingsTab data={data} />
                             <IntegrationSideInfo integration={data.integration} provider={data.template} />
                         </div>
                     </TabsContent>
