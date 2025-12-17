@@ -16,6 +16,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
+    AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?

@@ -81,7 +81,7 @@ export async function persistRecords({
         case 'update':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) => {
-                return recordsService.update({ records, connectionId, model, merging });
+                return recordsService.update({ records, environmentId: environment.id, connectionId, model, merging });
             };
             break;
     }

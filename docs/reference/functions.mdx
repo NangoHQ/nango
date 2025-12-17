@@ -785,6 +785,14 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
 Marks records as deleted in the Nango cache. Deleted records are still returned when you fetch them, but they are marked as deleted in the record's metadata (i.e. soft delete).
 
+<Tip>
+This does not remove cached payloads.
+
+`nango.batchDelete()` is used to mark records as deleted in Nango because they were deleted on the external API. Nango may still keep the last-known payload so your customer can react to the deletion event.
+
+If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
+</Tip>
+
 To implement deletion detection in your syncs, [follow this guide](/implementation-guides/syncs/deletion-detection).
 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
@@ -809,6 +817,14 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 ### Detect deletions automatically
 
 Automatically detects and marks records as deleted by comparing the current sync execution with the previous one.
+
+<Tip>
+This does not remove cached payloads.
+
+`nango.deleteRecordsFromPreviousExecutions()` is used to mark records as deleted in Nango because they were not returned by the external API. Nango may still keep the last-known payload so your customer can react to the deletion event.
+
+If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
+</Tip>
 
 ```js
 await nango.deleteRecordsFromPreviousExecutions('ModelName');

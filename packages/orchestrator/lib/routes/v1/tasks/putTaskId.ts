@@ -26,13 +26,12 @@ type PutTask = Endpoint<{
 const path = '/v1/tasks/:taskId';
 const method = 'PUT';
 
+const bodySchema = z.object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED', 'CANCELLED']) }).strict();
+const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+
 const validate = validateRequest<PutTask>({
-    parseBody: (data) =>
-        z
-            .object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED', 'CANCELLED']) })
-            .strict()
-            .parse(data),
-    parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
+    parseBody: (data) => bodySchema.parse(data),
+    parseParams: (data) => paramsSchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

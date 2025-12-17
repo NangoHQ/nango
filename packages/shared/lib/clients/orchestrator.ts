@@ -45,18 +45,18 @@ import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 export interface RecordsServiceInterface {
-    deleteRecordsBySyncId({
-        connectionId,
+    deleteRecords({
         environmentId,
+        connectionId,
         model,
-        syncId
+        mode
     }: {
-        connectionId: number;
         environmentId: number;
+        connectionId: number;
         model: string;
-        syncId: string;
-    }): Promise<Result<{ totalDeletedRecords: number }>>;
-    getRecordStatsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
+        mode: 'hard' | 'soft' | 'prune';
+    }): Promise<Result<{ count: number; lastCursor: string | null }>>;
+    getCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
 // TODO: move to @nangohq/types (with the rest of the ochestrator public types)
@@ -594,7 +594,7 @@ export class Orchestrator {
                             if (syncVariant !== 'base') {
                                 model = `${model}::${syncVariant}`;
                             }
-                            const deletion = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                            const deletion = await recordsService.deleteRecords({ environmentId, connectionId, model, mode: 'hard' });
                             if (deletion.isErr()) {
                                 void logCtx.error(`Records for model ${model} failed to be deleted`, { error: deletion.error });
                                 return Err(deletion.error);

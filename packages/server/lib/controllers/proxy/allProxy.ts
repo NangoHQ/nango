@@ -213,7 +213,11 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
                 freshConnection = credentialResponse.value;
                 return freshConnection;
-            }
+            },
+            getIntegrationConfig: () => ({
+                oauth_client_id: integration.oauth_client_id,
+                oauth_client_secret: integration.oauth_client_secret
+            })
         });
 
         let success = false;
