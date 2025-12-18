@@ -6,6 +6,7 @@ import db from '@nangohq/database';
 import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
@@ -84,6 +85,11 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
 
         await acceptInvitation(token);
     } else {
+        if (!envs.AUTH_ALLOW_SIGNUP) {
+            res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
+            return;
+        }
+
         // Regular account
         account = await accountService.createAccount({ name, email, foundUs });
         if (!account) {

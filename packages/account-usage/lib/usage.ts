@@ -269,7 +269,7 @@ export class UsageTracker implements IUsageTracker {
         let count = 0;
         if (envs.length > 0) {
             const envIds = envs.map((e) => e.id);
-            for await (const recordCounts of records.paginateRecordCounts({ environmentIds: envIds })) {
+            for await (const recordCounts of records.paginateCounts({ environmentIds: envIds })) {
                 if (recordCounts.isErr()) {
                     return Err(recordCounts.error);
                 }

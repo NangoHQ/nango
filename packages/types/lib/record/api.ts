@@ -8,6 +8,7 @@ export interface RecordMetadata {
     last_modified_at: string;
     last_action: RecordLastAction;
     deleted_at: string | null;
+    pruned_at: string | null;
     cursor: string;
 }
 
@@ -42,5 +43,25 @@ export type GetPublicRecords = Endpoint<{
     Success: {
         next_cursor: string | null;
         records: NangoRecord[];
+    };
+}>;
+
+export type PatchPublicPruneRecords = Endpoint<{
+    Method: 'PATCH';
+    Path: `/records/prune`;
+    Headers: {
+        'connection-id': string;
+        'provider-config-key': string;
+    };
+    Error: ApiError<'unknown_connection'>;
+    Body: {
+        model: string;
+        variant?: string | undefined;
+        until_cursor: string;
+        limit?: number | undefined;
+    };
+    Success: {
+        count: number;
+        has_more: boolean;
     };
 }>;

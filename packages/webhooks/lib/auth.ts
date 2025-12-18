@@ -71,7 +71,14 @@ export async function sendAuth({
         provider: providerConfig?.provider || 'unknown',
         environment: environment.name,
         operation,
-        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId, tags: endUser.tags || {} } : undefined
+        endUser: endUser
+            ? {
+                  endUserId: endUser.endUserId,
+                  endUserEmail: endUser.email,
+                  organizationId: endUser.organization?.organizationId,
+                  tags: endUser.tags || {}
+              }
+            : undefined
     };
 
     if (success) {

@@ -38,30 +38,31 @@ export type PostImmediate = Endpoint<{
     Success: { taskId: string; retryKey: string };
 }>;
 
+function argsSchema(data: any) {
+    if ('args' in data && 'type' in data.args) {
+        const taskType = data.args.type as TaskType;
+        switch (taskType) {
+            case 'sync':
+                return syncArgsSchema;
+            case 'action':
+                return actionArgsSchema;
+            case 'webhook':
+                return webhookArgsSchema;
+            case 'on-event':
+                return onEventArgsSchema;
+            case 'abort':
+                return syncAbortArgsSchema;
+            default:
+                ((_exhaustiveCheck: never) => {
+                    z.never();
+                })(taskType);
+        }
+    }
+    return z.never();
+}
+
 const validate = validateRequest<PostImmediate>({
     parseBody: (data: any) => {
-        function argsSchema(data: any) {
-            if ('args' in data && 'type' in data.args) {
-                const taskType = data.args.type as TaskType;
-                switch (taskType) {
-                    case 'sync':
-                        return syncArgsSchema;
-                    case 'action':
-                        return actionArgsSchema;
-                    case 'webhook':
-                        return webhookArgsSchema;
-                    case 'on-event':
-                        return onEventArgsSchema;
-                    case 'abort':
-                        return syncAbortArgsSchema;
-                    default:
-                        ((_exhaustiveCheck: never) => {
-                            z.never();
-                        })(taskType);
-                }
-            }
-            return z.never();
-        }
         const schema = z
             .object({
                 name: z.string().min(1),

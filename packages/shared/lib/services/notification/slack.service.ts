@@ -711,7 +711,11 @@ export class SlackService {
             const proxy = new ProxyRequest({
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
-                getConnection: () => slackConnection
+                getConnection: () => slackConnection,
+                getIntegrationConfig: () => ({
+                    oauth_client_id: integration.oauth_client_id,
+                    oauth_client_secret: integration.oauth_client_secret
+                })
             });
             const join = await proxy.request();
             if (join.isErr()) {
@@ -780,7 +784,11 @@ export class SlackService {
             const proxy = new ProxyRequest({
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
-                getConnection: () => slackConnection
+                getConnection: () => slackConnection,
+                getIntegrationConfig: () => ({
+                    oauth_client_id: integration.oauth_client_id,
+                    oauth_client_secret: integration.oauth_client_secret
+                })
             });
             const slackMessage = await proxy.request();
 

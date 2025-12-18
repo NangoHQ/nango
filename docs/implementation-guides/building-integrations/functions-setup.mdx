@@ -61,6 +61,18 @@ NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
 
 Get your secret keys from the **Environment Settings** tab (toggle between the `Production` and `Development` environment in the left nav bar).
 
+<Note>
+  You can rename environments in the Nango UI under _Environment Settings_. 
+  
+  The CLI reads secret keys from your `.env` using this pattern: `NANGO_SECRET_KEY_<ENV_NAME>`.
+
+  Example: if the environment is named `staging-product_1`, add:
+  ```bash
+  NANGO_SECRET_KEY_STAGING-PRODUCT_1=...
+  ```
+  If you rename the environment, update the variable name to match.
+</Note>
+
 ## Next steps
 
 Take a look at the example `github-issues-example` sync.
