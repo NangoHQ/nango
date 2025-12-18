@@ -362,8 +362,30 @@ export const ENVS = z.object({
     LAMBDA_PERSIST_SERVICE_URL: z.url().optional(),
     LAMBDA_JOBS_SERVICE_URL: z.url().optional(),
     LAMBDA_PROVIDERS_URL: z.url().optional(),
-    LAMBDA_SUBNET_IDS: z.array(z.string()).optional(),
-    LAMBDA_SECURITY_GROUP_IDS: z.array(z.string()).optional(),
+    LAMBDA_SUBNET_IDS: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`LAMBDA_SUBNET_IDS must be a valid JSON array of strings`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.array(z.string()))
+        .default([]),
+    LAMBDA_SECURITY_GROUP_IDS: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`LAMBDA_SECURITY_GROUP_IDS must be a valid JSON array of strings`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.array(z.string()))
+        .default([]),
     LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
     LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
     LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
