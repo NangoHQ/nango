@@ -1,14 +1,14 @@
 import { IconExternalLink } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './EditableInput';
-import { WebhookCheckboxes } from './WebhookCheckboxes';
+import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
+import { WebhookCheckboxes } from './components/WebhookCheckboxes';
 import { apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
 import { useStore } from '../../../store';
 
-export const NotificationSettings: React.FC = () => {
+export const Notifications: React.FC = () => {
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
 

@@ -14,7 +14,7 @@ import { Button } from '@/components-v2/ui/button';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 
-export const VariablesSettings: React.FC = () => {
+export const Functions: React.FC = () => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
