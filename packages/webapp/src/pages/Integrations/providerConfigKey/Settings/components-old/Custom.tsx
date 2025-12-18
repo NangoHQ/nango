@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { mutate } from 'swr';
 
-import { DeleteIntegrationButton } from './Delete';
-import { InfoBloc } from '../../../../../components/InfoBloc';
-import { Button } from '../../../../../components/ui/button/Button';
-import { CopyButton } from '../../../../../components/ui/button/CopyButton';
-import { Input } from '../../../../../components/ui/input/Input';
-import SecretInput from '../../../../../components/ui/input/SecretInput';
-import { SecretTextArea } from '../../../../../components/ui/input/SecretTextArea';
-import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
-import { useToast } from '../../../../../hooks/useToast';
-import { useStore } from '../../../../../store';
-import { defaultCallback } from '../../../../../utils/utils';
+import { DeleteIntegrationButton } from './Delete.js';
+import { InfoBloc } from '../../../../../components/InfoBloc.js';
+import { Button } from '../../../../../components/ui/button/Button.js';
+import { CopyButton } from '../../../../../components/ui/button/CopyButton.js';
+import { Input } from '../../../../../components/ui/input/Input.js';
+import SecretInput from '../../../../../components/ui/input/SecretInput.js';
+import { SecretTextArea } from '../../../../../components/ui/input/SecretTextArea.js';
+import { apiPatchIntegration } from '../../../../../hooks/useIntegration.js';
+import { useToast } from '../../../../../hooks/useToast.js';
+import { useStore } from '../../../../../store.js';
+import { defaultCallback } from '../../../../../utils/utils.js';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 

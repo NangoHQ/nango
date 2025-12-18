@@ -10,6 +10,7 @@ import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Button } from '@/components-v2/ui/button';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
@@ -17,13 +18,15 @@ import { useStore } from '@/store';
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
+    const { environmentAndAccount, loading: loadingEnvironment } = useEnvironment(env);
     const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
 
     if (error) {
         return <ErrorPageComponent title="Integration" error={error} />;
     }
 
-    if (loadingIntegration || !data) {
+    // TODO: Improve loading state
+    if (loadingIntegration || loadingEnvironment || !data || !environmentAndAccount) {
         return (
             <DashboardLayout fullWidth className="flex items-center justify-center">
                 <Helmet>
@@ -77,7 +80,7 @@ export const ShowIntegration: React.FC = () => {
                     </TabsContent>
                     <TabsContent value="settings">
                         <div className="flex w-full gap-11 justify-between">
-                            <SettingsTab data={data} />
+                            <SettingsTab data={data} environment={environmentAndAccount?.environment} />
                             <IntegrationSideInfo integration={data.integration} provider={data.template} />
                         </div>
                     </TabsContent>

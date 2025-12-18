@@ -1,10 +1,10 @@
-import { SettingsApp } from './components/App';
-import { SettingsCustom } from './components/Custom';
-import { SettingsDefault } from './components/Default';
-import { SettingsGeneral } from './components/General';
-import { SettingsMcpGeneric } from './components/McpGeneric';
-import { SettingsMcpOAuth } from './components/McpOAuth';
-import { SettingsOAuth } from './components/OAuth';
+import { SettingsApp } from './components-old/App';
+import { SettingsCustom } from './components-old/Custom';
+import { SettingsDefault } from './components-old/Default';
+import { SettingsGeneral } from './components-old/General';
+import { SettingsMcpGeneric } from './components-old/McpGeneric';
+import { SettingsMcpOAuth } from './components-old/McpOAuth';
+import { SettingsOAuth } from './components-old/OAuth';
 import { useEnvironment } from '../../../../hooks/useEnvironment';
 import { useStore } from '../../../../store';
 

@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
-import { Button } from '../../../../../components/ui/button/Button';
-import { clearConnectionsCache } from '../../../../../hooks/useConnections';
-import { apiDeleteIntegration } from '../../../../../hooks/useIntegration';
-import { useToast } from '../../../../../hooks/useToast';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog.js';
+import { Button } from '../../../../../components/ui/button/Button.js';
+import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
+import { apiDeleteIntegration } from '../../../../../hooks/useIntegration.js';
+import { useToast } from '../../../../../hooks/useToast.js';
 
 import type { ApiIntegration } from '@nangohq/types';
 

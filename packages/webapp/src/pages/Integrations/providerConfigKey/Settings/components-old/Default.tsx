@@ -1,5 +1,5 @@
-import { DeleteIntegrationButton } from './Delete';
-import { useStore } from '../../../../../store';
+import { DeleteIntegrationButton } from './Delete.js';
+import { useStore } from '../../../../../store.js';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
