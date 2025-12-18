@@ -26,7 +26,6 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { confirm, DialogComponent } = useConfirmDialog();
 
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
-    const [integrationIdError, setIntegrationIdError] = useState<string | null>(null);
 
     const [webhookForwarding, setWebhookForwarding] = useState(integration.forward_webhooks);
 
@@ -81,6 +80,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                 <Label htmlFor="unique_key">Integration ID</Label>
                 <EditableInput
                     initialValue={integration.unique_key}
+                    hintText="Must only contain letters, numbers, underscores and dashes."
                     validate={(value) => {
                         if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
                             return 'Must only contain letters, numbers, underscores and dashes.';
@@ -89,12 +89,6 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     }}
                     onEditingChange={(isEditing) => {
                         setIsEditingIntegrationId(isEditing);
-                        if (!isEditing) {
-                            setIntegrationIdError(null);
-                        }
-                    }}
-                    onValidationChange={(error) => {
-                        setIntegrationIdError(error);
                     }}
                     onSave={async (value) => {
                         await onSave({ integrationId: value });
@@ -102,17 +96,10 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     }}
                 />
                 {isEditingIntegrationId && (
-                    <>
-                        <p className={`text-body-small-regular ${integrationIdError ? 'text-feedback-error-fg' : 'text-text-tertiary'}`}>
-                            *Must only contain letters, numbers, underscores and dashes.
-                        </p>
-                        <Alert variant="info">
-                            <Info />
-                            <AlertDescription>
-                                You won&apos;t be able to change the integration ID if the integration has any active connections.
-                            </AlertDescription>
-                        </Alert>
-                    </>
+                    <Alert variant="info">
+                        <Info />
+                        <AlertDescription>You won&apos;t be able to change the integration ID if the integration has any active connections.</AlertDescription>
+                    </Alert>
                 )}
             </div>
 
