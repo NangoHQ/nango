@@ -123,6 +123,7 @@ export const ENVS = z.object({
         .regex(/^[a-zA-Z0-9_-]+$/)
         .optional()
         .default('nango_runners'),
+    RUNNER_LAMBDA_FLEET_ID: z.string().optional().default('nango_runners_lambda'),
     RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
     RUNNER_PROFILED_ACCOUNTS: z
         .string()

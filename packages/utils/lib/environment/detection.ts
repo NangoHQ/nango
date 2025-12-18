@@ -13,6 +13,7 @@ export const isLocal = !isCloud && !isEnterprise && !isDocker && (process.env['N
 export const isTest = Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
 export const isBasicAuthEnabled = !isCloud && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 export const isHosted = !isCloud && !isLocal && !isEnterprise;
+export const useLambda = isCloud && process.env['LAMBDA_ENABLED']?.toLowerCase() === 'true';
 
 export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv.Dev;
 

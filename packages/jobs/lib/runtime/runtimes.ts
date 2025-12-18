@@ -1,5 +1,5 @@
 import { Fleet } from '@nangohq/fleet';
-import { Err, Ok, isCloud } from '@nangohq/utils';
+import { Err, Ok, useLambda } from '@nangohq/utils';
 
 import { LambdaRuntimeAdapter } from './lambda.adapter.js';
 import { RunnerRuntimeAdapter } from './runner.adapter.js';
@@ -18,8 +18,8 @@ interface Runtime {
 
 const runtimes: Runtime[] = [];
 
-if (isCloud && envs.LAMBDA_ENABLED) {
-    const fleet = new Fleet({ fleetId: `${envs.RUNNER_FLEET_ID}_lambda`, nodeProvider: lambdaNodeProvider });
+if (useLambda) {
+    const fleet = new Fleet({ fleetId: envs.RUNNER_LAMBDA_FLEET_ID, nodeProvider: lambdaNodeProvider });
     const adapter = new LambdaRuntimeAdapter(fleet);
     runtimes.push({
         adapter,
@@ -55,6 +55,13 @@ export async function startFleets(): Promise<Result<void>> {
 export async function stopFleets(): Promise<Result<void>> {
     for (const runtime of runtimes) {
         await runtime.fleet.stop();
+    }
+    return Promise.resolve(Ok(undefined));
+}
+
+export async function migrateFleets(): Promise<Result<void>> {
+    for (const runtime of runtimes) {
+        await runtime.fleet.migrate();
     }
     return Promise.resolve(Ok(undefined));
 }
