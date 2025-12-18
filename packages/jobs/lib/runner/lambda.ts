@@ -84,7 +84,6 @@ class Lambda {
         const name = getFunctionName(node);
         const createFunctionCommand = new CreateFunctionCommand({
             FunctionName: name,
-            Runtime: envs.LAMBDA_RUNTIME,
             Role: envs.LAMBDA_EXECUTION_ROLE_ARN,
             Code: {
                 ImageUri: node.image
