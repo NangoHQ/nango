@@ -2,11 +2,11 @@ import { useState } from 'react';
 
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
-import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { useToast } from '../../../hooks/useToast';
 import { apiFetch } from '../../../utils/api';
 import { globalEnv } from '../../../utils/env';
 import { connectSlack } from '../../../utils/slack-connection';
+import { SlackIcon } from '@/assets/SlackIcon';
 import { Button } from '@/components-v2/ui/button';
 import { apiPatchEnvironment, useEnvironment } from '@/hooks/useEnvironment';
 import { useStore } from '@/store';
@@ -64,7 +64,7 @@ export const SlackAlertsSettings: React.FC = () => {
                         variant={isConnected ? 'tertiary' : 'primary'}
                         onClick={isConnected ? slackDisconnect : slackConnect}
                     >
-                        <IntegrationLogo provider="slack" />
+                        <SlackIcon className="w-5 h-5" />
                         {isConnected ? `Disconnect from Slack` : 'Connect to Slack'}
                     </Button>
                 </div>
