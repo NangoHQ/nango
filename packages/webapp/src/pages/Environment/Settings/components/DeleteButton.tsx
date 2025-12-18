@@ -2,7 +2,7 @@ import { IconTrash } from '@tabler/icons-react';
 
 import { DestructiveActionModal } from '@/components/DestructiveActionModal';
 import { SimpleTooltip } from '@/components/SimpleTooltip';
-import { Button } from '@/components/ui/button/Button';
+import { Button } from '@/components-v2/ui/button';
 
 interface DeleteButtonProps {
     environmentName: string;
@@ -17,7 +17,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
     const tooltipContent = disabled ? disabledTooltip : '';
     const trigger = (
         <SimpleTooltip tooltipContent={tooltipContent} className="text-text-light-gray pointer-events-none">
-            <Button variant="select" className="text-btn-destructive-fg bg-btn-destructive-bg flex gap-2 items-center text-sm" disabled={disabled}>
+            <Button variant="destructive" disabled={disabled}>
                 <IconTrash stroke={1} size={18} />
                 <span>Delete environment</span>
             </Button>
