@@ -34,7 +34,7 @@ export class Fleet {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
         if (nodeProvider) {
-            this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
+            this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider, fleetId: this.fleetId });
         }
         this.nodeProvider = nodeProvider || noopNodeProvider;
     }

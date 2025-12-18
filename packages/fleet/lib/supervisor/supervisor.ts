@@ -41,11 +41,13 @@ export class Supervisor {
     private state: SupervisorState = 'stopped';
     private dbClient: DatabaseClient;
     private tickCancelled: boolean = false;
+    private fleetId: string;
     public nodeProvider: NodeProvider;
 
-    constructor({ dbClient, nodeProvider }: { dbClient: DatabaseClient; nodeProvider: NodeProvider }) {
+    constructor({ dbClient, nodeProvider, fleetId }: { dbClient: DatabaseClient; nodeProvider: NodeProvider; fleetId: string }) {
         this.dbClient = dbClient;
         this.nodeProvider = nodeProvider;
+        this.fleetId = fleetId;
     }
 
     public async start(): Promise<void> {
@@ -109,7 +111,7 @@ export class Supervisor {
         while (this.state === 'running') {
             const res = await withPgLock({
                 db: this.dbClient.db,
-                lockKey: envs.FLEET_SUPERVISOR_LOCK_KEY,
+                lockKey: `${this.fleetId}_lock_key`,
                 fn: async () => this.tick(),
                 timeoutMs: envs.FLEET_SUPERVISOR_TIMEOUT_TICK_MS,
                 onTimeout: () => {
