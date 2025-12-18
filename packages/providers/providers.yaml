@@ -4876,6 +4876,8 @@ fathom:
                 content-type: application/json
             endpoints:
                 - /external/v1/teams
+    webhook_routing_script: fathomWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/integrations/all/fathom
     docs_connect: https://nango.dev/docs/integrations/all/fathom/connect
     credentials:
@@ -4899,6 +4901,8 @@ fathom-oauth:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    webhook_routing_script: fathomWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://api.fathom.ai
         retry:
