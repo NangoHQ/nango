@@ -33,11 +33,20 @@ const route: WebhookHandler<SellsyWebhookPayload> = async (nango, headers, body,
         logger.info('no webhook secret configured, skipping signature validation', { configId: nango.integration.id });
     }
 
-    const webhookType = body.thirdtype ? `${body.thirdtype}.${body.event}` : body.event;
+    let webhookTypeValue: string;
+    if (body.eventType?.toLowerCase() === 'thirdlog') {
+        if (body.thirdtype) {
+            webhookTypeValue = `${body.thirdtype}.${body.event}`;
+        } else {
+            webhookTypeValue = `${body.relatedtype}.${body.eventType}.${body.event}`;
+        }
+    } else {
+        webhookTypeValue = `${body.relatedtype}.${body.event}`;
+    }
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        webhookType,
+        webhookTypeValue,
         connectionIdentifier: 'corpid',
         propName: 'corpid'
     });

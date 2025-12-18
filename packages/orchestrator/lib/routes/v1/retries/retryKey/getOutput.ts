@@ -22,13 +22,12 @@ type GetRetryOutput = Endpoint<{
 const path = '/v1/retries/:retryKey/output';
 const method = 'GET';
 
+const querySchema = z.object({ ownerKey: z.string().min(1) }).strict();
+const paramsSchema = z.object({ retryKey: z.string().uuid() }).strict();
+
 const validate = validateRequest<GetRetryOutput>({
-    parseQuery: (data) =>
-        z
-            .object({ ownerKey: z.string().min(1) })
-            .strict()
-            .parse(data),
-    parseParams: (data) => z.object({ retryKey: z.string().uuid() }).strict().parse(data)
+    parseQuery: (data) => querySchema.parse(data),
+    parseParams: (data) => paramsSchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

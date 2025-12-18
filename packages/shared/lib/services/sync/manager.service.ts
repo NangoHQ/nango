@@ -6,8 +6,8 @@ import { getLatestSyncJob } from './job.service.js';
 import { createSync, getSync, getSyncsByConnectionId, getSyncsByProviderConfigKey, getSyncsBySyncConfigId, softDeleteSync } from './sync.service.js';
 import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
+import accountService from '../account.service.js';
 import configService from '../config.service.js';
-import environmentService from '../environment.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
@@ -270,7 +270,7 @@ export class SyncManagerService {
         deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
-        const account = (await environmentService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
+        const account = (await accountService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: syncCommandToOperation[command] } },
@@ -522,7 +522,7 @@ export class SyncManagerService {
             throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
         }
 
-        const countRes = await recordsService.getRecordStatsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
+        const countRes = await recordsService.getCountsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
         if (countRes.isErr()) {
             throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }

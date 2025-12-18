@@ -20,7 +20,7 @@
     "dependencies": {
         "@aws-sdk/client-s3": "3.796.0",
         "@hapi/boom": "10.0.1",
-        "@modelcontextprotocol/sdk": "1.19.1",
+        "@modelcontextprotocol/sdk": "1.24.3",
         "@nangohq/database": "file:../database",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/nango-yaml": "file:../nango-yaml",
@@ -37,7 +37,7 @@
         "form-data": "4.0.4",
         "he": "^1.2.0",
         "js-yaml": "4.1.1",
-        "jsonwebtoken": "9.0.2",
+        "jsonwebtoken": "9.0.3",
         "lodash-es": "4.17.21",
         "ms": "3.0.0-canary.1",
         "oauth-1.0a": "2.2.6",

@@ -10,6 +10,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import {
     ErrorSourceEnum,
     LogActionEnum,
+    accountService,
     configService,
     connectionService,
     environmentService,
@@ -1074,13 +1075,14 @@ class OAuthController {
         const connectionId = session.connectionId;
 
         try {
-            const environment = await environmentService.getById(session.environmentId);
-            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
-            if (!environment || !account) {
+            const accountRes = await accountService.getAccountContext({ environmentId: session.environmentId });
+            if (!accountRes) {
                 const error = WSErrBuilder.EnvironmentOrAccountNotFound();
                 await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
                 return;
             }
+
+            const { environment, account } = accountRes;
 
             logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
@@ -2011,6 +2013,37 @@ class OAuthController {
                 environmentId: session.environmentId
             });
 
+            if (!updatedConnection) {
+                void logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
+            }
+
+            let connectSession: ConnectSessionAndEndUser | undefined;
+
+            if (session.connectSessionId) {
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
+                    void logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    return;
+                }
+
+                connectSession = connectSessionRes.value;
+                await syncEndUserToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
+            }
+
             if (updatedConnection) {
                 void connectionCreatedHook(
                     {
@@ -2019,7 +2052,7 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
-                        endUser: undefined
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
