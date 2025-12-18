@@ -15657,8 +15657,8 @@ upsales:
                 content-type: application/json
             endpoints:
                 - /api/v2/users
-    docs: https://nango.dev/docs/integrations/all/upsales
-    docs_connect: https://nango.dev/docs/integrations/all/upsales/connect
+    docs: https://nango.dev/docs/api-integrations/upsales
+    docs_connect: https://nango.dev/docs/api-integrations/upsales/connect
     credentials:
         apiKey:
             type: string
