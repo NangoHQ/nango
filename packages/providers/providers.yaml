@@ -6166,6 +6166,16 @@ google-mail:
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-oauth-app
 
+google-search-console:
+    display_name: Google Search Console
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://www.googleapis.com/webmasters
+    docs: https://nango.dev/docs/api-integrations/google-search-console
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app
+
 google-sheet:
     display_name: Google Sheet
     categories:
