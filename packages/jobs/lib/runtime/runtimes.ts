@@ -16,12 +16,7 @@ interface Runtime {
     readonly fleet: Fleet;
 }
 
-const runtimes: Runtime[] = [
-    {
-        adapter: new RunnerRuntimeAdapter(),
-        fleet: runnersFleet
-    }
-];
+const runtimes: Runtime[] = [];
 
 if (isCloud && envs.LAMBDA_ENABLED) {
     const fleet = new Fleet({ fleetId: `${envs.RUNNER_FLEET_ID}_lambda`, nodeProvider: lambdaNodeProvider });
@@ -31,6 +26,11 @@ if (isCloud && envs.LAMBDA_ENABLED) {
         fleet
     });
 }
+
+runtimes.push({
+    adapter: new RunnerRuntimeAdapter(),
+    fleet: runnersFleet
+});
 
 export async function getRuntimes(): Promise<Result<Runtime[]>> {
     return Promise.resolve(Ok(runtimes));
