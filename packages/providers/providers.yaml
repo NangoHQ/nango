@@ -9843,6 +9843,33 @@ oracle-hcm:
             order: 1
             doc_section: '#step-1-finding-your-rest-server-url'
 
+oracle-cloud-identity:
+    display_name: Oracle Cloud Identity
+    categories:
+        - other
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.serviceInstance}.identity.oraclecloud.com/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.serviceInstance}.identity.oraclecloud.com
+    docs: https://nango.dev/docs/api-integrations/oracle-cloud-identity
+    docs_connect: https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect
+    connection_config:
+        serviceInstance:
+            type: string
+            title: IDCS Service Instance
+            description: Your Oracle Identity Cloud Service instance identifier
+            pattern: '^idcs-[a-f0-9]{32}$'
+            example: idcs-1234567890abcdef1234567890abcdef
+            prefix: https://
+            suffix: .identity.oraclecloud.com
+            order: 1
+            doc_section: '#step-1-finding-your-service-instance'
+
 ory:
     display_name: Ory
     categories:
