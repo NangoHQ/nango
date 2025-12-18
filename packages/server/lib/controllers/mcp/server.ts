@@ -43,12 +43,14 @@ export async function createMcpServerForConnection(
 
     server.setRequestHandler(ListToolsRequestSchema, () => {
         return {
-            tools: actions
-                .filter((action) => action.enabled)
-                .flatMap((action) => {
-                    const tool = actionToTool(action);
-                    return tool ? [tool] : [];
-                })
+            tools: actions.flatMap((action) => {
+                if (!action.enabled) {
+                    return [];
+                }
+
+                const tool = actionToTool(action);
+                return tool ? [tool] : [];
+            })
         };
     });
 
