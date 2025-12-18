@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { Badge } from '@/components-v2/ui/badge';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -25,6 +26,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
 
     const callbackUrl = environment.callback_url || defaultCallback();
     const hasExistingClientId = Boolean(integration.oauth_client_id);
+    const isSharedCredentials = Boolean(integration.shared_credentials_id);
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
@@ -81,28 +83,59 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             {/* Client ID */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_id">Client ID</Label>
-                <EditableInput initialValue={integration.oauth_client_id || ''} onSave={handleClientIdSave} onEditingChange={setIsEditingClientId} />
-                {isEditingClientId && hasExistingClientId && (
-                    <Alert variant="warning">
-                        <AlertTriangle />
-                        <AlertDescription>
-                            Updating the Client ID will invalidate token refreshes for all existing connections for this integration.
-                        </AlertDescription>
-                    </Alert>
+                {isSharedCredentials ? (
+                    <InputGroup>
+                        <InputGroupInput disabled value="••••••••••••••••••••••••••••••••" />
+                        <InputGroupAddon align="inline-end">
+                            <Badge variant="gray">Nango provided</Badge>
+                        </InputGroupAddon>
+                    </InputGroup>
+                ) : (
+                    <>
+                        <EditableInput initialValue={integration.oauth_client_id || ''} onSave={handleClientIdSave} onEditingChange={setIsEditingClientId} />
+                        {isEditingClientId && hasExistingClientId && (
+                            <Alert variant="warning">
+                                <AlertTriangle />
+                                <AlertDescription>
+                                    Updating the Client ID will invalidate token refreshes for all existing connections for this integration.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* Client Secret */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_secret">Client Secret</Label>
-                <EditableInput secret initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ clientSecret: value })} />
+                {isSharedCredentials ? (
+                    <InputGroup>
+                        <InputGroupInput disabled value="••••••••••••••••••••••••••••••••••••••••••••••••" />
+                        <InputGroupAddon align="inline-end">
+                            <Badge variant="gray">Nango provided</Badge>
+                        </InputGroupAddon>
+                    </InputGroup>
+                ) : (
+                    <EditableInput secret initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ clientSecret: value })} />
+                )}
             </div>
 
             {/* Scopes */}
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="scopes">Scopes</Label>
-                <EditableInput initialValue={integration.oauth_scopes || ''} onSave={(value) => onSave({ scopes: value })} />
-            </div>
+            {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="scopes">Scopes</Label>
+                    {isSharedCredentials ? (
+                        <InputGroup>
+                            <InputGroupInput disabled value={integration.oauth_scopes || ''} />
+                            <InputGroupAddon align="inline-end">
+                                <Badge variant="gray">Nango provided</Badge>
+                            </InputGroupAddon>
+                        </InputGroup>
+                    ) : (
+                        <EditableInput initialValue={integration.oauth_scopes || ''} onSave={(value) => onSave({ scopes: value })} />
+                    )}
+                </div>
+            )}
 
             {/* Confirmation Dialog */}
             {DialogComponent}
