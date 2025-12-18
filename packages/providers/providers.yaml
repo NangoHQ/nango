@@ -696,6 +696,8 @@ amazon-selling-partner:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    redirect_uri_metadata:
+        - selling_partner_id
     proxy:
         base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
@@ -745,6 +747,8 @@ amazon-selling-partner-beta:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    redirect_uri_metadata:
+        - selling_partner_id
     proxy:
         base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
@@ -9962,7 +9966,7 @@ pandadoc-api-key:
             headers:
                 content-type: application/json
             endpoints:
-                - /public/v1/logs
+                - /public/v1/members/current
         headers:
             authorization: API-Key ${apiKey}
     docs: https://nango.dev/docs/integrations/all/pandadoc-api-key
