@@ -4860,6 +4860,39 @@ facebook:
     docs: https://nango.dev/docs/api-integrations/facebook
     setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-oauth-app
 
+fanvue:
+    display_name: Fanvue
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://auth.fanvue.com/oauth2/auth
+    token_url: https://auth.fanvue.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+        - offline
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.fanvue.com
+        headers:
+            x-fanvue-api-version: ${connectionConfig.version} || 2025-06-26
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/fanvue
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 fathom:
     display_name: Fathom
     categories:
