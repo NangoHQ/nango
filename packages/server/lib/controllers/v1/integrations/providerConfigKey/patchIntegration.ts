@@ -177,14 +177,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             if (body.appLink !== undefined) {
                 integration.app_link = body.appLink;
             }
-            if (body.appId !== undefined || body.privateKey !== undefined) {
-                // This is a legacy thing
-                integration.custom = {
-                    ...integration.custom,
-                    ...(body.appId !== undefined && { app_id: body.appId }),
-                    ...(body.privateKey !== undefined && { private_key: Buffer.from(body.privateKey).toString('base64') })
-                };
-            }
+            // This is a legacy thing
+            integration.custom = {
+                ...integration.custom,
+                ...(body.appId !== undefined && { app_id: body.appId }),
+                ...(body.privateKey !== undefined && { private_key: Buffer.from(body.privateKey).toString('base64') })
+            };
         } else if (body.authType === 'MCP_OAUTH2') {
             if (body.scopes !== undefined) {
                 integration.oauth_scopes = body.scopes || '';
