@@ -7,6 +7,7 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { onFinishing } from '../utils/runner.js';
 
 import type { NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
@@ -91,5 +92,8 @@ export const localNodeProvider: NodeProvider = {
             ? Ok(undefined)
             : Err(new Error(`Local runner url should start with http://localhost, got ${url}`));
         return Promise.resolve(res);
+    },
+    onFinishing: async (node) => {
+        return onFinishing(node);
     }
 };

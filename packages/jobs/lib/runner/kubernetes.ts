@@ -4,6 +4,7 @@ import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { onFinishing } from '../utils/runner.js';
 
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
@@ -473,5 +474,8 @@ export const kubernetesNodeProvider: NodeProvider = {
     verifyUrl: (url: string) => {
         const kubernetes = Kubernetes.getInstance();
         return kubernetes.verifyUrl(url);
+    },
+    onFinishing: async (node: Node) => {
+        return onFinishing(node);
     }
 };

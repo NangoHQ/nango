@@ -2,7 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 
 import tracer from 'dd-trace';
 
-import { Err, Ok, errorToObject, report, retryWithBackoff } from '@nangohq/utils';
+import { Err, Ok, errorToObject, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { Operation } from './operation.js';
@@ -121,7 +121,7 @@ export class Supervisor {
             });
             if (res.isErr()) {
                 await setTimeout(envs.FLEET_SUPERVISOR_RETRY_DELAY_MS);
-                logger.warning('Fleet supervisor:', res.error.message, res.error.cause);
+                logger.warning(`Fleet supervisor for fleet ${this.fleetId}:`, res.error.message, res.error.cause);
             }
         }
         this.state = 'stopped';
@@ -410,18 +410,10 @@ export class Supervisor {
         if (!node.url) {
             return Err(new FleetError('fleet_node_url_not_found', { context: { nodeId: node.id } }));
         }
-
         try {
-            const res = await retryWithBackoff(
-                async () => {
-                    return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
-                },
-                {
-                    numOfAttempts: 5
-                }
-            );
-            if (!res.ok) {
-                throw new Error(`status: ${res.status}. response: ${res.statusText}`);
+            const res = await this.nodeProvider.onFinishing(node);
+            if (res.isErr()) {
+                throw res.error;
             }
         } catch (err) {
             report(new Error(`Failed to notify node ${node.id} to notifyWhenIdle`, { cause: err }));

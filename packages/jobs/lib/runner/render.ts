@@ -9,6 +9,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
+import { onFinishing } from '../utils/runner.js';
 
 import type { RenderPlan } from './render.api.js';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -31,6 +32,9 @@ export const renderNodeProvider: NodeProvider = {
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1
+    },
+    onFinishing: async (node) => {
+        return onFinishing(node);
     },
     start: async (node) => {
         if (!envs.RUNNER_OWNER_ID) {

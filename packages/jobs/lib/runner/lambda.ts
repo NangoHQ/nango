@@ -237,5 +237,8 @@ export const lambdaNodeProvider: NodeProvider = {
     },
     verifyUrl: async (url: string) => {
         return Lambda.getInstance().verifyUrl(url);
+    },
+    onFinishing: async (_node: Node) => {
+        return Promise.resolve(Ok(undefined));
     }
 };

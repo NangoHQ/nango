@@ -21,5 +21,8 @@ export const noopNodeProvider: NodeProvider = {
     },
     verifyUrl: () => {
         return Promise.resolve(Ok(undefined));
+    },
+    onFinishing: () => {
+        return Promise.resolve(Ok(undefined));
     }
 };
