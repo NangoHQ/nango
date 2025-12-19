@@ -1,3 +1,4 @@
+import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 import { InfoTooltip } from './InfoTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
@@ -71,30 +72,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             </div>
 
             {/* App Private Key */}
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <Label htmlFor="private_key">App Private Key</Label>
-                    <InfoTooltip>
-                        Obtain the app private key from the app page by downloading the private key and pasting the entirety of its contents here.
-                    </InfoTooltip>
-                </div>
-                <EditableInput
-                    secret
-                    textArea
-                    initialValue={integration.oauth_client_secret || ''}
-                    hintText='Private key must start with "-----BEGIN RSA PRIVATE KEY----" and end with "-----END RSA PRIVATE KEY-----"'
-                    validate={(value) => {
-                        if (!value.trim()) {
-                            return 'Private key is required';
-                        }
-                        if (!value.trim().startsWith('-----BEGIN RSA PRIVATE KEY----') || !value.trim().endsWith('-----END RSA PRIVATE KEY-----')) {
-                            return 'Private key must start with "-----BEGIN RSA PRIVATE KEY----" and end with "-----END RSA PRIVATE KEY-----"';
-                        }
-                        return null;
-                    }}
-                    onSave={(value) => onSave({ privateKey: value })}
-                />
-            </div>
+            <AppPrivateKeyInput initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ privateKey: value })} />
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import { AppAuthSettings } from './AppAuthSettings';
+import { CustomAuthSettings } from './CustomAuthSettings';
 import { McpGenericSettings } from './McpGenericSettings';
 import { McpOAuthSettings } from './McpOAuthSettings';
 import { OAuthSettings } from './OAuthSettings';
@@ -16,6 +17,9 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
 
         case 'APP':
             return <AppAuthSettings data={data} environment={environment} />;
+
+        case 'CUSTOM':
+            return <CustomAuthSettings data={data} environment={environment} />;
 
         case 'MCP_OAUTH2':
             return <McpOAuthSettings data={data} environment={environment} />;
