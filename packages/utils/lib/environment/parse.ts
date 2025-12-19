@@ -265,6 +265,7 @@ export const ENVS = z.object({
 
     // API Down Watch
     API_DOWN_WATCH_PUBLIC_KEY: z.string().optional(),
+    API_DOWN_WATCH_API_KEY: z.string().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),

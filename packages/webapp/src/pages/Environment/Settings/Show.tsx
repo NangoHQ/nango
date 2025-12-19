@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { BackendSettings } from './Backend';
@@ -10,6 +9,7 @@ import { Notifications } from './Notifications';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
 import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useHashNavigation } from '../../../hooks/useHashNavigation';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
@@ -22,26 +22,7 @@ export const EnvironmentSettings: React.FC = () => {
     const { team } = useTeam(env);
 
     const { environmentAndAccount } = useEnvironment(env);
-    const [scrolled, setScrolled] = useState(false);
-
-    useEffect(() => {
-        if (!environmentAndAccount || scrolled) {
-            return;
-        }
-
-        setScrolled(true);
-        const hash = window.location.hash.slice(1); // Remove the '#' character from the hash
-        if (!hash) {
-            return;
-        }
-
-        const element = document.getElementById(hash);
-        if (!element) {
-            return;
-        }
-
-        element.scrollIntoView({ behavior: 'smooth' });
-    }, [environmentAndAccount]);
+    const [activeTab, setActiveTab] = useHashNavigation('general');
 
     if (!environmentAndAccount || !team) {
         return (
@@ -78,40 +59,40 @@ export const EnvironmentSettings: React.FC = () => {
                 </div>
             </div>
             <div className="flex h-fit" key={env}>
-                <Navigation defaultValue="general">
+                <Navigation value={activeTab} onValueChange={setActiveTab}>
                     <NavigationList className="w-[209px] 4xl:w-[236px]">
-                        <NavigationTrigger value={'general'}>General</NavigationTrigger>
-                        <NavigationTrigger value={'backend'}>Backend</NavigationTrigger>
-                        <NavigationTrigger value={'connect-ui'}>Connect UI</NavigationTrigger>
-                        <NavigationTrigger value={'webhooks'}>Webhooks</NavigationTrigger>
-                        <NavigationTrigger value={'slack-alerts'}>Slack alerts</NavigationTrigger>
-                        <NavigationTrigger value={'functions'}>Functions</NavigationTrigger>
-                        <NavigationTrigger value={'telemetry'}>Telemetry</NavigationTrigger>
-                        {canSeeDeprecatedAuthorization && <NavigationTrigger value={'deprecated'}>Deprecated</NavigationTrigger>}
+                        <NavigationTrigger value="general">General</NavigationTrigger>
+                        <NavigationTrigger value="backend">Backend</NavigationTrigger>
+                        <NavigationTrigger value="connect-ui">Connect UI</NavigationTrigger>
+                        <NavigationTrigger value="webhooks">Webhooks</NavigationTrigger>
+                        <NavigationTrigger value="slack-alerts">Slack alerts</NavigationTrigger>
+                        <NavigationTrigger value="functions">Functions</NavigationTrigger>
+                        <NavigationTrigger value="telemetry">Telemetry</NavigationTrigger>
+                        {canSeeDeprecatedAuthorization && <NavigationTrigger value="deprecated">Deprecated</NavigationTrigger>}
                     </NavigationList>
-                    <NavigationContent value={'general'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="general" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <General />
                     </NavigationContent>
-                    <NavigationContent value={'backend'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="backend" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <BackendSettings />
                     </NavigationContent>
-                    <NavigationContent value={'connect-ui'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="connect-ui" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <ConnectUISettings />
                     </NavigationContent>
-                    <NavigationContent value={'webhooks'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="webhooks" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <Notifications />
                     </NavigationContent>
-                    <NavigationContent value={'slack-alerts'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="slack-alerts" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <SlackAlertsSettings />
                     </NavigationContent>
-                    <NavigationContent value={'functions'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="functions" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <Functions />
                     </NavigationContent>
-                    <NavigationContent value={'telemetry'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <NavigationContent value="telemetry" className="h-fit flex flex-col gap-6 flex-initial w-full">
                         <Telemetry />
                     </NavigationContent>
                     {canSeeDeprecatedAuthorization && (
-                        <NavigationContent value={'deprecated'} className="h-fit flex flex-col gap-6 flex-initial w-full">
+                        <NavigationContent value="deprecated" className="h-fit flex flex-col gap-6 flex-initial w-full">
                             <DeprecatedSettings />
                         </NavigationContent>
                     )}
