@@ -12,6 +12,7 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
@@ -122,12 +123,12 @@ export const FunctionsOne: React.FC = () => {
                 </div>
 
                 <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
-                    <Navigation value={activeTab} onValueChange={setActiveTab} orientation="horizontal">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
                         <div className="flex items-center justify-between gap-2">
-                            <NavigationList>
-                                <NavigationTrigger value="input">Input</NavigationTrigger>
-                                <NavigationTrigger value="output">Output</NavigationTrigger>
-                            </NavigationList>
+                            <TabsList className="w-fit gap-0">
+                                <TabsTrigger value="input">Input</TabsTrigger>
+                                <TabsTrigger value="output">Output</TabsTrigger>
+                            </TabsList>
                             {func.type === 'action' ? (
                                 <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
                                     How to use Actions <ExternalLink />
@@ -138,11 +139,11 @@ export const FunctionsOne: React.FC = () => {
                                 </ButtonLink>
                             )}
                         </div>
-                        <NavigationContent value="input" className="flex flex-col gap-4">
+                        <TabsContent value="input" className="flex flex-col gap-4">
                             <InfoCallout type={func.type as 'action' | 'sync'} variant="input" />
                             {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No inputs.`} />}
-                        </NavigationContent>
-                        <NavigationContent value="output" className="flex flex-col gap-4">
+                        </TabsContent>
+                        <TabsContent value="output" className="flex flex-col gap-4">
                             <InfoCallout type={func.type as 'action' | 'sync'} variant="output" />
                             {outputSchemas && outputSchemas.length > 0 ? (
                                 <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
@@ -162,8 +163,8 @@ export const FunctionsOne: React.FC = () => {
                             ) : (
                                 <EmptyCard content="No outputs." />
                             )}
-                        </NavigationContent>
-                    </Navigation>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </header>
         </DashboardLayout>
