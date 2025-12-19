@@ -14841,6 +14841,27 @@ wordpress:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://nango.dev/docs/integrations/all/wordpress
 
+wiseagent:
+    display_name: Wiseagent
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://sync.thewiseagent.com/WiseAuth/auth
+    token_url: https://sync.thewiseagent.com/WiseAuth/token
+    body_format: json
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sync.thewiseagent.com
+    docs: https://nango.dev/docs/api-integrations/wiseagent
+    setup_guide_url: https://nango.dev/docs/api-integrations/wiseagent/how-to-register-your-own-wiseagent-oauth-app
+
 woocommerce:
     display_name: WooCommerce
     categories:
