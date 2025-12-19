@@ -2978,6 +2978,12 @@ components:
                                     oauth_scopes_override:
                                         type: string
                                         description: Override oauth scopes
+                                    oauth_client_id_override:
+                                        type: string
+                                        description: Set to empty string to allow end-users to provide their own OAuth client ID in Connect UI
+                                    oauth_client_secret_override:
+                                        type: string
+                                        description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
                 overrides:
                     type: object
                     additionalProperties:
