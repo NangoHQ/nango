@@ -543,13 +543,6 @@ layer(base);
     }
 }
 
-@utility capitalize-first {
-    display: inline-block;
-    &::first-letter {
-        text-transform: uppercase;
-    }
-}
-
 @utility text-title-screen {
     font-size: 40px;
     line-height: 48px;
