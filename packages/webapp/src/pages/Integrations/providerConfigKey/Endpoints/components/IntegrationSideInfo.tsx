@@ -1,13 +1,15 @@
 import { CopyButton } from '@/components-v2/CopyButton';
 import { StyledLink } from '@/components-v2/StyledLink';
-import { useApiDownWatch } from '@/hooks/useApiDownWatch';
+import { useApiStatus } from '@/hooks/useApiStatus';
 import { StatusWidget } from '@/pages/Integrations/components/StatusWidget';
 import { getDisplayName } from '@/pages/Integrations/utils';
+import { useStore } from '@/store';
 
 import type { ApiIntegration, Provider } from '@nangohq/types';
 
 export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provider: Provider }> = ({ integration, provider }) => {
-    const { data: apiDownWatchStatus } = useApiDownWatch(integration.provider);
+    const env = useStore((state) => state.env);
+    const { data: apiStatus } = useApiStatus(integration.provider, env);
 
     return (
         <div className="flex flex-col min-w-30 w-60">
@@ -33,10 +35,10 @@ export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provid
                     </StyledLink>
                 </span>
             </InfoRow>
-            {apiDownWatchStatus?.status && (
+            {apiStatus?.status && (
                 <InfoRow label="API status">
                     <div className="flex">
-                        <StatusWidget className="text-text-primary" status={apiDownWatchStatus?.status} />
+                        <StatusWidget className="text-text-primary" status={apiStatus?.status} />
                     </div>
                 </InfoRow>
             )}

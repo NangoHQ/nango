@@ -1,7 +1,7 @@
 import { Dot } from '@/components-v2/Dot';
 import { cn } from '@/utils/utils';
 
-import type { ApiDownWatchResponse } from '@/hooks/useApiDownWatch';
+import type { ApiStatus } from '@nangohq/types';
 
 const statusVariants = {
     operational: {
@@ -22,7 +22,7 @@ const statusVariants = {
     }
 } as const;
 
-export function StatusWidget({ status, className = '' }: { status: ApiDownWatchResponse['status']; className?: string }) {
+export function StatusWidget({ status, className = '' }: { status: ApiStatus; className?: string }) {
     const variant = statusVariants[status].variant;
     return (
         <div className="inline-flex items-center gap-1">
