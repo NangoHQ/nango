@@ -359,6 +359,7 @@ export const ENVS = z.object({
 
     // Lambda
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_ECR_REGISTRY: z.string().optional(),
     LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
     LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),
     LAMBDA_PERSIST_SERVICE_URL: z.url().optional(),

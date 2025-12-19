@@ -86,7 +86,7 @@ class Lambda {
             FunctionName: name,
             Role: envs.LAMBDA_EXECUTION_ROLE_ARN,
             Code: {
-                ImageUri: node.image
+                ImageUri: `${envs.LAMBDA_ECR_REGISTRY}/${node.image}`
             },
             PackageType: 'Image',
             Architectures: [envs.LAMBDA_ARCHITECTURE],
