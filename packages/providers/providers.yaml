@@ -698,6 +698,8 @@ amazon-selling-partner:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    redirect_uri_metadata:
+        - selling_partner_id
     proxy:
         base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
@@ -747,6 +749,8 @@ amazon-selling-partner-beta:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    redirect_uri_metadata:
+        - selling_partner_id
     proxy:
         base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
@@ -4870,6 +4874,39 @@ facebook:
     docs: https://nango.dev/docs/api-integrations/facebook
     setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app
 
+fanvue:
+    display_name: Fanvue
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://auth.fanvue.com/oauth2/auth
+    token_url: https://auth.fanvue.com/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+        - offline
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.fanvue.com
+        headers:
+            x-fanvue-api-version: ${connectionConfig.version} || 2025-06-26
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/fanvue
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 fathom:
     display_name: Fathom
     categories:
@@ -4886,6 +4923,8 @@ fathom:
                 content-type: application/json
             endpoints:
                 - /external/v1/teams
+    webhook_routing_script: fathomWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/integrations/all/fathom
     docs_connect: https://nango.dev/docs/integrations/all/fathom/connect
     credentials:
@@ -4909,6 +4948,8 @@ fathom-oauth:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    webhook_routing_script: fathomWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://api.fathom.ai
         retry:
@@ -6175,6 +6216,16 @@ google-mail:
     webhook_routing_script: gmailWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
+
+google-search-console:
+    display_name: Google Search Console
+    alias: google
+    categories:
+        - productivity
+    proxy:
+        base_url: https://www.googleapis.com/webmasters
+    docs: https://nango.dev/docs/api-integrations/google-search-console
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app
 
 google-sheet:
     display_name: Google Sheet
@@ -9814,6 +9865,33 @@ oracle-hcm:
             order: 1
             doc_section: '#step-1-finding-your-rest-server-url'
 
+oracle-cloud-identity:
+    display_name: Oracle Cloud Identity
+    categories:
+        - other
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.serviceInstance}.identity.oraclecloud.com/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.serviceInstance}.identity.oraclecloud.com
+    docs: https://nango.dev/docs/api-integrations/oracle-cloud-identity
+    docs_connect: https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect
+    connection_config:
+        serviceInstance:
+            type: string
+            title: IDCS Service Instance
+            description: Your Oracle Identity Cloud Service instance identifier
+            pattern: '^idcs-[a-f0-9]{32}$'
+            example: idcs-1234567890abcdef1234567890abcdef
+            prefix: https://
+            suffix: .identity.oraclecloud.com
+            order: 1
+            doc_section: '#step-1-finding-your-service-instance'
+
 ory:
     display_name: Ory
     categories:
@@ -9938,7 +10016,7 @@ pandadoc-api-key:
             headers:
                 content-type: application/json
             endpoints:
-                - /public/v1/logs
+                - /public/v1/members/current
         headers:
             authorization: API-Key ${apiKey}
     docs: https://nango.dev/docs/integrations/all/pandadoc-api-key
@@ -10646,6 +10724,9 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+    authorization_url_skip_empty: true
+    token_request_auth_method: basic
+    disable_pkce: true
     token_response_metadata:
         - api_domain
     proxy:
@@ -10657,7 +10738,7 @@ pipedrive:
             response_path: data
             limit_name_in_request: limit
     docs: https://nango.dev/docs/api-integrations/pipedrive
-    setup_guide_url: https://nango.dev/docs/api-integrations/pipedrive/how-to-register-your-own-pipedrive-api-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/pipedrive/how-to-register-your-own-pipedrive-oauth-app
     connection_config:
         api_domain:
             type: string
@@ -14680,6 +14761,57 @@ vanta:
         base_url: https://api.vanta.com
     docs: https://nango.dev/docs/api-integrations/vanta
     docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
+
+veeva-vault:
+    display_name: Veeva Vault
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.subdomain}.veevavault.com/api/${connectionConfig.version}/auth
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: sessionId
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.veevavault.com/api/${connectionConfig.version}
+        headers:
+            authorization: ${accessToken}
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/veeva-vault
+    docs_connect: https://nango.dev/docs/api-integrations/veeva-vault/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Vault user name assigned by your administrator
+            doc_section: '#step-2-obtaining-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Vault password associated with your assigned Vault user name
+            secret: true
+            doc_section: '#step-2-obtaining-your-credentials'
+    connection_config:
+        subdomain:
+            type: string
+            title: Vault DNS (subdomain)
+            description: The Vault DNS subdomain of the Veeva Vault you want to connect to
+            example: myvault
+            prefix: https://
+            suffix: veevavault.com
+            order: 1
+            doc_section: '#step-1-finding-your-vault-dns-subdomain'
+        version:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 wakatime:
     display_name: Wakatime

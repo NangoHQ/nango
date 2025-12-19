@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { flagHasPlan, isCloud, metrics, report } from '@nangohq/utils';
+import { FixedSizeMap, flagHasPlan, isCloud, metrics, report } from '@nangohq/utils';
 
 import environmentService, { hashSecretKey } from './environment.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -11,7 +11,7 @@ import encryptionManager from '../utils/encryption.manager.js';
 import type { Knex } from '@nangohq/database';
 import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
-const hashLocalCache = new Map<string, string>();
+const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 
 const freeEmailDomains = new Set([
     'gmail.com',

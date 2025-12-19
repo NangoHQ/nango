@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 
 import { getLocking } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
-import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
+import { Err, FixedSizeMap, Ok, getLogger, metrics } from '@nangohq/utils';
 
 import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
@@ -63,10 +63,10 @@ interface RefreshProps {
 const logger = getLogger('connectionRefresh');
 
 // In-memory cache for in-flight refresh operations to collapse concurrent requests
-const inFlightRefreshes = new Map<
+const inFlightRefreshes = new FixedSizeMap<
     string,
     Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>>
->();
+>(5_000);
 
 /**
  * Take a connection and try to refresh or test based on it's type
