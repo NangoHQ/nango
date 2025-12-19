@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
-import { ScopesInput } from '@/components-v2/ScopeInput';
+import { ScopesInput } from '@/components-v2/ScopesInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
@@ -73,13 +73,18 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     };
 
     const handleScopesChange = async (scopes: string, countDifference: number) => {
-        await onSave({ scopes }, true);
+        try {
+            await onSave({ scopes }, true);
 
-        if (countDifference > 0) {
-            const plural = countDifference > 1 ? 'scopes' : 'scope';
-            toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
-        } else {
-            toast({ title: `Scope successfully removed`, variant: 'success' });
+            if (countDifference > 0) {
+                const plural = countDifference > 1 ? 'scopes' : 'scope';
+                toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
+            } else {
+                toast({ title: `Scope successfully removed`, variant: 'success' });
+            }
+        } catch (err) {
+            toast({ title: 'Failed to update scopes', variant: 'error' });
+            throw err;
         }
     };
 

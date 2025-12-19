@@ -1,5 +1,5 @@
 import { CopyButton } from '@/components-v2/CopyButton';
-import { ScopesInput } from '@/components-v2/ScopeInput';
+import { ScopesInput } from '@/components-v2/ScopesInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
@@ -25,7 +25,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
         });
 
         if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
+            const errorMessage = updated.json.error.message || 'Failed to update scopes';
             throw new Error(errorMessage);
         }
 
