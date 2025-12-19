@@ -1,4 +1,4 @@
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Button } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
@@ -27,15 +28,26 @@ export const ShowIntegration: React.FC = () => {
         return <ErrorPageComponent title="Integration" error={error} />;
     }
 
-    // TODO: Improve loading state
-    if (loadingIntegration || loadingEnvironment || !data || !environmentAndAccount) {
+    const isLoading = loadingIntegration || loadingEnvironment || !data || !environmentAndAccount;
+
+    if (isLoading) {
         return (
-            <DashboardLayout fullWidth className="flex items-center justify-center">
+            <DashboardLayout className="flex flex-col gap-8">
                 <Helmet>
                     <title>Integration - Nango</title>
                 </Helmet>
 
-                <Loader2 className="w-10 h-10 animate-spin" />
+                <div className="flex flex-col gap-5 w-full">
+                    <div className="inline-flex justify-between">
+                        <div className="inline-flex items-center gap-2">
+                            <Skeleton className="size-15" />
+                            <Skeleton className="w-36 h-6" />
+                        </div>
+                        <Skeleton className="w-36 h-10" />
+                    </div>
+                    <Skeleton className="w-full h-10" />
+                    <Skeleton className="w-56 h-10" />
+                </div>
             </DashboardLayout>
         );
     }

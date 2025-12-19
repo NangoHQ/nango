@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
+import { CardContent, CardHeader, CardLayout } from '../../components/CardLayout';
 import { EmptyCard } from '../../components/EmptyCard';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
@@ -15,6 +16,7 @@ import { StyledLink } from '@/components-v2/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { ButtonLink } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -67,9 +69,36 @@ export const FunctionsOne: React.FC = () => {
 
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
-    if (integrationLoading || flowsLoading) {
-        // TODO: improve loading state
-        return <>Loading...</>;
+    const isLoading = integrationLoading || flowsLoading;
+
+    if (isLoading) {
+        return (
+            <DashboardLayout>
+                <Helmet>
+                    <title>Nango</title>
+                </Helmet>
+
+                <CardLayout>
+                    <CardHeader>
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="inline-flex gap-2">
+                                <Skeleton className="bg-bg-subtle size-10.5" />
+                                <div className="flex flex-col gap-1">
+                                    <Skeleton className="bg-bg-subtle w-36 h-5" />
+                                    <Skeleton className="bg-bg-subtle w-24 h-4" />
+                                </div>
+                            </div>
+                            <Skeleton className="bg-bg-subtle w-8 h-5" />
+                        </div>
+                        <Skeleton className="bg-bg-subtle w-full h-6" />
+                        <Skeleton className="bg-bg-subtle w-1/2 h-6" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="bg-bg-subtle w-full h-50" />
+                    </CardContent>
+                </CardLayout>
+            </DashboardLayout>
+        );
     }
 
     if (!func || !integrationData) {
@@ -82,8 +111,8 @@ export const FunctionsOne: React.FC = () => {
                 <title>{func.name} - Nango</title>
             </Helmet>
 
-            <header className="flex flex-col">
-                <div className="flex flex-col gap-6 px-11 py-8 bg-bg-elevated border border-b-0 border-border-muted rounded-t-md">
+            <CardLayout>
+                <CardHeader>
                     <div className="flex items-center justify-between gap-2">
                         <div className="inline-flex gap-2">
                             <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
@@ -120,9 +149,9 @@ export const FunctionsOne: React.FC = () => {
                         {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
                     </div>
                     <span className="text-text-tertiary text-body-medium-medium">{func.description}</span>
-                </div>
+                </CardHeader>
 
-                <div className="px-11 py-8 border border-t-0 border-border-muted rounded-b-md">
+                <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
                         <div className="flex items-center justify-between gap-2">
                             <TabsList className="w-fit gap-0">
@@ -165,8 +194,8 @@ export const FunctionsOne: React.FC = () => {
                             )}
                         </TabsContent>
                     </Tabs>
-                </div>
-            </header>
+                </CardContent>
+            </CardLayout>
         </DashboardLayout>
     );
 };
