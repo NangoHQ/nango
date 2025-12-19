@@ -207,6 +207,7 @@
               "guides/platform/logs",
               "guides/platform/environments",
               "guides/platform/resource-limits",
+              "guides/platform/security",
               {
                 "group": "Self-hosting",
                 "pages": [
