@@ -835,6 +835,7 @@
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
+              "api-integrations/slab",
               "api-integrations/slack",
               "api-integrations/torii",
               "integrations/all/smartrecruiters-api-key",
