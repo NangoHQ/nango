@@ -125,6 +125,11 @@ const JsonSchemaOneOf: React.FC<{ name: string; schema: JSONSchema7; isArray?: b
 const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = ({ schema, depth }) => {
     const [open, setOpen] = useState(false);
 
+    // Don't go too deep to avoid breaking the UI
+    if (depth >= 8) {
+        return null;
+    }
+
     if (!isObjectSchema(schema)) {
         throw new Error('Expected object schema.');
     }
