@@ -116,7 +116,7 @@ const GroupedFunctionsTable: React.FC<{
                     </TableHeader>
                     <TableBody>
                         {functions.map((func, index) => (
-                            <TableRow key={index} className="cursor-pointer" onClick={() => onFunctionClick?.(func)}>
+                            <TableRow key={index} className="cursor-pointer hover:bg-bg-subtle" onClick={() => onFunctionClick?.(func)}>
                                 <TableCell>
                                     <div className="flex items-center gap-1.5">
                                         {func.name}
