@@ -9,7 +9,7 @@ import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
-import { Button } from '@/components-v2/ui/button';
+import { ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
@@ -65,7 +65,9 @@ export const ShowIntegration: React.FC = () => {
                         <IntegrationLogo provider={data.integration.provider} className="size-15" />
                         <span className="text-text-primary text-body-large-semi">{data.integration.display_name ?? data.template.display_name}</span>
                     </div>
-                    <Button size="lg">Add test connection</Button>
+                    <ButtonLink to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`} size="lg">
+                        Add test connection
+                    </ButtonLink>
                 </div>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>
