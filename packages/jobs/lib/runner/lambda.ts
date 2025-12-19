@@ -2,12 +2,9 @@ import {
     CreateAliasCommand,
     CreateFunctionCommand,
     DeleteFunctionCommand,
-    GetAliasCommand,
-    GetProvisionedConcurrencyConfigCommand,
     LambdaClient,
     PublishVersionCommand,
     PutProvisionedConcurrencyConfigCommand,
-    UpdateAliasCommand,
     waitUntilFunctionActive,
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
@@ -40,30 +37,9 @@ function getSize(node: Node): number {
 
 export function getFunctionQualifier(node: Node): string {
     //need to get the qualifier from the function url
-    const regex = /^arn:aws:lambda:.*:function:nango-function-\d+-[a-f0-9-]+:.*$/;
-    const match = node.url?.match(regex);
-    if (!match || match.length < 2) {
-        throw new Error('Invalid URL');
-    }
-    return match[1]!;
-}
-
-async function waitUntilProvisionedConcurrencyReady(params: { functionName: string; qualifier: string; maxWaitTimeMs: number }): Promise<void> {
-    const { functionName, qualifier, maxWaitTimeMs } = params;
-    const startTime = Date.now();
-    while (Date.now() - startTime < maxWaitTimeMs) {
-        const gpcResult = await lambdaClient.send(
-            new GetProvisionedConcurrencyConfigCommand({
-                FunctionName: functionName,
-                Qualifier: qualifier
-            })
-        );
-        if (gpcResult.Status === 'READY') {
-            return;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    throw new Error(`Provisioned concurrency not ready for function ${functionName} and qualifier ${qualifier} after ${maxWaitTimeMs}ms`);
+    //arn is made up 8 segments: arn:aws:lambda:region:account:function:functionName:qualifier
+    const arnSegments = node.url?.split(':');
+    return arnSegments && arnSegments.length >= 8 ? arnSegments[7]! : '';
 }
 
 class Lambda {
@@ -116,63 +92,20 @@ class Lambda {
                 Qualifier: pvResult.Version
             }
         );
-        try {
-            await lambdaClient.send(
-                new GetAliasCommand({
-                    FunctionName: pvResult.FunctionName,
-                    Name: envs.LAMBDA_FUNCTION_ALIAS
-                })
-            );
-            await lambdaClient.send(
-                new UpdateAliasCommand({
-                    FunctionName: pvResult.FunctionName,
-                    Name: envs.LAMBDA_FUNCTION_ALIAS,
-                    FunctionVersion: pvResult.Version
-                })
-            );
-        } catch (err: any) {
-            if (err.name === 'ResourceNotFoundException') {
-                await lambdaClient.send(
-                    new CreateAliasCommand({
-                        FunctionName: pvResult.FunctionName,
-                        Name: envs.LAMBDA_FUNCTION_ALIAS,
-                        FunctionVersion: pvResult.Version
-                    })
-                );
-            } else {
-                throw err;
-            }
-        }
-        let createProvisionedConcurrency = false;
-        try {
-            const gpcResult = await lambdaClient.send(
-                new GetProvisionedConcurrencyConfigCommand({
-                    FunctionName: pvResult.FunctionName,
-                    Qualifier: envs.LAMBDA_FUNCTION_ALIAS
-                })
-            );
-            if (gpcResult.AllocatedProvisionedConcurrentExecutions !== node.provisionedConcurrency) {
-                createProvisionedConcurrency = true;
-            }
-        } catch (err: any) {
-            if (err.name === 'ProvisionedConcurrencyConfigNotFoundException') {
-                createProvisionedConcurrency = true;
-            }
-        }
-        if (createProvisionedConcurrency) {
-            await lambdaClient.send(
-                new PutProvisionedConcurrencyConfigCommand({
-                    FunctionName: pvResult.FunctionName,
-                    Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
-                    ProvisionedConcurrentExecutions: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY
-                })
-            );
-            await waitUntilProvisionedConcurrencyReady({
-                functionName: pvResult.FunctionName || '',
-                qualifier: envs.LAMBDA_FUNCTION_ALIAS,
-                maxWaitTimeMs: 300000
-            });
-        }
+        await lambdaClient.send(
+            new CreateAliasCommand({
+                FunctionName: pvResult.FunctionName,
+                Name: envs.LAMBDA_FUNCTION_ALIAS,
+                FunctionVersion: pvResult.Version
+            })
+        );
+        await lambdaClient.send(
+            new PutProvisionedConcurrencyConfigCommand({
+                FunctionName: pvResult.FunctionName,
+                Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
+                ProvisionedConcurrentExecutions: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY
+            })
+        );
         return Ok(undefined);
     }
 
