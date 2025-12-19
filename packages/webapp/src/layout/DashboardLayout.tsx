@@ -20,7 +20,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
                     className={cn('w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl', fullWidth ? 'p-0' : 'p-11')}
                     {...props}
                 >
-                    <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'max-w-[1056px]', className)}>{children}</div>
+                    <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
                 </div>
             </SidebarInset>
         </SidebarProvider>
