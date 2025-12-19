@@ -55,10 +55,6 @@ The following data types are encrypted at rest:
 - **Nango Cloud**: Encryption keys are securely managed by Nango. All credentials are encrypted at rest.
 - **Self-hosted**: You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
 
-<Warning>
-**Self-hosted users**: Setting `NANGO_ENCRYPTION_KEY` is required to encrypt credentials at rest. Without it, OAuth tokens and API keys are stored in plaintext.
-</Warning>
-
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
 </Note>
