@@ -17,8 +17,8 @@ import { waitUntilHealthy } from './utils/url.js';
 
 import type { ImageVerifier } from './image-verifier.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
-import type { ImageType, Node, NodeConfigOverride } from './types.js';
-import type { Deployment, RoutingId } from '@nangohq/types';
+import type { Node, NodeConfigOverride } from './types.js';
+import type { Deployment, ImageType, RoutingId } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 
@@ -62,7 +62,7 @@ export class Fleet {
         await this.dbClient.destroy();
     }
 
-    public async rollout(image: string, options?: { imageType: ImageType; verifyImage?: boolean }): Promise<Result<Deployment>> {
+    public async rollout(image: string, options?: { imageType?: ImageType; verifyImage?: boolean }): Promise<Result<Deployment>> {
         if (options?.verifyImage !== false) {
             const imageVerifier = this.imageVerifiers.get(options?.imageType || 'docker');
             if (!imageVerifier) {

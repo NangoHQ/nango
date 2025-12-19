@@ -1,7 +1,5 @@
 import type { NodeConfig, RoutingId } from '@nangohq/types';
 
-export type ImageType = 'docker' | 'ecr';
-
 export const nodeStates = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'] as const;
 export type NodeState = (typeof nodeStates)[number];
 

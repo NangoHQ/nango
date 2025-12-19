@@ -7,6 +7,8 @@ export interface Deployment {
 
 export type RoutingId = string;
 
+export type ImageType = 'docker' | 'ecr';
+
 export interface NodeConfig {
     readonly image: string;
     readonly cpuMilli: number;
