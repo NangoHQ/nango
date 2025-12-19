@@ -112,11 +112,11 @@ const JsonSchemaOneOf: React.FC<{ name: string; schema: JSONSchema7; isArray?: b
                 depth={depth}
             />
             <div className="flex flex-col gap-3">
-                {schemas.map((s, index) => (
-                    <>
+                {schemas
+                    .filter((s) => isObjectSchema(s as JSONSchema7))
+                    .map((s, index) => (
                         <CollapsibleProperties key={index} schema={s as JSONSchema7} depth={depth + 1} />
-                    </>
-                ))}
+                    ))}
             </div>
         </div>
     );

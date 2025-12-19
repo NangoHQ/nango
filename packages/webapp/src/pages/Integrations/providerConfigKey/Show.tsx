@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Button } from '@/components-v2/ui/button';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
+import { usePathNavigation } from '@/hooks/usePathNavigation';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
@@ -19,6 +20,7 @@ export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
     const { environmentAndAccount, loading: loadingEnvironment } = useEnvironment(env);
+    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
     const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
 
     if (error) {
@@ -53,7 +55,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <Button size="lg">Add test connection</Button>
                 </div>
-                <Tabs basePath={`/${env}/integrations/${providerConfigKey}`} defaultValue="functions">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>
                         <TabsTrigger value="functions">Functions</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
