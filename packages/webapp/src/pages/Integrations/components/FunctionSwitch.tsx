@@ -6,9 +6,8 @@ import { useEnvironment } from '../../../hooks/useEnvironment.js';
 import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { useStore } from '../../../store.js';
-import { Button } from '@/components-v2/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Switch } from '@/components-v2/ui/switch';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 
@@ -19,19 +18,43 @@ export const FunctionSwitch: React.FC<{
     const { toast } = useToast();
     const env = useStore((state) => state.env);
     const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
 
-    const toggleSync = async () => {
-        if (flow.type === 'sync') {
-            setOpen(!open);
-        } else if (flow.type === 'action') {
+    const toggleSync = () => {
+        if (flow.type === 'action') {
             if (flow.enabled) {
-                await onDisable();
+                void onDisable();
             } else {
-                await onEnable();
+                void onEnable();
             }
+
+            return;
+        }
+
+        // Sync - show confirm dialog
+        if (flow.enabled) {
+            void confirm({
+                title: 'Disable sync?',
+                description:
+                    'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.',
+                confirmButtonText: 'Disable',
+                confirmVariant: 'destructive',
+                onConfirm: async () => {
+                    await onDisable();
+                }
+            });
+        } else {
+            void confirm({
+                title: 'Enable sync?',
+                description: 'It will start syncing potentially for multiple connections. This will impact your billing.',
+                confirmButtonText: 'Enable',
+                confirmVariant: 'primary',
+                onConfirm: async () => {
+                    await onEnable();
+                }
+            });
         }
     };
 
@@ -69,7 +92,6 @@ export const FunctionSwitch: React.FC<{
         } else {
             toast({ title: `Enabled successfully`, variant: 'success' });
             await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
-            setOpen(false);
 
             if (plan && plan.auto_idle && !plan.trial_end_at) {
                 await mutateEnv();
@@ -99,7 +121,6 @@ export const FunctionSwitch: React.FC<{
         } else {
             toast({ title: `Disabled successfully`, variant: 'success' });
             await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
-            setOpen(false);
         }
     };
 
@@ -110,58 +131,20 @@ export const FunctionSwitch: React.FC<{
                 e.stopPropagation();
             }}
         >
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <div>
-                        <Switch
-                            name="script"
-                            checked={flow.enabled === true}
-                            className="cursor-pointer"
-                            disabled={loading}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                toggleSync();
-                            }}
-                        />
-                    </div>
-                </DialogTrigger>
-                <DialogContent>
-                    {!flow.enabled && (
-                        <>
-                            <DialogTitle>Enable sync?</DialogTitle>
-                            <DialogDescription>It will start syncing potentially for multiple connections. This will impact your billing.</DialogDescription>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="secondary">Cancel</Button>
-                                </DialogClose>
-                                <Button variant={'primary'} disabled={loading} onClick={() => onEnable()}>
-                                    {loading && <Loader2 className="animate-spin" />}
-                                    Enable
-                                </Button>
-                            </DialogFooter>
-                        </>
-                    )}
-                    {flow.enabled && (
-                        <>
-                            <DialogTitle>Disable sync?</DialogTitle>
-                            <DialogDescription>
-                                Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The
-                                endpoints to fetch these records will no longer work.
-                            </DialogDescription>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="secondary">Cancel</Button>
-                                </DialogClose>
-                                <Button variant="destructive" disabled={loading} onClick={() => onDisable()}>
-                                    {loading && <Loader2 className="animate-spin" />}
-                                    Disable
-                                </Button>
-                            </DialogFooter>
-                        </>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <div>
+                <Switch
+                    name="script"
+                    checked={flow.enabled === true}
+                    className="cursor-pointer"
+                    disabled={loading}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        toggleSync();
+                    }}
+                />
+            </div>
             {flow.type === 'action' && loading && <Loader2 className="animate-spin size-4" />}
+            {DialogComponent}
         </div>
     );
 };
