@@ -251,6 +251,7 @@ export const ENVS = z.object({
     DD_ENV: z.string().optional(),
     DD_SITE: z.string().optional(),
     DD_TRACE_AGENT_URL: z.string().optional(),
+    DD_API_KEY_SECRET_ARN: z.string().optional(),
 
     // Elasticsearch
     NANGO_LOGS_ES_URL: z.url().optional(),

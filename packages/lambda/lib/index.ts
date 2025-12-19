@@ -44,7 +44,6 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
             locks: new MapLocks(), //new KVLocks(await getLocking()),
             abortController: abortController
         };
-        logger.info('payload', JSON.stringify(payload));
         const execRes = await exec(payload);
         const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
         telemetryBag.durationMs = Date.now() - startTime;
@@ -54,7 +53,6 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
             ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag })
         });
     } catch (err: any) {
-        logger.error('error', JSON.stringify(err));
         await jobsClient.putTask({
             taskId: request.taskId,
             error: {

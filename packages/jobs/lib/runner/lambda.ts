@@ -190,7 +190,8 @@ class Lambda {
                 DD_SITE: envs.DD_SITE || '',
                 DD_PROFILING_ENABLED: String(node.isProfilingEnabled),
                 DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
-                DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled)
+                DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
+                DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || ''
             }
         };
     }

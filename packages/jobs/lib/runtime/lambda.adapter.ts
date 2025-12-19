@@ -13,8 +13,8 @@ interface LambdaFunction {
 }
 
 function getSize(_nangoProps: NangoProps): number {
-    //based on memory return a memory size compatible with lambda
-    return 256;
+    //based on available props return a memory size compatible with lambda
+    return 512;
 }
 
 function getFunctionName(nangoProps: NangoProps): string {
