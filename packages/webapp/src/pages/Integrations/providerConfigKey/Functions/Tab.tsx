@@ -1,5 +1,5 @@
 import { Box, Code, ExternalLink, Info } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { EmptyCard } from '../../components/EmptyCard.js';
@@ -105,8 +105,8 @@ const GroupedFunctionsTable: React.FC<{
     return (
         <Table>
             {Object.entries(groupedFunctions).map(([groupName, functions], index) => (
-                <>
-                    <TableHeader key={groupName} className="h-8">
+                <Fragment key={groupName}>
+                    <TableHeader className="h-8">
                         <TableRow className="h-8">
                             <TableHead className="w-1/3 h-8">{groupName}</TableHead>
                             <TableHead className="h-8">{index === 0 && 'Name'}</TableHead>
@@ -151,7 +151,7 @@ const GroupedFunctionsTable: React.FC<{
                             </TableRow>
                         ))}
                     </TableBody>
-                </>
+                </Fragment>
             ))}
         </Table>
     );
