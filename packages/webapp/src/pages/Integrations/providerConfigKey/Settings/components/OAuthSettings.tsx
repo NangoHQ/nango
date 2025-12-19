@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
+import { ScopesInput } from '@/components-v2/ScopeInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
@@ -28,17 +29,21 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const hasExistingClientId = Boolean(integration.oauth_client_id);
     const isSharedCredentials = Boolean(integration.shared_credentials_id);
 
-    const onSave = async (field: Partial<PatchIntegration['Body']>) => {
+    const onSave = async (field: Partial<PatchIntegration['Body']>, supressToast = false) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
             ...field
         });
         if ('error' in updated.json) {
             const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
-            toast({ title: errorMessage, variant: 'error' });
+            if (!supressToast) {
+                toast({ title: errorMessage, variant: 'error' });
+            }
             throw new Error(errorMessage);
         } else {
-            toast({ title: 'Successfully updated', variant: 'success' });
+            if (!supressToast) {
+                toast({ title: 'Successfully updated', variant: 'success' });
+            }
         }
     };
 
@@ -64,6 +69,17 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
         // If user cancelled, throw error to keep EditableInput in edit mode
         if (!confirmed) {
             throw new Error('Cancelled');
+        }
+    };
+
+    const handleScopesChange = async (scopes: string, countDifference: number) => {
+        await onSave({ scopes }, true);
+
+        if (countDifference > 0) {
+            const plural = countDifference > 1 ? 'scopes' : 'scope';
+            toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
+        } else {
+            toast({ title: `Scope successfully removed`, variant: 'success' });
         }
     };
 
@@ -124,16 +140,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="scopes">Scopes</Label>
-                    {isSharedCredentials ? (
-                        <InputGroup>
-                            <InputGroupInput disabled value={integration.oauth_scopes || ''} />
-                            <InputGroupAddon align="inline-end">
-                                <Badge variant="gray">Nango provided</Badge>
-                            </InputGroupAddon>
-                        </InputGroup>
-                    ) : (
-                        <EditableInput initialValue={integration.oauth_scopes || ''} onSave={(value) => onSave({ scopes: value })} />
-                    )}
+                    <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} isSharedCredentials={isSharedCredentials} />
                 </div>
             )}
 

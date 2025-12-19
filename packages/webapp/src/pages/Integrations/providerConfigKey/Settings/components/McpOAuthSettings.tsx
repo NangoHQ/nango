@@ -1,5 +1,5 @@
 import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
+import { ScopesInput } from '@/components-v2/ScopeInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
-import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
+import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
 export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({
     data: { integration, template },
@@ -18,17 +18,22 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
 
     const callbackUrl = environment.callback_url || defaultCallback();
 
-    const onSave = async (field: Partial<PatchIntegration['Body']>) => {
+    const handleScopesChange = async (scopes: string, countDifference: number) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
-            ...field
+            ...(scopes && { scopes })
         });
+
         if ('error' in updated.json) {
             const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
-            toast({ title: errorMessage, variant: 'error' });
             throw new Error(errorMessage);
+        }
+
+        if (countDifference > 0) {
+            const plural = countDifference > 1 ? 'scopes' : 'scope';
+            toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
         } else {
-            toast({ title: 'Successfully updated', variant: 'success' });
+            toast({ title: `Scope successfully removed`, variant: 'success' });
         }
     };
 
@@ -61,7 +66,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
             {/* Scopes */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="scopes">Scopes</Label>
-                <EditableInput initialValue={integration.oauth_scopes || ''} onSave={(value) => onSave({ scopes: value })} />
+                <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} />
             </div>
         </div>
     );
