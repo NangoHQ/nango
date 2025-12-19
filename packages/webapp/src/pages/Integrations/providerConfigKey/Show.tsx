@@ -3,9 +3,9 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { IntegrationSideInfo } from './Endpoints/components/IntegrationSideInfo';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
+import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
