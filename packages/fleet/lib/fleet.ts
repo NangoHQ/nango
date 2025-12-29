@@ -13,7 +13,6 @@ import { noopNodeProvider } from './node-providers/noop.js';
 import { Supervisor } from './supervisor/supervisor.js';
 import { FleetError } from './utils/errors.js';
 import { withPgLock } from './utils/locking.js';
-import { waitUntilHealthy } from './utils/url.js';
 
 import type { ImageVerifier } from './image-verifier.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
@@ -167,7 +166,7 @@ export class Fleet {
         }
         // in Render, network configuration can take a long time to be applied and accessible to other services
         // we therefore wait until the health url is reachable
-        const healthy = await waitUntilHealthy({ url: `${url}/health`, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
+        const healthy = await this.nodeProvider.waitUntilHealthy({ nodeId, url, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
         if (healthy.isErr()) {
             return Err(healthy.error);
         }

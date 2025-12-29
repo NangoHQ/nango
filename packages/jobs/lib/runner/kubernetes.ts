@@ -1,5 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 
+import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
@@ -477,5 +478,8 @@ export const kubernetesNodeProvider: NodeProvider = {
     },
     finish: async (node: Node) => {
         return onFinishing(node);
+    },
+    waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
+        return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     }
 };

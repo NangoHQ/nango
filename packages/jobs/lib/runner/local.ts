@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 
 import getPort, { portNumbers } from 'get-port';
 
+import { waitUntilHealthy } from '@nangohq/fleet';
 import { getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
@@ -95,5 +96,8 @@ export const localNodeProvider: NodeProvider = {
     },
     finish: async (node) => {
         return onFinishing(node);
+    },
+    waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
+        return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     }
 };

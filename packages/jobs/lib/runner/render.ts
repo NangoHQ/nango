@@ -4,6 +4,7 @@ import { isAxiosError } from 'axios';
 import { RateLimiterMemory, RateLimiterRedis } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
 
+import { waitUntilHealthy } from '@nangohq/fleet';
 import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
@@ -32,6 +33,9 @@ export const renderNodeProvider: NodeProvider = {
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1
+    },
+    waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
+        return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     },
     finish: async (node) => {
         return onFinishing(node);

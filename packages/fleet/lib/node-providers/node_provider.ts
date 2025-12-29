@@ -8,4 +8,5 @@ export interface NodeProvider {
     terminate(node: Node): Promise<Result<void>>;
     verifyUrl(url: string): Promise<Result<void>>;
     finish(node: Node): Promise<Result<void>>;
+    waitUntilHealthy(options: { nodeId: number; url: string; timeoutMs: number }): Promise<Result<void>>;
 }

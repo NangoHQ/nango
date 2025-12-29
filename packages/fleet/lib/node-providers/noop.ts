@@ -24,5 +24,8 @@ export const noopNodeProvider: NodeProvider = {
     },
     finish: () => {
         return Promise.resolve(Ok(undefined));
+    },
+    waitUntilHealthy: () => {
+        return Promise.resolve(Ok(undefined));
     }
 };

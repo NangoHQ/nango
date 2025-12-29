@@ -188,5 +188,8 @@ export const lambdaNodeProvider: NodeProvider = {
     },
     finish: async (_node: Node) => {
         return Promise.resolve(Ok(undefined));
+    },
+    waitUntilHealthy: async (_opts: { nodeId: number; url: string; timeoutMs: number }) => {
+        return Promise.resolve(Ok(undefined));
     }
 };

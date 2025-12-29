@@ -29,6 +29,7 @@ const mockNodeProvider = {
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
     verifyUrl: vi.fn().mockResolvedValue(Ok(undefined)),
     finish: vi.fn().mockResolvedValue(Ok(undefined)),
+    waitUntilHealthy: vi.fn().mockResolvedValue(Ok(undefined)),
     mockClear: () => {
         mockNodeProvider.start.mockClear();
         mockNodeProvider.terminate.mockClear();
