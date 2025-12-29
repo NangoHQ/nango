@@ -16,28 +16,28 @@ interface Runtime {
     readonly fleet: Fleet;
 }
 
-const runtimes: Runtime[] = [];
+const runtimes: Map<string, Runtime> = new Map<string, Runtime>();
 
 if (useLambda) {
     const fleet = new Fleet({ fleetId: envs.RUNNER_LAMBDA_FLEET_ID, nodeProvider: lambdaNodeProvider });
     const adapter = new LambdaRuntimeAdapter(fleet);
-    runtimes.push({
+    runtimes.set(fleet.fleetId, {
         adapter,
         fleet
     });
 }
 
-runtimes.push({
+runtimes.set(runnersFleet.fleetId, {
     adapter: new RunnerRuntimeAdapter(),
     fleet: runnersFleet
 });
 
-export async function getRuntimes(): Promise<Result<Runtime[]>> {
-    return Promise.resolve(Ok(runtimes));
+export function getDefaultFleet(): Fleet {
+    return runnersFleet;
 }
 
 export async function getRuntimeAdapter(_nangoProps: NangoProps): Promise<Result<RuntimeAdapter>> {
-    for (const runtime of runtimes) {
+    for (const runtime of runtimes.values()) {
         if (runtime.adapter.canHandle(_nangoProps)) {
             return Promise.resolve(Ok(runtime.adapter));
         }
@@ -46,22 +46,35 @@ export async function getRuntimeAdapter(_nangoProps: NangoProps): Promise<Result
 }
 
 export async function startFleets(): Promise<Result<void>> {
-    for (const runtime of runtimes) {
+    for (const runtime of runtimes.values()) {
         runtime.fleet.start();
     }
     return Promise.resolve(Ok(undefined));
 }
 
 export async function stopFleets(): Promise<Result<void>> {
-    for (const runtime of runtimes) {
+    for (const runtime of runtimes.values()) {
         await runtime.fleet.stop();
     }
     return Promise.resolve(Ok(undefined));
 }
 
 export async function migrateFleets(): Promise<Result<void>> {
-    for (const runtime of runtimes) {
+    for (const runtime of runtimes.values()) {
         await runtime.fleet.migrate();
     }
     return Promise.resolve(Ok(undefined));
+}
+
+export async function registerWithFleet(fleetId: string, params: { nodeId: number; url: string }): Promise<Result<void>> {
+    const runtime = runtimes.get(fleetId);
+    if (runtime) {
+        const result = await runtime.fleet.registerNode(params);
+        if (result.isErr()) {
+            return Err(new Error(`Error registering node ${params.nodeId}`, { cause: result.error }));
+        }
+        return Ok(undefined);
+    } else {
+        return Err(new Error(`Error registering node ${params.nodeId}. No runtime found for fleetId ${fleetId}`));
+    }
 }

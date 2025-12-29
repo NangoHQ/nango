@@ -9,12 +9,13 @@ import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/ut
 
 import { envs } from './env.js';
 import { Processor } from './processor/processor.js';
-import { runnersFleet } from './runner/fleet.js';
-import { startFleets, stopFleets } from './runtime/runtimes.js';
+import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
 
 const logger = getLogger('Jobs');
+
+const runnersFleet = getDefaultFleet();
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);

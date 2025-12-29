@@ -2,11 +2,13 @@ import { Err, Ok, env, isProd } from '@nangohq/utils';
 
 import { RemoteRunner } from './remote.runner.js';
 import { envs } from '../env.js';
-import { runnersFleet } from './fleet.js';
 import { FleetRunner } from './fleet.runner.js';
+import { getDefaultFleet } from '../runtime/runtimes.js';
 
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import type { Result } from '@nangohq/utils';
+
+const runnersFleet = getDefaultFleet();
 
 export enum RunnerType {
     Remote = 'remote',

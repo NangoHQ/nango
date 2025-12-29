@@ -2,10 +2,12 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
-import { runnersFleet } from '../../runner/fleet.js';
+import { getDefaultFleet } from '../../runtime/runtimes.js';
 
 import type { PostRegister } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
+
+const runnersFleet = getDefaultFleet();
 
 const paramsSchema = z.object({ nodeId: z.coerce.number().positive() }).strict();
 const bodySchema = z.object({ url: z.string().min(1) }).strict();

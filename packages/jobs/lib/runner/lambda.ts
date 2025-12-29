@@ -12,6 +12,7 @@ import {
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { registerWithFleet } from '../runtime/runtimes.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -110,9 +111,16 @@ class Lambda {
                         ProvisionedConcurrentExecutions: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY
                     })
                 );
+                const fleetId = node.fleetId || envs.RUNNER_LAMBDA_FLEET_ID;
+                const result = await registerWithFleet(fleetId, {
+                    nodeId: node.id,
+                    url: cfResult.FunctionArn!
+                });
+                if (result.isErr()) {
+                    logger.error(`Error registering node ${node.id} to fleet ${fleetId}`, result.error);
+                }
             } catch (err: any) {
                 logger.error(`Error creating function ${name}`, err);
-                //can we tell the fleet to mark the node as failed?
             }
         });
         return Promise.resolve(Ok(undefined));
