@@ -97,7 +97,7 @@ class Lambda {
                         Qualifier: pvResult.Version
                     }
                 );
-                await lambdaClient.send(
+                const aResult = await lambdaClient.send(
                     new CreateAliasCommand({
                         FunctionName: pvResult.FunctionName,
                         Name: envs.LAMBDA_FUNCTION_ALIAS,
@@ -114,7 +114,7 @@ class Lambda {
                 const fleetId = node.fleetId || envs.RUNNER_LAMBDA_FLEET_ID;
                 const result = await registerWithFleet(fleetId, {
                     nodeId: node.id,
-                    url: cfResult.FunctionArn!
+                    url: `${aResult.AliasArn}`
                 });
                 if (result.isErr()) {
                     logger.error(`Error registering node ${node.id} to fleet ${fleetId}`, result.error);
