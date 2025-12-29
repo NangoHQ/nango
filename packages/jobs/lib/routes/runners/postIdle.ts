@@ -7,8 +7,6 @@ import { getDefaultFleet } from '../../runtime/runtimes.js';
 import type { PostIdle } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 
-const runnersFleet = getDefaultFleet();
-
 const paramsSchema = z.object({ nodeId: z.coerce.number().positive() }).strict();
 
 const validate = validateRequest<PostIdle>({
@@ -17,6 +15,7 @@ const validate = validateRequest<PostIdle>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostIdle>) => {
     try {
+        const runnersFleet = getDefaultFleet();
         const idle = await runnersFleet.idleNode({ nodeId: res.locals.parsedParams.nodeId });
         if (idle.isErr()) {
             throw idle.error;

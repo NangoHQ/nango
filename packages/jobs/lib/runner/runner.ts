@@ -8,8 +8,6 @@ import { getDefaultFleet } from '../runtime/runtimes.js';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import type { Result } from '@nangohq/utils';
 
-const runnersFleet = getDefaultFleet();
-
 export enum RunnerType {
     Remote = 'remote',
     Fleet = 'fleet'
@@ -47,6 +45,7 @@ export async function getRunner(teamId: number): Promise<Result<Runner>> {
 }
 
 export async function idle(nodeId: number): Promise<Result<void>> {
+    const runnersFleet = getDefaultFleet();
     const idle = await runnersFleet.idleNode({ nodeId });
     if (idle.isErr()) {
         return Err(idle.error);
@@ -58,6 +57,7 @@ async function getOrStartRunner(runnerId: string): Promise<Runner> {
     if (envs.RUNNER_TYPE === 'REMOTE') {
         return RemoteRunner.getOrStart(runnerId);
     }
+    const runnersFleet = getDefaultFleet();
     const getNode = await runnersFleet.getRunningNode(runnerId);
     if (getNode.isErr()) {
         throw new Error(`Failed to get running node for runner '${runnerId}'`);

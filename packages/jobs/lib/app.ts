@@ -15,8 +15,6 @@ import { pubsub } from './utils/pubsub.js';
 
 const logger = getLogger('Jobs');
 
-const runnersFleet = getDefaultFleet();
-
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
     report(reason);
@@ -99,6 +97,7 @@ try {
         // when running locally, the runners (running as processes) are being killed
         // when the main process is killed and the fleet entries are therefore not associated with any running process
         // we then must fake a new deployment so fleet replaces runners with new ones
+        const runnersFleet = getDefaultFleet();
         await runnersFleet.rollout(generateImage(), { verifyImage: false });
     }
     await startFleets();
