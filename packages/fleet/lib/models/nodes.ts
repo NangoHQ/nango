@@ -43,7 +43,7 @@ const NodeStateTransition = {
 
 interface DBNode {
     readonly id: number;
-    readonly fleetId: string | null;
+    readonly fleet_id: string | null;
     readonly routing_id: RoutingId;
     readonly deployment_id: number;
     readonly url: string | null;
@@ -66,7 +66,7 @@ const DBNode = {
     to: (node: Node): DBNode => {
         return {
             id: node.id,
-            fleetId: node.fleetId,
+            fleet_id: node.fleetId,
             routing_id: node.routingId,
             deployment_id: node.deploymentId,
             url: node.url,
@@ -88,7 +88,7 @@ const DBNode = {
     from: (dbNode: DBNode): Node => {
         return {
             id: dbNode.id,
-            fleetId: dbNode.fleetId,
+            fleetId: dbNode.fleet_id,
             routingId: dbNode.routing_id,
             deploymentId: dbNode.deployment_id,
             url: dbNode.url,
@@ -115,7 +115,7 @@ export async function create(
 ): Promise<Result<Node>> {
     const now = new Date();
     const newNode: Omit<DBNode, 'id' | 'url'> = {
-        fleetId: nodeProps.fleetId,
+        fleet_id: nodeProps.fleetId,
         routing_id: nodeProps.routingId,
         deployment_id: nodeProps.deploymentId,
         state: 'PENDING',
