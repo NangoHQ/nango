@@ -27,7 +27,6 @@
         "@nangohq/nango-runner": "file:../runner",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
-        "@nangohq/runtimes": "file:../runtimes",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",

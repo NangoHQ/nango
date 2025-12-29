@@ -29,6 +29,7 @@ describe('Nodes', () => {
     it('should be successfully created', async () => {
         const node = (
             await nodes.create(db, {
+                fleetId: 'fleet-id',
                 routingId: 'my-routing-id',
                 deploymentId: activeDeployment.id,
                 image: 'nangohq/my-image:latest',
@@ -44,6 +45,7 @@ describe('Nodes', () => {
         ).unwrap();
         expect(node).toStrictEqual({
             id: expect.any(Number),
+            fleetId: 'fleet-id',
             routingId: 'my-routing-id',
             deploymentId: activeDeployment.id,
             url: null,

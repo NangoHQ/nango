@@ -9,13 +9,15 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
+
+export const logger = getLogger('Lambda');
 
 const lambdaClient = new LambdaClient();
 
@@ -57,56 +59,63 @@ class Lambda {
     }
 
     async createFunction(node: Node): Promise<Result<void>> {
-        const name = getFunctionName(node);
-        const createFunctionCommand = new CreateFunctionCommand({
-            FunctionName: name,
-            Role: envs.LAMBDA_EXECUTION_ROLE_ARN,
-            Code: {
-                ImageUri: `${envs.LAMBDA_ECR_REGISTRY}/${node.image}`
-            },
-            PackageType: 'Image',
-            Architectures: [envs.LAMBDA_ARCHITECTURE],
-            MemorySize: getSize(node),
-            Timeout: node.executionTimeoutSecs || envs.LAMBDA_EXECUTION_TIMEOUT_SECS,
-            Environment: this.getEnvironmentVariables(node),
-            VpcConfig: {
-                SubnetIds: envs.LAMBDA_SUBNET_IDS,
-                SecurityGroupIds: envs.LAMBDA_SECURITY_GROUP_IDS
+        setImmediate(async () => {
+            const name = getFunctionName(node);
+            try {
+                const createFunctionCommand = new CreateFunctionCommand({
+                    FunctionName: name,
+                    Role: envs.LAMBDA_EXECUTION_ROLE_ARN,
+                    Code: {
+                        ImageUri: `${envs.LAMBDA_ECR_REGISTRY}/${node.image}`
+                    },
+                    PackageType: 'Image',
+                    Architectures: [envs.LAMBDA_ARCHITECTURE],
+                    MemorySize: getSize(node),
+                    Timeout: node.executionTimeoutSecs || envs.LAMBDA_EXECUTION_TIMEOUT_SECS,
+                    Environment: this.getEnvironmentVariables(node),
+                    VpcConfig: {
+                        SubnetIds: envs.LAMBDA_SUBNET_IDS,
+                        SecurityGroupIds: envs.LAMBDA_SECURITY_GROUP_IDS
+                    }
+                });
+                const cfResult = await lambdaClient.send(createFunctionCommand);
+                await waitUntilFunctionActive(
+                    { client: lambdaClient, maxWaitTime: envs.LAMBDA_CREATE_TIMEOUT_SECS },
+                    {
+                        FunctionName: cfResult.FunctionName
+                    }
+                );
+                const publishVersionCommand = new PublishVersionCommand({
+                    FunctionName: cfResult.FunctionName
+                });
+                const pvResult = await lambdaClient.send(publishVersionCommand);
+                await waitUntilPublishedVersionActive(
+                    { client: lambdaClient, maxWaitTime: envs.LAMBDA_CREATE_TIMEOUT_SECS },
+                    {
+                        FunctionName: pvResult.FunctionName,
+                        Qualifier: pvResult.Version
+                    }
+                );
+                await lambdaClient.send(
+                    new CreateAliasCommand({
+                        FunctionName: pvResult.FunctionName,
+                        Name: envs.LAMBDA_FUNCTION_ALIAS,
+                        FunctionVersion: pvResult.Version
+                    })
+                );
+                await lambdaClient.send(
+                    new PutProvisionedConcurrencyConfigCommand({
+                        FunctionName: pvResult.FunctionName,
+                        Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
+                        ProvisionedConcurrentExecutions: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY
+                    })
+                );
+            } catch (err: any) {
+                logger.error(`Error creating function ${name}`, err);
+                //can we tell the fleet to mark the node as failed?
             }
         });
-        const cfResult = await lambdaClient.send(createFunctionCommand);
-        await waitUntilFunctionActive(
-            { client: lambdaClient, maxWaitTime: envs.LAMBDA_CREATE_TIMEOUT_SECS },
-            {
-                FunctionName: cfResult.FunctionName
-            }
-        );
-        const publishVersionCommand = new PublishVersionCommand({
-            FunctionName: cfResult.FunctionName
-        });
-        const pvResult = await lambdaClient.send(publishVersionCommand);
-        await waitUntilPublishedVersionActive(
-            { client: lambdaClient, maxWaitTime: envs.LAMBDA_CREATE_TIMEOUT_SECS },
-            {
-                FunctionName: pvResult.FunctionName,
-                Qualifier: pvResult.Version
-            }
-        );
-        await lambdaClient.send(
-            new CreateAliasCommand({
-                FunctionName: pvResult.FunctionName,
-                Name: envs.LAMBDA_FUNCTION_ALIAS,
-                FunctionVersion: pvResult.Version
-            })
-        );
-        await lambdaClient.send(
-            new PutProvisionedConcurrencyConfigCommand({
-                FunctionName: pvResult.FunctionName,
-                Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
-                ProvisionedConcurrentExecutions: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY
-            })
-        );
-        return Ok(undefined);
+        return Promise.resolve(Ok(undefined));
     }
 
     protected getEnvironmentVariables(node: Node): Environment {
@@ -131,11 +140,9 @@ class Lambda {
 
     async terminateFunction(node: Node): Promise<Result<void>> {
         const name = getFunctionName(node);
-        const qualifer = getFunctionQualifier(node);
         await lambdaClient.send(
             new DeleteFunctionCommand({
-                FunctionName: name,
-                Qualifier: qualifer
+                FunctionName: name
             })
         );
         return Ok(undefined);
@@ -171,7 +178,7 @@ export const lambdaNodeProvider: NodeProvider = {
     verifyUrl: async (url: string) => {
         return Lambda.getInstance().verifyUrl(url);
     },
-    onFinishing: async (_node: Node) => {
+    finish: async (_node: Node) => {
         return Promise.resolve(Ok(undefined));
     }
 };

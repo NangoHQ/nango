@@ -233,7 +233,7 @@ export class Supervisor {
 
                 // if OUTDATED node but no RUNNING or upcoming nodes then create a new one
                 if ((nodes.OUTDATED?.length || 0) > 0 && (nodes.RUNNING?.length || 0) + (nodes.STARTING?.length || 0) + (nodes.PENDING?.length || 0) === 0) {
-                    plan.push({ type: 'CREATE', routingId, deployment });
+                    plan.push({ type: 'CREATE', routingId, deployment, fleetId: this.fleetId });
                 }
 
                 // Warn about old finishing nodes
@@ -331,11 +331,13 @@ export class Supervisor {
         db: Knex,
         {
             routingId,
-            deployment
+            deployment,
+            fleetId
         }: {
             type: 'CREATE';
             routingId: Node['routingId'];
             deployment: Deployment;
+            fleetId: Node['fleetId'];
         }
     ): Promise<Result<Node>> {
         let newNodeConfig: NodeConfig = {
@@ -364,6 +366,7 @@ export class Supervisor {
 
         return nodes.create(db, {
             routingId,
+            fleetId,
             deploymentId: deployment.id,
             image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,
@@ -411,7 +414,7 @@ export class Supervisor {
             return Err(new FleetError('fleet_node_url_not_found', { context: { nodeId: node.id } }));
         }
         try {
-            const res = await this.nodeProvider.onFinishing(node);
+            const res = await this.nodeProvider.finish(node);
             if (res.isErr()) {
                 throw res.error;
             }

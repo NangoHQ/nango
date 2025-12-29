@@ -5,6 +5,7 @@ export type NodeState = (typeof nodeStates)[number];
 
 export interface Node {
     readonly id: number;
+    readonly fleetId: string | null;
     readonly routingId: RoutingId;
     readonly deploymentId: number;
     readonly url: string | null;

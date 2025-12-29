@@ -2,7 +2,7 @@ import type { Node } from '../types.js';
 import type { Deployment, NodeConfig } from '@nangohq/types';
 
 export type Operation =
-    | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment; nodeConfig?: NodeConfig | undefined }
+    | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment; nodeConfig?: NodeConfig | undefined; fleetId: string }
     | { type: 'START'; node: Node }
     | { type: 'FAIL'; node: Node; reason: 'starting_timeout_reached' | 'pending_timeout_reached' | 'idle_timeout_reached' }
     | { type: 'OUTDATE'; node: Node }
@@ -18,7 +18,8 @@ export const Operation = {
                 return {
                     operation: o.type,
                     routingId: o.routingId,
-                    deploymentId: o.deployment.id
+                    deploymentId: o.deployment.id,
+                    fleetId: o.fleetId
                 };
             case 'FAIL':
                 return {

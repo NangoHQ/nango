@@ -12,11 +12,12 @@ export async function createNodeWithAttributes(
         state,
         deploymentId,
         routingId = nanoid(),
+        fleetId = nanoid(),
         lastStateTransitionAt
-    }: { state: NodeState; deploymentId: number; routingId?: RoutingId; lastStateTransitionAt?: Date }
+    }: { state: NodeState; deploymentId: number; routingId?: RoutingId; fleetId?: string; lastStateTransitionAt?: Date }
 ): Promise<Node> {
     return db.transaction(async (trx) => {
-        let node = await createNode(trx, { routingId, deploymentId });
+        let node = await createNode(trx, { routingId, deploymentId, fleetId });
         if (state == 'ERROR') {
             node = (await nodes.fail(trx, { nodeId: node.id, reason: 'my error' })).unwrap();
         }
@@ -46,8 +47,9 @@ export async function createNodeWithAttributes(
     });
 }
 
-async function createNode(db: knex.Knex, { routingId, deploymentId }: { routingId: RoutingId; deploymentId: number }): Promise<Node> {
+async function createNode(db: knex.Knex, { routingId, deploymentId, fleetId }: { routingId: RoutingId; deploymentId: number; fleetId: string }): Promise<Node> {
     const node = await nodes.create(db, {
+        fleetId,
         routingId,
         deploymentId,
         image: 'nangohq/my-image:latest',

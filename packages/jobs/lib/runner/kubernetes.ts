@@ -475,7 +475,7 @@ export const kubernetesNodeProvider: NodeProvider = {
         const kubernetes = Kubernetes.getInstance();
         return kubernetes.verifyUrl(url);
     },
-    onFinishing: async (node: Node) => {
+    finish: async (node: Node) => {
         return onFinishing(node);
     }
 };

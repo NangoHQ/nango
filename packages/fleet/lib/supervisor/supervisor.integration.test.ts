@@ -28,6 +28,7 @@ const mockNodeProvider = {
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
     verifyUrl: vi.fn().mockResolvedValue(Ok(undefined)),
+    finish: vi.fn().mockResolvedValue(Ok(undefined)),
     mockClear: () => {
         mockNodeProvider.start.mockClear();
         mockNodeProvider.terminate.mockClear();
@@ -76,8 +77,8 @@ describe('Supervisor', () => {
     });
 
     it('should start PENDING nodes', async () => {
-        const node1 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
-        const node2 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
+        const node1 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
+        const node2 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
 
         await supervisor.tick();
 
@@ -139,6 +140,7 @@ describe('Supervisor', () => {
         const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
+            fleetId: node.fleetId,
             routingId: node.routingId,
             deploymentId: activeDeployment.id,
             image: node.image,
@@ -178,6 +180,7 @@ describe('Supervisor', () => {
         const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
+            fleetId: node.fleetId,
             routingId: node.routingId,
             deploymentId: activeDeployment.id,
             image: imageOverride,

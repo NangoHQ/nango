@@ -33,7 +33,7 @@ export const renderNodeProvider: NodeProvider = {
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1
     },
-    onFinishing: async (node) => {
+    finish: async (node) => {
         return onFinishing(node);
     },
     start: async (node) => {

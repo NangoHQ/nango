@@ -7,5 +7,5 @@ export interface NodeProvider {
     start(node: Node): Promise<Result<void>>;
     terminate(node: Node): Promise<Result<void>>;
     verifyUrl(url: string): Promise<Result<void>>;
-    onFinishing(node: Node): Promise<Result<void>>;
+    finish(node: Node): Promise<Result<void>>;
 }

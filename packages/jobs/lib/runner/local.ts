@@ -93,7 +93,7 @@ export const localNodeProvider: NodeProvider = {
             : Err(new Error(`Local runner url should start with http://localhost, got ${url}`));
         return Promise.resolve(res);
     },
-    onFinishing: async (node) => {
+    finish: async (node) => {
         return onFinishing(node);
     }
 };
