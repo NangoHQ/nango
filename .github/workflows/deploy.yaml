@@ -136,7 +136,7 @@ jobs:
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy:
-        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda'
         runs-on: ubuntu-latest
         permissions:
             contents: write
