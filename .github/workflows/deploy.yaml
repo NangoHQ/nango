@@ -195,4 +195,40 @@ jobs:
                   curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_k8s/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
-                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
+                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
+    deploy_lambda:
+        if: inputs.service == 'lambda' && inputs.stage != 'replit'
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.stage }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.DEPLOY_LAMBDA_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+            - name: Build and Push Lambda Image
+              env:
+                  LAMBDA_REPOSITORY_NAME: ${{ vars.LAMBDA_REPOSITORY_NAME }}
+                  LAMBDA_REPOSITORY_URI: ${{ steps.login-ecr.outputs.registry }}
+                  LAMBDA_IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  npm run build:docker:all -w @nangohq/lambda
+            - name: Deploy all runners
+              env:
+                  ENVIRONMENT: ${{ inputs.stage }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+              run: |
+                  curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_lambda/rollout" \
+                    --header "authorization: Bearer $INTERNAL_API_KEY"\
+                    --header "content-type: application/json"\
+                    --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
