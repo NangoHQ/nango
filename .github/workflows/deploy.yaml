@@ -28,6 +28,7 @@ on:
                     - metering
                     - connect_ui
                     - app_ui
+                    - lambda
 
 jobs:
     deploy_app_ui:
