@@ -15,10 +15,10 @@ const bodyValidation = z
     .strict()
     .refine(
         (data) => {
-            return /^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/.test(data.image) || /^[a-z0-9-]+\/[a-z0-9-]+@sha256:[a-f0-9]{64}$/.test(data.image);
+            return /^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/.test(data.image);
         },
         {
-            message: "Invalid image format. Must be 'repository/image:commit' or 'respository/image@sha256:xxx'",
+            message: "Invalid image format. Must be 'repository/image:commit'",
             path: ['image']
         }
     );

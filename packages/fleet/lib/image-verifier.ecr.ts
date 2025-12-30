@@ -15,29 +15,16 @@ export class ECRImageVerifier implements ImageVerifier {
     }
 
     async verify(image: string): Promise<Result<boolean, FleetError>> {
-        //we expect the image to be in the form "qualifier/image-name@sha256:xxx"
-        const [imagePart, tag] = image.split('@');
-        if (!imagePart || !tag) {
+        const [imagePart, imageTag] = image.split(':');
+        if (!imagePart || !imageTag) {
             return Err(new FleetError('fleet_rollout_invalid_image', { context: { image } }));
-        }
-
-        const [qualifier, imageName] = imagePart.split('/');
-        if (!qualifier || !imageName) {
-            return Err(new FleetError('fleet_rollout_invalid_image', { context: { image } }));
-        }
-        let imageDigest;
-        let imageTag;
-        if (tag.startsWith('sha256:')) {
-            imageDigest = tag;
-        } else {
-            imageTag = tag;
         }
 
         try {
             await this.ecrClient.send(
                 new DescribeImagesCommand({
                     repositoryName: imagePart,
-                    imageIds: [{ imageDigest, imageTag }]
+                    imageIds: [{ imageTag }]
                 })
             );
         } catch (err: any) {
