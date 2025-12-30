@@ -8,10 +8,7 @@
     "private": true,
     "scripts": {
         "ts-build": "tsc",
-        "build:docker": "cd ../.. && docker buildx build --provenance=false --platform linux/arm64 -f packages/lambda/Dockerfile.lambda -t $LAMBDA_REPOSITORY_NAME .",
-        "build:docker:tag": "docker tag $LAMBDA_REPOSITORY_NAME $LAMBDA_REPOSITORY_URI/$LAMBDA_REPOSITORY_NAME:$LAMBDA_IMAGE_TAG",
-        "build:docker:push": "docker push $LAMBDA_REPOSITORY_URI/$LAMBDA_REPOSITORY_NAME:$LAMBDA_IMAGE_TAG",
-        "build:docker:all": "npm run build:docker && npm run build:docker:tag && npm run build:docker:push"
+        "build:docker:all": "cd ../.. && docker buildx build --provenance=false --platform linux/arm64 -f packages/lambda/Dockerfile.lambda -t $LAMBDA_REPOSITORY_NAME:$LAMBDA_IMAGE_TAG --push ."
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.158",
