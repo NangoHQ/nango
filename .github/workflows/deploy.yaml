@@ -200,6 +200,9 @@ jobs:
     deploy_lambda:
         if: inputs.service == 'lambda' && inputs.stage != 'replit'
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
         environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
