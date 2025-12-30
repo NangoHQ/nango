@@ -232,7 +232,7 @@ jobs:
                       ${{ steps.login-ecr.outputs.registry }}/${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}
                   cache-from: type=gha,scope=lambda
                   cache-to: type=gha,scope=lambda,mode=max
-            - name: Deploy all runners
+            - name: Rollout image
               env:
                   ENVIRONMENT: ${{ inputs.stage }}
                   INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
