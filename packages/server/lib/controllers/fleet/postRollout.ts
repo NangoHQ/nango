@@ -15,17 +15,10 @@ const bodyValidation = z
     .strict()
     .refine(
         (data) => {
-            const imageType = data.imageType ?? 'docker';
-            if (imageType === 'docker') {
-                // Docker format: repository/image:commit (40 char hex)
-                return /^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/.test(data.image);
-            } else {
-                // ECR format: qualifier/image-repo@sha256:xxx (64 char hex)
-                return /^[a-z0-9-]+\/[a-z0-9-]+@sha256:[a-f0-9]{64}$/.test(data.image);
-            }
+            return /^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/.test(data.image) || /^[a-z0-9-]+\/[a-z0-9-]+@sha256:[a-f0-9]{64}$/.test(data.image);
         },
         {
-            message: "Invalid image format. Must be 'repository/image:commit' for docker or 'qualifier/image-repo@sha256:xxx' for ecr",
+            message: "Invalid image format. Must be 'repository/image:commit' or 'respository/image@sha256:xxx'",
             path: ['image']
         }
     );
