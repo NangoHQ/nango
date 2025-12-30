@@ -4,6 +4,8 @@ import { Err, Ok, useLambda } from '@nangohq/utils';
 import { LambdaRuntimeAdapter } from './lambda.adapter.js';
 import { RunnerRuntimeAdapter } from './runner.adapter.js';
 import { envs } from '../env.js';
+import { getFleetId } from './runtimes.rules.js';
+import { logger } from '../logger.js';
 import { runnersFleet } from '../runner/fleet.js';
 import { lambdaNodeProvider } from '../runner/lambda.js';
 
@@ -27,22 +29,27 @@ if (useLambda) {
     });
 }
 
-runtimes.set(runnersFleet.fleetId, {
+const defaultRuntime = {
     adapter: new RunnerRuntimeAdapter(),
     fleet: runnersFleet
-});
+};
+runtimes.set(runnersFleet.fleetId, defaultRuntime);
 
 export function getDefaultFleet(): Fleet {
     return runnersFleet;
 }
 
-export async function getRuntimeAdapter(_nangoProps: NangoProps): Promise<Result<RuntimeAdapter>> {
-    for (const runtime of runtimes.values()) {
-        if (runtime.adapter.canHandle(_nangoProps)) {
-            return Promise.resolve(Ok(runtime.adapter));
+export async function getRuntimeAdapter(nangoProps: NangoProps): Promise<Result<RuntimeAdapter>> {
+    const result = await getFleetId(nangoProps);
+    if (result.isErr()) {
+        logger.error('Error while getting fleet id for runtime', result.error);
+    } else {
+        if (result.value) {
+            const runtime = runtimes.get(result.value);
+            if (runtime) return Ok(runtime.adapter);
         }
     }
-    return Promise.resolve(Err('No runtime adapter found'));
+    return Ok(defaultRuntime.adapter);
 }
 
 export async function startFleets(): Promise<Result<void>> {

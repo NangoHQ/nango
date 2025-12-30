@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { JsonRulesEngineRuleSchema } from './zod.types.js';
+
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -124,6 +126,18 @@ export const ENVS = z.object({
         .optional()
         .default('nango_runners'),
     RUNNER_LAMBDA_FLEET_ID: z.string().optional().default('nango_runners_lambda'),
+    RUNNER_FLEET_RULES: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue('RUNNER_FLEET_RULES must be a valid JSON array of json-rules-engine rules');
+                return z.NEVER;
+            }
+        })
+        .pipe(z.array(JsonRulesEngineRuleSchema))
+        .default([]),
     RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
     RUNNER_PROFILED_ACCOUNTS: z
         .string()
@@ -360,6 +374,7 @@ export const ENVS = z.object({
 
     // Lambda
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_DEFAULT_SIZE: z.coerce.number().default(512),
     LAMBDA_ECR_REGISTRY: z.string().optional(),
     LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
     LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),

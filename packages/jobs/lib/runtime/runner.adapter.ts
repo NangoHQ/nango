@@ -23,10 +23,6 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
         }
     }
 
-    canHandle(_nangoProps: NangoProps): boolean {
-        return true;
-    }
-
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
         const runner = await getRunner(params.nangoProps.team.id);
         if (runner.isErr()) {
