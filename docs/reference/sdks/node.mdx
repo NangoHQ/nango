@@ -1907,7 +1907,18 @@ const { data } = await nango.createConnectSession({
   </ResponseField>
 
   <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations.
+    Default configuration for specific integrations. For OAuth2 integrations, you can allow end-users to provide their own OAuth client credentials by setting empty `oauth_client_id_override` and `oauth_client_secret_override` values:
+    ```js
+    integrations_config_defaults: {
+      google: {
+        connection_config: {
+          oauth_client_id_override: '',
+          oauth_client_secret_override: ''
+        }
+      }
+    }
+    ```
+    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
   </ResponseField>
 </Expandable>
 

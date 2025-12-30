@@ -44,6 +44,10 @@ export async function createMcpServerForConnection(
     server.setRequestHandler(ListToolsRequestSchema, () => {
         return {
             tools: actions.flatMap((action) => {
+                if (!action.enabled) {
+                    return [];
+                }
+
                 const tool = actionToTool(action);
                 return tool ? [tool] : [];
             })
