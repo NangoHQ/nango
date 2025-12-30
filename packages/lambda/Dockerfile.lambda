@@ -73,7 +73,7 @@ RUN true \
 RUN true \
   && npm prune --omit=dev --omit=peer --omit=optional
 
-RUN npm install -g npm@10.9.2
+  RUN npm install -g npm@11.6.4
 
 # ------------------
 # Final runtime image
