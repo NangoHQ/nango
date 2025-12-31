@@ -2,7 +2,7 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { envs } from '../env.js';
+import { getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
 import type { Fleet } from '@nangohq/fleet';
@@ -14,21 +14,11 @@ interface LambdaFunction {
     arn: string;
 }
 
-function getSize(_nangoProps: NangoProps): number {
-    //based on available props return a memory size compatible with lambda - will use rules for this
-    return envs.LAMBDA_DEFAULT_SIZE;
-}
-
-function getFunctionName(nangoProps: NangoProps): string {
-    const size = getSize(nangoProps);
-    return `nango-function-${size}`;
-}
-
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
     constructor(private readonly fleet: Fleet) {}
 
     async getFunction(nangoProps: NangoProps): Promise<LambdaFunction> {
-        const routingId = getFunctionName(nangoProps);
+        const routingId = getRoutingId(nangoProps);
         const node = await this.fleet.getRunningNode(routingId);
         if (node.isErr()) {
             throw new Error(`Failed to get running node for routing id '${routingId}'`, { cause: node.error });

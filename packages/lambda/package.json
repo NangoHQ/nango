@@ -7,8 +7,7 @@
     "typings": "dist/index.d.ts",
     "private": true,
     "scripts": {
-        "ts-build": "tsc",
-        "build:docker:all": "cd ../.. && docker buildx build --cache-from type=gha,scope=lambda --cache-to type=gha,scope=lambda,mode=max --provenance=false --platform linux/arm64 -f packages/lambda/Dockerfile.lambda -t $LAMBDA_REPOSITORY_URI/$LAMBDA_REPOSITORY_NAME:$LAMBDA_IMAGE_TAG --push ."
+        "ts-build": "tsc"
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.158",

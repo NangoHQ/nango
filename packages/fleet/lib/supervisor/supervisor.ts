@@ -331,13 +331,11 @@ export class Supervisor {
         db: Knex,
         {
             routingId,
-            deployment,
-            fleetId
+            deployment
         }: {
             type: 'CREATE';
             routingId: Node['routingId'];
             deployment: Deployment;
-            fleetId: Node['fleetId'];
         }
     ): Promise<Result<Node>> {
         let newNodeConfig: NodeConfig = {
@@ -366,7 +364,7 @@ export class Supervisor {
 
         return nodes.create(db, {
             routingId,
-            fleetId,
+            fleetId: this.fleetId,
             deploymentId: deployment.id,
             image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,

@@ -4,6 +4,8 @@ import { NODE_CONFIG_OVERRIDES_TABLE } from '../../models/node_config_overrides.
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`ALTER TABLE ${NODES_TABLE}
+      ADD COLUMN IF NOT EXISTS fleet_id varchar(255) DEFAULT NULL`);
+    await knex.raw(`ALTER TABLE ${NODES_TABLE}
       ADD COLUMN IF NOT EXISTS execution_timeout_secs int DEFAULT NULL`);
     await knex.raw(`ALTER TABLE ${NODES_TABLE}
       ADD COLUMN IF NOT EXISTS provisioned_concurrency int DEFAULT NULL`);

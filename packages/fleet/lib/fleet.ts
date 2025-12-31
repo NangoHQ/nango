@@ -137,7 +137,7 @@ export class Fleet {
                         if (!deployment.value) {
                             return Err(new FleetError('no_active_deployment'));
                         }
-                        return supervisor.createNode(trx, { type: 'CREATE', routingId, deployment: deployment.value, fleetId: this.fleetId });
+                        return supervisor.createNode(trx, { type: 'CREATE', routingId, deployment: deployment.value });
                     },
                     timeoutMs: 10 * 1000
                 });

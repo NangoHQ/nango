@@ -18,8 +18,7 @@ export const Operation = {
                 return {
                     operation: o.type,
                     routingId: o.routingId,
-                    deploymentId: o.deployment.id,
-                    fleetId: o.fleetId
+                    deploymentId: o.deployment.id
                 };
             case 'FAIL':
                 return {

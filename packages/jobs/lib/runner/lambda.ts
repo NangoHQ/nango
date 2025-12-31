@@ -13,6 +13,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
+import { getSizeFromRoutingId } from '../utils/lambda.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -27,15 +28,7 @@ export function getFunctionName(node: Node): string {
 }
 
 function getSize(node: Node): number {
-    //based on memory return a memory size compatible with lambda
-    const memoryMb = node.memoryMb;
-    if (memoryMb <= 256) return 256;
-    if (memoryMb <= 512) return 512;
-    if (memoryMb <= 1024) return 1024;
-    if (memoryMb <= 2048) return 2048;
-    if (memoryMb <= 4096) return 4096;
-    if (memoryMb <= 8192) return 8192;
-    return 10240;
+    return getSizeFromRoutingId(node.routingId);
 }
 
 export function getFunctionQualifier(node: Node): string {

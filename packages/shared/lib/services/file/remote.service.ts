@@ -4,7 +4,7 @@ import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, PutObjectCom
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { isCloud, isEnterprise, isLocal, isTest, report } from '@nangohq/utils';
+import { isCloud, isEnterprise, isLocal, isTest, report, useS3 } from '@nangohq/utils';
 
 import localFileService from './local.service.js';
 import { NangoError } from '../../utils/error.js';
@@ -16,8 +16,8 @@ import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
 function getCredentials() {
-    const accessKeyId = process.env['AWS_INTEGRATIONS_ACCESS_KEY_ID'];
-    const secretAccessKey = process.env['AWS_INTEGRATIONS_SECRET_ACCESS_KEY'];
+    const accessKeyId = process.env['AWS_INTEGRATIONS_ACCESS_KEY_ID'] || process.env['AWS_ACCESS_KEY_ID'];
+    const secretAccessKey = process.env['AWS_INTEGRATIONS_SECRET_ACCESS_KEY'] || process.env['AWS_SECRET_ACCESS_KEY'];
     if (!accessKeyId || !secretAccessKey) {
         return undefined;
     }
@@ -28,15 +28,11 @@ function getCredentials() {
 }
 
 function getRegion() {
-    return process.env['AWS_INTEGRATIONS_REGION'] || 'us-west-2';
+    return process.env['AWS_INTEGRATIONS_REGION'] || process.env['AWS_REGION'] || 'us-west-2';
 }
 
 function getBucketName() {
-    return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || 'nangodev-customer-integrations';
-}
-
-function useS3() {
-    return Boolean(process.env['AWS_INTEGRATIONS_REGION'] && process.env['AWS_INTEGRATIONS_BUCKET_NAME']);
+    return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || process.env['AWS_BUCKET_NAME'] || 'nangodev-customer-integrations';
 }
 
 class RemoteFileService {
@@ -50,7 +46,7 @@ class RemoteFileService {
     constructor() {
         const region = getRegion();
         if (isEnterprise) {
-            this.useS3 = useS3();
+            this.useS3 = useS3;
         } else {
             this.useS3 = !isLocal && !isTest;
         }
