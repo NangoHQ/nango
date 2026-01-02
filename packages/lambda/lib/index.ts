@@ -1,4 +1,5 @@
-import { MapLocks, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { getLocking } from '@nangohq/kvstore';
+import { KVLocks, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
 import { getLogger } from '@nangohq/utils';
 
 import { requestSchema } from './schemas.js';
@@ -41,7 +42,7 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
             nangoProps: { ...(request.nangoProps as unknown as NangoProps), host: getNangoHost() },
             code: request.code,
             codeParams: request.codeParams,
-            locks: new MapLocks(), //new KVLocks(await getLocking()),
+            locks: new KVLocks(await getLocking()),
             abortController: abortController
         };
         const execRes = await exec(payload);
