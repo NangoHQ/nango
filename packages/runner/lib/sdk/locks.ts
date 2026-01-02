@@ -24,8 +24,8 @@ export class KVLocks implements Locks {
         this.locking = locking;
     }
 
-    private getLockKey(owner: string, key: string): string {
-        return `runner:${owner}:${key}`;
+    private getLockKey(owner: string, key?: string): string {
+        return key ? `runner:${owner}:${key}` : `runner:${owner}`;
     }
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
@@ -41,7 +41,7 @@ export class KVLocks implements Locks {
     }
 
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
-        const lockKey = this.getLockKey(owner, '*');
+        const lockKey = this.getLockKey(owner);
         await this.locking.releaseAll(lockKey);
         return Ok(undefined);
     }
