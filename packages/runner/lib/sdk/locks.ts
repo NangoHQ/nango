@@ -30,26 +30,42 @@ export class KVLocks implements Locks {
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
         const lockKey = this.getLockKey(owner, key);
-        await this.locking.tryAcquire(lockKey, ttlMs, 1000);
-        return Ok(true);
+        try {
+            await this.locking.tryAcquire(lockKey, ttlMs, 1000);
+            return Ok(true);
+        } catch (err: any) {
+            return Err(new Error(`Error acquiring lock for key ${lockKey}`, { cause: err }));
+        }
     }
 
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
         const lockKey = this.getLockKey(owner, key);
-        await this.locking.release({ key: lockKey });
-        return Ok(true);
+        try {
+            await this.locking.release({ key: lockKey });
+            return Ok(true);
+        } catch (err: any) {
+            return Err(new Error(`Error releasing lock for key ${lockKey}`, { cause: err }));
+        }
     }
 
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
         const lockKey = this.getLockKey(owner);
-        await this.locking.releaseAll(lockKey);
-        return Ok(undefined);
+        try {
+            await this.locking.releaseAll(lockKey);
+            return Ok(undefined);
+        } catch (err: any) {
+            return Err(new Error(`Failed to release all locks for key ${lockKey}`, { cause: err }));
+        }
     }
 
     public async hasLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
         const lockKey = this.getLockKey(owner, key);
-        const hasLock = await this.locking.hasLock(lockKey);
-        return Ok(hasLock);
+        try {
+            const hasLock = await this.locking.hasLock(lockKey);
+            return Ok(hasLock);
+        } catch (err: any) {
+            return Err(new Error(`Failed to check for lock with key ${lockKey}`, { cause: err }));
+        }
     }
 }
 

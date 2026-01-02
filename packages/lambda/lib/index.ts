@@ -4,11 +4,43 @@ import { getLogger } from '@nangohq/utils';
 
 import { requestSchema } from './schemas.js';
 
+import type { Lock, Locking } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 import type { Context } from 'aws-lambda';
 import type * as zod from 'zod';
 
 const logger = getLogger('lambda-function-runner');
+
+interface GatePass {
+    lock?: Lock;
+    allowed: boolean;
+}
+
+class Gate {
+    constructor(private readonly locking: Locking) {}
+
+    getKey(nangoProps: NangoProps): string {
+        return `function:${nangoProps.scriptType}:${nangoProps.syncId}`;
+    }
+
+    async enter(nangoProps: NangoProps, opts: { ttlMs: number }): Promise<GatePass> {
+        try {
+            if (nangoProps.scriptType !== 'sync') return { allowed: true };
+            const key = this.getKey(nangoProps);
+            const lock = await this.locking.tryAcquire(key, opts.ttlMs, 1000);
+            return {
+                allowed: true,
+                lock
+            };
+        } catch {
+            return { allowed: false };
+        }
+    }
+
+    async exit(lock: Lock) {
+        await this.locking.release(lock);
+    }
+}
 
 function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
@@ -16,9 +48,20 @@ function getNangoHost() {
 
 export const handler = async (event: zod.infer<typeof requestSchema>, context: Context) => {
     context.callbackWaitsForEmptyEventLoop = false;
+    const request = requestSchema.parse(event);
+    const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
+    const locking = await getLocking();
+    const gate = new Gate(locking);
+    const pass = await gate.enter(nangoProps, { ttlMs: context.getRemainingTimeInMillis() });
+    if (!pass.allowed) {
+        logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
+        throw new Error('Conflicting sync detected');
+    }
+    const locks = new KVLocks(locking);
+
     let lastSuccessHeartbeatAt: number | null = null;
     const startTime = Date.now();
-    const request = requestSchema.parse(event);
+
     const abortController = new AbortController();
     const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
 
@@ -39,10 +82,10 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
     }, heartbeatIntervalMs);
     try {
         const payload = {
-            nangoProps: { ...(request.nangoProps as unknown as NangoProps), host: getNangoHost() },
+            nangoProps: { ...nangoProps, host: getNangoHost() },
             code: request.code,
             codeParams: request.codeParams,
-            locks: new KVLocks(await getLocking()),
+            locks,
             abortController: abortController
         };
         const execRes = await exec(payload);
@@ -72,6 +115,9 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         });
     } finally {
         clearInterval(heartbeat);
+        if (pass.lock) {
+            await gate.exit(pass.lock);
+        }
         logger.info(`Task ${request.taskId} completed`);
     }
 };
