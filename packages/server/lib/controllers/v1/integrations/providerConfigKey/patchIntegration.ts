@@ -32,7 +32,7 @@ const validationBody = z
                         authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                         clientId: z.string().min(1).max(255),
                         clientSecret: z.string().min(1),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)])
                     })
                     .strict(),
                 z
@@ -56,7 +56,7 @@ const validationBody = z
                 z
                     .object({
                         authType: z.enum(['MCP_OAUTH2']),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)])
                     })
                     .strict(),
                 z
