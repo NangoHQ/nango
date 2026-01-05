@@ -96,6 +96,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     const updatedMdx = path.join(updatedDocsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
     const connectMdx = path.join(docsPath, `${providerKey}/connect.mdx`);
+    const updatedConnectMdx = path.join(updatedDocsPath, `${filename}/connect.mdx`);
     let hasValidConnect = false;
     const headers = new Set<string>();
 
@@ -127,14 +128,15 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     }
     let connectMdxPath: string | null = null;
     if (provider.docs_connect) {
-        const updatedConnectMdx = path.join(updatedDocsPath, `${providerKey}/connect.mdx`);
-        if (!fs.existsSync(connectMdx) && !fs.existsSync(updatedConnectMdx)) {
+        const connectMdxExists = fs.existsSync(connectMdx);
+        const updatedConnectMdxExists = fs.existsSync(updatedConnectMdx);
+        if (!connectMdxExists && !updatedConnectMdxExists) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `Connect.mdx file not found`);
-            console.error(`Expected file: ${connectMdx}`);
+            console.error(`Expected file: ${connectMdx} or ${updatedConnectMdx}`);
             error = true;
         } else {
             hasValidConnect = true;
-            connectMdxPath = fs.existsSync(updatedConnectMdx) ? updatedConnectMdx : connectMdx;
+            connectMdxPath = connectMdxExists ? connectMdx : updatedConnectMdx;
             const content = fs.readFileSync(connectMdxPath).toString();
             const matched = content.matchAll(/^[#]+\sStep[a-zA-Z0-9:()._ -]+$/gim);
             for (const match of matched) {
