@@ -1,6 +1,6 @@
 {
     "permissions": {
-        "allow": ["Skill(agent-builder-skill)", "Skill(creating-skills-skill)", "WebFetch(domain:github.com)"],
+        "allow": ["Skill(agent-builder-skill)", "Skill(creating-skills-skill)", "WebFetch(domain:github.com)", "Bash(mkdir:*)"],
         "deny": [],
         "ask": []
     }

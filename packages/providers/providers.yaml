@@ -9391,8 +9391,8 @@ nerdio:
         scope: ${connectionConfig.scope}
     proxy:
         base_url: https://${connectionConfig.hostname}/rest-api
-    docs: https://nango.dev/docs/integrations/all/nerdio
-    docs_connect: https://nango.dev/docs/integrations/all/nerdio/connect
+    docs: https://nango.dev/docs/api-integrations/nerdio
+    docs_connect: https://nango.dev/docs/api-integrations/nerdio/connect
     connection_config:
         hostname:
             type: string
