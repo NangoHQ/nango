@@ -1,9 +1,9 @@
 import { CornerDownLeft, Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group';
+import { Badge } from './ui/badge.js';
+import { Button } from './ui/button.js';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group.js';
 import { cn } from '@/utils/utils';
 
 function unique<T>(array: T[]): T[] {
@@ -38,7 +38,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
 
         setLoading(true);
 
-        const scopesToAdd = inputValue.split(/[,\s]+/).map((scope) => scope.trim());
+        const scopesToAdd = inputValue.split(',').map((scope) => scope.trim());
         const newScopes = unique([...scopes, ...scopesToAdd]);
         const countDifference = newScopes.length - scopes.length;
 
@@ -59,7 +59,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
                     disabled={loading || isSharedCredentials}
-                    placeholder="Single, space-separated or comma-separated list of scopes"
+                    placeholder="Single scope or comma-separated list of scopes"
                 />
 
                 <InputGroupAddon align="inline-end">
