@@ -9390,14 +9390,14 @@ nerdio:
         grant_type: client_credentials
         scope: ${connectionConfig.scope}
     proxy:
-        base_url: https://${connectionConfig.hostname}/rest-api/v1
+        base_url: https://${connectionConfig.hostname}/rest-api
     docs: https://nango.dev/docs/integrations/all/nerdio
     docs_connect: https://nango.dev/docs/integrations/all/nerdio/connect
     connection_config:
         hostname:
             type: string
             title: Nerdio Instance URL
-            description: The hostname of your Nerdio Manager instance (e.g., web-admin-portal-xxxxx.azurewebsites.net)
+            description: The hostname of your Nerdio Manager instance
             format: hostname
             example: web-admin-portal-3e3a4zfp4peo4.azurewebsites.net
             doc_section: '#step-1-finding-your-nerdio-instance-url'
@@ -9413,7 +9413,7 @@ nerdio:
         scope:
             type: string
             title: API Scope
-            description: The Application ID URI scope (e.g., api://your-app-id/.default)
+            description: The Application ID URI scope
             example: api://g0cb288e-ff16-1861-9393-50219a19453c/.default
             doc_section: '#step-3-configuring-the-api-scope'
             order: 3
@@ -9423,6 +9423,7 @@ nerdio:
             title: Client ID
             description: The Application (client) ID from your Azure App Registration
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            format: uuid
             doc_section: '#step-2-getting-your-azure-credentials'
         client_secret:
             type: string
