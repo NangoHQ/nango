@@ -1,0 +1,83 @@
+---
+title: Nerdio - How do I link my account?
+sidebarTitle: Nerdio
+---
+
+# Overview
+
+To authenticate with Nerdio, you need:
+1. **Nerdio Instance URL** - The hostname of your Nerdio Manager instance
+2. **Azure Tenant ID** - Your Azure Active Directory Tenant ID
+3. **Client ID** - The Application (client) ID from your Azure App Registration
+4. **Client Secret** - The client secret from your Azure App Registration
+5. **API Scope** - The Application ID URI scope for the Nerdio API
+
+This guide walks you through enabling the REST API in Nerdio Manager and obtaining the required credentials.
+
+### Prerequisites:
+
+- Admin access to your Nerdio Manager installation (Premium edition required)
+- Access to your Azure Portal with permissions to manage App Registrations
+
+### Instructions:
+
+#### Step 1: Finding your Nerdio Instance URL
+
+1. Log in to your Nerdio Manager portal.
+2. Copy the hostname from your browser's address bar (e.g., `web-admin-portal-xxxxx.azurewebsites.net`).
+
+#### Step 2: Getting your Azure Credentials
+
+1. In Nerdio Manager, navigate to **Settings** > **Integrations**.
+2. In the **REST API** tile, if the Current status is Disabled, select **Disabled** to enable it.
+3. In Step #1, select **Run**. This creates a new Azure application under the nerdio-nmw-app app registration in your Azure tenant.
+4. In Step #2, select **Grant** to navigate to your Azure portal and grant Admin consent.
+
+<img src="/integrations/all/nerdio/nerdio_rest_api_settings.png" alt="Nerdio REST API Settings"/>
+
+5. Once enabled, copy the following values from the **REST API Credentials** section:
+   - **Client ID** - The Application (client) ID
+   - **Tenant ID** - Your Azure AD Tenant ID
+
+<img src="/integrations/all/nerdio/nerdio_credentials.png" alt="Nerdio REST API Credentials"/>
+
+6. To generate a Client Secret:
+   - Navigate to your Azure Portal > **App Registrations** > select the Nerdio app
+   - Go to **Certificates & secrets** > **New client secret**
+   - Copy the secret value immediately (it will only be shown once)
+
+<Note>
+Store the Client Secret securely immediately. It cannot be retrieved later. If you lose it, you will need to generate a new one.
+</Note>
+
+#### Step 3: Configuring the API Scope
+
+1. In the Azure Portal, navigate to your Nerdio App Registration.
+2. Go to **Expose an API** and copy the **Application ID URI**.
+3. Append `/.default` to the URI to form the complete scope (e.g., `api://your-app-id/.default`).
+
+<Note>
+If the Application ID URI is not set, you need to add it first. An example format is `api://g0cb288e-ff16-1861-9393-50219a19453c`.
+</Note>
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have gathered all credentials:
+1. Open the form where you need to authenticate with Nerdio.
+2. Enter your **Nerdio Instance URL** (hostname only, without https://).
+3. Enter your **Azure Tenant ID**.
+4. Enter your **API Scope**.
+5. Enter your **Client ID** and **Client Secret**.
+6. Submit the form to authenticate.
+
+<img src="/integrations/all/nerdio/nerdio_connect_form.png" alt="Nerdio Connect Form"/>
+
+You are now connected to Nerdio.
+
+---
+
+### Additional Information
+
+- **Token Expiration**: Access tokens obtained through the Client Credentials flow typically have a TTL of 1 hour. Nango will automatically refresh the token when it expires.
+- **API Documentation**: The Nerdio Manager API documentation can be found under **Settings** > **Integrations** > **REST API** in your Nerdio portal.
+- **Security Best Practices**: Store your Client ID and Client Secret securely. Never commit these credentials to source control or expose them in client-side code.

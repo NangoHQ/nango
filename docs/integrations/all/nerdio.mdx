@@ -1,0 +1,61 @@
+---
+title: 'Nerdio'
+sidebarTitle: 'Nerdio'
+---
+
+<Note>
+Nerdio Manager API is only available in the Premium edition.
+</Note>
+
+## API Configuration: [Nerdio](https://getnerdio.com/)
+
+| | |
+| - | - |
+| Auth type | OAuth2 Client Credentials |
+| Base URL | `https://{hostname}/rest-api/v1` |
+
+## Features
+
+| Feature | Supported |
+| - | - |
+| Managed OAuth | Yes |
+| Proxy requests | Yes |
+| Rate limit handling | No |
+| Automatic retries | No |
+| Pagination helper | No |
+
+## Pre-built Tooling
+
+| | |
+| - | - |
+| Syncs | _No pre-built syncs available yet._ |
+| Actions | _No pre-built actions available yet._ |
+
+## Guides
+
+<CardGroup cols={2}>
+    <Card
+        title="How to connect to Nerdio"
+        href="/integrations/all/nerdio/connect"
+        icon="plug"
+    />
+    <Card
+        title="Nerdio REST API Docs"
+        href="https://nmehelp.getnerdio.com/hc/en-us/sections/19703469488013-REST-API"
+        icon="book"
+    />
+</CardGroup>
+
+## Connection Configuration
+
+To connect to Nerdio through Nango, you need:
+
+| Parameter | Description |
+| - | - |
+| Nerdio Instance URL | The hostname of your Nerdio Manager instance (e.g., `web-admin-portal-xxxxx.azurewebsites.net`) |
+| Azure Tenant ID | Your Azure Active Directory Tenant ID |
+| API Scope | The Application ID URI scope (e.g., `api://your-app-id/.default`) |
+| Client ID | The Application (client) ID from Azure App Registration |
+| Client Secret | The client secret from Azure App Registration |
+
+For detailed setup instructions, see the [connection guide](/integrations/all/nerdio/connect).
