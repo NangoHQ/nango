@@ -106,6 +106,8 @@ export const FunctionSwitch: React.FC<{
             return;
         }
 
+        setLoading(true);
+
         const res = await apiFlowDisable(
             env,
             { id: flow.id },
@@ -122,6 +124,8 @@ export const FunctionSwitch: React.FC<{
             toast({ title: `Disabled successfully`, variant: 'success' });
             await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
         }
+
+        setLoading(false);
     };
 
     return (
