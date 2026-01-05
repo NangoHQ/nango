@@ -57,6 +57,49 @@ describe('Usage', () => {
             const res = (await usageTracker.get({ accountId, metric })).unwrap();
             expect(res).toEqual({ accountId, metric, current: 5 });
         });
+        it('should trigger revalidation when entry is null', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
+            const res = (await usageTracker.get({ accountId, metric })).unwrap();
+            expect(res).toEqual({ accountId, metric, current: 0 });
+            expect(revalidateSpy).toHaveBeenCalledTimes(1);
+            expect(revalidateSpy).toHaveBeenCalledWith({ accountId, metric });
+        });
+        it('should trigger revalidation when revalidateAfter has passed', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+
+            // Set up an entry with a past revalidateAfter
+            await usageTracker.incr({ accountId, metric, delta: 5 });
+            // Move time forward by 1 day to pass revalidateAfter
+            vi.advanceTimersByTime(24 * 60 * 60 * 1000);
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
+            const res = (await usageTracker.get({ accountId, metric })).unwrap();
+            expect(res).toEqual({ accountId, metric, current: 5 });
+            expect(revalidateSpy).toHaveBeenCalledTimes(1);
+            expect(revalidateSpy).toHaveBeenCalledWith({ accountId, metric });
+        });
+        it('should not trigger revalidation when entry exists and is not stale', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+
+            await usageTracker.incr({ accountId, metric, delta: 5 });
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
+            const res = (await usageTracker.get({ accountId, metric })).unwrap();
+            expect(res).toEqual({ accountId, metric, current: 5 });
+            // revalidateAfter hasn't passed yet
+            expect(revalidateSpy).not.toHaveBeenCalled();
+        });
     });
 
     describe('incr', () => {
@@ -87,6 +130,55 @@ describe('Usage', () => {
             const metric = 'proxy';
             const res = (await usageTracker.incr({ accountId, metric, delta: 1 })).unwrap();
             expect(res).toEqual({ accountId, metric, current: 1 });
+        });
+    });
+
+    describe('getAll', () => {
+        it('should trigger revalidation for null entries', async () => {
+            const accountId = 1;
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
+            const res = (await usageTracker.getAll(accountId)).unwrap();
+            expect(res).toBeDefined();
+            // Should trigger revalidation for all metrics that are null
+            expect(revalidateSpy).toHaveBeenCalled();
+        });
+        it('should trigger revalidation for stale entries', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+
+            // Set up an entry with a past revalidateAfter
+            await usageTracker.incr({ accountId, metric, delta: 5 });
+            // Move time forward by 1 day to pass revalidateAfter
+            vi.advanceTimersByTime(24 * 60 * 60 * 1000);
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
+            const res = (await usageTracker.getAll(accountId)).unwrap();
+            expect(res).toBeDefined();
+            expect(res[metric]).toEqual({ accountId, metric, current: 5 });
+            // Should trigger revalidation for the stale metric
+            expect(revalidateSpy).toHaveBeenCalledWith({ accountId, metric });
+        });
+        it('should not trigger revalidation for non-stale entries', async () => {
+            const accountId = 1;
+            const metric = 'connections';
+
+            await usageTracker.incr({ accountId, metric, delta: 5 });
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
+            const res = (await usageTracker.getAll(accountId)).unwrap();
+            expect(res).toBeDefined();
+            expect(res[metric]).toEqual({ accountId, metric, current: 5 });
+            // revalidateAfter hasn't passed yet, so revalidation should not be called for this metric
+            // (but may be called for other null metrics)
+            const callsForMetric = revalidateSpy.mock.calls.filter((call) => call[0].metric === metric);
+            expect(callsForMetric).toHaveLength(0);
         });
     });
 });
