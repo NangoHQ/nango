@@ -229,11 +229,13 @@ program
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
-    .option('--validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
+    .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
+    .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
+        const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
@@ -266,7 +268,7 @@ program
             }
         }
 
-        const dryRun = new DryRunService({ fullPath, validation, isZeroYaml: precheck.isZeroYaml });
+        const dryRun = new DryRunService({ fullPath, validation: shouldValidate, isZeroYaml: precheck.isZeroYaml });
         await dryRun.run(
             {
                 ...this.opts(),
@@ -466,9 +468,11 @@ program
 program
     .command('generate:tests')
     .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
+    .option('-s, --sync <syncName>', 'Generate tests only for a specific sync')
+    .option('-a, --action <actionName>', 'Generate tests only for a specific action')
     .description('Generate tests for integration scripts and config files')
     .action(async function (this: Command) {
-        const { debug, integration: integrationId, autoConfirm } = this.opts();
+        const { debug, integration: integrationId, sync: syncName, action: actionName, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
@@ -477,15 +481,24 @@ program
             return;
         }
 
-        const ok = await generateTests({
+        const { success, generatedFiles } = await generateTests({
             absolutePath,
             integrationId,
+            syncName,
+            actionName,
             debug: Boolean(debug),
             autoConfirm: Boolean(autoConfirm)
         });
 
-        if (ok) {
-            console.log(chalk.green(`Tests have been generated successfully!`));
+        if (success) {
+            if (generatedFiles.length > 0) {
+                console.log(chalk.green(`Generated ${generatedFiles.length} test file(s):`));
+                for (const file of generatedFiles) {
+                    console.log(chalk.cyan(`  ${path.relative(process.cwd(), file)}`));
+                }
+            } else {
+                console.log(chalk.yellow(`No test files were generated. Make sure you have mocks in place.`));
+            }
         } else {
             console.log(chalk.red(`Failed to generate tests`));
         }

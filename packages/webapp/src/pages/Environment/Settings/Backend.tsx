@@ -1,16 +1,19 @@
-import { IconKey, IconServer } from '@tabler/icons-react';
+import { IconExternalLink, IconKey } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './EditableInput';
-import { Info } from '../../../components/Info';
+import { EditableInput } from './components/EditableInput';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import { Button } from '../../../components/ui/button/Button';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { Button } from '@/components-v2/ui/button';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
@@ -34,7 +37,6 @@ export const BackendSettings: React.FC = () => {
         }
 
         void mutate();
-        toast({ title: `New secret generated, delete one or the other to activate`, variant: 'success' });
     };
 
     const onRevert = async () => {
@@ -51,7 +53,6 @@ export const BackendSettings: React.FC = () => {
         }
 
         void mutate();
-        toast({ title: `New secret deleted, current secret is still active`, variant: 'success' });
     };
 
     const onRotate = async () => {
@@ -68,7 +69,6 @@ export const BackendSettings: React.FC = () => {
         }
 
         void mutate();
-        toast({ title: `Old secret deleted, new secret is now active`, variant: 'success' });
     };
 
     if (!environmentAndAccount) {
@@ -77,44 +77,39 @@ export const BackendSettings: React.FC = () => {
 
     const hasNewSecretKey = environmentAndAccount.environment.pending_secret_key;
     return (
-        <div className="text-grayscale-100 flex flex-col gap-10">
-            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#backend" id="backend">
-                <div>
-                    <IconServer stroke={1} size={18} />
-                </div>
-                <h3 className="uppercase text-sm">Backend Settings</h3>
-            </Link>
-            <div className="px-8 flex flex-col gap-10 w-1/2">
-                <fieldset className="flex flex-col gap-2.5">
-                    <label htmlFor="secretKey" className="font-semibold mb-2">
-                        Secret Key
-                    </label>
-                    {hasNewSecretKey && (
-                        <label htmlFor="secretKey" className={'text-s'}>
-                            Current secret
-                        </label>
-                    )}
-                    <div className="flex gap-2">
-                        <SecretInput
-                            view={false}
-                            inputSize={'lg'}
-                            copy={true}
-                            variant={'black'}
-                            name="secretKey"
-                            value={environmentAndAccount.environment.secret_key}
-                        />
+        <SettingsContent title="Backend">
+            <SettingsGroup label="Secret key">
+                <fieldset className="flex flex-col gap-3.5">
+                    <div className="flex flex-col gap-2">
+                        {hasNewSecretKey && (
+                            <label htmlFor="secretKey" className="text-sm">
+                                Current secret
+                            </label>
+                        )}
+                        <div className="flex gap-2">
+                            <SecretInput
+                                view={false}
+                                inputSize={'lg'}
+                                copy={true}
+                                variant={'black'}
+                                name="secretKey"
+                                value={environmentAndAccount.environment.secret_key}
+                            />
+                        </div>
                     </div>
                     {!hasNewSecretKey && (
-                        <div className="flex justify-end">
-                            <Button variant={'secondary'} onClick={onGenerate} isLoading={loading}>
-                                <IconKey stroke={1} size={18} />
-                                Generate new secret key
+                        <div className="flex justify-start">
+                            <Button variant={'secondary'} onClick={onGenerate} loading={loading}>
+                                <>
+                                    <IconKey stroke={1} size={18} />
+                                    Generate new secret key
+                                </>
                             </Button>
                         </div>
                     )}
                     {hasNewSecretKey && (
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor="secretKey" className={'text-s'}>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="secretKey" className="text-sm">
                                 New secret
                             </label>
                             <SecretInput
@@ -128,14 +123,16 @@ export const BackendSettings: React.FC = () => {
                         </div>
                     )}
                     {hasNewSecretKey && (
-                        <Info>
-                            The current secret is still active, the new secret is not. Confirm key rotation to activate new secret and deactivate current
-                            secret.
-                        </Info>
+                        <Alert variant="info">
+                            <AlertDescription>
+                                The current secret is still active, the new secret is not. Confirm key rotation to activate new secret and deactivate current
+                                secret.
+                            </AlertDescription>
+                        </Alert>
                     )}
 
                     {hasNewSecretKey && (
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex gap-3 justify-start">
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <Button variant={'tertiary'}>Cancel key rotation</Button>
@@ -148,9 +145,9 @@ export const BackendSettings: React.FC = () => {
                                     </DialogDescription>
                                     <DialogFooter>
                                         <DialogClose asChild>
-                                            <Button variant={'tertiary'}>Dismiss</Button>
+                                            <Button variant="tertiary">Dismiss</Button>
                                         </DialogClose>
-                                        <Button variant={'danger'} onClick={onRevert} isLoading={loading}>
+                                        <Button variant="destructive" onClick={onRevert} loading={loading}>
                                             Cancel key rotation
                                         </Button>
                                     </DialogFooter>
@@ -171,7 +168,7 @@ export const BackendSettings: React.FC = () => {
                                         <DialogClose asChild>
                                             <Button variant={'tertiary'}>Dismiss</Button>
                                         </DialogClose>
-                                        <Button variant={'danger'} onClick={onRotate} isLoading={loading}>
+                                        <Button variant="destructive" onClick={onRotate} loading={loading}>
                                             Confirm key rotation
                                         </Button>
                                     </DialogFooter>
@@ -180,30 +177,49 @@ export const BackendSettings: React.FC = () => {
                         </div>
                     )}
                 </fieldset>
-
+            </SettingsGroup>
+            <SettingsGroup
+                label={
+                    <>
+                        <div className="flex gap-1.5">
+                            Callback URL
+                            <Link
+                                className="flex gap-2 items-center"
+                                target="_blank"
+                                to="https://nango.dev/docs/implementation-guides/api-auth/configure-integration#2-create-an-integration"
+                            >
+                                <IconExternalLink stroke={1} size={18} />
+                            </Link>
+                        </div>
+                    </>
+                }
+            >
                 <EditableInput
                     name="callback_url"
-                    title="Callback URL"
                     placeholder="https://api.nango.dev/oauth/callback"
                     originalValue={environmentAndAccount.environment.callback_url}
-                    docs="https://nango.dev/docs/implementation-guides/api-auth/configure-integration#2-create-an-integration"
                     editInfo={
-                        <Info>
-                            Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API providers.
-                            Otherwise authorization attempts will fail. Details in{' '}
-                            <Link
-                                to="https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional"
-                                className="underline"
-                            >
-                                docs
-                            </Link>
-                            .
-                        </Info>
+                        <Alert variant="info">
+                            <AlertDescription>
+                                <span>
+                                    Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
+                                    providers. Otherwise authorization attempts will fail. Details in{' '}
+                                    <StyledLink
+                                        to="https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional"
+                                        type="external"
+                                        variant="info"
+                                    >
+                                        docs
+                                    </StyledLink>
+                                    .
+                                </span>
+                            </AlertDescription>
+                        </Alert>
                     }
                     apiCall={(value) => apiPatchEnvironment(env, { callback_url: value })}
                     onSuccess={() => void mutate()}
                 />
-            </div>
-        </div>
+            </SettingsGroup>
+        </SettingsContent>
     );
 };

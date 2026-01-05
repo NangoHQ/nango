@@ -5,6 +5,7 @@ import { acceptInvitation, accountService, expirePreviousInvitations, getInvitat
 import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
+import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 
@@ -97,6 +98,10 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else {
             // Regular signup
+            if (!envs.AUTH_ALLOW_SIGNUP) {
+                res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
+                return;
+            }
             const resAccount = await accountService.createAccount({ name, email: authorizedUser.email });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });

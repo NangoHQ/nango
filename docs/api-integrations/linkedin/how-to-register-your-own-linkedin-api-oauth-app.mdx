@@ -1,0 +1,40 @@
+---
+title: 'Set up LinkedIn with Nango'
+sidebarTitle: 'LinkedIn Setup'
+description: 'Register an OAuth app with LinkedIn and connect it to Nango'
+---
+
+This guide shows you how to register your own app with LinkedIn to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their LinkedIn account.
+
+<Steps>
+  <Step title="Create a developer account">
+    If you don't already have one, sign up for a free [LinkedIn's developer account](https://www.linkedin.com/developers/).
+  </Step>
+  <Step title="Create & configure a LinkedIn app">
+    1. Go to the [Create an app](https://www.linkedin.com/developers/apps/new) page
+    2. Fill in all the required details, then click the **Create App** button.
+    3. In the **Products** tab, select the products you need for your integration. This will automatically add the necessary OAuth 2.0 scopes in the **Auth** tab.
+    4. In the **Auth** tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`, then copy both the **Client ID** and **Primary Client Secret**, you will need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+## Important considerations
+
+**Scope permissions and re-authentication**
+
+If the scope permissions are changed in your app, your users must re-authenticate to ensure that they have explicitly granted your application all of the permissions that it is requesting on their behalf.
+
+**Product access determines available scopes**
+
+The scopes available to your app depend on which Products or Partner Programs your app has access to.
+
+**Refresh tokens and app verification**
+
+In order to receive refresh tokens for your connections you must request the **Advertising API** product in your app under the **Products** tab on LinkedIn. This also requires your app to be verified which can be done by your LinkedIn page admin.
+
+For more details on LinkedIn's OAuth implementation, see [LinkedIn's authorization documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fcontext&tabs=HTTPS1).
+
+---

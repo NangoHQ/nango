@@ -2,6 +2,7 @@ import { URL } from 'url';
 
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { externalWebhookService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -78,7 +79,7 @@ export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
         return;
     }
 
-    await externalWebhookService.update(environment.id, data);
+    await externalWebhookService.update(db.knex, { environment_id: environment.id, data: data });
 
     res.status(200).send({ success: true });
 });

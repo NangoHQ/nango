@@ -43,21 +43,16 @@ export class AccessMiddleware {
         if (!keyRegex.test(secret)) {
             return Err('invalid_secret_key_format');
         }
-        const result = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
-        if (!result) {
+        const accountContext = await accountService.getAccountContextBySecretKey(secret);
+        if (!accountContext) {
             return Err('unknown_user_account');
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                return Err('plan_not_found');
-            }
-            plan = planRes.value;
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
         }
 
-        return Ok({ ...result, plan });
+        return Ok({ ...accountContext });
     }
 
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -116,21 +111,16 @@ export class AccessMiddleware {
             return Err('invalid_secret_key_format');
         }
 
-        const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
-        if (!result) {
+        const accountContext = await accountService.getAccountContextByPublicKey(publicKey);
+        if (!accountContext) {
             return Err('unknown_user_account');
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                return Err('plan_not_found');
-            }
-            plan = planRes.value;
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
         }
 
-        return Ok({ ...result, plan });
+        return Ok({ ...accountContext });
     }
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -213,28 +203,23 @@ export class AccessMiddleware {
             return Err('unknown_connect_session_token');
         }
 
-        const result = await environmentService.getAccountAndEnvironment({
+        const accountContext = await accountService.getAccountContext({
             environmentId: getConnectSession.value.connectSession.environmentId
         });
-        if (!result) {
+        if (!accountContext) {
             return Err('unknown_account');
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                return Err('plan_not_found');
-            }
-            plan = planRes.value;
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
         }
 
         return Ok({
-            account: result.account,
-            environment: result.environment,
+            account: accountContext.account,
+            environment: accountContext.environment,
             connectSession: getConnectSession.value.connectSession,
             endUser: getConnectSession.value.connectSession.endUser,
-            plan
+            plan: accountContext.plan
         });
     }
 

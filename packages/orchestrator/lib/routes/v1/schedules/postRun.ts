@@ -19,13 +19,10 @@ export type PostScheduleRun = Endpoint<{
     Success: { scheduleId: string };
 }>;
 
+const bodySchema = z.object({ scheduleName: z.string().min(1) }).strict();
+
 const validate = validateRequest<PostScheduleRun>({
-    parseBody: (data: any) => {
-        return z
-            .object({ scheduleName: z.string().min(1) })
-            .strict()
-            .parse(data);
-    }
+    parseBody: (data: any) => bodySchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

@@ -213,7 +213,11 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
                 freshConnection = credentialResponse.value;
                 return freshConnection;
-            }
+            },
+            getIntegrationConfig: () => ({
+                oauth_client_id: integration.oauth_client_id,
+                oauth_client_secret: integration.oauth_client_secret
+            })
         });
 
         let success = false;
@@ -299,7 +303,7 @@ export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
     return forwardedHeaders;
 }
 
-async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
+export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
     const contentType = responseStream.headers['content-type'] || '';
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
@@ -341,17 +345,15 @@ async function handleResponse({ res, responseStream, logCtx }: { res: Response; 
             return;
         }
 
-        if (!isJsonResponse) {
-            res.send(Buffer.concat(responseData));
-            await logCtx.success();
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
-            return;
-        }
-
         try {
-            const parsedResponse = JSON.parse(Buffer.concat(responseData).toString());
+            if (isJsonResponse) {
+                // Validate JSON structure without re-serializing to avoid JSON.parse limitations (ex: precision loss with big integers)
+                // TODO: consider removing validation and forwarding upstream response as-is (even if invalid JSON) to avoid performance overhead
+                JSON.parse(Buffer.concat(responseData).toString());
+                res.setHeader('Content-Type', 'application/json');
+            }
 
-            res.json(parsedResponse);
+            res.send(Buffer.concat(responseData));
             metrics.increment(metrics.Types.PROXY_SUCCESS);
             await logCtx.success();
         } catch (err) {

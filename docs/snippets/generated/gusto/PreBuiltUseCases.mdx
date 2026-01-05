@@ -1,25 +1,14 @@
+### Employees
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-employee` | Creates an employee in Gusto. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/create-employee.ts) |
+| `terminate-employee` | Terminates an employee in Gusto. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/terminate-employee.ts) |
+| `update-employee` | Updates an employee in Gusto. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/update-employee.ts) |
+| `employees` | Fetches all employees from Gusto | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/employees.ts) |
 
-<AccordionGroup>
+### Unified HRIS API
 
-
-<Accordion title="Employees">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /employees` | Creates an employee in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/create-employee.md) |
-| `PUT /employees` | Updates an employee in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/update-employee.md) |
-| `DELETE /employees` | Terminates an employee in Gusto. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/actions/terminate-employee.md) |
-| `GET /employees` | Fetches all employees from Gusto | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/employees.md) |
-</Accordion>
-
-
-<Accordion title="Unified HRIS API">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /employees/unified` | Fetches all employees from Gusto and maps them to the standard HRIS model | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/unified-employees.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `unified-employees` | Fetches all employees from Gusto and maps them to the standard HRIS model | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gusto/syncs/unified-employees.ts) |

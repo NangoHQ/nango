@@ -86,4 +86,21 @@ describe(`PATCH ${endpoint}`, () => {
             error: { code: 'invalid_body', message: "Can't rename an integration with active connections" }
         });
     });
+
+    it('should allow scopes with spaces', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: env.secret_key,
+            params: { providerConfigKey: 'github' },
+            body: { authType: 'OAUTH2', clientId: 'test-client', clientSecret: 'test-secret', scopes: 'read write,admin access' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: { success: true }
+        });
+    });
 });

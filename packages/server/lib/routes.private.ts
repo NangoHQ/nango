@@ -26,6 +26,7 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getApiStatus } from './controllers/v1/apiStatus/getApiStatus.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
 import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
@@ -71,6 +72,8 @@ import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
+import { getProviderItem } from './controllers/v1/providers/getProvider.js';
+import { getProvidersList } from './controllers/v1/providers/getProviders.js';
 import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
 import { postStripeCollectPayment } from './controllers/v1/stripe/payment_methods/postCollectPayment.js';
@@ -191,6 +194,8 @@ web.route('/integrations/:providerConfigKey').delete(webAuth, deleteIntegration)
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
 web.route('/provider').get(configController.listProvidersFromYaml.bind(configController));
+web.route('/providers').get(webAuth, getProvidersList);
+web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 
 web.route('/connections').get(webAuth, getConnections);
 web.route('/connections/count').get(webAuth, getConnectionsCount);
@@ -229,10 +234,16 @@ if (flagHasUsage) {
     web.route('/stripe/payment_methods').delete(webAuth, deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
-    web.route('/orb/webhooks').post(rateLimiterMiddleware, postOrbWebhooks);
+    web.route('/orb/webhooks').post((_req, _res, next) => {
+        // Skip rate limiting of Orb webhooks. Rate limit errors can accidentally disable the Orb
+        // webhook and there is no way to control the type or frequency of the webhooks from within Orb.
+        next();
+    }, postOrbWebhooks);
 }
 
 web.route('/admin/impersonate').post(webAuth, postImpersonate);
+
+web.route('/api-status/:service').get(webAuth, getApiStatus);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

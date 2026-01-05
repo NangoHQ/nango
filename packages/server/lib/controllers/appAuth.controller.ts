@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, environmentService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
+import { accountService, configService, connectionService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
@@ -41,14 +41,14 @@ class AppAuthController {
             await oAuthSessionService.delete(session.id);
         }
 
-        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: session.environmentId });
+        const accountContext = await accountService.getAccountContext({ environmentId: session.environmentId });
 
-        if (!environmentAndAccountLookup) {
+        if (!accountContext) {
             res.sendStatus(404);
             return;
         }
 
-        const { environment, account } = environmentAndAccountLookup;
+        const { environment, account } = accountContext;
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });

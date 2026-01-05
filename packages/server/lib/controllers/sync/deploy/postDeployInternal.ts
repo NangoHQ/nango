@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { cleanIncomingFlow, configService, connectionService, deploy, environmentService, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
@@ -48,7 +49,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     let environment = await environmentService.getByEnvironmentName(account.id, environmentName);
 
     if (!environment) {
-        environment = await environmentService.createEnvironment(account.id, environmentName);
+        environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
 
         if (!environment) {
             res.status(500).send({

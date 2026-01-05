@@ -2,6 +2,195 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.19] - 2025-12-16
+
+### Added
+
+- *(providers-logo)* Add logo_url (#5154) by @khaliqgant
+- *(records)* Add pruned_at column to records table (#5152) by @TBonnin
+- Add docs for records pruning feature (#5159) by @TBonnin
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bad174fa1f79a614b3c992b6551abb1f23d3c6e3 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/abbf6b3a7a1b889df8dd45153445533f88188134 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f0b7ef33849d967fb6e224d698f8e8bb98900911 by Khaliq by @github-actions[bot]
+
+## [v0.69.18] - 2025-12-15
+
+### Added
+
+- *(deploy)* Add deploy for replit (#5137) by @rossmcewan
+- *(integrations)* Add support for sophos-central (#5111) by @hassan254-prog
+- *(integrations)* Add support for fathom oauth (#5140) by @hassan254-prog
+- *(integrations)* Add support for conductorone (#5136) by @hassan254-prog
+- *(webhooks)* Add webhook verification for calendly webhooks (#5138) by @hassan254-prog
+- *(integrations)* Add support for firstbase (#5135) by @hassan254-prog
+- *(integrations)* Add support for onlogist (#5125) by @hassan254-prog
+- *(integrations)* Add support for lumos (#5131) by @hassan254-prog
+- *(integrations)* Add support for torii (#5132) by @hassan254-prog
+- *(integrations)* Add support for justworks (#5133) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3c264c5cb838145a92f3a80fd71d98602b87a74a by Khaliq by @github-actions[bot]
+
+### Fixed
+
+- *(records)* Remove sync_id from mark_previous_generation_as_deleted index (#5144) by @TBonnin
+- Cache zod schema when possible (#5143) by @TBonnin
+- *(auth)* Allow/disallow regular signup based on environment variable (#5149) by @rossmcewan
+- *(cli)* Don't generate for sync if an action is passed in (#5150) by @khaliqgant
+
+## [v0.69.17] - 2025-12-12
+
+### Added
+
+- Add /DELETE records endpoint (#5128) by @TBonnin
+
+### Fixed
+
+- *(mcp-generic)* Metadata discovery (#5129) by @omar-inkeep
+- *(cli-generate-tests)* Filtering follow up (#5141) by @khaliqgant
+
+## [v0.69.16] - 2025-12-11
+
+### Added
+
+- *(records)* Add support for hard/soft delete to deleteRecords (#5123) by @TBonnin
+- *(generate:tests)* By sync or action name and output tests that were updated (#5126) by @khaliqgant
+
+### Changed
+
+- Manually fixing the managed-manifest - commit failed in workflow (#5127) by @rossmcewan
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/0c9611de5d0964e5d9c748ef688f3e3720c9e00a by Khaliq by @github-actions[bot]
+- Update version in manifest by @actions-user
+- Clarify CLI auth env variables (#5121) by @mintlify[bot]
+
+### Fixed
+
+- Override of glob package to not use vulnerable versions (#5130) by @rossmcewan
+- Npm also carries the vulnerable glob version (#5134) by @rossmcewan
+
+## [v0.69.15] - 2025-12-10
+
+### Added
+
+- Usage charts (#5040) by @kaposke
+- *(integrations)* Add support for rocketlane (#5048) by @hassan254-prog
+- *(webapp)* Minor transition polish (#5053) by @kaposke
+- *(webhooks)* Add support for sellsy webhooks (#5054) by @hassan254-prog
+- *(webapp)* Warning for legacy plans in usage (#5060) by @kaposke
+- *(integrations)* Add Zendesk Sell provider (#5039) by @nickmaxwell10
+- *(integrations)* Add support for practicefusion (#5057) by @hassan254-prog
+- *(integrations)* Add support for fellow (#5063) by @hassan254-prog
+- *(connect-session)* Add in end user for mcp generic (#5073) by @khaliqgant
+- *(webhooks)* Add circuit breaker (#5061) by @TBonnin
+- *(webapp)* Redesign integrations list (#5067) by @kaposke
+- *(webapp)* Redesign integrations catalog (#5075) by @kaposke
+- *(webapp)* (proposal) improve fuzzy search in integrations catalog (#5076) by @kaposke
+- *(providers)* Add correct refresh params for bamboohr OAuth (#5072) by @hassan254-prog
+- *(integrations)* Add support for paylocity-nextgen (#5069) by @hassan254-prog
+- *(integrations)* Add support for bettercontact (#5086) by @hassan254-prog
+- *(integrations)* Add support for availity (#5070) by @hassan254-prog
+- *(webhooks)* Add X-Nango-Hmac-Sha256 header to webhook requests (#5093) by @marcindobry
+- *(integrations)* Add support for grist (#5087) by @hassan254-prog
+- *(integrations)* Add support for drata (#5091) by @hassan254-prog
+- *(integrations)* Add support for vanta (#5092) by @hassan254-prog
+- *(integrations)* Add support for recall.ai (#5095) by @hassan254-prog
+- *(webhooks)* Add new webhook verification utility based on the new secure header X-Nango-Hmac-Sha256 (#5097) by @marcindobry
+- *(webhooks)* Update docs around the new webhook verification header (#5101) by @marcindobry
+- *(post-connection)* Add zoho post connection script (#5068) by @hassan254-prog
+- *(server)* Single provider endpoint (#5099) by @kaposke
+- *(proxy)* Add authentication header for `OAuth1.0` (#5109) by @hassan254-prog
+- *(runners)* Add `OAuth1` auth headers to runners (#5118) by @hassan254-prog
+- *(runners)* Pass OAuth credentials via NangoProps instead of making an API call (#5120) by @hassan254-prog
+- *(webhook)* Add endUserEmail (#5085) by @khaliqgant
+- *(integrations)* Add support for sap s/4hana (#4943) by @hassan254-prog
+- *(records)* Add cursor-based deletion to deleteRecords (#5117) by @TBonnin
+
+### Changed
+
+- Add tool calling implementation guides for 4 providers (#5046) by @bastienbeurier
+- Document Nango webhook retries and timeouts (#5066) by @bastienbeurier
+- *(api)* Retrieve DEFAULT_RATE_LIMIT_PER_MIN using zod (#5077) by @marcindobry
+- Combine getPlan with getAccountContext (#5079) by @TBonnin
+- *(records)* Use tuple comparisons for cursor pagination (#5098) by @TBonnin
+- *(runner-sdk)* Remove records validation (#5082) by @TBonnin
+- Upgrade dependencies that use jws to patch security vulnerability (#5106) by @marcindobry
+- Records partition tracing (#5096) by @TBonnin
+- *(records)* SyncId not necessary to delete records (#5103) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6c9d3e5215dcd0259b1b4f0675b3379e5ab47753 by Khaliq by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(records)* Centralize count management with incrCount helper (#5114) by @TBonnin
+
+### Fixed
+
+- *(docs)* Doc restructure batch 10 (#5037) by @khaliqgant
+- *(webapp)* ProfileDropdown font (#5051) by @kaposke
+- *(webapp)* Chart improvements (#5052) by @kaposke
+- *(providers)* Remove scope param in `drchrono` if its empty (#5055) by @hassan254-prog
+- Getting Started typo (#5058) by @mintlify[bot]
+- *(metering)* Type mismatch concatenating strings instead of adding numbers (#5062) by @rossmcewan
+- *(docker)* Upgrade nodejs to 22.21 from 22.17 (#5021) by @rossmcewan
+- *(connect-ui)* Pass oauth2 connection config defaults (#5064) by @hassan254-prog
+- *(webapp)* Force UTC timezone in usage page (#5065) by @kaposke
+- Nango watermark can't be turned off in self hosted (#5042) by @ej-sanmartin
+- *(runners)* Keep track of pending actions (#5038) by @TBonnin
+- *(webhook)* Fix sellsy webhook eventType mapping (#5074) by @hassan254-prog
+- Account activation toasts (#5078) by @kaposke
+- *(webapp)* Profile dropdown alignment and open state (#5088) by @kaposke
+- *(server)* Coalesce concurrent token refresh requests (#5090) by @TBonnin
+- Stop rate limiting orb webhooks (#5108) by @marcindobry
+- Remove mention of runtime records validation in prod (#5113) by @TBonnin
+- *(cli)* Ensure dynamic imports work across all platforms (#5089) by @hassan254-prog
+- NAN-4493: Wrap create account DB write with transaction (#5115) by @agusayerza
+- Upgrade mcp sdk (#5104) by @rossmcewan
+- *(runners)* Use https call instead of a direct db call (#5119) by @hassan254-prog
+- Upgrade js-yaml in nango-yaml (#5084) by @radko93
+- *(two_step)* Enrich logs with provider specific error logs (#5105) by @hassan254-prog
+- *(connectUI)* Allow integrations_config_defaults to flow through (#5124) by @khaliqgant
+
+## [v0.69.14] - 2025-11-21
+
+### Added
+
+- *(webhooks)* Add support for google calendar webhooks (#4994) by @hassan254-prog
+- *(integrations)* Add support for crisp (#5002) by @hassan254-prog
+- *(webhooks)* Add support for pagerduty webhooks (#4940) by @hassan254-prog
+- *(docs)* Add diagnostics info (#5003) by @khaliqgant
+- *(integrations)* Add support for valley (#4995) by @hassan254-prog
+- *(server)* Cumulative usage metrics (#5020) by @kaposke
+- *(integration)* Add mimecast support (#5019) by @gonzalde97
+- *(providers)* Add pennylane rate limit header to check (#5024) by @hassan254-prog
+- *(integrations)* Add support for wiza (#5022) by @hassan254-prog
+- *(integrations)* Add support for cursor admin (#5014) by @hassan254-prog
+- *(integrations)* Add support for contactout (#5023) by @hassan254-prog
+- *(integrations)* Add support for drchrono (#5035) by @hassan254-prog
+- *(nango-cli)* Command updates (#5034) by @khaliqgant
+- *(docs)* Add initial restructure integrations (#4982) by @khaliqgant
+- Map orb usage to local metrics (#5032) by @kaposke
+
+### Changed
+
+- *(webapp)* Use text utilities from figma (#5010) by @kaposke
+- Add dimensions to billing events (#5012) by @TBonnin
+- Use crypto md5 hashing (#5015) by @TBonnin
+- Add Vercel AI SDK implementation guide (#5017) by @bastienbeurier
+- Pubsub.publish metrics on failure (#5016) by @TBonnin
+
+### Fixed
+
+- *(proxy)* Resolve issue where authorization headers are getting dropped during redirects (#5009) by @hassan254-prog
+- Remove dimensions for records/conn billing events (#5018) by @TBonnin
+- Avoid excessive locking when updating connection last_fetched_at (#5026) by @TBonnin
+- *(runner)* Reset last idle tracking date whenever track is called (#5036) by @rossmcewan
+- *(persist)* Caching zod schemas (#5030) by @TBonnin
+- Upgrade glob (#5029) by @TBonnin
+- Upgrade vite (#5028) by @TBonnin
+- Upgrade js-yaml (#5027) by @TBonnin
+- *(webhook)* Use event-type header and minor clean up (#5043) by @khaliqgant
+
 ## [v0.69.13] - 2025-11-13
 
 ### Added
@@ -5346,6 +5535,12 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.19]: https://github.com/NangoHQ/nango/compare/v0.69.18..v0.69.19
+[v0.69.18]: https://github.com/NangoHQ/nango/compare/v0.69.17..v0.69.18
+[v0.69.17]: https://github.com/NangoHQ/nango/compare/v0.69.16..v0.69.17
+[v0.69.16]: https://github.com/NangoHQ/nango/compare/v0.69.15..v0.69.16
+[v0.69.15]: https://github.com/NangoHQ/nango/compare/v0.69.14..v0.69.15
+[v0.69.14]: https://github.com/NangoHQ/nango/compare/v0.69.13..v0.69.14
 [v0.69.13]: https://github.com/NangoHQ/nango/compare/v0.69.12..v0.69.13
 [v0.69.12]: https://github.com/NangoHQ/nango/compare/v0.69.10..v0.69.12
 [v0.69.10]: https://github.com/NangoHQ/nango/compare/v0.69.9..v0.69.10
