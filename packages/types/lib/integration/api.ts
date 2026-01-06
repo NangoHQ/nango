@@ -103,11 +103,56 @@ export type GetIntegrations = Endpoint<{
     };
 }>;
 
+// Shared auth type union for integration body
+export type IntegrationAuthTypeBody =
+    | {
+          authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
+          clientId?: string | undefined;
+          clientSecret?: string | undefined;
+          scopes?: string | undefined;
+      }
+    | {
+          authType: Extract<AuthModeType, 'APP'>;
+          appId?: string | undefined;
+          appLink?: string | undefined;
+          privateKey?: string | undefined;
+      }
+    | {
+          authType: Extract<AuthModeType, 'CUSTOM'>;
+          clientId?: string | undefined;
+          clientSecret?: string | undefined;
+          appId?: string | undefined;
+          appLink?: string | undefined;
+          privateKey?: string | undefined;
+      }
+    | {
+          authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
+          scopes?: string | undefined;
+      }
+    | {
+          authType: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
+          clientName?: string | undefined;
+          clientUri?: string | undefined;
+          clientLogoUri?: string | undefined;
+      };
+
 export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
-    Body: { provider: string; useSharedCredentials: boolean };
+    Body:
+        | {
+              provider: string;
+              useSharedCredentials: boolean;
+              integrationId?: string | undefined;
+              webhookSecret?: string | undefined;
+              displayName?: string | undefined;
+              forward_webhooks?: boolean | undefined;
+          }
+        | ({
+              provider: string;
+              useSharedCredentials: boolean;
+          } & IntegrationAuthTypeBody);
     Success: {
         data: ApiIntegration;
     };
@@ -138,42 +183,7 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
-        | {
-              authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-              clientId?: string | undefined;
-              clientSecret?: string | undefined;
-              scopes?: string | undefined;
-          }
-        | {
-              authType: Extract<AuthModeType, 'APP'>;
-              appId?: string | undefined;
-              appLink?: string | undefined;
-              privateKey?: string | undefined;
-          }
-        | {
-              authType: Extract<AuthModeType, 'CUSTOM'>;
-              clientId?: string | undefined;
-              clientSecret?: string | undefined;
-              appId?: string | undefined;
-              appLink?: string | undefined;
-              privateKey?: string | undefined;
-          }
-        | {
-              authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
-              scopes?: string | undefined;
-          }
-        | {
-              authType: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
-              clientName?: string | undefined;
-              clientUri?: string | undefined;
-              clientLogoUri?: string | undefined;
-          }
-        | {
-              authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
-              appLink?: string | undefined;
-              username?: string | undefined;
-              password?: string | undefined;
-          };
+        | IntegrationAuthTypeBody;
     Success: {
         data: {
             success: boolean;

@@ -1,17 +1,9 @@
-import * as z from 'zod';
-
 import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
-import {
-    integrationDisplayNameSchema,
-    integrationForwardWebhooksSchema,
-    privateKeySchema,
-    providerConfigKeySchema,
-    publicKeySchema
-} from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { patchIntegrationBodySchema } from '../validation.js';
 
 import type { PatchIntegration } from '@nangohq/types';
 
@@ -95,7 +87,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         return;
     }
 
-    const valBody = validationBody.safeParse(req.body);
+    const valBody = patchIntegrationBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) }
