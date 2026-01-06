@@ -151,7 +151,6 @@ class Lambda {
     }
 
     async verifyUrl(_url: string): Promise<Result<void>> {
-        //this needs to be validates against a lambda function arn with qualifier using regex
         const regex = /^arn:aws:lambda:.*:function:nango-runner-function-\d+-[a-f0-9-]+:.*$/;
         if (!regex.test(_url)) {
             return Err('Invalid URL');
