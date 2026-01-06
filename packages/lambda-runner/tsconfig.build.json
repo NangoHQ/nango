@@ -92,7 +92,7 @@
             "path": "packages/metering"
         },
         {
-            "path": "packages/lambda"
+            "path": "packages/lambda-runner"
         }
     ]
 }

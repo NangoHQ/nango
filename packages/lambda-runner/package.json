@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/lambda",
+    "name": "@nangohq/lambda-runner",
     "version": "1.0.0",
     "description": "Lambda functions for Nango",
     "type": "module",

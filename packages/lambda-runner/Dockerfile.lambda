@@ -3,7 +3,7 @@
 # ------------------
 FROM badouralix/curl-jq AS precompile
 
-COPY packages/lambda/tsconfig.build.json /tsconfig.build.json
+COPY packages/lambda-runner/tsconfig.build.json /tsconfig.build.json
 RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build.json > tsconfig.docker.json
 
 # ------------------
@@ -45,7 +45,7 @@ COPY packages/pubsub/package.json ./packages/pubsub/package.json
 COPY packages/account-usage/package.json ./packages/account-usage/package.json
 COPY packages/email/package.json ./packages/email/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
-COPY packages/lambda/package.json ./packages/lambda/package.json
+COPY packages/lambda-runner/package.json ./packages/lambda-runner/package.json
 COPY package*.json  ./
 
 # Install every dependencies
@@ -93,7 +93,7 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
 # Code
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
-ENV DD_LAMBDA_HANDLER="packages/lambda/dist/index.handler"
+ENV DD_LAMBDA_HANDLER="packages/lambda-runner/dist/index.handler"
 RUN rm node_modules/datadog-lambda-js/dist/handler.js
 CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]
 
