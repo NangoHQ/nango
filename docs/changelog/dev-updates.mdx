@@ -4,9 +4,45 @@ sidebarTitle: 'Dev Updates'
 description: "Updates and breaking changes for developers."
 ---
 
-<Info>
-[Full technical changelog on <Icon icon="github" />](https://github.com/NangoHQ/nango/releases)
-</Info>
+<Update label="January 6, 2025">
+
+  ## Sync cache: new data retention policies
+
+  ### ✨ What's changing
+
+  Nango introduces automatic data retention policies for records stored in the Nango sync cache. These policies apply to synced records produced by syncs (our replication-oriented functions) and ensure that record payloads are not retained indefinitely.
+
+  #### Retention lifecycle
+
+  **1.  Automated payload pruning**
+
+  If a record has not been updated for **30 days**, Nango will automatically prune its payload. The record still exists and its metadata remains intact, including record ID, sync state and payload hash (used for change detection). After pruning, the record’s data fields are no longer retrievable from the Nango cache, but Nango can still track the record and detect future changes. This pruning does not impact sync execution or delta-detection.
+
+  **2. Automated hard deletion**
+
+  If a sync has not executed for **60 days**, records belonging to that sync will be permanently deleted (payload + metadata).
+
+  ### 🗓️ Timeline
+
+  The new data retention policies will start on **January 8, 2026**. Record payload pruning will start **30 days later**. Record hard deletion for inactive syncs will start **60 days later**.
+
+  ### 🧐 Am I impacted?
+
+  Most customers (including most sync users) are not impacted, in particular if you use syncs for replication, receiving updates via Nango webhooks, and replicating records into your own system shortly after they arrive in the Nango cache.
+
+  You are impacted if you use Nango sync's cache as a long-term persistent data store, reading/editing record payloads from the Nango cache long after they were updated.
+
+  ### 💡 What should I do?
+
+  If you fetch record payloads from Nango long after they were updated (30+ days), reach out. We will make sure you do not experience breaking changes.
+
+  ### Why are we making this change?
+
+  These retention policies are part of our broader commitment to helping customers meet modern data compliance and security expectations. They ensure that sensitive user data is not stored indefinitely in the Nango sync cache when it is no longer needed for syncing.
+
+  ---
+
+</Update>
 
 <Update label="December 5, 2025">
 
@@ -33,7 +69,7 @@ description: "Updates and breaking changes for developers."
   **For existing integrations:**
   - Migrate to using `X-Nango-Hmac-Sha256` when convenient
   - The old `X-Nango-Signature` header will continue to work, but we recommend migrating for better security
-
+#
   ### Why are we making this change?
 
   HMAC-SHA256 is cryptographically more secure than plain SHA-256 with concatenation. HMAC provides better protection against length extension attacks and is the industry standard for webhook signature verification.
