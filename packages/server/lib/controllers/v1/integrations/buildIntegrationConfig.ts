@@ -46,35 +46,37 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
         };
     }
 
+    const { auth } = body;
+
     // Handle credentials based on authType
-    if ('authType' in body) {
-        if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            config.oauth_client_id = body.clientId ?? null;
-            config.oauth_client_secret = body.clientSecret ?? null;
-            config.oauth_scopes = body.scopes ?? null;
-        } else if (body.authType === 'APP') {
-            config.oauth_client_id = body.appId ?? null;
-            if (body.privateKey) {
+    if (auth && 'authType' in auth) {
+        if (auth.authType === 'OAUTH1' || auth.authType === 'OAUTH2' || auth.authType === 'TBA') {
+            config.oauth_client_id = auth.clientId ?? null;
+            config.oauth_client_secret = auth.clientSecret ?? null;
+            config.oauth_scopes = auth.scopes ?? null;
+        } else if (auth.authType === 'APP') {
+            config.oauth_client_id = auth.appId ?? null;
+            if (auth.privateKey) {
                 // This is a legacy thing
-                config.oauth_client_secret = Buffer.from(body.privateKey).toString('base64');
+                config.oauth_client_secret = Buffer.from(auth.privateKey).toString('base64');
             }
-            config.app_link = body.appLink ?? null;
-        } else if (body.authType === 'CUSTOM') {
-            config.oauth_client_id = body.clientId ?? null;
-            config.oauth_client_secret = body.clientSecret ?? null;
-            config.app_link = body.appLink ?? null;
+            config.app_link = auth.appLink ?? null;
+        } else if (auth.authType === 'CUSTOM') {
+            config.oauth_client_id = auth.clientId ?? null;
+            config.oauth_client_secret = auth.clientSecret ?? null;
+            config.app_link = auth.appLink ?? null;
             // This is a legacy thing
             config.custom = {
                 ...config.custom,
-                ...(body.appId && { app_id: body.appId }),
-                ...(body.privateKey && { private_key: Buffer.from(body.privateKey).toString('base64') })
+                ...(auth.appId && { app_id: auth.appId }),
+                ...(auth.privateKey && { private_key: Buffer.from(auth.privateKey).toString('base64') })
             };
-        } else if (body.authType === 'MCP_OAUTH2') {
+        } else if (auth.authType === 'MCP_OAUTH2') {
             config.oauth_client_id = mcpClientId ?? null;
             config.oauth_client_secret = null;
-            config.oauth_scopes = body.scopes ?? null;
-        } else if (body.authType === 'MCP_OAUTH2_GENERIC') {
-            const { clientName, clientUri, clientLogoUri } = body;
+            config.oauth_scopes = auth.scopes ?? null;
+        } else if (auth.authType === 'MCP_OAUTH2_GENERIC') {
+            const { clientName, clientUri, clientLogoUri } = auth;
             config.custom = {
                 ...config.custom,
                 ...(clientName && { oauth_client_name: clientName }),

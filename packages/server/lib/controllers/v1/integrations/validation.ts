@@ -85,49 +85,8 @@ export const integrationBaseBodySchema = z
 export const patchIntegrationBodySchema = integrationBaseBodySchema.or(integrationAuthTypeSchema);
 
 // Schema for POST integration body (extends base with provider and useSharedCredentials)
-export const postIntegrationBaseBodySchema = integrationBaseBodySchema.extend({
+export const postIntegrationBodySchema = integrationBaseBodySchema.extend({
     provider: providerSchema,
-    useSharedCredentials: z.boolean()
+    useSharedCredentials: z.boolean(),
+    auth: integrationAuthTypeSchema.optional()
 });
-
-// Auth type schemas extended with provider and useSharedCredentials for POST
-const postIntegrationAuthTypeOAuthSchema = integrationAuthTypeOAuthSchema.extend({
-    provider: providerSchema,
-    useSharedCredentials: z.boolean()
-});
-
-const postIntegrationAuthTypeAppSchema = integrationAuthTypeAppSchema.extend({
-    provider: providerSchema,
-    useSharedCredentials: z.boolean()
-});
-
-const postIntegrationAuthTypeCustomSchema = integrationAuthTypeCustomSchema.extend({
-    provider: providerSchema,
-    useSharedCredentials: z.boolean()
-});
-
-const postIntegrationAuthTypeMcpOAuth2Schema = integrationAuthTypeMcpOAuth2Schema.extend({
-    provider: providerSchema,
-    useSharedCredentials: z.boolean()
-});
-
-const postIntegrationAuthTypeMcpOAuth2GenericSchema = integrationAuthTypeMcpOAuth2GenericSchema.extend({
-    provider: providerSchema,
-    useSharedCredentials: z.boolean()
-});
-
-// Discriminated union for POST integration auth types
-const postIntegrationAuthTypeSchema = z.discriminatedUnion(
-    'authType',
-    [
-        postIntegrationAuthTypeOAuthSchema,
-        postIntegrationAuthTypeAppSchema,
-        postIntegrationAuthTypeCustomSchema,
-        postIntegrationAuthTypeMcpOAuth2Schema,
-        postIntegrationAuthTypeMcpOAuth2GenericSchema
-    ],
-    { error: () => ({ message: 'invalid credentials object' }) }
-);
-
-// Schema for POST integration body
-export const postIntegrationBodySchema = postIntegrationBaseBodySchema.or(postIntegrationAuthTypeSchema);

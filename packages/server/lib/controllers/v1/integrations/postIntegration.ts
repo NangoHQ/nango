@@ -42,7 +42,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         }
     }
 
-    if ('authType' in body && body.authType !== provider.auth_mode) {
+    if ('auth' in body && body.auth && 'authType' in body.auth && body.auth.authType !== provider.auth_mode) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
         return;
     }
