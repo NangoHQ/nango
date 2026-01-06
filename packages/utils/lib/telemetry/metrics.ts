@@ -96,7 +96,9 @@ export enum Types {
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
-    PUBSUB_PUBLISH = 'nango.pubsub.publish'
+    PUBSUB_PUBLISH = 'nango.pubsub.publish',
+
+    PERSIST_RECORDS_AUTO_PRUNING = 'nango.persist.daemon.autopruning'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
