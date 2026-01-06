@@ -810,25 +810,35 @@ amplitude:
         - analytics
     auth_mode: BASIC
     proxy:
-        base_url: https://amplitude.com
+        base_url: https://${connectionConfig.hostname} || https://amplitude.com
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
                 - /api/2/events/list
-    docs: https://nango.dev/docs/integrations/all/amplitude
+    docs: https://nango.dev/docs/api-integrations/amplitude
+    docs_connect: https://nango.dev/docs/api-integrations/amplitude/connect
     credentials:
         username:
             type: string
             title: API Key
+            example: 64371a39e74ad915af75674c0696e356
+            pattern: '^[a-f0-9]{32}$'
             description: Your Amplitude API Key
         password:
             type: string
             title: Secret Key
+            example: 6GhPfVz47PKJGSLcDDc9jL5E4Mn
             description: Your Amplitude secret key
-            # https://amplitude.com/docs/apis/authentication
-            # Amplitude is using basic auth with an api key
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname associated with your server residency
+            example: analytics.eu.amplitude.com
+            optional: true
+            pattern: '^(?:analytics\.eu\.)?amplitude\.com$'
 
 anthropic:
     display_name: Anthropic

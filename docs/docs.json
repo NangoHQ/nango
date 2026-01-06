@@ -517,7 +517,7 @@
               "api-integrations/amazon",
               "integrations/all/amazon-selling-partner",
               "integrations/all/amazon-selling-partner-beta",
-              "integrations/all/amplitude",
+              "api-integrations/amplitude",
               "integrations/all/anrok",
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
