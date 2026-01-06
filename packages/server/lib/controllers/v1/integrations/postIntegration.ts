@@ -1,20 +1,12 @@
-import * as z from 'zod';
-
 import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { buildIntegrationConfig } from './buildIntegrationConfig.js';
+import { postIntegrationBodySchema } from './validation.js';
 import { integrationToApi } from '../../../formatters/integration.js';
-import { providerSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { IntegrationConfig, PostIntegration } from '@nangohq/types';
-
-const validationBody = z
-    .object({
-        provider: providerSchema,
-        useSharedCredentials: z.boolean()
-    })
-    .strict();
 
 export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -23,7 +15,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
-    const valBody = validationBody.safeParse(req.body);
+    const valBody = postIntegrationBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) }
@@ -42,9 +34,39 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
 
     const { environment, account } = res.locals;
 
+    if ('integrationId' in body && body.integrationId) {
+        const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
+        if (exists) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'integrationId is already used by another integration' } });
+            return;
+        }
+    }
+
+    if ('authType' in body && body.authType !== provider.auth_mode) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
+        return;
+    }
+
     let integration: IntegrationConfig;
     if (body.useSharedCredentials) {
-        const result = await sharedCredentialsService.createPreprovisionedProvider({ providerName: body.provider, environment_id: environment.id, provider });
+        const createParams: {
+            providerName: string;
+            environment_id: number;
+            provider: typeof provider;
+            unique_key?: string;
+            display_name?: string;
+        } = {
+            providerName: body.provider,
+            environment_id: environment.id,
+            provider
+        };
+        if ('integrationId' in body && body.integrationId) {
+            createParams.unique_key = body.integrationId;
+        }
+        if ('displayName' in body && body.displayName) {
+            createParams.display_name = body.displayName;
+        }
+        const result = await sharedCredentialsService.createPreprovisionedProvider(createParams);
         if (result.isErr()) {
             res.status(400).send({
                 error: { code: 'invalid_body', message: result.error.message }
@@ -52,11 +74,21 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
             return;
         }
         integration = result.value;
-    } else if (provider.auth_mode === 'MCP_OAUTH2') {
-        const client_id = await mcpClient.registerClientId({ provider, environment, team: account });
-        integration = await configService.createEmptyProviderConfigWithCreds(body.provider, environment.id, provider, client_id, '');
     } else {
-        integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
+        // Get client_id for MCP_OAUTH2 if needed
+        let mcpClientId: string | undefined;
+        if (provider.auth_mode === 'MCP_OAUTH2') {
+            mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
+        }
+
+        const config = await buildIntegrationConfig(body, environment.id, mcpClientId);
+
+        const createdIntegration = await configService.createProviderConfig(config, provider);
+        if (!createdIntegration) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
+            return;
+        }
+        integration = createdIntegration;
     }
 
     res.status(200).send({
