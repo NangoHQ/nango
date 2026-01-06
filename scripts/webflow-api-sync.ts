@@ -116,8 +116,8 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
     const logo = `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/${logoPath}`;
 
     let preBuiltCount = 0;
-    if (flowProviderKeys.integrations[slug]) {
-        const flowProviderIndex = flowProviderKeys.indexOf(slug);
+    const flowProviderIndex = flowProviderKeys.indexOf(slug);
+    if (flowProviderIndex !== -1) {
         if (flowsJson[flowProviderIndex]['actions']) {
             preBuiltCount += flowsJson[flowProviderIndex]['actions'].length;
         }

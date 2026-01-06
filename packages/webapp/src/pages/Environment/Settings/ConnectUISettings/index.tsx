@@ -15,6 +15,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
+import { cn } from '@/utils/utils';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { Theme } from '@nangohq/types';
@@ -26,7 +27,10 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
         <form.Field name="theme.light.primary">
             {(field: any) => (
                 <div className="w-full flex flex-col gap-2">
-                    <label htmlFor={field.name} className="text-sm text-body-medium-medium flex items-center gap-1">
+                    <label
+                        htmlFor={field.name}
+                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-tertiary' : '')}
+                    >
                         Primary (Light theme)
                     </label>
                     <div className="flex items-center">
@@ -51,7 +55,10 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
         <form.Field name="theme.dark.primary">
             {(field: any) => (
                 <div className="w-full flex flex-col gap-2">
-                    <label htmlFor={field.name} className="text-sm text-body-medium-medium flex items-center gap-1">
+                    <label
+                        htmlFor={field.name}
+                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-tertiary' : '')}
+                    >
                         Primary (Dark theme)
                     </label>
                     <div className="flex items-center">
@@ -79,7 +86,7 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
     <form.Field name="showWatermark">
         {(field: any) => (
             <div className="flex gap-5 items-center">
-                <label htmlFor={field.name} className={`text-sm text-body-medium-medium`}>
+                <label htmlFor={field.name} className={cn('text-sm text-body-medium-medium', disabled ? 'text-text-tertiary' : '')}>
                     Show &quot;Secured by Nango&quot;
                 </label>
                 <Tooltip delayDuration={0}>
@@ -150,7 +157,7 @@ export const ConnectUISettings = () => {
                         e.stopPropagation();
                         void form.handleSubmit();
                     }}
-                    className="w-full flex flex-col gap-10"
+                    className="w-fit flex flex-col gap-10 text-nowrap"
                 >
                     <div className="flex flex-col gap-6">
                         <form.Field name="defaultTheme">
@@ -202,14 +209,14 @@ export const ConnectUISettings = () => {
                                         disabled={!canSubmit || !isDirty}
                                         loading={isUpdatingConnectUISettings}
                                     >
-                                        Save Connect UI settings
+                                        Save
                                     </Button>
                                 )}
                             </form.Subscribe>
                         )}
 
                         {(!canCustomizeTheme || !canDisableWatermark) && (
-                            <div className="bg-bg-subtle p-6 flex flex-col gap-6">
+                            <div className="bg-bg-elevated p-6 flex flex-col gap-6">
                                 <div className="flex text-body-medium-regular gap-2 items-center">
                                     <Lock size="16" />
                                     <span>Advanced Customization</span>
@@ -226,15 +233,15 @@ export const ConnectUISettings = () => {
                                 {!canCustomizeTheme && <ThemeColorPickers disabled={true} form={form} />}
                                 {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
 
-                                <ButtonLink to={`/${env}/team/billing#plans`} variant="secondary" className="bg-bg-muted" target="_blank">
+                                <ButtonLink to={`/${env}/team/billing#plans`} variant="secondary" target="_blank">
                                     Upgrade to &apos;Growth&apos; plan
                                 </ButtonLink>
                             </div>
                         )}
                     </div>
                 </form>
-                <div className="w-full max-w-[600px] min-h-full flex justify-center items-center">
-                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[500px] max-h-[700px]" />
+                <div className="w-full min-h-full flex justify-end items-center">
+                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[450px] max-h-[700px]" />
                 </div>
             </div>
         </SettingsContent>

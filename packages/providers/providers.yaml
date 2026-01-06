@@ -810,25 +810,35 @@ amplitude:
         - analytics
     auth_mode: BASIC
     proxy:
-        base_url: https://amplitude.com
+        base_url: https://${connectionConfig.hostname} || https://amplitude.com
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
                 - /api/2/events/list
-    docs: https://nango.dev/docs/integrations/all/amplitude
+    docs: https://nango.dev/docs/api-integrations/amplitude
+    docs_connect: https://nango.dev/docs/api-integrations/amplitude/connect
     credentials:
         username:
             type: string
             title: API Key
+            example: 64371a39e74ad915af75674c0696e356
+            pattern: '^[a-f0-9]{32}$'
             description: Your Amplitude API Key
         password:
             type: string
             title: Secret Key
+            example: 6GhPfVz47PKJGSLcDDc9jL5E4Mn
             description: Your Amplitude secret key
-            # https://amplitude.com/docs/apis/authentication
-            # Amplitude is using basic auth with an api key
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname associated with your server residency
+            example: analytics.eu.amplitude.com
+            optional: true
+            pattern: '^(?:analytics\.eu\.)?amplitude\.com$'
 
 anthropic:
     display_name: Anthropic
@@ -2989,6 +2999,25 @@ clickup:
         base_url: https://api.clickup.com
     docs: https://nango.dev/docs/api-integrations/clickup
     setup_guide_url: https://nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-api-oauth-app
+
+cloudbeds:
+    display_name: Cloudbeds
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://api.cloudbeds.com/api/v1.3/oauth
+    token_url: https://api.cloudbeds.com/api/v1.3/access_token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cloudbeds.com
+    docs: https://nango.dev/docs/api-integrations/cloudbeds
+    setup_guide_url: https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app
 
 clerk:
     display_name: Clerk
@@ -15023,6 +15052,27 @@ wordpress:
     proxy:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://nango.dev/docs/integrations/all/wordpress
+
+wiseagent:
+    display_name: Wiseagent
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://sync.thewiseagent.com/WiseAuth/auth
+    token_url: https://sync.thewiseagent.com/WiseAuth/token
+    body_format: json
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sync.thewiseagent.com
+    docs: https://nango.dev/docs/api-integrations/wiseagent
+    setup_guide_url: https://nango.dev/docs/api-integrations/wiseagent/how-to-register-your-own-wiseagent-oauth-app
 
 woocommerce:
     display_name: WooCommerce
