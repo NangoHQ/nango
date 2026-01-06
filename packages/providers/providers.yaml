@@ -12685,11 +12685,13 @@ servicenow-oauth2-cc:
             type: string
             title: Client ID
             description: The Client ID from your ServiceNow OAuth Application
+            doc_section: '#step-4-create-an-oauth-application'
         client_secret:
             type: string
             title: Client Secret
             description: The Client Secret from your ServiceNow OAuth Application
             secret: true
+            doc_section: '#step-4-create-an-oauth-application'
 
 skio:
     display_name: Skio
