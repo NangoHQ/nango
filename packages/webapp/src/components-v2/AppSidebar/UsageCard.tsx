@@ -53,7 +53,7 @@ export default function UsageCard() {
     return (
         <Link
             to={`/${env}/team/billing#usage`}
-            className="flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted cursor-pointer hover:bg-bg-elevated hover:border-transparent"
+            className="flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent"
         >
             {isLoading ? (
                 <>

@@ -1,0 +1,82 @@
+---
+title: 'GitHub App OAuth'
+sidebarTitle: 'GitHub App OAuth'
+description: 'Integrate your application with the GitHub App OAuth API'
+---
+
+## 🚀 Quickstart
+
+Connect to GitHub App OAuth with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GitHub App OAuth_.
+    </Step>
+    <Step title="Authorize GitHub App OAuth">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to GitHub App OAuth. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the GitHub App OAuth API">
+    Let's make your first request to the GitHub API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/repos" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/repos',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 GitHub App OAuth Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own GitHub App OAuth app](/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app)  
+Register an OAuth app with GitHub and obtain credentials to connect it to Nango
+
+Official docs: [GitHub Developer Documentation](https://docs.github.com/en)
+
+## 🧩 Pre-built syncs & actions for GitHub App OAuth
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/github-app-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

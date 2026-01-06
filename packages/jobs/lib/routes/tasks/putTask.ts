@@ -76,26 +76,26 @@ const nangoPropsSchema = z.looseObject({
         .default({ level: 'info' })
 });
 
+const bodySchema = z.object({
+    nangoProps: nangoPropsSchema,
+    error: z
+        .object({
+            type: z.string(),
+            payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
+            status: z.number(),
+            additional_properties: z.record(z.string(), z.unknown()).optional()
+        })
+        .optional(),
+    output: jsonSchema.default(null),
+    telemetryBag: z
+        .object({ customLogs: z.number(), proxyCalls: z.number(), durationMs: z.number().default(0), memoryGb: z.number().default(1) })
+        .default({ customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 })
+});
+const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+
 const validate = validateRequest<PutTask>({
-    parseBody: (data) =>
-        z
-            .object({
-                nangoProps: nangoPropsSchema,
-                error: z
-                    .object({
-                        type: z.string(),
-                        payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
-                        status: z.number(),
-                        additional_properties: z.record(z.string(), z.unknown()).optional()
-                    })
-                    .optional(),
-                output: jsonSchema.default(null),
-                telemetryBag: z
-                    .object({ customLogs: z.number(), proxyCalls: z.number(), durationMs: z.number().default(0), memoryGb: z.number().default(1) })
-                    .default({ customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 })
-            })
-            .parse(data),
-    parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
+    parseBody: (data) => bodySchema.parse(data),
+    parseParams: (data) => paramsSchema.parse(data)
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {

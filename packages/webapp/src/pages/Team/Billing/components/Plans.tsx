@@ -2,8 +2,8 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { mutate } from 'swr';
 
-import { Dot } from './Dot.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
+import { Dot } from '../../../../components-v2/Dot.js';
 import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
 import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
@@ -184,12 +184,14 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     return (
         <TableRow>
             <TableCell className="w-1/3 font-medium">
-                <div className="inline-flex items-center gap-1 py-3">
+                <div className="inline-flex items-center gap-1 py-3 text-text-primary text-body-medium-medium">
                     {plan.title} {active && <Dot />}
                 </div>
             </TableCell>
-            <TableCell className="text-left py-3 text-text-secondary">{plan.basePrice ? `From $${plan.basePrice}/month` : '—'}</TableCell>
-            <TableCell className="text-right py-3 text-text-secondary">{ButtonComponent}</TableCell>
+            <TableCell className="text-left py-3 text-text-secondary !text-body-medium-regular">
+                {plan.basePrice ? `From $${plan.basePrice}/month` : '—'}
+            </TableCell>
+            <TableCell className="text-right py-3">{ButtonComponent}</TableCell>
         </TableRow>
     );
 };

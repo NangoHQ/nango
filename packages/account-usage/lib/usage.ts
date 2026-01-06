@@ -11,7 +11,7 @@ import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
+import type { BillingUsageMetric, BillingUsageMetrics, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const cacheKeyPrefix = 'usageV2';
@@ -27,7 +27,7 @@ export interface IUsageTracker {
     getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number; forceRevalidation?: boolean }): Promise<Result<UsageStatus>>;
     revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>>;
-    getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>>;
+    getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>>;
 }
 
 export class UsageTrackerNoOps implements IUsageTracker {
@@ -67,8 +67,8 @@ export class UsageTrackerNoOps implements IUsageTracker {
         return Promise.resolve(Ok(undefined));
     }
 
-    public async getBillingUsage(): Promise<Result<BillingUsageMetric[]>> {
-        return Promise.resolve(Ok([]));
+    public async getBillingUsage(): Promise<Result<BillingUsageMetrics>> {
+        return Promise.resolve(Ok({}));
     }
 }
 
@@ -213,21 +213,18 @@ export class UsageTracker implements IUsageTracker {
         }
     }
 
-    public async getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetric[]>> {
+    public async getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
 
         if (billingUsageMetrics.isErr()) {
             return billingUsageMetrics;
         }
 
-        return Ok(
-            billingUsageMetrics.value.map((billingUsageMetric) => {
-                const usageMetric = billingMetricToUsageMetric(billingUsageMetric.name);
-                const shouldBeCumulative = usageMetric && ['connections', 'records'].includes(usageMetric);
-
-                return shouldBeCumulative ? toCumulativeUsage(billingUsageMetric) : billingUsageMetric;
-            })
-        );
+        return Ok({
+            ...billingUsageMetrics.value,
+            connections: billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined,
+            records: billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined
+        });
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
@@ -252,17 +249,16 @@ export class UsageTracker implements IUsageTracker {
         if (!plan.value.orb_subscription_id) {
             return Err(new Error('orb_subscription_id_missing'));
         }
-        const billingUsage: Result<BillingUsageMetric[]> = await this.getBillingUsage(plan.value.orb_subscription_id);
+        const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id);
         if (billingUsage.isErr()) {
             // Note: errors (including rate limit errors) are not being retried
             // revalidateAfter isn't being updated, so next incr will attempt to revalidate again
             return Err(billingUsage.error);
         }
         const res = {} as Record<UsageMetric, number>;
-        for (const billingMetric of billingUsage.value) {
-            const usageMetric = billingMetricToUsageMetric(billingMetric.name);
-            if (usageMetric) {
-                res[usageMetric] = billingMetric.total;
+        for (const [usageMetric, billingMetric] of Object.entries(billingUsage.value)) {
+            if (billingMetric) {
+                res[usageMetric as UsageMetric] = billingMetric.total;
             }
         }
         return Ok(res);
@@ -273,7 +269,7 @@ export class UsageTracker implements IUsageTracker {
         let count = 0;
         if (envs.length > 0) {
             const envIds = envs.map((e) => e.id);
-            for await (const recordCounts of records.paginateRecordCounts({ environmentIds: envIds })) {
+            for await (const recordCounts of records.paginateCounts({ environmentIds: envIds })) {
                 if (recordCounts.isErr()) {
                     return Err(recordCounts.error);
                 }
@@ -300,22 +296,6 @@ export class UsageTracker implements IUsageTracker {
         }
         return Ok(count);
     }
-}
-
-function billingMetricToUsageMetric(name: string): UsageMetric | null {
-    // Not ideal to match on BillingMetric name but Orb only exposes the user friendly name or internal ids
-    const lowerName = name.toLowerCase();
-    // order matters here
-    if (lowerName.includes('legacy')) return null;
-    if (lowerName.includes('logs')) return 'function_logs';
-    if (lowerName.includes('proxy')) return 'proxy';
-    if (lowerName.includes('forward')) return 'webhook_forwards';
-    if (lowerName.includes('compute')) return 'function_compute_gbms';
-    if (lowerName.includes('function')) return 'function_executions';
-    if (lowerName.includes('connections')) return 'connections';
-    if (lowerName.includes('records')) return 'records';
-
-    return null;
 }
 
 const sources: Record<UsageMetric, string> = {
@@ -345,7 +325,7 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
         cumulativeUsage.push({
             timeframeStart: usage.timeframeStart,
             timeframeEnd: usage.timeframeEnd,
-            quantity: quantity
+            quantity: Math.floor(quantity)
         });
 
         previousQuantity = quantity;
@@ -353,6 +333,7 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
     return {
         ...periodicUsage,
         view_mode: 'cumulative',
+        total: Math.floor(previousQuantity),
         usage: cumulativeUsage
     };
 }

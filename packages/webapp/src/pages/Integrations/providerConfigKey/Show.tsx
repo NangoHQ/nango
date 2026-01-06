@@ -1,138 +1,107 @@
-import { BookOpenIcon } from '@heroicons/react/24/outline';
-import { PlusIcon } from '@radix-ui/react-icons';
-import { useEffect, useRef, useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
-import { EndpointsShow } from './Endpoints/Show';
-import { SettingsShow } from './Settings/Show';
-import { ErrorPageComponent } from '../../../components/ErrorComponent';
-import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { Skeleton } from '../../../components/ui/Skeleton';
-import { ButtonLink } from '../../../components/ui/button/Button';
-import { useGetIntegration } from '../../../hooks/useIntegration';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import { useStore } from '../../../store';
-import PageNotFound from '../../PageNotFound';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { StatusWidget } from '../components/StatusWidget';
+import { FunctionsTab } from './Functions/Tab';
+import { SettingsTab } from './Settings/Tab';
+import { IntegrationSideInfo } from './components/IntegrationSideInfo';
+import { ErrorPageComponent } from '@/components/ErrorComponent';
+import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
+import { ButtonLink } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { useGetIntegration } from '@/hooks/useIntegration';
+import { usePathNavigation } from '@/hooks/usePathNavigation';
+import DashboardLayout from '@/layout/DashboardLayout';
+import { useStore } from '@/store';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
-    const location = useLocation();
-    const ref = useRef<HTMLDivElement>(null);
-
     const env = useStore((state) => state.env);
+    const { environmentAndAccount, loading: loadingEnvironment } = useEnvironment(env);
+    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
     const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
-
-    const [tab, setTab] = useState<string>('');
-
-    useEffect(() => {
-        if (location.pathname.match(/\/settings/)) {
-            setTab('settings');
-        } else {
-            setTab('home');
-        }
-    }, [location]);
-
-    useEffect(() => {
-        // Scroll top on path change, because list of endpoints can be long and the body is not scrollable
-        // So clicking an endpoint will display the bottom of the next page without this
-        if (ref.current && ref.current.scrollTop > 150) {
-            ref.current.scrollTo({ top: 150 });
-        }
-    }, [location]);
-
-    if (loadingIntegration) {
-        return (
-            <DashboardLayout>
-                <Helmet>
-                    <title>Integration - Nango</title>
-                </Helmet>
-                <div className="flex gap-4 justify-between">
-                    <div className="flex gap-6">
-                        <div className="shrink-0">
-                            <div className="w-[80px] h-[80px] p-5 border border-border-gray rounded-xl">
-                                <Skeleton className="w-[48px] h-[48px]" />
-                            </div>
-                        </div>
-                        <div className="my-3 flex flex-col gap-4">
-                            <div className="text-left text-lg font-semibold text-gray-400">
-                                <Skeleton className="w-[150px]" />
-                            </div>
-                            <div className="flex gap-4 items-center">
-                                <Skeleton className="w-[250px]" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </DashboardLayout>
-        );
-    }
 
     if (error) {
         return <ErrorPageComponent title="Integration" error={error} />;
     }
 
-    if (!data) {
-        return null;
-    }
+    const isLoading = loadingIntegration || loadingEnvironment || !data || !environmentAndAccount;
 
-    return (
-        <DashboardLayout ref={ref}>
-            <Helmet>
-                <title>{data.integration.unique_key} - Integration - Nango</title>
-            </Helmet>
-            <div className="flex gap-4 justify-between">
-                <div className="flex gap-6">
-                    <div className="shrink-0">
-                        <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
-                            <IntegrationLogo provider={data.integration.provider} height={12} width={12} />
-                        </div>
-                    </div>
-                    <div className="my-2">
-                        <div className="text-left text-lg font-semibold text-gray-400">Integration</div>
+    if (isLoading) {
+        return (
+            <DashboardLayout className="flex flex-col gap-8">
+                <Helmet>
+                    <title>Integration - Nango</title>
+                </Helmet>
 
-                        <div className="flex gap-4 items-center">
-                            <h2 className="text-left text-3xl font-semibold text-white break-all">
-                                {data.integration.display_name ?? data.template.display_name}
-                            </h2>
-                            <div className="flex items-center">
-                                {data.template.docs && (
-                                    <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
-                                        <BookOpenIcon className="h-5 w-5" />
-                                    </ButtonLink>
-                                )}
-                            </div>
-                            <div className="flex">
-                                <StatusWidget className="text-white" service={data.integration.provider} />
-                            </div>
+                <div className="flex flex-col gap-5 w-full">
+                    <div className="inline-flex justify-between">
+                        <div className="inline-flex items-center gap-2">
+                            <Skeleton className="size-15" />
+                            <Skeleton className="w-36 h-6" />
                         </div>
+                        <Skeleton className="w-36 h-10" />
                     </div>
+                    <Skeleton className="w-full h-10" />
+                    <Skeleton className="w-56 h-10" />
                 </div>
-                <div className="shrink-0">
-                    <ButtonLink to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`}>
-                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                        Add Test Connection
+            </DashboardLayout>
+        );
+    }
+    return (
+        <DashboardLayout className="flex flex-col gap-8">
+            <Helmet>
+                <title>Integration - Nango</title>
+            </Helmet>
+
+            <AutoIdlingBanner />
+
+            <div className="flex flex-col gap-5 w-full">
+                <div className="inline-flex justify-between">
+                    <div className="inline-flex items-center gap-2">
+                        <IntegrationLogo provider={data.integration.provider} className="size-15" />
+                        <span className="text-text-primary text-body-large-semi">{data.integration.display_name ?? data.template.display_name}</span>
+                    </div>
+                    <ButtonLink to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`} size="lg">
+                        Add test connection
                     </ButtonLink>
                 </div>
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList>
+                        <TabsTrigger value="functions">Functions</TabsTrigger>
+                        <TabsTrigger value="settings">Settings</TabsTrigger>
+                        <TabsTrigger value="setup-guide" disabled asChild>
+                            <Link to={data.template.docs} target="_blank" className="w-fit inline-flex items-center gap-1.5">
+                                API setup guide <ExternalLink className="size-4" />
+                            </Link>
+                        </TabsTrigger>
+                        <TabsTrigger value="logs" disabled asChild>
+                            <Link
+                                to={`/${env}/logs?integrations=${data.integration.unique_key}`}
+                                target="_blank"
+                                className="w-fit inline-flex items-center gap-1.5"
+                            >
+                                Logs <ExternalLink className="size-4" />
+                            </Link>
+                        </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="functions">
+                        <div className="flex w-full gap-11 justify-between">
+                            <FunctionsTab integration={data.integration} />
+                            <IntegrationSideInfo integration={data.integration} provider={data.template} />
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="settings">
+                        <div className="flex w-full gap-11 justify-between">
+                            <SettingsTab data={data} environment={environmentAndAccount?.environment} />
+                            <IntegrationSideInfo integration={data.integration} provider={data.template} />
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </div>
-
-            <nav className="flex gap-2 my-11">
-                <ButtonLink to="./" variant={tab === 'home' ? 'active' : 'zombie'}>
-                    Endpoints
-                </ButtonLink>
-                <ButtonLink to="./settings" variant={tab === 'settings' ? 'active' : 'zombie'}>
-                    Settings
-                    {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
-                </ButtonLink>
-            </nav>
-            <AutoIdlingBanner />
-            <Routes>
-                <Route path="/*" element={<EndpointsShow integration={data} />} />
-                <Route path="/settings" element={<SettingsShow data={data} />} />
-                <Route path="*" element={<PageNotFound />} />
-            </Routes>
         </DashboardLayout>
     );
 };
