@@ -1,0 +1,82 @@
+---
+title: 'ServiceNow (Client Credentials)'
+sidebarTitle: 'ServiceNow (Client Credentials)'
+description: 'Integrate your application with the ServiceNow API using OAuth 2.0 Client Credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to ServiceNow with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ServiceNow (Client Credentials)_.
+    </Step>
+    <Step title="Authorize ServiceNow">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ServiceNow subdomain, Client ID, and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the ServiceNow API">
+    Let's make your first request to the ServiceNow Table API (fetch a list of incidents). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/now/table/incident?sysparm_limit=5" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/now/table/incident',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { sysparm_limit: '5' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 ServiceNow Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/servicenow-oauth2-cc/connect)
+Connect your ServiceNow account using the Connect UI
+
+Official docs: [ServiceNow REST API Documentation](https://developer.servicenow.com/dev.do#!/reference/api/vancouver/rest/c_TableAPI)
+
+## 🧩 Pre-built syncs & actions for ServiceNow
+
+_No pre-built syncs or actions available yet._
+
+<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+
+---
+

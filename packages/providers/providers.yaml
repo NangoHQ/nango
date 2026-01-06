@@ -12659,6 +12659,38 @@ servicenow:
             suffix: .service-now.com
             prefix: https://
 
+servicenow-oauth2-cc:
+    display_name: ServiceNow (Client Credentials)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.service-now.com
+    docs: https://nango.dev/docs/integrations/all/servicenow-oauth2-cc
+    connection_config:
+        subdomain:
+            type: string
+            title: ServiceNow Domain
+            description: The subdomain of your ServiceNow account (e.g., 'dev12345' for dev12345.service-now.com)
+            pattern: '^[a-z0-9_-]+$'
+            example: dev12345
+            suffix: .service-now.com
+            prefix: https://
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID from your ServiceNow OAuth Application
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret from your ServiceNow OAuth Application
+            secret: true
+
 skio:
     display_name: Skio
     categories:

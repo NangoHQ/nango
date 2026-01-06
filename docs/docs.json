@@ -971,6 +971,7 @@
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
               "integrations/all/servicenow",
+              "api-integrations/servicenow-oauth2-cc",
               "integrations/all/setmore",
               "integrations/all/sellsy",
               "integrations/all/sellsy-oauth2-cc",
