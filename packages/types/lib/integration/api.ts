@@ -170,7 +170,7 @@ export type PatchIntegration = Endpoint<{
           }
         | {
               authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
-              appLink: string;
+              appLink?: string | undefined;
               username?: string | undefined;
               password?: string | undefined;
           };

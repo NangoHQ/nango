@@ -70,7 +70,7 @@ const validationBody = z
                 z
                     .object({
                         authType: z.enum(['INSTALL_PLUGIN']),
-                        appLink: z.url().max(255),
+                        appLink: z.url().max(255).optional(),
                         username: z.string().min(1).max(255).optional(),
                         password: z.string().min(1).max(255).optional()
                     })
@@ -207,9 +207,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             }
         } else if (body.authType === 'INSTALL_PLUGIN') {
             const { username, password, appLink } = body;
-            if (username || password || appLink) {
+            if (appLink) {
                 integration.app_link = appLink;
+            }
+            if (username || password) {
                 integration.custom = {
+                    ...integration.custom,
                     ...(username && { username: username }),
                     ...(password && { password: password })
                 };
