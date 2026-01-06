@@ -104,7 +104,7 @@ export type GetIntegrations = Endpoint<{
 }>;
 
 // Shared auth type union for integration body
-export type IntegrationAuthTypeBody =
+export type IntegrationAuthBody =
     | {
           authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
           clientId?: string | undefined;
@@ -140,19 +140,15 @@ export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
-    Body:
-        | {
-              provider: string;
-              useSharedCredentials: boolean;
-              integrationId?: string | undefined;
-              webhookSecret?: string | undefined;
-              displayName?: string | undefined;
-              forward_webhooks?: boolean | undefined;
-          }
-        | ({
-              provider: string;
-              useSharedCredentials: boolean;
-          } & IntegrationAuthTypeBody);
+    Body: {
+        provider: string;
+        useSharedCredentials: boolean;
+        integrationId?: string | undefined;
+        webhookSecret?: string | undefined;
+        displayName?: string | undefined;
+        forward_webhooks?: boolean | undefined;
+        auth?: IntegrationAuthBody | undefined;
+    };
     Success: {
         data: ApiIntegration;
     };
@@ -183,7 +179,7 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
-        | IntegrationAuthTypeBody;
+        | IntegrationAuthBody;
     Success: {
         data: {
             success: boolean;
