@@ -41,6 +41,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 code: Buffer.from(params.code).toString('base64'),
                 codeParams: params.codeParams
             }),
+            //InvocationType is Event for async invocation, RequestResponse for sync invocation
             InvocationType: 'Event'
         });
         await client.send(command);

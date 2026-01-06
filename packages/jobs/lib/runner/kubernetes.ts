@@ -5,7 +5,7 @@ import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { onFinishing } from '../utils/runner.js';
+import { notifyOnIdle } from './runner.js';
 
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
@@ -477,7 +477,7 @@ export const kubernetesNodeProvider: NodeProvider = {
         return kubernetes.verifyUrl(url);
     },
     finish: async (node: Node) => {
-        return onFinishing(node);
+        return notifyOnIdle(node);
     },
     waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
         return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });

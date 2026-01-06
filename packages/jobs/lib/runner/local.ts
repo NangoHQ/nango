@@ -8,7 +8,7 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
-import { onFinishing } from '../utils/runner.js';
+import { notifyOnIdle } from './runner.js';
 
 import type { NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
@@ -95,7 +95,7 @@ export const localNodeProvider: NodeProvider = {
         return Promise.resolve(res);
     },
     finish: async (node) => {
-        return onFinishing(node);
+        return notifyOnIdle(node);
     },
     waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
         return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });

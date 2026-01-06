@@ -10,7 +10,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
-import { onFinishing } from '../utils/runner.js';
+import { notifyOnIdle } from './runner.js';
 
 import type { RenderPlan } from './render.api.js';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -38,7 +38,7 @@ export const renderNodeProvider: NodeProvider = {
         return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     },
     finish: async (node) => {
-        return onFinishing(node);
+        return notifyOnIdle(node);
     },
     start: async (node) => {
         if (!envs.RUNNER_OWNER_ID) {

@@ -1,10 +1,11 @@
-import { Err, Ok, env, isProd } from '@nangohq/utils';
+import { Err, Ok, env, isProd, retryWithBackoff } from '@nangohq/utils';
 
 import { RemoteRunner } from './remote.runner.js';
 import { envs } from '../env.js';
 import { FleetRunner } from './fleet.runner.js';
 import { getDefaultFleet } from '../runtime/runtimes.js';
 
+import type { Node } from '@nangohq/fleet';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import type { Result } from '@nangohq/utils';
 
@@ -49,6 +50,21 @@ export async function idle(nodeId: number): Promise<Result<void>> {
     const idle = await runnersFleet.idleNode({ nodeId });
     if (idle.isErr()) {
         return Err(idle.error);
+    }
+    return Ok(undefined);
+}
+
+export async function notifyOnIdle(node: Node): Promise<Result<void>> {
+    const res = await retryWithBackoff(
+        async () => {
+            return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+        },
+        {
+            numOfAttempts: 5
+        }
+    );
+    if (!res.ok) {
+        throw new Error(`status: ${res.status}. response: ${res.statusText}`);
     }
     return Ok(undefined);
 }

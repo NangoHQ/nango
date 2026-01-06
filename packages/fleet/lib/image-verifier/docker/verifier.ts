@@ -1,8 +1,8 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { FleetError } from './utils/errors.js';
+import { FleetError } from '../../utils/errors.js';
 
-import type { ImageVerifier } from './image-verifier.js';
+import type { ImageVerifier } from '../verifier.js';
 import type { Result } from '@nangohq/utils';
 
 export class DockerImageVerifier implements ImageVerifier {

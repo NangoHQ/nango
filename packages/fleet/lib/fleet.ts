@@ -4,8 +4,8 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { DatabaseClient } from './db/client.js';
 import { envs } from './env.js';
-import { DockerImageVerifier } from './image-verifier.docker.js';
-import { ECRImageVerifier } from './image-verifier.ecr.js';
+import { DockerImageVerifier } from './image-verifier/docker/verifier.js';
+import { ECRImageVerifier } from './image-verifier/ecr/verifier.js';
 import * as deployments from './models/deployments.js';
 import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import * as nodes from './models/nodes.js';
@@ -14,7 +14,7 @@ import { Supervisor } from './supervisor/supervisor.js';
 import { FleetError } from './utils/errors.js';
 import { withPgLock } from './utils/locking.js';
 
-import type { ImageVerifier } from './image-verifier.js';
+import type { ImageVerifier } from './image-verifier/verifier.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
 import type { Node, NodeConfigOverride } from './types.js';
 import type { Deployment, ImageType, RoutingId } from '@nangohq/types';
