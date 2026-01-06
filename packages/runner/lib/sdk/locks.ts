@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
+import crypto from 'node:crypto';
+
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Locking } from '@nangohq/kvstore';
@@ -24,8 +26,12 @@ export class KVLocks implements Locks {
         this.locking = locking;
     }
 
+    private createHash(key: string): string {
+        return crypto.createHash('sha256').update(key).digest().subarray(0, 16).toString('base64url');
+    }
+
     private getLockKey(owner: string, key?: string): string {
-        return key ? `runner:${owner}:${key}` : `runner:${owner}`;
+        return key ? `runner:${owner}:${this.createHash(key)}` : `runner:${owner}`;
     }
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
