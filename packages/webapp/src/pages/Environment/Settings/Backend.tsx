@@ -148,7 +148,7 @@ export const BackendSettings: React.FC = () => {
                                             <Button variant="tertiary">Dismiss</Button>
                                         </DialogClose>
                                         <Button variant="destructive" onClick={onRevert} loading={loading}>
-                                            Cancel key rotation
+                                            Cancel
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
