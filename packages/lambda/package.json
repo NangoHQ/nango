@@ -21,11 +21,8 @@
         "@nangohq/runner": "file:../runner",
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
-        "botbuilder": "4.23.3",
         "datadog-lambda-js": "12.130.0",
         "dd-trace": "5.80.0",
-        "soap": "1.6.0",
-        "unzipper": "0.12.3",
         "zod": "4.1.12"
     }
 }
