@@ -33,7 +33,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
             ...field
-        });
+        } as any);
         if ('error' in updated.json) {
             const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
             if (!supressToast) {

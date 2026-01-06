@@ -16,7 +16,8 @@ const displayNames: Record<AuthModeType, string> = {
     CUSTOM: 'Custom',
     TBA: 'TBA',
     JWT: 'JWT',
-    BILL: 'Bill'
+    BILL: 'Bill',
+    INSTALL_PLUGIN: 'Install Plugin'
 };
 
 /**

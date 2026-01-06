@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { mutate } from 'swr';
 
-import { DeleteIntegrationButton } from './Delete';
+import { DeleteIntegrationButton } from './DeleteIntegrationButton';
 import { InfoBloc } from '../../../../../components/InfoBloc';
 import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
