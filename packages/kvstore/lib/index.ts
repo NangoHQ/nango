@@ -4,6 +4,7 @@ import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
+import { envs } from './env.js';
 
 import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';
@@ -68,13 +69,13 @@ mapRedisUrl.set('system', getRedisUrl());
 mapRedisUrl.set('customer', getCustomerRedisUrl() || getRedisUrl());
 
 function getRedisUrl(): string | undefined {
-    const url = process.env['NANGO_REDIS_URL'];
+    const url = envs.NANGO_REDIS_URL;
     if (url) {
         return url;
     }
-    const endpoint = process.env['NANGO_REDIS_HOST'];
-    const port = process.env['NANGO_REDIS_PORT'] || 6379;
-    const auth = process.env['NANGO_REDIS_AUTH'];
+    const endpoint = envs.NANGO_REDIS_HOST;
+    const port = envs.NANGO_REDIS_PORT || 6379;
+    const auth = envs.NANGO_REDIS_AUTH;
     if (endpoint && port && auth) {
         return `rediss://:${auth}@${endpoint}:${port}`;
     }
@@ -82,13 +83,13 @@ function getRedisUrl(): string | undefined {
 }
 
 function getCustomerRedisUrl(): string | undefined {
-    const url = process.env['NANGO_CUSTOMER_REDIS_URL'];
+    const url = envs.NANGO_CUSTOMER_REDIS_URL;
     if (url) {
         return url;
     }
-    const endpoint = process.env['NANGO_CUSTOMER_REDIS_HOST'];
-    const port = process.env['NANGO_CUSTOMER_REDIS_PORT'] || 6379;
-    const auth = process.env['NANGO_CUSTOMER_REDIS_AUTH'];
+    const endpoint = envs.NANGO_CUSTOMER_REDIS_HOST;
+    const port = envs.NANGO_CUSTOMER_REDIS_PORT || 6379;
+    const auth = envs.NANGO_CUSTOMER_REDIS_AUTH;
     if (endpoint && port && auth) {
         return `rediss://:${auth}@${endpoint}:${port}`;
     }

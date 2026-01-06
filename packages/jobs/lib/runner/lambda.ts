@@ -128,7 +128,7 @@ class Lambda {
                 PERSIST_SERVICE_URL: envs.LAMBDA_PERSIST_SERVICE_URL || '',
                 JOBS_SERVICE_URL: envs.LAMBDA_JOBS_SERVICE_URL || '',
                 PROVIDERS_URL: envs.LAMBDA_PROVIDERS_URL || '',
-                NANGO_REDIS_URL: envs.NANGO_REDIS_URL || '',
+                NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || '',
                 NANGO_TELEMETRY_SDK: String(envs.NANGO_TELEMETRY_SDK),
                 DD_ENV: envs.DD_ENV || '',
                 DD_SITE: envs.DD_SITE || '',

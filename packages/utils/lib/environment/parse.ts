@@ -334,11 +334,17 @@ export const ENVS = z.object({
     RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
     RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
-    // Redis
+    // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),
     NANGO_REDIS_HOST: z.string().optional(),
     NANGO_REDIS_PORT: z.coerce.number().optional().default(6379),
     NANGO_REDIS_AUTH: z.string().optional(),
+
+    // Redis (customer boundary)
+    NANGO_CUSTOMER_REDIS_URL: z.url().optional(),
+    NANGO_CUSTOMER_REDIS_HOST: z.string().optional(),
+    NANGO_CUSTOMER_REDIS_PORT: z.coerce.number().optional().default(6379),
+    NANGO_CUSTOMER_REDIS_AUTH: z.string().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),
