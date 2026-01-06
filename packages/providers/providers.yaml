@@ -9409,6 +9409,58 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+nerdio:
+    display_name: Nerdio
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        scope: ${connectionConfig.scope}
+    proxy:
+        base_url: https://${connectionConfig.hostname}/rest-api
+    docs: https://nango.dev/docs/api-integrations/nerdio
+    docs_connect: https://nango.dev/docs/api-integrations/nerdio/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Nerdio Instance URL
+            description: The hostname of your Nerdio Manager instance
+            format: hostname
+            example: web-admin-portal-3e3a4zfp4peo4.azurewebsites.net
+            doc_section: '#step-1-finding-your-nerdio-instance-url'
+            order: 1
+        tenantId:
+            type: string
+            title: Azure Tenant ID
+            description: Your Azure Active Directory Tenant ID
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-2-getting-your-azure-credentials'
+            order: 2
+        scope:
+            type: string
+            title: API Scope
+            description: The Application ID URI scope
+            example: api://g0cb288e-ff16-1861-9393-50219a19453c/.default
+            doc_section: '#step-3-configuring-the-api-scope'
+            order: 3
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Application (client) ID from your Azure App Registration
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            format: uuid
+            doc_section: '#step-2-getting-your-azure-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret from your Azure App Registration
+            secret: true
+            doc_section: '#step-2-getting-your-azure-credentials'
+
 netsuite:
     display_name: NetSuite (OAuth)
     categories:
