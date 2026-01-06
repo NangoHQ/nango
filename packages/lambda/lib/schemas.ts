@@ -71,18 +71,7 @@ export const nangoPropsSchema = zod.object({
         })
         .nullable(),
     heartbeatTimeoutSecs: zod.number().optional(),
-    isCLI: zod.boolean().optional(),
-    axios: zod
-        .object({
-            request: zod.any().optional(), // AxiosInterceptorManager cannot be validated
-            response: zod
-                .object({
-                    onFulfilled: zod.function(),
-                    onRejected: zod.function()
-                })
-                .optional()
-        })
-        .optional()
+    isCLI: zod.boolean().optional()
 });
 
 export const requestSchema = zod.object({
