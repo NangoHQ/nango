@@ -16,5 +16,5 @@ export function getSizeFromRoutingId(name: string): number {
 
 export function getRoutingId(nangoProps: NangoProps): string {
     const size = getSizeFromProps(nangoProps);
-    return `nango-function-${size}`;
+    return `nango-runner-function-${size}`;
 }
