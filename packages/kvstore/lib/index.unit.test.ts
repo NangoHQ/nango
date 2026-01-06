@@ -56,4 +56,10 @@ describe('getKVStore', () => {
 
         expect(store).toBeInstanceOf(InMemoryKVStore);
     });
+    it('should return different instances for different boundaries', async () => {
+        const store1 = await getKVStore('system');
+        const store2 = await getKVStore('customer');
+
+        expect(store1).not.toBe(store2);
+    });
 });

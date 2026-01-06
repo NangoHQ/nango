@@ -50,7 +50,7 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
     context.callbackWaitsForEmptyEventLoop = false;
     const request = requestSchema.parse(event);
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
-    const locking = await getLocking();
+    const locking = await getLocking('customer');
     const gate = new Gate(locking);
     const pass = await gate.enter(nangoProps, { ttlMs: context.getRemainingTimeInMillis() });
     if (!pass.allowed) {
