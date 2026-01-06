@@ -38,7 +38,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             Payload: JSON.stringify({
                 taskId: params.taskId,
                 nangoProps: params.nangoProps,
-                code: Buffer.from(params.code).toString('base64'),
+                code: params.code,
                 codeParams: params.codeParams
             }),
             //InvocationType is Event for async invocation, RequestResponse for sync invocation
