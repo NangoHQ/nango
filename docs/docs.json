@@ -604,6 +604,7 @@
               "api-integrations/clickup",
               "integrations/all/clerk",
               "integrations/all/close",
+              "api-integrations/cloudbeds",
               "integrations/all/cloudentity",
               "integrations/all/coda",
               "integrations/all/codeclimate",

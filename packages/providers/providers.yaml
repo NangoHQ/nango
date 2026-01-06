@@ -3000,6 +3000,25 @@ clickup:
     docs: https://nango.dev/docs/api-integrations/clickup
     setup_guide_url: https://nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-api-oauth-app
 
+cloudbeds:
+    display_name: Cloudbeds
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://api.cloudbeds.com/api/v1.3/oauth
+    token_url: https://api.cloudbeds.com/api/v1.3/access_token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cloudbeds.com
+    docs: https://nango.dev/docs/api-integrations/cloudbeds
+    setup_guide_url: https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app
+
 clerk:
     display_name: Clerk
     categories:
