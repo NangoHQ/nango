@@ -63,7 +63,6 @@ import type {
     DBEndUser,
     DBEnvironment,
     DBTeam,
-    InstallPluginCredentials,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -175,15 +174,7 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials:
-            | TwoStepCredentials
-            | TbaCredentials
-            | JwtCredentials
-            | ApiKeyCredentials
-            | BasicApiCredentials
-            | BillCredentials
-            | SignatureCredentials
-            | InstallPluginCredentials;
+        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -1388,11 +1379,8 @@ class ConnectionService {
 
             return { success: true, error: null, response: parsedCreds };
         } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching TwoStep credentials tokens ${stringifyError(err)}`);
+            const errorPayload = stringifyError(err);
+            logger.error(`Error fetching TwoStep credentials tokens ${errorPayload}`);
             const error = new NangoError('two_step_credentials_fetch_error', errorPayload);
 
             return { success: false, error, response: null };

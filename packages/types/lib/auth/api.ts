@@ -177,9 +177,9 @@ export interface SignatureCredentials {
 }
 
 export interface InstallPluginCredentials {
-    type: 'BASIC'; // we will have this for now, open to others like API_KEY if its implemented
-    username?: string | undefined;
-    password?: string | undefined;
+    type: AuthModes['Basic']; // we will have this for now, open to others like API_KEY if its implemented
+    username: string;
+    password: string;
 }
 
 export interface CombinedOauth2AppCredentials extends CredentialsCommon {

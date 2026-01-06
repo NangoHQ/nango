@@ -1,9 +1,11 @@
+import db from '@nangohq/database';
+
 import environmentService from '../services/environment.service.js';
 
 import type { DBEnvironment } from '@nangohq/types';
 
 export async function createEnvironmentSeed(accountId: number = 0, envName: string = 'test'): Promise<DBEnvironment> {
-    const env = await environmentService.createEnvironment(accountId, envName);
+    const env = await environmentService.createEnvironment(db.knex, { accountId: accountId, name: envName });
     if (!env) {
         throw new Error('Failed to create environment');
     }

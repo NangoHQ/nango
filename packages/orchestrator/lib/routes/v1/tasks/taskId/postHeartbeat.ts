@@ -19,8 +19,10 @@ type PostHeartbeat = Endpoint<{
     Success: never;
 }>;
 
+const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+
 const validate = validateRequest<PostHeartbeat>({
-    parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
+    parseParams: (data) => paramsSchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

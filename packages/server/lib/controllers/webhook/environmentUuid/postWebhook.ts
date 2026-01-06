@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, environmentService, getPlan } from '@nangohq/shared';
+import { accountService, configService, getPlan } from '@nangohq/shared';
 import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -38,7 +38,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
-            const resEnv = await environmentService.getAccountAndEnvironment({ environmentUuid });
+            const resEnv = await accountService.getAccountContext({ environmentUuid });
             if (!resEnv) {
                 res.status(404).send({ error: { code: 'unknown_environment' } });
                 return;

@@ -31,7 +31,6 @@ import type {
     DBEnvironment,
     DBPlan,
     DBTeam,
-    InstallPluginCredentials,
     IntegrationConfig,
     InternalProxyConfiguration,
     JwtCredentials,
@@ -92,7 +91,7 @@ export async function testConnectionCredentials({
     config: Config;
     connectionConfig: ConnectionConfig;
     connectionId: string;
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
     provider: Provider;
     logCtx: LogContextStateless;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
@@ -291,7 +290,7 @@ export async function credentialsTest({
 }: {
     config: Config;
     provider: Provider;
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
     connectionId: string;
     connectionConfig: ConnectionConfig;
     logCtx: LogContextStateless;
@@ -375,7 +374,11 @@ export async function credentialsTest({
                 proxyConfig,
                 getConnection: () => {
                     return connection;
-                }
+                },
+                getIntegrationConfig: () => ({
+                    oauth_client_id: config.oauth_client_id,
+                    oauth_client_secret: config.oauth_client_secret
+                })
             });
 
             const response = (await proxy.request()).unwrap();

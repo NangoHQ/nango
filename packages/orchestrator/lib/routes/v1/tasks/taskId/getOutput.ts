@@ -26,14 +26,14 @@ type GetOutput = Endpoint<{
 const path = '/v1/tasks/:taskId/output';
 const method = 'GET';
 
+const querySchema = z.object({
+    longPolling: z.coerce.number().optional()
+});
+const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+
 const validate = validateRequest<GetOutput>({
-    parseQuery: (data) =>
-        z
-            .object({
-                longPolling: z.coerce.number().optional()
-            })
-            .parse(data),
-    parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
+    parseQuery: (data) => querySchema.parse(data),
+    parseParams: (data) => paramsSchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {

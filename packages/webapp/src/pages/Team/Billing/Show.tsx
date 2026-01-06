@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
 
 import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
@@ -8,11 +7,11 @@ import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
 
 export const TeamBilling: React.FC = () => {
-    const location = useLocation();
-    // Navigation defaults to 'usage' when no hash is present
-    const isUsageTab = !location.hash || location.hash === '#usage';
+    const [activeTab, setActiveTab] = useHashNavigation('usage');
+    const isUsageTab = activeTab === 'usage';
     const [selectedMonth, setSelectedMonth] = useState<Date>(() => {
         const now = new Date();
         return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
@@ -31,7 +30,7 @@ export const TeamBilling: React.FC = () => {
                     </div>
                 )}
             </header>
-            <Navigation defaultValue="usage" className="max-w-full">
+            <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-full">
                 <NavigationList>
                     <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
                     <NavigationTrigger value={'plans'}>Plans</NavigationTrigger>

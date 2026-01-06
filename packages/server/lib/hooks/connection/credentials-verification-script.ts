@@ -10,7 +10,6 @@ import type {
     BasicApiCredentials,
     ConnectionConfig,
     DBConnectionDecrypted,
-    InstallPluginCredentials,
     InternalProxyConfiguration,
     JwtCredentials,
     SignatureCredentials,
@@ -33,7 +32,7 @@ export interface InternalNango {
 
 async function execute(
     config: Config,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials,
     connectionId: string,
     connectionConfig: ConnectionConfig
 ) {
@@ -108,7 +107,11 @@ async function execute(
                     proxyConfig,
                     getConnection: () => {
                         return connection;
-                    }
+                    },
+                    getIntegrationConfig: () => ({
+                        oauth_client_id: null,
+                        oauth_client_secret: null
+                    })
                 });
                 return (await proxy.request()).unwrap();
             }

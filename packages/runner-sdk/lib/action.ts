@@ -17,7 +17,6 @@ import type {
     GetPublicConnection,
     GetPublicIntegration,
     HTTP_METHOD,
-    InstallPluginCredentials,
     JwtCredentials,
     MaybePromise,
     NangoProps,
@@ -70,6 +69,7 @@ export abstract class NangoActionBase<
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
+    public integrationConfig?: NangoProps['integrationConfig'];
 
     public ActionError = ActionError;
 
@@ -123,6 +123,10 @@ export abstract class NangoActionBase<
 
         if (config.syncConfig) {
             this.syncConfig = config.syncConfig;
+        }
+
+        if (config.integrationConfig) {
+            this.integrationConfig = config.integrationConfig;
         }
 
         this.logger = config.logger || {
@@ -212,7 +216,6 @@ export abstract class NangoActionBase<
         | BillCredentials
         | TwoStepCredentials
         | SignatureCredentials
-        | InstallPluginCredentials
     > {
         this.throwIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

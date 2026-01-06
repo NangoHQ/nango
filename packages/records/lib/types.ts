@@ -21,7 +21,7 @@ export interface FormattedRecord {
     deleted_at?: Date | null;
 }
 
-export type FormattedRecordWithMetadata = FormattedRecord & RecordMetadata;
+export type FormattedRecordWithMetadata = FormattedRecord & RecordMetadata & { partition: string };
 
 export interface EncryptedRecordData {
     iv: string;
@@ -45,6 +45,7 @@ interface RecordMetadata {
     last_modified_at: string;
     last_action: LastAction;
     deleted_at: string | null;
+    pruned_at: string | null;
     cursor: string;
 }
 

@@ -1,6 +1,6 @@
 import ms from 'ms';
 
-import { Err, Ok, flagHasPlan } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
@@ -10,14 +10,6 @@ import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
-
-export async function safeGetPlan(db: Knex, { accountId }: { accountId: number }): Promise<DBPlan | null> {
-    if (!flagHasPlan) {
-        return null;
-    }
-    const planRes = await getPlan(db, { accountId });
-    return planRes.isOk() ? planRes.value : null;
-}
 
 export async function getPlan(db: Knex, { accountId }: { accountId: number }): Promise<Result<DBPlan>> {
     try {

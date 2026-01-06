@@ -11,7 +11,8 @@ const bodySchema = z
     .object({
         allowed_integrations: originalBodySchema.shape.allowed_integrations,
         end_user: originalBodySchema.shape.end_user,
-        organization: originalBodySchema.shape.organization
+        organization: originalBodySchema.shape.organization,
+        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults
     })
     .strict();
 
@@ -35,7 +36,8 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
     const emulatedBody = {
         allowed_integrations: body.allowed_integrations,
         end_user: { ...body.end_user, tags: { origin: 'nango_dashboard' } },
-        organization: body.organization
+        organization: body.organization,
+        integrations_config_defaults: body.integrations_config_defaults
     } satisfies PostConnectSessions['Body'];
 
     await generateSession(res, emulatedBody);

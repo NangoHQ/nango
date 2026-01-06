@@ -1,7 +1,6 @@
 import tracer from 'dd-trace';
 
-import db from '@nangohq/database';
-import { environmentService, getPlan } from '@nangohq/shared';
+import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
 import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
@@ -34,29 +33,26 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     }
 
     try {
-        const accountAndEnv = await tracer.trace('persist.middleware.auth.getAccountAndEnvironmentBySecretKey', async () => {
-            return await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+        const accountContext = await tracer.trace('persist.middleware.auth.getAccountAndEnvironmentBySecretKey', async () => {
+            return await accountService.getAccountContextBySecretKey(secret);
         });
-        if (!accountAndEnv || accountAndEnv.environment.id !== environmentId) {
-            throw new Error('Cannot find matching environment');
+        if (!accountContext) {
+            res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Account not found` } });
+            return;
+        }
+        if (accountContext.environment.id !== environmentId) {
+            res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Matching environment not found` } });
+            return;
+        }
+        if (flagHasPlan && !accountContext.plan) {
+            res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: plan not found` } });
+            return;
         }
 
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const resPlan = await tracer.trace('persist.middleware.auth.getPlan', async () => {
-                return await getPlan(db.knex, { accountId: accountAndEnv.account.id });
-            });
-            if (resPlan.isErr()) {
-                res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(resPlan.error)}` } });
-                return;
-            }
-            plan = resPlan.value;
-        }
-
-        res.locals['account'] = accountAndEnv.account;
-        res.locals['environment'] = accountAndEnv.environment;
-        res.locals['plan'] = plan;
-        tagTraceUser({ ...accountAndEnv, plan });
+        res.locals['account'] = accountContext.account;
+        res.locals['environment'] = accountContext.environment;
+        res.locals['plan'] = accountContext.plan;
+        tagTraceUser({ ...accountContext });
         next();
     } catch (err) {
         res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(err)}` } });

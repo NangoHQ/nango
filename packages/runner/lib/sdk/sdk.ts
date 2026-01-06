@@ -1,5 +1,5 @@
 import { Nango } from '@nangohq/node';
-import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 
@@ -22,7 +22,6 @@ export const oldLevelToNewLevel = {
     http: 'info'
 } as const;
 
-const RECORDS_VALIDATION_SAMPLE = 1;
 const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
@@ -115,6 +114,9 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
                     prevConnection = connection;
                 }
                 return connection;
+            },
+            getIntegrationConfig: () => {
+                return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
             }
         });
         const response = (await proxy.request()).unwrap();
@@ -377,41 +379,8 @@ export class NangoSyncRunner extends NangoSyncBase {
         }
 
         const resultsWithoutMetadata = this.removeMetadata(results);
-
-        // Validate records
-        const hasErrors = this.validateRecords(model, resultsWithoutMetadata);
-
-        if (hasErrors.length > 0) {
-            metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS, hasErrors.length);
-            if (this.runnerFlags?.validateSyncRecords) {
-                throw new InvalidRecordSDKError({ ...hasErrors[0], model });
-            }
-
-            const sampled = hasErrors.length > RECORDS_VALIDATION_SAMPLE;
-            const sample = sampled ? hasErrors.slice(0, RECORDS_VALIDATION_SAMPLE) : hasErrors;
-            if (sampled) {
-                await this.sendLogToPersist({
-                    type: 'log',
-                    message: `Invalid records: ${hasErrors.length} failed ${sampled ? `(sampled to ${RECORDS_VALIDATION_SAMPLE})` : ''}`,
-                    source: 'internal',
-                    level: 'warn',
-                    createdAt: new Date().toISOString()
-                });
-            }
-            await Promise.all(
-                sample.map((log) => {
-                    return this.sendLogToPersist({
-                        type: 'log',
-                        message: `Invalid record payload`,
-                        meta: { ...log, model },
-                        level: 'warn',
-                        createdAt: new Date().toISOString()
-                    });
-                })
-            );
-        }
-
         const modelFullName = this.modelFullName(model);
+
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.saveRecords({

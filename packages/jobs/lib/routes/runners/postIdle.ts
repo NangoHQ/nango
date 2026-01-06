@@ -7,8 +7,10 @@ import { runnersFleet } from '../../runner/fleet.js';
 import type { PostIdle } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 
+const paramsSchema = z.object({ nodeId: z.coerce.number().positive() }).strict();
+
 const validate = validateRequest<PostIdle>({
-    parseParams: (data) => z.object({ nodeId: z.coerce.number().positive() }).strict().parse(data)
+    parseParams: (data) => paramsSchema.parse(data)
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostIdle>) => {

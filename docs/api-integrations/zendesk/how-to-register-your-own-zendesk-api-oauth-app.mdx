@@ -1,0 +1,74 @@
+---
+title: 'How to register your own Zendesk OAuth app'
+sidebarTitle: 'Zendesk Setup'
+description: 'Register an OAuth app with Zendesk and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Zendesk to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Zendesk account.
+
+<Note>
+Zendesk has two kinds of OAuth apps:
+- Helpdesk/support apps
+- CRM apps
+
+Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reach out or contribute it :)
+</Note>
+
+## Creating a Zendesk OAuth Client
+
+<Steps>
+  <Step title="Create a Zendesk account">
+    If you don't already have one, sign up for a free [Zendesk account](https://www.zendesk.com/register/).
+  </Step>
+  <Step title="Create an OAuth client">
+    1. Log in to your to [Zendesk account](https://www.zendesk.com/login/) then navigate to **Admin Center** → **Apps and Integrations** → **APIs** → **OAuth Clients**.
+    2. Click **Add OAuth Client**.
+  </Step>
+  <Step title="Configure your OAuth client">
+    1. Fill in all the required details. For **Client kind** select **Confidential** and for **Redirect URLs** enter `https://api.nango.dev/oauth/callback`.
+    2. Click **Save** to create your OAuth client.
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    1. After creating your OAuth client, you'll receive a **Secret** (your **Client Secret**). It will not be shown again, so be sure to store it securely. The **Client ID** is the same **Identifier** you provided earlier when configuring your OAuth client. Keep both credentials safe, as you'll need them when setting up your integration in Nango.
+  </Step>
+</Steps>
+
+<Note>
+Important considerations when creating your OAuth client:
+- Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app.
+- The subdomain is a critical part of the OAuth flow and API calls. It's the unique identifier in the Zendesk URL: `https://<subdomain>.zendesk.com`.
+- When creating an OAuth client, make sure to fill out all fields, even those marked as "optional", especially if you plan to request a **global OAuth client** later.
+</Note>
+
+## Requesting a Global OAuth Client
+
+If your application needs to connect to multiple Zendesk instances, you should request a **global OAuth client**. To do this, follow these steps:
+
+<Steps>
+  <Step title="Prepare your OAuth client">
+    1. From the same app you created earlier, ensure your **Identifier** is prefixed with "zdg-" (e.g., "zdg-your-app-name").
+    2. Complete all fields in the OAuth client configuration, including any that were left blank during the initial setup.
+    3. When your app is ready to be used across multiple Zendesk accounts, note down the **Identifier** and **Secret** as you'll need them when setting up your integration in Nango. You will lose access to the client administration page once the local client is converted to a global client.
+  </Step>
+  <Step title="Submit global OAuth request">
+    1. Sign in to the [Zendesk Marketplace](https://apps.zendesk.com/) portal, select **Organization** from the left-hand menu, and then navigate to the **Global OAuth Request** tab.
+    2. Complete and submit the request form. Make sure:
+    - The subdomain includes the prefix `d3v`- (submissions from non `-d3v-` accounts are not accepted).
+    - Your local OAuth client in your sponsored account is properly configured with the same prefixes.
+    <Note> You'll receive an email and a ticket reference with updates on your submission. Please add `support@appsubmission.zendesk.com` to your contact list to ensure you receive all communications regarding your submission. If the request is approved, Zendesk will convert your **local OAuth client** into a **global OAuth client**. </Note>
+  </Step>
+</Steps>
+
+<Note>
+For security reasons, Zendesk doesn't allow developers to create their own global OAuth clients. You must request one from Zendesk. Zendesk OAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
+</Note>
+
+## Additional Resources
+
+Zendesk has [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) that vary by plan. For more details on Zendesk's OAuth implementation, see:
+- [OAuth authentication guide](https://developer.zendesk.com/api-reference/sales-crm/authentication/reference/)
+- [OAuth client setup](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_s21_lfs_qk)
+- [OAuth scopes](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_qkc_dcm_dcc)
+- [Global OAuth client setup](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/)
+
+---

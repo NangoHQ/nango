@@ -1376,10 +1376,92 @@ paths:
                                                             type: string
                                                             description: The current cursor of the record. Use this to fetch records updated after this record
                                                             example: 'MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=='
+                                                        pruned_at:
+                                                            anyOf:
+                                                                - type: string
+                                                                  format: date-time
+                                                                - type: 'null'
+                                                            description: The timestamp at which the record payload was pruned (emptied)
                                     next_cursor:
                                         type: string
                                         description: The base64-encoded cursor for pagination
                                         example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /records/prune:
+        patch:
+            summary: Prune records
+            description: |-
+                Prunes synced records for a given connection and model using cursor-based pagination.
+
+                **What is pruning:**
+                Pruning empties the record payload while preserving the record metadata.
+
+                **Cursor behavior:**
+                Records are pruned up to and including the specified cursor.
+            parameters:
+                - name: Connection-Id
+                  in: header
+                  required: true
+                  description: The connection ID used to create the connection.
+                  schema:
+                      type: string
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - model
+                                - until_cursor
+                            properties:
+                                model:
+                                    type: string
+                                    description: The data model to prune records from
+                                variant:
+                                    type: string
+                                    description: The variant of the model
+                                until_cursor:
+                                    type: string
+                                    description: Prune all records up to and including this cursor. Use the cursor value from _nango_metadata.cursor of the record you want to prune up to.
+                                limit:
+                                    type: integer
+                                    minimum: 1
+                                    maximum: 10000
+                                    description: The maximum number of records to prune in this request. Defaults to 1000.
+
+            responses:
+                '200':
+                    description: Successfully pruned records
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - count
+                                    - has_more
+                                properties:
+                                    count:
+                                        type: integer
+                                        description: The number of records pruned in this request
+                                        example: 150
+                                    has_more:
+                                        type: boolean
+                                        description: |-
+                                            Indicates if there are potentially more records to prune.
+                                            - `true`: There may be more records that need pruning
+                                            - `false`: All records up to the cursor have been pruned
+                                        example: true
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -2897,6 +2979,12 @@ components:
                                     oauth_scopes_override:
                                         type: string
                                         description: Override oauth scopes
+                                    oauth_client_id_override:
+                                        type: string
+                                        description: Set to empty string to allow end-users to provide their own OAuth client ID in Connect UI
+                                    oauth_client_secret_override:
+                                        type: string
+                                        description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
                 overrides:
                     type: object
                     additionalProperties:

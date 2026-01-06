@@ -10,6 +10,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import {
     ErrorSourceEnum,
     LogActionEnum,
+    accountService,
     configService,
     connectionService,
     environmentService,
@@ -1111,13 +1112,14 @@ class OAuthController {
         const connectionId = session.connectionId;
 
         try {
-            const environment = await environmentService.getById(session.environmentId);
-            const account = await environmentService.getAccountFromEnvironment(session.environmentId);
-            if (!environment || !account) {
+            const accountRes = await accountService.getAccountContext({ environmentId: session.environmentId });
+            if (!accountRes) {
                 const error = WSErrBuilder.EnvironmentOrAccountNotFound();
                 await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
                 return;
             }
+
+            const { environment, account } = accountRes;
 
             logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
