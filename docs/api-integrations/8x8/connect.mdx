@@ -60,11 +60,3 @@ Once you have your **Client ID** and **Client Secret**:
 
 You are now connected to 8x8.
 
-## API Access Notes
-
-The OAuth authentication for 8x8 XCaaS APIs uses the client credentials grant type. The access token:
-- Is valid for approximately 30 minutes (1799 seconds)
-- Should be refreshed before expiration or when you receive an authentication error
-- Is passed via the Authorization header as `Bearer {access_token}` in all API requests
-
-Nango handles token refresh automatically, so you don't need to manage token expiration manually.
