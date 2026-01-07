@@ -309,7 +309,6 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
     const contentEncoding = responseStream.headers['content-encoding'] || '';
 
-    const isJsonResponse = contentType.includes('application/json');
     const isChunked = transferEncoding === 'chunked';
     const isEncoded = Boolean(contentEncoding);
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
@@ -345,8 +344,8 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        if (isJsonResponse) {
-            res.setHeader('Content-Type', 'application/json');
+        if (typeof contentType === 'string' && contentType !== '') {
+            res.setHeader('Content-Type', contentType);
         }
 
         try {
