@@ -24,14 +24,10 @@ This guide will walk you through configuring OAuth 2.0 Client Credentials in Ser
 Client Credentials must be enabled at the instance level:
 
 1. In ServiceNow, navigate to **sys_properties.list** (this won't appear under the "All" menu - type it in the navigation filter and press *Enter* to be redirected).
-<Frame>
 <img src="/api-integrations/servicenow-oauth2-cc/nav_filter.png" />
-</Frame>
 
 2. Search for `glide.oauth.inbound.client.credential.grant_type.enabled`.
-<Frame>
 <img src="/api-integrations/servicenow-oauth2-cc/sys_properties.png" />
-</Frame>
 3. If it doesn't exist, click **New** and create it:
    - **Name**: `glide.oauth.inbound.client.credential.grant_type.enabled`
    - **Type**: `true | false`
@@ -73,17 +69,11 @@ This is the service account identity that API calls will be made as:
 2. Click **New** > **Create an OAuth API endpoint for external clients**.
 3. **Important**: The default form view doesn't show all required fields. To add them:
    - Click on the burger icon next to "Application Registries"
-   <Frame>
    <img src="/api-integrations/servicenow-oauth2-cc/app_registry_header.png" />
-   </Frame>
    - Select **Configure** > **Form Builder**
-   <Frame>
    <img src="/api-integrations/servicenow-oauth2-cc/context_menu.png" />
-   </Frame>
    - Add the **OAuth Application User** and **Default Grant Type** fields to the form
-   <Frame>
    <img src="/api-integrations/servicenow-oauth2-cc/form_builder.png" />
-   </Frame>
    - Save the form layout
 4. Configure the application:
    - **Name**: `Nango Integration`
@@ -92,9 +82,7 @@ This is the service account identity that API calls will be made as:
    - **Default Grant Type**: `Client Credentials`
    - **OAuth Application User**: Select the user created in Step 2
    - **Active**: Checked
-<Frame>
 <img src="/api-integrations/servicenow-oauth2-cc/oauth_app_form.png" />
-</Frame>
 
 5. Click **Submit**.
 6. Open the application and go to the **Auth Scopes** related list.
@@ -107,19 +95,8 @@ Once you have your credentials:
 
 1. Open the form where you need to authenticate with ServiceNow.
 2. Enter your **Subdomain** (e.g., `dev12345`), **Client ID**, and **Client Secret** in their designated fields.
+<img src="/api-integrations/servicenow-oauth2-cc/form.png" />
 3. Submit the form, and you should be successfully authenticated.
 
 You are now connected to ServiceNow.
 
-### Troubleshooting
-
-**Error: "integration user is not configured"**
-- Ensure the OAuth Application has an **OAuth Application User** set in Step 4.
-
-**Error: "access_denied"**
-- Verify the system property `glide.oauth.inbound.client.credential.grant_type.enabled` is set to `true`.
-- Check that the OAuth Application User has the required roles (`rest_service`, `itil`).
-
-**Error: "invalid_client"**
-- Double-check your Client ID and Client Secret are correct.
-- Ensure the OAuth Application is set to **Active**.
