@@ -134,8 +134,8 @@ describe('handleResponse', () => {
         handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
         await mockRes.waitForSend();
 
-        expect(mockRes.res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
-        expect(mockRes.res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Failed to parse JSON response' }));
+        expect(mockRes.res.writeHead).toHaveBeenCalledWith(502, { 'Content-Type': 'application/json' });
+        expect(mockRes.res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Failed to parse JSON response from upstream service' }));
         expect(mockLogCtx.failed).toHaveBeenCalled();
     });
 
@@ -151,6 +151,20 @@ describe('handleResponse', () => {
         const sentData = mockRes.getSentData();
         expect(sentData).toBeDefined();
         expect(sentData!.toString()).toBe(jsonWithBigInt);
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should pass-thru non-json payload', async () => {
+        const nonJsonPayload = `<foobar>`;
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream(nonJsonPayload, 'text/xml');
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await mockRes.waitForSend();
+
+        const sentData = mockRes.getSentData();
+        expect(sentData).toBeDefined();
+        expect(sentData!.toString()).toBe(nonJsonPayload);
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 });

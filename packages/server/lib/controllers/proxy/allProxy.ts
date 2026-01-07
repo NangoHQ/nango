@@ -345,28 +345,34 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        try {
-            if (isJsonResponse) {
-                // Validate JSON structure without re-serializing to avoid JSON.parse limitations (ex: precision loss with big integers)
-                // TODO: consider removing validation and forwarding upstream response as-is (even if invalid JSON) to avoid performance overhead
+        if (isJsonResponse) {
+            // Validate JSON structure without re-serializing to avoid JSON.parse limitations (ex: precision loss with big integers).
+            // TODO: consider removing validation and forwarding upstream response as-is (even if invalid JSON) to avoid performance overhead.
+            try {
                 JSON.parse(Buffer.concat(responseData).toString());
-                res.setHeader('Content-Type', 'application/json');
+            } catch (err) {
+                res.writeHead(502, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to parse JSON response from upstream service' }));
+                void logCtx.error('Failed to parse JSON response from upstream service', { error: err });
+                await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE);
+                return;
             }
+            res.setHeader('Content-Type', 'application/json');
+        }
 
+        try {
             res.send(Buffer.concat(responseData));
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
-            await logCtx.success();
         } catch (err) {
-            logger.error(err);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
-
-            void logCtx.error('Failed to parse JSON response', { error: err });
+            void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
-        } finally {
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
+            return;
         }
+
+        await logCtx.success();
+        metrics.increment(metrics.Types.PROXY_SUCCESS);
+        metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
     });
 }
 

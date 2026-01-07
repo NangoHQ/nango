@@ -9,7 +9,6 @@ import { Notifications } from './Notifications';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useHashNavigation } from '../../../hooks/useHashNavigation';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
@@ -17,12 +16,21 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Badge } from '@/components-v2/ui/badge';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 
+import type { ReactNode } from 'react';
+
+const EnvironmentSettingsContent: React.FC<{ value: string; children: ReactNode }> = ({ value, children }) => {
+    return (
+        <NavigationContent value={value} className="h-fit flex w-full">
+            <div className="flex-1"></div>
+            <div className="max-w-[900px] min-w-[715px] w-full">{children}</div>
+        </NavigationContent>
+    );
+};
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
     const { team } = useTeam(env);
 
     const { environmentAndAccount } = useEnvironment(env);
-    const [activeTab, setActiveTab] = useHashNavigation('general');
 
     if (!environmentAndAccount || !team) {
         return (
@@ -42,24 +50,24 @@ export const EnvironmentSettings: React.FC = () => {
             </DashboardLayout>
         );
     }
-
     const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
+
     return (
-        <DashboardLayout className="flex-col">
+        <DashboardLayout fullWidth className="flex-col justify-center 4xl:px-51">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
 
-            <div className="flex justify-between mb-8 items-center">
-                <div className="flex text-left text-3xl tracking-tight text-white gap-2.5">
+            <div className="flex mb-8 justify-center">
+                <div className="flex text-left text-3xl tracking-tight text-white w-[1153px] 4xl:w-full gap-2.5">
                     <h2 className="font-semibold">Environment Settings</h2>
                     <Badge size="custom" className="px-3.5 text-title-group">
                         {env}
                     </Badge>
                 </div>
             </div>
-            <div className="flex h-fit" key={env}>
-                <Navigation value={activeTab} onValueChange={setActiveTab}>
+            <div className="flex h-fit justify-center" key={env}>
+                <Navigation defaultValue="general" className="max-w-[1153px] mx-auto 4xl:max-w-full">
                     <NavigationList className="w-[209px] 4xl:w-[236px]">
                         <NavigationTrigger value="general">General</NavigationTrigger>
                         <NavigationTrigger value="backend">Backend</NavigationTrigger>
@@ -70,31 +78,31 @@ export const EnvironmentSettings: React.FC = () => {
                         <NavigationTrigger value="telemetry">Telemetry</NavigationTrigger>
                         {canSeeDeprecatedAuthorization && <NavigationTrigger value="deprecated">Deprecated</NavigationTrigger>}
                     </NavigationList>
-                    <NavigationContent value="general" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    <EnvironmentSettingsContent value={'general'}>
                         <General />
-                    </NavigationContent>
-                    <NavigationContent value="backend" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'backend'}>
                         <BackendSettings />
-                    </NavigationContent>
-                    <NavigationContent value="connect-ui" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'connect-ui'}>
                         <ConnectUISettings />
-                    </NavigationContent>
-                    <NavigationContent value="webhooks" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'webhooks'}>
                         <Notifications />
-                    </NavigationContent>
-                    <NavigationContent value="slack-alerts" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'slack-alerts'}>
                         <SlackAlertsSettings />
-                    </NavigationContent>
-                    <NavigationContent value="functions" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'functions'}>
                         <Functions />
-                    </NavigationContent>
-                    <NavigationContent value="telemetry" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'telemetry'}>
                         <Telemetry />
-                    </NavigationContent>
+                    </EnvironmentSettingsContent>
                     {canSeeDeprecatedAuthorization && (
-                        <NavigationContent value="deprecated" className="h-fit flex flex-col gap-6 flex-initial w-full">
+                        <EnvironmentSettingsContent value={'deprecated'}>
                             <DeprecatedSettings />
-                        </NavigationContent>
+                        </EnvironmentSettingsContent>
                     )}
                 </Navigation>
             </div>
