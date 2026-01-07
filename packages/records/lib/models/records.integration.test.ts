@@ -1573,6 +1573,82 @@ describe('Records service', () => {
             }
         });
     });
+
+    describe('autoDeletingCandidate', () => {
+        beforeEach(async () => {
+            await db(RECORDS_TABLE).truncate();
+            await db(RECORD_COUNTS_TABLE).truncate();
+        });
+
+        it('should find a stale connection/model candidate for deletion', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Record 1' },
+                { id: '2', name: 'Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Make the count entry stale by updating its updated_at timestamp
+            const oneDay = 24 * 60 * 60 * 1000;
+            const twoDaysAgo = new Date(Date.now() - 2 * oneDay);
+            await db(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).update({ updated_at: twoDaysAgo });
+
+            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+
+            expect(candidate?.connectionId).toBe(connectionId);
+            expect(candidate?.model).toBe(model);
+            expect(candidate?.environmentId).toBe(environmentId);
+        });
+
+        it('should return null when no stale candidates exist', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Fresh Record 1' },
+                { id: '2', name: 'Fresh Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: 60 * 1000 })).unwrap();
+
+            expect(candidate).toBeNull();
+        });
+
+        it('should randomly select candidates', async () => {
+            const oneDay = 24 * 60 * 60 * 1000;
+            const syncId = uuid.v4();
+
+            // Insert multiple stale record counts
+            for (let i = 0; i < 5; i++) {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+
+                const records = [{ id: '1', name: 'Record' }];
+                await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+                await db(RECORD_COUNTS_TABLE)
+                    .where({ connection_id: connectionId, environment_id: environmentId, model })
+                    .update({ updated_at: new Date(Date.now() - 2 * oneDay) });
+            }
+
+            const candidates = new Set<string>();
+            for (let i = 0; i < 50; i++) {
+                const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+                if (candidate) {
+                    candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
+                }
+            }
+            expect(candidates.size).toBeGreaterThan(1);
+        });
+    });
 });
 
 async function upsertNRecords(n: number): Promise<{ environmentId: number; connectionId: number; model: string; syncId: string; result: UpsertSummary }> {
