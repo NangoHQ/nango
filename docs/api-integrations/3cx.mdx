@@ -21,7 +21,7 @@ Connect to 3CX with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/Defs?%24select=Id" \
+            curl "https://api.nango.dev/proxy/Defs?$select=Id" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,10 @@ Connect to 3CX with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/Defs?$select=Id',
+            endpoint: '/Defs',
+            params: {
+              $select: 'Id'
+            },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });

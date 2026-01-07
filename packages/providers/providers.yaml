@@ -48,10 +48,9 @@
         accept: application/json
     token_response:
         token: access_token
-        token_expiration: expires_in
-        token_expiration_strategy: expireIn
+        token_expires_in_ms: 3600000
     proxy:
-        base_url: https://${connectionConfig.domain}/xapi/v1
+        base_url: https://${connectionConfig.domain}/xapi
         headers:
             authorization: Bearer ${accessToken}
             accept: application/json
@@ -73,9 +72,9 @@
         domain:
             type: string
             title: 3CX Domain
-            description: Your 3CX instance domain (e.g., mycompany.3cx.us or your custom domain)
+            description: Your 3CX instance domain
             example: mycompany.3cx.us
-            pattern: '^[a-zA-Z0-9][a-zA-Z0-9.-]+[a-zA-Z0-9]$'
+            format: hostname
             prefix: https://
             order: 1
             doc_section: '#step-1-find-your-3cx-domain'
