@@ -108,8 +108,7 @@ const GroupedFunctionsTable: React.FC<{
                 <Fragment key={groupName}>
                     <TableHeader className="h-8">
                         <TableRow className="h-8">
-                            <TableHead className="w-1/3 h-8">{groupName}</TableHead>
-                            <TableHead className="h-8">{index === 0 && 'Name'}</TableHead>
+                            <TableHead className="h-8">{groupName}</TableHead>
                             <TableHead className="h-8">{index === 0 && 'Type'}</TableHead>
                             <TableHead className="h-8 text-center">{index === 0 && 'Enabled'}</TableHead>
                         </TableRow>
@@ -126,10 +125,8 @@ const GroupedFunctionsTable: React.FC<{
                                             </TooltipTrigger>
                                             <TooltipContent>{func.description}</TooltipContent>
                                         </Tooltip>
+                                        <CopyButton text={func.name} />
                                     </div>
-                                </TableCell>
-                                <TableCell>
-                                    <CopyButton text={func.name} />
                                 </TableCell>
                                 <TableCell>
                                     {func.pre_built ? (
