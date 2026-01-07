@@ -1162,7 +1162,8 @@ atlassian:
         grant_type: refresh_token
     proxy:
         base_url: https://api.atlassian.com
-    docs: https://nango.dev/docs/integrations/all/atlassian
+    docs: https://nango.dev/docs/api-integrations/atlassian
+    setup_guide_url: https://nango.dev/docs/api-integrations/atlassian/how-to-register-your-own-atlassian-api-oauth-app
 
 atlassian-admin:
     display_name: Atlassian Cloud Admin
@@ -4230,7 +4231,8 @@ docusign:
     proxy:
         base_url: https://www.docusign.net
     post_connection_script: docusignPostConnection
-    docs: https://nango.dev/docs/integrations/all/docusign
+    docs: https://nango.dev/docs/api-integrations/docusign
+    setup_guide_url: https://nango.dev/docs/api-integrations/docusign/how-to-register-your-own-docusign-api-oauth-app
 
 docusign-sandbox:
     display_name: DocuSign (Sandbox)
@@ -6553,8 +6555,9 @@ greenhouse:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-    docs: https://nango.dev/docs/integrations/all/greenhouse
-    docs_connect: https://nango.dev/docs/integrations/all/greenhouse/connect
+    docs: https://nango.dev/docs/api-integrations/greenhouse
+    setup_guide_url: https://nango.dev/docs/api-integrations/greenhouse/how-to-register-your-own-greenhouse-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/greenhouse/connect
     connection_config:
         resource:
             type: string
@@ -8264,7 +8267,8 @@ lever:
         audience: https://api.lever.co/v1/
     proxy:
         base_url: https://api.lever.co
-    docs: https://nango.dev/docs/integrations/all/lever
+    docs: https://nango.dev/docs/api-integrations/lever
+    setup_guide_url: https://nango.dev/docs/api-integrations/lever/how-to-register-your-own-lever-api-oauth-app
 
 lever-basic:
     display_name: Lever (Basic Auth)
@@ -9295,7 +9299,8 @@ monday:
     token_url: https://auth.monday.com/oauth2/token
     proxy:
         base_url: https://api.monday.com
-    docs: https://nango.dev/docs/integrations/all/monday
+    docs: https://nango.dev/docs/api-integrations/monday
+    setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-api-oauth-app
 
 momentum-io:
     display_name: Momentum.io
@@ -12729,7 +12734,8 @@ servicenow:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.service-now.com
-    docs: https://nango.dev/docs/integrations/all/servicenow
+    docs: https://nango.dev/docs/api-integrations/servicenow
+    setup_guide_url: https://nango.dev/docs/api-integrations/servicenow/how-to-register-your-own-servicenow-api-oauth-app
     connection_config:
         subdomain:
             type: string
@@ -15231,8 +15237,8 @@ workday:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.hostname}/ccx/service/${connectionConfig.tenant}
-    docs: https://nango.dev/docs/integrations/all/workday
-    docs_connect: https://nango.dev/docs/integrations/all/workday/connect
+    docs: https://nango.dev/docs/api-integrations/workday
+    docs_connect: https://nango.dev/docs/api-integrations/workday/connect
     connection_config:
         hostname:
             type: string

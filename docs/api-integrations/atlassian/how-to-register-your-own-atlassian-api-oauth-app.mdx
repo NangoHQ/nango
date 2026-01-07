@@ -1,0 +1,64 @@
+---
+title: 'How to register your own Atlassian API OAuth app'
+sidebarTitle: 'Atlassian Setup'
+description: 'Register an OAuth app with Atlassian and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Atlassian to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Atlassian account.
+
+## Creating an OAuth 2.0 (3LO) App
+
+<Steps>
+  <Step title="Create an Atlassian developer account">
+    If you don't already have one, sign up for an [Atlassian developer account](https://id.atlassian.com/signup/).
+  </Step>
+  <Step title="Create a new OAuth 2.0 (3LO) app">
+    1. Go to the [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/).
+    2. Click **Create** and select **OAuth 2.0 integration**.
+    3. Enter a name, agree to Atlassian's developer terms by checking the agreement checkbox for your app and click **Create**.
+    4. Your app will be created and you'll be taken to the app management page.
+  </Step>
+  <Step title="Configure OAuth 2.0 (3LO)">
+    1. In the left sidebar, select **Authorization**.
+    2. Next to OAuth 2.0 (3LO), click **Add**.
+    3. Enter `https://api.nango.dev/oauth/callback` as the **Callback URL**.
+    4. Click **Save Changes** to save your changes.
+  </Step>
+  <Step title="Add API permissions">
+    1. In the left sidebar, select **Permissions**.
+    2. Find the APIs you want to use (Jira, Confluence, etc.) and click **Add**, then click **Configure**.
+    3. Click **Edit Scopes** then select the [scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#scopes) your application requires.
+    4. Click **Save Changes** to save your changes.
+
+    Common scopes include:
+    - `read:jira-user` - Read user information
+    - `read:jira-work` - Read Jira work items (issues, projects, etc.)
+    - `write:jira-work` - Create and update Jira work items
+    - `offline_access` - Access to refresh tokens for offline access
+
+    See the full list of scopes in [Atlassian's Jira scopes documentation](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) and [Confluence scopes documentation](https://developer.atlassian.com/cloud/confluence/scopes-for-oauth-2-3LO-and-forge-apps/).
+  </Step>
+  <Step title="Obtain your client credentials">
+    1. In the left sidebar, select **Settings**.
+    2. Copy both the **Client ID** and **Secret** by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Make your app available to users">
+    1. In the left sidebar, select **Distribution**.
+    2. In **Distribution controls**, click the **Edit** button, select the **Sharing** radio button, enter a **Privacy Policy URL** and then click the **Save changes** button.
+
+    <Note>By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.</Note>
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+## Important API Considerations
+
+**Refresh token expiration:** Refresh tokens will expire after 365 days of non-use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See [Atlassian's OAuth documentation](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-) for more details.
+
+**Using the Nango proxy:** When using the proxy for Atlassian, it is important to know that Jira apps will use `/jira/{cloudid}/{api}` for Jira apps and `/confluence/{cloudid}/{api}` for Confluence apps.
+
+For more information on Atlassian's OAuth implementation, see the [OAuth-related documentation](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps).
+
+---

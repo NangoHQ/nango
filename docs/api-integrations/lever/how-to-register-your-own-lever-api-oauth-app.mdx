@@ -1,0 +1,47 @@
+---
+title: 'How to register your own Lever API OAuth app'
+sidebarTitle: 'Lever Setup'
+description: 'Register an OAuth app with Lever and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Lever to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Lever account.
+
+## Registering your OAuth application
+
+<Steps>
+  <Step title="Sign in to Lever">
+    Go to your Lever account and navigate to the [Lever Settings](https://hire.lever.co/settings/integrations?tab=api) -> Integrations & API section.
+  </Step>
+  <Step title="Request OAuth credentials">
+    Contact Lever to request OAuth credentials for your application. You'll need to provide:
+    - **Application Name**: The name of your application
+    - **Redirect URI**: Use `https://api.nango.dev/oauth/callback`
+    - **Description**: Brief description of what your application does
+  </Step>
+  <Step title="Receive OAuth credentials">
+    After approval, Lever will provide you with:
+    - **Client ID**: Your application's unique identifier
+    - **Client Secret**: Your application's secret key
+
+    Copy these credentials as you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Configure in Nango">
+    In your [Nango dashboard](https://app.nango.dev/dev/integrations), go to the Lever integration and enter your Client ID and Client Secret.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+## Production vs Sandbox Environments
+
+You should create different integrations in Nango for using the Lever production vs. sandbox API:
+
+- **Lever (OAuth)** - For production use with the live Lever API
+- **Lever (OAuth Sandbox)** - For testing with Lever's sandbox environment
+
+Each environment requires separate OAuth credentials.
+
+For more details on Lever's OAuth implementation, see [Lever's OAuth documentation](https://hire.lever.co/developer/oauth).
+
+---
