@@ -1,10 +1,10 @@
+import { ApplicationAutoScalingClient, PutScalingPolicyCommand, RegisterScalableTargetCommand } from '@aws-sdk/client-application-auto-scaling';
 import {
     CreateAliasCommand,
     CreateFunctionCommand,
     DeleteFunctionCommand,
     LambdaClient,
     PublishVersionCommand,
-    PutProvisionedConcurrencyConfigCommand,
     waitUntilFunctionActive,
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
@@ -22,6 +22,7 @@ import type { Result } from '@nangohq/utils';
 export const logger = getLogger('Lambda');
 
 const lambdaClient = new LambdaClient();
+const applicationAutoScalingClient = new ApplicationAutoScalingClient();
 
 export function getFunctionName(node: Node): string {
     return `${node.routingId}-${node.id}`;
@@ -97,11 +98,29 @@ class Lambda {
                         FunctionVersion: pvResult.Version
                     })
                 );
-                await lambdaClient.send(
-                    new PutProvisionedConcurrencyConfigCommand({
-                        FunctionName: pvResult.FunctionName,
-                        Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
-                        ProvisionedConcurrentExecutions: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY
+                const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
+                await applicationAutoScalingClient.send(
+                    new RegisterScalableTargetCommand({
+                        ServiceNamespace: 'lambda',
+                        ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                        ResourceId: resourceId,
+                        MinCapacity: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY,
+                        MaxCapacity: (node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY) * 10
+                    })
+                );
+                await applicationAutoScalingClient.send(
+                    new PutScalingPolicyCommand({
+                        ServiceNamespace: 'lambda',
+                        ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                        ResourceId: resourceId,
+                        PolicyName: `${pvResult.FunctionName}-scaling-policy`,
+                        PolicyType: 'TargetTrackingScaling',
+                        TargetTrackingScalingPolicyConfiguration: {
+                            TargetValue: envs.LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET,
+                            PredefinedMetricSpecification: {
+                                PredefinedMetricType: 'LambdaProvisionedConcurrencyUtilization'
+                            }
+                        }
                     })
                 );
                 const fleetId = node.fleetId || envs.RUNNER_LAMBDA_FLEET_ID;
@@ -128,7 +147,7 @@ class Lambda {
                 PERSIST_SERVICE_URL: envs.LAMBDA_PERSIST_SERVICE_URL || '',
                 JOBS_SERVICE_URL: envs.LAMBDA_JOBS_SERVICE_URL || '',
                 PROVIDERS_URL: envs.LAMBDA_PROVIDERS_URL || '',
-                NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || '',
+                NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '',
                 NANGO_TELEMETRY_SDK: String(envs.NANGO_TELEMETRY_SDK),
                 DD_ENV: envs.DD_ENV || '',
                 DD_SITE: envs.DD_SITE || '',
