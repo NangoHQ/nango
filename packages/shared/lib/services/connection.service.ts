@@ -1414,8 +1414,23 @@ class ConnectionService {
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
+            const credentials = connection.credentials as OAuth2Credentials;
+            if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {
+                providerConfig = {
+                    ...providerConfig,
+                    oauth_client_id: credentials.config_override.client_id,
+                    oauth_client_secret: credentials.config_override.client_secret
+                };
+            }
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
+
+            if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {
+                parsedCreds.config_override = {
+                    client_id: credentials.config_override.client_id,
+                    client_secret: credentials.config_override.client_secret
+                };
+            }
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {
