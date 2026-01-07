@@ -120,6 +120,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
                 id: account.id,
                 name: account.name
             },
+            plan: plan || undefined,
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,

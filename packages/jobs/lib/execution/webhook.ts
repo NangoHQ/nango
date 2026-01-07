@@ -132,6 +132,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
                 id: team.id,
                 name: team.name
             },
+            plan: plan || undefined,
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,

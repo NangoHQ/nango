@@ -1,5 +1,6 @@
 import type { RunnerFlags } from './index.js';
 import type { LogLevel } from '../logs/messages.js';
+import type { DBPlan } from '../plans/db.js';
 import type { IntegrationConfigForProxy } from '../proxy/api.js';
 import type { DBSyncConfig } from '../syncConfigs/db.js';
 import type { DBTeam } from '../team/db.js';
@@ -14,6 +15,7 @@ export interface NangoProps {
     host?: string;
     secretKey: string;
     team: Pick<DBTeam, 'id' | 'name'>;
+    plan?: DBPlan | undefined;
     connectionId: string;
     environmentId: number;
     environmentName: string;

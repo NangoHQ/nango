@@ -8,6 +8,12 @@ export const nangoPropsSchema = zod.object({
         id: zod.number(),
         name: zod.string().min(1)
     }),
+    plan: zod
+        .object({
+            id: zod.number(),
+            name: zod.string().min(1)
+        })
+        .optional(),
     connectionId: zod.string().min(1),
     environmentId: zod.number(),
     environmentName: zod.string().min(1),
