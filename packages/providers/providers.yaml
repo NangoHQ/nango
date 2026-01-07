@@ -13580,7 +13580,7 @@ stripe-api-key:
             secret: true
             example: rk_live_51On1GfAemfaBCd0eHq***************BV5007KeuAVcO
             pattern: '^(rk_live_[A-Za-z0-9]{8})[A-Za-z0-9]+([A-Za-z0-9]{8})$'
-            doc_section: '#step-1-generating-your-stripe-api-key'
+            doc_section: '#step-1-generating-your-stripe-restricted-api-key'
         password:
             type: string
             title: ''
