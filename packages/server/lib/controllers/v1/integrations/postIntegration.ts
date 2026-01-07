@@ -75,13 +75,12 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         }
         integration = result.value;
     } else {
-        // Get client_id for MCP_OAUTH2 if needed
-        let mcpClientId: string | undefined;
-        if (provider.auth_mode === 'MCP_OAUTH2') {
-            mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
-        }
+        const config = await buildIntegrationConfig(body, environment.id);
 
-        const config = await buildIntegrationConfig(body, environment.id, mcpClientId);
+        if (provider.auth_mode === 'MCP_OAUTH2') {
+            const mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
+            config.oauth_client_id = mcpClientId;
+        }
 
         const createdIntegration = await configService.createProviderConfig(config, provider);
         if (!createdIntegration) {
