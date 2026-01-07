@@ -57,12 +57,12 @@ describe(`POST ${endpoint}`, () => {
 
     it('should validate integrationId uniqueness', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConfigSeed(env, 'github-unique', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
             token: env.secret_key,
-            body: { provider: 'github', useSharedCredentials: false, integrationId: 'github' }
+            body: { provider: 'github', useSharedCredentials: false, integrationId: 'github-unique' }
         });
 
         isError(res.json);
