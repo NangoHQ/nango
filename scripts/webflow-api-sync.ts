@@ -33,8 +33,12 @@ const providersPath = 'packages/providers/providers.yaml';
 // eslint-disable-next-line import/no-named-as-default-member
 const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
 
-const docsPath = 'docs/integrations/all';
-const files = await fs.readdir(docsPath);
+const docsPaths = ['docs/integrations/all', 'docs/api-integrations'];
+const files: string[] = [];
+for (const docsPath of docsPaths) {
+    const dirFiles = await fs.readdir(docsPath);
+    files.push(...dirFiles);
+}
 
 // we only need a subset of providers based on how our docs are written
 const neededProviders: Record<string, Provider> = {};
