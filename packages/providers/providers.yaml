@@ -51,9 +51,6 @@
         token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.domain}/xapi
-        headers:
-            authorization: Bearer ${accessToken}
-            accept: application/json
     docs: https://nango.dev/docs/api-integrations/3cx
     docs_connect: https://nango.dev/docs/api-integrations/3cx/connect
     credentials:
