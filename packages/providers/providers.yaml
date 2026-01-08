@@ -14820,7 +14820,7 @@ wise-api-key:
             description: Your Wise Personal API Token
             example: 12345678-1234-1234-1234-123456789abc
             pattern: '^[a-f0-9-]{36}$'
-            doc_section: '#step-2-generate-your-api-token'
+            doc_section: '#step-1-generating-your-api-token'
 xai:
     display_name: xAI
     categories:
