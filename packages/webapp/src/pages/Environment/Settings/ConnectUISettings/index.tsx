@@ -198,22 +198,20 @@ export const ConnectUISettings = () => {
                         {canCustomizeTheme && <ThemeColorPickers disabled={false} form={form} />}
                         {canDisableWatermark && <WatermarkToggle disabled={false} form={form} />}
 
-                        {(canCustomizeTheme || canDisableWatermark) && (
-                            <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
-                                {([canSubmit, isDirty]) => (
-                                    <Button
-                                        type="submit"
-                                        variant="primary"
-                                        size="sm"
-                                        className="self-start"
-                                        disabled={!canSubmit || !isDirty}
-                                        loading={isUpdatingConnectUISettings}
-                                    >
-                                        Save
-                                    </Button>
-                                )}
-                            </form.Subscribe>
-                        )}
+                        <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
+                            {([canSubmit, isDirty]) => (
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    size="sm"
+                                    className="self-start"
+                                    disabled={!canSubmit || !isDirty}
+                                    loading={isUpdatingConnectUISettings}
+                                >
+                                    Save
+                                </Button>
+                            )}
+                        </form.Subscribe>
 
                         {(!canCustomizeTheme || !canDisableWatermark) && (
                             <div className="bg-bg-elevated p-6 flex flex-col gap-6">
