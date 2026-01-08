@@ -4,14 +4,17 @@ import React, { useState } from 'react';
 import { cn } from '@/utils/utils';
 
 export const TabsList: React.FC<React.ComponentProps<typeof TabsPrimitive.List>> = (props) => {
-    return <TabsPrimitive.List className="w-full inline-flex gap-5 border-b border-b-border-default" {...props} />;
+    return <TabsPrimitive.List {...props} className={cn('w-full inline-flex gap-5 border-b border-b-border-default', props.className)} />;
 };
 
 export const TabsTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Trigger>> = (props) => {
     return (
         <TabsPrimitive.Trigger
-            className="w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-primary hover:border-text-tertiary data-[state=active]:text-text-primary data-[state=active]:border-text-primary focus-default"
             {...props}
+            className={cn(
+                'w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-primary hover:border-text-tertiary data-[state=active]:text-text-primary data-[state=active]:border-text-primary focus-default',
+                props.className
+            )}
         />
     );
 };
