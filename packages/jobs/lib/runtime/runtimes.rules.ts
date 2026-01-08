@@ -1,33 +1,25 @@
-import { Engine } from 'json-rules-engine';
-
-import { Err, Ok } from '@nangohq/utils';
+import { Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
-import type { NangoProps, Result } from '@nangohq/types';
-import type { RuleProperties } from 'json-rules-engine';
+import type { DBPlan, NangoProps, Result } from '@nangohq/types';
 
-const rules = envs.RUNNER_FLEET_RULES.length
-    ? envs.RUNNER_FLEET_RULES
-    : [
-          {
-              priority: 0,
-              conditions: { all: [{ fact: 'always', operator: 'equal', value: true }] },
-              event: { type: envs.RUNNER_FLEET_ID }
-          }
-      ];
-
-const engine = new Engine(rules.map((rule) => rule as RuleProperties));
+const runtimeSelectors = {
+    sync: (plan: DBPlan) => plan.sync_function_runtime,
+    action: (plan: DBPlan) => plan.action_function_runtime,
+    webhook: (plan: DBPlan) => plan.webhook_function_runtime,
+    'on-event': (plan: DBPlan) => plan.on_event_function_runtime
+};
 
 export async function getFleetId(nangoProps: NangoProps): Promise<Result<string | undefined>> {
-    try {
-        const { events } = await engine.run({ always: true, nangoProps });
-        if (events.length) {
-            return Ok(events[0]?.type);
-        } else {
-            return Ok(undefined);
-        }
-    } catch (err: any) {
-        return Err(new Error('Error evaluating fleet rules', { cause: err }));
+    if (!nangoProps.plan) {
+        return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));
+    }
+    const runtime = runtimeSelectors[nangoProps.scriptType](nangoProps.plan);
+    switch (runtime) {
+        case 'lambda':
+            return Promise.resolve(Ok(envs.RUNNER_LAMBDA_FLEET_ID));
+        default:
+            return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));
     }
 }

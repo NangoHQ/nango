@@ -1,7 +1,5 @@
 import * as z from 'zod';
 
-import { JsonRulesEngineRuleSchema } from './zod.types.js';
-
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -127,18 +125,6 @@ export const ENVS = z.object({
         .optional()
         .default('nango_runners'),
     RUNNER_LAMBDA_FLEET_ID: z.string().optional().default('nango_runners_lambda'),
-    RUNNER_FLEET_RULES: z
-        .string()
-        .transform((s, ctx) => {
-            try {
-                return JSON.parse(s);
-            } catch {
-                ctx.addIssue('RUNNER_FLEET_RULES must be a valid JSON array of json-rules-engine rules');
-                return z.NEVER;
-            }
-        })
-        .pipe(z.array(JsonRulesEngineRuleSchema))
-        .default([]),
     RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
     RUNNER_PROFILED_ACCOUNTS: z
         .string()
