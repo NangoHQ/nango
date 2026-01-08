@@ -33,29 +33,6 @@ Once you have your **API Token**:
 2. Enter your **API Token** in the respective field.
 3. Submit the form, and you should be successfully authenticated.
 
+<img src="/api-integrations/wise-api-key/form.png" style={{maxWidth: "450px" }}/>
+
 You are now connected to Wise.
-
----
-
-## Important Notes
-
-- **Business Account Required**: Personal API tokens are generated from a Wise Business profile.
-- **Limited API Access**: Personal tokens have more limited API access compared to OAuth credentials.
-- **PSD2 Restrictions (EU/UK)**: Due to PSD2 regulations, you **cannot** fund transfers or view balance statements via API with a personal token in the EU/UK.
-- **Single User**: A personal token authenticates requests for a single Wise.com user only.
-
-### Available with Personal Token
-
-- View profiles
-- Create quotes
-- Create recipients
-- View transfers
-- Basic account operations
-
-### Not Available with Personal Token (EU/UK)
-
-- Fund transfers via API
-- View balance statements
-- Some advanced operations
-
-<Note>If you need full API access or are building for end customers, consider using [Wise OAuth](/integrations/all/wise) instead (requires Wise partnership).</Note>
