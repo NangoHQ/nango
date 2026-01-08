@@ -314,6 +314,34 @@
     {
       "source": "/integrations/all/zoho-crm",
       "destination": "/api-integrations/zoho-crm"
+    },
+    {
+      "source": "/integrations/all/atlassian",
+      "destination": "/api-integrations/atlassian"
+    },
+    {
+      "source": "/integrations/all/greenhouse",
+      "destination": "/api-integrations/greenhouse"
+    },
+    {
+      "source": "/integrations/all/servicenow",
+      "destination": "/api-integrations/servicenow"
+    },
+    {
+      "source": "/integrations/all/workday",
+      "destination": "/api-integrations/workday"
+    },
+    {
+      "source": "/integrations/all/monday",
+      "destination": "/api-integrations/monday"
+    },
+    {
+      "source": "/integrations/all/docusign",
+      "destination": "/api-integrations/docusign"
+    },
+    {
+      "source": "/integrations/all/lever",
+      "destination": "/api-integrations/lever"
     }
   ],
   "navigation": {
@@ -532,7 +560,7 @@
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "integrations/all/atlas-so",
-              "integrations/all/atlassian",
+              "api-integrations/atlassian",
               "integrations/all/atlassian-admin",
               "integrations/all/atlassian-government-cloud",
               "api-integrations/attio",
@@ -649,7 +677,7 @@
               "integrations/all/discourse",
               "integrations/all/dixa",
               "integrations/all/document360",
-              "integrations/all/docusign",
+              "api-integrations/docusign",
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
               "api-integrations/drata",
@@ -742,7 +770,7 @@
               "integrations/all/grain-api-key",
               "integrations/all/grammarly",
               "integrations/all/grammarly-scim",
-              "integrations/all/greenhouse",
+              "api-integrations/greenhouse",
               "integrations/all/greenhouse-assessment",
               "integrations/all/greenhouse-basic",
               "integrations/all/greenhouse-harvest",
@@ -807,7 +835,7 @@
               "integrations/all/lattice",
               "integrations/all/leadmagic",
               "integrations/all/lessonly",
-              "integrations/all/lever",
+              "api-integrations/lever",
               "integrations/all/lever-basic",
               "integrations/all/lever-basic-sandbox",
               "integrations/all/lever-sandbox",
@@ -849,7 +877,7 @@
               "integrations/all/miro-scim",
               "integrations/all/missive",
               "integrations/all/mixpanel",
-              "integrations/all/monday",
+              "api-integrations/monday",
               "integrations/all/momentum-io",
               "integrations/all/mural",
               "integrations/all/nationbuilder",
@@ -974,7 +1002,7 @@
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
-              "integrations/all/servicenow",
+              "api-integrations/servicenow",
               "integrations/all/setmore",
               "integrations/all/sellsy",
               "integrations/all/sellsy-oauth2-cc",
@@ -1084,7 +1112,7 @@
               "integrations/all/wordpress",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
-              "integrations/all/workday",
+              "api-integrations/workday",
               "integrations/all/workday-oauth",
               "integrations/all/wrike",
               "integrations/all/xai",

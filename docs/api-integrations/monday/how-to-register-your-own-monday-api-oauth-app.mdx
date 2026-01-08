@@ -1,0 +1,45 @@
+---
+title: 'How to register your own Monday API OAuth app'
+sidebarTitle: 'Monday Setup'
+description: 'Register an OAuth app with Monday and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Monday to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Monday account.
+
+## Registering your Monday OAuth app
+
+<Steps>
+    <Step title="Access the Monday Developers section">
+        Log in to your Monday account.
+        Click on the profile icon in the top right corner and select _Developers_.
+    </Step>
+    <Step title="Create an OAuth application">
+        On the _Developers_ section, click on the _Create App_ button.
+        Select the newly created app from the list.
+        Scroll down to the _App Credentials_ section.
+        Copy the _Client ID_ and _Client Secret_.
+        You will need them when configuring Nango.
+    </Step>
+    <Step title="Configure the redirect URL">
+        On the created app page, select the _Build_ dropdown at the right side of the page.
+        Select _OAuth and Permissions_
+        At the top of the page, select the _Redirect URLs_ tab.
+        Add the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+        Click on _Save Scopes_.
+    </Step>
+    <Step title="Promote the Monday app to live">
+        At the top right of the page, click on the _Promote to Live_ button.
+        Click on the confirmation button.
+    </Step>
+    <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart) to set up your Monday integration in Nango.
+    </Step>
+</Steps>
+
+## Important API Considerations
+
+**Access tokens do not expire:** Access tokens will be valid until the user uninstalls your app. Monday's OAuth flow does not support refresh tokens at the moment.
+
+For more details on Monday's OAuth implementation, see [Monday's OAuth documentation](https://developer.monday.com/apps/docs/oauth).
+
+---

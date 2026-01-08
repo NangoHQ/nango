@@ -1,0 +1,42 @@
+---
+title: 'How to register your own DocuSign API OAuth app'
+sidebarTitle: 'DocuSign Setup'
+description: 'Register an OAuth app with DocuSign and connect it to Nango'
+---
+
+This guide shows you how to register your own app with DocuSign to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their DocuSign account.
+
+## Before you begin
+
+To test your integration during development, use the `docusign-sandbox` configuration in Nango. This lets you test with the [DocuSign Developer account](https://developers.docusign.com/platform/account/).
+
+## Registering your OAuth app
+
+<Steps>
+  <Step title="Sign up for a developer account">
+    If you don't already have one, sign up for a [DocuSign Developer account](https://developers.docusign.com/).
+  </Step>
+  <Step title="Create and configure an integration">
+    1. Navigate to [Build Integration](https://developers.docusign.com/platform/build-integration/).
+    2. Click **Create App & Get Keys** or similar button to start creating your integration.
+    3. Fill in all the required information for your application.
+    4. In the OAuth redirect URIs section, add `https://api.nango.dev/oauth/callback` as your redirect URL.
+    5. Under the permission scopes section, select the various scopes you will need. See [DocuSign's OAuth scopes documentation](https://developers.docusign.com/platform/auth/reference/scopes) for the full list.
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    On your app's configuration page, copy your **Integration Key** (this is your client ID) and **Secret Key** (this is your client secret).
+
+    <Note>
+    The DocuSign **Integration Key** is actually the 'client ID'. You'll also need to add a **Secret Key** when creating your app.
+    </Note>
+
+    <img src="/integrations/all/docusign/docusign_secret.png" style={{maxWidth: "450px" }} />
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to configure your integration in Nango using these credentials.
+  </Step>
+</Steps>
+
+For more details on DocuSign's OAuth implementation, see [DocuSign's OAuth documentation](https://developers.docusign.com/platform/auth/authcode).
+
+---
