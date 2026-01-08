@@ -5022,6 +5022,46 @@ fellow:
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-api-key'
 
+freeagent:
+    display_name: FreeAgent
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.freeagent.com/v2/approve_app
+    token_url: https://api.freeagent.com/v2/token_endpoint
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.freeagent.com
+    docs: https://nango.dev/docs/api-integrations/freeagent
+    setup_guide_url: https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app
+
+freeagent-sandbox:
+    display_name: FreeAgent (Sandbox)
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.sandbox.freeagent.com/v2/approve_app
+    token_url: https://api.sandbox.freeagent.com/v2/token_endpoint
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sandbox.freeagent.com
+    docs: https://nango.dev/docs/api-integrations/freeagent
+    setup_guide_url: https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app
+
 figjam:
     display_name: FigJam
     categories:
