@@ -1155,6 +1155,44 @@ export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: num
     }
 }
 
+/*
+ * autoDeletingCandidate
+ * @desc finds a candidate connection/model for auto-deleting
+ * by randomly selecting a connection/model that have NOT seen its count updated in the past staleAfterMs milliseconds.
+ * @param staleAfterMs - milliseconds since last modification to consider a connection as potentially stale
+ * @returns a Result containing either:
+ * - candidate connection, model and environmentId
+ * - null if no candidate found
+ */
+export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: number }): Promise<
+    Result<{
+        connectionId: number;
+        model: string;
+        environmentId: number;
+    } | null>
+> {
+    try {
+        const [candidate] = await db
+            .from(RECORD_COUNTS_TABLE)
+            .select<RecordCount[]>('*')
+            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
+            .where('count', '>', 0)
+            .orderByRaw('RANDOM()')
+            .limit(1);
+
+        if (candidate) {
+            return Ok({
+                connectionId: candidate.connection_id,
+                model: candidate.model,
+                environmentId: candidate.environment_id
+            });
+        }
+        return Ok(null);
+    } catch (err) {
+        return Err(new Error(`Failed to find auto-delete candidate`, { cause: err }));
+    }
+}
+
 /**
  * getRecordsToUpdate
  * @desc returns records that exist in the records table but have a different data_hash
