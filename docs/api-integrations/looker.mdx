@@ -1,0 +1,85 @@
+---
+title: 'Looker'
+sidebarTitle: 'Looker'
+description: 'Integrate your application with the Looker API'
+---
+
+## 🚀 Quickstart
+
+Connect to Looker with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Looker_.
+    </Step>
+    <Step title="Authorize Looker">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Looker. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Looker API">
+    Let's make your first request to the Looker API (retrieve user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/4.0/user" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/4.0/user',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Looker Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Looker OAuth app](/api-integrations/looker/how-to-register-your-own-looker-oauth-app)  
+Register an OAuth client application with Looker and obtain credentials to connect it to Nango
+
+- [How to find your Looker hostname](/api-integrations/looker/connect)  
+Find your Looker instance hostname to configure the connection
+
+Official docs: [Looker API documentation](https://docs.cloud.google.com/looker/docs/api-intro)
+
+## 🧩 Pre-built syncs & actions for Looker
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/looker/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
+
