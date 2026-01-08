@@ -13679,6 +13679,42 @@ stripe-app-sandbox:
             description: The unique identifier Stripe assigns to your app instance
             doc_section: '#step-1-finding-your-app-domain'
 
+stripe-api-key:
+    display_name: Stripe (API Key)
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.stripe.com
+        headers:
+            stripe-context: ${connectionConfig.context}
+    docs: https://nango.dev/docs/api-integrations/stripe-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/stripe-api-key/connect
+    credentials:
+        username:
+            type: string
+            title: Restricted API Key
+            description: Your Stripe restricted API Key
+            secret: true
+            example: rk_live_51On1GfAemfaBCd0eHq***************BV5007KeuAVcO
+            pattern: '^rk_[a-z]+_[A-Za-z0-9]{8}[A-Za-z0-9]+([A-Za-z0-9]{8})$'
+            doc_section: '#step-1-generating-your-stripe-restricted-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+    connection_config:
+        context:
+            type: string
+            title: Stripe Context
+            description: The Stripe account context
+            optional: true
+            example: acct_1aTnTtAAB0hHJ26p
+            pattern: '^acct_[A-Za-z0-9]{16}$'
+            doc_section: '#step-2-finding-your-stripe-context'
+
 supabase:
     display_name: Supabase
     categories:

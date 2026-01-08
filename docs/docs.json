@@ -1015,6 +1015,7 @@
               "integrations/all/strava-web",
               "integrations/all/streak",
               "api-integrations/stripe",
+              "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
               "integrations/all/stripe-app-sandbox",
               "integrations/all/stripe-express",
