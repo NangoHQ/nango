@@ -1,4 +1,10 @@
-import { ApplicationAutoScalingClient, PutScalingPolicyCommand, RegisterScalableTargetCommand } from '@aws-sdk/client-application-auto-scaling';
+import {
+    ApplicationAutoScalingClient,
+    DeleteScalingPolicyCommand,
+    DeregisterScalableTargetCommand,
+    PutScalingPolicyCommand,
+    RegisterScalableTargetCommand
+} from '@aws-sdk/client-application-auto-scaling';
 import {
     CreateAliasCommand,
     CreateFunctionCommand,
@@ -164,6 +170,22 @@ class Lambda {
         await lambdaClient.send(
             new DeleteFunctionCommand({
                 FunctionName: name
+            })
+        );
+        const resourceId = `function:${name}:${envs.LAMBDA_FUNCTION_ALIAS}`;
+        await applicationAutoScalingClient.send(
+            new DeleteScalingPolicyCommand({
+                PolicyName: `${name}-scaling-policy`,
+                ServiceNamespace: 'lambda',
+                ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                ResourceId: resourceId
+            })
+        );
+        await applicationAutoScalingClient.send(
+            new DeregisterScalableTargetCommand({
+                ServiceNamespace: 'lambda',
+                ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                ResourceId: resourceId
             })
         );
         return Ok(undefined);
