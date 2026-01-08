@@ -44,3 +44,7 @@ This guide shows you how to register your own app with Facebook to obtain your O
 </Steps>
 
 For more details, see [Facebook's OAuth documentation](https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow#confirm) and [how to create an application](https://developers.facebook.com/docs/development/create-an-app/).
+
+## Important notes for Facebook API
+
+- Facebook tokens expire after 60 days and cannot be refreshed. Once a token expires, users must re-authenticate by [re-authorizing the connection](/implementation-guides/api-auth/implement-api-auth#6-re-authorize-an-existing-connection).

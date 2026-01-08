@@ -35,7 +35,7 @@ export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provid
                     </StyledLink>
                 </span>
             </InfoRow>
-            {apiStatus?.status && (
+            {apiStatus?.status && apiStatus?.status !== 'unknown' && (
                 <InfoRow label="API status">
                     <div className="flex">
                         <StatusWidget className="text-text-primary" status={apiStatus?.status} />

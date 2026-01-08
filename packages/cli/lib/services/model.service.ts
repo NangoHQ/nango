@@ -106,6 +106,9 @@ export function modelToTypescript({ model }: { model: NangoModel }) {
     if (model.isAnon) {
         output.push(`export type ${model.name} = ${fieldToTypescript({ field: model.fields[0]! })}`);
     } else {
+        if (model.description) {
+            output.push([`/**`, ` * ${model.description}`, ` */`].join('\n'));
+        }
         output.push(`export interface ${model.name} {`);
         output.push(...fieldsToTypescript({ fields: model.fields }));
         output.push(`};`);
@@ -119,6 +122,10 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
 
     // Insert dynamic key at the beginning
     if (dynamic) {
+        if (dynamic.description) {
+            output.push([`  /**`, `   * ${dynamic.description}`, `   */`].join('\n'));
+        }
+
         output.push(`  [key: string]: ${fieldToTypescript({ field: dynamic })};`);
     }
 
@@ -126,6 +133,10 @@ export function fieldsToTypescript({ fields }: { fields: NangoModelField[] }) {
     for (const field of fields) {
         if (field.dynamic) {
             continue;
+        }
+
+        if (field.description) {
+            output.push([`  /**`, `   * ${field.description}`, `   */`].join('\n'));
         }
 
         output.push(`  ${shouldQuote(field.name) ? `"${field.name}"` : field.name}${field.optional ? '?' : ''}: ${fieldToTypescript({ field: field })};`);

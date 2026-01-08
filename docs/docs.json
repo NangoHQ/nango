@@ -491,6 +491,7 @@
             "group": "APIs & Integrations",
             "pages": [
               "integrations/all/1password-scim",
+              "api-integrations/8x8",
               "api-integrations/accelo",
               "integrations/all/acuity-scheduling",
               "integrations/all/active-campaign",
@@ -817,6 +818,7 @@
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
               "integrations/all/loop-returns",
+              "api-integrations/looker",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
               "api-integrations/lumos",
@@ -854,6 +856,7 @@
               "integrations/all/ninjaone-rmm",
               "integrations/all/namely",
               "integrations/all/namely-pat",
+              "api-integrations/nerdio",
               "integrations/all/netsuite",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",

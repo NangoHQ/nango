@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
 import * as uuid from 'uuid';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
 import { formatRecords } from '../helpers/format.js';
@@ -1250,6 +1251,128 @@ describe('Records service', () => {
             expect(stats[model]?.count).toBe(3);
             expect(stats[model]?.size_bytes).toBeLessThan(statsBefore[model]?.size_bytes || 0);
         });
+
+        it('should simulate hard deletion when dryRun = true', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' },
+                { id: '4', name: 'Mike Doe' },
+                { id: '5', name: 'Alice Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsBefore[model]?.count).toBe(5);
+            const initialSize = statsBefore[model]?.size_bytes || 0;
+
+            const res = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'hard',
+                    limit: 3,
+                    dryRun: true
+                })
+            ).unwrap();
+
+            // Should report what would be deleted
+            expect(res.count).toBe(3);
+            expect(res.lastCursor).toBeDefined();
+
+            // Verify records were not actually deleted
+            const statsAfterDryRun = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfterDryRun[model]?.count).toBe(5);
+            expect(statsAfterDryRun[model]?.size_bytes).toBe(initialSize);
+
+            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(recordsAfterDryRun.records.length).toBe(5);
+        });
+
+        it('should simulate soft deletion when dryRun = true', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const res = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'soft',
+                    dryRun: true
+                })
+            ).unwrap();
+
+            // Should report what would be deleted
+            expect(res.count).toBe(3);
+            expect(res.lastCursor).toBeDefined();
+
+            // Verify records were not actually deleted
+            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
+            expect(recordsAfterDryRun.records.length).toBe(0);
+
+            const allRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(allRecords.records.length).toBe(3);
+            allRecords.records.forEach((r) => {
+                expect(r._nango_metadata.deleted_at).toBeNull();
+            });
+        });
+
+        it('should simulate pruning when dryRun = true', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialSize = statsBefore[model]?.size_bytes || 0;
+
+            const res = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'prune',
+                    dryRun: true
+                })
+            ).unwrap();
+
+            expect(res.count).toBe(2);
+            expect(res.lastCursor).toBeDefined();
+
+            // Verify records were not actually pruned
+            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(recordsAfterDryRun.records.length).toBe(2);
+            recordsAfterDryRun.records.forEach((r) => {
+                expect(r._nango_metadata.pruned_at).toBeNull();
+                expect(r['name']).toBeDefined(); // payload still exists
+            });
+
+            // Size should remain unchanged
+            const statsAfterDryRun = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfterDryRun[model]?.size_bytes).toBe(initialSize);
+        });
     });
 
     describe('incrCount', () => {
@@ -1355,6 +1478,175 @@ describe('Records service', () => {
             });
             expect(newCount.count).toBe(initialStats[model]?.count);
             expect(newCount.size_bytes).toBe(initialStats[model]?.size_bytes);
+        });
+    });
+
+    describe('autoPruningCandidate', () => {
+        beforeEach(async () => {
+            await db(RECORDS_TABLE).truncate();
+        });
+        it('should find a stale record candidate for pruning', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Old Record 1' },
+                { id: '2', name: 'Old Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Make first record stale
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            await db(RECORDS_TABLE).where({ external_id: '1', connection_id: connectionId, model }).update({ updated_at: oneDayAgo });
+
+            // Try to find a stale record
+            // Since we're picking a random partition, we might need to try multiple times
+            const staleAfterMs = 60 * 60 * 1000; // 1 hour
+            for (let i = 0; i < 1000; i++) {
+                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                if (candidate) {
+                    expect(candidate.connectionId).toBe(connectionId);
+                    expect(candidate.model).toBe(model);
+                    const decodedCursor = Cursor.from(candidate.cursor);
+                    if (!decodedCursor) {
+                        throw new Error('Failed to decode cursor');
+                    }
+                    const staleRecord = (
+                        await Records.getRecords({ connectionId: candidate.connectionId, model: candidate.model, externalIds: ['1'] })
+                    ).unwrap().records[0];
+                    expect(staleRecord?._nango_metadata.cursor).toBe(candidate.cursor);
+                    return;
+                }
+            }
+            throw new Error('No candidate found. Expecting one');
+        });
+
+        it('should return null when no stale records exist', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Old Record 1' },
+                { id: '2', name: 'Old Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Since we're picking a random partition we need to try multiple times
+            const staleAfterMs = 60 * 60 * 1000; // 1 hour
+            for (let i = 0; i < 1000; i++) {
+                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                if (candidate) {
+                    throw new Error(`Expected no candidate, but found ${JSON.stringify(candidate)}`);
+                }
+            }
+        });
+
+        it('should not return already pruned records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            // Insert records
+            const records = [
+                { id: '1', name: 'Record to be pruned' },
+                { id: '2', name: 'Another record' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Mark the records as already pruned
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).update({ updated_at: oneDayAgo, pruned_at: new Date() });
+
+            // Try to find a stale record
+            // Since we're picking a random partition we need to try multiple times
+            const staleAfterMs = 60 * 60 * 1000; // 1 hour
+            for (let i = 0; i < 50; i++) {
+                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                if (candidate) {
+                    throw new Error(`Expected no candidate, but found ${JSON.stringify(candidate)}`);
+                }
+            }
+        });
+    });
+
+    describe('autoDeletingCandidate', () => {
+        beforeEach(async () => {
+            await db(RECORDS_TABLE).truncate();
+            await db(RECORD_COUNTS_TABLE).truncate();
+        });
+
+        it('should find a stale connection/model candidate for deletion', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Record 1' },
+                { id: '2', name: 'Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Make the count entry stale by updating its updated_at timestamp
+            const oneDay = 24 * 60 * 60 * 1000;
+            const twoDaysAgo = new Date(Date.now() - 2 * oneDay);
+            await db(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).update({ updated_at: twoDaysAgo });
+
+            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+
+            expect(candidate?.connectionId).toBe(connectionId);
+            expect(candidate?.model).toBe(model);
+            expect(candidate?.environmentId).toBe(environmentId);
+        });
+
+        it('should return null when no stale candidates exist', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Fresh Record 1' },
+                { id: '2', name: 'Fresh Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: 60 * 1000 })).unwrap();
+
+            expect(candidate).toBeNull();
+        });
+
+        it('should randomly select candidates', async () => {
+            const oneDay = 24 * 60 * 60 * 1000;
+            const syncId = uuid.v4();
+
+            // Insert multiple stale record counts
+            for (let i = 0; i < 5; i++) {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+
+                const records = [{ id: '1', name: 'Record' }];
+                await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+                await db(RECORD_COUNTS_TABLE)
+                    .where({ connection_id: connectionId, environment_id: environmentId, model })
+                    .update({ updated_at: new Date(Date.now() - 2 * oneDay) });
+            }
+
+            const candidates = new Set<string>();
+            for (let i = 0; i < 50; i++) {
+                const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+                if (candidate) {
+                    candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
+                }
+            }
+            expect(candidates.size).toBeGreaterThan(1);
         });
     });
 });
