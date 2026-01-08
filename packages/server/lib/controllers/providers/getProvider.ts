@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { getProvider } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { basePublicUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerNameSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -36,5 +36,5 @@ export const getPublicProvider = asyncWrapper<GetPublicProvider>((req, res) => {
         return;
     }
 
-    res.status(200).send({ data: { ...provider, name: params.provider } });
+    res.status(200).send({ data: { ...provider, name: params.provider, logo_url: `${basePublicUrl}/images/template-logos/${params.provider}.svg` } });
 });

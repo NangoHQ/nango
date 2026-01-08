@@ -52,11 +52,12 @@ const validate = validateRequest<DeleteOutdatedRecords>({
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
-    const { nangoConnectionId, syncId, syncJobId } = res.locals.parsedParams;
+    const { nangoConnectionId, syncId, syncJobId, environmentId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
     const { account, environment } = res.locals;
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     const result = await records.deleteOutdatedRecords({
+        environmentId,
         connectionId: nangoConnectionId,
         model,
         generation: syncJobId

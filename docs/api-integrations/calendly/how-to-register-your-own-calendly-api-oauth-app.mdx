@@ -1,0 +1,46 @@
+---
+title: 'Set up Calendly with Nango'
+sidebarTitle: 'Calendly Setup'
+description: 'Register an OAuth app with Calendly and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Calendly to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Calendly account.
+
+## Creating a Calendly OAuth App
+
+<Steps>
+   <Step title="Create a Calendly developer account">
+     If you don't already have one, [create a Calendly developer account](https://developer.calendly.com/create-a-developer-account).
+   </Step>
+
+   <Step title="Register a new application">
+     In your Calendly developer dashboard, navigate to the OAuth applications section and create a new application.
+   </Step>
+
+   <Step title="Configure your OAuth app">
+     Fill in the required information for your application:
+     - **Application Name**: Enter a name for your application
+     - **Redirect URI**: Enter your Nango callback URL (found in your [Nango integration settings](https://app.nango.dev/dev/integrations))
+
+     <Note>Only HTTPS redirect URIs will work when your app is in production.</Note>
+   </Step>
+
+   <Step title="Save your credentials">
+     After creating the application, you'll receive a **Client ID** and **Client Secret**. Copy these credentials.
+   </Step>
+
+   <Step title="Add credentials to Nango">
+     In Nango, go to your [Calendly integration](https://app.nango.dev/dev/integrations) and enter:
+     - **Client ID**: Your Calendly OAuth Client ID
+     - **Client Secret**: Your Calendly OAuth Client Secret
+   </Step>
+</Steps>
+
+## Additional Resources
+
+For more details on Calendly's OAuth implementation, see:
+- [Calendly OAuth 2.0 documentation](https://developer.calendly.com/api-docs/3cefb59b832eb-calendly-o-auth-2-0m)
+- [How to register an application](https://developer.calendly.com/create-a-developer-account)
+- [Calendly API documentation](https://developer.calendly.com/api-docs)
+
+---

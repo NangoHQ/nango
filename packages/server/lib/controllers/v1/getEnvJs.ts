@@ -36,6 +36,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             logs: envs.NANGO_LOGS_ENABLED,
             scripts: flagHasScripts,
             auth: flagHasAuth,
+            allowSignup: envs.AUTH_ALLOW_SIGNUP,
             managedAuth: flagHasManagedAuth,
             gettingStarted: true,
             slack: flagHasSlack,

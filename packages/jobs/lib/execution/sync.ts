@@ -180,7 +180,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
-            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
+            integrationConfig: {
+                oauth_client_id: providerConfig.oauth_client_id,
+                oauth_client_secret: providerConfig.oauth_client_secret
+            }
         };
 
         if (task.debug) {
@@ -304,6 +308,7 @@ export async function handleSyncSuccess({
                     `'track_deletes' is deprecated and will be removed in future versions. To detect deletions please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script.`
                 );
                 const res = await records.deleteOutdatedRecords({
+                    environmentId: nangoProps.environmentId,
                     connectionId: nangoProps.nangoConnectionId,
                     model,
                     generation: nangoProps.syncJobId
@@ -468,7 +473,7 @@ export async function handleSyncSuccess({
         }
         await setTaskSuccess({ taskId, output: null });
 
-        await slackService.removeFailingConnection({
+        void slackService.removeFailingConnection({
             connection,
             name: nangoProps.syncVariant === 'base' ? nangoProps.syncConfig.sync_name : `${nangoProps.syncConfig.sync_name}::${nangoProps.syncVariant}`,
             type: 'sync',

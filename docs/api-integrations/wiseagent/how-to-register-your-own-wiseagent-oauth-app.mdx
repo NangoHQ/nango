@@ -1,0 +1,39 @@
+---
+title: 'How to register your own Wiseagent OAuth app'
+sidebarTitle: 'Wiseagent Setup'
+description: 'Register an OAuth app with Wiseagent and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with Wiseagent to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Wiseagent account.
+
+<Steps>
+  <Step title="Create a Wiseagent Account">
+    If you don't already have one, go to [Wiseagent](https://wiseagent.com/secure/registration.asp) and create an account.
+  </Step>
+  <Step title="Request OAuth Application Access">
+    1. Contact [Wiseagent support](https://wiseagent.com/contact-us.asp) to request OAuth application access.
+    2. You will need to provide the following information:
+       - **Name of your Application**
+       - **A publicly accessible URL to a logo** for your application
+       - **Redirect Domain** for your application: `https://api.nango.dev/oauth/callback`
+       - **List of scopes** you need access to. Wiseagent API supports the following scopes:
+         - **profile**: Read profile information including Email, Name, Company
+         - **team**: Read or Update inside team members / update inside team assignments
+         - **marketing**: Read or Update marketing programs
+         - **contacts**: Read, Update, or Create contacts
+         - **properties**: Read or Update properties
+         - **calendar**: Read or Update Calendar/Planner
+  </Step>
+  
+  <Step title="Configure OAuth Settings">
+    1. Once your OAuth application is approved, you will receive your **Client ID** and **Client Secret**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to start building your integration.
+  </Step>
+</Steps>
+
+For more details, see [Wiseagent's OAuth 2.0 documentation](https://wiseagent.com/docs/api.asp#anch55).
+
+---
+

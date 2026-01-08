@@ -16,6 +16,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
+    AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -53,6 +54,18 @@ export const ENVS = z.object({
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
+    PERSIST_AUTO_PRUNING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
+    PERSIST_AUTO_PRUNING_LIMIT: z.coerce.number().optional().default(1_000),
+    PERSIST_AUTO_PRUNING_STALE_AFTER_MS: z.coerce
+        .number()
+        .optional()
+        .default(30 * 24 * 3600 * 1000), // 30 days
+    PERSIST_AUTO_DELETING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
+    PERSIST_AUTO_DELETING_LIMIT: z.coerce.number().optional().default(1_000),
+    PERSIST_AUTO_DELETING_STALE_AFTER_MS: z.coerce
+        .number()
+        .optional()
+        .default(60 * 24 * 3600 * 1000), // 60 days
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator
@@ -264,6 +277,7 @@ export const ENVS = z.object({
 
     // API Down Watch
     API_DOWN_WATCH_PUBLIC_KEY: z.string().optional(),
+    API_DOWN_WATCH_API_KEY: z.string().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),

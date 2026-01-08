@@ -44,6 +44,10 @@ export async function createMcpServerForConnection(
     server.setRequestHandler(ListToolsRequestSchema, () => {
         return {
             tools: actions.flatMap((action) => {
+                if (!action.enabled) {
+                    return [];
+                }
+
                 const tool = actionToTool(action);
                 return tool ? [tool] : [];
             })
@@ -77,7 +81,7 @@ function actionToTool(action: DBSyncConfig): Tool | null {
         name: action.sync_name,
         inputSchema: {
             type: 'object',
-            properties: inputSchema?.properties,
+            properties: inputSchema?.properties as Record<string, object>,
             required: inputSchema?.required
         },
         description

@@ -136,6 +136,7 @@ describe(`GET ${route}`, () => {
                     _nango_metadata: {
                         cursor: expect.any(String),
                         deleted_at: null,
+                        pruned_at: null,
                         first_seen_at: expect.toBeIsoDateTimezone(),
                         last_action: 'ADDED',
                         last_modified_at: expect.toBeIsoDateTimezone()
@@ -147,6 +148,7 @@ describe(`GET ${route}`, () => {
                     _nango_metadata: {
                         cursor: expect.any(String),
                         deleted_at: null,
+                        pruned_at: null,
                         first_seen_at: expect.toBeIsoDateTimezone(),
                         last_action: 'ADDED',
                         last_modified_at: expect.toBeIsoDateTimezone()
@@ -173,6 +175,7 @@ describe(`GET ${route}`, () => {
                     _nango_metadata: {
                         cursor: expect.any(String),
                         deleted_at: null,
+                        pruned_at: null,
                         first_seen_at: expect.toBeIsoDateTimezone(),
                         last_action: 'ADDED',
                         last_modified_at: expect.toBeIsoDateTimezone()

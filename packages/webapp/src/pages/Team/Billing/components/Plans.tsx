@@ -2,8 +2,8 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { mutate } from 'swr';
 
-import { Dot } from './Dot.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
+import { Dot } from '../../../../components-v2/Dot.js';
 import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
 import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';

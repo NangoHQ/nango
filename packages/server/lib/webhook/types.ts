@@ -271,3 +271,94 @@ export interface SellsyWebhookPayload {
     relatedobject: Record<string, any>;
     individual: boolean;
 }
+
+interface CalendarInvitee {
+    name: string | null;
+    email: string | null;
+    email_domain: string | null;
+    is_external: boolean;
+    matched_speaker_display_name?: string | null;
+}
+
+interface RecordedBy {
+    name: string;
+    email: string;
+    email_domain: string;
+    team: string | null;
+}
+
+interface Speaker {
+    display_name: string;
+    matched_calendar_invitee_email: string | null;
+}
+
+interface TranscriptEntry {
+    speaker: Speaker;
+    text: string;
+    timestamp: string;
+}
+
+interface DefaultSummary {
+    template_name: string | null;
+    markdown_formatted: string | null;
+}
+
+interface Assignee {
+    name: string | null;
+    email: string | null;
+    team: string | null;
+}
+
+interface ActionItem {
+    description: string;
+    user_generated: boolean;
+    completed: boolean;
+    recording_timestamp: string;
+    recording_playback_url: string;
+    assignee: Assignee;
+}
+
+interface CRMContact {
+    name: string;
+    email: string;
+    record_url: string;
+}
+
+interface CRMCompany {
+    name: string;
+    record_url: string;
+}
+
+interface CRMDeal {
+    name: string;
+    amount: number;
+    record_url: string;
+}
+
+interface CRMMatches {
+    contacts: CRMContact[];
+    companies: CRMCompany[];
+    deals: CRMDeal[];
+    error: string | null;
+}
+
+export interface FathomWebhookResponse {
+    title: string;
+    meeting_title: string | null;
+    recording_id: number;
+    url: string;
+    share_url: string;
+    created_at: string;
+    scheduled_start_time: string;
+    scheduled_end_time: string;
+    recording_start_time: string;
+    recording_end_time: string;
+    calendar_invitees_domains_type: 'only_internal' | 'one_or_more_external';
+    transcript_language: string;
+    calendar_invitees: CalendarInvitee[];
+    recorded_by: RecordedBy;
+    transcript: TranscriptEntry[] | null;
+    default_summary?: DefaultSummary;
+    action_items: ActionItem[] | null;
+    crm_matches?: CRMMatches;
+}

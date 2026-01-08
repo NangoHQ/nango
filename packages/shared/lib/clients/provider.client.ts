@@ -40,6 +40,7 @@ class ProviderClient {
             case 'stripe-app':
             case 'stripe-app-sandbox':
             case 'workday-oauth':
+            case 'fanvue':
                 return true;
             default:
                 return false;
@@ -92,6 +93,8 @@ class ProviderClient {
                 return this.createTiktokPersonalToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'workday-oauth':
                 return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'fanvue':
+                return this.createFanvueToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -180,6 +183,8 @@ class ProviderClient {
                     config.oauth_client_id,
                     config.oauth_client_secret
                 );
+            case 'fanvue':
+                return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -510,7 +515,7 @@ class ProviderClient {
 
             throw new NangoError('stripe_app_token_request_error');
         } catch (err: any) {
-            throw new NangoError('stripe_app_token_request_error', err.message);
+            throw new NangoError('stripe_app_token_request_error', stringifyError(err));
         }
     }
 
@@ -542,7 +547,7 @@ class ProviderClient {
             }
             throw new NangoError('stripe_app_token_refresh_request_error');
         } catch (err: any) {
-            throw new NangoError('stripe_app_token_refresh_request_error', err.message);
+            throw new NangoError('stripe_app_token_refresh_request_error', stringifyError(err));
         }
     }
 
@@ -864,6 +869,64 @@ class ProviderClient {
             throw new NangoError('refresh_token_external_error', response.data);
         } catch (err: any) {
             throw new NangoError('refresh_token_external_error', err.message);
+        }
+    }
+
+    private async createFanvueToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        client_secret: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = {
+                grant_type: 'authorization_code',
+                code,
+                redirect_uri,
+                code_verifier
+            };
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('fanvue_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('fanvue_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshFanvueToken(refreshTokenUrl: string, refreshToken: string, client_id: string, client_secret: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = {
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            };
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+            };
+
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('fanvue_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('fanvue_refresh_token_request_error', stringifyError(err));
         }
     }
 

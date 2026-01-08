@@ -190,6 +190,22 @@ Generate tests for your integrations:
 nango generate:tests
 ```
 
+You can also generate tests for specific integrations, syncs, or actions:
+
+```bash
+# Generate tests for a specific integration
+nango generate:tests -i github
+
+# Generate tests for a specific sync
+nango generate:tests -s fetch-tickets
+
+# Generate tests for a specific action
+nango generate:tests -a create-ticket
+
+# Combine flags for more specific targeting
+nango generate:tests -i github -s fetch-tickets
+```
+
 Run your tests:
 
 ```bash
