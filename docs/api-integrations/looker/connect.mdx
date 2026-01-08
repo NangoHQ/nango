@@ -1,56 +1,56 @@
 ---
-title: Looker - How do I link my account?
-sidebarTitle: Looker
+title: Looker Studio - How do I link my account?
+sidebarTitle: Looker Studio
 ---
 
 
 # Overview
 
-To authenticate with Looker, you will need:
-1. **Looker Instance Hostname** - Your Looker instance hostname (e.g., `mycompany.looker.com`)
+To authenticate with Looker Studio, you will need:
+1. **Looker Studio Instance Hostname** - Your Looker Studio instance hostname (e.g., `mycompany.looker.com`)
 2. **Client ID** - A unique identifier for your client.
 3. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
 
-This guide will walk you through finding your **Looker Instance Hostname** and obtaining your **Client Credentials**.
+This guide will walk you through finding your **Looker Studio Instance Hostname** and obtaining your **Client Credentials**.
 
 ### Prerequisites:
 
-- You must have a Looker account with admin access
+- You must have a Looker Studio account with admin access
 
 ### Instructions:
 
-#### Step 1: Finding your Looker hostname
+#### Step 1: Finding your Looker Studio hostname
 
-Your Looker instance hostname is the API URL for accessing your Looker instance's API. The hostname format depends on your Looker instance configuration.
+Your Looker Studio instance hostname is the API URL for accessing your Looker Studio instance's API. The hostname format depends on your Looker Studio instance configuration.
 
-**Option 1: Check the API Host URL in Looker Admin (Recommended)**
+**Option 1: Check the API Host URL in Looker Studio Admin (Recommended)**
 
-1. Log into your Looker instance with admin access.
+1. Log into your Looker Studio instance with admin access.
 2. Navigate to **Admin** > **API**.
 3. Check the **API Host URL** field. This shows your configured API path.
 4. If an API Host URL is specified, use that value as your hostname (without the `https://` prefix).
-5. If the API Host URL field is not configured, you can use this field to assign an API path that is different from your Looker server machine name. 
+5. If the API Host URL field is not configured, you can use this field to assign an API path that is different from your Looker Studio server machine name. 
 
 #### Step 2: Obtaining your client credentials
 
 To generate your Client ID and Client Secret:
 
-1. Log into your Looker instance with admin access.
+1. Log into your Looker Studio instance with admin access.
 2. Navigate to **Admin** > **Users** and select your user account.
 3. Click the **API** section and select **Create API3 Key**.
 4. A new **Client ID** and **Client Secret** will be generated.
 
 #### Step 3: Enter credentials in the Connect UI
 
-Once you have your **Looker Instance Hostname**, **Client ID**, and **Client Secret**:
+Once you have your **Looker Studio Instance Hostname**, **Client ID**, and **Client Secret**:
 
-1. Open the form where you need to authenticate with Looker.
-2. Enter your **Looker Instance Hostname**, **Client ID**, and **Client Secret** in their respective fields.
+1. Open the form where you need to authenticate with Looker Studio.
+2. Enter your **Looker Studio Instance Hostname**, **Client ID**, and **Client Secret** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/looker/form.png" style={{maxWidth: "450px" }}/>
 
-You are now connected to Looker.
+You are now connected to Looker Studio.
 
 ---
 

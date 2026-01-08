@@ -8497,7 +8497,7 @@ looker:
             example: mycompany.looker.com
             order: 1
             format: hostname
-            doc_section: '#step-1-finding-your-looker-hostname'
+            doc_section: '#step-1-finding-your-looker-studio-hostname'
     credentials:
         clientId:
             type: string
