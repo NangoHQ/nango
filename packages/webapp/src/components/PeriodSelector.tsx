@@ -9,7 +9,7 @@ import { Button } from './ui/button/Button';
 
 import type { Period, PeriodPreset } from '../utils/dates';
 
-const dateTimeFormat = 'LLL dd, HH:mm:ss';
+const dateTimeFormat = 'LLL dd, yyyy, HH:mm:ss';
 
 export interface PeriodSelectorProps {
     period: Period | null;

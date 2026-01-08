@@ -855,6 +855,7 @@
               "integrations/all/ninjaone-rmm",
               "integrations/all/namely",
               "integrations/all/namely-pat",
+              "api-integrations/nerdio",
               "integrations/all/netsuite",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
