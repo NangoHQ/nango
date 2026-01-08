@@ -6,11 +6,12 @@ import type { AuthModeType } from '@nangohq/types';
 interface AuthBadgeProps {
     authMode: AuthModeType;
     className?: string;
+    variant?: 'light' | 'dark';
 }
 
-export const AuthBadge: React.FC<AuthBadgeProps> = ({ authMode, className }) => {
+export const AuthBadge: React.FC<AuthBadgeProps> = ({ authMode, className, variant = 'light' }) => {
     return (
-        <CatalogBadge variant="light" className={className}>
+        <CatalogBadge variant={variant} className={className}>
             {getDisplayName(authMode)}
         </CatalogBadge>
     );

@@ -11,6 +11,7 @@ const badgeVariants = cva(
     {
         variants: {
             variant: {
+                brand: 'bg-bg-accent text-text-brand',
                 gray: 'bg-badge-bg-gray text-badge-fg-gray',
                 mint: 'bg-badge-bg-mint text-badge-fg-mint',
                 pink: 'bg-badge-bg-pink text-badge-fg-pink',

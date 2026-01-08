@@ -1,310 +1,120 @@
-import { useVirtualizer } from '@tanstack/react-virtual';
-import Fuse from 'fuse.js';
-import debounce from 'lodash/debounce';
-import { Info, Loader2, Search } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
-import { useSWRConfig } from 'swr';
+import { BookOpen } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { AuthBadge } from './components/AuthBadge';
-import { apiPostIntegration, clearIntegrationsCache } from '../../hooks/useIntegration';
-import { useProviders } from '../../hooks/useProviders';
-import { useToast } from '../../hooks/useToast';
-import DashboardLayout from '../../layout/DashboardLayout';
-import { useStore } from '../../store';
+import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
+import { OAuthCreateForm } from './components/forms/OAuthCreateForm';
+import { getDisplayName } from './utils';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button } from '@/components-v2/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components-v2/ui/dialog';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton';
+import { apiPostIntegration } from '@/hooks/useIntegration';
+import { useProvider } from '@/hooks/useProvider';
+import { useToast } from '@/hooks/useToast';
+import DashboardLayout from '@/layout/DashboardLayout';
+import { useStore } from '@/store';
 
-import type { ApiProviderListItem } from '@nangohq/types';
-import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
-
-type Provider = ApiProviderListItem;
+import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
 export const CreateIntegration = () => {
-    const { mutate, cache } = useSWRConfig();
-    const { toast } = useToast();
     const env = useStore((state) => state.env);
-
-    const [providers, setProviders] = useState<Provider[] | null>(null);
-    const [showConfigModal, setShowConfigModal] = useState(false);
-    const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
-    const [isCreatingShared, setIsCreatingShared] = useState(false);
-
-    const { data: providersData } = useProviders(env);
+    const { toast } = useToast();
     const navigate = useNavigate();
 
-    const initialProviders = useMemo(() => {
-        return providersData?.data ?? null;
-    }, [providersData]);
+    const { providerConfigKey } = useParams();
+    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey!);
 
-    useEffect(() => {
-        if (initialProviders) {
-            setProviders(initialProviders);
-        }
-    }, [initialProviders]);
+    const provider = providerData?.data;
 
-    const onSelectProvider = (provider: Provider) => {
-        if (provider.preConfigured) {
-            // show modal for preconfigured providers
-            setSelectedProvider(provider);
-            setShowConfigModal(true);
-        } else {
-            // go directly to create integration for non-preconfigured providers
-            void onCreateIntegrationDirect(provider.name);
+    const onSubmit = async (data: PostIntegration['Body']) => {
+        if (!provider) {
+            return;
         }
+
+        const response = await apiPostIntegration(env, data);
+
+        if ('error' in response.json) {
+            toast({ title: response.json.error.message || 'Failed to create integration', variant: 'error' });
+            return;
+        }
+
+        navigate(`/${env}/integrations/${response.json.data.unique_key}/settings`);
     };
 
-    const onCreateIntegrationDirect = async (providerName: string) => {
-        const created = await apiPostIntegration(env, {
-            provider: providerName,
-            useSharedCredentials: false
-        });
-
-        if ('error' in created.json) {
-            toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
-        } else {
-            toast({ title: 'Integration created', variant: 'success' });
-            clearIntegrationsCache(cache, mutate);
-            navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
-        }
-    };
-
-    const fuse = useMemo(() => {
-        if (!initialProviders || initialProviders.length === 0) {
-            return null;
-        }
-
-        return new Fuse(initialProviders, {
-            keys: [
-                { name: 'displayName', weight: 0.3 },
-                { name: 'name', weight: 0.3 },
-                { name: 'authMode', weight: 0.2 },
-                { name: 'categories', weight: 0.2 }
-            ],
-            threshold: 0.4, // 0.0 = exact match, 1.0 = match anything. 0.4 is a good balance
-            includeScore: true,
-            minMatchCharLength: 1,
-            ignoreLocation: true, // Search anywhere in the string
-            findAllMatches: true // Find all matches, not just the first
-        });
-    }, [initialProviders]);
-
-    const filterProviders = useCallback(
-        (value: string) => {
-            if (!value.trim() || !fuse) {
-                setProviders(initialProviders);
-                return;
-            }
-
-            const results = fuse.search(value);
-            const filtered = results.map((result) => result.item);
-            setProviders(filtered);
-        },
-        [initialProviders, fuse]
-    );
-
-    const debouncedFilterProviders = useMemo(() => debounce(filterProviders, 300), [filterProviders]);
-
-    useEffect(() => {
-        return () => {
-            debouncedFilterProviders.cancel();
-        };
-    }, [debouncedFilterProviders]);
-
-    const handleInputChange = useCallback(
-        (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-            debouncedFilterProviders(event.currentTarget.value);
-        },
-        [debouncedFilterProviders]
-    );
-
-    const handleIntegrationCreation = async (useSharedCredentials: boolean) => {
-        if (!selectedProvider) return;
-
-        if (useSharedCredentials) {
-            setIsCreatingShared(true);
-
-            try {
-                const created = await apiPostIntegration(env, { provider: selectedProvider.name, useSharedCredentials: true });
-
-                if ('error' in created.json) {
-                    toast({ title: created.json.error.message || 'Failed to create, an error occurred', variant: 'error' });
-                    return;
-                }
-
-                toast({ title: 'Integration created with Nango credentials', variant: 'success' });
-                clearIntegrationsCache(cache, mutate);
-                navigate(`/${env}/integrations/${created.json.data.unique_key}/settings`);
-                setShowConfigModal(false);
-            } finally {
-                setIsCreatingShared(false);
-            }
-        } else {
-            await onCreateIntegrationDirect(selectedProvider.name);
-            setShowConfigModal(false);
-        }
-    };
+    if (loadingProvider || !provider) {
+        return <Skeleton className="size-10.5" />;
+    }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
-            <Helmet>
-                <title>Create integration - Nango</title>
-            </Helmet>
-
-            <header>
-                <h2 className="text-text-primary text-title-subsection">Set up new integration</h2>
-            </header>
-
-            <InputGroup className="bg-bg-subtle">
-                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} autoFocus />
-                <InputGroupAddon>
-                    <Search />
-                </InputGroupAddon>
-            </InputGroup>
-
-            <ProviderList providers={providers} onSelectProvider={onSelectProvider} />
-
-            <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
-                <DialogContent className="w-[570px] max-w-[570px]">
-                    <DialogHeader>
-                        <DialogTitle>Configure new integration:</DialogTitle>
-                    </DialogHeader>
-
-                    {selectedProvider && (
-                        <div className="flex flex-col gap-4">
-                            <div className="flex items-center justify-between p-3 bg-bg-subtle rounded">
-                                <div className="flex items-center gap-2">
-                                    <IntegrationLogo provider={selectedProvider.name} />
-                                    <span className="text-white font-medium">{selectedProvider.displayName}</span>
-                                </div>
-                                <AuthBadge authMode={selectedProvider.authMode} className="py-2 px-4 !text-body-small-semi gap-2" />
+        <DashboardLayout>
+            <CardLayout>
+                <CardHeader>
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col gap-6">
+                            <div className="inline-flex gap-2 items-center">
+                                <IntegrationLogo provider={provider.name} className="size-10.5" />
+                                <span className="text-text-primary text-body-medium-semi">{provider.displayName}</span>
                             </div>
-                            <Alert variant="info">
-                                <Info />
-                                <AlertDescription>
-                                    Nango provides a developer app for testing. They may get reset occasionally. Always use your own developer app for
-                                    production.
-                                </AlertDescription>
-                            </Alert>
-                            <div className="flex justify-between gap-2">
-                                <Button
-                                    type="button"
-                                    size="lg"
-                                    onClick={() => handleIntegrationCreation(env !== 'prod')}
-                                    disabled={isCreatingShared}
-                                    variant="primary"
-                                >
-                                    {isCreatingShared && <Loader2 />}
-                                    {isCreatingShared && env !== 'prod'
-                                        ? 'Creating...'
-                                        : env !== 'prod'
-                                          ? "Use Nango's developer app"
-                                          : 'Use your own developer app'}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="lg"
-                                    onClick={() => handleIntegrationCreation(env === 'prod')}
-                                    disabled={isCreatingShared}
-                                    variant="secondary"
-                                >
-                                    {isCreatingShared && <Loader2 />}
-                                    {isCreatingShared && env === 'prod'
-                                        ? 'Creating...'
-                                        : env === 'prod'
-                                          ? "Use Nango's developer app"
-                                          : 'Use your own developer app'}
-                                </Button>
+                            <div className="flex flex-wrap gap-3 gap-y-2">
+                                {provider.authMode !== 'NONE' && <Badge variant="brand">{getDisplayName(provider.authMode)}</Badge>}
+                                {provider.categories?.map((category) => (
+                                    <Badge key={category} variant="ghost">
+                                        {category}
+                                    </Badge>
+                                ))}
                             </div>
                         </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+                        <ButtonLink to={provider.docs} variant="secondary">
+                            <BookOpen />
+                            Full setup guide
+                        </ButtonLink>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <Content provider={provider} onSubmit={onSubmit} />
+                </CardContent>
+            </CardLayout>
         </DashboardLayout>
     );
 };
 
-const ProviderList = ({ providers, onSelectProvider }: { providers: Provider[] | null; onSelectProvider: (provider: Provider) => void }) => {
-    const parentRef = useRef<HTMLDivElement>(null);
-
-    const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
-        count: providers?.length ?? 0,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 74,
-        overscan: 5,
-        gap: 8
-    });
-
-    if (!providers || providers.length === 0) {
-        return null;
+const getInfoMessage = (provider: ApiProviderListItem): string | null => {
+    switch (provider.authMode) {
+        case 'BASIC':
+            return "This API uses basic auth. Nothing to configure here, Nango will ask for the user's basic credentials as part of the auth flow.";
+        case 'API_KEY':
+            return 'This API uses API key auth. Nothing to configure here, Nango will ask the user for an API key as part of the auth flow.';
     }
 
-    return (
-        <div ref={parentRef} className="h-full overflow-auto">
-            <div className="relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const provider = providers[virtualRow.index];
-                    return (
-                        <Provider
-                            key={virtualRow.key}
-                            provider={provider}
-                            onClick={() => onSelectProvider(provider)}
-                            virtualRow={virtualRow}
-                            rowVirtualizer={rowVirtualizer}
-                        />
-                    );
-                })}
-            </div>
-        </div>
-    );
+    return `This API uses ${getDisplayName(provider.authMode)}. Nothing to configure here.`;
 };
 
-const Provider = ({
-    provider,
-    onClick,
-    virtualRow,
-    rowVirtualizer
-}: {
-    provider: Provider;
-    onClick: () => void;
-    virtualRow?: VirtualItem;
-    rowVirtualizer?: Virtualizer<HTMLDivElement, HTMLDivElement>;
-}) => {
+const Content = ({ provider, onSubmit }: { provider: ApiProviderListItem; onSubmit: (data: PostIntegration['Body']) => Promise<void> }) => {
+    if (['OAUTH1', 'OAUTH2', 'TBA'].includes(provider.authMode)) {
+        return <OAuthCreateForm provider={provider} onSubmit={onSubmit} />;
+    }
+
+    const infoMessage = getInfoMessage(provider);
+
     return (
-        <div
-            onClick={onClick}
-            className="p-4 w-full inline-flex items-center justify-between bg-bg-elevated rounded border border-transparent cursor-pointer transition-colors hover:bg-bg-surface hover:border-border-disabled"
-            data-index={virtualRow?.index}
-            ref={rowVirtualizer ? (node) => rowVirtualizer.measureElement(node) : undefined}
-            style={
-                virtualRow
-                    ? {
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          transform: `translateY(${virtualRow.start}px)`
-                      }
-                    : undefined
-            }
-        >
-            <div className="inline-flex gap-1.5 items-center">
-                <IntegrationLogo provider={provider.name} />
-                <span className="text-text-primary text-body-medium-semi">{provider.displayName}</span>
-            </div>
-            <div className="inline-flex gap-1.5 items-center justify-end">
-                <AuthBadge authMode={provider.authMode} />
-                {provider.categories?.map((category) => (
-                    <Badge key={category} variant="ghost">
-                        {category}
-                    </Badge>
-                ))}
-            </div>
+        <div className="flex flex-col gap-8">
+            {infoMessage && (
+                <Alert variant="info">
+                    <AlertDescription>{infoMessage}</AlertDescription>
+                </Alert>
+            )}
+            <Button
+                variant="primary"
+                onClick={() =>
+                    onSubmit({
+                        provider: provider.name,
+                        useSharedCredentials: false
+                    })
+                }
+            >
+                Create
+            </Button>
         </div>
     );
 };
