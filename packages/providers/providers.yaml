@@ -76,6 +76,32 @@
             order: 1
             doc_section: '#step-1-find-your-3cx-domain'
 
+8x8:
+    display_name: 8x8
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://api.8x8.com/oauth/v2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.8x8.com
+    docs: https://nango.dev/docs/api-integrations/8x8
+    docs_connect: https://nango.dev/docs/api-integrations/8x8/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your 8x8 API Client ID from the Admin Console
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your 8x8 API Client Secret from the Admin Console
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+       
 accelo:
     display_name: Accelo
     categories:

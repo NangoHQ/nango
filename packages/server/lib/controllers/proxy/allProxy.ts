@@ -309,7 +309,6 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
     const contentEncoding = responseStream.headers['content-encoding'] || '';
 
-    const isJsonResponse = contentType.includes('application/json');
     const isChunked = transferEncoding === 'chunked';
     const isEncoded = Boolean(contentEncoding);
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
@@ -345,20 +344,8 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        if (isJsonResponse) {
-            // Validate JSON structure without re-serializing to avoid JSON.parse limitations (ex: precision loss with big integers).
-            // TODO: consider removing validation and forwarding upstream response as-is (even if invalid JSON) to avoid performance overhead.
-            try {
-                JSON.parse(Buffer.concat(responseData).toString());
-            } catch (err) {
-                res.writeHead(502, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Failed to parse JSON response from upstream service' }));
-                void logCtx.error('Failed to parse JSON response from upstream service', { error: err });
-                await logCtx.failed();
-                metrics.increment(metrics.Types.PROXY_FAILURE);
-                return;
-            }
-            res.setHeader('Content-Type', 'application/json');
+        if (typeof contentType === 'string' && contentType !== '') {
+            res.setHeader('Content-Type', contentType);
         }
 
         try {

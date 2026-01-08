@@ -6,20 +6,6 @@ description: 'Register an OAuth app with Confluence and obtain credentials to co
 
 This guide shows you how to register your own app with Confluence (Atlassian) to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Confluence account.
 
-## Access requirements
-
-Free Atlassian developer account available - no paid account required. App review is only required if you want to list your app on the Atlassian Marketplace.
-
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for an [Atlassian developer account](https://developer.atlassian.com/). |
-| Paid test account | ✅ Not required | Free Confluence Cloud instance can be used for testing. |
-| Partnership | ✅ Not required | |
-| App review | ⚠️ Conditional | Required only if you want to list your app on the Atlassian Marketplace. |
-| Security audit | ✅ Not required | |
-
-## Setup guide
-
 <Steps>
   <Step title="Create an Atlassian developer account">
     If you don't already have one, sign up for an [Atlassian developer account](https://id.atlassian.com/signup/).
@@ -46,6 +32,7 @@ Free Atlassian developer account available - no paid account required. App revie
        - `write:confluence-content` - Create and update content
        - `delete:confluence-content` - Delete content
        - `manage:confluence-configuration` - Manage Confluence instance settings
+       - `read:page:confluence` - Read Confluence pages
        - `offline_access` - Get refresh tokens (required for long-term access)
     4. Click **Save** to save your changes.
   </Step>
@@ -75,9 +62,17 @@ When working with the Confluence API through Nango, keep these important points 
 To allow the possibility of refreshing the token, you must add `offline_access` to your scopes when creating the integration on the Nango UI.
 
 **Cloud ID and domain configuration:**
+A single Confluence OAuth token can be valid for multiple Atlassian sites. For example, the same token might grant access to both "nango-hq.atlassian.net" and "nango-test.atlassian.net". This is why specifying the `domain` during connection creation is important if you need to connect to a specific site.
+
 When connecting to Confluence, you have two options for specifying which Confluence site to connect to:
 1. Provide a `domain` during connection creation (recommended): This ensures you connect to the specific Confluence site you want.
 2. Let Nango auto-select the first available site (legacy behavior): If no baseUrl is specified, Nango will use the first site from the accessible resources api.
+
+The connection process works as follows:
+1. Nango fetches all accessible sites for the OAuth token
+2. If you specified a `domain`, Nango finds the matching site and sets its `cloudId`
+3. If no `domain` is specified, Nango uses the first available site and sets its `cloudId`
+4. The selected site's `cloudId` and `domain` are stored in the connection configuration
 
 You will need to fetch your Cloud ID to be able to make API requests to the Confluence API. You can do this with the proxy by calling:
 

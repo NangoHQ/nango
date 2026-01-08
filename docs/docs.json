@@ -492,6 +492,7 @@
             "pages": [
               "integrations/all/1password-scim",
               "api-integrations/3cx",
+              "api-integrations/8x8",
               "api-integrations/accelo",
               "integrations/all/acuity-scheduling",
               "integrations/all/active-campaign",
