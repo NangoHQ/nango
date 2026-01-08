@@ -14811,8 +14811,8 @@ wise-api-key:
             method: GET
             endpoints:
                 - /v1/profiles
-    docs: https://nango.dev/docs/integrations/all/wise-api-key
-    docs_connect: https://nango.dev/docs/integrations/all/wise-api-key/connect
+    docs: https://nango.dev/docs/api-integrations/wise-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/wise-api-key/connect
     credentials:
         apiKey:
             type: string
