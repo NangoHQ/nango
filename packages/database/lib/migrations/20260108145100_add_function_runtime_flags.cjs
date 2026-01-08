@@ -15,7 +15,7 @@ exports.up = async function (knex) {
         ADD COLUMN IF NOT EXISTS "sync_function_runtime" function_runtime DEFAULT 'runner',
         ADD COLUMN IF NOT EXISTS "action_function_runtime" function_runtime DEFAULT 'runner',
         ADD COLUMN IF NOT EXISTS "webhook_function_runtime" function_runtime DEFAULT 'runner',
-        ADD COLUMN IF NOT EXISTS "on_event_function_runtime" function_runtime DEFAULT 'runner';
+        ADD COLUMN IF NOT EXISTS "on_event_function_runtime" function_runtime DEFAULT 'runner'
     `);
 };
 
