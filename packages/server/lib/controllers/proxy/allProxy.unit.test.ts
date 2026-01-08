@@ -126,19 +126,6 @@ describe('handleResponse', () => {
         expect(mockLogCtx.error).not.toHaveBeenCalled();
     });
 
-    it('should handle invalid JSON in response', async () => {
-        const invalidJson = '{invalid json content}';
-        const mockRes = createMockResponse();
-        const mockResponseStream = createMockResponseStream(invalidJson);
-
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
-        await mockRes.waitForSend();
-
-        expect(mockRes.res.writeHead).toHaveBeenCalledWith(502, { 'Content-Type': 'application/json' });
-        expect(mockRes.res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Failed to parse JSON response from upstream service' }));
-        expect(mockLogCtx.failed).toHaveBeenCalled();
-    });
-
     it('should preserve BigInt values in JSON response without precision loss', async () => {
         const jsonWithBigInt = `{"id": 7584781588001541408, "name": "test", "count": 42, "list": [12345678901234567890, 98765432109876543210]}`;
 

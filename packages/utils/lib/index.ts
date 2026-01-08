@@ -26,3 +26,4 @@ export * from './wait.js';
 export * from './date.js';
 export * from './frequency.js';
 export * from './map.js';
+export * from './daemon.js';

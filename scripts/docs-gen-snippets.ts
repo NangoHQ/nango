@@ -21,7 +21,7 @@ const prettyAuthModes: Record<string, string> = {
 
 const flowsPath = 'packages/shared/flows.zero.json';
 const providersPath = 'packages/providers/providers.yaml';
-const docsPath = 'docs/integrations/all';
+const docsPaths = ['docs/integrations/all', 'docs/api-integrations'];
 const snippetsPath = 'docs/snippets/generated';
 
 const flowsString = await fs.readFile(flowsPath, 'utf-8');
@@ -40,36 +40,45 @@ for (const flow of flows) {
 }
 
 const providersHandled: string[] = [];
-const files = await fs.readdir(docsPath);
-for (const file of files) {
-    if (file.endsWith('.mdx')) {
-        const provider = path.basename(file, '.mdx');
-        const snippetPath = `${snippetsPath}/${path.basename(file, '.mdx')}`;
+for (const docsPath of docsPaths) {
+    const files = await fs.readdir(docsPath);
+    for (const file of files) {
+        if (file.endsWith('.mdx')) {
+            const provider = path.basename(file, '.mdx');
 
-        await fs.mkdir(snippetPath, { recursive: true });
+            // Skip if already processed from another directory
+            if (providersHandled.includes(provider)) {
+                console.log(`Skipping ${provider} (already processed from another directory)`);
+                continue;
+            }
 
-        const maybeAliased: Provider | undefined = providers[provider];
-        if (!maybeAliased) {
-            throw new Error(`Couldn't find provider config for  ${provider}`);
+            const snippetPath = `${snippetsPath}/${path.basename(file, '.mdx')}`;
+
+            await fs.mkdir(snippetPath, { recursive: true });
+
+            const maybeAliased: Provider | undefined = providers[provider];
+            if (!maybeAliased) {
+                throw new Error(`Couldn't find provider config for  ${provider}`);
+            }
+
+            const providerConfig: Provider | undefined = (maybeAliased as any)['alias'] ? providers[(maybeAliased as any)['alias']] : maybeAliased;
+            if (!providerConfig) {
+                throw new Error(`Couldn't find provider alias for ${(maybeAliased as any)['alias']}`);
+            }
+
+            const docLink = maybeAliased.docs.split('/').slice(-1)[0];
+            if (docLink !== provider) {
+                console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
+            }
+
+            const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
+            await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
+
+            const casesSnippet = useCasesSnippet(useCases[provider]);
+            await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
+
+            providersHandled.push(provider);
         }
-
-        const providerConfig: Provider | undefined = (maybeAliased as any)['alias'] ? providers[(maybeAliased as any)['alias']] : maybeAliased;
-        if (!providerConfig) {
-            throw new Error(`Couldn't find provider alias for ${(maybeAliased as any)['alias']}`);
-        }
-
-        const docLink = maybeAliased.docs.split('/').slice(-1)[0];
-        if (docLink !== provider) {
-            console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
-        }
-
-        const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
-        await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
-
-        const casesSnippet = useCasesSnippet(useCases[provider]);
-        await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
-
-        providersHandled.push(provider);
     }
 }
 
