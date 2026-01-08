@@ -52,35 +52,39 @@ describe('zodToNango', () => {
         ).toStrictEqual({
             name: 'test',
             optional: false,
+            description: undefined,
             value: [
-                { name: 'foo', optional: false, value: 'bar' },
+                { name: 'foo', optional: false, value: 'bar', description: undefined },
                 {
                     name: 'literalArray',
                     optional: false,
                     union: true,
                     value: [
-                        { name: '0', value: 'bar' },
-                        { name: '1', value: 'baz' }
-                    ]
+                        { name: '0', value: 'bar', description: undefined },
+                        { name: '1', value: 'baz', description: undefined }
+                    ],
+                    description: undefined
                 },
-                { name: 'num', optional: false, tsType: true, value: 'number' },
-                { name: 'bigint', optional: false, tsType: true, value: 'bigint' },
-                { name: 'bool', optional: false, tsType: true, value: 'boolean' },
-                { name: 'null', optional: false, tsType: true, value: null },
+                { name: 'num', optional: false, tsType: true, value: 'number', description: undefined },
+                { name: 'bigint', optional: false, tsType: true, value: 'bigint', description: undefined },
+                { name: 'bool', optional: false, tsType: true, value: 'boolean', description: undefined },
+                { name: 'null', optional: false, tsType: true, value: null, description: undefined },
                 {
                     name: 'enum',
                     optional: false,
                     union: true,
                     value: [
-                        { name: '0', value: 'tip' },
-                        { name: '1', value: 'top' }
-                    ]
+                        { name: '0', value: 'tip', description: undefined },
+                        { name: '1', value: 'top', description: undefined }
+                    ],
+                    description: undefined
                 },
-                { array: true, name: 'arr', optional: false, tsType: true, value: 'string' },
+                { array: true, name: 'arr', optional: false, tsType: true, value: 'string', description: undefined },
                 {
                     name: 'obj',
                     optional: false,
-                    value: [{ name: 'bar', optional: false, tsType: true, value: 'string' }]
+                    value: [{ name: 'bar', optional: false, tsType: true, value: 'string', description: undefined }],
+                    description: undefined
                 },
                 {
                     name: 'union',
@@ -88,30 +92,33 @@ describe('zodToNango', () => {
                     tsType: true,
                     union: true,
                     value: [
-                        { name: '0', optional: false, tsType: true, value: 'string' },
-                        { name: '1', optional: false, tsType: true, value: 'boolean' }
-                    ]
+                        { name: '0', optional: false, tsType: true, value: 'string', description: undefined },
+                        { name: '1', optional: false, tsType: true, value: 'boolean', description: undefined }
+                    ],
+                    description: undefined
                 },
-                { name: 'any', optional: true, tsType: true, value: 'any' },
+                { name: 'any', optional: true, tsType: true, value: 'any', description: undefined },
                 {
                     name: 'reco',
                     optional: false,
-                    value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'Date' }]
+                    value: [{ dynamic: true, name: '__string', optional: false, tsType: true, value: 'Date', description: undefined }],
+                    description: undefined
                 },
-                { name: 'opt', optional: true, tsType: true, value: 'any' },
-                { name: 'nullable', optional: false, tsType: true, value: 'string' },
-                { name: 'nullableOptional', optional: true, tsType: true, value: 'string' },
-                { name: 'nullish', optional: true, tsType: true, value: 'string' },
+                { name: 'opt', optional: true, tsType: true, value: 'any', description: undefined },
+                { name: 'nullable', optional: false, tsType: true, value: 'string', description: undefined },
+                { name: 'nullableOptional', optional: true, tsType: true, value: 'string', description: undefined },
+                { name: 'nullish', optional: true, tsType: true, value: 'string', description: undefined },
                 {
                     name: 'ref',
                     optional: false,
-                    value: [{ name: 'id', optional: false, tsType: true, value: 'string' }]
+                    value: [{ name: 'id', optional: false, tsType: true, value: 'string', description: undefined }],
+                    description: undefined
                 },
-                { name: 'void', tsType: true, value: 'void' },
-                { name: 'never', optional: false, tsType: true, value: 'never' },
-                { name: 'date', optional: false, tsType: true, value: 'Date' },
-                { name: 'emptyObject', optional: false, value: [] },
-                { name: 'unknown', optional: true, tsType: true, value: 'unknown' },
+                { name: 'void', tsType: true, value: 'void', description: undefined },
+                { name: 'never', optional: false, tsType: true, value: 'never', description: undefined },
+                { name: 'date', optional: false, tsType: true, value: 'Date', description: undefined },
+                { name: 'emptyObject', optional: false, value: [], description: undefined },
+                { name: 'unknown', optional: true, tsType: true, value: 'unknown', description: undefined },
                 {
                     name: 'discriminatedUnion',
                     optional: false,
@@ -122,21 +129,24 @@ describe('zodToNango', () => {
                             name: '0',
                             optional: false,
                             value: [
-                                { name: 'type', optional: false, value: 'a' },
-                                { name: 'foo', optional: false, tsType: true, value: 'string' }
-                            ]
+                                { name: 'type', optional: false, value: 'a', description: undefined },
+                                { name: 'foo', optional: false, tsType: true, value: 'string', description: undefined }
+                            ],
+                            description: undefined
                         },
                         {
                             name: '1',
                             optional: false,
                             value: [
-                                { name: 'type', optional: false, value: 'b' },
-                                { name: 'bar', optional: false, tsType: true, value: 'string' }
-                            ]
+                                { name: 'type', optional: false, value: 'b', description: undefined },
+                                { name: 'bar', optional: false, tsType: true, value: 'string', description: undefined }
+                            ],
+                            description: undefined
                         }
-                    ]
+                    ],
+                    description: undefined
                 },
-                { name: 'coerce', optional: true, tsType: true, value: 'string' }
+                { name: 'coerce', optional: true, tsType: true, value: 'string', description: undefined }
 
                 // {
                 //     name: 'tuple',
@@ -158,14 +168,28 @@ describe('zodToNango', () => {
             name: 'test',
             optional: false,
             value: [
-                { name: 'foo', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] },
+                {
+                    name: 'foo',
+                    optional: false,
+                    value: [{ name: 'id', optional: false, tsType: true, value: 'string', description: undefined }],
+                    description: undefined
+                },
                 {
                     array: true,
                     name: 'arr',
                     optional: false,
-                    value: [{ name: '0', optional: false, value: [{ name: 'id', optional: false, tsType: true, value: 'string' }] }]
+                    value: [
+                        {
+                            name: '0',
+                            optional: false,
+                            value: [{ name: 'id', optional: false, tsType: true, value: 'string', description: undefined }],
+                            description: undefined
+                        }
+                    ],
+                    description: undefined
                 }
-            ]
+            ],
+            description: undefined
         });
     });
 });
