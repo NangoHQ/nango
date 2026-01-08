@@ -11,10 +11,10 @@ exports.up = async function (knex) {
         );
     `);
     await knex.schema.raw(`
-        ALTER TABLE "plans" ADD COLUMN "sync_function_runtime" function_runtime DEFAULT 'nango-runner';
-        ALTER TABLE "plans" ADD COLUMN "action_function_runtime" function_runtime DEFAULT 'nango-runner';
-        ALTER TABLE "plans" ADD COLUMN "webhook_function_runtime" function_runtime DEFAULT 'nango-runner';
-        ALTER TABLE "plans" ADD COLUMN "on_event_function_runtime" function_runtime DEFAULT 'nango-runner';
+        ALTER TABLE "plans" ADD COLUMN IF NOT EXISTS "sync_function_runtime" function_runtime DEFAULT 'runner';
+        ALTER TABLE "plans" ADD COLUMN IF NOT EXISTS "action_function_runtime" function_runtime DEFAULT 'runner';
+        ALTER TABLE "plans" ADD COLUMN IF NOT EXISTS "webhook_function_runtime" function_runtime DEFAULT 'runner';
+        ALTER TABLE "plans" ADD COLUMN IF NOT EXISTS "on_event_function_runtime" function_runtime DEFAULT 'runner';
     `);
 };
 
