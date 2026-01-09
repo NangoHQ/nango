@@ -8540,6 +8540,47 @@ loop-returns:
             description: The API key for your Loop Returns account
             doc_section: '#step-1-generating-your-api-key'
 
+looker:
+    display_name: Looker Studio
+    categories:
+        - analytics
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/api/4.0/login
+    body_format: form
+    token_params:
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://nango.dev/docs/api-integrations/looker
+    docs_connect: https://nango.dev/docs/api-integrations/looker/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Looker Instance Hostname
+            description: Your Looker instance hostname
+            prefix: https://
+            example: mycompany.looker.com
+            order: 1
+            format: hostname
+            doc_section: '#step-1-finding-your-looker-studio-hostname'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Looker Client ID
+            doc_section: '#step-2-obtaining-your-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Looker Client Secret
+            secret: true
+            doc_section: '#step-2-obtaining-your-client-credentials'
+
 lucid-scim:
     display_name: Lucid (SCIM)
     categories:
@@ -13682,6 +13723,42 @@ stripe-app-sandbox:
             title: App Domain
             description: The unique identifier Stripe assigns to your app instance
             doc_section: '#step-1-finding-your-app-domain'
+
+stripe-api-key:
+    display_name: Stripe (API Key)
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.stripe.com
+        headers:
+            stripe-context: ${connectionConfig.context}
+    docs: https://nango.dev/docs/api-integrations/stripe-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/stripe-api-key/connect
+    credentials:
+        username:
+            type: string
+            title: Restricted API Key
+            description: Your Stripe restricted API Key
+            secret: true
+            example: rk_live_51On1GfAemfaBCd0eHq***************BV5007KeuAVcO
+            pattern: '^rk_[a-z]+_[A-Za-z0-9]{8}[A-Za-z0-9]+([A-Za-z0-9]{8})$'
+            doc_section: '#step-1-generating-your-stripe-restricted-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+    connection_config:
+        context:
+            type: string
+            title: Stripe Context
+            description: The Stripe account context
+            optional: true
+            example: acct_1aTnTtAAB0hHJ26p
+            pattern: '^acct_[A-Za-z0-9]{16}$'
+            doc_section: '#step-2-finding-your-stripe-context'
 
 supabase:
     display_name: Supabase
