@@ -1,9 +1,9 @@
 import { getKVStore } from '@nangohq/kvstore';
-import { abortCheckIntervalMs } from '@nangohq/runner';
 import { accountService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { orchestratorClient } from '../../clients.js';
+import { envs } from '../../env.js';
 import { logger } from '../../logger.js';
 import { getRunner } from '../../runner/runner.js';
 
@@ -55,7 +55,7 @@ export async function abortTaskWithId({ taskId, teamId }: { taskId: string; team
 async function setAbortFlag(taskId: string): Promise<void> {
     try {
         const kvStore = await getKVStore('customer');
-        await kvStore.set(`function:${taskId}:abort`, '1', { ttlMs: abortCheckIntervalMs * 5 });
+        await kvStore.set(`function:${taskId}:abort`, '1', { ttlMs: envs.RUNNER_ABORT_CHECK_INTERVAL_MS * 5 });
     } catch (err) {
         logger.error(`Error setting abort flag for task: ${taskId}`, err);
     }

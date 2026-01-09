@@ -170,6 +170,8 @@ export const ENVS = z.object({
     RUNNER_MIN_REQUEST_MEMORY: z.coerce.number().optional().default(512),
     RUNNER_REQUEST_CPU_MULTIPLIER: z.coerce.number().optional().default(0.6),
     RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(0.6),
+    RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
+    RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
