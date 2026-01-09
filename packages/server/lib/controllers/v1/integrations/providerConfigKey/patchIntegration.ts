@@ -106,7 +106,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const { environment } = res.locals;
     const params: PatchIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
+    let integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;
@@ -207,16 +207,15 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             }
         } else if (body.authType === 'INSTALL_PLUGIN') {
             const { username, password, appLink } = body;
-            if (appLink) {
-                integration.app_link = appLink;
-            }
-            if (username || password) {
-                integration.custom = {
+            integration = {
+                ...integration,
+                ...(appLink && { app_link: appLink }),
+                custom: {
                     ...integration.custom,
                     ...(username && { username: username }),
                     ...(password && { password: password })
-                };
-            }
+                }
+            };
         }
     }
 
