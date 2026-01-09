@@ -26,7 +26,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -120,7 +120,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
                 id: account.id,
                 name: account.name
             },
-            plan: plan || undefined,
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -143,9 +142,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             }
         };
 
+        const runtimeContext: RuntimeContext = {
+            plan: plan
+        };
+
         const res = await startScript({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx,
             input: task.input
         });

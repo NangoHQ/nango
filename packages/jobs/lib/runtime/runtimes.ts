@@ -10,7 +10,7 @@ import { runnersFleet } from '../runner/fleet.js';
 import { lambdaNodeProvider } from '../runner/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
-import type { NangoProps } from '@nangohq/types';
+import type { NangoProps, RuntimeContext } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 interface Runtime {
@@ -39,8 +39,8 @@ export function getDefaultFleet(): Fleet {
     return runnersFleet;
 }
 
-export async function getRuntimeAdapter(nangoProps: NangoProps): Promise<Result<RuntimeAdapter>> {
-    const result = await getFleetId(nangoProps);
+export async function getRuntimeAdapter(params: { nangoProps: NangoProps; runtimeContext: RuntimeContext }): Promise<Result<RuntimeAdapter>> {
+    const result = await getFleetId(params);
     if (result.isErr()) {
         logger.error('Error while getting fleet id for runtime', result.error);
     } else {

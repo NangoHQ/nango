@@ -41,7 +41,18 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
+import type {
+    ConnectionJobs,
+    DBEnvironment,
+    DBSyncConfig,
+    DBTeam,
+    NangoProps,
+    RuntimeContext,
+    SdkLogger,
+    SyncResult,
+    SyncTypeLiteral,
+    TelemetryBag
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -160,7 +171,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 id: team.id,
                 name: team.name
             },
-            plan: plan || undefined,
             connectionId: task.connection.connection_id,
             environmentId: task.connection.environment_id,
             environmentName: environment.name,
@@ -188,6 +198,10 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             }
         };
 
+        const runtimeContext: RuntimeContext = {
+            plan: plan
+        };
+
         if (task.debug) {
             void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
@@ -195,6 +209,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const res = await startScriptFn({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx
         });
 

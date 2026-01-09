@@ -2,7 +2,7 @@ import { Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
-import type { DBPlan, NangoProps, Result } from '@nangohq/types';
+import type { DBPlan, NangoProps, Result, RuntimeContext } from '@nangohq/types';
 
 const runtimeSelectors = {
     sync: (plan: DBPlan) => plan.sync_function_runtime,
@@ -11,11 +11,17 @@ const runtimeSelectors = {
     'on-event': (plan: DBPlan) => plan.on_event_function_runtime
 };
 
-export async function getFleetId(nangoProps: NangoProps): Promise<Result<string | undefined>> {
-    if (!nangoProps.plan) {
+export async function getFleetId({
+    nangoProps,
+    runtimeContext
+}: {
+    nangoProps: NangoProps;
+    runtimeContext: RuntimeContext;
+}): Promise<Result<string | undefined>> {
+    if (!runtimeContext.plan) {
         return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));
     }
-    const runtime = runtimeSelectors[nangoProps.scriptType](nangoProps.plan);
+    const runtime = runtimeSelectors[nangoProps.scriptType](runtimeContext.plan);
     switch (runtime) {
         case 'lambda':
             return Promise.resolve(Ok(envs.RUNNER_LAMBDA_FLEET_ID));
