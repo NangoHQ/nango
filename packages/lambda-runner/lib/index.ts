@@ -1,5 +1,5 @@
-import { getLocking } from '@nangohq/kvstore';
-import { KVLocks, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { getKVStore, getLocking } from '@nangohq/kvstore';
+import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
 import { getLogger } from '@nangohq/utils';
 
 import { requestSchema } from './schemas.js';
@@ -64,6 +64,17 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
 
     const abortController = new AbortController();
     const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
+
+    const kvStore = await getKVStore('customer');
+    const abort = setInterval(async () => {
+        const shouldAbort = await kvStore.exists(`function:sync:${request.taskId}:abort`);
+        if (shouldAbort) {
+            logger.info('Aborting task', { taskId: request.taskId });
+            abortController.abort();
+            clearInterval(abort);
+            return;
+        }
+    }, abortCheckIntervalMs);
 
     const heartbeat = setInterval(async () => {
         if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
