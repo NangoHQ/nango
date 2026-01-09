@@ -12783,7 +12783,7 @@ servicenow-oauth2-cc:
             type: string
             title: ServiceNow Domain
             description: The subdomain of your ServiceNow account
-            doc_section: '#overview'
+            doc_section: '#step-5-enter-credentials-in-the-connect-ui'
             pattern: '^[a-z0-9_-]+$'
             example: dev12345
             suffix: .service-now.com
