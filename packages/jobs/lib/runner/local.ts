@@ -2,11 +2,13 @@ import { spawn } from 'child_process';
 
 import getPort, { portNumbers } from 'get-port';
 
+import { waitUntilHealthy } from '@nangohq/fleet';
 import { getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { notifyOnIdle } from './runner.js';
 
 import type { NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
@@ -20,7 +22,9 @@ export const localNodeProvider: NodeProvider = {
         storageMb: 20000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 0 // No auto-shutdown for local runners
+        idleMaxDurationMs: 0, // No auto-shutdown for local runners
+        executionTimeoutSecs: -1,
+        provisionedConcurrency: -1
     },
     start: async (node) => {
         try {
@@ -89,5 +93,11 @@ export const localNodeProvider: NodeProvider = {
             ? Ok(undefined)
             : Err(new Error(`Local runner url should start with http://localhost, got ${url}`));
         return Promise.resolve(res);
+    },
+    finish: async (node) => {
+        return notifyOnIdle(node);
+    },
+    waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
+        return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     }
 };

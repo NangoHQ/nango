@@ -1,10 +1,11 @@
-import { Err, Ok, env, isProd } from '@nangohq/utils';
+import { Err, Ok, env, isProd, retryWithBackoff } from '@nangohq/utils';
 
 import { RemoteRunner } from './remote.runner.js';
 import { envs } from '../env.js';
-import { runnersFleet } from './fleet.js';
 import { FleetRunner } from './fleet.runner.js';
+import { getDefaultFleet } from '../runtime/runtimes.js';
 
+import type { Node } from '@nangohq/fleet';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import type { Result } from '@nangohq/utils';
 
@@ -45,9 +46,25 @@ export async function getRunner(teamId: number): Promise<Result<Runner>> {
 }
 
 export async function idle(nodeId: number): Promise<Result<void>> {
+    const runnersFleet = getDefaultFleet();
     const idle = await runnersFleet.idleNode({ nodeId });
     if (idle.isErr()) {
         return Err(idle.error);
+    }
+    return Ok(undefined);
+}
+
+export async function notifyOnIdle(node: Node): Promise<Result<void>> {
+    const res = await retryWithBackoff(
+        async () => {
+            return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+        },
+        {
+            numOfAttempts: 5
+        }
+    );
+    if (!res.ok) {
+        throw new Error(`status: ${res.status}. response: ${res.statusText}`);
     }
     return Ok(undefined);
 }
@@ -56,6 +73,7 @@ async function getOrStartRunner(runnerId: string): Promise<Runner> {
     if (envs.RUNNER_TYPE === 'REMOTE') {
         return RemoteRunner.getOrStart(runnerId);
     }
+    const runnersFleet = getDefaultFleet();
     const getNode = await runnersFleet.getRunningNode(runnerId);
     if (getNode.isErr()) {
         throw new Error(`Failed to get running node for runner '${runnerId}'`);

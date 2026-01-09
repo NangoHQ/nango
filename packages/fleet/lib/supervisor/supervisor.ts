@@ -2,7 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 
 import tracer from 'dd-trace';
 
-import { Err, Ok, errorToObject, report, retryWithBackoff } from '@nangohq/utils';
+import { Err, Ok, errorToObject, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { Operation } from './operation.js';
@@ -41,11 +41,13 @@ export class Supervisor {
     private state: SupervisorState = 'stopped';
     private dbClient: DatabaseClient;
     private tickCancelled: boolean = false;
+    private fleetId: string;
     public nodeProvider: NodeProvider;
 
-    constructor({ dbClient, nodeProvider }: { dbClient: DatabaseClient; nodeProvider: NodeProvider }) {
+    constructor({ dbClient, nodeProvider, fleetId }: { dbClient: DatabaseClient; nodeProvider: NodeProvider; fleetId: string }) {
         this.dbClient = dbClient;
         this.nodeProvider = nodeProvider;
+        this.fleetId = fleetId;
     }
 
     public async start(): Promise<void> {
@@ -109,7 +111,7 @@ export class Supervisor {
         while (this.state === 'running') {
             const res = await withPgLock({
                 db: this.dbClient.db,
-                lockKey: envs.FLEET_SUPERVISOR_LOCK_KEY,
+                lockKey: `${this.fleetId}_lock_key`,
                 fn: async () => this.tick(),
                 timeoutMs: envs.FLEET_SUPERVISOR_TIMEOUT_TICK_MS,
                 onTimeout: () => {
@@ -119,7 +121,7 @@ export class Supervisor {
             });
             if (res.isErr()) {
                 await setTimeout(envs.FLEET_SUPERVISOR_RETRY_DELAY_MS);
-                logger.warning('Fleet supervisor:', res.error.message, res.error.cause);
+                logger.warning(`Fleet supervisor for fleet ${this.fleetId}:`, res.error.message, res.error.cause);
             }
         }
         this.state = 'stopped';
@@ -231,7 +233,7 @@ export class Supervisor {
 
                 // if OUTDATED node but no RUNNING or upcoming nodes then create a new one
                 if ((nodes.OUTDATED?.length || 0) > 0 && (nodes.RUNNING?.length || 0) + (nodes.STARTING?.length || 0) + (nodes.PENDING?.length || 0) === 0) {
-                    plan.push({ type: 'CREATE', routingId, deployment });
+                    plan.push({ type: 'CREATE', routingId, deployment, fleetId: this.fleetId });
                 }
 
                 // Warn about old finishing nodes
@@ -354,12 +356,15 @@ export class Supervisor {
                 storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb,
                 isTracingEnabled: nodeConfigOverrideValue.isTracingEnabled || newNodeConfig.isTracingEnabled,
                 isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled,
-                idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs
+                idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs,
+                executionTimeoutSecs: nodeConfigOverrideValue.executionTimeoutSecs || newNodeConfig.executionTimeoutSecs,
+                provisionedConcurrency: nodeConfigOverrideValue.provisionedConcurrency || newNodeConfig.provisionedConcurrency
             };
         }
 
         return nodes.create(db, {
             routingId,
+            fleetId: this.fleetId,
             deploymentId: deployment.id,
             image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,
@@ -367,7 +372,9 @@ export class Supervisor {
             storageMb: newNodeConfig.storageMb,
             isTracingEnabled: newNodeConfig.isTracingEnabled,
             isProfilingEnabled: newNodeConfig.isProfilingEnabled,
-            idleMaxDurationMs: newNodeConfig.idleMaxDurationMs
+            idleMaxDurationMs: newNodeConfig.idleMaxDurationMs,
+            executionTimeoutSecs: newNodeConfig.executionTimeoutSecs,
+            provisionedConcurrency: newNodeConfig.provisionedConcurrency
         });
     }
 
@@ -404,18 +411,10 @@ export class Supervisor {
         if (!node.url) {
             return Err(new FleetError('fleet_node_url_not_found', { context: { nodeId: node.id } }));
         }
-
         try {
-            const res = await retryWithBackoff(
-                async () => {
-                    return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
-                },
-                {
-                    numOfAttempts: 5
-                }
-            );
-            if (!res.ok) {
-                throw new Error(`status: ${res.status}. response: ${res.statusText}`);
+            const res = await this.nodeProvider.finish(node);
+            if (res.isErr()) {
+                throw res.error;
             }
         } catch (err) {
             report(new Error(`Failed to notify node ${node.id} to notifyWhenIdle`, { cause: err }));

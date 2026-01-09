@@ -1,0 +1,28 @@
+{
+    "name": "@nangohq/lambda-runner",
+    "version": "1.0.0",
+    "description": "Lambda functions for Nango",
+    "type": "module",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "private": true,
+    "scripts": {
+        "ts-build": "tsc"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "8.10.158",
+        "@types/node": "24.10.0",
+        "@types/unzipper": "0.10.11",
+        "typescript": "5.9.3"
+    },
+    "dependencies": {
+        "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/node": "file:../node-client",
+        "@nangohq/runner": "file:../runner",
+        "@nangohq/types": "file:../types",
+        "@nangohq/utils": "file:../utils",
+        "datadog-lambda-js": "12.130.0",
+        "dd-trace": "5.80.0",
+        "zod": "4.1.12"
+    }
+}

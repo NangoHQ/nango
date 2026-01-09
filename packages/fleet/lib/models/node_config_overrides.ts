@@ -19,6 +19,8 @@ interface DBNodeConfigOverride {
     readonly is_tracing_enabled: boolean | null;
     readonly is_profiling_enabled: boolean | null;
     readonly idle_max_duration_ms: number | null;
+    readonly execution_timeout_secs: number | null;
+    readonly provisioned_concurrency: number | null;
     readonly created_at: Date;
     readonly updated_at: Date;
 }
@@ -36,7 +38,9 @@ const DBNodeConfigOverride = {
             is_profiling_enabled: nodeConfigOverride.isProfilingEnabled,
             idle_max_duration_ms: nodeConfigOverride.idleMaxDurationMs,
             created_at: nodeConfigOverride.createdAt,
-            updated_at: nodeConfigOverride.updatedAt
+            updated_at: nodeConfigOverride.updatedAt,
+            execution_timeout_secs: nodeConfigOverride.executionTimeoutSecs,
+            provisioned_concurrency: nodeConfigOverride.provisionedConcurrency
         };
     },
     from: (dbNodeConfigOverride: DBNodeConfigOverride): NodeConfigOverride => {
@@ -50,6 +54,8 @@ const DBNodeConfigOverride = {
             isTracingEnabled: dbNodeConfigOverride.is_tracing_enabled,
             isProfilingEnabled: dbNodeConfigOverride.is_profiling_enabled,
             idleMaxDurationMs: dbNodeConfigOverride.idle_max_duration_ms,
+            executionTimeoutSecs: dbNodeConfigOverride.execution_timeout_secs,
+            provisionedConcurrency: dbNodeConfigOverride.provisioned_concurrency,
             createdAt: dbNodeConfigOverride.created_at,
             updatedAt: dbNodeConfigOverride.updated_at
         };
@@ -72,6 +78,8 @@ export async function upsert(
             is_tracing_enabled: props.isTracingEnabled ?? null,
             is_profiling_enabled: props.isProfilingEnabled ?? null,
             idle_max_duration_ms: props.idleMaxDurationMs ?? null,
+            execution_timeout_secs: props.executionTimeoutSecs ?? null,
+            provisioned_concurrency: props.provisionedConcurrency ?? null,
             created_at: now,
             updated_at: now
         };

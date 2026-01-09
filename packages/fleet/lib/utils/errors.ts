@@ -27,6 +27,8 @@ type FleetErrorCode =
     | 'fleet_misconfigured'
     | 'fleet_rollout_invalid_image'
     | 'fleet_rollout_image_not_found'
+    | 'fleet_rollout_image_verification_failed'
+    | 'fleet_rollout_invalid_image_type'
     | 'fleet_node_not_ready_timeout'
     | 'fleet_node_url_not_found'
     | 'fleet_node_outdate_failed'

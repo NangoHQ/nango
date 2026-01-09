@@ -258,6 +258,14 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 }
                 break;
             }
+            // FUNCTION RUNTIME FLAGS - keep override if different
+            case 'sync_function_runtime':
+            case 'action_function_runtime':
+            case 'webhook_function_runtime':
+            case 'on_event_function_runtime': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
+                break;
+            }
             // SPECIAL CASES
             case 'api_rate_limit_size': {
                 const sizeIndex: Record<DBPlan['api_rate_limit_size'], number> = {

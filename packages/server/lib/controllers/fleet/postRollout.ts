@@ -5,13 +5,23 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { PostRollout } from '@nangohq/types';
+import type { ImageType, PostRollout } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
-        image: z.string().regex(/^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/, { message: "Invalid image. Must be 'repository/image:commit'" })
+        imageType: z.enum(['docker', 'ecr']).optional(),
+        image: z.string()
     })
-    .strict();
+    .strict()
+    .refine(
+        (data) => {
+            return /^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/.test(data.image);
+        },
+        {
+            message: "Invalid image format. Must be 'repository/image:commit'",
+            path: ['image']
+        }
+    );
 
 const paramsValidation = z
     .object({
@@ -41,9 +51,12 @@ export const postRollout = asyncWrapper<PostRollout>(async (req, res) => {
     const { fleetId }: PostRollout['Params'] = params.data;
     const runnersFleet = new Fleet({ fleetId });
 
-    const { image }: PostRollout['Body'] = body.data;
+    const { image, imageType = 'docker' } = body.data;
 
-    const rollout = await runnersFleet.rollout(image);
+    const rollout = await runnersFleet.rollout(image, {
+        imageType: imageType as ImageType,
+        verifyImage: true
+    });
     if (rollout.isErr()) {
         res.status(500).send({ error: { code: 'rollout_failed', message: rollout.error.message } });
     } else {

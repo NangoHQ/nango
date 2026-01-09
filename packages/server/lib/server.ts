@@ -22,7 +22,7 @@ import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
-import { runnersFleet } from './fleet.js';
+import { migrateFleets, stopFleets } from './fleet.js';
 import { pubsub } from './pubsub.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
@@ -77,7 +77,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateKeystore(db.knex);
     await migrateLogs();
     await migrateRecords();
-    await runnersFleet.migrate();
+    await migrateFleets();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
@@ -114,7 +114,7 @@ const close = once(() => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     server.close(async () => {
         wss.close();
-        await runnersFleet.stop();
+        await stopFleets();
         await db.destroy();
         await destroyRecords();
         await destroyLogs();
