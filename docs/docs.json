@@ -959,7 +959,7 @@
               "integrations/all/salesloft",
               "integrations/all/sap-business-one",
               "integrations/all/sap-concur",
-              "integrations/all/sap-success-factors",
+              "api-integrations/sap-success-factors",
               "integrations/all/sap-fieldglass",
               "api-integrations/sap-odata-oauth2-cc",
               "api-integrations/sap-odata-basic",

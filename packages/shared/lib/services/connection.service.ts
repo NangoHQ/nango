@@ -11,6 +11,7 @@ import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
+import * as samlClient from '../auth/samlAssertion.js';
 import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
@@ -1198,7 +1199,8 @@ class ConnectionService {
         providerConfig: string,
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
-        connectionConfig: Record<string, string>
+        connectionConfig: Record<string, string>,
+        refreshToken?: boolean
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         if (provider.signature) {
             const create = jwtClient.createCredentials({
@@ -1213,6 +1215,29 @@ class ConnectionService {
 
             const { token } = create.value;
             dynamicCredentials['token'] = token;
+        }
+
+        if (provider.assertion && (refreshToken === false || refreshToken === undefined)) {
+            const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
+            const assertionOption = assertionOptionValue as Record<string, any> | undefined;
+
+            const create = samlClient.generateAssertion({
+                provider,
+                dynamicCredentials: credentials,
+                connectionConfig,
+                ...(assertionOption && { assertionOption })
+            });
+
+            if (create.isErr()) {
+                console.log(create.error);
+                return { success: false, error: create.error, response: null };
+            }
+
+            credentials['assertion'] = create.value;
+
+            Object.assign(dynamicCredentials, credentials);
+
+            delete dynamicCredentials['assertionOption'];
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1494,7 +1519,13 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getTwoStepCredentials(providerConfig.unique_key, provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
+            } = await this.getTwoStepCredentials(
+                providerConfig.unique_key,
+                provider as ProviderTwoStep,
+                dynamicCredentials,
+                connection.connection_config,
+                true
+            );
 
             if (!success || !credentials) {
                 return { success, error, response: null };
