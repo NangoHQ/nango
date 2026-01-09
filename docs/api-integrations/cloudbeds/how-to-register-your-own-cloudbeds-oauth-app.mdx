@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Cloudbeds OAuth app'
+sidebarTitle: 'Cloudbeds Setup'
+description: 'Register an OAuth app with Cloudbeds and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with Cloudbeds to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Cloudbeds account.
+
+<Steps>
+  <Step title="Register Your OAuth App">
+    1. If you don't already have a Cloudbeds account, go to [Cloudbeds](https://www.cloudbeds.com/) and register for one.
+    2. Log in to your platform using your credentials at [https://signin.cloudbeds.com/](https://signin.cloudbeds.com/).
+    3. Ensure that **API Keys Authentication** is enabled for your Partner Dev Account by the team at Cloudbeds.
+    4. Navigate to the section to set up your **API Key Delivery method** and select **Automatic** delivery for API keys.
+    5. Locate and note the **Client ID** issued by Cloudbeds.
+    6. Click on **Generate New Secret** to retrieve your **Client Secret** for the first time or to reset it. You will need both the **Client ID** and **Client Secret** when setting up your integration in Nango.
+    7. Specify your **redirect URL**: `https://api.nango.dev/oauth/callback`
+    8. Select the required **permission scopes** for the API endpoints you intend to use. You can find details on the scopes related to each endpoint in the [About Cloudbeds API](https://developers.cloudbeds.com/docs/about-cloudbeds-api) documentation.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to start building your integration.
+    
+    <Note>You don't need to specify the scopes when configuring your integration in Nango, as it will use the already configured ones that were set when creating the app on Cloudbeds.</Note>
+  </Step>
+</Steps>
+
+For more details, see [Cloudbeds OAuth 2.0 Creating API Credentials](https://developers.cloudbeds.com/docs/quickstart-guide-api-authentication-for-property-level-users#1-creating-api-credentials).
+
+---
+

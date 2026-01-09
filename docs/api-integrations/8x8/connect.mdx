@@ -1,0 +1,62 @@
+---
+title: 8x8 - How do I link my account?
+sidebarTitle: 8x8
+---
+
+# Overview
+
+To authenticate with 8x8, you need:
+1. **Client ID** - The client ID from your 8x8 Admin Console.
+2. **Client Secret** - The client secret from your 8x8 Admin Console.
+
+This guide will walk you through obtaining your API credentials from the 8x8 Admin Console.
+
+### Prerequisites:
+
+- You must have an 8x8 account with admin access.
+- You need access to the [8x8 Admin Console](https://admin.8x8.com/).
+
+### Instructions:
+
+#### Step 1: Obtaining Your Client Credentials
+
+1. Log in to the [8x8 Admin Console](https://admin.8x8.com/) with your administrator credentials.
+
+2. Navigate to **Home** > **API Management** in the left-hand menu.
+
+3. Click **Create API App** to create a new application.
+
+<img src="/api-integrations/8x8/api_keys.png" style={{maxWidth: "450px" }}/>
+
+4. Enter a name and description for your application.
+
+5. Select the API products you want to enable for this application. Available products include:
+   - CC Realtime Analytics
+   - CC Historical Analytics
+   - Cloud Storage Service
+   - Quality Management
+   - Contact Center Chat
+
+6. Click **Save** to create the application.
+
+7. After the application is created, you will be provided with:
+   - **Client ID** - This is your API username
+   - **Client Secret** - This is your API password (shown only once, so save it securely)
+
+<Note>
+The Client Secret is only displayed once when you create the application. Make sure to copy and store it securely. If you lose it, you'll need to regenerate a new secret.
+</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Client Secret**:
+
+1. Open the form where you need to authenticate with 8x8.
+2. Enter your **Client ID** in its designated field.
+3. Enter your **Client Secret** in its designated field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/8x8/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to 8x8.
+

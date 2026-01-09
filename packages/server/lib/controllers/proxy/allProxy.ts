@@ -309,7 +309,6 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
     const contentEncoding = responseStream.headers['content-encoding'] || '';
 
-    const isJsonResponse = contentType.includes('application/json');
     const isChunked = transferEncoding === 'chunked';
     const isEncoded = Boolean(contentEncoding);
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
@@ -345,28 +344,22 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
+        if (typeof contentType === 'string' && contentType !== '') {
+            res.setHeader('Content-Type', contentType);
+        }
+
         try {
-            if (isJsonResponse) {
-                // Validate JSON structure without re-serializing to avoid JSON.parse limitations (ex: precision loss with big integers)
-                // TODO: consider removing validation and forwarding upstream response as-is (even if invalid JSON) to avoid performance overhead
-                JSON.parse(Buffer.concat(responseData).toString());
-                res.setHeader('Content-Type', 'application/json');
-            }
-
             res.send(Buffer.concat(responseData));
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
-            await logCtx.success();
         } catch (err) {
-            logger.error(err);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
-
-            void logCtx.error('Failed to parse JSON response', { error: err });
+            void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
-        } finally {
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
+            return;
         }
+
+        await logCtx.success();
+        metrics.increment(metrics.Types.PROXY_SUCCESS);
+        metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
     });
 }
 

@@ -1,0 +1,54 @@
+---
+title: 'Set up Amazon with Nango'
+sidebarTitle: 'Amazon Setup'
+description: 'Register an OAuth app with Amazon and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Amazon to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Amazon account.
+
+## Register your application
+
+<Steps>
+    <Step title="Create an Amazon developer account">
+    If you don't already have one, sign up for an [Amazon Developer account](https://developer.amazon.com/).
+    </Step>
+
+    <Step title="Register your application">
+    Go to the [Login with Amazon console](https://developer.amazon.com/loginwithamazon/console/site/lwa/overview.html) and click **Register new application**.
+
+    Enter your application name and description, then save the application.
+    </Step>
+
+    <Step title="Configure OAuth settings">
+    In your application settings:
+
+    1. Click **Web Settings** under the application name
+    2. Click **Edit** to configure the OAuth settings
+    3. Add your **Allowed JavaScript Origins** (e.g., `https://yourdomain.com`)
+    4. Add your **Allowed Return URLs** - this should be your Nango callback URL:
+       ```
+       https://api.nango.dev/oauth/callback
+       ```
+       Or if you're self-hosting Nango, use your instance's callback URL.
+    5. Save your changes
+    </Step>
+
+    <Step title="Get your OAuth credentials">
+    After saving, you'll see your **Client ID** and **Client Secret** in the web settings section. Copy these credentials.
+    </Step>
+
+    <Step title="Add credentials to Nango">
+    In the [Nango dashboard](https://app.nango.dev/dev/integrations), find your Amazon integration and add:
+    - **Client ID** from step 4
+    - **Client Secret** from step 4
+    - **Scopes** - Add the required scopes for your use case (see [Amazon's scope documentation](https://developer.amazon.com/docs/login-with-amazon/customer-profile.html))
+    </Step>
+</Steps>
+
+## Connection configuration in Nango
+
+Amazon uses different domain extensions for different regions (e.g., `amazon.com` for the US, `amazon.co.uk` for the UK, or `amazon.de` for Germany). When creating a connection in Nango, you can specify the region-specific domain using connection configuration parameters.
+
+For more details on Amazon's OAuth implementation, see [Amazon's OAuth documentation](https://developer.amazon.com/docs/login-with-amazon/authorization-code-grant.html).
+
+---

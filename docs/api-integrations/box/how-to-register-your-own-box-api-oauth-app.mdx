@@ -1,0 +1,47 @@
+---
+title: 'How to register your own Box OAuth app'
+sidebarTitle: 'Box Setup'
+description: 'Register an OAuth app with Box and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Box to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Box account.
+
+<Steps>
+    <Step title="Create a Box account">
+        If you don't already have one, sign up for a free trial [Box account](https://www.box.com/pricing).
+    </Step>
+
+    <Step title="Create a new application">
+        1. Go to the [Box Developer Console](https://app.box.com/developers/console).
+        2. Click **Create Platform App**.
+        3. Select **Custom App** as your **Platform App** from the list of application types.
+        4. Enter the basic application details and choose **User Authentication (OAuth 2.0)** as your app's **Authentication Method**.
+        5. In your app's **Configuration** tab, add `https://api.nango.dev/oauth/callback` as your **Redirect URI**, then click **Save Changes**.
+        6. Scroll down to the **Application Scopes** section and select the scopes you need.
+    </Step>
+
+    <Step title="Obtain OAuth credentials">
+        1. In the same **Configuration** tab, under the **OAuth 2.0 Credentials** section, copy your **Client ID** and **Client Secret**, you'll need these when configuring your integration in Nango.
+    </Step>
+
+    <Step title="Start building your integration">
+        Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.
+    </Step>
+</Steps>
+
+## Common Scopes
+
+For a complete list of scopes, see [Box's scopes documentation](https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/).
+
+| Scope                  | Description                                                          |
+| ---------------------- | -------------------------------------------------------------------- |
+| `root_readwrite`       | Read and write access to all files and folders in the user's account |
+| `root_readonly`        | Read-only access to all files and folders in the user's account      |
+| `manage_managed_users` | Manage Managed Users (create, update, reset password, change roles)  |
+| `manage_app_users`     | Manage App Users (for server-side JWT apps)                          |
+| `manage_groups`        | Create, update, delete groups, and manage group memberships          |
+| `manage_webhook`       | Create and manage webhooks for a user                                |
+
+For more details on Box's OAuth implementation, see [Box's OAuth documentation](https://developer.box.com/guides/authentication/oauth2/).
+
+---

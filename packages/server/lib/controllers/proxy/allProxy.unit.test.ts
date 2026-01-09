@@ -126,19 +126,6 @@ describe('handleResponse', () => {
         expect(mockLogCtx.error).not.toHaveBeenCalled();
     });
 
-    it('should handle invalid JSON in response', async () => {
-        const invalidJson = '{invalid json content}';
-        const mockRes = createMockResponse();
-        const mockResponseStream = createMockResponseStream(invalidJson);
-
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
-        await mockRes.waitForSend();
-
-        expect(mockRes.res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
-        expect(mockRes.res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Failed to parse JSON response' }));
-        expect(mockLogCtx.failed).toHaveBeenCalled();
-    });
-
     it('should preserve BigInt values in JSON response without precision loss', async () => {
         const jsonWithBigInt = `{"id": 7584781588001541408, "name": "test", "count": 42, "list": [12345678901234567890, 98765432109876543210]}`;
 
@@ -151,6 +138,20 @@ describe('handleResponse', () => {
         const sentData = mockRes.getSentData();
         expect(sentData).toBeDefined();
         expect(sentData!.toString()).toBe(jsonWithBigInt);
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should pass-thru non-json payload', async () => {
+        const nonJsonPayload = `<foobar>`;
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream(nonJsonPayload, 'text/xml');
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await mockRes.waitForSend();
+
+        const sentData = mockRes.getSentData();
+        expect(sentData).toBeDefined();
+        expect(sentData!.toString()).toBe(nonJsonPayload);
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 });

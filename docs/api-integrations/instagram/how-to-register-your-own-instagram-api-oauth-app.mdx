@@ -1,0 +1,59 @@
+---
+title: 'Set up Instagram with Nango'
+sidebarTitle: 'Instagram Setup'
+description: 'Register an OAuth app with Instagram and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Instagram to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Instagram account.
+
+## Access Requirements
+
+Before you begin, note the following requirements for Instagram API access:
+
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+## Registering Your App
+
+Apps for the Instagram API can be registered at the [Facebook for Developers console](https://developers.facebook.com/apps).
+
+<Note>Instagram uses Facebook's developer platform for app registration and OAuth configuration.</Note>
+
+## Choosing the Right API
+
+Instagram offers two different APIs with different authentication methods:
+
+### Instagram Basic Display API
+
+The Basic Display API uses standard OAuth 2.0 authentication:
+- **Required scope:** `user_profile` (mandatory)
+- **Optional scope:** `user_media`
+- **Documentation:** [Instagram Basic Display API docs](https://developers.facebook.com/docs/instagram-basic-display-api)
+- **OAuth scopes:** [Available permissions](https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions)
+
+<Note>The documented scopes may not work as expected. What has been confirmed to work are `user_profile` and `user_media`.</Note>
+
+### Instagram Graph API
+
+For access to the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api), you need to use Facebook OAuth:
+
+<Steps>
+    <Step title="Set up Facebook OAuth">
+    The Instagram Graph API uses [Facebook OAuth](/integrations/all/facebook) to authenticate accounts. Add a provider config for Facebook to Nango with the scopes [specified in the Instagram Graph API documentation](https://developers.facebook.com/docs/instagram-api/getting-started#2--implement-facebook-login).
+    </Step>
+    <Step title="Complete the login flow">
+    Let your users complete the Facebook login flow through Nango.
+    </Step>
+    <Step title="Retrieve Instagram account details">
+    Once the login flow completes, you can [query the Facebook API for the Instagram account details](https://developers.facebook.com/docs/instagram-api/getting-started#4--get-the-user-s-pages). Follow steps 4-6 in the Instagram Graph API getting started guide.
+    </Step>
+</Steps>
+
+For more information on Instagram's APIs, see the [Instagram Basic Display API documentation](https://developers.facebook.com/docs/instagram-basic-display-api) and [Instagram Graph API documentation](https://developers.facebook.com/docs/instagram-api).
+
+---

@@ -39,7 +39,7 @@ export const AutoIdlingBanner: React.FC = () => {
         return (
             <Alert variant="warning">
                 <TriangleAlert />
-                <AlertTitle>Endpoints paused</AlertTitle>
+                <AlertTitle>Functions paused</AlertTitle>
                 <AlertDescription>Functions are paused every 2 weeks on the free plan.</AlertDescription>
                 <AlertActions>
                     <AlertButton variant={'warning-secondary'} onClick={onClickExtend} disabled={trialLoading}>

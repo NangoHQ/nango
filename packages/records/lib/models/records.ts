@@ -709,6 +709,7 @@ export async function update({
  * @param limit - The maximum number of records to delete.
  * @param toCursorIncluded - The cursor up to which records should be deleted (inclusive. ordered by updated_at, id).
  * @param batchSize - The number of records to delete in each batch (default is 1000).
+ * @param dryRun - If true, simulates the deletion without actually deleting any records (default is false).
  */
 export async function deleteRecords({
     connectionId,
@@ -717,7 +718,8 @@ export async function deleteRecords({
     mode,
     limit,
     toCursorIncluded,
-    batchSize = 1000
+    batchSize = 1000,
+    dryRun = false
 }: {
     connectionId: number;
     environmentId: number;
@@ -726,11 +728,18 @@ export async function deleteRecords({
     limit?: number;
     toCursorIncluded?: string;
     batchSize?: number;
+    dryRun?: boolean;
 }): Promise<Result<{ count: number; lastCursor: string | null }>> {
     const activeSpan = tracer.scope().active();
     const span = tracer.startSpan('nango.records.deletedRecords', {
         ...(activeSpan ? { childOf: activeSpan } : {}),
-        tags: { 'nango.environmentId': environmentId, 'nango.connectionId': connectionId, 'nango.model': model, 'nango.deletionMode': mode }
+        tags: {
+            'nango.environmentId': environmentId,
+            'nango.connectionId': connectionId,
+            'nango.model': model,
+            'nango.deletionMode': mode,
+            'nango.dryRun': dryRun
+        }
     });
 
     let partition: string | undefined = undefined;
@@ -754,8 +763,10 @@ export async function deleteRecords({
 
         await db.transaction(async (trx) => {
             const now = trx.fn.now(6);
-            // Lock to prevent concurrent deletions
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
+            // Lock to prevent concurrent deletions (skip lock if dry run)
+            if (!dryRun) {
+                await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
+            }
 
             do {
                 const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
@@ -797,23 +808,25 @@ export async function deleteRecords({
                         trx.raw('to_json(updated_at) as updated_at')
                     ]);
 
-                switch (mode) {
-                    case 'prune':
-                        query.update({
-                            pruned_at: now,
-                            json: {} // empty the record payload
-                            // IMPORTANT: updated_at isn't updated because it would cause the record cursor to also change
-                        });
-                        break;
-                    case 'soft':
-                        query.update({
-                            deleted_at: now,
-                            updated_at: now
-                        });
-                        break;
-                    case 'hard':
-                        query.del();
-                        break;
+                if (!dryRun) {
+                    switch (mode) {
+                        case 'prune':
+                            query.update({
+                                pruned_at: now,
+                                json: {} // empty the record payload
+                                // IMPORTANT: updated_at isn't updated because it would cause the record cursor to also change
+                            });
+                            break;
+                        case 'soft':
+                            query.update({
+                                deleted_at: now,
+                                updated_at: now
+                            });
+                            break;
+                        case 'hard':
+                            query.del();
+                            break;
+                    }
                 }
 
                 const res = await query;
@@ -829,25 +842,32 @@ export async function deleteRecords({
                 if (lastDeletedRecord) {
                     lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
                 }
+
+                // break if the returned page is not full
+                if (paginatedRecords < toDelete) {
+                    break;
+                }
             } while (paginatedRecords > 0);
 
             // Update counts
-            const delta = mode === 'prune' ? 0 : -totalRecords; // pruning doesn't affect the records count
-            const newCount = await incrCount(trx, {
-                environmentId,
-                connectionId,
-                model,
-                delta,
-                deltaSizeInBytes: -totalSizeInBytes
-            });
-
-            // If all records are deleted, clean up the count entry
-            if (newCount?.count === 0) {
-                await deleteCount(trx, {
+            if (!dryRun) {
+                const delta = mode === 'prune' ? 0 : -totalRecords; // pruning doesn't affect the records count
+                const newCount = await incrCount(trx, {
                     environmentId,
                     connectionId,
-                    model
+                    model,
+                    delta,
+                    deltaSizeInBytes: -totalSizeInBytes
                 });
+
+                // If all records are deleted, clean up the count entry
+                if (newCount?.count === 0) {
+                    await deleteCount(trx, {
+                        environmentId,
+                        connectionId,
+                        model
+                    });
+                }
             }
         });
 
@@ -1079,6 +1099,98 @@ export async function deleteCount(
     }
 ): Promise<void> {
     await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
+}
+
+/*
+ * autoPruningCandidate
+ * @desc finds a candidate connection/model for auto-pruning
+ * This function helps distribute the pruning load across partitions
+ * by randomly selecting a partition to search for stale records.
+ * @param staleAfterMs - milliseconds since last modification to consider a record stale
+ * @returns a Result containing either:
+ * - candidate connection and model with a cursor to the stale record
+ * - null if no candidate found
+ */
+export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: number }): Promise<
+    Result<{
+        partition: number;
+        connectionId: number;
+        model: string;
+        cursor: string;
+    } | null>
+> {
+    // Pick a random partition
+    const partition = Math.floor(Math.random() * 256);
+
+    try {
+        // Find a record that is stale in that partition
+        const [candidate] = await db
+            .from(`${RECORDS_TABLE}_p${partition}`)
+            .select<{ id: string; connection_id: number; model: string; last_modified_at: string }[]>(
+                // PostgreSQL stores timestamp with microseconds precision
+                // however, javascript date only supports milliseconds precision
+                // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
+                db.raw(`
+                    id,
+                    connection_id,
+                    model,
+                    to_json(updated_at) as last_modified_at
+                `)
+            )
+            .whereNull('pruned_at')
+            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
+            .limit(1);
+
+        if (candidate) {
+            return Ok({
+                partition,
+                connectionId: candidate.connection_id,
+                model: candidate.model,
+                cursor: Cursor.new(candidate)
+            });
+        }
+        return Ok(null);
+    } catch (err) {
+        return Err(new Error(`Failed to find auto-pruning candidate in partition ${partition}`, { cause: err }));
+    }
+}
+
+/*
+ * autoDeletingCandidate
+ * @desc finds a candidate connection/model for auto-deleting
+ * by randomly selecting a connection/model that have NOT seen its count updated in the past staleAfterMs milliseconds.
+ * @param staleAfterMs - milliseconds since last modification to consider a connection as potentially stale
+ * @returns a Result containing either:
+ * - candidate connection, model and environmentId
+ * - null if no candidate found
+ */
+export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: number }): Promise<
+    Result<{
+        connectionId: number;
+        model: string;
+        environmentId: number;
+    } | null>
+> {
+    try {
+        const [candidate] = await db
+            .from(RECORD_COUNTS_TABLE)
+            .select<RecordCount[]>('*')
+            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
+            .where('count', '>', 0)
+            .orderByRaw('RANDOM()')
+            .limit(1);
+
+        if (candidate) {
+            return Ok({
+                connectionId: candidate.connection_id,
+                model: candidate.model,
+                environmentId: candidate.environment_id
+            });
+        }
+        return Ok(null);
+    } catch (err) {
+        return Err(new Error(`Failed to find auto-delete candidate`, { cause: err }));
+    }
 }
 
 /**

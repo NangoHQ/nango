@@ -5,6 +5,8 @@ import { destroy as destroyLogs } from '@nangohq/logs';
 import { destroy as destroyRecords } from '@nangohq/records';
 import { getLogger, initSentry, once, report } from '@nangohq/utils';
 
+import { autoDeletingDaemon } from './daemons/autodeleting.daemon.js';
+import { autoPruningDaemon } from './daemons/autopruning.daemon.js';
 import { envs } from './env.js';
 import { pubsub } from './pubsub.js';
 import { server } from './server.js';
@@ -28,6 +30,8 @@ process.on('uncaughtException', (err) => {
 initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 let api: Server;
+const autoPruning = autoPruningDaemon();
+const autoDeleting = autoDeletingDaemon();
 
 try {
     const pubsubConnect = await pubsub.connect();
@@ -49,6 +53,8 @@ const close = once(() => {
     logger.info('Closing...');
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
+        await autoPruning.abort();
+        await autoDeleting.abort();
         await destroyLogs();
         await db.knex.destroy();
         await db.readOnly.destroy();
