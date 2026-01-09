@@ -8,6 +8,10 @@ openapi: 'GET /records'
 
 Receive webhooks from Nango when new records are available. Follow our [implement a sync guide](/implementation-guides/use-cases/syncs/implement-a-sync).
 
+<Warning>
+**Data availability**: Records are subject to Nango's [data retention policies](/guides/platform/retention-policies#synced-records). Records not updated for 30 days will have their payload pruned (only metadata remains). Records from syncs not executed for 60 days are permanently deleted. Fetch and store records promptly in your own system.
+</Warning>
+
 ## Response
 
 <Tip>

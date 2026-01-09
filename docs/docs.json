@@ -88,6 +88,7 @@
               "guides/platform/environments",
               "guides/platform/limits",
               "guides/platform/security",
+              "guides/platform/retention-policies",
               "guides/platform/self-hosting"
             ]
           }
