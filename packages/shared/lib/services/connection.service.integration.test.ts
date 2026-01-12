@@ -92,26 +92,6 @@ describe('Connection service integration tests', () => {
             expect(connectionIds).toEqual([notion.connection_id, google.connection_id]);
         });
 
-        it('should return metadata on demand', async () => {
-            const env = await createEnvironmentSeed();
-
-            await createConfigSeed(env, 'google', 'google');
-            await createConnectionSeed({ env, provider: 'google', metadata: { test: 'value' } });
-
-            // By default metadata is not returned
-            const dbConnections = await connectionService.listConnections({
-                environmentId: env.id
-            });
-            expect(dbConnections[0]?.connection.metadata).toBeUndefined();
-
-            // When requested, metadata is returned
-            const withMetadataConnections = await connectionService.listConnections({
-                environmentId: env.id,
-                opts: { includesMetadata: true }
-            });
-            expect(withMetadataConnections[0]?.connection.metadata).toEqual({ test: 'value' });
-        });
-
         it('should paginate', async () => {
             const env = await createEnvironmentSeed();
 
