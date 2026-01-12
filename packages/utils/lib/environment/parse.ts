@@ -54,6 +54,18 @@ export const ENVS = z.object({
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
+    PERSIST_AUTO_PRUNING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
+    PERSIST_AUTO_PRUNING_LIMIT: z.coerce.number().optional().default(1_000),
+    PERSIST_AUTO_PRUNING_STALE_AFTER_MS: z.coerce
+        .number()
+        .optional()
+        .default(30 * 24 * 3600 * 1000), // 30 days
+    PERSIST_AUTO_DELETING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
+    PERSIST_AUTO_DELETING_LIMIT: z.coerce.number().optional().default(1_000),
+    PERSIST_AUTO_DELETING_STALE_AFTER_MS: z.coerce
+        .number()
+        .optional()
+        .default(60 * 24 * 3600 * 1000), // 60 days
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator

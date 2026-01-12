@@ -132,6 +132,7 @@ export type LayoutMode = 'root' | 'nested';
 // TODO: delete when fully replaced by json-schema
 export interface NangoModel {
     name: string;
+    description?: string | undefined;
     fields: NangoModelField[];
     isAnon?: boolean | undefined;
 }
@@ -140,6 +141,7 @@ export interface NangoModel {
 export interface NangoModelField {
     name: string;
     value: string | number | boolean | null | NangoModelField[];
+    description?: string | undefined;
     dynamic?: boolean | undefined;
     tsType?: boolean | undefined;
     model?: boolean | undefined;

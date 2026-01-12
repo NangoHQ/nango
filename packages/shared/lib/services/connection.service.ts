@@ -733,7 +733,10 @@ class ConnectionService {
         endUserId,
         endUserOrganizationId,
         limit = 1000,
-        page = 0
+        page = 0,
+        opts = {
+            includesMetadata: false
+        }
     }: {
         environmentId: number;
         connectionId?: string | undefined;
@@ -744,11 +747,16 @@ class ConnectionService {
         endUserOrganizationId?: string | undefined;
         limit?: number;
         page?: number | undefined;
+        opts?: {
+            includesMetadata?: boolean;
+        };
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.readOnly
             .from<DBConnection>(`_nango_connections`)
             .select<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
-                db.knex.raw('row_to_json(_nango_connections.*) as connection'),
+                opts.includesMetadata
+                    ? db.knex.raw('row_to_json(_nango_connections.*) as connection')
+                    : db.knex.raw("row_to_json(_nango_connections.*)::jsonb - 'metadata' as connection"),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
                     COALESCE(
@@ -1414,8 +1422,23 @@ class ConnectionService {
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
+            const credentials = connection.credentials as OAuth2Credentials;
+            if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
+                providerConfig = {
+                    ...providerConfig,
+                    oauth_client_id: credentials.config_override.client_id,
+                    oauth_client_secret: credentials.config_override.client_secret
+                };
+            }
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
+
+            if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
+                parsedCreds.config_override = {
+                    client_id: credentials.config_override.client_id,
+                    client_secret: credentials.config_override.client_secret
+                };
+            }
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {

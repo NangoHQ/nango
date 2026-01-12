@@ -586,3 +586,42 @@ export function normalizedSyncParams(syncs: (string | { name: string; variant: s
     }
     return Ok(syncIdentifiers as { syncName: string; syncVariant: string }[]);
 }
+
+export async function isSyncStale({
+    connectionId,
+    model,
+    staleAfterMs
+}: {
+    connectionId: number;
+    model: string;
+    staleAfterMs: number;
+}): Promise<Result<boolean>> {
+    try {
+        // A sync is considered stale if:
+        // - it was created before (now - staleAfterMs)
+        // - it has never been synced OR last_sync_date is before (now - staleAfterMs))
+        const res = await db.readOnly
+            .select<Sync[]>(`${TABLE}.*`)
+            .from(TABLE)
+            .join(SYNC_CONFIG_TABLE, `${TABLE}.sync_config_id`, `${SYNC_CONFIG_TABLE}.id`)
+            .crossJoin(db.knex.raw(`unnest(${SYNC_CONFIG_TABLE}.models) AS model`))
+            .where({ [`${TABLE}.nango_connection_id`]: connectionId })
+            .andWhere(db.knex.raw(`${TABLE}.created_at < now() - INTERVAL '${staleAfterMs} milliseconds'`))
+            .andWhere(function () {
+                this.whereNull(`${TABLE}.last_sync_date`).orWhere(db.knex.raw(`${TABLE}.last_sync_date < now() - INTERVAL '${staleAfterMs} milliseconds'`));
+            })
+            .andWhere(
+                db.knex.raw(
+                    `CASE
+                    WHEN ${TABLE}.variant = 'base' THEN model
+                    ELSE CONCAT(model, '::', ${TABLE}.variant)
+                END = ?`,
+                    [model]
+                )
+            )
+            .limit(1);
+        return Ok(res.length > 0);
+    } catch (err) {
+        return Err(`Failed to check if sync is stale: ${stringifyError(err)}`);
+    }
+}

@@ -28,8 +28,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
     }, [scopesString]);
 
     const onDelete = (index: number) => {
-        setScopes((prev) => prev.filter((_, i) => i !== index));
-        onChange?.(scopes.join(','), -1);
+        const newScopes = scopes.filter((_, i) => i !== index);
+        setScopes(newScopes);
+        onChange?.(newScopes.join(','), -1);
     };
 
     const onSubmit = async () => {
