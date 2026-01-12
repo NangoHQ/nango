@@ -69,8 +69,7 @@ describe(`GET ${endpoint}`, () => {
             provider: 'algolia',
             endUser,
             rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
-            connectionConfig: { APP_ID: 'TEST' },
-            metadata: { some: 'data' }
+            connectionConfig: { APP_ID: 'TEST' }
         });
 
         const res = await api.fetch(endpoint, {
@@ -102,7 +101,7 @@ describe(`GET ${endpoint}`, () => {
             errors: [],
             id: expect.any(Number),
             last_fetched_at: expect.toBeIsoDateTimezone(),
-            metadata: { some: 'data' },
+            metadata: null,
             provider: 'algolia',
             provider_config_key: 'algolia',
             updated_at: expect.toBeIsoDateTimezone()
