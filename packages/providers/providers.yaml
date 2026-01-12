@@ -32,6 +32,50 @@
             description: Your 1Password SCIM API Key
             secret: true
             doc_section: '#step-1-retrieve-your-1password-scim-api-key'
+3cx:
+    display_name: 3CX
+    categories:
+        - communication
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.domain}/connect/token
+    token_params:
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        token_expires_in_ms: 3600000
+    proxy:
+        base_url: https://${connectionConfig.domain}/xapi
+    docs: https://nango.dev/docs/api-integrations/3cx
+    docs_connect: https://nango.dev/docs/api-integrations/3cx/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your 3CX API integration
+            doc_section: '#step-2-create-api-integration'
+        clientSecret:
+            type: string
+            title: API Key
+            description: The API Key generated when creating your 3CX API integration
+            secret: true
+            doc_section: '#step-2-create-api-integration'
+    connection_config:
+        domain:
+            type: string
+            title: 3CX Domain
+            description: Your 3CX instance domain
+            example: mycompany.3cx.us
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-3cx-domain'
+
 8x8:
     display_name: 8x8
     categories:
@@ -57,6 +101,7 @@
             description: Your 8x8 API Client Secret from the Admin Console
             secret: true
             doc_section: '#step-1-obtaining-your-client-credentials'
+       
 accelo:
     display_name: Accelo
     categories:
