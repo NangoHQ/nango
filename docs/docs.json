@@ -921,6 +921,7 @@
               "integrations/all/private-api-bearer",
               "integrations/all/prospeo",
               "integrations/all/productboard",
+              "api-integrations/pylon",
               "integrations/all/qualtrics",
               "integrations/all/quickbase",
               "api-integrations/quickbooks",

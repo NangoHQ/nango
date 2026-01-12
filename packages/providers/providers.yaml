@@ -101,7 +101,7 @@
             description: Your 8x8 API Client Secret from the Admin Console
             secret: true
             doc_section: '#step-1-obtaining-your-client-credentials'
-       
+
 accelo:
     display_name: Accelo
     categories:
@@ -10937,6 +10937,29 @@ pipedrive:
             title: ''
             description: ''
             automated: true
+
+pylon:
+    display_name: Pylon
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.usepylon.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: '*/*'
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/pylon
+    docs_connect: https://nango.dev/docs/api-integrations/pylon/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Pylon API token
+            doc_section: '#step-1-generating-your-api-token'
 
 pipedream:
     display_name: Pipedream (API Key)
