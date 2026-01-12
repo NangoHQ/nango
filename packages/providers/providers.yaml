@@ -101,7 +101,7 @@
             description: Your 8x8 API Client Secret from the Admin Console
             secret: true
             doc_section: '#step-1-obtaining-your-client-credentials'
-       
+
 accelo:
     display_name: Accelo
     categories:
@@ -13813,7 +13813,7 @@ stripe-api-key:
             description: The Stripe account context
             optional: true
             example: acct_1aTnTtAAB0hHJ26p
-            pattern: '^acct_[A-Za-z0-9]{16}$'
+            pattern: '^acct_[A-Za-z0-9]{16}(\/acct_[A-Za-z0-9]{16})?$'
             doc_section: '#step-2-finding-your-stripe-context'
 
 supabase:
