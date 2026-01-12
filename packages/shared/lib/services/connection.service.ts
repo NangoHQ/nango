@@ -735,7 +735,8 @@ class ConnectionService {
         limit = 1000,
         page = 0,
         opts = {
-            includesMetadata: false
+            includesCredentials: false,
+            includesConnectionConfig: false
         }
     }: {
         environmentId: number;
@@ -748,15 +749,39 @@ class ConnectionService {
         limit?: number;
         page?: number | undefined;
         opts?: {
-            includesMetadata?: boolean;
+            includesCredentials?: boolean;
+            includesConnectionConfig?: boolean;
         };
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.readOnly
             .from<DBConnection>(`_nango_connections`)
             .select<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
-                opts.includesMetadata
-                    ? db.knex.raw('row_to_json(_nango_connections.*) as connection')
-                    : db.knex.raw("row_to_json(_nango_connections.*)::jsonb - 'metadata' as connection"),
+                db.knex.raw(`
+                    jsonb_build_object(
+                        'id', _nango_connections.id,
+                        'created_at', _nango_connections.created_at,
+                        'updated_at', _nango_connections.updated_at,
+                        'provider_config_key', _nango_connections.provider_config_key,
+                        'connection_id', _nango_connections.connection_id,
+                        'metadata', _nango_connections.metadata,
+                        ${opts.includesConnectionConfig ? `'connection_config', _nango_connections.connection_config,` : ''}
+                        ${opts.includesCredentials ? `'credentials', _nango_connections.credentials,` : ''}
+                        ${opts.includesCredentials ? `'credentials_iv', _nango_connections.credentials_iv,` : ''}
+                        ${opts.includesCredentials ? `'credentials_tag', _nango_connections.credentials_tag,` : ''}
+                        'environment_id', _nango_connections.environment_id,
+                        'deleted', _nango_connections.deleted,
+                        'deleted_at', _nango_connections.deleted_at,
+                        'last_fetched_at', _nango_connections.last_fetched_at,
+                        'config_id', _nango_connections.config_id,
+                        'end_user_id', _nango_connections.end_user_id,
+                        'credentials_expires_at', _nango_connections.credentials_expires_at,
+                        'last_refresh_success', _nango_connections.last_refresh_success,
+                        'last_refresh_failure', _nango_connections.last_refresh_failure,
+                        'refresh_attempts', _nango_connections.refresh_attempts,
+                        'refresh_exhausted', _nango_connections.refresh_exhausted,
+                        'last_execution_at', _nango_connections.last_execution_at
+                    ) as connection
+                `),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
                     COALESCE(

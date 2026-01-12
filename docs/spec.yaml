@@ -306,6 +306,11 @@ paths:
                                                 created:
                                                     type: string
                                                     description: Connection creation date.
+                                                metadata:
+                                                    anyOf:
+                                                        - type: object
+                                                        - type: 'null'
+                                                    description: Custom metadata attached to the connection
                                                 errors:
                                                     type: array
                                                     items:
@@ -752,6 +757,11 @@ paths:
                                                 created:
                                                     type: string
                                                     description: Connection creation date.
+                                                metadata:
+                                                    anyOf:
+                                                        - type: object
+                                                        - type: 'null'
+                                                    description: Custom metadata attached to the connection
                                                 errors:
                                                     type: array
                                                     items:

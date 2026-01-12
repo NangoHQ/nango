@@ -92,24 +92,36 @@ describe('Connection service integration tests', () => {
             expect(connectionIds).toEqual([notion.connection_id, google.connection_id]);
         });
 
-        it('should return metadata on demand', async () => {
+        it('should return optional fields on demand', async () => {
             const env = await createEnvironmentSeed();
 
             await createConfigSeed(env, 'google', 'google');
-            await createConnectionSeed({ env, provider: 'google', metadata: { test: 'value' } });
+            await createConnectionSeed({
+                env,
+                provider: 'google',
+                credentials: {
+                    apiKey: 'test_api_key',
+                    type: 'API_KEY'
+                },
+                connectionConfig: {
+                    test_config_key: 'test_config_value'
+                }
+            });
 
-            // By default metadata is not returned
+            // By default connectionConfig and credentials are not returned
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id
             });
-            expect(dbConnections[0]?.connection.metadata).toBeUndefined();
+            expect(dbConnections[0]?.connection.credentials).toBeUndefined();
+            expect(dbConnections[0]?.connection.connection_config).toBeUndefined();
 
-            // When requested, metadata is returned
-            const withMetadataConnections = await connectionService.listConnections({
+            // When requested, they are returned
+            const withCredentialsConnections = await connectionService.listConnections({
                 environmentId: env.id,
-                opts: { includesMetadata: true }
+                opts: { includesCredentials: true, includesConnectionConfig: true }
             });
-            expect(withMetadataConnections[0]?.connection.metadata).toEqual({ test: 'value' });
+            expect(withCredentialsConnections[0]?.connection.credentials).toBeDefined();
+            expect(withCredentialsConnections[0]?.connection.connection_config).toEqual({ test_config_key: 'test_config_value' });
         });
 
         it('should paginate', async () => {

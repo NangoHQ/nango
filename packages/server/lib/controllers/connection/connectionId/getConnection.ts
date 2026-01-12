@@ -76,7 +76,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
             environmentId: environment.id,
             connectionId,
             integrationIds: [providerConfigKey],
-            opts: { includesMetadata: true }
+            opts: { includesConnectionConfig: true, includesCredentials: true }
         });
         if (finalConnections.length !== 1 || !finalConnections[0]) {
             return Err('Failed to get connection');
