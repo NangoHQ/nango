@@ -377,7 +377,7 @@ export class AccessMiddleware {
 
     async connectSessionOrPublicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('connectSessionOrSecretKeyAuth', {
+        const span = tracer.startSpan('connectSessionOrPublicKeyAuth', {
             childOf: active!
         });
 
