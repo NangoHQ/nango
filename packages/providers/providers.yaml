@@ -12320,8 +12320,8 @@ sap-success-factors:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/sap-success-factors
-    docs_connect: https://nango.dev/docs/integrations/all/sap-success-factors/connect
+    docs: https://nango.dev/docs/api-integrations/sap-success-factors
+    docs_connect: https://nango.dev/docs/api-integrations/sap-success-factors/connect
     connection_config:
         apiServer:
             type: string
@@ -12360,7 +12360,7 @@ sap-success-factors:
             title: Username
             description: The username of your SAP SuccessFactors account
             example: johnDoe
-            doc_section: '#step-4-finding-your-user-name'
+            doc_section: '#step-4-finding-your-username'
         privateKey:
             type: string
             title: Private Key
