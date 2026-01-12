@@ -850,7 +850,7 @@
               "integrations/all/miro-scim",
               "integrations/all/missive",
               "integrations/all/mixpanel",
-              "integrations/all/monday",
+              "api-integrations/monday",
               "integrations/all/momentum-io",
               "integrations/all/mural",
               "integrations/all/nationbuilder",

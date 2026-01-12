@@ -101,7 +101,7 @@
             description: Your 8x8 API Client Secret from the Admin Console
             secret: true
             doc_section: '#step-1-obtaining-your-client-credentials'
-       
+
 accelo:
     display_name: Accelo
     categories:
@@ -9404,9 +9404,15 @@ monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        force_install_if_needed: true
+    authorization_url_replacements:
+        response_type: ''
     proxy:
         base_url: https://api.monday.com
-    docs: https://nango.dev/docs/integrations/all/monday
+    docs: https://nango.dev/docs/api-integrations/monday
+    setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
 
 momentum-io:
     display_name: Momentum.io
