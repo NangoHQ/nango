@@ -14,7 +14,7 @@ export const SecretInput: React.FC<React.ComponentProps<'input'>> = (props) => {
         <InputGroup>
             <InputGroupInput {...props} type={isSecretVisible ? 'text' : 'password'} />
             <InputGroupAddon align="inline-end">
-                <Button variant="ghost" size="icon" onClick={toggleSecretVisibility}>
+                <Button type="button" variant="ghost" size="icon" onClick={toggleSecretVisibility}>
                     {isSecretVisible ? <EyeIcon /> : <EyeSlashIcon />}
                 </Button>
             </InputGroupAddon>
