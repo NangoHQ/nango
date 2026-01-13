@@ -1,0 +1,67 @@
+---
+title: 'Adobe Commerce - How do I link my account?'
+sidebarTitle: 'Adobe Commerce'
+---
+
+# Overview
+
+To authenticate with Adobe Commerce, you will need:
+1. **Store Domain** - The domain of your Adobe Commerce store.
+2. **Store Code** - The store code for your Adobe Commerce store (e.g., "default").
+3. **Access Token** - Your Adobe Commerce access token for authentication.
+
+This guide will walk you through finding your store information and obtaining your **Access Token** within Adobe Commerce.
+
+### Prerequisites:
+
+- You must have an active Adobe Commerce account
+- You must have admin access to your Adobe Commerce Admin panel
+
+### Instructions:
+
+#### Step 1: Finding your Store Domain
+
+Your store domain is the base URL of your Adobe Commerce store (e.g., `yourstore.com` or `mystore.magento.com`). This is the domain where your Adobe Commerce store is hosted.
+
+Once logged in to your Adobe Commerce Admin panel, you can check the address bar in your browser—the store domain is the text between the protocol (e.g., `https://`) and the first slash (`/`).
+
+#### Step 2: Finding your Store Code
+
+The store code is typically `default` for the main store, but you can find it by:
+1. Log in to your Adobe Commerce Admin panel.
+2. Navigate to **Stores** > **All Stores**. In the Store view column, select the store you want to connect to.
+<img src="/api-integrations/adobe-commerce/store_settings.png" />
+<img src="/api-integrations/adobe-commerce/store_list.png" />
+3. The store **Code** is displayed in the **Store View** section.
+<img src="/api-integrations/adobe-commerce/store_code.png" />
+
+#### Step 3: Obtaining your Access Token
+
+Before you create the connection in Nango, you should first obtain your Access Token in your Adobe Commerce account.
+
+To obtain your Access Token:
+
+1. Navigate to **System** > **Extensions** > **Integrations** on the Admin sidebar.
+<img src="/api-integrations/adobe-commerce/integrations_settings.png" />
+2. Click **Add Integration**.
+3. Fill in all the required information in the **Integration Info** tab.
+<img src="/api-integrations/adobe-commerce/integration_props.png" />
+4. For the **API** tab, select all the resources the integration should have access to.
+<img src="/api-integrations/adobe-commerce/api_setting.png" />
+5. Click **Save** at the top right.
+6. You will be redirected to the integrations page list. Click **Activate** to your newly created integration, click **Allow**, and your **Access Token** will be displayed to you.
+<img src="/api-integrations/adobe-commerce/access_token.png" />
+
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Store Domain**, **Store Code**, and **Access Token**:
+1. Open the form where you need to authenticate with Adobe Commerce.
+2. Enter your **Store Domain**, **Store Code**, and **Access Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/api-integrations/adobe-commerce/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Adobe Commerce.
