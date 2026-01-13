@@ -331,6 +331,43 @@ adobe-workfront:
             description: The hostname of your Adobe Workfront account
             example: acme.my.workfront.com
 
+adobe-commerce:
+    display_name: Adobe Commerce
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.storeDomain}/rest/${connectionConfig.storeCode}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/adobe-commerce
+    docs_connect: https://nango.dev/docs/api-integrations/adobe-commerce/connect
+    connection_config:
+        storeDomain:
+            type: string
+            title: Store Domain
+            description: The domain of your Adobe Commerce store
+            format: hostname
+            prefix: https://
+            example: yourstore.com
+            doc_section: '#step-1-finding-your-store-domain'
+            order: 1
+        storeCode:
+            type: string
+            title: Store Code
+            description: The store code for your Adobe Commerce store
+            example: default
+            doc_section: '#step-2-finding-your-store-code'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            example: 3pgsytnpxbyz0waujkw9qllcjb79s379
+            pattern: '^[a-z0-9]{32}$'
+            description: Your Adobe Commerce access token
+            doc_section: '#step-3-obtaining-your-access-token'
+
 adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
@@ -3333,6 +3370,22 @@ companycam:
             title: Access Token
             description: The Access Token for your CompanyCam company
 
+constant-contact:
+    display_name: Constant Contact
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://authz.constantcontact.com/oauth2/default/v1/authorize
+    token_url: https://authz.constantcontact.com/oauth2/default/v1/token
+    disable_pkce: true
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.cc.email
+    docs: https://nango.dev/docs/api-integrations/constant-contact
+    setup_guide_url: https://nango.dev/docs/api-integrations/constant-contact/how-to-register-your-own-constant-contact-oauth-app
+
 conductorone:
     display_name: ConductorOne
     categories:
@@ -5132,6 +5185,46 @@ fellow:
             example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-api-key'
+
+freeagent:
+    display_name: FreeAgent
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.freeagent.com/v2/approve_app
+    token_url: https://api.freeagent.com/v2/token_endpoint
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.freeagent.com
+    docs: https://nango.dev/docs/api-integrations/freeagent
+    setup_guide_url: https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app
+
+freeagent-sandbox:
+    display_name: FreeAgent (Sandbox)
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://api.sandbox.freeagent.com/v2/approve_app
+    token_url: https://api.sandbox.freeagent.com/v2/token_endpoint
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sandbox.freeagent.com
+    docs: https://nango.dev/docs/api-integrations/freeagent-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app
 
 figjam:
     display_name: FigJam
@@ -7330,6 +7423,7 @@ instagram:
     scope_separator: ','
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
+    refresh_url: https://graph.instagram.com/refresh_access_token
     proxy:
         base_url: https://graph.instagram.com
     docs: https://nango.dev/docs/api-integrations/instagram
@@ -10979,6 +11073,29 @@ pipedrive:
             description: ''
             automated: true
 
+pylon:
+    display_name: Pylon
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.usepylon.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: '*/*'
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/pylon
+    docs_connect: https://nango.dev/docs/api-integrations/pylon/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Pylon API token
+            doc_section: '#step-1-generating-your-api-token'
+
 pipedream:
     display_name: Pipedream (API Key)
     categories:
@@ -13834,7 +13951,7 @@ stripe-api-key:
             description: The Stripe account context
             optional: true
             example: acct_1aTnTtAAB0hHJ26p
-            pattern: '^acct_[A-Za-z0-9]{16}$'
+            pattern: '^acct_[A-Za-z0-9]{16}(\/acct_[A-Za-z0-9]{16})?$'
             doc_section: '#step-2-finding-your-stripe-context'
 
 supabase:
