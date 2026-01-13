@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.22] - 2026-01-13
+
+### Fixed
+
+- Page param for listConnections (#5234) by @TBonnin
+
 ## [v0.69.21] - 2026-01-13
 
 ### Added
@@ -5620,6 +5626,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.22]: https://github.com/NangoHQ/nango/compare/v0.69.21..v0.69.22
 [v0.69.21]: https://github.com/NangoHQ/nango/compare/v0.69.20..v0.69.21
 [v0.69.19]: https://github.com/NangoHQ/nango/compare/v0.69.18..v0.69.19
 [v0.69.18]: https://github.com/NangoHQ/nango/compare/v0.69.17..v0.69.18
