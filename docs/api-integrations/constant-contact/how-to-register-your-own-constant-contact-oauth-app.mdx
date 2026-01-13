@@ -1,0 +1,49 @@
+---
+title: 'How to register your own Constant Contact OAuth app'
+sidebarTitle: 'Constant Contact Setup'
+description: 'Register an OAuth app with Constant Contact and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Constant Contact to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Constant Contact account.
+
+## Prerequisites
+
+Before you begin, note the following requirements for Constant Contact API access:
+
+- You must have a Constant Contact account
+
+## Registering your application
+
+<Steps>
+  <Step title="Create a developer account">
+    Go to the [Constant Contact V3 API Developer Portal](https://developer.constantcontact.com/) and sign in with your Constant Contact account.
+  </Step>
+  <Step title="Create a new application">
+    1. Navigate to the [My Applications](https://app.constantcontact.com/pages/dma/portal/) tab in the Developer Portal
+    2. Click **Create New Application** or **Add Application**
+    3. Fill in all the required details.
+    4. In **Application OAuth2 Settings**, select: **Authorization Code Flow and Implicit Flow.**
+    5. For **Refresh Token Type**, select **Rotating Refresh Tokens**
+    6. Click **Create** to create your application
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. After creating your application, click **Edit** for the app you just created
+    2. In the **Redirect URI** section, add: `https://api.nango.dev/oauth/callback`
+    3. Click **Save** to save your changes
+  </Step>
+  <Step title="Get your credentials">
+    1. In your application settings, you'll find:
+       - **API Key (Client ID)**: This is your `client_id` for OAuth requests
+    2. Click **Generate Client Secret** to create your client secret
+    3. Copy and save both the **API Key (Client ID)** and **Client Secret** securely. You'll need them when configuring the integration in Nango.
+    
+    <Warning>The client secret is only shown once when generated. Make sure to copy and save it immediately.</Warning>
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+## OAuth scopes
+
+When configuring your OAuth app, you'll need to specify which scopes your app requires. For a complete list of available OAuth scopes and the endpoints they enable, see [Constant Contact's Authorization Scopes Overview](https://developer.constantcontact.com/api_guide/scopes.html).
