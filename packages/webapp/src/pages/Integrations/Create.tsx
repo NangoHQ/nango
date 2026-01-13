@@ -87,7 +87,7 @@ const getInfoMessage = (provider: ApiProviderListItem): string | null => {
             return 'This API uses API key auth. Nothing to configure here, Nango will ask the user for an API key as part of the auth flow.';
     }
 
-    return `This API uses ${getDisplayName(provider.authMode)}. Nothing to configure here.`;
+    return `Nothing to configure here.`;
 };
 
 const Content = ({ provider, onSubmit }: { provider: ApiProviderListItem; onSubmit: (data: PostIntegration['Body']) => Promise<void> }) => {
