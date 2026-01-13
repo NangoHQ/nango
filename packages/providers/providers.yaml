@@ -13830,7 +13830,7 @@ stripe-api-key:
             description: The Stripe account context
             optional: true
             example: acct_1aTnTtAAB0hHJ26p
-            pattern: '^acct_[A-Za-z0-9]{16}$'
+            pattern: '^acct_[A-Za-z0-9]{16}(\/acct_[A-Za-z0-9]{16})?$'
             doc_section: '#step-2-finding-your-stripe-context'
 
 supabase:
