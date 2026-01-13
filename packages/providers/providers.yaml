@@ -3333,6 +3333,22 @@ companycam:
             title: Access Token
             description: The Access Token for your CompanyCam company
 
+constant-contact:
+    display_name: Constant Contact
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://authz.constantcontact.com/oauth2/default/v1/authorize
+    token_url: https://authz.constantcontact.com/oauth2/default/v1/token
+    disable_pkce: true
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.cc.email
+    docs: https://nango.dev/docs/api-integrations/constant-contact
+    setup_guide_url: https://nango.dev/docs/api-integrations/constant-contact/how-to-register-your-own-constant-contact-oauth-app
+
 conductorone:
     display_name: ConductorOne
     categories:
