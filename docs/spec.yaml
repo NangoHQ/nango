@@ -271,7 +271,7 @@ paths:
                   in: query
                   schema:
                       type: integer
-                      description: Limit the number of connections returned
+                  description: Limit the number of connections returned
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -727,7 +727,7 @@ paths:
                   in: query
                   schema:
                       type: integer
-                      description: Limit the number of connections returned
+                  description: Limit the number of connections returned
             responses:
                 '200':
                     description: Successfully returned a list of connections
