@@ -7305,6 +7305,7 @@ instagram:
     scope_separator: ','
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
+    refresh_url: https://graph.instagram.com/refresh_access_token
     proxy:
         base_url: https://graph.instagram.com
     docs: https://nango.dev/docs/api-integrations/instagram
