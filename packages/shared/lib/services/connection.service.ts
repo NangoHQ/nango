@@ -967,7 +967,8 @@ class ConnectionService {
 
                 const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
                 const refreshToken = refreshTokenPath ? extractValueByPath(rawCreds, refreshTokenPath) : undefined;
-                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : undefined;
+
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -987,6 +988,8 @@ class ConnectionService {
                     }
                 } else if (template.token_expires_in_ms) {
                     expiresAt = new Date(Date.now() + template.token_expires_in_ms);
+                } else {
+                    expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
                 const twoStepCredentials: TwoStepCredentials = {

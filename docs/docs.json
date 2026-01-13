@@ -663,6 +663,7 @@
               "integrations/all/e-conomic",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
+              "api-integrations/ecu360",
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
               "integrations/all/elevio",
