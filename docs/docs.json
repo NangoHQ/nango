@@ -680,6 +680,8 @@
               "integrations/all/expensify",
               "api-integrations/facebook",
               "api-integrations/fellow",
+              "api-integrations/freeagent",
+              "api-integrations/freeagent-sandbox",
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
