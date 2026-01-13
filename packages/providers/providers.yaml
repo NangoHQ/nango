@@ -5059,8 +5059,8 @@ freeagent-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://api.sandbox.freeagent.com
-    docs: https://nango.dev/docs/api-integrations/freeagent
-    setup_guide_url: https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app
+    docs: https://nango.dev/docs/api-integrations/freeagent-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app
 
 figjam:
     display_name: FigJam
