@@ -179,4 +179,23 @@ describe(`GET ${endpoint}`, () => {
             connections: [{ connection_id: conn.connection_id, end_user: { id: endUser.endUserId } }]
         });
     });
+
+    it('should limit the number of connections', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        for (let i = 0; i < 5; i++) {
+            await seeders.createConnectionSeed({ env, provider: 'github' });
+        }
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                limit: 3
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connections).toHaveLength(3);
+    });
 });

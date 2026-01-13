@@ -15,7 +15,8 @@ const validationQuery = z
         search: z.string().min(1).max(255).optional(),
         endUserId: bodySchema.shape.end_user.shape.id.optional(),
         integrationId: z.string().min(1).optional(),
-        endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional()
+        endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional(),
+        limit: z.coerce.number().min(1).max(1000).optional()
     })
     .strict();
 
@@ -38,7 +39,7 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         endUserId: queryParam.endUserId,
         integrationIds: queryParam.integrationId ? queryParam.integrationId.split(',').map((id) => id.trim()) : undefined,
         endUserOrganizationId: queryParam.endUserOrganizationId,
-        limit: 10000
+        limit: queryParam.limit || 10_000 // 10_000 to avoid breaking changes. TODO: set to more reasonable default like 1000 in the future
     });
 
     res.status(200).send({
