@@ -267,6 +267,11 @@ paths:
                   schema:
                       type: string
                   description: Filter the list of connections based on the given end user's organization id.
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      description: Limit the number of connections returned
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -718,6 +723,11 @@ paths:
                   schema:
                       type: string
                   description: Filter the list of connections based on the given end user's organization id.
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      description: Limit the number of connections returned
             responses:
                 '200':
                     description: Successfully returned a list of connections
