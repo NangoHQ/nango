@@ -331,6 +331,43 @@ adobe-workfront:
             description: The hostname of your Adobe Workfront account
             example: acme.my.workfront.com
 
+adobe-commerce:
+    display_name: Adobe Commerce
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.storeDomain}/rest/${connectionConfig.storeCode}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/adobe-commerce
+    docs_connect: https://nango.dev/docs/api-integrations/adobe-commerce/connect
+    connection_config:
+        storeDomain:
+            type: string
+            title: Store Domain
+            description: The domain of your Adobe Commerce store
+            format: hostname
+            prefix: https://
+            example: yourstore.com
+            doc_section: '#step-1-finding-your-store-domain'
+            order: 1
+        storeCode:
+            type: string
+            title: Store Code
+            description: The store code for your Adobe Commerce store
+            example: default
+            doc_section: '#step-2-finding-your-store-code'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            example: 3pgsytnpxbyz0waujkw9qllcjb79s379
+            pattern: '^[a-z0-9]{32}$'
+            description: Your Adobe Commerce access token
+            doc_section: '#step-3-obtaining-your-access-token'
+
 adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
@@ -13833,7 +13870,7 @@ stripe-api-key:
             description: The Stripe account context
             optional: true
             example: acct_1aTnTtAAB0hHJ26p
-            pattern: '^acct_[A-Za-z0-9]{16}$'
+            pattern: '^acct_[A-Za-z0-9]{16}(\/acct_[A-Za-z0-9]{16})?$'
             doc_section: '#step-2-finding-your-stripe-context'
 
 supabase:
