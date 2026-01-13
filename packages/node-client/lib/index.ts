@@ -270,6 +270,7 @@ export class Nango {
                   integrationId?: string | string[];
                   tags?: Record<'displayName' | 'email', string>;
                   limit?: number;
+                  page?: number;
               },
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
@@ -279,7 +280,7 @@ export class Nango {
         // Handle both call signatures
         if (typeof connectionIdOrParams === 'object') {
             // New object parameter syntax
-            const { connectionId, userId, integrationId, tags, limit } = connectionIdOrParams;
+            const { connectionId, userId, integrationId, tags, limit, page } = connectionIdOrParams;
 
             if (connectionId) {
                 url.searchParams.append('connectionId', connectionId);
@@ -301,6 +302,9 @@ export class Nango {
             if (limit) {
                 url.searchParams.append('limit', limit.toString());
             }
+            if (page) {
+                url.searchParams.append('page', page.toString());
+            }
         } else {
             // Legacy parameter syntax
             if (connectionIdOrParams) {
@@ -317,6 +321,9 @@ export class Nango {
             }
             if (queries?.limit) {
                 url.searchParams.append('limit', queries.limit.toString());
+            }
+            if (queries?.page) {
+                url.searchParams.append('page', queries.page.toString());
             }
         }
 
