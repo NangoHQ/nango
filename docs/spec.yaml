@@ -272,6 +272,11 @@ paths:
                   schema:
                       type: integer
                   description: Limit the number of connections returned
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                  description: Page number for paginated results
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -728,6 +733,11 @@ paths:
                   schema:
                       type: integer
                   description: Limit the number of connections returned
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                  description: Page number for paginated results
             responses:
                 '200':
                     description: Successfully returned a list of connections
