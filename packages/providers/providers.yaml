@@ -366,7 +366,7 @@ adobe-commerce:
             example: 3pgsytnpxbyz0waujkw9qllcjb79s379
             pattern: '^[a-z0-9]{32}$'
             description: Your Adobe Commerce access token
-            doc_section: '#step-2-obtaining-your-access-token'
+            doc_section: '#step-3-obtaining-your-access-token'
 
 adp:
     display_name: ADP
