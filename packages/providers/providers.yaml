@@ -8696,7 +8696,7 @@ loop-returns:
             doc_section: '#step-1-generating-your-api-key'
 
 looker:
-    display_name: Looker Studio
+    display_name: Looker
     categories:
         - analytics
     auth_mode: TWO_STEP
@@ -12133,7 +12133,7 @@ rootly:
         verification:
             method: GET
             headers:
-                content-type: application/json
+                content-type: application/vnd.api+json
             endpoints:
                 - /v1/users/me
     docs: https://nango.dev/docs/integrations/all/rootly
