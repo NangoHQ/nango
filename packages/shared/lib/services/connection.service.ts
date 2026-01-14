@@ -746,62 +746,78 @@ class ConnectionService {
         page?: number | undefined;
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.readOnly
-            .from<DBConnection>(`_nango_connections`)
-            .select<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
+            // Filter and paginate connections
+            .with('filtered_connections', (qb) => {
+                const subQuery = qb
+                    .select('_nango_connections.id')
+                    .from('_nango_connections')
+                    .where('_nango_connections.environment_id', environmentId)
+                    .where('_nango_connections.deleted', false);
+
+                // Filter by specific connection ID
+                if (connectionId) {
+                    subQuery.where('_nango_connections.connection_id', connectionId);
+                }
+
+                // Filter by integration IDs
+                if (integrationIds) {
+                    subQuery.join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id').whereIn('_nango_configs.unique_key', integrationIds);
+                }
+
+                // Filter by end user criteria or search
+                if (endUserId || endUserOrganizationId || search) {
+                    subQuery.leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id');
+
+                    if (endUserId) {
+                        subQuery.where('end_users.end_user_id', endUserId);
+                    }
+
+                    if (endUserOrganizationId) {
+                        subQuery.where('end_users.organization_id', endUserOrganizationId);
+                    }
+
+                    if (search) {
+                        subQuery.where(function () {
+                            this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
+                                .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
+                                .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
+                        });
+                    }
+                }
+
+                return subQuery
+                    .orderBy('_nango_connections.created_at', 'desc')
+                    .limit(limit)
+                    .offset(page * limit);
+            })
+            // Aggregate active logs for filtered connections
+            .with('active_logs_agg', (qb) => {
+                return qb
+                    .select('connection_id')
+                    .select(db.knex.raw(`json_agg(json_build_object('type', type, 'log_id', log_id)) as active_logs`))
+                    .from(ACTIVE_LOG_TABLE)
+                    .where('active', true)
+                    .whereRaw('connection_id = ANY(ARRAY(SELECT id FROM filtered_connections))')
+                    .groupBy('connection_id');
+            })
+            // Join all data together
+            .select(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
-                db.knex.raw(`
-                    COALESCE(
-                        json_agg(
-                            json_build_object(
-                                'type', _nango_active_logs.type,
-                                'log_id', _nango_active_logs.log_id
-                            )
-                        ) FILTER (WHERE _nango_active_logs.id IS NOT NULL)
-                        , '[]'::json
-                    ) as active_logs
-               `),
-                db.knex.raw('count(_nango_active_logs.id) as active_logs_count'),
+                db.knex.raw(`COALESCE(active_logs_agg.active_logs, '[]'::json) as active_logs`),
                 '_nango_configs.provider'
             )
-            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .from('_nango_connections')
+            .innerJoin('filtered_connections', 'filtered_connections.id', '_nango_connections.id')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
-            .leftJoin(ACTIVE_LOG_TABLE, function () {
-                this.on(`${ACTIVE_LOG_TABLE}.connection_id`, '_nango_connections.id').andOn(`${ACTIVE_LOG_TABLE}.active`, db.knex.raw(true));
-            })
-            .where({
-                '_nango_connections.environment_id': environmentId,
-                '_nango_connections.deleted': false
-            })
-            .orderBy('_nango_connections.created_at', 'desc')
-            .groupBy('_nango_connections.id', 'end_users.id', '_nango_configs.provider')
-            .limit(limit)
-            .offset(page * limit);
-
-        if (search) {
-            query.where(function () {
-                this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
-                    .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
-                    .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
-            });
-        }
-        if (integrationIds) {
-            query.whereIn('_nango_configs.unique_key', integrationIds);
-        }
-        if (connectionId) {
-            query.where('_nango_connections.connection_id', connectionId);
-        }
-        if (endUserId) {
-            query.where('end_users.end_user_id', endUserId);
-        }
-        if (endUserOrganizationId) {
-            query.where('end_users.organization_id', endUserOrganizationId);
-        }
+            .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
+            .orderBy('_nango_connections.created_at', 'desc');
 
         if (withError === false) {
-            query.havingRaw('count(_nango_active_logs.id) = 0');
+            query.whereNull('active_logs_agg.connection_id');
         } else if (withError === true) {
-            query.havingRaw('count(_nango_active_logs.id) > 0');
+            query.whereNotNull('active_logs_agg.connection_id');
         }
 
         return await query;
@@ -951,7 +967,8 @@ class ConnectionService {
 
                 const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
                 const refreshToken = refreshTokenPath ? extractValueByPath(rawCreds, refreshTokenPath) : undefined;
-                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : undefined;
+
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -971,6 +988,8 @@ class ConnectionService {
                     }
                 } else if (template.token_expires_in_ms) {
                     expiresAt = new Date(Date.now() + template.token_expires_in_ms);
+                } else {
+                    expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
                 const twoStepCredentials: TwoStepCredentials = {
