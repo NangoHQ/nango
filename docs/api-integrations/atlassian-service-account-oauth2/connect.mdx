@@ -1,0 +1,58 @@
+---
+title: 'Atlassian Service Account (OAuth 2.0) - How do I link my account?'
+sidebarTitle: 'Atlassian Service Account (OAuth 2.0)'
+---
+
+# Overview
+
+To authenticate with Atlassian using OAuth 2.0 service account credentials, you will need:
+1. **Subdomain** (optional) - Your Atlassian account subdomain.
+2. **Client ID** - The OAuth 2.0 client ID from your service account credential.
+3. **Client Secret** - The OAuth 2.0 client secret from your service account credential.
+
+This guide will walk you through finding your subdomain and creating OAuth 2.0 credentials for your service account.
+
+### Prerequisites:
+
+- You must have an Atlassian account with admin access
+- You must have created a service account
+
+### Instructions:
+
+#### Step 1: Finding your Subdomain (Optional)
+
+1. Log in to your Atlassian account.
+2. Once logged in, check the address bar in your browser. Your subdomain is the text between `https://` and `.atlassian.net` in the URL.
+- For example, if your URL is `https://acme.atlassian.net`, your subdomain is `acme`.
+
+<Note>The subdomain is optional. Since a single access token can have access to many resources, you can either provide a `Subdomain` during connection creation (recommended) to ensure your connect to a specific Atlassian site, or let Nango auto-select the first available site if no `Subdomain` is specified. Adding the subdomain ensures you connect to the intended site.</Note>
+
+#### Step 2: Creating OAuth 2 Credentials
+
+1. Go to **Atlassian Administration**. Select your organization if you have more than one.
+2. Select **Directory** > **Service accounts**.
+3. Select the service account you want to create a credential for.
+4. Select **Create credentials**.
+<img src="/api-integrations/atlassian-service-account-oauth2/create_credentials.png"/>
+5. Select **OAuth 2.0**, then select **Next**.
+<img src="/api-integrations/atlassian-service-account-oauth2/auth_types.png"/>
+6. Select scopes to determine what the API acces token can do in Atlassian. Select **Next**.
+<img src="/api-integrations/atlassian-service-account-oauth2/scopes.png"/>
+7. Review your OAuth information, then select **Create**.
+8. Copy your **Client ID** and **Client Secret** and save them somewhere safe. You can't recover them after you create the credential.
+<img src="/api-integrations/atlassian-service-account-oauth2/credentials.png"/>
+
+<Tip>Store your Client ID and Client Secret securely. If you lose them, you'll need to create new credentials.</Tip>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Client Secret** (and optionally your **Subdomain**):
+1. Open the form where you need to authenticate with Atlassian Service Account (OAuth 2.0).
+2. Enter your **Subdomain**, **Client ID**, and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/api-integrations/atlassian-service-account-oauth2/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Atlassian using OAuth 2.0 service account credentials.

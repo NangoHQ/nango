@@ -101,7 +101,7 @@
             description: Your 8x8 API Client Secret from the Admin Console
             secret: true
             doc_section: '#step-1-obtaining-your-client-credentials'
-       
+
 accelo:
     display_name: Accelo
     categories:
@@ -1301,6 +1301,87 @@ atlassian-government-cloud:
             example: acme
             suffix: .atlassian-us-gov-mod.net
             prefix: https://
+
+atlassian-service-account-api-token:
+    display_name: Atlassian Service Account (API Token)
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.atlassian.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        connection_config:
+            cloudId: ${connectionConfig.cloudId}
+    post_connection_script: atlassianServicAccountPostConnection
+    docs: https://nango.dev/docs/api-integrations/atlassian-service-account-api-token
+    docs_connect: https://nango.dev/docs/api-integrations/atlassian-service-account-api-token/connect
+    connection_config:
+        cloudId:
+            type: string
+            title: Cloud ID
+            description: Your Atlassian Cloud ID
+            example: '12345678-1234-1234-1234-123456789012'
+            pattern: uuid
+            doc_section: '#step-1-finding-your-cloud-id'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Service Account Email
+            description: The email address of your Atlassian service account
+            example: bot@serviceaccount.atlassian.com
+            doc_section: '#step-2-finding-your-service-account-email'
+        password:
+            type: string
+            title: API Token
+            description: Your Atlassian service account API token
+            secret: true
+            example: ATSTT3xFfGF07SUw*******************************RvxLUHWs8ZV58TfHI=610694C8
+            pattern: '^[A-Za-z0-9_-]{40,}=[A-Fa-f0-9]{8}$'
+            doc_section: '#step-3-creating-an-api-token'
+
+atlassian-service-account-oauth2:
+    display_name: Atlassian Service Account (OAuth 2.0)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.atlassian.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.atlassian.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+    post_connection_script: atlassianServicAccountPostConnection
+    docs: https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2
+    docs_connect: https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Attlassian account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: subdomain
+            suffix: .atlassian.net
+            prefix: https://
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The OAuth 2.0 client ID from your service account credential
+            doc_section: '#step-2-creating-oauth-2-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The OAuth 2.0 client secret from your service account credential
+            secret: true
+            doc_section: '#step-2-creating-oauth-2-credentials'
 
 attio:
     display_name: Attio
