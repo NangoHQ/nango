@@ -19,7 +19,7 @@ This guide will walk you through creating OAuth 2.0 credentials for your service
 
 ### Instructions:
 
-#### Step 1: Creating OAuth 2 Credentials
+#### Step 1: Creating OAuth Client Credentials
 
 1. Go to **Atlassian Administration**. Select your organization if you have more than one.
 2. Select **Directory** > **Service accounts**.
@@ -40,7 +40,7 @@ This guide will walk you through creating OAuth 2.0 credentials for your service
 
 1. Log in to your Atlassian cloud site.
 2. Once logged in, check the address bar in your browser. Your subdomain is the text between `https://` and `.atlassian.net` in the URL.
-- For example, if your URL is `https://acme.atlassian.net`, your subdomain is `acme`.
+    - For example, if your URL is `https://acme.atlassian.net`, your subdomain is `acme`.
 
 <Note>The subdomain is optional. Since a single access token can have access to many resources, you can either provide a `Subdomain` during connection creation (recommended) to ensure you connect to a specific Atlassian site, or let Nango auto-select the first available site if no `Subdomain` is specified. Adding the subdomain ensures you connect to the intended site.</Note>
 

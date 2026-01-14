@@ -1323,7 +1323,7 @@ atlassian-service-account-api-token:
             title: Cloud ID
             description: Your Atlassian Cloud ID
             example: '12345678-1234-1234-1234-123456789012'
-            pattern: uuid
+            format: uuid
             doc_section: '#step-1-finding-your-cloud-id'
             order: 1
     credentials:
@@ -1332,6 +1332,7 @@ atlassian-service-account-api-token:
             title: Service Account Email
             description: The email address of your Atlassian service account
             example: bot@serviceaccount.atlassian.com
+            format: email
             doc_section: '#step-2-finding-your-service-account-email'
         password:
             type: string
@@ -1376,13 +1377,13 @@ atlassian-service-account-oauth2:
             type: string
             title: Client ID
             description: The OAuth 2.0 client ID from your service account credential
-            doc_section: '#step-1-creating-oauth-2-credentials'
+            doc_section: '#step-1-creating-oauth-client-credentials'
         client_secret:
             type: string
             title: Client Secret
             description: The OAuth 2.0 client secret from your service account credential
             secret: true
-            doc_section: '#step-1-creating-oauth-2-credentials'
+            doc_section: '#step-1-creating-oauth-client-credentials'
 
 attio:
     display_name: Attio
