@@ -6,7 +6,7 @@ sidebarTitle: 'Atlassian Service Account (API Token)'
 # Overview
 
 To authenticate with Atlassian using service account API tokens, you will need:
-1. **Cloud ID** - Your Atlassian Cloud ID (required).
+1. **Cloud ID** - Your Atlassian site Cloud ID.
 2. **Service Account Email** - The email address of your Atlassian service account.
 3. **API Token** - Your Atlassian service account API token.
 
@@ -30,27 +30,25 @@ This guide will walk you through finding your Cloud ID and creating an API token
 
 #### Step 2: Finding your Service Account Email
 
-1. Go to **Atlassian Administration**. Select your organization if you have more than one.
-2. Select **Directory** > **Service accounts**.
-3. Select the service account you want to use.
-4. The service account email will be displayed in the service account details. It typically follows the format `bot@serviceaccount.atlassian.com` or similar.
+1. Select **Directory** > **Service accounts**.
+2. Select the service account you want to use.
+3. The service account email will be displayed in the service account details. It typically follows the format `bot@serviceaccount.atlassian.com` or similar.
 <img src="/api-integrations/atlassian-service-account-api-token/email.png"/>
 
 #### Step 3: Creating an API Token
 
-1. Go to **Atlassian Administration**. Select your organization if you have more than one.
-2. Select **Directory** > **Service accounts**.
-3. Select the service account you want to create a token for.
-4. Select **Create credentials**.
+1. Select **Directory** > **Service accounts**.
+2. Select the service account you want to create a token for.
+3. Select **Create credentials**.
 <img src="/api-integrations/atlassian-service-account-oauth2/create_credentials.png"/>
-5. Select **API token**, then select **Next**.
+4. Select **API token**, then select **Next**.
 <img src="/api-integrations/atlassian-service-account-api-token/auth_type.png"/>
-6. Give your API token a name that describes what it does. Select an expiration date for the API token (token expiration can be between 1 and 365 days). Select **Next**.
-7. Select scopes to determine what the API token can do in Jira or Confluence. Select **Next**.
+5. Give your API token a name that describes what it does. Select an expiration date for the API token (token expiration can be between 1 and 365 days). Select **Next**.
+6. Select scopes to determine what the API token can do in Jira or Confluence. Select **Next**.
 <img src="/api-integrations/atlassian-service-account-oauth2/scopes.png"/>
-8. Review your API token, then select **Create**.
+7. Review your API token, then select **Create**.
 <img src="/api-integrations/atlassian-service-account-api-token/review_token.png"/>
-9. Select **Copy to clipboard**, then paste the token to your script, or save it somewhere safe.
+8. Select **Copy to clipboard**, then paste the token to your script, or save it somewhere safe.
 
 <Tip>Store your API token securely. You can't recover the API token after completing this step.</Tip>
 

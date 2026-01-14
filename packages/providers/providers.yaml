@@ -1370,18 +1370,19 @@ atlassian-service-account-oauth2:
             example: subdomain
             suffix: .atlassian.net
             prefix: https://
+            doc_section: '#step-2-finding-your-subdomain'
     credentials:
         client_id:
             type: string
             title: Client ID
             description: The OAuth 2.0 client ID from your service account credential
-            doc_section: '#step-2-creating-oauth-2-credentials'
+            doc_section: '#step-1-creating-oauth-2-credentials'
         client_secret:
             type: string
             title: Client Secret
             description: The OAuth 2.0 client secret from your service account credential
             secret: true
-            doc_section: '#step-2-creating-oauth-2-credentials'
+            doc_section: '#step-1-creating-oauth-2-credentials'
 
 attio:
     display_name: Attio
