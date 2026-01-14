@@ -259,6 +259,7 @@ export class Nango {
         userId?: string;
         integrationId?: string | string[];
         tags?: Record<'displayName' | 'email', string>;
+        limit?: number;
     }): Promise<GetPublicConnections['Success']>;
 
     public async listConnections(
@@ -269,6 +270,8 @@ export class Nango {
                   userId?: string;
                   integrationId?: string | string[];
                   tags?: Record<'displayName' | 'email', string>;
+                  limit?: number;
+                  page?: number;
               },
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
@@ -278,7 +281,7 @@ export class Nango {
         // Handle both call signatures
         if (typeof connectionIdOrParams === 'object') {
             // New object parameter syntax
-            const { connectionId, userId, integrationId, tags } = connectionIdOrParams;
+            const { connectionId, userId, integrationId, tags, limit, page } = connectionIdOrParams;
 
             if (connectionId) {
                 url.searchParams.append('connectionId', connectionId);
@@ -297,6 +300,12 @@ export class Nango {
                     url.searchParams.append('email', tags['email']);
                 }
             }
+            if (limit) {
+                url.searchParams.append('limit', limit.toString());
+            }
+            if (page) {
+                url.searchParams.append('page', page.toString());
+            }
         } else {
             // Legacy parameter syntax
             if (connectionIdOrParams) {
@@ -310,6 +319,12 @@ export class Nango {
             }
             if (queries?.endUserOrganizationId) {
                 url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
+            }
+            if (queries?.limit) {
+                url.searchParams.append('limit', queries.limit.toString());
+            }
+            if (queries?.page) {
+                url.searchParams.append('page', queries.page.toString());
             }
         }
 

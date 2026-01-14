@@ -564,7 +564,7 @@ export async function shouldRefreshCredentials({
 
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'microsoft-admin') {
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'instagram') {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 

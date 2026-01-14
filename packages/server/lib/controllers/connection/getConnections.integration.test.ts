@@ -179,4 +179,47 @@ describe(`GET ${endpoint}`, () => {
             connections: [{ connection_id: conn.connection_id, end_user: { id: endUser.endUserId } }]
         });
     });
+
+    it('should be paginable', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        for (let i = 0; i < 5; i++) {
+            await seeders.createConnectionSeed({ env, provider: 'github' });
+        }
+
+        const page0 = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                limit: 3
+            }
+        });
+
+        isSuccess(page0.json);
+        expect(page0.json.connections).toHaveLength(3);
+
+        const page1 = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                limit: 3,
+                page: 1
+            }
+        });
+
+        isSuccess(page1.json);
+        expect(page1.json.connections).toHaveLength(2);
+
+        const page2 = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                limit: 3,
+                page: 2
+            }
+        });
+
+        isSuccess(page2.json);
+        expect(page2.json.connections).toHaveLength(0);
+    });
 });

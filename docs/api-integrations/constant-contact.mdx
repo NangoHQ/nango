@@ -1,0 +1,81 @@
+---
+title: 'Constant Contact'
+sidebarTitle: 'Constant Contact'
+description: 'Integrate your application with the Constant Contact API'
+---
+
+## 🚀 Quickstart
+
+Connect to Constant Contact with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Constant Contact_.
+    </Step>
+    <Step title="Authorize Constant Contact">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Constant Contact. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Constant Contact API">
+    Let's make your first request to the Constant Contact API (Get contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v3/contact_lists" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const response = await nango.get({
+            endpoint: '/v3/contact_lists',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Constant Contact Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Constant Contact OAuth app](/api-integrations/constant-contact/how-to-register-your-own-constant-contact-oauth-app)  
+Register an OAuth app with Constant Contact and obtain credentials to connect it to Nango
+
+Official docs: [Constant Contact V3 API documentation](https://developer.constantcontact.com/api_guide/index.html)
+
+## 🧩 Pre-built syncs & actions for Constant Contact
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/constant-contact/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
