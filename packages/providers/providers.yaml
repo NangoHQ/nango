@@ -8722,7 +8722,7 @@ looker:
             example: mycompany.looker.com
             order: 1
             format: hostname
-            doc_section: '#step-1-finding-your-looker-studio-hostname'
+            doc_section: '#step-1-finding-your-looker-hostname'
     credentials:
         clientId:
             type: string
