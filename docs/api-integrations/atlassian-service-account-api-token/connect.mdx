@@ -23,9 +23,10 @@ This guide will walk you through finding your Cloud ID and creating an API token
 
 1. Navigate to [admin.atlassian.com](https://admin.atlassian.com).
 2. If you're a member of more than one organization, select your Organization.
-3. Select **Products** from the main navigation.
-4. Select the appropriate site as listed under the **Sites and products** sub-header in the navigation menu.
-5. The Cloud ID is listed after `/s/` in your address bar. For example, if your URL is `https://admin.atlassian.com/s/1a11d016-8984-4c3e-b9ab-142dd06acb1b/access-requests`, your Cloud ID is `1a11d016-8984-4c3e-b9ab-142dd06acb1b`.
+3. Select **Apps** > **Sites** from the main navigation.
+4. Select the appropriate site as listed.
+<img src="/api-integrations/atlassian-service-account-api-token/site_lists.png"/>
+5. The **Cloud ID** is listed after `/s/` in your address bar. For example, if your URL is `https://admin.atlassian.com/s/1a11d016-8984-4c3e-b9ab-142dd06acb1b/access-requests`, your Cloud ID is `1a11d016-8984-4c3e-b9ab-142dd06acb1b`.
 
 #### Step 2: Finding your Service Account Email
 
@@ -43,7 +44,7 @@ This guide will walk you through finding your Cloud ID and creating an API token
 4. Select **Create credentials**.
 <img src="/api-integrations/atlassian-service-account-oauth2/create_credentials.png"/>
 5. Select **API token**, then select **Next**.
-<img src="/api-integrations/atlassian-service-account-oauth2/auth_type.png"/>
+<img src="/api-integrations/atlassian-service-account-api-token/auth_type.png"/>
 6. Give your API token a name that describes what it does. Select an expiration date for the API token (token expiration can be between 1 and 365 days). Select **Next**.
 7. Select scopes to determine what the API token can do in Jira or Confluence. Select **Next**.
 <img src="/api-integrations/atlassian-service-account-oauth2/scopes.png"/>

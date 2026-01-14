@@ -25,7 +25,7 @@ This guide will walk you through finding your subdomain and creating OAuth 2.0 c
 2. Once logged in, check the address bar in your browser. Your subdomain is the text between `https://` and `.atlassian.net` in the URL.
 - For example, if your URL is `https://acme.atlassian.net`, your subdomain is `acme`.
 
-<Note>The subdomain is optional. Since a single access token can have access to many resources, you can either provide a `Subdomain` during connection creation (recommended) to ensure your connect to a specific Atlassian site, or let Nango auto-select the first available site if no `Subdomain` is specified. Adding the subdomain ensures you connect to the intended site.</Note>
+<Note>The subdomain is optional. Since a single access token can have access to many resources, you can either provide a `Subdomain` during connection creation (recommended) to ensure you connect to a specific Atlassian site, or let Nango auto-select the first available site if no `Subdomain` is specified. Adding the subdomain ensures you connect to the intended site.</Note>
 
 #### Step 2: Creating OAuth 2 Credentials
 
@@ -36,7 +36,7 @@ This guide will walk you through finding your subdomain and creating OAuth 2.0 c
 <img src="/api-integrations/atlassian-service-account-oauth2/create_credentials.png"/>
 5. Select **OAuth 2.0**, then select **Next**.
 <img src="/api-integrations/atlassian-service-account-oauth2/auth_types.png"/>
-6. Select scopes to determine what the API acces token can do in Atlassian. Select **Next**.
+6. Select scopes to determine what the API access token can do in Atlassian. Select **Next**.
 <img src="/api-integrations/atlassian-service-account-oauth2/scopes.png"/>
 7. Review your OAuth information, then select **Create**.
 8. Copy your **Client ID** and **Client Secret** and save them somewhere safe. You can't recover them after you create the credential.
