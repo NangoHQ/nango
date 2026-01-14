@@ -66,6 +66,14 @@ const validationBody = z
                         clientUri: z.url().max(255).optional(),
                         clientLogoUri: z.url().max(255).optional()
                     })
+                    .strict(),
+                z
+                    .object({
+                        authType: z.enum(['INSTALL_PLUGIN']),
+                        appLink: z.url().max(255).optional(),
+                        username: z.string().min(1).max(255).optional(),
+                        password: z.string().min(1).max(255).optional()
+                    })
                     .strict()
             ],
             { error: () => ({ message: 'invalid credentials object' }) }
@@ -98,7 +106,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const { environment } = res.locals;
     const params: PatchIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
+    let integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;
@@ -197,6 +205,17 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                     ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
                 };
             }
+        } else if (body.authType === 'INSTALL_PLUGIN') {
+            const { username, password, appLink } = body;
+            integration = {
+                ...integration,
+                ...(appLink && { app_link: appLink }),
+                custom: {
+                    ...integration.custom,
+                    ...(username && { username: username }),
+                    ...(password && { password: password })
+                }
+            };
         }
     }
 
