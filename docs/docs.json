@@ -537,6 +537,8 @@
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
               "integrations/all/atlassian-government-cloud",
+              "api-integrations/atlassian-service-account-api-token",
+              "api-integrations/atlassian-service-account-oauth2",
               "api-integrations/attio",
               "api-integrations/availity",
               "integrations/all/auth0",
