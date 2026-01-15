@@ -1088,6 +1088,7 @@
               "api-integrations/whatsapp-business",
               "integrations/all/whoop",
               "integrations/all/wildix-pbx",
+              "api-integrations/wise-api-key",
               "api-integrations/wiseagent",
               "integrations/all/wiza",
               "integrations/all/woocommerce",

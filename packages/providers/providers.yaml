@@ -15699,6 +15699,30 @@ wrike:
             format: hostname
             prefix: https://
 
+wise-api-key:
+    display_name: Wise (API Key)
+    categories:
+        - banking
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.wise.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/profiles
+    docs: https://nango.dev/docs/api-integrations/wise-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/wise-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Wise Personal API Token
+            example: 12345678-1234-1234-1234-123456789abc
+            pattern: '^[a-f0-9-]{36}$'
+            doc_section: '#step-1-generating-your-api-token'
 xai:
     display_name: xAI
     categories:
