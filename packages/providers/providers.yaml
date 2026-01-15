@@ -12327,8 +12327,8 @@ salesforce:
         - crm
         - popular
     auth_mode: OAUTH2
-    authorization_url: https://login.salesforce.com/services/oauth2/authorize
-    token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_url: https://${connectionConfig.hostname}/services/oauth2/authorize || https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/services/oauth2/token || https://login.salesforce.com/services/oauth2/token
     authorization_params:
         prompt: consent
     default_scopes:
@@ -12349,6 +12349,14 @@ salesforce:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname to your Salesforce instance
+            format: hostname
+            example: acme.my.salesforce.com
+            prefix: https://
+            optional: true
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
