@@ -956,7 +956,7 @@
               "integrations/all/rocketlane",
               "integrations/all/roam-scim",
               "integrations/all/rock-gym-pro",
-              "integrations/all/rootly",
+              "api-integrations/rootly",
               "integrations/all/sage",
               "integrations/all/sage-hr",
               "integrations/all/sage-intacct",
