@@ -26,6 +26,22 @@ interface CompletionCache {
 }
 
 /**
+ * Get GitHub API headers, including auth token if available
+ */
+function getGitHubHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        Accept: 'application/vnd.github.v3+json'
+    };
+
+    const token = process.env['GITHUB_TOKEN'];
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
+}
+
+/**
  * Fetch list of integrations from GitHub API
  */
 async function fetchIntegrations(): Promise<string[]> {
@@ -36,9 +52,7 @@ async function fetchIntegrations(): Promise<string[]> {
     }
 
     const response = await http.get<GitHubContent[]>(GITHUB_API_BASE, {
-        headers: {
-            Accept: 'application/vnd.github.v3+json'
-        }
+        headers: getGitHubHeaders()
     });
 
     const integrations = response.data.filter((item) => item.type === 'dir' && !item.name.startsWith('.')).map((item) => item.name);
@@ -66,9 +80,7 @@ async function fetchScripts(integration: string, type: string): Promise<string[]
 
     const url = `${GITHUB_API_BASE}/${integration}/${type}`;
     const response = await http.get<GitHubContent[]>(url, {
-        headers: {
-            Accept: 'application/vnd.github.v3+json'
-        }
+        headers: getGitHubHeaders()
     });
 
     const scripts = response.data.filter((item) => item.type === 'file' && item.name.endsWith('.ts')).map((item) => item.name.replace('.ts', ''));

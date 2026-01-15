@@ -16,7 +16,10 @@ import type { ImportDeclaration } from '@babel/types';
 // Handle ESM/CJS interop for @babel/traverse
 const traverse = (_traverse as typeof _traverse & { default?: typeof _traverse }).default ?? _traverse;
 
+// GitHub API for directory listings (rate limited: 60/hour unauthenticated, 5000/hour with token)
 const GITHUB_API_BASE = 'https://api.github.com/repos/NangoHQ/integration-templates/contents/integrations';
+// Raw content URL for file downloads (no practical rate limit)
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/NangoHQ/integration-templates/main/integrations';
 
 interface GitHubDirectoryItem {
     name: string;
@@ -24,9 +27,13 @@ interface GitHubDirectoryItem {
     type: 'file' | 'dir' | 'symlink';
 }
 
-interface GitHubFileContent {
-    content: string;
-    encoding: 'base64';
+class GitHubRateLimitError extends Error {
+    constructor(resetTime?: number) {
+        const resetDate = resetTime ? new Date(resetTime * 1000) : null;
+        const resetMsg = resetDate ? ` Rate limit resets at ${resetDate.toLocaleTimeString()}.` : '';
+        super(`GitHub API rate limit exceeded.${resetMsg} Set GITHUB_TOKEN environment variable to increase the limit.`);
+        this.name = 'GitHubRateLimitError';
+    }
 }
 
 interface CloneOptions {
@@ -79,6 +86,23 @@ function parseTemplatePath(templatePath: string): ParsedTemplate {
 }
 
 /**
+ * Get GitHub API headers, including auth token if available
+ */
+function getGitHubHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'nango-cli'
+    };
+
+    const token = process.env['GITHUB_TOKEN'];
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
+}
+
+/**
  * Fetch directory contents from GitHub API
  */
 async function fetchGitHubDirectory(urlPath: string, debug: boolean): Promise<GitHubDirectoryItem[]> {
@@ -87,39 +111,37 @@ async function fetchGitHubDirectory(urlPath: string, debug: boolean): Promise<Gi
 
     try {
         const response = await axios.get<GitHubDirectoryItem[]>(url, {
-            headers: {
-                Accept: 'application/vnd.github.v3+json',
-                'User-Agent': 'nango-cli'
-            }
+            headers: getGitHubHeaders()
         });
         return response.data;
     } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-            throw new Error(`Template not found: ${urlPath}`);
+        if (axios.isAxiosError(err)) {
+            if (err.response?.status === 403) {
+                const resetTime = err.response.headers['x-ratelimit-reset'];
+                throw new GitHubRateLimitError(resetTime ? Number(resetTime) : undefined);
+            }
+            if (err.response?.status === 404) {
+                throw new Error(`Template not found: ${urlPath}`);
+            }
         }
         throw err;
     }
 }
 
 /**
- * Fetch file content from GitHub API
- * The API returns base64-encoded content which we decode
+ * Fetch file content from GitHub raw URL
+ * Uses raw.githubusercontent.com which has no practical rate limit
  */
 async function fetchFileContent(urlPath: string, debug: boolean): Promise<string> {
-    const url = `${GITHUB_API_BASE}/${urlPath}`;
+    const url = `${GITHUB_RAW_BASE}/${urlPath}`;
     printDebug(`Fetching file: ${url}`, debug);
 
     try {
-        const response = await axios.get<GitHubFileContent>(url, {
-            headers: {
-                Accept: 'application/vnd.github.v3+json',
-                'User-Agent': 'nango-cli'
-            }
+        const response = await axios.get<string>(url, {
+            headers: { 'User-Agent': 'nango-cli' },
+            responseType: 'text'
         });
-
-        // GitHub API returns base64-encoded content
-        const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
-        return content;
+        return response.data;
     } catch (err) {
         if (axios.isAxiosError(err) && err.response?.status === 404) {
             throw new Error(`File not found: ${urlPath}`);
