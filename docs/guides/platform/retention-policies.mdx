@@ -1,0 +1,104 @@
+---
+title: 'Data Retention Policies'
+sidebarTitle: 'Data Retention'
+description: 'Understand how Nango manages data retention'
+---
+
+Nango automatically manages data retention to ensure that sensitive user data is not stored indefinitely when it's no longer needed, helping you meet modern data compliance and security expectations.
+
+# Synced records
+
+Data retention policies for records stored in the Nango records cache.
+
+## Retention lifecycle
+
+### 1. Automated payload pruning (30 days)
+
+If a record has not been updated for **30 days**, Nango will automatically empty its payload.
+
+**Impact:**
+After pruning, the record's data fields are no longer retrievable from the Nango cache via the API or SDK. However, Nango can still track the record and detect future changes. This pruning does not impact sync execution or delta-detection capabilities.
+
+### 2. Automated hard deletion (60 days)
+
+If a sync has not executed for **60 days**, all records belonging to that sync will be permanently deleted.
+
+**Impact:**
+Complete removal of all records from the inactive sync. The sync itself remains configured but starts fresh on the next execution.
+
+## When do retention policies apply?
+
+The retention policies apply to all records stored in Nango's records cache:
+
+- **30-day pruning countdown**: Starts from the last time a specific record was updated.
+- **60-day deletion countdown**: Starts from the last time a sync successfully executed
+
+## Best practices
+
+To work optimally with Nango's retention policies:
+
+### 1. Fetch records promptly
+
+Set up [webhooks from Nango](/implementation-guides/platform/webhooks-from-nango) to be notified when new data is available. When you receive a sync webhook:
+
+```typescript
+// Example: Handle sync webhook and fetch records immediately
+app.post('/webhooks/nango', async (req, res) => {
+    const webhook = req.body;
+
+    if (webhook.type === 'sync' && webhook.success) {
+        // Fetch the updated records immediately
+        const records = await nango.listRecords({
+            providerConfigKey: webhook.providerConfigKey,
+            connectionId: webhook.connectionId,
+            model: webhook.model,
+            modifiedAfter: webhook.modifiedAfter
+        });
+
+        // Store records in your own database
+        await yourSystem.saveRecords(records);
+    }
+
+    res.sendStatus(200);
+});
+```
+
+### 2. Use cursor-based synchronization
+
+Track your sync progress using cursors to ensure you never miss records, even if webhooks are occasionally missed. Store the cursor of the last-fetched record and use it on subsequent fetches:
+
+```typescript
+// Fetch records using cursor from last sync
+const records = await nango.listRecords({
+    providerConfigKey: 'salesforce',
+    connectionId: 'user-123',
+    model: 'Contact',
+    cursor: lastStoredCursor // From your database
+});
+
+// Store the new cursor for next time
+await yourSystem.saveLastCursor(records.next_cursor);
+```
+
+### 3. Store data in your own system
+
+Don't use Nango's cache as your primary data store. Instead:
+- Store synced records in your own database
+- Use Nango as a synchronization pipeline
+- Keep your own copy of all critical data
+
+
+## Frequently asked questions
+
+
+### Does this affect my ability to do incremental syncs?
+
+No. The retention policies do not impact incremental syncs. Even after payload pruning, Nango retains the metadata needed for change detection (record ID and payload hash). Your syncs will continue to work normally.
+
+### What if I need longer retention?
+
+If your use case requires accessing record payloads from Nango's cache beyond the 30-day window, please reach out to the Nango team. We can work with you to ensure you don't experience breaking changes.
+
+### Can I disable these retention policies?
+
+The retention policies are applied globally to ensure data security and compliance. If you have specific requirements that conflict with these policies, please contact our team to discuss your needs.

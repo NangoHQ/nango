@@ -360,6 +360,7 @@
               "guides/platform/environments",
               "guides/platform/resource-limits",
               "guides/platform/security",
+              "guides/platform/retention-policies",
               {
                 "group": "Self-hosting",
                 "pages": [
