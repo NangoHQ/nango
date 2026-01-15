@@ -2,12 +2,11 @@ import { BookOpen } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
-import { OAuthCreateForm } from './components/forms/OAuthCreateForm';
+import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { apiPostIntegration } from '@/hooks/useIntegration';
 import { useProvider } from '@/hooks/useProvider';
@@ -15,7 +14,7 @@ import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
-import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
+import type { PostIntegration } from '@nangohq/types';
 
 export const CreateIntegration = () => {
     const env = useStore((state) => state.env);
@@ -72,49 +71,9 @@ export const CreateIntegration = () => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Content provider={provider} onSubmit={onSubmit} />
+                    <AuthCreateForm provider={provider} onSubmit={onSubmit} />
                 </CardContent>
             </CardLayout>
         </DashboardLayout>
-    );
-};
-
-const getInfoMessage = (provider: ApiProviderListItem): string | null => {
-    switch (provider.authMode) {
-        case 'BASIC':
-            return "This API uses basic auth. Nothing to configure here, Nango will ask for the user's basic credentials as part of the auth flow.";
-        case 'API_KEY':
-            return 'This API uses API key auth. Nothing to configure here, Nango will ask the user for an API key as part of the auth flow.';
-    }
-
-    return `Nothing to configure here.`;
-};
-
-const Content = ({ provider, onSubmit }: { provider: ApiProviderListItem; onSubmit: (data: PostIntegration['Body']) => Promise<void> }) => {
-    if (['OAUTH1', 'OAUTH2', 'TBA'].includes(provider.authMode)) {
-        return <OAuthCreateForm provider={provider} onSubmit={onSubmit} />;
-    }
-
-    const infoMessage = getInfoMessage(provider);
-
-    return (
-        <div className="flex flex-col gap-8">
-            {infoMessage && (
-                <Alert variant="info">
-                    <AlertDescription>{infoMessage}</AlertDescription>
-                </Alert>
-            )}
-            <Button
-                variant="primary"
-                onClick={() =>
-                    onSubmit({
-                        provider: provider.name,
-                        useSharedCredentials: false
-                    })
-                }
-            >
-                Create
-            </Button>
-        </div>
     );
 };
