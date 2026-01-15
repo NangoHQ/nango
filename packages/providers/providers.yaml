@@ -12147,6 +12147,32 @@ rootly:
             pattern: '^rootly_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
 
+reapit:
+    display_name: Reapit Connect
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://connect.reapit.cloud/authorize
+    token_url: https://connect.reapit.cloud/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.reapit.cloud
+        headers:
+            api-version: ${connectionConfig.version} || 2020-01-31
+    docs: https://nango.dev/docs/api-integrations/reapit
+    setup_guide_url: https://nango.dev/docs/api-integrations/reapit/how-to-register-your-own-reapit-oauth-app
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 segment:
     display_name: Segment
     categories:
