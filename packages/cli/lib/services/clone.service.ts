@@ -17,13 +17,16 @@ import type { ImportDeclaration } from '@babel/types';
 const traverse = (_traverse as typeof _traverse & { default?: typeof _traverse }).default ?? _traverse;
 
 const GITHUB_API_BASE = 'https://api.github.com/repos/NangoHQ/integration-templates/contents/integrations';
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/NangoHQ/integration-templates/main/integrations';
 
-interface GitHubContent {
+interface GitHubDirectoryItem {
     name: string;
     path: string;
     type: 'file' | 'dir' | 'symlink';
-    download_url: string | null;
+}
+
+interface GitHubFileContent {
+    content: string;
+    encoding: 'base64';
 }
 
 interface CloneOptions {
@@ -78,12 +81,12 @@ function parseTemplatePath(templatePath: string): ParsedTemplate {
 /**
  * Fetch directory contents from GitHub API
  */
-async function fetchGitHubContents(urlPath: string, debug: boolean): Promise<GitHubContent[]> {
+async function fetchGitHubDirectory(urlPath: string, debug: boolean): Promise<GitHubDirectoryItem[]> {
     const url = `${GITHUB_API_BASE}/${urlPath}`;
-    printDebug(`Fetching GitHub contents: ${url}`, debug);
+    printDebug(`Fetching GitHub directory: ${url}`, debug);
 
     try {
-        const response = await axios.get<GitHubContent[]>(url, {
+        const response = await axios.get<GitHubDirectoryItem[]>(url, {
             headers: {
                 Accept: 'application/vnd.github.v3+json',
                 'User-Agent': 'nango-cli'
@@ -99,19 +102,30 @@ async function fetchGitHubContents(urlPath: string, debug: boolean): Promise<Git
 }
 
 /**
- * Fetch file content from GitHub raw URL
+ * Fetch file content from GitHub API
+ * The API returns base64-encoded content which we decode
  */
 async function fetchFileContent(urlPath: string, debug: boolean): Promise<string> {
-    const url = `${GITHUB_RAW_BASE}/${urlPath}`;
+    const url = `${GITHUB_API_BASE}/${urlPath}`;
     printDebug(`Fetching file: ${url}`, debug);
 
-    const response = await axios.get<string>(url, {
-        headers: {
-            'User-Agent': 'nango-cli'
-        },
-        responseType: 'text'
-    });
-    return response.data;
+    try {
+        const response = await axios.get<GitHubFileContent>(url, {
+            headers: {
+                Accept: 'application/vnd.github.v3+json',
+                'User-Agent': 'nango-cli'
+            }
+        });
+
+        // GitHub API returns base64-encoded content
+        const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
+        return content;
+    } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+            throw new Error(`File not found: ${urlPath}`);
+        }
+        throw err;
+    }
 }
 
 /**
@@ -261,7 +275,7 @@ async function collectDependencies(
  */
 async function validateIntegrationExists(integration: string, debug: boolean): Promise<boolean> {
     try {
-        await fetchGitHubContents(integration, debug);
+        await fetchGitHubDirectory(integration, debug);
         return true;
     } catch {
         return false;
@@ -300,7 +314,7 @@ async function getFilesToClone(parsed: ParsedTemplate, debug: boolean): Promise<
         }
     } else if (type) {
         // Pull all scripts of a specific type
-        const contents = await fetchGitHubContents(`${integration}/${type}`, debug);
+        const contents = await fetchGitHubDirectory(`${integration}/${type}`, debug);
         for (const item of contents) {
             if (item.type === 'file' && (item.name.endsWith('.ts') || item.name.endsWith('.md'))) {
                 const isScript = item.name.endsWith('.ts');
@@ -312,7 +326,7 @@ async function getFilesToClone(parsed: ParsedTemplate, debug: boolean): Promise<
         const types: ('actions' | 'syncs' | 'on-events')[] = ['actions', 'syncs', 'on-events'];
         for (const t of types) {
             try {
-                const contents = await fetchGitHubContents(`${integration}/${t}`, debug);
+                const contents = await fetchGitHubDirectory(`${integration}/${t}`, debug);
                 for (const item of contents) {
                     if (item.type === 'file' && (item.name.endsWith('.ts') || item.name.endsWith('.md'))) {
                         const isScript = item.name.endsWith('.ts');
