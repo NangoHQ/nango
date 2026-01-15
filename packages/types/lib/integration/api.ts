@@ -89,6 +89,7 @@ export type ApiIntegrationList = ApiIntegration & {
         missingFieldsCount: number;
         connectionConfigParams?: string[];
         credentialParams?: string[];
+        assertionOptionParams?: string[];
         displayName: string;
         requireClientCertificate?: boolean;
         installation?: 'outbound';

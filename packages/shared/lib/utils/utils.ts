@@ -216,6 +216,9 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
         if (b === 'now') {
             return new Date().toISOString();
         }
+        if (b === 'random') {
+            return crypto.randomUUID();
+        }
         if (b.startsWith('base64(')) {
             return a;
         }

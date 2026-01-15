@@ -87,6 +87,7 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    assertion_option?: Record<string, SimplifiedJSONSchema>; // introduce another property since these params are not stored and can only be used once for assertion generation
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
@@ -213,6 +214,16 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_url: string;
         token_request_method?: 'GET';
     }[];
+    assertion?: {
+        key?: string;
+        issuer?: string;
+        lifetimeInSeconds?: number;
+        audiences?: string | string[];
+        attributes?: Record<string, string | number | boolean | (string | number | boolean)[]>;
+        sessionIndex?: string;
+        recipient?: string;
+    };
+    assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
     body_format?: 'xml' | 'json' | 'form';

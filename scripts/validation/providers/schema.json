@@ -11,6 +11,10 @@
                 "alias": {
                     "type": "string"
                 },
+                "assertion": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "display_name": {
                     "type": "string"
                 },
@@ -659,6 +663,9 @@
                             "additionalProperties": false,
                             "required": ["type", "title", "description"],
                             "properties": {
+                                "automated": {
+                                    "type": "boolean"
+                                },
                                 "type": {
                                     "type": "string",
                                     "enum": ["string"]
@@ -697,6 +704,49 @@
                                 },
                                 "optional": {
                                     "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "assertion_option": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[a-zA-Z_]+$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "title", "description"],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["string"]
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "type": "string"
+                                },
+                                "pattern": {
+                                    "type": "string"
+                                },
+                                "format": {
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
+                                },
+                                "default_value": {
+                                    "type": "string"
+                                },
+                                "suffix": {
+                                    "type": "string"
+                                },
+                                "doc_section": {
+                                    "type": "string",
+                                    "pattern": "^#[a-z0-9-]+$"
                                 }
                             }
                         }

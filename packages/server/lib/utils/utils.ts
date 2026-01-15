@@ -232,6 +232,13 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep | P
     return [...new Set(matches.map(cleanParamName))]; // Remove duplicates
 }
 
+export function parseAssertionOptionParamsFromTemplate(provider: ProviderTwoStep): string[] {
+    if (provider.assertion_option) {
+        return Object.keys(provider.assertion_option);
+    }
+    return [];
+}
+
 /**
  * This can be used to convert the keys of a Json to snake case
  * @param payload This the json we want to convert from a camelCase a snake_case

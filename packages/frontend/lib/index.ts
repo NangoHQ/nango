@@ -406,7 +406,8 @@ export default class Nango {
 
     private async triggerAuth({
         authUrl,
-        credentials
+        credentials,
+        assertionOption
     }: {
         authUrl: string;
         credentials?:
@@ -420,13 +421,22 @@ export default class Nango {
             | TwoStepCredentials
             | SignatureCredentials
             | undefined;
+        assertionOption?: Record<string, string>;
     }): Promise<AuthSuccess> {
+        const body: Record<string, any> = {};
+        if (credentials) {
+            Object.assign(body, credentials);
+        }
+        if (assertionOption) {
+            body['assertionOption'] = assertionOption;
+        }
+
         const res = await fetch(authUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            ...(credentials ? { body: JSON.stringify(credentials) } : {})
+            ...(Object.keys(body).length > 0 ? { body: JSON.stringify(body) } : {})
         });
 
         if (!res.ok) {
@@ -459,9 +469,11 @@ export default class Nango {
         }
 
         if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
+            const assertionOption = connectionConfig?.assertionOption as Record<string, any> | undefined;
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as TwoStepCredentials
+                credentials: credentials as unknown as TwoStepCredentials,
+                ...(assertionOption ? { assertionOption } : {})
             });
         }
 

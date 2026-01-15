@@ -62,6 +62,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [privateKeyId, setPrivateKeyId] = useState('');
     const [privateKey, setPrivateKey] = useState('');
     const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
+    const [assertionOptionState, setAssertionOptionState] = useState<Record<string, string>>({});
     const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
@@ -248,7 +249,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
             authorization_params: authorizationParams || {},
             hmac: hmacDigest || '',
             credentials,
-            ...(integration?.meta.installation && { installation: integration?.meta.installation })
+            ...(integration?.meta.installation && { installation: integration?.meta.installation }),
+            ...(authMode === 'TWO_STEP' && Object.keys(assertionOptionState).length > 0 && { assertionOption: assertionOptionState })
         };
         const getConnection =
             authMode === 'NONE'
@@ -307,6 +309,13 @@ export const ConnectionCreateLegacy: React.FC = () => {
 
     const handleCredentialParamsChange = (paramName: string, value: string) => {
         setCredentialsState((prevState) => ({
+            ...prevState,
+            [paramName]: value
+        }));
+    };
+
+    const handleAssertionOptionParamsChange = (paramName: string, value: string) => {
+        setAssertionOptionState((prevState) => ({
             ...prevState,
             [paramName]: value
         }));
@@ -568,6 +577,21 @@ export const ConnectionCreateLegacy: React.FC = () => {
   `;
             }
         }
+
+        let assertionOptionString = '';
+        if (authMode === 'TWO_STEP') {
+            const assertionOptionEntries = Object.entries(assertionOptionState);
+
+            if (assertionOptionEntries.length > 0) {
+                const assertionOptionValuesString = assertionOptionEntries.map(([key, value]) => `${key}: '${value}'`).join(',\n      ');
+
+                assertionOptionString = `
+    assertionOption: {
+      ${assertionOptionValuesString}
+    }
+  `;
+            }
+        }
         const connectionConfigStr =
             !installationStr &&
             !connectionConfigParamsStr &&
@@ -581,7 +605,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
             !jwtCredentialsString &&
             !tbaCredentialsString &&
             !billCredentialsString &&
-            !twoStepCredentialsString
+            !twoStepCredentialsString &&
+            !assertionOptionString
                 ? ''
                 : ', { ' +
                   [
@@ -597,7 +622,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
                       jwtCredentialsString,
                       tbaCredentialsString,
                       billCredentialsString,
-                      twoStepCredentialsString
+                      twoStepCredentialsString,
+                      assertionOptionString
                   ]
                       .filter(Boolean)
                       .join(', ') +
@@ -1194,25 +1220,55 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                             )}
                             {(authMode === 'TWO_STEP' || authMode === 'JWT') && (
                                 <div>
-                                    {integration?.meta.credentialParams?.map((paramName: string) => (
-                                        <div key={paramName}>
-                                            <div className="flex mt-6">
-                                                <label htmlFor={`credential-${paramName}`} className="text-text-light-gray block text-sm font-semibold">
-                                                    {paramName.charAt(0).toUpperCase() + paramName.slice(1)}
-                                                </label>
-                                            </div>
+                                    {integration?.meta.credentialParams
+                                        ?.filter((paramName: string) => {
+                                            if (paramName === 'assertion' && integration?.meta.assertionOptionParams) {
+                                                return false;
+                                            }
+                                            return true;
+                                        })
+                                        .map((paramName: string) => (
+                                            <div key={paramName}>
+                                                <div className="flex mt-6">
+                                                    <label htmlFor={`credential-${paramName}`} className="text-text-light-gray block text-sm font-semibold">
+                                                        {paramName.charAt(0).toUpperCase() + paramName.slice(1)}
+                                                    </label>
+                                                </div>
 
-                                            <div className="mt-1">
-                                                <SecretInput
-                                                    copy={true}
-                                                    id={`credential-${paramName}`}
-                                                    name={`credential-${paramName}`}
-                                                    optionalValue={credentialsState[paramName]}
-                                                    setOptionalValue={(value) => handleCredentialParamsChange(paramName, value)}
-                                                />
+                                                <div className="mt-1">
+                                                    <SecretInput
+                                                        copy={true}
+                                                        id={`credential-${paramName}`}
+                                                        name={`credential-${paramName}`}
+                                                        optionalValue={credentialsState[paramName]}
+                                                        setOptionalValue={(value) => handleCredentialParamsChange(paramName, value)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    {authMode === 'TWO_STEP' &&
+                                        integration?.meta.assertionOptionParams?.map((paramName: string) => (
+                                            <div key={paramName}>
+                                                <div className="flex mt-6">
+                                                    <label
+                                                        htmlFor={`assertion-option-${paramName}`}
+                                                        className="text-text-light-gray block text-sm font-semibold"
+                                                    >
+                                                        {paramName.charAt(0).toUpperCase() + paramName.slice(1)}
+                                                    </label>
+                                                </div>
+
+                                                <div className="mt-1">
+                                                    <SecretInput
+                                                        copy={true}
+                                                        id={`assertion-option-${paramName}`}
+                                                        name={`assertion-option-${paramName}`}
+                                                        optionalValue={assertionOptionState[paramName]}
+                                                        setOptionalValue={(value) => handleAssertionOptionParamsChange(paramName, value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
                                 </div>
                             )}
                             <div>
