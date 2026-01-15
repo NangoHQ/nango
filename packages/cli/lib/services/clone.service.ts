@@ -85,6 +85,16 @@ function parseTemplatePath(templatePath: string): ParsedTemplate {
     throw new Error(`Invalid template format: ${templatePath}. Expected format: "integration", "integration/type", or "integration/type/script-name"`);
 }
 
+// Threshold for warning about large clones without authentication
+const LARGE_CLONE_THRESHOLD = 20;
+
+/**
+ * Check if a GitHub token is configured
+ */
+function hasGitHubToken(): boolean {
+    return Boolean(process.env['GITHUB_TOKEN']);
+}
+
 /**
  * Get GitHub API headers, including auth token if available
  */
@@ -319,30 +329,20 @@ interface FilesToClone {
 }
 
 /**
- * Get all script files to clone based on the parsed template
+ * Get initial file list from directory listings (without fetching content for dependencies)
+ * This is a quick operation that only uses GitHub API for directory listings
  */
-async function getFilesToClone(parsed: ParsedTemplate, debug: boolean): Promise<FilesToClone> {
+async function getInitialFileList(parsed: ParsedTemplate, debug: boolean): Promise<{ relativePath: string; isScript: boolean }[]> {
     const files: { relativePath: string; isScript: boolean }[] = [];
     const { integration, type, scriptName } = parsed;
 
-    // Always include models.ts if it exists
-    try {
-        await fetchFileContent(`${integration}/models.ts`, debug);
-        files.push({ relativePath: `${integration}/models.ts`, isScript: false });
-    } catch {
-        printDebug(`No models.ts found for ${integration}`, debug);
-    }
+    // Always include models.ts
+    files.push({ relativePath: `${integration}/models.ts`, isScript: false });
 
     if (scriptName && type) {
         // Pull a specific script
         files.push({ relativePath: `${integration}/${type}/${scriptName}.ts`, isScript: true });
-        // Also try to get the markdown doc
-        try {
-            await fetchFileContent(`${integration}/${type}/${scriptName}.md`, debug);
-            files.push({ relativePath: `${integration}/${type}/${scriptName}.md`, isScript: false });
-        } catch {
-            printDebug(`No documentation found for ${scriptName}`, debug);
-        }
+        files.push({ relativePath: `${integration}/${type}/${scriptName}.md`, isScript: false });
     } else if (type) {
         // Pull all scripts of a specific type
         const contents = await fetchGitHubDirectory(`${integration}/${type}`, debug);
@@ -367,6 +367,26 @@ async function getFilesToClone(parsed: ParsedTemplate, debug: boolean): Promise<
             } catch {
                 printDebug(`No ${t} directory found for ${integration}`, debug);
             }
+        }
+    }
+
+    return files;
+}
+
+/**
+ * Get all files to clone including dependencies
+ * This fetches file content to analyze imports and resolve dependencies
+ */
+async function getFilesToClone(initialFiles: { relativePath: string; isScript: boolean }[], integration: string, debug: boolean): Promise<FilesToClone> {
+    const files: { relativePath: string; isScript: boolean }[] = [];
+
+    // Filter out files that don't exist (models.ts, .md files)
+    for (const file of initialFiles) {
+        try {
+            await fetchFileContent(file.relativePath, debug);
+            files.push(file);
+        } catch {
+            printDebug(`File not found, skipping: ${file.relativePath}`, debug);
         }
     }
 
@@ -489,15 +509,34 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
 
         spinner.text = `Fetching file list for: ${template}`;
 
-        // Get files to clone (with their content cached to avoid double-fetching)
-        const { files, contentCache } = await getFilesToClone(parsed, debug);
+        // Get initial file list (quick, only uses directory listings)
+        const initialFiles = await getInitialFileList(parsed, debug);
+        spinner.succeed(`Found ${initialFiles.length} files to clone`);
+
+        // Warn about large clones without authentication
+        if (!hasGitHubToken() && initialFiles.length >= LARGE_CLONE_THRESHOLD) {
+            console.log(chalk.yellow(`\nWarning: Cloning ${initialFiles.length} files without a GitHub token may hit rate limits.`));
+            console.log(chalk.gray(`Set GITHUB_TOKEN environment variable to avoid rate limiting (5000 requests/hour vs 60/hour).`));
+
+            if (!autoConfirm) {
+                const answer = await promptly.prompt(chalk.yellow(`Continue anyway? (yes/no): `), { default: 'no' });
+                if (answer.toLowerCase() !== 'yes' && answer.toLowerCase() !== 'y') {
+                    console.log(chalk.yellow('Clone cancelled.'));
+                    return false;
+                }
+            }
+        }
+
+        // Get files with dependencies (fetches content to analyze imports)
+        spinner.start('Resolving dependencies...');
+        const { files, contentCache } = await getFilesToClone(initialFiles, parsed.integration, debug);
         if (files.length === 0) {
             spinner.fail(`No files found for template: ${template}`);
             return false;
         }
 
-        printDebug(`Found ${files.length} files to clone`, debug);
-        spinner.succeed(`Found ${files.length} files to clone`);
+        printDebug(`Found ${files.length} files (including dependencies) to clone`, debug);
+        spinner.succeed(`Resolved ${files.length} files (including dependencies)`);
 
         // Check for existing files
         const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug);
