@@ -130,7 +130,7 @@ async function fetchGitHubDirectory(urlPath: string, debug: boolean): Promise<Gi
 
 /**
  * Fetch file content from GitHub raw URL
- * Uses raw.githubusercontent.com which has no practical rate limit
+ * Uses raw.githubusercontent.com which has higher rate limits than the API
  */
 async function fetchFileContent(urlPath: string, debug: boolean): Promise<string> {
     const url = `${GITHUB_RAW_BASE}/${urlPath}`;
@@ -143,8 +143,13 @@ async function fetchFileContent(urlPath: string, debug: boolean): Promise<string
         });
         return response.data;
     } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-            throw new Error(`File not found: ${urlPath}`);
+        if (axios.isAxiosError(err)) {
+            if (err.response?.status === 404) {
+                throw new Error(`File not found: ${urlPath}`);
+            }
+            if (err.response?.status === 403) {
+                throw new GitHubRateLimitError();
+            }
         }
         throw err;
     }
@@ -299,7 +304,11 @@ async function validateIntegrationExists(integration: string, debug: boolean): P
     try {
         await fetchGitHubDirectory(integration, debug);
         return true;
-    } catch {
+    } catch (err) {
+        // Re-throw rate limit errors so they're handled properly
+        if (err instanceof GitHubRateLimitError) {
+            throw err;
+        }
         return false;
     }
 }
