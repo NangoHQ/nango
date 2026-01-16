@@ -1,0 +1,153 @@
+---
+title: 'CI/CD for Nango Integrations'
+sidebarTitle: 'CI/CD'
+description: 'How to set up a CI/CD pipeline to automatically test and deploy your Nango integrations to multiple stages.'
+---
+
+import { Tabs, Tab, Callout } from 'nextra/components'
+
+This guide provides an opinionated approach to integrating Nango into your company's Continuous Integration (CI) and Continuous Deployment (CD) processes. The goal is to automate the testing and deployment of your Nango integrations across multiple environments (e.g., development and production).
+
+## The CI/CD Workflow
+
+A robust CI/CD workflow for Nango integrations involves these steps:
+
+1.  **Push to Git**: A developer pushes changes to a feature branch and opens a pull request.
+2.  **Automated Testing**: The push triggers a CI pipeline that installs dependencies and runs your integration tests to verify correctness.
+3.  **Merge to Main**: After the pull request is reviewed and approved, the changes are merged into the `main` branch.
+4.  **Deploy to Development**: The merge to `main` automatically triggers a deployment to your `dev` environment in Nango.
+5.  **Deploy to Production**: A manual trigger (e.g., a `workflow_dispatch` in GitHub Actions) is used to promote a specific version to the `prod` environment. This provides an airlock for production deployments.
+
+This guide focuses on the deployment steps, with recommendations for testing.
+
+## Multi-Stage Deployments
+
+We recommend a multi-stage deployment strategy to separate your development and production environments. This allows you to test changes in a `dev` environment before promoting them to `prod`.
+
+The Nango CLI supports this via the `deploy` command, which can target a specific stage:
+
+```bash
+nango deploy <stage>
+```
+
+If you don't specify a stage, it defaults to `dev`.
+
+### Authentication
+
+To deploy from a CI script, you need to authenticate using a secret key for each stage.
+
+1.  **Generate Secret Keys**: In the Nango UI, go to **Settings > Secret Keys** and generate a secret key for each stage (e.g., `dev` and `prod`).
+2.  **Store the Secret Keys**: Store these keys as secrets in your CI/CD provider. We recommend naming them based on the stage, for example:
+    *   `NANGO_SECRET_KEY_DEV`
+    *   `NANGO_SECRET_KEY_PROD`
+
+## Example: GitHub Actions
+
+Here is an example of a GitHub Actions workflow that implements the multi-stage deployment strategy described above.
+
+You can find a complete example in the [Nango GitHub Actions repository](https://github.com/NangoHQ/github-actions).
+
+```yaml
+# .github/workflows/nango-deploy.yml
+name: Deploy Nango Integrations
+
+on:
+  # 1. Manual trigger to deploy to a specific stage
+  workflow_dispatch:
+    inputs:
+      stage:
+        type: choice
+        description: 'Stage to deploy to'
+        required: true
+        default: 'dev'
+        options:
+          - dev
+          - prod
+      allowDestructive:
+        type: boolean
+        description: 'Allow destructive changes'
+        required: true
+        default: false
+
+  # 2. Automatic trigger on push to main
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Set secrets as environment variables
+    env:
+      NANGO_SECRET_KEY_DEV: ${{ secrets.NANGO_SECRET_KEY_DEV }}
+      NANGO_SECRET_KEY_PROD: ${{ secrets.NANGO_SECRET_KEY_PROD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies & Run tests
+        run: |
+          npm install
+          npm test
+
+      - name: Deploy to Nango
+        run: |
+          # Determine the stage to deploy to
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            stage="${{ inputs.stage }}"
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            stage="dev" # Default to dev for pushes to main
+          else
+            echo "Not a deployable event. Exiting."
+            exit 0
+          fi
+
+          # Select the appropriate secret key
+          secret_key_var="NANGO_SECRET_KEY_$(echo "$stage" | tr '[:lower:]' '[:upper:]')"
+          secret_key="${!secret_key_var}"
+
+          if [ -z "$secret_key" ]; then
+            echo "Error: ${secret_key_var} secret is not set"
+            exit 1
+          fi
+
+          # Handle destructive changes flag
+          destructive_flag=""
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.allowDestructive }}" == "true" ]; then
+            destructive_flag="--allow-destructive"
+          fi
+
+          # Deploy to the selected stage
+          npx nango@latest deploy "$stage" --secret-key "$secret_key" $destructive_flag
+```
+
+<Callout>
+  **Destructive Changes**
+
+  A destructive change is a modification that removes an integration, sync, or action. To prevent accidental deletions, the `nango deploy` command will prompt for confirmation if it detects a destructive change.
+
+  In a CI environment, you can use the `--auto-confirm` or `--allow-destructive` flag to bypass this prompt. We recommend only using this with a manual trigger, as shown in the example.
+</Callout>
+
+## Testing in CI
+
+We strongly recommend running tests in your CI pipeline before every deployment. This is your first line of defense against regressions.
+
+Nango's testing framework uses dry runs and snapshot testing to validate your integrations without affecting production data. You can run your entire test suite with a single command:
+
+```bash
+npm test
+```
+
+For a complete guide on setting up and writing tests for your integrations, see the [Testing integrations guide](/implementation-guides/building-integrations/testing).
+
+## Related resources
+
+- [Testing integrations](/implementation-guides/building-integrations/testing) - A comprehensive guide to testing your Nango integrations.
+- [Nango GitHub Actions](https://github.com/NangoHQ/github-actions) - A repository with a complete, reusable GitHub Action for deploying Nango integrations.

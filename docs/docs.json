@@ -454,7 +454,8 @@
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
               "implementation-guides/building-integrations/data-validation",
-              "implementation-guides/building-integrations/testing"
+              "implementation-guides/building-integrations/testing",
+              "implementation-guides/building-integrations/ci-cd"
             ]
           },
           {
@@ -555,7 +556,7 @@
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
               "api-integrations/bamboohr",
-              "integrations/all/bamboohr-basic", 
+              "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
@@ -1127,142 +1128,6 @@
               "api-integrations/zoom",
               "integrations/all/zoominfo",
               "integrations/all/zuora"
-            ]
-          }
-        ]
-      },
-      {
-        "anchor": "Reference",
-        "icon": "book",
-        "groups": [
-          {
-            "group": "Reference",
-            "pages": [
-              "reference/overview"
-            ]
-          },
-          {
-            "group": "Use Integrations - Reference",
-            "pages": [
-              "reference/sdks/frontend",
-              {
-                "group": "HTTP API",
-                "icon": "cloud",
-                "pages": [
-                  "reference/api/authentication",
-                  "reference/api/rate-limits",
-                  {
-                    "group": "Providers",
-                    "pages": [
-                      "reference/api/providers/list",
-                      "reference/api/providers/get"
-                    ]
-                  },
-                  {
-                    "group": "Integrations",
-                    "pages": [
-                      "reference/api/integration/list",
-                      "reference/api/integration/get",
-                      "reference/api/integration/create",
-                      "reference/api/integration/update",
-                      "reference/api/integration/delete"
-                    ]
-                  },
-                  {
-                    "group": "Connections (deprecated)",
-                    "pages": [
-                      "reference/api/connection/list",
-                      "reference/api/connection/get",
-                      "reference/api/connection/post",
-                      "reference/api/connection/set-metadata",
-                      "reference/api/connection/set-metadata-legacy",
-                      "reference/api/connection/update-metadata",
-                      "reference/api/connection/update-metadata-legacy",
-                      "reference/api/connection/delete"
-                    ]
-                  },
-                  {
-                    "group": "Connections",
-                    "pages": [
-                      "reference/api/connections/post",
-                      "reference/api/connections/list",
-                      "reference/api/connections/get",
-                      "reference/api/connections/patch",
-                      "reference/api/connections/set-metadata",
-                      "reference/api/connections/update-metadata",
-                      "reference/api/connections/delete"
-                    ]
-                  },
-                  {
-                    "group": "Functions",
-                    "pages": [
-                      "reference/api/scripts/config"
-                    ]
-                  },
-                  {
-                    "group": "Syncs",
-                    "pages": [
-                      "reference/api/sync/records-list",
-                      "reference/api/sync/prune-records",
-                      "reference/api/sync/trigger",
-                      "reference/api/sync/start",
-                      "reference/api/sync/pause",
-                      "reference/api/sync/status",
-                      "reference/api/sync/update-connection-frequency",
-                      "reference/api/sync/environment-variables",
-                      "reference/api/sync/create-variant",
-                      "reference/api/sync/delete-variant"
-                    ]
-                  },
-                  {
-                    "group": "Actions",
-                    "pages": [
-                      "reference/api/action/trigger"
-                    ]
-                  },
-                  {
-                    "group": "Proxy",
-                    "pages": [
-                      "reference/api/proxy/get",
-                      "reference/api/proxy/post",
-                      "reference/api/proxy/put",
-                      "reference/api/proxy/patch",
-                      "reference/api/proxy/delete"
-                    ]
-                  },
-                  {
-                    "group": "Connect",
-                    "pages": [
-                      "reference/api/connect/sessions/create",
-                      "reference/api/connect/sessions/reconnect",
-                      "reference/api/connect/session/get",
-                      "reference/api/connect/session/delete"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Backend SDKs",
-                "icon": "cubes",
-                "pages": [
-                  "reference/sdks/node",
-                  "reference/sdks/python",
-                  "reference/sdks/java",
-                  "reference/sdks/ruby",
-                  "reference/sdks/go",
-                  "reference/sdks/rust",
-                  "reference/sdks/php"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Build Integrations - Reference",
-            "pages": [
-              "reference/cli",
-              "reference/functions",
-              "reference/api-configuration",
-              "reference/integration-configuration"
             ]
           }
         ]
