@@ -305,7 +305,7 @@ program
 
         try {
             const ensure = new Ensure(interactive);
-            environment = await ensure.environment(environment);
+            environment = await ensure.environment(environment, debug);
 
             const definitions = await buildDefinitions({ fullPath, debug });
             if (definitions.isOk()) {
@@ -410,7 +410,7 @@ program
 
         try {
             const ensure = new Ensure(interactive);
-            environment = await ensure.environment(environment);
+            environment = await ensure.environment(environment, debug);
         } catch (err: any) {
             console.error(chalk.red(err.message));
             if (err instanceof MissingArgumentError) {
