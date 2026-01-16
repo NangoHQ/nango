@@ -1,0 +1,34 @@
+---
+title: 'How to register your own Mollie OAuth app'
+sidebarTitle: 'Mollie Setup'
+description: 'Register an OAuth app with Mollie and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Mollie to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Mollie account.
+
+To create and register your OAuth application, follow the steps below:
+
+<Steps>
+  <Step title="Create a Mollie account">
+    1. Go to [Mollie](https://www.mollie.com/) and sign up for an account if you don't already have one.
+    2. Log in to your [Mollie Dashboard](https://my.mollie.com/).
+  </Step>
+  <Step title="Register your OAuth app">
+    1. At the bottom left of the screen, click **Developers** > **Your apps**.
+    2. Click **Create Application**.
+    3. Fill in all your app details. For **Redirect URI**, add: `https://api.nango.dev/oauth/callback`
+    4. Click **Save** to create your OAuth app.
+  </Step>
+  <Step title="Get your credentials">
+    1. Your application will now show up under the **Your apps** tab.
+    2. Copy your **Client ID** (starts with `app_`) and **Client Secret**.
+    3. Save both values securely. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Mollie OAuth Documentation](https://docs.mollie.com/reference/authentication).
+
+---
