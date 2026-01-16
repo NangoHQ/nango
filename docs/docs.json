@@ -856,6 +856,7 @@
               "integrations/all/miro-scim",
               "integrations/all/missive",
               "integrations/all/mixpanel",
+              "api-integrations/mollie",
               "integrations/all/monday",
               "integrations/all/momentum-io",
               "integrations/all/mural",
