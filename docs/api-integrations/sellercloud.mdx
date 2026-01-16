@@ -13,11 +13,11 @@ Connect to Sellercloud with Nango and see data flow in 2 minutes.
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Sellercloud_.
     </Step>
     <Step title="Authorize Sellercloud">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Team Name, REST API Endpoint, and API Key. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Team Name, Username, and Password. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Sellercloud API">
-    Let's make your first request to the Sellercloud API (retrieve user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
-    <Tabs>
+    Let's make your first request to the Sellercloud API (retrieve a list of companies). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs> 
         <Tab title="cURL">
 
             ```bash
@@ -41,8 +41,8 @@ Connect to Sellercloud with Nango and see data flow in 2 minutes.
         const response = await nango.get({
             endpoint: '/rest/api/companies',
             params: {
-                pageNumber: 1
-                pageSize: 10
+                pageNumber: 1,
+                pageSize: 10,
             },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
