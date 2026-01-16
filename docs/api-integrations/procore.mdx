@@ -16,7 +16,7 @@ Connect to Procore with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Procore. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Procore API">
-    Let's make your first request to the Procore API (retrieve current user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Procore API (retrieve a list of companies). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
@@ -41,9 +41,9 @@ Connect to Procore with Nango and see data flow in 2 minutes.
         const response = await nango.get({
             endpoint: '/rest/v1.0/companies',
             params: {
-                page: 1
+                page: 1,
                 per_page: 10
-            }
+            },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
