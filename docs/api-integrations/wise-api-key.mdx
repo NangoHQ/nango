@@ -1,27 +1,27 @@
 ---
-title: 'Looker'
-sidebarTitle: 'Looker'
-description: 'Integrate your application with the Looker API'
+title: 'Wise (API Key)'
+sidebarTitle: 'Wise (API Key)'
+description: 'Integrate your application with the Wise API using a Personal API Token'
 ---
 
 ## 🚀 Quickstart
 
-Connect to Looker with Nango and see data flow in 2 minutes.
+Connect to Wise with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Looker_.
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Wise (API Key)_.
     </Step>
-    <Step title="Authorize Looker">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Looker. Later, you'll let your users do the same directly from your app.
+    <Step title="Authorize Wise">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Token. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Looker API">
-    Let's make your first request to the Looker API (retrieve current user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Step title="Call the Wise API">
+    Let's make your first request to the Wise API (get your profiles). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/4.0/user" \
+            curl "https://api.nango.dev/proxy/v1/profiles" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Looker with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/4.0/user',
+            endpoint: '/v1/profiles',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -47,6 +47,7 @@ Connect to Looker with Nango and see data flow in 2 minutes.
         console.log(res.data);
         ```
         </Tab>
+
 
     </Tabs>
     Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
@@ -61,22 +62,21 @@ Connect to Looker with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-## 📚 Looker Integration Guides
+## 📚 Wise (API Key) Integration Guides
 
 Nango-maintained guides for common use cases.
 
-- [How do I link my account?](/api-integrations/looker/connect)  
-Connect your Looker account using the Connect UI
+- [How do I link my account?](/api-integrations/wise-api-key/connect)
+Connect your Wise account using the Connect UI
 
-Official docs: [Looker API documentation](https://docs.cloud.google.com/looker/docs/api-intro)
+Official docs: [Wise API Documentation](https://docs.wise.com/api-reference)
 
-## 🧩 Pre-built syncs & actions for Looker
+## 🧩 Pre-built syncs & actions for Wise (API Key)
 
 Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
 
-import PreBuiltUseCases from "/snippets/generated/looker/PreBuiltUseCases.mdx"
+import PreBuiltUseCases from "/snippets/generated/wise-api-key/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
 
 ---
-

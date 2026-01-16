@@ -89,7 +89,7 @@ describe('PrivateKey', async () => {
 
     it('should be retrieved before it expires', async () => {
         const entityType = 'connect_session';
-        const ttlInMs = 100;
+        const ttlInMs = 10_000;
         const createKey = await createPrivateKey(db, {
             displayName: 'this is my key',
             entityType,

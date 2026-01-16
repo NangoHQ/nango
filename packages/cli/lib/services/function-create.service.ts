@@ -5,30 +5,21 @@ import chalk from 'chalk';
 
 import { templateFolder } from '../zeroYaml/constants.js';
 
+import type { FunctionType } from '../types.js';
+
 export async function create({
     absolutePath,
-    sync,
-    action,
-    onEvent,
+    functionType,
     integration,
     name
 }: {
     absolutePath: string;
-    sync: boolean | undefined;
-    action: boolean | undefined;
-    onEvent: boolean | undefined;
+    functionType?: FunctionType;
     integration: string | undefined;
     name: string | undefined;
 }): Promise<boolean> {
     try {
-        let functionType: 'sync' | 'action' | 'on-event';
-        if (sync) {
-            functionType = 'sync';
-        } else if (action) {
-            functionType = 'action';
-        } else if (onEvent) {
-            functionType = 'on-event';
-        } else {
+        if (!functionType) {
             console.log(chalk.red('Must specify either --sync, --action, or --on-event'));
             return false;
         }

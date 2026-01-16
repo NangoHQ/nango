@@ -1,0 +1,49 @@
+---
+title: 'How to register your own Monday OAuth app'
+sidebarTitle: 'Monday Setup'
+description: 'Register an OAuth app with Monday and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Monday to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Monday account.
+
+## Prerequisites
+
+Before you begin, note the following requirements for Monday API access:
+
+- You must have a Monday account
+
+## Registering your application
+
+<Steps>
+  <Step title="Access the Monday Developers' section">
+    Log in to your Monday account.
+    Click on the profile icon in the top right corner and select **Developers**.
+  </Step>
+  <Step title="Create an OAuth application">
+    1. On the **Developers** section, click on the **Create App** button.
+    2. Select the newly created app from the list.
+    3. Select **General Settings**.
+    4. Copy the **Client ID** and **Client Secret**.
+    5. You will need them when configuring Nango.
+  </Step>
+  <Step title="Configure the redirect URL">
+    1. On the created app page, select the **Build** dropdown at the left side of the page.
+    2. Select **OAuth and Permissions**.
+    3. On the **Scopes** tab, select all your required scopes.
+    4. At the top of the page, select the **Redirect URLs** tab.
+    5. Add the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+    6. Click on **Save Scopes**.
+  </Step>
+  <Step title="Promoting the Monday app to live">
+    1. At the top left of the page, click on the **Promote to Live** button.
+    2. Click on the confirmation button.
+    3. From the **Distribute** menu, click **Share App**, accept the terms, and submit the form to change the app from private to public.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to set up your Monday integration in Nango.
+  </Step>
+</Steps>
+
+## OAuth scopes
+
+When configuring your OAuth app, you'll need to specify which scopes your app requires. For a complete list of available OAuth scopes, see [Monday's OAuth scopes documentation](https://developer.monday.com/apps/docs/oauth#set-up-permission-scopes).

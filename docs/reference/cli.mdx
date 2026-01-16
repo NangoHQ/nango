@@ -53,6 +53,50 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
+## Interactive Mode
+
+The Nango CLI includes an interactive mode that prompts you for missing arguments. For example, if you run `nango create` without specifying the function type, integration, or name, the CLI will prompt you for them.
+
+This mode is enabled by default when you're in an interactive terminal session.
+
+### Usage Examples
+
+**Interactive Usage:**
+
+If you run a command without all the required arguments, the CLI will prompt you for them.
+
+```bash
+# Running "nango create" without arguments
+$ nango create
+
+? What type of function do you want to create?
+❯   sync
+    action
+    on-event
+```
+
+**Non-Interactive (Explicit) Usage:**
+
+You can provide all arguments upfront to bypass the interactive prompts. This is ideal for scripting.
+
+```bash
+nango create --sync --integration my-api --name get-contacts
+```
+
+### Disabling Interactive Mode
+
+You can disable interactive mode in two ways:
+
+1.  **Using a flag:** Pass the `--no-interactive` flag to any command.
+    ```bash
+    nango create --no-interactive
+    ```
+2.  **In a CI environment:** Interactive mode is automatically disabled when the `CI` environment variable is set. This is the standard way to detect CI/CD environments.
+
+### Backwards Compatibility
+
+Interactive mode is fully backward compatible. If you provide all the required arguments for a command, the CLI will not prompt you for anything and will behave exactly as it did before.
+
 ## Flags & environment variables
 
 Global command flags:
@@ -61,6 +105,9 @@ Global command flags:
 # Command flag to auto-confirm all prompts (useful for CI).
 # Note: Destructive changes (like removing a sync or renaming a model) requires confirmation, even when --auto-confirm is set. To bypass this restriction, the --allow-destructive flag can be passed to nango deploy.
 --auto-confirm
+
+# Command flag to disable interactive mode.
+--no-interactive
 ```
 
 Environment variables:
@@ -85,4 +132,3 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
-
