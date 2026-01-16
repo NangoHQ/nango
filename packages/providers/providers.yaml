@@ -9108,6 +9108,14 @@ metabase:
             description: The API key for your Metabase account
             doc_section: '#step-1-generating-an-api-key'
 
+meta-marketing-api:
+    display_name: Meta Marketing API
+    categories:
+        - marketing
+    alias: facebook
+    docs: https://nango.dev/docs/api-integrations/meta-marketing-api
+    setup_guide_url: https://nango.dev/docs/api-integrations/meta-marketing-api/how-to-register-your-own-meta-marketing-api-oauth-app
+
 microsoft:
     display_name: Microsoft
     auth_mode: OAUTH2
