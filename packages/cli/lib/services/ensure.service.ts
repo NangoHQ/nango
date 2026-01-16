@@ -57,8 +57,8 @@ export class Ensure {
         return this.ensure(current, () => promptForFunctionName(functionType), 'Function name is required');
     }
 
-    public async environment(current: string | undefined): Promise<string> {
-        return this.ensure(current, () => promptForEnvironment(), 'Environment is required');
+    public async environment(current: string | undefined, debug = false): Promise<string> {
+        return this.ensure(current, () => promptForEnvironment(debug), 'Environment is required');
     }
 
     public async function(current: string | undefined, availableFunctions: { name: string; type: string }[]): Promise<string> {
