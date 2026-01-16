@@ -15,5 +15,6 @@
             "path": "../nango-yaml"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*"],
+    "exclude": ["lib/**/*.test.ts"]
 }
