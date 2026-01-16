@@ -11427,6 +11427,39 @@ productboard:
         base_url: https://api.productboard.com
     docs: https://nango.dev/docs/integrations/all/productboard
 
+procore:
+    display_name: Procore
+    categories:
+        - construction
+    auth_mode: OAUTH2
+    authorization_url: https://login.procore.com/oauth/authorize
+    token_url: https://login.procore.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    post_connection_script: procorePostConnection
+    proxy:
+        headers:
+            procore-company-id: ${connectionConfig.companyId}
+        base_url: https://api.procore.com
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/procore
+    setup_guide_url: https://nango.dev/docs/api-integrations/procore/how-to-register-your-own-procore-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/procore/connect
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: Your Procore company ID
+            optional: true
+            example: 598134325779301
+            pattern: '^[0-9]+$'
+
 qualtrics:
     display_name: Qualtrics
     categories:
