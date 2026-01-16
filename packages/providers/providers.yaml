@@ -12695,6 +12695,24 @@ sap-odata-basic:
             doc_section: '#step-2-finding-your-api-server'
             order: 1
 
+schwab:
+    display_name: Schwab
+    categories:
+        - finance
+    auth_mode: OAUTH2
+    authorization_url: https://api.schwabapi.com/v1/oauth/authorize
+    token_url: https://api.schwabapi.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.schwabapi.com
+    docs: https://nango.dev/docs/api-integrations/schwab
+    setup_guide_url: https://nango.dev/docs/api-integrations/schwab/how-to-register-your-own-schwab-oauth-app
+
 scrapedo:
     display_name: Scrape.do
     categories:

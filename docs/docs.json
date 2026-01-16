@@ -973,6 +973,7 @@
               "integrations/all/sap-fieldglass",
               "api-integrations/sap-odata-oauth2-cc",
               "api-integrations/sap-odata-basic",
+              "api-integrations/schwab",
               "integrations/all/scrapedo",
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
