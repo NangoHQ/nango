@@ -12795,7 +12795,8 @@ sap-odata-basic:
 schwab:
     display_name: Schwab
     categories:
-        - finance
+        - banking
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://api.schwabapi.com/v1/oauth/authorize
     token_url: https://api.schwabapi.com/v1/oauth/token
