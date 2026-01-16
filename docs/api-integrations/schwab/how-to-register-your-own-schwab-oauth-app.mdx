@@ -1,0 +1,52 @@
+---
+title: 'How to register your own Schwab OAuth app'
+sidebarTitle: 'Schwab Setup'
+description: 'Register an OAuth app with Schwab and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Schwab to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Schwab account.
+
+<Note>
+Each Line of Business manages their own rules regarding the creation of apps. In some cases you may be required to create and test an app in the Sandbox Environment, then request approval to Promote that App to the Production Environment.
+</Note>
+
+<Steps>
+  <Step title="Access the Developer Dashboard">
+    1. Go to the [Schwab Developer Portal](https://developer.schwab.com/) and sign in to your account.
+    2. You must either be a member of a company, or an Individual Developer and be approved to use the API Product.
+  </Step>
+  <Step title="Create an App">
+    1. Select **Dashboard** link in the main menu.
+    2. Select **Apps** from the navigation menu.
+    3. Select **Create App**.
+    4. Fill in the **App Name** field and add `https://api.nango.dev/oauth/callback` as your **Callback URL**.
+    5. Select an **API Product**. This will subscribe your App to that API Product.
+    6. Click **Submit** to create your app.
+  </Step>
+  <Step title="Get your credentials">
+    1. Upon successful creation and approval, navigate to your app's details page.
+    2. Your app's **Client ID** and **Client Secret** will be found in the **App Details** section.
+    3. Copy both values and save them securely. You'll need these when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+## App Approval and Status
+
+Your app may go through different statuses during the creation and approval process:
+
+- **Pending** - Awaiting Admin review and approval.
+- **Sandbox** - Approved Sandbox access. The App is ready for testing.
+- **Active (Approved)** - The app has been approved and is available for use.
+- **Rejected/Denied** - App creation has not been approved. Contact Support for details.
+- **Inactive (Revoked)** - The app has been disabled and will be unavailable for use until it has been re-activated.
+
+<Note>
+Many API Products are configured to auto-approve Sandbox App creation. In cases where Sandbox Apps are not auto-approved, a Pending (approval) status will be displayed until approved.
+</Note>
+
+For more details, see [Schwab Create an App Documentation](https://developer.schwab.com/user-guides/apis-and-apps/create-an-app).
+
+---
