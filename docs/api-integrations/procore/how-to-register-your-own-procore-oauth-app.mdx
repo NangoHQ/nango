@@ -1,0 +1,37 @@
+---
+title: 'How to register your own Procore OAuth app'
+sidebarTitle: 'Procore Setup'
+description: 'Register an OAuth app with Procore and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Procore to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Procore account.
+
+<Steps>
+  <Step title="Sign up for a developer account">
+    1. Go to the [Procore Developer Portal](https://developers.procore.com/) and sign up for a developer account.
+    2. If you already have an account, sign in to the developer portal.
+  </Step>
+  <Step title="Create a sample application">
+    1. Click on your profile, then select **My Apps**.
+    2. Click **Create New App**, enter a name for your app, and submit the form.
+    3. You will be redirected to your app's settings. Click the **OAuth credentials** tab and set the **Redirect URI** to `https://api.nango.dev/oauth/callback`.
+  </Step>
+  <Step title="Get your credentials">
+    1. From the same tab, click the **Show Client Secret** button to reveal both your **Client ID** and **Client Secret**.
+    2. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+## Connection configuration
+
+Procore requires a **Company ID** to make API calls. This can be provided in two ways:
+
+- **Optional field**: When connecting a Procore account, users can optionally provide a `companyId`. If provided, Nango will use this company ID for all API requests.
+- **Automatic retrieval**: If no `companyId` is provided, Nango will automatically fetch the first company from the `/rest/v1.0/companies` endpoint after the OAuth authorization completes and store it in the connection configuration.
+
+For more details, see [Procore OAuth 2.0 Documentation](https://developers.procore.com/documentation/oauth-2-0).
+
+---
