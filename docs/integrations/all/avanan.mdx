@@ -1,0 +1,94 @@
+---
+title: 'Avanan'
+sidebarTitle: 'Avanan'
+description: 'Connect to the Avanan SmartAPI using API credentials in 2 minutes'
+---
+
+<Tabs>
+  <Tab title="Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _Avanan_.
+      </Step>
+
+      <Step title="Authorize Avanan">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Avanan **API Region**, **Application ID**, and **Secret Key**. Later, you'll let your users do the same directly from your app.
+      </Step>
+
+      <Step title="Call the Avanan API">
+        Let's make your first request to Avanan (authenticate and get a token). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+          <Tab title="cURL">
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/auth" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+          </Tab>
+
+          <Tab title="Node">
+            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            // Authenticate with Avanan
+            const res = await nango.get({
+              endpoint: '/auth',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+          </Tab>
+        </Tabs>
+
+        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+      </Step>
+    </Steps>
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+      Next step: [Embed the auth flow](/getting-started/quickstart/embed-in-your-app) in your app to let your users connect their Avanan accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Avanan using Connect UI](/integrations/all/avanan/connect) |
+    | General | [Avanan Website](https://www.avanan.com/) |
+    | | [Check Point Harmony Email & Collaboration](https://www.checkpoint.com/harmony/email-collaboration/) |
+    | Developer | [Avanan SmartAPI Reference Guide](https://sc1.checkpoint.com/documents/Infinity_Portal/WebAdminGuides/EN/Harmony-Email-Collaboration-Admin-Guide/Topics-HEC-AG/API.htm) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/avanan.mdx)</Note>
+  </Tab>
+
+  <Tab title="API gotchas">
+
+    - Avanan uses signature-based authentication. The signature is computed as `SHA256(secret_key + date_value)` and must be included in the `x-av-sig` header for API requests.
+    - You must first call the `/auth` endpoint to obtain a token before making other API calls. The token should be included in the `x-av-token` header.
+    - Each request requires a unique request ID in the `x-av-req-id` header.
+    - The API supports multiple regional endpoints. Make sure to select the correct region for your Avanan tenant:
+      - USA: `smart-api-production-1-us`
+      - Europe: `smart-api-production-1-eu`
+      - Canada: `smart-api-production-1-ca`
+      - Australia: `smart-api-production-5-ap`
+      - UK: `smart-api-production-1-euw2`
+      - UAE: `smart-api-production-1-mec1`
+      - India: `smart-api-production-1-aps1`
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/avanan.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
