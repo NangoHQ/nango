@@ -1538,6 +1538,39 @@ auth0-cc:
             optional: true
             doc_section: '#step-4-finding-your-organization'
 
+avanan:
+    display_name: Avanan
+    categories:
+        - security
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.region}.avanan.net/v1.0
+        headers:
+            x-av-app-id: ${connectionConfig.appId}
+            content-type: application/json
+    docs: https://nango.dev/docs/integrations/all/avanan
+    docs_connect: https://nango.dev/docs/integrations/all/avanan/connect
+    connection_config:
+        region:
+            type: string
+            title: API Region
+            description: The regional API endpoint for your Avanan account (e.g., smart-api-production-1-us for USA)
+            example: smart-api-production-1-us
+            pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
+            doc_section: '#step-1-determine-your-region'
+        appId:
+            type: string
+            title: Application ID
+            description: Your Avanan API Application ID (Client ID)
+            doc_section: '#step-2-create-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Key
+            description: Your Avanan API Secret Key
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
+
 auvik:
     display_name: Auvik
     categories:
