@@ -3267,6 +3267,25 @@ cloudentity:
             description: The workspace ID of your Cloudentity account
             doc_section: '#step-4-retrieving-the-workspace-id'
 
+cloudflare:
+    display_name: Cloudflare
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cloudflare.com/client
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/cloudflare
+    docs_connect: https://nango.dev/docs/api-integrations/cloudflare/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Cloudflare user or account
+            secret: true
+
 close:
     display_name: Close
     categories:

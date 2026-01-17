@@ -611,6 +611,7 @@
               "integrations/all/close",
               "api-integrations/cloudbeds",
               "integrations/all/cloudentity",
+              "api-integrations/cloudflare",
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",

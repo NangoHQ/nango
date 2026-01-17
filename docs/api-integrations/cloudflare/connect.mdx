@@ -1,0 +1,40 @@
+---
+title: 'Cloudflare - How do I link my account?'
+sidebarTitle: 'Cloudflare'
+---
+
+# Overview
+
+To authenticate with Cloudflare, you will need:
+1. **API Token** - A key that grants Nango permission to interact with Cloudflare's API resources and services.
+
+This guide will walk you through generating your **API Token** within Cloudflare.
+
+### Prerequisites:
+
+- You must have a Cloudflare account
+
+### Instructions:
+
+#### Step 1: Generating your API Token
+
+Cloudflare API Tokens can be created for individual users or accounts.
+
+Cloudflare [recommends](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) using Account API Tokens if you prefer credentials that are not associated with users.
+
+To create an Account API Token:
+
+1. Log in to your [Cloudflare dashboard](https://dash.cloudflare.com/login)
+2. Navigate to **Manage Account** > **Account API Tokens** in the left sidebar menu.
+3. Click **Create Token** to create your API Token.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Token**:
+1. Open the form where you need to authenticate with Cloudflare.
+2. Enter your **API Token** in the respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cloudflare/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cloudflare.
