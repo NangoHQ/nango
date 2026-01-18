@@ -1,0 +1,106 @@
+---
+title: 'How to Connect to Perdoo'
+sidebarTitle: 'Connect'
+description: 'Learn how to obtain your Perdoo API token and link your account'
+---
+
+This guide shows you how to generate an API token in Perdoo and connect it to Nango.
+
+## Prerequisites
+
+- An active Perdoo account
+- Access to Personal Settings in Perdoo
+
+## Generating Your API Token
+
+<Steps>
+  <Step title="Access Personal Settings">
+    1. Log in to your Perdoo account at [https://eu.perdoo.com](https://eu.perdoo.com)
+    2. Click on your profile icon in the top right corner
+    3. Select **Personal Settings** from the dropdown menu
+  </Step>
+  
+  <Step title="Navigate to API Tokens">
+    In the left sidebar, click on **API Tokens**
+  </Step>
+  
+  <Step title="Generate a New Token">
+    1. Click **Generate New Token** or **Create API Token**
+    2. Give your token a descriptive name (e.g., "Nango Integration")
+    3. Copy the generated token immediately - it won't be shown again
+    
+    <Warning>
+    Store your API token securely. The token is a 64-character hexadecimal string (e.g., `5037c64a83d34725a13131b9b28856c0e499887b16c84b6d9bba2756d1e61634`). Perdoo will not show it again after creation.
+    </Warning>
+  </Step>
+  
+  <Step title="Add Token to Nango">
+    1. In your Nango dashboard, navigate to **Connections**
+    2. Click **Add Test Connection**
+    3. Select **Perdoo** from the integration list
+    4. Paste your API token in the **API Token** field
+    5. Click **Connect** to complete the setup
+    
+    Nango will automatically verify your credentials by making a test request to the Perdoo API.
+  </Step>
+</Steps>
+
+## Testing the Connection
+
+Once connected, Nango verifies your token by making a request to:
+```
+GET https://eu.perdoo.com/user
+```
+
+If successful, you'll see a confirmation that your Perdoo integration is active.
+
+## Troubleshooting
+
+### Invalid Token Error
+
+**Possible causes:**
+- The token wasn't copied completely (ensure all 64 characters are included)
+- The token has been revoked in Perdoo's Personal Settings
+- The token doesn't have appropriate permissions
+
+**Solution:** Generate a new token in Perdoo and ensure you copy the entire 64-character value.
+
+### Connection Failed
+
+**Possible causes:**
+- Incorrect Perdoo instance region (verify you're using the EU region)
+- Perdoo account is inactive or suspended
+- API access is disabled for your organization
+
+**Solution:** Verify your account status and confirm API access is enabled.
+
+### API Request Errors
+
+**Possible causes:**
+- The API token has expired or been revoked
+- Network connectivity issues
+- Perdoo API service disruption
+
+**Solution:** Check the [Perdoo status page](https://status.perdoo.com) and verify your token is still valid.
+
+## Using Perdoo with Nango
+
+After connecting, you can:
+
+- **Query OKRs, KPIs, and Goals** - Access your organization's objectives and key results
+- **Manage Users and Teams** - Retrieve user information and team structures
+- **Track Progress** - Get updates on goal progress and completion
+- **Access REST & GraphQL APIs** - Use both REST endpoints and GraphQL queries
+
+Base API URL: `https://eu.perdoo.com/graphql/`
+
+For detailed API capabilities, see the [Perdoo GraphQL API Documentation](https://studio.apollographql.com/public/Perdoo-GQL/variant/current/home).
+
+## Need Help?
+
+If you continue to experience issues:
+- Review the [Perdoo API Documentation](https://studio.apollographql.com/public/Perdoo-GQL/variant/current/home)
+- Contact [Perdoo Support](https://support.perdoo.com)
+- Reach out to Nango support through the dashboard
+
+---
