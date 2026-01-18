@@ -104,6 +104,10 @@ do {
 } while (apiResp.pagination?.total && apiOffset < apiResp.pagination.total);
 
 const apiItemsBySlug = apiItems.reduce<Record<string, CollectionItem>>((acc, item) => {
+    if (!item.fieldData.slug) {
+        console.warn(`Warning: API item "${item.fieldData.name}" (id: ${item.id}) has no slug`);
+        return acc;
+    }
     acc[item.fieldData.slug] = item;
 
     return acc;
@@ -192,9 +196,45 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
             }
             console.log(`Created ${slug} ${dryRun ? '(dry run)' : ''}`);
             await setTimeout(rateLimitSleep);
-        } catch (err) {
-            console.error(`Failed to update ${slug}`, err);
-            process.exit(1);
+        } catch (err: any) {
+            // Handle the case where the item exists but wasn't found in our initial fetch
+            if (
+                err?.statusCode === 400 &&
+                err?.body?.details?.some((d: any) => d.param === 'slug' && d.description?.includes('Unique value is already in database'))
+            ) {
+                console.warn(`Warning: Item with slug "${slug}" already exists in Webflow but wasn't in apiItemsBySlug map`);
+
+                // First check if it's in our originally fetched items but with a different slug or missing slug
+                const foundInOriginal = apiItems.find((item) => item.fieldData.slug === slug);
+
+                if (foundInOriginal?.id) {
+                    console.log(`Found ${slug} in original fetch (was not properly indexed). Updating...`);
+                    const apiCategories = providerCategories.map((category) => categoriesBySlug[category]?.id);
+                    const update = {
+                        fieldData: {
+                            name: provider.display_name,
+                            documentation: provider.docs,
+                            logo,
+                            'api-categories': apiCategories,
+                            'pre-built-integrations-count': preBuiltCount
+                        }
+                    };
+
+                    if (!dryRun) {
+                        await webflow.collections.items.updateItem(apiCollectionId, foundInOriginal.id, update);
+                    }
+                    console.log(`Updated ${slug} ${dryRun ? '(dry run)' : ''}`);
+                    await setTimeout(rateLimitSleep);
+                } else {
+                    // Item truly wasn't in our fetch - this could be a race condition or pagination issue
+                    console.error(`Error: Item "${slug}" exists in Webflow but was not found in our fetch of ${apiItems.length} items`);
+                    console.error(`This may indicate a pagination issue or race condition. Please re-run the script.`);
+                    throw err;
+                }
+            } else {
+                console.error(`Failed to create ${slug}`, err);
+                process.exit(1);
+            }
         }
     }
 }
