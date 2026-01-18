@@ -55,18 +55,9 @@ Copy and securely store both values immediately. The Secret Key may only be disp
 
 Once you have your credentials:
 1. Open the form where you need to authenticate with Avanan.
-2. Select your **API Region** from the dropdown or enter the regional endpoint value.
-3. Enter your **Application ID** and **Secret Key** in their respective fields.
-4. Submit the form, and you should be successfully authenticated.
+2. Enter your **API Region**, **Application ID** and **Secret Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
-<img src="/integrations/all/avanan/avanan_connect_form.png" />
+<img src="/api-integrations/avanan/avanan_connect_form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to Avanan.
-
----
-
-### Additional Information
-
-- **Authentication Flow**: Avanan uses signature-based authentication. The Nango integration stores your credentials securely and passes the Application ID to API requests via the `x-av-app-id` header.
-- **Token Management**: After initial authentication via the `/auth` endpoint, you'll receive a token that is valid for API requests. Tokens typically expire after 30 minutes.
-- **Security Best Practices**: Store your Application ID and Secret Key securely. Never commit these credentials to source control or expose them in client-side code.
