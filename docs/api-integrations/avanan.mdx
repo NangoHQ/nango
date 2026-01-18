@@ -1,0 +1,99 @@
+---
+title: 'Avanan'
+sidebarTitle: 'Avanan'
+description: 'Integrate your application with the Avanan SmartAPI'
+---
+
+## 🚀 Quickstart
+
+Connect to Avanan with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Avanan_.
+    </Step>
+    <Step title="Authorize Avanan">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Avanan **API Region**, **Application ID**, and **Secret Key**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Avanan API">
+    Let's make your first request to the Avanan API (list security events). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1.0/event?pageSize=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1.0/event',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { pageSize: '10' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Avanan Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Avanan API credentials](/api-integrations/avanan/connect)
+Get your Avanan API Region, Application ID, and Secret Key to connect it to Nango
+
+Official docs: [Avanan SmartAPI Reference Guide](https://sc1.checkpoint.com/documents/Infinity_Portal/WebAdminGuides/EN/Harmony-Email-Collaboration-Admin-Guide/Topics-HEC-AG/API.htm)
+
+## 🧩 Pre-built syncs & actions for Avanan
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/avanan/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Avanan uses signature-based authentication. The signature is computed as `SHA256(secret_key + date_value)` and must be included in the `x-av-sig` header for API requests.
+- You must first call the `/auth` endpoint to obtain a token before making other API calls. The token should be included in the `x-av-token` header.
+- Each request requires a unique request ID in the `x-av-req-id` header.
+- The API supports multiple regional endpoints. Make sure to select the correct region for your Avanan tenant:
+  - USA: `smart-api-production-1-us`
+  - Europe: `smart-api-production-1-eu`
+  - Canada: `smart-api-production-1-ca`
+  - Australia: `smart-api-production-5-ap`
+  - UK: `smart-api-production-1-euw2`
+  - UAE: `smart-api-production-1-mec1`
+  - India: `smart-api-production-1-aps1`
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/avanan.mdx)</Note>
+
+---

@@ -102,6 +102,14 @@
     {
       "source": "/guides/use-cases/mcp-server",
       "destination": "/guides/use-cases/ai-tool-calling"
+    },
+    {
+      "source": "/integrations/all/avanan",
+      "destination": "/api-integrations/avanan"
+    },
+    {
+      "source": "/integrations/all/avanan/connect",
+      "destination": "/api-integrations/avanan/connect"
     }
   ],
   "navigation": {
@@ -324,6 +332,7 @@
               "integrations/all/auvik",
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
+              "api-integrations/avanan",
               "integrations/all/aws",
               "integrations/all/aws-iam",
               "integrations/all/aws-scim",
