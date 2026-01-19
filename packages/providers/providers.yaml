@@ -7258,10 +7258,11 @@ highlevel:
     post_connection_script: highlevelPostConnection
     webhook_routing_script: highlevelWebhookRouting
     webhook_user_defined_secret: true
-    docs: https://nango.dev/docs/integrations/all/highlevel
+    docs: https://nango.dev/docs/api-integrations/highlevel
+    setup_guide_url: https://nango.dev/docs/api-integrations/highlevel/how-to-register-your-own-highlevel-api-oauth-app
 
 highlevel-white-label:
-    display_name: HighLevel (White Label)
+    display_name: HighLevel (LeadConnector)
     categories:
         - marketing
     auth_mode: OAUTH2
@@ -7278,7 +7279,8 @@ highlevel-white-label:
     post_connection_script: highlevelPostConnection
     webhook_routing_script: highlevelWebhookRouting
     webhook_user_defined_secret: true
-    docs: https://nango.dev/docs/integrations/all/highlevel-white-label
+    docs: https://nango.dev/docs/api-integrations/highlevel-white-label
+    setup_guide_url: https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app
 
 holded:
     display_name: Holded
