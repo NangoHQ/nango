@@ -96,22 +96,13 @@ export const CreateIntegration = () => {
 
     const filterProviders = useCallback(
         (value: string) => {
-            if (!value.trim()) {
+            if (!value.trim() || !fuse) {
                 setProviders(initialProviders);
                 return;
             }
 
-            if (!fuse) {
-                setProviders(initialProviders);
-                return;
-            }
-
-            // Perform fuzzy search
             const results = fuse.search(value);
-
-            // Extract providers from results, sorted by relevance (lower score = better match)
             const filtered = results.map((result) => result.item);
-
             setProviders(filtered);
         },
         [initialProviders, fuse]
@@ -164,7 +155,7 @@ export const CreateIntegration = () => {
             </header>
 
             <InputGroup className="bg-bg-subtle">
-                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} onKeyUp={handleInputChange} />
+                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} onKeyUp={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
                 </InputGroupAddon>
