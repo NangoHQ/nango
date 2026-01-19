@@ -24,11 +24,8 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
         if (!value) {
             return null; // Empty values are allowed (optional fields)
         }
-        const result = z.string().url().safeParse(value);
-        if (!result.success) {
-            return 'Must be a valid URL (e.g., https://example.com)';
-        }
-        return null;
+        const result = z.string().url('Must be a valid URL (e.g., https://example.com)').safeParse(value);
+        return result.success ? null : result.error.issues[0]?.message || null;
     };
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {

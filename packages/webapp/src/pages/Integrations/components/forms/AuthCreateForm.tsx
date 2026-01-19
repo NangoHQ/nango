@@ -1,5 +1,6 @@
 import { AppAuthCreateForm } from './AppAuthCreateForm';
 import { CustomAuthCreateForm } from './CustomAuthCreateForm';
+import { InstallPluginAuthCreateForm } from './InstallPluginAuthCreateForm';
 import { McpGenericCreateForm } from './McpGenericCreateForm';
 import { McpOAuthCreateForm } from './McpOAuthCreateForm';
 import { OAuthCreateForm } from './OAuthCreateForm';
@@ -44,6 +45,9 @@ export const AuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
         case 'MCP_OAUTH2_GENERIC':
             return <McpGenericCreateForm provider={provider} onSubmit={onSubmit} />;
+
+        case 'INSTALL_PLUGIN':
+            return <InstallPluginAuthCreateForm provider={provider} onSubmit={onSubmit} />;
 
         default: {
             const infoMessage = getInfoMessage(provider);

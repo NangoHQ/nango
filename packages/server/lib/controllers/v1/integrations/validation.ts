@@ -61,9 +61,9 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
 export const integrationAuthTypeInstallPluginSchema = z
     .object({
         authType: z.enum(['INSTALL_PLUGIN']),
-        appLink: z.string().min(1).optional(),
-        username: z.string().min(1).optional(),
-        password: z.string().min(1).optional()
+        appLink: z.url().max(255).optional(),
+        username: z.string().min(1).max(255).optional(),
+        password: z.string().min(1).max(255).optional()
     })
     .strict();
 

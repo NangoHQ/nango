@@ -77,6 +77,13 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
                 ...(clientUri && { oauth_client_uri: clientUri }),
                 ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
             };
+        } else if (auth.authType === 'INSTALL_PLUGIN') {
+            config.app_link = auth.appLink ?? null;
+            config.custom = {
+                ...config.custom,
+                ...(auth.username && { username: auth.username }),
+                ...(auth.password && { password: Buffer.from(auth.password).toString('base64') })
+            };
         }
     }
 

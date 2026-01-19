@@ -139,7 +139,14 @@ export interface MCPOAuth2GenericAuthBody {
     clientLogoUri?: string | undefined;
 }
 
-export type IntegrationAuthBody = OAuthAuthBody | AppAuthBody | CustomAuthBody | MCPOAuth2AuthBody | MCPOAuth2GenericAuthBody;
+export interface InstallPluginAuthBody {
+    authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
+    appLink?: string | undefined;
+    username?: string | undefined;
+    password?: string | undefined;
+}
+
+export type IntegrationAuthBody = OAuthAuthBody | AppAuthBody | CustomAuthBody | MCPOAuth2AuthBody | MCPOAuth2GenericAuthBody | InstallPluginAuthBody;
 
 export type PostIntegration = Endpoint<{
     Method: 'POST';

@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 import { InfoTooltip } from './InfoTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
@@ -19,6 +21,14 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { toast } = useToast();
 
     const setupUrl = (environment.callback_url || defaultCallback()).replace('oauth/callback', 'app-auth/connect');
+
+    const validateUrl = (value: string): string | null => {
+        if (!value) {
+            return null; // Empty values are allowed (optional fields)
+        }
+        const result = z.string().url('Must be a valid URL (e.g., https://example.com)').safeParse(value);
+        return result.success ? null : result.error.issues[0]?.message || null;
+    };
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
@@ -68,7 +78,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
                     <Label htmlFor="app_link">App Public Link</Label>
                     <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
                 </div>
-                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} />
+                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
             </div>
 
             {/* App Private Key */}

@@ -1,4 +1,5 @@
-import { InfoTooltip } from './InfoTooltip';
+import z from 'zod';
+
 import { EditableInput } from '@/components-v2/EditableInput';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
@@ -12,6 +13,14 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
 }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+
+    const validateUrl = (value: string): string | null => {
+        if (!value) {
+            return null; // Empty values are allowed (optional fields)
+        }
+        const result = z.string().url('Must be a valid URL (e.g., https://example.com)').safeParse(value);
+        return result.success ? null : result.error.issues[0]?.message || null;
+    };
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
@@ -33,45 +42,22 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
         <div className="flex flex-col gap-10">
             {/* Install Link */}
             <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                    <Label htmlFor="install_link">Install Link</Label>
-                    <InfoTooltip>Enter the install link for the plugin</InfoTooltip>
-                </div>
-                <EditableInput
-                    initialValue={integration.app_link || ''}
-                    onSave={(value) => onSave({ appLink: value })}
-                    placeholder="Enter the install link for the plugin"
-                />
+                <Label htmlFor="install_link">Install Link</Label>
+                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
             </div>
 
             {isBasicAuth && (
                 <>
                     {/* Username */}
                     <div className="flex flex-col gap-2">
-                        <div className="flex gap-2 items-center">
-                            <Label htmlFor="username">Username</Label>
-                            <InfoTooltip>Enter the username for basic authentication</InfoTooltip>
-                        </div>
-                        <EditableInput
-                            secret
-                            initialValue={integration.custom?.['username'] || ''}
-                            onSave={(value) => onSave({ username: value } as any)}
-                            placeholder="Enter username"
-                        />
+                        <Label htmlFor="username">Username</Label>
+                        <EditableInput secret initialValue={integration.custom?.['username'] || ''} onSave={(value) => onSave({ username: value } as any)} />
                     </div>
 
                     {/* Password */}
                     <div className="flex flex-col gap-2">
-                        <div className="flex gap-2 items-center">
-                            <Label htmlFor="password">Password</Label>
-                            <InfoTooltip>Enter the password for basic authentication</InfoTooltip>
-                        </div>
-                        <EditableInput
-                            secret
-                            initialValue={integration.custom?.['password'] || ''}
-                            onSave={(value) => onSave({ password: value } as any)}
-                            placeholder="Enter password"
-                        />
+                        <Label htmlFor="password">Password</Label>
+                        <EditableInput secret initialValue={integration.custom?.['password'] || ''} onSave={(value) => onSave({ password: value } as any)} />
                     </div>
                 </>
             )}
