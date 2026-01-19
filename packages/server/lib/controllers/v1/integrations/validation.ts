@@ -58,6 +58,15 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
     })
     .strict();
 
+export const integrationAuthTypeInstallPluginSchema = z
+    .object({
+        authType: z.enum(['INSTALL_PLUGIN']),
+        appLink: z.string().min(1).optional(),
+        username: z.string().min(1).optional(),
+        password: z.string().min(1).optional()
+    })
+    .strict();
+
 // Discriminated union for all auth types
 export const integrationAuthTypeSchema = z.discriminatedUnion(
     'authType',
@@ -66,7 +75,8 @@ export const integrationAuthTypeSchema = z.discriminatedUnion(
         integrationAuthTypeAppSchema,
         integrationAuthTypeCustomSchema,
         integrationAuthTypeMcpOAuth2Schema,
-        integrationAuthTypeMcpOAuth2GenericSchema
+        integrationAuthTypeMcpOAuth2GenericSchema,
+        integrationAuthTypeInstallPluginSchema
     ],
     { error: () => ({ message: 'invalid credentials object' }) }
 );

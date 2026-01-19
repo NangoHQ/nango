@@ -134,6 +134,12 @@ export type IntegrationAuthBody =
           clientName?: string | undefined;
           clientUri?: string | undefined;
           clientLogoUri?: string | undefined;
+      }
+    | {
+          authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
+          appLink?: string | undefined;
+          username?: string | undefined;
+          password?: string | undefined;
       };
 
 export type PostIntegration = Endpoint<{
