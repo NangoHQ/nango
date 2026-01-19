@@ -9696,10 +9696,8 @@ modmed:
             x-api-key: ${credentials.apiKey}
     token_response:
         token: access_token
-        token_expiration: expires_in
-        token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/modmed
-    docs_connect: https://nango.dev/docs/integrations/all/modmed/connect
+    docs: https://nango.dev/docs/api-integrations/modmed
+    docs_connect: https://nango.dev/docs/api-integrations/modmed/connect
     connection_config:
         environment:
             type: string
