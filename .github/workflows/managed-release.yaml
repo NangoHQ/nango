@@ -384,6 +384,7 @@ jobs:
                   fi
 
             - name: Retag and push final image
+              id: retag-image
               if: ${{ !env.ACT }}
               run: |
                   echo "Pulling image..."
@@ -391,13 +392,34 @@ jobs:
 
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
-                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
-                      docker push nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      IMAGE_TAG="managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
                       echo "Test deployment successful, using original versions"
-                      docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
-                      docker push nangohq/nango:managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                      IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
+
+                  docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
+                  docker push nangohq/nango:${IMAGE_TAG}
+
+                  echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+            - name: Tag commit with managed release
+              if: ${{ !env.ACT }}
+              env:
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
+              run: |
+                  # Use the tag name from the Docker image step
+                  TAG_NAME="${{ steps.retag-image.outputs.tag_name }}"
+
+                  # Checkout the specific commit hash
+                  git fetch origin ${{ needs.manage-versions.outputs.commit_hash }}:refs/tags/temp-commit || true
+                  git checkout ${{ needs.manage-versions.outputs.commit_hash }}
+
+                  # Create and push the tag
+                  git config --global user.name "GitHub Actions"
+                  git config --global user.email "actions@github.com"
+                  git tag -a "$TAG_NAME" -m "Managed release ${TAG_NAME}"
+                  git push origin "$TAG_NAME"
 
             - name: Commit and create PR for version changes
               if: ${{ !env.ACT }}
