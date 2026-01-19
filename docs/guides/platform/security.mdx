@@ -171,6 +171,44 @@ Nango maintains security practices aligned with industry standards:
 
 For enterprise customers requiring specific compliance documentation (SOC 2, GDPR DPA, etc.), please contact our sales team.
 
+## IP Allowlist
+
+Some integrations require network-level access controls that only allow inbound traffic from known IP addresses.  
+This page lists the **public IP addresses used by Nango services** when making outbound requests.
+
+
+### When is IP allowlisting required?
+
+IP allowlisting is only required if **your customers' systems** restrict inbound network traffic.
+
+Common examples include:
+- Private or self-hosted APIs behind a firewall
+- Enterprise systems that only accept traffic from approved IPs
+- Third-party services with IP-based access controls
+
+If a system is publicly accessible without IP restrictions, **no allowlist configuration is needed**.
+
+
+### Nango public IP addresses
+
+Allowlist the following IP addresses to permit inbound traffic from Nango:
+
+- `52.34.139.153`
+- `54.69.127.183`
+- `44.247.133.183`
+- `52.26.211.56`
+
+
+### IP address changes
+
+While we aim to keep IP addresses stable, they **may change over time** as we scale or improve reliability.
+
+To minimize disruption:
+- Ensure all listed IPs are allowlisted
+- Periodically review this page for updates
+
+We will make reasonable efforts to communicate breaking changes in advance.
+
 <Tip>
 **Questions about security?** Please reach out in the [Slack community](https://nango.dev/slack) or contact security@nango.dev.
 </Tip>
