@@ -6874,6 +6874,68 @@ greenhouse-harvest:
             default_value: ''
             hidden: true
 
+greenhouse-harvest-partner:
+    display_name: Greenhouse Harvest Partner (V3)
+    categories:
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://auth.greenhouse.io/authorize
+    token_url: https://auth.greenhouse.io/token
+    token_request_auth_method: basic
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/greenhouse-harvest-partner
+    setup_guide_url: https://nango.dev/docs/api-integrations/greenhouse-harvest-partner/how-to-register-your-own-greenhouse-harvest-partner-oauth-app
+
+greenhouse-harvest-oauth2-cc:
+    display_name: Greenhouse Harvest (Client Credentials V3)
+    categories:
+        - ats
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.greenhouse.io/token?grant_type=client_credentials
+    token_request_auth_method: basic
+    body_format: json
+    token_params:
+        sub: ${connectionConfig.sub}
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/greenhouse-harvest-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/greenhouse-harvest-oauth2-cc/connect
+    connection_config:
+        sub:
+            type: string
+            title: User ID
+            description: The optional ID of the user to act on-behalf-of.
+            optional: true
+            example: '4212952002'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-finding-your-user-id'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Greenhouse client ID for authentication
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Greenhouse client secret for authentication
+            doc_section: '#step-1-generating-your-client-credentials'
+
 greenhouse-job-board:
     display_name: Greenhouse (Job Board API)
     auth_mode: BASIC
