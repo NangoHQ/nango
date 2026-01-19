@@ -23,13 +23,13 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
                 'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
                 'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
-                // Focus state.
-                'has-[[data-slot=input-group-control]:focus-visible]:shadow-focus has-[[data-slot=input-group-control]:focus-visible]:border-border-default',
+                // Focus state
+                'has-[[data-slot=input-group-control]:focus-visible]:focus-default has-[[data-slot=input-group-control]:focus-visible]:border-border-default',
                 // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
-                'has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-border-strong',
+                'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-strong',
 
                 // Error state.
-                'has-[[data-slot][aria-invalid=true]]:focus-error has-[[data-slot][aria-invalid=true]]:border-feedback-error-border',
+                'has-[[data-slot][aria-invalid=true]]:!focus-error has-[[data-slot][aria-invalid=true]]:!border-feedback-error-border',
 
                 className
             )}
@@ -106,24 +106,90 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
     );
 }
 
-function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>) {
+const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(({ className, value, defaultValue, onChange, ...props }, ref) => {
+    const [isFilled, setIsFilled] = React.useState(() => {
+        // Check initial state for both controlled and uncontrolled inputs
+        if (value !== undefined) {
+            return String(value).length > 0;
+        }
+        if (defaultValue !== undefined) {
+            return String(defaultValue).length > 0;
+        }
+        return false;
+    });
+
+    React.useEffect(() => {
+        // Update filled state when value prop changes (controlled input)
+        if (value !== undefined) {
+            setIsFilled(String(value).length > 0);
+        }
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Update filled state for uncontrolled inputs
+        if (value === undefined) {
+            setIsFilled(e.target.value.length > 0);
+        }
+        onChange?.(e);
+    };
+
     return (
         <Input
+            ref={ref}
             data-slot="input-group-control"
+            data-filled={isFilled}
             className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0', className)}
+            value={value}
+            defaultValue={defaultValue}
+            onChange={handleChange}
             {...props}
         />
     );
-}
+});
+InputGroupInput.displayName = 'InputGroupInput';
 
-function InputGroupTextarea({ className, ...props }: React.ComponentProps<'textarea'>) {
-    return (
-        <Textarea
-            data-slot="input-group-control"
-            className={cn('flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0', className)}
-            {...props}
-        />
-    );
-}
+const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(
+    ({ className, value, defaultValue, onChange, ...props }, ref) => {
+        const [isFilled, setIsFilled] = React.useState(() => {
+            // Check initial state for both controlled and uncontrolled inputs
+            if (value !== undefined) {
+                return String(value).length > 0;
+            }
+            if (defaultValue !== undefined) {
+                return String(defaultValue).length > 0;
+            }
+            return false;
+        });
+
+        React.useEffect(() => {
+            // Update filled state when value prop changes (controlled input)
+            if (value !== undefined) {
+                setIsFilled(String(value).length > 0);
+            }
+        }, [value]);
+
+        const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            // Update filled state for uncontrolled inputs
+            if (value === undefined) {
+                setIsFilled(e.target.value.length > 0);
+            }
+            onChange?.(e);
+        };
+
+        return (
+            <Textarea
+                ref={ref}
+                data-slot="input-group-control"
+                data-filled={isFilled}
+                className={cn('flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0', className)}
+                value={value}
+                defaultValue={defaultValue}
+                onChange={handleChange}
+                {...props}
+            />
+        );
+    }
+);
+InputGroupTextarea.displayName = 'InputGroupTextarea';
 
 export { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea };

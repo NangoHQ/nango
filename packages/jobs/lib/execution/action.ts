@@ -230,7 +230,7 @@ export async function handleActionSuccess({
         environment_id: nangoProps.environmentId,
         provider_config_key: nangoProps.providerConfigKey
     };
-    await slackService.removeFailingConnection({
+    void slackService.removeFailingConnection({
         connection,
         name: nangoProps.syncConfig.sync_name,
         type: 'action',

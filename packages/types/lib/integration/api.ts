@@ -140,23 +140,23 @@ export type PatchIntegration = Endpoint<{
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-              clientId: string;
-              clientSecret: string;
+              clientId?: string | undefined;
+              clientSecret?: string | undefined;
               scopes?: string | undefined;
           }
         | {
               authType: Extract<AuthModeType, 'APP'>;
-              appId: string;
-              appLink: string;
-              privateKey: string;
+              appId?: string | undefined;
+              appLink?: string | undefined;
+              privateKey?: string | undefined;
           }
         | {
               authType: Extract<AuthModeType, 'CUSTOM'>;
-              clientId: string;
-              clientSecret: string;
-              appId: string;
-              appLink: string;
-              privateKey: string;
+              clientId?: string | undefined;
+              clientSecret?: string | undefined;
+              appId?: string | undefined;
+              appLink?: string | undefined;
+              privateKey?: string | undefined;
           }
         | {
               authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
@@ -167,6 +167,12 @@ export type PatchIntegration = Endpoint<{
               clientName?: string | undefined;
               clientUri?: string | undefined;
               clientLogoUri?: string | undefined;
+          }
+        | {
+              authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
+              appLink?: string | undefined;
+              username?: string | undefined;
+              password?: string | undefined;
           };
     Success: {
         data: {

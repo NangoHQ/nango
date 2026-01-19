@@ -30,33 +30,33 @@ const validationBody = z
                 z
                     .object({
                         authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-                        clientId: z.string().min(1).max(255),
-                        clientSecret: z.string().min(1),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
+                        clientId: z.string().min(1).max(255).optional(),
+                        clientSecret: z.string().min(1).optional(),
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)]).optional()
                     })
                     .strict(),
                 z
                     .object({
                         authType: z.enum(['APP']),
-                        appId: z.string().min(1).max(255),
-                        appLink: z.string().min(1),
-                        privateKey: privateKeySchema
+                        appId: z.string().min(1).max(255).optional(),
+                        appLink: z.string().min(1).optional(),
+                        privateKey: privateKeySchema.optional()
                     })
                     .strict(),
                 z
                     .object({
                         authType: z.enum(['CUSTOM']),
-                        clientId: z.string().min(1).max(255),
-                        clientSecret: z.string().min(1),
-                        appId: z.string().min(1).max(255),
-                        appLink: z.string().min(1),
-                        privateKey: privateKeySchema
+                        clientId: z.string().min(1).max(255).optional(),
+                        clientSecret: z.string().min(1).optional(),
+                        appId: z.string().min(1).max(255).optional(),
+                        appLink: z.string().min(1).optional(),
+                        privateKey: privateKeySchema.optional()
                     })
                     .strict(),
                 z
                     .object({
                         authType: z.enum(['MCP_OAUTH2']),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)])
+                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)]).optional()
                     })
                     .strict(),
                 z
@@ -65,6 +65,14 @@ const validationBody = z
                         clientName: z.string().min(1).max(255).optional(),
                         clientUri: z.url().max(255).optional(),
                         clientLogoUri: z.url().max(255).optional()
+                    })
+                    .strict(),
+                z
+                    .object({
+                        authType: z.enum(['INSTALL_PLUGIN']),
+                        appLink: z.url().max(255).optional(),
+                        username: z.string().min(1).max(255).optional(),
+                        password: z.string().min(1).max(255).optional()
                     })
                     .strict()
             ],
@@ -98,7 +106,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     const { environment } = res.locals;
     const params: PatchIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
+    let integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
         return;
@@ -147,22 +155,46 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
-            integration.oauth_client_id = body.clientId;
-            integration.oauth_client_secret = body.clientSecret;
-            integration.oauth_scopes = body.scopes || '';
+            if (body.clientId !== undefined) {
+                integration.oauth_client_id = body.clientId;
+            }
+            if (body.clientSecret !== undefined) {
+                integration.oauth_client_secret = body.clientSecret;
+            }
+            if (body.scopes !== undefined) {
+                integration.oauth_scopes = body.scopes || '';
+            }
         } else if (body.authType === 'APP') {
-            integration.oauth_client_id = body.appId;
-            // This is a legacy thing
-            integration.oauth_client_secret = Buffer.from(body.privateKey).toString('base64');
-            integration.app_link = body.appLink;
+            if (body.appId !== undefined) {
+                integration.oauth_client_id = body.appId;
+            }
+            if (body.privateKey !== undefined) {
+                // This is a legacy thing
+                integration.oauth_client_secret = Buffer.from(body.privateKey).toString('base64');
+            }
+            if (body.appLink !== undefined) {
+                integration.app_link = body.appLink;
+            }
         } else if (body.authType === 'CUSTOM') {
-            integration.oauth_client_id = body.clientId;
-            integration.oauth_client_secret = body.clientSecret;
-            integration.app_link = body.appLink;
+            if (body.clientId !== undefined) {
+                integration.oauth_client_id = body.clientId;
+            }
+            if (body.clientSecret !== undefined) {
+                integration.oauth_client_secret = body.clientSecret;
+            }
+            if (body.appLink !== undefined) {
+                integration.app_link = body.appLink;
+            }
             // This is a legacy thing
-            integration.custom = { app_id: body.appId, private_key: Buffer.from(body.privateKey).toString('base64') };
+            integration.custom = {
+                ...integration.custom,
+                ...(body.appId !== undefined && { app_id: body.appId }),
+                ...(body.privateKey !== undefined && { private_key: Buffer.from(body.privateKey).toString('base64') })
+            };
         } else if (body.authType === 'MCP_OAUTH2') {
-            integration.oauth_scopes = body.scopes || '';
+            if (body.scopes !== undefined) {
+                integration.oauth_scopes = body.scopes || '';
+            }
         } else if (body.authType === 'MCP_OAUTH2_GENERIC') {
             const { clientName, clientUri, clientLogoUri } = body;
             if (clientName || clientUri || clientLogoUri) {
@@ -173,6 +205,17 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                     ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
                 };
             }
+        } else if (body.authType === 'INSTALL_PLUGIN') {
+            const { username, password, appLink } = body;
+            integration = {
+                ...integration,
+                ...(appLink && { app_link: appLink }),
+                custom: {
+                    ...integration.custom,
+                    ...(username && { username: username }),
+                    ...(password && { password: password })
+                }
+            };
         }
     }
 

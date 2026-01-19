@@ -7,7 +7,9 @@ function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
         <textarea
             data-slot="textarea"
             className={cn(
-                'border-neutral-200 placeholder:text-neutral-500 focus-visible:border-neutral-950 focus-visible:ring-neutral-950/50 aria-invalid:ring-red-500/20 dark:aria-invalid:ring-red-500/40 aria-invalid:border-red-500 dark:bg-neutral-200/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-neutral-800 dark:placeholder:text-neutral-400 dark:focus-visible:border-neutral-300 dark:focus-visible:ring-neutral-300/50 dark:aria-invalid:ring-red-900/20 dark:dark:aria-invalid:ring-red-900/40 dark:aria-invalid:border-red-900 dark:dark:bg-neutral-800/30',
+                'bg-bg-surface border border-border-muted text-text-primary !text-body-medium-regular placeholder:text-text-tertiary focus-shadow focus:border-border-default data-[filled=true]:not-aria-invalid:border-border-strong',
+                'file:text-neutral-950 flex w-full min-w-0 rounded px-3 py-1 shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-body-medium-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+                'aria-invalid:focus-error aria-invalid:border-feedback-error-border',
                 className
             )}
             {...props}

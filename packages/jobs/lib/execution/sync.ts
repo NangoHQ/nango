@@ -473,7 +473,7 @@ export async function handleSyncSuccess({
         }
         await setTaskSuccess({ taskId, output: null });
 
-        await slackService.removeFailingConnection({
+        void slackService.removeFailingConnection({
             connection,
             name: nangoProps.syncVariant === 'base' ? nangoProps.syncConfig.sync_name : `${nangoProps.syncConfig.sync_name}::${nangoProps.syncVariant}`,
             type: 'sync',

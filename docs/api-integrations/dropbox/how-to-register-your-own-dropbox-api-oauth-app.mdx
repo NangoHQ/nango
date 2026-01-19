@@ -1,0 +1,69 @@
+---
+title: Set up Dropbox with Nango
+sidebarTitle: Dropbox Setup
+description: Register an OAuth app with Dropbox and connect it to Nango
+---
+
+This guide shows you how to register your own app with Dropbox to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Dropbox account.
+
+## Creating a Dropbox App
+
+<Steps>
+   <Step title="Register for a Dropbox developer account">
+     If you don't already have one, sign up for a [Dropbox developer account](https://www.dropbox.com/developers).
+   </Step>
+
+   <Step title="Create a new app">
+     Go to the [Dropbox App Console](https://www.dropbox.com/developers/apps) and click "Create app".
+
+     Choose your API type and access level:
+     - **Scoped access**: Recommended for most applications, provides granular permission control
+     - **Full Dropbox access** or **App folder access**: Choose based on your app's needs
+   </Step>
+
+   <Step title="Configure OAuth settings">
+     In your app's settings:
+     1. Add your **OAuth Redirect URI**: `https://api.nango.dev/oauth/callback`
+     2. Note your **App key** (Client ID) and **App secret** (Client Secret)
+   </Step>
+
+   <Step title="Configure permissions">
+     Navigate to the **Permissions** tab in your app console.
+
+     Select the appropriate scopes for your application. Common scopes include:
+     - `files.metadata.read` - Read file and folder metadata
+     - `files.metadata.write` - Create, edit, and delete files and folders
+     - `files.content.read` - Read file content
+     - `files.content.write` - Upload and modify file content
+
+     <Note>Changes to permissions require users to re-authorize your app to grant the new scopes.</Note>
+   </Step>
+
+   <Step title="Add credentials to Nango">
+     In Nango:
+     1. Go to the [Integrations](https://app.nango.dev/dev/integrations) page
+     2. Find and select **Dropbox**
+     3. Enter your **App key** as the Client ID
+     4. Enter your **App secret** as the Client Secret
+     5. Add any required scopes in the configuration
+     6. Click **Save**
+   </Step>
+</Steps>
+
+## Access Requirements
+
+Note the following requirements for Dropbox apps:
+
+| Requirement | Status | Notes |
+| - | - | - |
+| Paid developer account | Unknown | Check current requirements with Dropbox |
+| Paid test account | Unknown | May be required for testing |
+| Partnership | Unknown | May be needed for production access |
+| App review | Unknown | May be required before production launch |
+| Security audit | Unknown | May be required for certain access levels |
+
+<Tip>Check [Dropbox's developer documentation](https://developers.dropbox.com/oauth-guide) for the most up-to-date requirements and guidelines.</Tip>
+
+For more details on Dropbox's OAuth implementation, see [Dropbox's OAuth documentation](https://developers.dropbox.com/oauth-guide).
+
+---

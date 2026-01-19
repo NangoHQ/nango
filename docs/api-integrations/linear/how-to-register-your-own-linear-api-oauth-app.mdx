@@ -1,0 +1,36 @@
+---
+title: 'How to register your own Linear OAuth app'
+sidebarTitle: 'Linear Setup'
+description: 'Register an OAuth app with Linear and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Linear to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Linear account.
+
+<Steps>
+  <Step title="Create a Linear account">
+    If you don't already have one, sign up for a [Linear account](https://linear.app/signup).
+  </Step>
+  <Step title="Create an OAuth2 application">
+    1. Log in to your [Linear account](https://linear.app/login).
+    2. Under your specific workspace, navigate to **Settings** > **API** > **OAuth applications**.
+    3. Click the **+** icon.
+    <Note> It is highly recommended to create a dedicated workspace for managing your OAuth application, as each admin user will have access. </Note>
+  </Step>
+  <Step title="Configure your OAuth application">
+    1. Fill in all the required information. For **Callback URLs**, add `https://api.nango.dev/oauth/callback` and toggle the **Public** switch to allow installation in other workspaces. Newly created OAuth applications will have the **Refresh Tokens** option enabled by default. If it is not enabled, you can turn it on to allow new connections to include refresh token functionality.
+    2. Click **Create** to save your application.
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    1. After creating your application, you'll be provided with **Client ID** and **Client Secret**. Make a copy of these credentials as they will be needed when configuring your integration in Nango.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Note>Linear is moving to short-lived OAuth2 access tokens with refresh tokens starting `Oct 1, 2025`. Existing OAuth2 apps must be updated to support refresh tokens by toggling the **Refresh Token** option in the OAuth settings. Connections created before enabling this will still have the 10-year expiry; only new connections after enabling will include refresh tokens in the response.</Note>
+
+For more details on Linear's OAuth implementation, see [Linear's OAuth documentation](https://linear.app/developers/oauth-2-0-authentication).
+
+---

@@ -89,6 +89,80 @@ describe('buildModelTs', () => {
         }
         expect(removeVersion(acc.join('\n'))).toMatchSnapshot();
     });
+
+    it('should generate JSDoc comments for model and field descriptions', () => {
+        const models: NangoModel[] = [
+            {
+                name: 'User',
+                description: 'Represents a user in the system',
+                fields: [
+                    {
+                        name: '__string',
+                        value: 'string',
+                        tsType: true,
+                        dynamic: true,
+                        description: 'Dynamic string field for additional properties'
+                    },
+                    {
+                        name: 'id',
+                        value: 'number',
+                        tsType: true,
+                        description: 'Unique identifier for the user'
+                    },
+                    {
+                        name: 'name',
+                        value: 'string',
+                        tsType: true,
+                        description: 'Full name of the user',
+                        optional: true
+                    },
+                    {
+                        name: 'email',
+                        value: 'string',
+                        tsType: true,
+                        description: 'Email address of the user'
+                    }
+                ]
+            }
+        ];
+        const res = buildModelsTS({
+            parsed: {
+                yamlVersion: 'v2',
+                models: new Map(Object.entries(models)),
+                integrations: []
+            }
+        });
+
+        // Extract the models section
+        const modelsSection = res.split('// ------ Models')[1]?.split('// ------ /Models')[0]?.trim();
+        expect(modelsSection).toBeDefined();
+
+        const expectedOutput = [
+            '/**',
+            ' * Represents a user in the system',
+            ' */',
+            'export interface User {',
+            '  /**',
+            '   * Dynamic string field for additional properties',
+            '   */',
+            '  [key: string]: string;',
+            '  /**',
+            '   * Unique identifier for the user',
+            '   */',
+            '  id: number;',
+            '  /**',
+            '   * Full name of the user',
+            '   */',
+            '  name?: string | undefined;',
+            '  /**',
+            '   * Email address of the user',
+            '   */',
+            '  email: string;',
+            '};'
+        ].join('\n');
+
+        expect(modelsSection).toBe(expectedOutput);
+    });
 });
 
 describe('fieldsToTypescript', () => {

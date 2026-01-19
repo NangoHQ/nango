@@ -6,7 +6,6 @@ import passport from 'passport';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
-import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
@@ -26,6 +25,7 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getApiStatus } from './controllers/v1/apiStatus/getApiStatus.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
 import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
@@ -192,7 +192,6 @@ web.route('/integrations/:providerConfigKey').patch(webAuth, patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
-web.route('/provider').get(configController.listProvidersFromYaml.bind(configController));
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 
@@ -241,6 +240,8 @@ if (flagHasUsage) {
 }
 
 web.route('/admin/impersonate').post(webAuth, postImpersonate);
+
+web.route('/api-status/:service').get(webAuth, getApiStatus);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

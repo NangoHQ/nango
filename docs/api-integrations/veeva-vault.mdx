@@ -1,0 +1,82 @@
+---
+title: 'Veeva Vault'
+sidebarTitle: 'Veeva Vault'
+description: 'Integrate your application with the Veeva Vault API'
+---
+
+## 🚀 Quickstart
+
+Connect to Veeva Vault with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Veeva Vault_.
+    </Step>
+    <Step title="Authorize Veeva Vault">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Vault DNS (subdomain), username, and password. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Veeva Vault API">
+    Let's make your first request to the Veeva Vault API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/metadata/objects/users" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/metadata/objects/users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Veeva Vault Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/veeva-vault/connect)  
+Connect your Veeva Vault account using the Connect UI
+
+Official docs: [Veeva Vault API Documentation](https://developer.veevavault.com/)
+
+## 🧩 Pre-built syncs & actions for Veeva Vault
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/veeva-vault/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
+

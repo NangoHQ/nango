@@ -25,4 +25,5 @@ export { default as connectwisePsaWebhookRouting } from './connectwise-psa-webho
 export { default as shipstationWebhookRouting } from './shipstation-webhook-routing.js';
 export { default as googleCalendarWebhookRouting } from './google-calendar-webhook-routing.js';
 export { default as sellsyWebhookRouting } from './sellsy-webhook-routing.js';
+export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
 export type * from './types.js';

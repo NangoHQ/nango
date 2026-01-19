@@ -50,16 +50,18 @@ describe('buildSync', () => {
         });
         expect(Array.from(def.models.values())).toStrictEqual([
             {
-                fields: [{ name: 'metadata', tsType: true, value: 'void' }],
+                fields: [{ name: 'metadata', tsType: true, value: 'void', description: undefined }],
                 isAnon: true,
-                name: 'SyncMetadata_github_fetchIssues'
+                name: 'SyncMetadata_github_fetchIssues',
+                description: undefined
             },
             {
                 fields: [
-                    { name: 'id', optional: false, tsType: true, value: 'string' },
-                    { name: 'foobar', optional: false, tsType: true, value: 'string' }
+                    { name: 'id', optional: false, tsType: true, value: 'string', description: undefined },
+                    { name: 'foobar', optional: false, tsType: true, value: 'string', description: undefined }
                 ],
-                name: 'Model'
+                name: 'Model',
+                description: undefined
             }
         ]);
     });
@@ -97,14 +99,16 @@ describe('buildSync', () => {
         });
         expect(Array.from(res.models.values())).toStrictEqual([
             {
-                fields: [{ name: 'input', tsType: true, value: 'void' }],
+                fields: [{ name: 'input', tsType: true, value: 'void', description: undefined }],
                 isAnon: true,
-                name: 'ActionInput_github_createIssue'
+                name: 'ActionInput_github_createIssue',
+                description: undefined
             },
             {
-                fields: [{ name: 'output', optional: false, tsType: true, value: 'number' }],
+                fields: [{ name: 'output', optional: false, tsType: true, value: 'number', description: undefined }],
                 isAnon: true,
-                name: 'ActionOutput_github_createIssue'
+                name: 'ActionOutput_github_createIssue',
+                description: undefined
             }
         ]);
     });

@@ -2,6 +2,97 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.22] - 2026-01-13
+
+### Fixed
+
+- Page param for listConnections (#5234) by @TBonnin
+
+## [v0.69.21] - 2026-01-13
+
+### Added
+
+- *(environment settings)* First version of Environment Settings revamp (#5145) by @marcindobry
+- *(connect-ui)* Allow override for client id and client secret for OAUTH2 (#5164) by @khaliqgant
+- *(microsoft-business-central)* Add .default scope configuration ex… (#5102) by @r13i
+- *(webhooks)* Add support for fathom webhook (#5151) by @hassan254-prog
+- *(integrations)* Add support for google search console (#5158) by @hassan254-prog
+- *(integrations)* Add support for fanvue (#5157) by @hassan254-prog
+- *(integrations)* Add support for veeva vault (#5156) by @hassan254-prog
+- *(providers)* Add amazon selling partner `redirect_uri_metadata` config (#5172) by @hassan254-prog
+- *(integrations)* Add support for oracle cloud identity (#5155) by @hassan254-prog
+- *(security)* Security docs (#5179) by @khaliqgant
+- *(webapp)* New components & pre-requisites for integration page redesign (#5177) by @kaposke
+- *(integrations)* Add support for slab (#5165) by @hassan254-prog
+- *(docs-migration)* Second iteration of docs migration (#5056) by @khaliqgant
+- *(webapp)* Redesign integrations page (#5176) by @kaposke
+- *(providers)* Add support for wiseagent (#5180) by @hassan254-prog
+- *(providers)* Add support for cloudbeds (#5181) by @hassan254-prog
+- *(integration)* Add nerdio support (#5189) by @gonzalde97
+- *(webapp)* Integrations screen feedback (#5196) by @kaposke
+- *(integration)* Add support for 8x8 (#5195) by @gonzalde97
+- Pipe zod descriptions to json-schema (#5208) by @kaposke
+- *(persist)* Add records auto-pruning (#5198) by @TBonnin
+- *(persist)* Automatic deletion of records when sync hasn't run recently (#5209) by @TBonnin
+- *(integrations)* Add support for looker (#5211) by @hassan254-prog
+- *(integrations)* Add support for stripe api key (#5202) by @hassan254-prog
+- *(integration)* Add support for 3cx (#5197) by @gonzalde97
+- *(integrations)* Add ServiceNow OAuth2 Client Credentials (#5193) by @0x4rm4nd
+- *(provider)* Add support for pylon (#5224) by @hassan254-prog
+- *(integrations)* Add support for constant-contact (#5221) by @hassan254-prog
+- *(integrations)* Add support for adobe commerce (#5230) by @hassan254-prog
+- *(integrations)* Add support for freeagent (#5212) by @hassan254-prog
+- *(integrations)* Add support for ecu360 (#5232) by @hassan254-prog
+- Add limit optional parameter to list connection endpoint/function (#5233) by @TBonnin
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/839857b259b33ccd6534aaffc947cfc770d15b85 by Agustin Ayerza by @github-actions[bot]
+- *(environment settings)* Rename and reorganize environment settings pages and components (#5147) by @marcindobry
+- Improve pipedrive docs (#5148) by @hassan254-prog
+- *(webapp)* Fix no hover pointer over buttons (#5171) by @marcindobry
+- *(client-id)* Update docs (#5182) by @khaliqgant
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/752d208fbf22967295a9c907a14d079e3d221f17 by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/68a4c1134b198c9e2ecc93bff1aad193dffb67fd by Khaliq by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/8e53b9e25b46a01401469d2f140e0255bb7ad0f2 by Khaliq by @github-actions[bot]
+- *(environment settings)* Environment settings revamp - minor adjustments (#5173) by @marcindobry
+- Announcement sync data retention policies (#5194) by @bastienbeurier
+- Improve confluence docs  (#5049) by @hassan254-prog
+- *(deps-dev)* Bump zx from 8.7.1 to 8.8.5 in /scripts (#5050) by @dependabot[bot]
+- *(deps)* Bump qs from 6.11.2 to 6.14.1 in /packages/shared (#5186) by @dependabot[bot]
+- Update version in manifest by @actions-user
+- *(listConnextion)* Optimize query early filtering/limiting + index (#5229) by @TBonnin
+
+### Fixed
+
+- *(docs)* Clarify Nango doesn't export otlp logs (#5166) by @TBonnin
+- *(runner)* Upgrade trpc version to resolve vulnerability (#5167) by @rossmcewan
+- *(mcp)* Filter disabled actions (#5168) by @kaposke
+- *(webhooks)* Use local server in tests (#5163) by @TBonnin
+- FixedSizedMap utilt (#5162) by @TBonnin
+- *(proxy)* Preserve BigInt precision in JSON responses (#5169) by @TBonnin
+- *(webapp)* Fix slack logo (#5174) by @hassan254-prog
+- *(scopes)* Allow spaces in scopes (#5178) by @khaliqgant
+- Do not await slack when handling function success (#5175) by @TBonnin
+- *(docs)* Correct typo in action implementation guide (#5183) (#5191) by @ptrtht
+- *(providers)* Allow dynamic interpolation of `base_url` for amplitude (#5187) by @hassan254-prog
+- *(webflow)* Fix check on webhflow sync (#5192) by @khaliqgant
+- *(proxy)* Proxy JSON validation from remote (#5188) by @thw-nango
+- Scopes deletion logic (#5190) by @kaposke
+- *(docs-snippet)* Fix docs snippet to look at both locations (#5204) by @khaliqgant
+- *(logs)* Allow year to be set as well (#5206) by @khaliqgant
+- *(webflow)* Fix docs paths to recognized migrated ones (#5201) by @khaliqgant
+- *(proxy)* Disable JSON validation entirely (#5200) by @thw-nango
+- *(webapp)* Fix missing Save button in Connect UI (#5213) by @marcindobry
+- Remove always null this.win.modal.window check in auth flows. (#5025) by @ej-sanmartin
+- *(persist)* Trace tag (#5214) by @TBonnin
+- *(auth)* Correct token refresh for providers using providerClient (#5205) by @hassan254-prog
+- *(listConnections)* Don't return connection metadata unless requested (#5218) by @TBonnin
+- *(trace)* Fix wrongly copy-pasted trace span name. (#5226) by @thw-nango
+- Revert "fix(listConnections): don't return connection metadata unless requested (#5218)" (#5228) by @TBonnin
+- Only create index if not exists (#5231) by @TBonnin
+- *(providers)* Fix token refresh for instagram (#5220) by @hassan254-prog
+
 ## [v0.69.19] - 2025-12-16
 
 ### Added
@@ -5535,6 +5626,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.22]: https://github.com/NangoHQ/nango/compare/v0.69.21..v0.69.22
+[v0.69.21]: https://github.com/NangoHQ/nango/compare/v0.69.20..v0.69.21
 [v0.69.19]: https://github.com/NangoHQ/nango/compare/v0.69.18..v0.69.19
 [v0.69.18]: https://github.com/NangoHQ/nango/compare/v0.69.17..v0.69.18
 [v0.69.17]: https://github.com/NangoHQ/nango/compare/v0.69.16..v0.69.17
