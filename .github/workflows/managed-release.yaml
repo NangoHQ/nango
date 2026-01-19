@@ -408,6 +408,9 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
+                  # Preserve the updated managed-manifest.json before checking out commit
+                  cp managed-manifest.json managed-manifest.json.backup
+
                   # Use the tag name from the Docker image step
                   TAG_NAME="${{ steps.retag-image.outputs.tag_name }}"
 
@@ -426,6 +429,14 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
+                  # Explicitly checkout master branch to ensure we're on the right branch
+                  git checkout master
+                  git fetch origin master
+                  git reset --hard origin/master
+
+                  # Restore the managed-manifest.json from the backup
+                  mv managed-manifest.json.backup managed-manifest.json
+
                   git config --global user.name "GitHub Actions"
                   git config --global user.email "actions@github.com"
                   git add managed-manifest.json
