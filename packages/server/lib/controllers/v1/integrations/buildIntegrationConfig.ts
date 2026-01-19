@@ -3,6 +3,11 @@ import { nanoid } from '@nangohq/utils';
 
 import type { DBCreateIntegration, PostIntegration } from '@nangohq/types';
 
+async function getUniqueKey(key: string, environmentId: number): Promise<string> {
+    const exists = await configService.getIdByProviderConfigKey(environmentId, key);
+    return !exists ? key : `${key}-${nanoid(4).toLocaleLowerCase()}`;
+}
+
 /**
  * Builds a DBCreateIntegration object from the POST integration body.
  * Handles unique_key generation, credential mapping, and all field transformations.
@@ -13,21 +18,14 @@ import type { DBCreateIntegration, PostIntegration } from '@nangohq/types';
  */
 export async function buildIntegrationConfig(body: PostIntegration['Body'], environmentId: number): Promise<DBCreateIntegration> {
     // Determine unique_key
-    let unique_key: string;
-    if ('integrationId' in body && body.integrationId) {
-        const exists = await configService.getIdByProviderConfigKey(environmentId, body.integrationId);
-        unique_key = !exists ? body.integrationId : `${body.integrationId}-${nanoid(4).toLocaleLowerCase()}`;
-    } else {
-        const exists = await configService.getIdByProviderConfigKey(environmentId, body.provider);
-        unique_key = !exists ? body.provider : `${body.provider}-${nanoid(4).toLocaleLowerCase()}`;
-    }
+    const unique_key = await getUniqueKey(body.integrationId ?? body.provider, environmentId);
 
     // Start with base config
     const config: DBCreateIntegration = {
         environment_id: environmentId,
         unique_key,
         provider: body.provider,
-        forward_webhooks: 'forward_webhooks' in body && body.forward_webhooks !== undefined ? body.forward_webhooks : true,
+        forward_webhooks: body.forward_webhooks ?? true,
         shared_credentials_id: null,
         display_name: 'displayName' in body && body.displayName ? body.displayName : null,
         oauth_client_id: null,
