@@ -11027,7 +11027,7 @@ perdoo:
         apiKey:
             type: string
             title: API Token
-            description: Your Perdoo API token from Personal Settings > API Tokens
+            description: Your Perdoo API token
             example: '5037c64a83d34725a13131b9b28856c0e499887b16c84b6d9bba2756d1e61634'
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#generating-your-api-token'
