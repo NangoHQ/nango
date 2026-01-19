@@ -1,4 +1,7 @@
 import { AppAuthCreateForm } from './AppAuthCreateForm';
+import { CustomAuthCreateForm } from './CustomAuthCreateForm';
+import { McpGenericCreateForm } from './McpGenericCreateForm';
+import { McpOAuthCreateForm } from './McpOAuthCreateForm';
 import { OAuthCreateForm } from './OAuthCreateForm';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
@@ -33,14 +36,14 @@ export const AuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
         case 'APP':
             return <AppAuthCreateForm provider={provider} onSubmit={onSubmit} />;
 
-        // case 'CUSTOM':
-        //     return <CustomAuthCreateForm provider={provider} onSubmit={onSubmit} />;
+        case 'CUSTOM':
+            return <CustomAuthCreateForm provider={provider} onSubmit={onSubmit} />;
 
-        // case 'MCP_OAUTH2':
-        //     return <McpOAuthCreateForm provider={provider} onSubmit={onSubmit} />;
+        case 'MCP_OAUTH2':
+            return <McpOAuthCreateForm provider={provider} onSubmit={onSubmit} />;
 
-        // case 'MCP_OAUTH2_GENERIC':
-        //     return <McpGenericCreateForm provider={provider} onSubmit={onSubmit} />;
+        case 'MCP_OAUTH2_GENERIC':
+            return <McpGenericCreateForm provider={provider} onSubmit={onSubmit} />;
 
         default: {
             const infoMessage = getInfoMessage(provider);
