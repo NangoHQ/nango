@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "lockfileVersion": 1,
+  "packages": {
+    "@prpm/agent-builder-skill": {
+      "version": "1.0.3",
+      "resolved": "https://registry.prpm.dev/api/v1/packages/%40prpm%2Fagent-builder-skill/1.0.3.tar.gz",
+      "integrity": "sha256-0705011f4d56fad66974f4d5acfe9cc5a47e7d7b289f6aa269c6dd68bf0d3874",
+      "format": "claude",
+      "subtype": "skill",
+      "installedPath": ".claude/skills/agent-builder-skill"
+    },
+    "@prpm/creating-skills-skill": {
+      "version": "1.0.3",
+      "resolved": "https://registry.prpm.dev/api/v1/packages/%40prpm%2Fcreating-skills-skill/1.0.3.tar.gz",
+      "integrity": "sha256-ff3044675a4b62b3dff77ae2cf796603a21ded7998d41f0bca3db0f97b3bfa01",
+      "format": "claude",
+      "subtype": "skill",
+      "installedPath": ".claude/skills/creating-skills-skill/SKILL.md"
+    }
+  },
+  "generated": "2025-11-10T12:51:24.730Z"
+}

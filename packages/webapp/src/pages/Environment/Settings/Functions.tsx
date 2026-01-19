@@ -1,0 +1,230 @@
+import { IconExternalLink } from '@tabler/icons-react';
+import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
+import SettingsContent from './components/SettingsContent';
+import { Input } from '../../../components/ui/input/Input';
+import SecretInput from '../../../components/ui/input/SecretInput';
+import { apiPostVariables, useEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { cn } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/button';
+
+import type { ApiEnvironmentVariable } from '@nangohq/types';
+
+export const Functions: React.FC = () => {
+    const { toast } = useToast();
+    const env = useStore((state) => state.env);
+    const { environmentAndAccount, mutate } = useEnvironment(env);
+
+    const [edit, setEdit] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [vars, setVars] = useState<ApiEnvironmentVariable[]>(() =>
+        environmentAndAccount && environmentAndAccount.env_variables.length > 0
+            ? JSON.parse(JSON.stringify(environmentAndAccount.env_variables))
+            : [{ name: '', value: '' }]
+    );
+    const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
+
+    const onEnabledEdit = () => {
+        if (vars[vars.length - 1].name !== '') {
+            setVars((copy) => [...copy, { name: '', value: '' }]);
+        }
+        setEdit(true);
+    };
+
+    const onUpdate = (key: 'name' | 'value', value: string, index: number) => {
+        setVars((copy) => {
+            copy[index][key] = value;
+            if (copy.length === index + 1 && value !== '') {
+                copy[index + 1] = { name: '', value: '' };
+            }
+            return [...copy];
+        });
+    };
+
+    const onRemove = (index: number) => {
+        if (index === 0 && vars.length === 1) {
+            setVars([{ name: '', value: '' }]);
+            setErrors([]);
+        } else {
+            setVars(vars.filter((_, i) => i !== index));
+            setErrors(errors.filter((e) => e.index !== index));
+        }
+    };
+
+    const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        const filtered = handlePastedEnv(
+            e.clipboardData.getData('Text'),
+            vars.map((v) => v.name)
+        );
+        if (!filtered || filtered.size === 0) {
+            return;
+        }
+
+        e.preventDefault();
+
+        setVars((prev) => {
+            const copy = [...prev].filter((v) => v.value !== '');
+            const next = Array.from(filtered);
+
+            copy.push(...next.map((v) => ({ name: v[0], value: v[1] })));
+            copy.push({ name: '', value: '' });
+            return copy;
+        });
+    };
+
+    const onSave = async () => {
+        setLoading(true);
+        const res = await apiPostVariables(env, {
+            variables: vars.filter((v) => v.name !== '' || v.value !== '')
+        });
+
+        setLoading(false);
+
+        if ('error' in res.json) {
+            toast({ title: 'There was an issue updating the environment variables', variant: 'error' });
+            if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
+                setErrors(
+                    res.json.error.errors.map((err) => {
+                        if (err.path[0] !== 'variables') {
+                            return null as any;
+                        }
+                        return { index: err.path[1], key: err.path[2], error: err.message };
+                    })
+                );
+            }
+            return;
+        }
+
+        void mutate();
+
+        setEdit(false);
+        setVars((prev) => (prev.length > 1 ? prev.filter((v) => v.name !== '' || v.value !== '') : prev));
+        setErrors([]);
+    };
+
+    const onCancel = () => {
+        setErrors([]);
+        setVars(environmentAndAccount!.env_variables.length > 0 ? JSON.parse(JSON.stringify(environmentAndAccount!.env_variables)) : [{ name: '', value: '' }]);
+        setEdit(false);
+    };
+
+    if (!environmentAndAccount) {
+        return null;
+    }
+
+    return (
+        <SettingsContent title="Functions">
+            <div className="flex flex-col gap-2.5">
+                <div className="flex">
+                    Environment variables
+                    <Link className="flex items-center px-1.5" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
+                        <IconExternalLink stroke={1} size={18} />
+                    </Link>
+                </div>
+                <div className="flex flex-col gap-5">
+                    <fieldset className="flex flex-col gap-3">
+                        {vars.map((envVar, i) => {
+                            const errorName = errors.find((err) => err.index === i && err.key === 'name');
+                            const errorValue = errors.find((err) => err.index === i && err.key === 'value');
+                            return (
+                                <div key={i} className="flex flex-col gap-0.5">
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <Input
+                                                value={envVar.name}
+                                                onChange={(e) => onUpdate('name', e.target.value, i)}
+                                                inputSize={'lg'}
+                                                variant={'black'}
+                                                onPaste={(e) => onPaste(e)}
+                                                className={cn(errorName && 'border-alert-400')}
+                                                placeholder="MY_ENV_VAR"
+                                                disabled={!edit || loading}
+                                            />
+                                        </div>
+                                        <div className="flex flex-1">
+                                            <SecretInput
+                                                value={envVar.value}
+                                                onChange={(e) => onUpdate('value', e.target.value, i)}
+                                                copy={true}
+                                                inputSize={'lg'}
+                                                variant={'black'}
+                                                onPaste={(e) => onPaste(e)}
+                                                className={cn(errorValue && 'border-alert-400')}
+                                                placeholder="value"
+                                                disabled={!edit || loading}
+                                            />
+                                            {edit && (
+                                                <Button variant="ghost" size="lg" className="py-2 px-2 h-full w-11" onClick={() => !loading && onRemove(i)}>
+                                                    <Trash2 className="text-fg-error" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {(errorName || errorValue) && (
+                                        <div className="flex gap-2">
+                                            <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
+                                            <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </fieldset>
+                    <div className="flex justify-start gap-2">
+                        {!edit && (
+                            <Button variant="secondary" onClick={() => onEnabledEdit()}>
+                                Edit
+                            </Button>
+                        )}
+                        {edit && (
+                            <>
+                                <Button variant="tertiary" onClick={onCancel}>
+                                    Cancel
+                                </Button>
+                                <Button variant="primary" onClick={onSave} disabled={loading}>
+                                    Save
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </SettingsContent>
+    );
+};
+
+function handlePastedEnv(clip: string, prev: string[]) {
+    if (!clip) {
+        return;
+    }
+
+    const split = clip.split(/[\n, ]/g);
+
+    const filtered = new Map<string, string>();
+    for (const item of split) {
+        if (!item.includes('=')) {
+            continue;
+        }
+
+        const line = item.split('=');
+        if (line.length > 2 || line[0] === '') {
+            continue;
+        }
+
+        const name = line[0].trim();
+        const value = line[1] ? line[1].trim().replaceAll(/['"]/g, '') : '';
+
+        // dedup
+        if (prev.find((v) => v === name)) {
+            continue;
+        }
+
+        filtered.set(name, value);
+    }
+    return filtered;
+}

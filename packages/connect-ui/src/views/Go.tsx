@@ -68,7 +68,8 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
     }),
     CUSTOM: z.object({}),
     MCP_OAUTH2: z.object({}),
-    MCP_OAUTH2_GENERIC: z.object({})
+    MCP_OAUTH2_GENERIC: z.object({}),
+    INSTALL_PLUGIN: z.object({})
 };
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
@@ -187,6 +188,18 @@ export const Go: React.FC = () => {
             }
         }
 
+        if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfigured).length > 0) {
+            // For OAUTH2, allow users to override client credentials if preconfigured with empty values
+            const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override'];
+            for (const key of allowedOverrides) {
+                if (key in preconfigured && !additionalFields[key] && !(key in baseForm.shape)) {
+                    baseForm.shape[key] = z.string().optional();
+                    order += 1;
+                    orderedFields[`credentials.${key}`] = order;
+                }
+            }
+        }
+
         // Only add objects if they have something otherwise it breaks react-form
         const fields = z.object({
             ...(Object.keys(baseForm.shape).length > 0 ? { credentials: baseForm } : {}),
@@ -202,7 +215,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider]);
+    }, [provider, preconfigured]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -253,7 +266,8 @@ export const Go: React.FC = () => {
                     provider.auth_mode === 'CUSTOM' ||
                     provider.auth_mode === 'APP' ||
                     provider.auth_mode === 'MCP_OAUTH2' ||
-                    provider.auth_mode === 'MCP_OAUTH2_GENERIC'
+                    provider.auth_mode === 'MCP_OAUTH2_GENERIC' ||
+                    provider.auth_mode === 'INSTALL_PLUGIN'
                 ) {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
@@ -445,7 +459,14 @@ export const Go: React.FC = () => {
                                                     <FormItem
                                                         className={cn(
                                                             'bg-elevated p-5',
-                                                            isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null
+                                                            (isPreconfigured &&
+                                                                (provider.auth_mode !== 'OAUTH2' ||
+                                                                    preconfigured[key] !== '' ||
+                                                                    !['oauth_client_id_override', 'oauth_client_secret_override'].includes(key))) ||
+                                                                definition?.hidden ||
+                                                                definition?.automated
+                                                                ? 'hidden'
+                                                                : null
                                                         )}
                                                     >
                                                         <div className="flex flex-col gap-2">

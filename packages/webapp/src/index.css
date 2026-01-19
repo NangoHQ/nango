@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700&display=swap') layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap')
+layer(base);
 
 @import 'tailwindcss';
 
@@ -15,8 +17,13 @@
 @theme {
     --font-*: initial;
     --font-sans: Inter, sans-serif;
-    --font-mono: 'Source Code Pro', sans-serif;
+    --font-mono: 'Roboto Mono', 'Source Code Pro', sans-serif;
     --font-code: 'Roboto Mono', 'Source Code Pro', system-ui, sans-serif;
+
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1440px;
+    --breakpoint-3xl: 1600px;
+    --breakpoint-4xl: 1920px;
 
     --color-bg-black: #0e1014;
     --color-pure-black: #05050a;
@@ -315,6 +322,8 @@
     --color-bg-accent: var(--color-brand-100);
     --color-bg-success: var(--color-mint-100);
 
+    --color-fg-error: var(--color-red-500);
+
     /* Nav */
     --color-nav-bg-hover: var(--color-gray-50);
     --color-nav-bg-press: var(--color-gray-200);
@@ -330,6 +339,7 @@
     --color-border-default: var(--color-gray-300);
     --color-border-muted: var(--color-gray-200);
     --color-border-strong: var(--color-gray-300);
+    --color-border-extra-strong: var(--color-gray-50);
     --color-border-disabled: var(--color-gray-150);
     --color-border-brand: var(--color-brand-500);
 
@@ -378,21 +388,29 @@
     --color-btn-primary-fg: var(--color-gray-50);
     --color-btn-primary-hover: var(--color-brand-700);
     --color-btn-primary-press: var(--color-brand-900);
+    --color-btn-primary-disabled: var(--color-brand-900);
+    --color-btn-primary-loading: var(--color-brand-900);
 
     --color-btn-secondary-bg: var(--color-gray-200);
     --color-btn-secondary-fg: var(--color-gray-600);
     --color-btn-secondary-hover: var(--color-gray-50);
     --color-btn-secondary-press: var(--color-gray-400);
+    --color-btn-secondary-disabled: var(--color-gray-400);
+    --color-btn-secondary-loading: var(--color-gray-400);
 
     --color-btn-tertiary-bg: var(--color-gray-50);
     --color-btn-tertiary-fg: var(--color-gray-750);
     --color-btn-tertiary-hover: var(--color-gray-100);
     --color-btn-tertiary-press: var(--color-gray-200);
+    --color-btn-tertiary-disabled: var(--color-gray-200);
+    --color-btn-tertiary-loading: var(--color-gray-200);
 
     --color-btn-destructive-bg: var(--color-red-500);
     --color-btn-destructive-fg: var(--color-gray-50);
     --color-btn-destructive-hover: var(--color-red-700);
     --color-btn-destructive-press: var(--color-red-900);
+    --color-btn-destructive-disabled: var(--color-red-900);
+    --color-btn-destructive-loading: var(--color-red-900);
 
     /* Link */
     --color-link-default: var(--color-gray-1000);
@@ -428,6 +446,7 @@
             --color-border-default: var(--color-gray-700);
             --color-border-muted: var(--color-gray-800);
             --color-border-strong: var(--color-gray-500);
+            --color-border-extra-strong: var(--color-gray-1000);
             --color-border-disabled: var(--color-gray-900);
             --color-border-brand: var(--color-brand-500);
 
@@ -476,7 +495,7 @@
             --color-btn-primary-hover: var(--color-brand-700);
             --color-btn-primary-press: var(--color-brand-900);
 
-            --color-btn-secondary-bg: var(--color-gray-800);
+            --color-btn-secondary-bg: var(--color-gray-700);
             --color-btn-secondary-fg: var(--color-gray-150);
             --color-btn-secondary-hover: var(--color-gray-650);
             --color-btn-secondary-press: var(--color-gray-500);
@@ -632,6 +651,11 @@
     #root {
         width: 100%;
         height: 100%;
+    }
+
+    button,
+    [role='button'] {
+        cursor: pointer;
     }
 }
 

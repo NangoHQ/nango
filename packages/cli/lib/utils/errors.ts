@@ -43,3 +43,10 @@ export class CLIError extends Error {
         this.code = code;
     }
 }
+
+export class MissingArgumentError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'MissingArgumentError';
+    }
+}

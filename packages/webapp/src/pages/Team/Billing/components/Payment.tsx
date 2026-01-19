@@ -1,8 +1,8 @@
 import { CreditCard } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Dot } from './Dot';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
+import { Dot } from '../../../../components-v2/Dot';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
