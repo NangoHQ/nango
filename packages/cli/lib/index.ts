@@ -367,8 +367,9 @@ program
     .command('dev')
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
+    .option('--disable-dep-check', 'Disable dependency check', false)
     .action(async function (this: Command) {
-        const { compileInterfaces, debug } = this.opts();
+        const { compileInterfaces, debug, disableDepCheck } = this.opts();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
@@ -379,11 +380,13 @@ program
         }
 
         if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
-            if (resCheck.isErr()) {
-                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-                process.exitCode = 1;
-                return;
+            if (!disableDepCheck) {
+                const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+                if (resCheck.isErr()) {
+                    console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+                    process.exitCode = 1;
+                    return;
+                }
             }
 
             await dev({ fullPath, debug });
