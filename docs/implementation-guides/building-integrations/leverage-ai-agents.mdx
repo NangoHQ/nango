@@ -8,7 +8,7 @@ Building custom integrations for Nango is much faster when using AI tools. This 
 
 ## Automated Integrations Building
 
-The fastest way to build Nango integrations is using our automated integration builder. With a single command, you can install everything needed to generate a fully working action through an interactive AI workflow.
+The fastest way to build Nango integrations is using our automated function builder. With a single command, you can install everything needed to generate a fully working sync or action through an interactive AI workflow.
 
 This uses [prpm](https://prpm.dev) to install pre-built workflows directly into your development environment.
 
@@ -20,7 +20,7 @@ This uses [prpm](https://prpm.dev) to install pre-built workflows directly into 
 
 ### [Claude Code](https://claude.com/product/claude-code)
 ```bash
-npx prpm install collections/nango-integration-builder --as claude
+npx prpm install collections/nango-function-builder --as claude
 claude
 /build-actions
 ```
@@ -31,48 +31,48 @@ For Gemini, you need to set `GEMINI_SANDBOX=true` in your `.env` file or export 
 </Note>
 
 ```bash
-npx prpm install collections/nango-integration-builder --as gemini
+npx prpm install collections/nango-function-builder --as gemini
 gemini
 /build-actions
 ```
 
 ### [Cursor CLI](https://cursor.com/cli)
 ```bash
-npx prpm install collections/nango-integration-builder --as cursor
+npx prpm install collections/nango-function-builder --as cursor
 cursor-agent
 /build-actions
 ```
 ### [Cursor IDE](https://cursor.com/)
 ```bash
-npx prpm install collections/nango-integration-builder --as cursor
+npx prpm install collections/nango-function-builder --as cursor
 code .
 /build-actions
 ```
 
 ### [Codex CLI](https://developers.openai.com/codex/cli/)
 ```bash
-npx prpm install collections/nango-integration-builder --as codex
+npx prpm install collections/nango-function-builder --as codex
 codex
 build-actions
 ```
 
 ### [VS Code With Copilot](https://code.visualstudio.com/docs/copilot/overview)
 ```bash
-npx prpm install collections/nango-integration-builder --as copilot
+npx prpm install collections/nango-function-builder --as copilot
 # open the VS Code Application
 build-actions
 ```
 
 ### [Opencode](https://opencode.ai/)
 ```bash
-npx prpm install collections/nango-integration-builder --as opencode
+npx prpm install collections/nango-function-builder --as opencode
 opencode
 /build-actions
 ```
 
 ### [Droid By Factory](https://factory.ai/)
 ```bash
-npx prpm install collections/nango-integration-builder --as droid
+npx prpm install collections/nango-function-builder --as droid
 droid
 /build-actions
 ```
