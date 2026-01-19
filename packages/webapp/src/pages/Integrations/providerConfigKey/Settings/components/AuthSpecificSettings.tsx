@@ -1,5 +1,6 @@
 import { AppAuthSettings } from './AppAuthSettings';
 import { CustomAuthSettings } from './CustomAuthSettings';
+import { InstallPluginSettings } from './InstallPluginSettings';
 import { McpGenericSettings } from './McpGenericSettings';
 import { McpOAuthSettings } from './McpOAuthSettings';
 import { OAuthSettings } from './OAuthSettings';
@@ -26,6 +27,9 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
 
         case 'MCP_OAUTH2_GENERIC':
             return <McpGenericSettings data={data} environment={environment} />;
+
+        case 'INSTALL_PLUGIN':
+            return <InstallPluginSettings data={data} environment={environment} />;
 
         default:
             return null;

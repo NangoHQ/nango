@@ -32,7 +32,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             authType: 'CUSTOM',
             ...field
-        });
+        } as any);
         if ('error' in updated.json) {
             const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
             if (!supressToast) {

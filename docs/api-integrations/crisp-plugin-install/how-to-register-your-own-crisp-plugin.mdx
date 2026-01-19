@@ -1,0 +1,39 @@
+---
+title: 'How to configure your Crisp plugin credentials'
+sidebarTitle: 'Crisp (Plugin Install) Setup'
+description: 'Configure your Crisp Marketplace plugin and obtain token credentials and install link to connect it to Nango'
+---
+
+This guide shows you how to configure your plugin in the Crisp Marketplace to obtain your token credentials (Token Identifier and Token Key) and install link. These are required to connect your Crisp plugin to Nango.
+
+<Steps>
+  <Step title="Create a Crisp marketplace account">
+    Go to the [Crisp Marketplace](https://marketplace.crisp.chat/) and sign in or create an account.
+  </Step>
+  <Step title="Create a new plugin">
+    1. Once logged in, go to **Plugins** and click on the **New Plugin** button.
+    2. Give your plugin a name and description, then click **Create Plugin**.
+  </Step>
+  <Step title="Generate your token keypair">
+    1. On the plugin page, go to the **Tokens** tab and scroll down to **Production**.
+    2. Click on **Ask a production token**, pick the **scopes** you require for your integration, and provide a **justification**.
+    3. Click on **Request production token**.
+    4. Wait for your submission to get approved (this can take a few minutes).
+    5. Once accepted, come back to the **Tokens** tab and copy your Production **Token Identifier** and **Token Key**.
+    
+    You'll use these as your **username** (Token Identifier) and **password** (Token Key) when configuring the integration in Nango.
+  </Step>
+  <Step title="Get your install link">
+    1. Go to the **Settings** section of your plugin.
+    2. Under **Access**, you'll find the **Installation link** for your plugin.
+    3. Copy this **Install Link** - you'll need it when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [Crisp's authentication documentation](https://docs.crisp.chat/guides/rest-api/authentication/).
+
+---
+
