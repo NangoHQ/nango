@@ -9674,6 +9674,68 @@ momentum-io:
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
 
+modmed:
+    display_name: ModMed
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.environment}/firm/${connectionConfig.firmUrlPrefix}/ema/ws/oauth2/grant
+    token_params:
+        grant_type: password
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-api-key: ${credentials.apiKey}
+        accept: application/json
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.environment}/firm/${connectionConfig.firmUrlPrefix}
+        headers:
+            accept: application/fhir+json
+            x-api-key: ${credentials.apiKey}
+    token_response:
+        token: access_token
+    docs: https://nango.dev/docs/api-integrations/modmed
+    docs_connect: https://nango.dev/docs/api-integrations/modmed/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The ModMed API environment
+            example: stage.ema-api.com/ema-dev
+            pattern: '^(stage|mmapi)\.ema-api\.com\/(ema-dev|ema-training|ema-prod)$'
+            doc_section: '#step-3-selecting-your-environment'
+            order: 1
+        firmUrlPrefix:
+            type: string
+            title: Firm URL Prefix
+            description: The firm URL prefix for your practice
+            example: emapmsandbox01
+            doc_section: '#step-2-finding-your-firm-url-prefix'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your API username
+            example: fhir_QfLlo
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+        password:
+            type: string
+            title: Password
+            description: Your API password
+            secret: true
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API key (x-api-key)
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+
 mural:
     display_name: Mural
     categories:
