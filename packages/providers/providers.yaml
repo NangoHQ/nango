@@ -7264,7 +7264,7 @@ highlevel:
 highlevel-white-label:
     display_name: HighLevel (LeadConnector)
     categories:
-        - marketing
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://marketplace.leadconnectorhq.com/oauth/chooselocation
     token_url: https://services.leadconnectorhq.com/oauth/token
