@@ -39,17 +39,20 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
 
     const onSubmitForm = async (formData: FormData) => {
         setLoading(true);
-        await onSubmit?.({
-            provider: provider.name,
-            useSharedCredentials: false,
-            auth: {
-                authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2_GENERIC'>,
-                clientName: formData.clientName,
-                clientUri: formData.clientUri,
-                clientLogoUri: formData.clientLogoUri
-            }
-        });
-        setLoading(false);
+        try {
+            await onSubmit?.({
+                provider: provider.name,
+                useSharedCredentials: false,
+                auth: {
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2_GENERIC'>,
+                    clientName: formData.clientName,
+                    clientUri: formData.clientUri,
+                    clientLogoUri: formData.clientLogoUri
+                }
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

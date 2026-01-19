@@ -27,15 +27,18 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
 
     const onSubmitForm = async (formData: FormData) => {
         setLoading(true);
-        await onSubmit?.({
-            provider: provider.name,
-            useSharedCredentials: false,
-            auth: {
-                authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2'>,
-                scopes: formData.scopes
-            }
-        });
-        setLoading(false);
+        try {
+            await onSubmit?.({
+                provider: provider.name,
+                useSharedCredentials: false,
+                auth: {
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2'>,
+                    scopes: formData.scopes
+                }
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

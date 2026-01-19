@@ -47,17 +47,20 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
     const onSubmitForm = async (formData: FormData) => {
         setLoading(true);
-        await onSubmit?.({
-            provider: provider.name,
-            useSharedCredentials: false,
-            auth: {
-                authType: provider.authMode as Extract<typeof provider.authMode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
-                clientId: formData.clientId,
-                clientSecret: formData.clientSecret,
-                scopes: formData.scopes
-            }
-        });
-        setLoading(false);
+        try {
+            await onSubmit?.({
+                provider: provider.name,
+                useSharedCredentials: false,
+                auth: {
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
+                    clientId: formData.clientId,
+                    clientSecret: formData.clientSecret,
+                    scopes: formData.scopes
+                }
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

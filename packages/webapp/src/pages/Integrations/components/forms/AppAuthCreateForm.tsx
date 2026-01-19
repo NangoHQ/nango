@@ -30,17 +30,21 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
 
     const onSubmitForm = async (formData: FormData) => {
         setLoading(true);
-        await onSubmit?.({
-            provider: provider.name,
-            useSharedCredentials: false,
-            auth: {
-                authType: provider.authMode as Extract<typeof provider.authMode, 'APP'>,
-                appId: formData.appId,
-                appLink: formData.appLink,
-                privateKey: formData.privateKey
-            }
-        });
-        setLoading(false);
+
+        try {
+            await onSubmit?.({
+                provider: provider.name,
+                useSharedCredentials: false,
+                auth: {
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'APP'>,
+                    appId: formData.appId,
+                    appLink: formData.appLink,
+                    privateKey: formData.privateKey
+                }
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
