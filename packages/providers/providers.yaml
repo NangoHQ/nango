@@ -2432,7 +2432,8 @@ brex:
         - offline_access
     proxy:
         base_url: https://platform.brexapis.com
-    docs: https://nango.dev/docs/integrations/all/brex
+    docs: https://nango.dev/docs/api-integrations/brex
+    setup_guide_url: https://nango.dev/docs/api-integrations/brex/how-to-register-your-own-brex-oauth-app
 
 brex-api-key:
     display_name: Brex (API Key)
@@ -2441,8 +2442,8 @@ brex-api-key:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
-    docs: https://nango.dev/docs/integrations/all/brex-api-key
-    docs_connect: https://nango.dev/docs/integrations/all/brex-api-key/connect
+    docs: https://nango.dev/docs/api-integrations/brex-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/brex-api-key/connect
     credentials:
         apiKey:
             type: string
@@ -2458,8 +2459,9 @@ brex-staging:
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
     proxy:
-        base_url: https://platform.staging.brexapis.com
-    docs: https://nango.dev/docs/integrations/all/brex-staging
+        base_url: https://platform.staging.brexapps.com
+    docs: https://nango.dev/docs/api-integrations/brex-staging
+    setup_guide_url: https://nango.dev/docs/api-integrations/brex-staging/how-to-register-your-own-brex-staging-oauth-app
 
 brightcrowd:
     display_name: BrightCrowd
