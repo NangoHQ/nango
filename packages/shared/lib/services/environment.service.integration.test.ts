@@ -5,6 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import environmentService, { hashSecretKey } from './environment.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
+import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 
 describe('Environment service', () => {
     beforeAll(async () => {
@@ -73,5 +74,23 @@ describe('Environment service', () => {
         expect(env3.pending_secret_key).toBeNull();
         expect(env3.secret_key).toEqual(env2.pending_secret_key);
         expect(env3.secret_key_hashed).toEqual(await hashSecretKey(env3.secret_key));
+    });
+
+    describe('environment variables', () => {
+        it('should store and retrieve environment variables', async () => {
+            const account = await createAccount();
+            const env = await createEnvironmentSeed(account.id, uuid());
+
+            const variables = [
+                { name: 'TEST_VAR', value: 'test_value' },
+                { name: 'ANOTHER_VAR', value: 'another_value' }
+            ];
+
+            await environmentService.editEnvironmentVariable(env.id, variables);
+
+            const retrieved = await environmentService.getEnvironmentVariables(env.id);
+            expect(retrieved).toHaveLength(2);
+            expect(retrieved.map((v) => ({ name: v.name, value: v.value }))).toEqual(expect.arrayContaining(variables));
+        });
     });
 });
