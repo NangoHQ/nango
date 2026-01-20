@@ -393,7 +393,7 @@ class EnvironmentService {
                 updated_at: new Date()
             })
             .onConflict(trx.raw('(environment_id) where is_default = true'))
-            .merge(['secret', 'iv', 'tag', 'hashed']);
+            .merge(['secret', 'iv', 'tag', 'hashed', 'updated_at']);
     }
 
     async getDefaultAPISecret(trx: Knex, environmentId: number): Promise<DBAPISecret | null> {
