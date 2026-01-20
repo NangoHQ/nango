@@ -5,6 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import environmentService, { hashSecretKey } from './environment.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 describe('Environment service', () => {
     beforeAll(async () => {
@@ -56,6 +57,13 @@ describe('Environment service', () => {
         const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
         expect(env.secret_key).toBeUUID();
 
+        const defaultSecret = await environmentService.getDefaultAPISecret(db.knex, env.id);
+        expect(defaultSecret).not.toBeNull();
+        expect(defaultSecret!.hashed).toEqual(env.secret_key_hashed);
+        expect(defaultSecret?.is_default).toBe(true);
+        const decryptedDefaultSecret = encryptionManager.decryptAPISecret(defaultSecret!);
+        expect(decryptedDefaultSecret).toEqual(env.secret_key);
+
         // Rotate
         await environmentService.rotateSecretKey(env.id);
 
@@ -73,5 +81,12 @@ describe('Environment service', () => {
         expect(env3.pending_secret_key).toBeNull();
         expect(env3.secret_key).toEqual(env2.pending_secret_key);
         expect(env3.secret_key_hashed).toEqual(await hashSecretKey(env3.secret_key));
+
+        const defaultSecret2 = await environmentService.getDefaultAPISecret(db.knex, env.id);
+        expect(defaultSecret2).not.toBeNull();
+        expect(defaultSecret2!.hashed).toEqual(env3.secret_key_hashed);
+        expect(defaultSecret2?.is_default).toBe(true);
+        const decryptedDefaultSecret2 = encryptionManager.decryptAPISecret(defaultSecret2!);
+        expect(decryptedDefaultSecret2).toEqual(env3.secret_key);
     });
 });

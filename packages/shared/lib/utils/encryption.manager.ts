@@ -8,7 +8,7 @@ import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
+import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -64,6 +64,13 @@ export class EncryptionManager extends Encryption {
         }
 
         return decryptedEnvironment;
+    }
+
+    public decryptAPISecret(row: DBAPISecret): string {
+        if (!this.shouldEncrypt()) {
+            return row.secret;
+        }
+        return this.decryptSync(row.secret, row.iv, row.tag);
     }
 
     public encryptConnection(connection: Omit<DBConnectionDecrypted, 'end_user_id' | 'credentials_iv' | 'credentials_tag'>): Omit<DBConnection, 'end_user_id'> {
