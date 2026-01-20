@@ -26,20 +26,15 @@ exports.up = async function (knex) {
 
         insert into api_secrets (environment_id, name, secret, iv, tag, hashed, is_default)
             select
-                id                as environment_id,
-                'default'         as name,
-                secret_key        as secret,
-                secret_key_iv     as iv,
-                secret_key_tag    as tag,
-                secret_key_hashed as hashed,
-                true              as is_default
+                id                              as environment_id,
+                'default'                       as name,
+                coalesce(secret_key, '')        as secret,
+                coalesce(secret_key_iv, '')     as iv,
+                coalesce(secret_key_tag, '')    as tag,
+                coalesce(secret_key_hashed, '') as hashed,
+                true                            as is_default
             from
-                _nango_environments
-            where
-                secret_key is not null
-                and secret_key_iv is not null
-                and secret_key_tag is not null
-                and secret_key_hashed is not null;
+                _nango_environments;
     `);
 };
 
