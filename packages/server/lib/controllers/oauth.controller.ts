@@ -1193,9 +1193,22 @@ class OAuthController {
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
 
+        if (authMode === 'CUSTOM') {
+            console.log('[CUSTOM AUTH] Callback received:', {
+                setupAction,
+                hasAuthorizationCode: !!authorizationCode,
+                installationId,
+                connectionId,
+                providerConfigKey,
+                connectSessionId: session.connectSessionId,
+                channel
+            });
+        }
         if (!authorizationCode && authMode === 'CUSTOM' && setupAction === 'update') {
             // this means the app was already installed and another user is trying to update the app
             // in this case we don't need the auth token
+            console.log('[CUSTOM AUTH UPDATE] Processing update flow for installation:', installationId);
+
             const connectionConfig = {
                 ...session.connectionConfig,
                 app_id: config?.custom?.['app_id'],
@@ -1205,22 +1218,28 @@ class OAuthController {
             let connectSession: ConnectSessionAndEndUser | undefined;
 
             if (session.connectSessionId) {
+                console.log('[CUSTOM AUTH UPDATE] Looking up connect session:', session.connectSessionId);
                 const connectSessionRes = await getConnectSession(db.knex, {
                     id: session.connectSessionId,
                     accountId: account.id,
                     environmentId: environment.id
                 });
                 if (connectSessionRes.isErr()) {
-                    void logCtx.error('Failed to get session');
+                    console.log('[CUSTOM AUTH UPDATE] Failed to get connect session:', connectSessionRes.error);
+                    void logCtx.error('Failed to get session', { error: connectSessionRes.error });
                     await logCtx.failed();
                     if (res) {
                         await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                     }
                     return;
                 }
+                // FIX: Assign the connect session value
+                connectSession = connectSessionRes.value;
+                console.log('[CUSTOM AUTH UPDATE] Connect session found:', { endUserId: connectSession?.connectSession?.endUser?.id });
             }
 
             const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                console.log('[CUSTOM AUTH UPDATE] Connection created/updated:', { operation: res.operation, connectionId: res.connection.id });
                 void connectionCreatedHook(
                     {
                         connection: res.connection,
@@ -1237,6 +1256,7 @@ class OAuthController {
                 );
             };
 
+            console.log('[CUSTOM AUTH UPDATE] Getting app credentials and finishing connection...');
             const connectionResponse = await connectionService.getAppCredentialsAndFinishConnection(
                 connectionId,
                 config,
@@ -1246,9 +1266,21 @@ class OAuthController {
                 connCreatedHook
             );
 
+            // FIX: Handle connection response error
+            if (connectionResponse.isErr()) {
+                console.log('[CUSTOM AUTH UPDATE] Failed to finish connection:', connectionResponse.error);
+                void logCtx.error('Failed to finish connection', { error: connectionResponse.error });
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to finish connection'));
+                return;
+            }
+
+            console.log('[CUSTOM AUTH UPDATE] Connection response success:', { connectionId: connectionResponse.value?.connection?.id });
+
             if (session.connectSessionId && connectionResponse.isOk()) {
                 const upsertedConnection = connectionResponse.value;
                 if (upsertedConnection?.connection && connectSession) {
+                    console.log('[CUSTOM AUTH UPDATE] Syncing end user to connection...');
                     await syncEndUserToConnection(db.knex, {
                         connectSession: connectSession.connectSession,
                         connection: upsertedConnection.connection,
@@ -1260,6 +1292,7 @@ class OAuthController {
 
             await logCtx.success();
 
+            console.log('[CUSTOM AUTH UPDATE] Notifying success to frontend via WebSocket channel:', channel);
             await publisher.notifySuccess({
                 res,
                 wsClientId: channel,
@@ -1268,6 +1301,7 @@ class OAuthController {
                 isPending: false
             });
 
+            console.log('[CUSTOM AUTH UPDATE] Flow completed successfully');
             return;
         }
 
