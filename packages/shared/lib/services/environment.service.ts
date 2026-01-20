@@ -238,9 +238,6 @@ class EnvironmentService {
         }
 
         const pending_secret_key = uuid.v4();
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ pending_secret_key });
-
         environment.pending_secret_key = pending_secret_key;
 
         const encryptedEnvironment = await encryptionManager.encryptEnvironment(environment);

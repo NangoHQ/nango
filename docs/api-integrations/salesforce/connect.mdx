@@ -1,0 +1,38 @@
+---
+title: 'Salesforce - How do I link my account?'
+sidebarTitle: 'Salesforce'
+---
+
+# Overview
+
+To authenticate with Salesforce, you will need:
+1. **Hostname** (optional) - Your Salesforce instance hostname.
+
+This guide will walk you through finding your hostname in Salesforce.
+
+### Prerequisites:
+
+- You must have a Salesforce account
+
+### Instructions:
+
+#### Step 1: Finding your Hostname (Optional)
+
+1. Log in to your Salesforce account.
+2. Once logged in, click on your profile to view your hostname.
+
+<img src="/api-integrations/salesforce/hostname.png"/>
+
+<Note>The hostname is optional. If not provided, Nango will use the default Salesforce login endpoint (`login.salesforce.com`). Providing a hostname ensures you connect to your specific Salesforce instance.</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Hostname** (optional):
+1. Open the form where you need to authenticate with Salesforce.
+2. Enter your **Hostname** in the respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/salesforce/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Salesforce.

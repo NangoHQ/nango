@@ -35,7 +35,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2_GENERIC'>,
             ...field
-        });
+        } as any);
         if ('error' in updated.json) {
             const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
             toast({ title: errorMessage, variant: 'error' });

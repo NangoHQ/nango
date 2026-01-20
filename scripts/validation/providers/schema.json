@@ -53,8 +53,13 @@
                         "TWO_STEP",
                         "SIGNATURE",
                         "MCP_OAUTH2",
-                        "MCP_OAUTH2_GENERIC"
+                        "MCP_OAUTH2_GENERIC",
+                        "INSTALL_PLUGIN"
                     ]
+                },
+                "auth_type": {
+                    "type": "string",
+                    "enum": ["BASIC"]
                 },
                 "authorization_method": {
                     "type": "string",
