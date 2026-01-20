@@ -5,8 +5,8 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import environmentService, { hashSecretKey } from './environment.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
-import encryptionManager from '../utils/encryption.manager.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 describe('Environment service', () => {
     beforeAll(async () => {
