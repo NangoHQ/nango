@@ -12810,12 +12810,12 @@ sap-success-factors:
         assertion: ${credentials.assertion}
         new_token: true
     assertion:
-        key: ${assertionOption.cert}
+        key: ${assertionOption.privateKey}
         issuer: www.successfactors.com
-        lifetimeInSeconds: 315360000
+        lifetimeInSeconds: '315360000'
         audiences: www.successfactors.com
         attributes:
-            api_key: ${credentials.privateKey}
+            api_key: ${credentials.apiKey}
             use_username: true
             use_email: false
             external_user: false
