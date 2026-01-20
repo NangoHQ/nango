@@ -1,7 +1,7 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { useEffect, useRef } from 'react';
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { SWRConfig } from 'swr';
@@ -39,7 +39,7 @@ import { useStore } from './store';
 import { fetcher } from './utils/api';
 import { globalEnv } from './utils/env';
 import { LocalStorageKeys } from './utils/local-storage';
-import { SentryRoutes } from './utils/sentry';
+import { sentryCreateBrowserRouter } from './utils/sentry';
 import { useSignout } from './utils/user';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -48,11 +48,166 @@ const theme = createTheme({
     fontFamily: 'Inter'
 });
 
+// Wrapper component for conditional getting started route
+const GettingStartedRoute = () => {
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
+
+    if (!showGettingStarted) {
+        return <Navigate to="/" replace />;
+    }
+
+    return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+};
+
+// Wrapper component for activity redirect that uses route params
+const ActivityRedirect = () => {
+    const { env } = useParams<{ env: string }>();
+    return <Navigate to={`/${env}/logs`} replace={true} />;
+};
+
+// Build routes - most routes are static, only auth routes depend on feature flag
+const buildRoutes = () => {
+    const authRoutes = globalEnv.features.auth
+        ? [
+              {
+                  path: '/signin',
+                  element: <Signin />
+              },
+              {
+                  path: '/signup/:token',
+                  element: <InviteSignup />
+              },
+              {
+                  path: '/forgot-password',
+                  element: <ForgotPassword />
+              },
+              {
+                  path: '/reset-password/:token',
+                  element: <ResetPassword />
+              },
+              {
+                  path: '/verify-email/:uuid',
+                  element: <VerifyEmail />
+              },
+              {
+                  path: '/verify-email/expired/:token',
+                  element: <VerifyEmailByExpiredToken />
+              },
+              {
+                  path: '/signup/verification/:token',
+                  element: <EmailVerified />
+              },
+              {
+                  path: '/signup',
+                  element: <Signup />
+              }
+          ]
+        : [];
+
+    return [
+        {
+            path: '/',
+            element: <Root />
+        },
+        {
+            element: <PrivateRoute />,
+            children: [
+                {
+                    path: '/:env',
+                    element: <Homepage />
+                },
+                {
+                    path: '/dev/getting-started',
+                    element: <GettingStartedRoute />
+                },
+                {
+                    path: '/:env/integrations',
+                    element: <IntegrationsList />
+                },
+                {
+                    path: '/:env/integrations/create',
+                    element: <CreateIntegration />
+                },
+                {
+                    path: '/:env/integration/:providerConfigKey',
+                    element: <Navigate to={'/integrations'} />
+                },
+                {
+                    path: '/:env/integrations/:providerConfigKey/functions/:functionName',
+                    element: <FunctionsOne />
+                },
+                {
+                    path: '/:env/integrations/:providerConfigKey/*',
+                    element: <ShowIntegration />
+                },
+                {
+                    path: '/:env/connections',
+                    element: <ConnectionList />
+                },
+                {
+                    path: '/:env/connections/create',
+                    element: <ConnectionCreate />
+                },
+                {
+                    path: '/:env/connections/create-legacy',
+                    element: <ConnectionCreateLegacy />
+                },
+                {
+                    path: '/:env/connections/:providerConfigKey/:connectionId',
+                    element: <ConnectionShow />
+                },
+                {
+                    path: '/:env/activity',
+                    element: <ActivityRedirect />
+                },
+                {
+                    path: '/:env/logs',
+                    element: <LogsShow />
+                },
+                {
+                    path: '/:env/environment-settings',
+                    element: <EnvironmentSettings />
+                },
+                {
+                    path: '/:env/project-settings',
+                    element: <Navigate to="/environment-settings" />
+                },
+                {
+                    path: '/:env/account-settings',
+                    element: <Navigate to="/team-settings" />
+                },
+                {
+                    path: '/:env/team-settings',
+                    element: <TeamSettings />
+                },
+                {
+                    path: '/:env/team/billing',
+                    element: <TeamBilling />
+                },
+                {
+                    path: '/:env/user-settings',
+                    element: <UserSettings />
+                }
+            ]
+        },
+        {
+            path: '/hn-demo',
+            element: <Navigate to={'/signup'} />
+        },
+        ...authRoutes,
+        {
+            path: '*',
+            element: <NotFound />
+        }
+    ];
+};
+
+const router = sentryCreateBrowserRouter(buildRoutes());
+
 const App = () => {
     const env = useStore((state) => state.env);
     const signout = useSignout();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
     const { meta } = useMeta();
 
@@ -92,49 +247,7 @@ const App = () => {
                         }
                     }}
                 >
-                    <SentryRoutes>
-                        <Route path="/" element={<Root />} />
-                        <Route element={<PrivateRoute />} key={env}>
-                            <Route path="/:env" element={<Homepage />} />
-                            {showGettingStarted &&
-                                (globalEnv.isCloud ? (
-                                    <Route path="/dev/getting-started" element={<GettingStarted />} />
-                                ) : (
-                                    <Route path="/dev/getting-started" element={<ClassicGettingStarted />} />
-                                ))}
-                            <Route path="/:env/integrations" element={<IntegrationsList />} />
-                            <Route path="/:env/integrations/create" element={<CreateIntegration />} />
-                            <Route path="/:env/integration/:providerConfigKey" element={<Navigate to={'/integrations'} />} />
-                            <Route path="/:env/integrations/:providerConfigKey/functions/:functionName" element={<FunctionsOne />} />
-                            <Route path="/:env/integrations/:providerConfigKey/*" element={<ShowIntegration />} />
-                            <Route path="/:env/connections" element={<ConnectionList />} />
-                            <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                            <Route path="/:env/connections/create-legacy" element={<ConnectionCreateLegacy />} />
-                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
-                            <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
-                            <Route path="/:env/logs" element={<LogsShow />} />
-                            <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
-                            <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
-                            <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
-                            <Route path="/:env/team-settings" element={<TeamSettings />} />
-                            <Route path="/:env/team/billing" element={<TeamBilling />} />
-                            <Route path="/:env/user-settings" element={<UserSettings />} />
-                        </Route>
-                        {<Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
-                        {globalEnv.features.auth && (
-                            <>
-                                <Route path="/signin" element={<Signin />} />
-                                <Route path="/signup/:token" element={<InviteSignup />} />
-                                <Route path="/forgot-password" element={<ForgotPassword />} />
-                                <Route path="/reset-password/:token" element={<ResetPassword />} />
-                                <Route path="/verify-email/:uuid" element={<VerifyEmail />} />
-                                <Route path="/verify-email/expired/:token" element={<VerifyEmailByExpiredToken />} />
-                                <Route path="/signup/verification/:token" element={<EmailVerified />} />
-                            </>
-                        )}
-                        {globalEnv.features.auth && <Route path="/signup" element={<Signup />} />}
-                        <Route path="*" element={<NotFound />} />
-                    </SentryRoutes>
+                    <RouterProvider router={router} />
                 </SWRConfig>
                 <ToastContainer />
             </TooltipProvider>
