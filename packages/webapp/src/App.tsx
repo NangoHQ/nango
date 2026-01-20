@@ -48,7 +48,6 @@ const theme = createTheme({
     fontFamily: 'Inter'
 });
 
-// Wrapper component for conditional getting started route
 const GettingStartedRoute = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
 
@@ -65,7 +64,6 @@ const ActivityRedirect = () => {
     return <Navigate to={`/${env}/logs`} replace={true} />;
 };
 
-// Build routes - most routes are static, only auth routes depend on feature flag
 const buildRoutes = () => {
     const authRoutes = globalEnv.features.auth
         ? [
@@ -107,54 +105,84 @@ const buildRoutes = () => {
     return [
         {
             path: '/',
-            element: <Root />
+            element: <Root />,
+            handle: { breadcrumb: 'Home' }
         },
         {
             element: <PrivateRoute />,
             children: [
                 {
                     path: '/:env',
-                    element: <Homepage />
+                    element: <Homepage />,
+                    handle: {
+                        breadcrumb: 'Metrics'
+                    }
                 },
                 {
                     path: '/dev/getting-started',
-                    element: <GettingStartedRoute />
+                    element: <GettingStartedRoute />,
+                    handle: { breadcrumb: 'Getting Started' }
                 },
                 {
                     path: '/:env/integrations',
-                    element: <IntegrationsList />
-                },
-                {
-                    path: '/:env/integrations/create',
-                    element: <CreateIntegration />
-                },
-                {
-                    path: '/:env/integration/:providerConfigKey',
-                    element: <Navigate to={'/integrations'} />
-                },
-                {
-                    path: '/:env/integrations/:providerConfigKey/functions/:functionName',
-                    element: <FunctionsOne />
-                },
-                {
-                    path: '/:env/integrations/:providerConfigKey/*',
-                    element: <ShowIntegration />
+                    handle: { breadcrumb: 'Integrations' },
+                    children: [
+                        {
+                            index: true,
+                            element: <IntegrationsList />
+                        },
+                        {
+                            path: 'create',
+                            element: <CreateIntegration />,
+                            handle: { breadcrumb: 'Create Integration' }
+                        },
+                        {
+                            path: ':providerConfigKey',
+                            handle: {
+                                breadcrumb: (params: Record<string, string | undefined>) => params.providerConfigKey || 'Integration'
+                            },
+                            children: [
+                                {
+                                    index: true,
+                                    element: <ShowIntegration />
+                                },
+                                {
+                                    path: 'functions/:functionName',
+                                    element: <FunctionsOne />,
+                                    handle: { breadcrumb: (params: Record<string, string | undefined>) => params.functionName || 'Function' }
+                                },
+                                {
+                                    path: '*',
+                                    element: <ShowIntegration />
+                                }
+                            ]
+                        }
+                    ]
                 },
                 {
                     path: '/:env/connections',
-                    element: <ConnectionList />
-                },
-                {
-                    path: '/:env/connections/create',
-                    element: <ConnectionCreate />
-                },
-                {
-                    path: '/:env/connections/create-legacy',
-                    element: <ConnectionCreateLegacy />
-                },
-                {
-                    path: '/:env/connections/:providerConfigKey/:connectionId',
-                    element: <ConnectionShow />
+                    handle: { breadcrumb: 'Connections' },
+                    children: [
+                        {
+                            index: true,
+                            element: <ConnectionList />
+                        },
+                        {
+                            path: 'create',
+                            element: <ConnectionCreate />,
+                            handle: { breadcrumb: 'Create Connection' }
+                        },
+                        {
+                            path: 'create-legacy',
+                            element: <ConnectionCreateLegacy />,
+                            handle: { breadcrumb: 'Create Connection (Legacy)' }
+                        },
+                        {
+                            path: ':providerConfigKey/:connectionId',
+                            element: <ConnectionShow />,
+                            handle: { breadcrumb: (params: Record<string, string | undefined>) => params.connectionId || 'Connection' }
+                        }
+                    ]
                 },
                 {
                     path: '/:env/activity',
@@ -162,11 +190,13 @@ const buildRoutes = () => {
                 },
                 {
                     path: '/:env/logs',
-                    element: <LogsShow />
+                    element: <LogsShow />,
+                    handle: { breadcrumb: 'Logs' }
                 },
                 {
                     path: '/:env/environment-settings',
-                    element: <EnvironmentSettings />
+                    element: <EnvironmentSettings />,
+                    handle: { breadcrumb: 'Environment Settings' }
                 },
                 {
                     path: '/:env/project-settings',
@@ -178,15 +208,18 @@ const buildRoutes = () => {
                 },
                 {
                     path: '/:env/team-settings',
-                    element: <TeamSettings />
+                    element: <TeamSettings />,
+                    handle: { breadcrumb: 'Team Settings' }
                 },
                 {
                     path: '/:env/team/billing',
-                    element: <TeamBilling />
+                    element: <TeamBilling />,
+                    handle: { breadcrumb: 'Billing' }
                 },
                 {
                     path: '/:env/user-settings',
-                    element: <UserSettings />
+                    element: <UserSettings />,
+                    handle: { breadcrumb: 'User Settings' }
                 }
             ]
         },

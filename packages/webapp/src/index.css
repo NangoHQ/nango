@@ -417,6 +417,11 @@ layer(base);
     --color-link-hover: var(--color-brand-500);
     --color-link-press: var(--color-brand-700);
     --color-link-disabled: var(--color-gray-700);
+
+    /* Breadcrumb */
+    --color-breadcrumb-default: var(--color-gray-700);
+    --color-breadcrumb-hover: var(--color-gray-900);
+    --color-breadcrumb-press: var(--color-gray-1000);
 }
 
 @layer theme {
@@ -515,6 +520,11 @@ layer(base);
             --color-link-hover: var(--color-brand-300);
             --color-link-press: var(--color-brand-500);
             --color-link-disabled: var(--color-gray-500);
+
+            /* Breadcrumb */
+            --color-breadcrumb-default: var(--color-gray-300);
+            --color-breadcrumb-hover: var(--color-gray-100);
+            --color-breadcrumb-press: var(--color-gray-50);
         }
     }
 }
