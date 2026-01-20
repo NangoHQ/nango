@@ -454,7 +454,8 @@
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
               "implementation-guides/building-integrations/data-validation",
-              "implementation-guides/building-integrations/testing"
+              "implementation-guides/building-integrations/testing",
+              "implementation-guides/building-integrations/ci-cd"
             ]
           },
           {
@@ -555,7 +556,7 @@
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
               "api-integrations/bamboohr",
-              "integrations/all/bamboohr-basic", 
+              "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
