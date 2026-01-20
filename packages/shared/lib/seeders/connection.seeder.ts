@@ -94,6 +94,7 @@ export function getTestConnection(override?: Partial<DBConnectionDecrypted>): DB
         last_refresh_success: null,
         refresh_attempts: null,
         refresh_exhausted: false,
+        tags: {},
         ...override
     };
 }

@@ -1,6 +1,15 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { accountService, configService, connectionService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
+import {
+    accountService,
+    configService,
+    connectionService,
+    errorManager,
+    getProvider,
+    githubAppClient,
+    syncEndUserToConnection,
+    syncTagsToConnection
+} from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
@@ -172,6 +181,10 @@ class AppAuthController {
                     connection: updatedConnection.connection,
                     account,
                     environment
+                });
+                await syncTagsToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection
                 });
             }
 

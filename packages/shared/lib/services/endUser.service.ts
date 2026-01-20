@@ -1,6 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { Err, Ok } from '@nangohq/utils';
 
+import { normalizeTags } from './tags/utils.js';
+
 import type { Knex } from '@nangohq/database';
 import type {
     ConnectSession,
@@ -11,7 +13,8 @@ import type {
     DBInsertEndUser,
     DBTeam,
     EndUser,
-    InternalEndUser
+    InternalEndUser,
+    Tags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -297,4 +300,54 @@ export async function syncEndUserToConnection(
 
     await linkConnection(db, { endUserId: upsertRes.value.id, connection });
     return Ok(true);
+}
+
+/**
+ * Build tags from endUser and organization fields for backward compatibility.
+ * Existing users using endUser/organization fields will have their metadata
+ * automatically populated as tags.
+ *
+ * Merge priority (lowest to highest):
+ * 1. Auto-generated from end_user (end_user_id, end_user_email, end_user_display_name)
+ * 2. Auto-generated from organization (organization_id, organization_display_name)
+ * 3. end_user.tags (can override auto-generated tags)
+ *
+ * All keys and values are normalized to lowercase.
+ */
+export function buildTagsFromEndUser(
+    endUser: ConnectSessionInput['end_user'] | null | undefined,
+    organization: ConnectSessionInput['organization'] | null | undefined
+): Tags {
+    const generatedTags: Tags = {};
+
+    if (endUser) {
+        generatedTags['end_user_id'] = endUser.id;
+
+        if (endUser.email) {
+            generatedTags['end_user_email'] = endUser.email;
+        }
+        if (endUser.display_name) {
+            generatedTags['end_user_display_name'] = endUser.display_name;
+        }
+
+        // end_user.tags can override auto-generated tags
+        if (endUser.tags) {
+            Object.assign(generatedTags, endUser.tags);
+        }
+    }
+
+    if (organization) {
+        generatedTags['organization_id'] = organization.id;
+
+        if (organization.display_name) {
+            generatedTags['organization_display_name'] = organization.display_name;
+        }
+    }
+
+    if (Object.keys(generatedTags).length === 0) {
+        return {};
+    }
+
+    const result = normalizeTags(generatedTags);
+    return result.success ? result.tags : generatedTags;
 }
