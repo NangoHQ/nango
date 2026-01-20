@@ -10310,6 +10310,39 @@ onelogin:
             suffix: .onelogin.com
             doc_section: '#step-1-finding-your-subdomain'
 
+oomnitza:
+    display_name: Oomnitza
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.oomnitza.com
+        headers:
+            authorization2: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/v3/assets/meta
+    docs: https://nango.dev/docs/api-integrations/oomnitza
+    docs_connect: https://nango.dev/docs/api-integrations/oomnitza/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Oomnitza Subdomain
+            description: The subdomain of your Oomnitza instance
+            example: mycompany
+            prefix: https://
+            suffix: .oomnitza.com
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Oomnitza API token
+            doc_section: '#step-2-generating-your-api-token'
+
 openai:
     display_name: OpenAI
     categories:
