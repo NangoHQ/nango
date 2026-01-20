@@ -47,9 +47,7 @@ export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
     }
 
     const server = result.value;
-    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined
-    });
+    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();
 
     res.on('close', () => {
         void transport.close();

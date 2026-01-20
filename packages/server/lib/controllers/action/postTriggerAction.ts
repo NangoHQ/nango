@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorManager, getSyncConfigRaw } from '@nangohq/shared';
-import { actionAllowListCustomers, getHeaders, isCloud, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, metrics, redactHeaders, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
@@ -25,8 +25,6 @@ const schemaBody = z.object({
     action_name: syncNameSchema,
     input: z.unknown()
 });
-
-const actionPayloadAllowList = isCloud ? actionAllowListCustomers : [];
 
 export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(async (req, res) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
@@ -116,23 +114,6 @@ export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(asy
             });
 
             if (actionResponse.isOk()) {
-                const payloadSize = Buffer.byteLength(JSON.stringify(actionResponse.value), 'utf8');
-                const payloadSizeInMb = payloadSize / (1024 * 1024);
-
-                if (payloadSizeInMb > 2) {
-                    if (actionPayloadAllowList.includes(account.id)) {
-                        void logCtx.warn(
-                            `The action payload is larger than 2 MB at ${payloadSizeInMb}. The usage of an action for an output this large will soon be deprecated. It is recommended to use the nango proxy directly for such operations. See the proxy docs: https://nango.dev/docs/guides/use-cases/proxy.`,
-                            {
-                                payloadSize,
-                                actionName: action_name,
-                                connectionId: connection.id,
-                                environmentId: environment.id
-                            }
-                        );
-                    }
-                }
-
                 if ('statusUrl' in actionResponse.value) {
                     res.status(202).location(actionResponse.value.statusUrl).json(actionResponse.value);
                 } else {
