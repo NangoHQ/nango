@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { connectionService } from '@nangohq/shared';
+import { connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
@@ -16,6 +16,7 @@ const validationQuery = z
         endUserId: bodySchema.shape.end_user.shape.id.optional(),
         integrationId: z.string().min(1).optional(),
         endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional(),
+        tags: connectionTagsSchema.optional(),
         limit: z.coerce.number().min(1).max(1000).optional(),
         page: z.coerce.number().min(0).optional()
     })
@@ -31,7 +32,7 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
     }
 
     const { environment } = res.locals;
-    const queryParam: GetPublicConnections['Querystring'] = queryParamValues.data;
+    const queryParam = queryParamValues.data;
 
     const connections = await connectionService.listConnections({
         environmentId: environment.id,
@@ -40,6 +41,7 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         endUserId: queryParam.endUserId,
         integrationIds: queryParam.integrationId ? queryParam.integrationId.split(',').map((id) => id.trim()) : undefined,
         endUserOrganizationId: queryParam.endUserOrganizationId,
+        tags: queryParam.tags,
         page: queryParam.page,
         limit: queryParam.limit || 10_000 // 10_000 to avoid breaking changes. TODO: set to more reasonable default like 1000 in the future
     });
