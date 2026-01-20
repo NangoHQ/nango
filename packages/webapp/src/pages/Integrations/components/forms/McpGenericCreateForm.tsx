@@ -11,18 +11,8 @@ import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
 const formSchema = z.object({
     clientName: z.string().optional(),
-    clientUri: z
-        .string()
-        .optional()
-        .refine((val) => !val || z.string().url().safeParse(val).success, {
-            message: 'Must be a valid URL (e.g., https://example.com)'
-        }),
-    clientLogoUri: z
-        .string()
-        .optional()
-        .refine((val) => !val || z.string().url().safeParse(val).success, {
-            message: 'Must be a valid URL (e.g., https://example.com/logo.png)'
-        })
+    clientUri: z.string().url('Must be a valid URL (e.g., https://example.com)').optional(),
+    clientLogoUri: z.string().url('Must be a valid URL (e.g., https://example.com/logo.png)').optional()
 });
 
 type FormData = z.infer<typeof formSchema>;
