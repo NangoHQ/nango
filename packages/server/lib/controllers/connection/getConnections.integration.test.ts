@@ -62,10 +62,189 @@ describe(`GET ${endpoint}`, () => {
                     id: conn.id,
                     metadata: null,
                     provider: 'github',
-                    provider_config_key: 'github'
+                    provider_config_key: 'github',
+                    tags: {}
                 }
             ]
         });
+    });
+
+    it('should list connection with tags', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'sales', tier: 'enterprise' } });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {}
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            connections: [
+                {
+                    connection_id: conn.connection_id,
+                    created: expect.toBeIsoDateTimezone(),
+                    end_user: null,
+                    errors: [],
+                    id: conn.id,
+                    metadata: null,
+                    provider: 'github',
+                    provider_config_key: 'github',
+                    tags: { department: 'sales', tier: 'enterprise' }
+                }
+            ]
+        });
+    });
+
+    it('should filter connections by single tag', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn1 = await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            tags: { department: 'engineering,backend', env: 'production' }
+        });
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'sales', env: 'staging' } });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                tags: { department: 'engineering,backend' }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connections).toHaveLength(1);
+        expect(res.json.connections[0]!.connection_id).toBe(conn1.connection_id);
+    });
+
+    it('should filter connections with manually built URL', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn1 = await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            tags: { department: 'engineering,backend', env: 'production' }
+        });
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'sales', env: 'staging' } });
+
+        const params = new URLSearchParams();
+        params.set('tags[department]', 'engineering,backend');
+        params.set('tags[env]', 'production');
+        const url = `${api.url}${endpoint}?${params.toString()}`;
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${env.secret_key}` }
+        });
+        const json = await res.json();
+
+        isSuccess(json);
+        expect(json.connections).toHaveLength(1);
+        expect(json.connections[0]!.connection_id).toBe(conn1.connection_id);
+    });
+
+    it('should filter connections by multiple tags (AND logic)', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn1 = await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'engineering', env: 'production' } });
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'engineering', env: 'staging' } });
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'sales', env: 'production' } });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                tags: { department: 'engineering', env: 'production' }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connections).toHaveLength(1);
+        expect(res.json.connections[0]!.connection_id).toBe(conn1.connection_id);
+    });
+
+    it('should return empty when no connections match tags', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'engineering' } });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                tags: { department: 'sales' }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connections).toHaveLength(0);
+    });
+
+    it('should not match when tag key exists but value differs', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { department: 'engineering' } });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                tags: { department: 'sales' }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connections).toHaveLength(0);
+    });
+
+    it('should return 400 when tag keys are invalid', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                tags: { '123invalid': 'value' }
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_query_params',
+                errors: [
+                    {
+                        code: 'invalid_key',
+                        message: 'Invalid key in record',
+                        path: ['tags', '123invalid']
+                    }
+                ]
+            }
+        });
+    });
+
+    it('should filter by tag values containing colons (e.g. IPv6)', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        // Tag values can contain colons (e.g., IPv6 addresses)
+        const conn1 = await seeders.createConnectionSeed({ env, provider: 'github', tags: { ip: '2001:db8::1' } });
+        await seeders.createConnectionSeed({ env, provider: 'github', tags: { ip: '192.168.1.1' } });
+
+        // First colon separates key from value: ip:2001:db8::1 -> { ip: "2001:db8::1" }
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                tags: { ip: '2001:db8::1' }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connections).toHaveLength(1);
+        expect(res.json.connections[0]!.connection_id).toBe(conn1.connection_id);
     });
 
     it('should search connections', async () => {

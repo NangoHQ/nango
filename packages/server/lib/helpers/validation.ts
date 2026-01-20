@@ -1,5 +1,9 @@
 import * as z from 'zod';
 
+import { connectionTagsSchema } from '@nangohq/shared';
+
+export { connectionTagsSchema };
+
 export const providerSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
@@ -148,7 +152,7 @@ export const connectionCredentialsGithubAppSchema = z.strictObject({
     installation_id: z.string().min(1).max(255)
 });
 
-export const connectionTagsSchema = z
+export const connectionEndUserTagsSchema = z
     // Please be careful when changing this:
     // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that
     // + It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
@@ -160,5 +164,5 @@ export const endUserSchema = z.strictObject({
     id: z.string().max(255).min(1),
     email: z.string().email().min(5).optional(),
     display_name: z.string().max(255).optional(),
-    tags: connectionTagsSchema.optional()
+    tags: connectionEndUserTagsSchema.optional()
 });

@@ -135,7 +135,8 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
             provider as ProviderGithubApp,
             connectionConfig,
             logCtx,
-            connCreatedHook
+            connCreatedHook,
+            connection.tags
         );
         await logCtx.success();
 
