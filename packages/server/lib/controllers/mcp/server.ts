@@ -82,7 +82,8 @@ function actionToTool(action: DBSyncConfig): Tool | null {
         inputSchema: {
             type: 'object',
             properties: inputSchema?.properties as Record<string, object>,
-            required: inputSchema?.required
+            required: inputSchema?.required,
+            description: inputSchema?.description
         },
         description
     };

@@ -1339,6 +1339,89 @@ atlassian-government-cloud:
             suffix: .atlassian-us-gov-mod.net
             prefix: https://
 
+atlassian-service-account-api-token:
+    display_name: Atlassian Service Account (API Token)
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.atlassian.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        connection_config:
+            cloudId: ${connectionConfig.cloudId}
+    post_connection_script: atlassianServicAccountPostConnection
+    docs: https://nango.dev/docs/api-integrations/atlassian-service-account-api-token
+    docs_connect: https://nango.dev/docs/api-integrations/atlassian-service-account-api-token/connect
+    connection_config:
+        cloudId:
+            type: string
+            title: Cloud ID
+            description: Your Atlassian Cloud ID
+            example: '12345678-1234-1234-1234-123456789012'
+            format: uuid
+            doc_section: '#step-1-finding-your-cloud-id'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Service Account Email
+            description: The email address of your Atlassian service account
+            example: bot@serviceaccount.atlassian.com
+            format: email
+            doc_section: '#step-2-finding-your-service-account-email'
+        password:
+            type: string
+            title: API Token
+            description: Your Atlassian service account API token
+            secret: true
+            example: ATSTT3xFfGF07SUw*******************************RvxLUHWs8ZV58TfHI=610694C8
+            pattern: '^[A-Za-z0-9_-]{40,}=[A-Fa-f0-9]{8}$'
+            doc_section: '#step-3-creating-an-api-token'
+
+atlassian-service-account-oauth2:
+    display_name: Atlassian Service Account (OAuth 2.0)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.atlassian.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.atlassian.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+    post_connection_script: atlassianServicAccountPostConnection
+    docs: https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2
+    docs_connect: https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            optional: true
+            description: The subdomain of your Attlassian account
+            pattern: '^[a-zA-Z0-9.-]+$'
+            example: subdomain
+            suffix: .atlassian.net
+            prefix: https://
+            doc_section: '#step-2-finding-your-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The OAuth 2.0 client ID from your service account credential
+            doc_section: '#step-1-creating-oauth-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The OAuth 2.0 client secret from your service account credential
+            secret: true
+            doc_section: '#step-1-creating-oauth-client-credentials'
+
 attio:
     display_name: Attio
     categories:
@@ -6874,6 +6957,68 @@ greenhouse-harvest:
             default_value: ''
             hidden: true
 
+greenhouse-harvest-partner:
+    display_name: Greenhouse Harvest Partner (V3)
+    categories:
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://auth.greenhouse.io/authorize
+    token_url: https://auth.greenhouse.io/token
+    token_request_auth_method: basic
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/greenhouse-harvest-partner
+    setup_guide_url: https://nango.dev/docs/api-integrations/greenhouse-harvest-partner/how-to-register-your-own-greenhouse-harvest-partner-oauth-app
+
+greenhouse-harvest-oauth2-cc:
+    display_name: Greenhouse Harvest (Client Credentials V3)
+    categories:
+        - ats
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.greenhouse.io/token?grant_type=client_credentials
+    token_request_auth_method: basic
+    body_format: json
+    token_params:
+        sub: ${connectionConfig.sub}
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/greenhouse-harvest-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/greenhouse-harvest-oauth2-cc/connect
+    connection_config:
+        sub:
+            type: string
+            title: User ID
+            description: The optional ID of the user to act on-behalf-of.
+            optional: true
+            example: '4212952002'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-finding-your-user-id'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Greenhouse client ID for authentication
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Greenhouse client secret for authentication
+            doc_section: '#step-1-generating-your-client-credentials'
+
 greenhouse-job-board:
     display_name: Greenhouse (Job Board API)
     auth_mode: BASIC
@@ -8696,7 +8841,7 @@ loop-returns:
             doc_section: '#step-1-generating-your-api-key'
 
 looker:
-    display_name: Looker Studio
+    display_name: Looker
     categories:
         - analytics
     auth_mode: TWO_STEP
@@ -8722,7 +8867,7 @@ looker:
             example: mycompany.looker.com
             order: 1
             format: hostname
-            doc_section: '#step-1-finding-your-looker-studio-hostname'
+            doc_section: '#step-1-finding-your-looker-hostname'
     credentials:
         clientId:
             type: string
@@ -9559,9 +9704,15 @@ monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        force_install_if_needed: true
+    authorization_url_replacements:
+        response_type: ''
     proxy:
         base_url: https://api.monday.com
-    docs: https://nango.dev/docs/integrations/all/monday
+    docs: https://nango.dev/docs/api-integrations/monday
+    setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
 
 momentum-io:
     display_name: Momentum.io
@@ -9584,6 +9735,68 @@ momentum-io:
             title: API Key
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
+
+modmed:
+    display_name: ModMed
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.environment}/firm/${connectionConfig.firmUrlPrefix}/ema/ws/oauth2/grant
+    token_params:
+        grant_type: password
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-api-key: ${credentials.apiKey}
+        accept: application/json
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.environment}/firm/${connectionConfig.firmUrlPrefix}
+        headers:
+            accept: application/fhir+json
+            x-api-key: ${credentials.apiKey}
+    token_response:
+        token: access_token
+    docs: https://nango.dev/docs/api-integrations/modmed
+    docs_connect: https://nango.dev/docs/api-integrations/modmed/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The ModMed API environment
+            example: stage.ema-api.com/ema-dev
+            pattern: '^(stage|mmapi)\.ema-api\.com\/(ema-dev|ema-training|ema-prod)$'
+            doc_section: '#step-3-selecting-your-environment'
+            order: 1
+        firmUrlPrefix:
+            type: string
+            title: Firm URL Prefix
+            description: The firm URL prefix for your practice
+            example: emapmsandbox01
+            doc_section: '#step-2-finding-your-firm-url-prefix'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your API username
+            example: fhir_QfLlo
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+        password:
+            type: string
+            title: Password
+            description: Your API password
+            secret: true
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API key (x-api-key)
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
 
 mural:
     display_name: Mural
@@ -12166,7 +12379,7 @@ rootly:
         verification:
             method: GET
             headers:
-                content-type: application/json
+                content-type: application/vnd.api+json
             endpoints:
                 - /v1/users/me
     docs: https://nango.dev/docs/integrations/all/rootly
@@ -12360,8 +12573,8 @@ salesforce:
         - crm
         - popular
     auth_mode: OAUTH2
-    authorization_url: https://login.salesforce.com/services/oauth2/authorize
-    token_url: https://login.salesforce.com/services/oauth2/token
+    authorization_url: https://${connectionConfig.hostname}/services/oauth2/authorize || https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/services/oauth2/token || https://login.salesforce.com/services/oauth2/token
     authorization_params:
         prompt: consent
     default_scopes:
@@ -12382,6 +12595,14 @@ salesforce:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname to your Salesforce instance
+            format: hostname
+            example: acme.my.salesforce.com
+            prefix: https://
+            optional: true
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
@@ -15732,6 +15953,30 @@ wrike:
             format: hostname
             prefix: https://
 
+wise-api-key:
+    display_name: Wise (API Key)
+    categories:
+        - banking
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.wise.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/profiles
+    docs: https://nango.dev/docs/api-integrations/wise-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/wise-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Wise Personal API Token
+            example: 12345678-1234-1234-1234-123456789abc
+            pattern: '^[a-f0-9-]{36}$'
+            doc_section: '#step-1-generating-your-api-token'
 xai:
     display_name: xAI
     categories:
