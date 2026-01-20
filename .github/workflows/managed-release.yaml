@@ -408,20 +408,17 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
-                  # Preserve the updated managed-manifest.json before checking out commit
-                  cp managed-manifest.json managed-manifest.json.backup
-
                   # Use the tag name from the Docker image step
                   TAG_NAME="${{ steps.retag-image.outputs.tag_name }}"
+                  SHA="${{ needs.manage-versions.outputs.commit_hash }}"
 
-                  # Checkout the specific commit hash
-                  git fetch origin ${{ needs.manage-versions.outputs.commit_hash }}:refs/tags/temp-commit || true
-                  git checkout ${{ needs.manage-versions.outputs.commit_hash }}
+                  # Ensure the commit exists locally (fetch just that object)
+                  git fetch --no-tags origin "$SHA"
 
                   # Create and push the tag
                   git config --global user.name "GitHub Actions"
                   git config --global user.email "actions@github.com"
-                  git tag -a "$TAG_NAME" -m "Managed release ${TAG_NAME}"
+                  git tag -a "$TAG_NAME" "$SHA" -m "Managed release ${TAG_NAME}"
                   git push origin "$TAG_NAME"
 
             - name: Commit and create PR for version changes
@@ -429,18 +426,10 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
-                  # Explicitly checkout master branch to ensure we're on the right branch
-                  git checkout master
-                  git fetch origin master
-                  git reset --hard origin/master
-
-                  # Restore the managed-manifest.json from the backup
-                  mv managed-manifest.json.backup managed-manifest.json
-
                   git config --global user.name "GitHub Actions"
                   git config --global user.email "actions@github.com"
                   git add managed-manifest.json
-                  git commit -m "chore: update version in manifest"
+                  git commit -m "chore: update version in manifest" || echo "No manifest changes to commit"
                   git push origin master
 
             - name: Log PR creation (act)
