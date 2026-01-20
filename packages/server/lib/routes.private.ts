@@ -36,6 +36,7 @@ import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
 import { getEnvironment } from './controllers/v1/environment/getEnvironment.js';
+import { getEnvironments } from './controllers/v1/environment/getEnvironments.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
@@ -167,6 +168,7 @@ web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
 web.route('/plans/change').post(webAuth, postPlanChange);
 
+web.route('/environments').get(webAuth, getEnvironments);
 web.route('/environments').post(webAuth, postEnvironment);
 web.route('/environments/').patch(webAuth, patchEnvironment);
 web.route('/environments/').delete(webAuth, deleteEnvironment);
