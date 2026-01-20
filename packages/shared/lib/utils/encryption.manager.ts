@@ -72,7 +72,6 @@ export class EncryptionManager extends Encryption {
         }
         return this.decryptSync(row.secret, row.iv, row.tag);
     }
-    }
 
     public encryptConnection(connection: Omit<DBConnectionDecrypted, 'end_user_id' | 'credentials_iv' | 'credentials_tag'>): Omit<DBConnection, 'end_user_id'> {
         if (!this.shouldEncrypt()) {
