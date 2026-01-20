@@ -67,10 +67,11 @@ export class EncryptionManager extends Encryption {
     }
 
     public decryptAPISecret(row: DBAPISecret): string {
-        if (!this.shouldEncrypt()) {
+        if (!this.shouldEncrypt() || !row.iv || !row.tag) {
             return row.secret;
         }
         return this.decryptSync(row.secret, row.iv, row.tag);
+    }
     }
 
     public encryptConnection(connection: Omit<DBConnectionDecrypted, 'end_user_id' | 'credentials_iv' | 'credentials_tag'>): Omit<DBConnection, 'end_user_id'> {
