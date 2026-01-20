@@ -124,6 +124,10 @@ Once you restart the Nango server, the encryption of the database will happen
 automatically. Please note that, at the current time, you cannot modify this
 encryption key once you have set it.
 
+<Warning>
+The `NANGO_ENCRYPTION_KEY` is also required for Connect UI to function. It's used to generate sessions for [Connect UI](/reference/sdks/frontend#connect-using-nango-connect-ui). Without this key, the Connect UI will not work.
+</Warning>
+
 ### Custom websockets path[](#custom-websockets-path 'Direct link to Custom websockets path')
 
 The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow.
