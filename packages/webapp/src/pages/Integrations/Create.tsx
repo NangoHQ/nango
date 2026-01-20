@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react';
+import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
@@ -42,11 +43,39 @@ export const CreateIntegration = () => {
     };
 
     if (loadingProvider || !provider) {
-        return <Skeleton className="size-10.5" />;
+        return (
+            <DashboardLayout>
+                <Helmet>
+                    <title>Create integration - Nango</title>
+                </Helmet>
+
+                <CardLayout>
+                    <CardHeader>
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col gap-6">
+                                <div className="inline-flex gap-2 items-center">
+                                    <Skeleton className="bg-bg-subtle size-10.5" />
+                                    <Skeleton className="bg-bg-subtle w-36 h-5" />
+                                </div>
+                                <Skeleton className="bg-bg-subtle w-64 h-5" />
+                            </div>
+                            <Skeleton className="bg-bg-subtle w-38 h-8" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="bg-bg-subtle w-full h-20" />
+                    </CardContent>
+                </CardLayout>
+            </DashboardLayout>
+        );
     }
 
     return (
         <DashboardLayout>
+            <Helmet>
+                <title>Create integration - Nango</title>
+            </Helmet>
+
             <CardLayout>
                 <CardHeader>
                     <div className="flex items-center justify-between gap-2">
