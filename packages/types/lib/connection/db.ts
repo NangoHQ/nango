@@ -1,5 +1,5 @@
 import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
-import type { TimestampsAndDeletedCorrect } from '../db.js';
+import type { Tags, TimestampsAndDeletedCorrect } from '../db.js';
 import type { InternalEndUser } from '../endUser/index.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { DBTeam } from '../team/db.js';
@@ -19,6 +19,7 @@ export interface DBConnection extends TimestampsAndDeletedCorrect {
     id: number;
     config_id: number;
     end_user_id: number | null;
+    tags: Tags | null;
     /**
      * @deprecated
      */

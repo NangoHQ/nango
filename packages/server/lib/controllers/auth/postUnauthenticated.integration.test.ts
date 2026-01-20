@@ -152,4 +152,157 @@ describe(`GET ${endpoint}`, () => {
         });
         expect(connectionBefore?.updated_at.toISOString()).not.toBe(connectionAfter?.updated_at.toISOString());
     });
+
+    describe('tags', () => {
+        it('should sync tags from connect session to connection', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            // Create session with tags
+            const resSession = await api.fetch('/connect/sessions', {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    end_user: { id: '1', email: 'john@example.com' },
+                    tags: { department: 'engineering', priority: 'high' }
+                }
+            });
+            isSuccess(resSession.json);
+
+            // Connect using the session token
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { connect_session_token: resSession.json.data.token },
+                params: { providerConfigKey: config.unique_key }
+            });
+            isSuccess(res.json);
+
+            // Verify the connection has the tags
+            const connection = await connectionService.checkIfConnectionExists(db.knex, {
+                connectionId: res.json.connectionId,
+                providerConfigKey: res.json.providerConfigKey,
+                environmentId: env.id
+            });
+            expect(connection?.tags).toStrictEqual({ department: 'engineering', priority: 'high' });
+        });
+
+        it('should replace tags on reconnect when new tags are provided', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            // Initial session token with tags
+            const resSession = await api.fetch('/connect/sessions', {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    end_user: { id: '1', email: 'john@example.com' },
+                    tags: { department: 'sales', region: 'west' }
+                }
+            });
+            isSuccess(resSession.json);
+
+            // Initial connect
+            const resConnect = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { connect_session_token: resSession.json.data.token },
+                params: { providerConfigKey: config.unique_key }
+            });
+            isSuccess(resConnect.json);
+
+            const connectionBefore = await connectionService.checkIfConnectionExists(db.knex, {
+                connectionId: resConnect.json.connectionId,
+                providerConfigKey: resConnect.json.providerConfigKey,
+                environmentId: env.id
+            });
+            expect(connectionBefore?.tags).toStrictEqual({ department: 'sales', region: 'west' });
+
+            // Reconnect session token with different tags
+            const resSessionReconnect = await api.fetch('/connect/sessions/reconnect', {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    connection_id: resConnect.json.connectionId,
+                    integration_id: resConnect.json.providerConfigKey,
+                    end_user: { id: '1', email: 'john@example.com' },
+                    tags: { department: 'engineering', priority: 'high' }
+                }
+            });
+            isSuccess(resSessionReconnect.json);
+
+            // Reconnect connect
+            const resReconnect = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { connect_session_token: resSessionReconnect.json.data.token },
+                params: { providerConfigKey: config.unique_key }
+            });
+            isSuccess(resReconnect.json);
+
+            // Verify the connection has the new tags (completely replaced)
+            const connectionAfter = await connectionService.checkIfConnectionExists(db.knex, {
+                connectionId: resConnect.json.connectionId,
+                providerConfigKey: resConnect.json.providerConfigKey,
+                environmentId: env.id
+            });
+            expect(connectionAfter?.tags).toStrictEqual({ department: 'engineering', priority: 'high' });
+        });
+
+        it('should not modify tags on reconnect when no tags are provided', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            // Initial session token with tags
+            const resSession = await api.fetch('/connect/sessions', {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    end_user: { id: '1', email: 'john@example.com' },
+                    tags: { department: 'sales', region: 'west' }
+                }
+            });
+            isSuccess(resSession.json);
+
+            // Initial connect
+            const resConnect = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { connect_session_token: resSession.json.data.token },
+                params: { providerConfigKey: config.unique_key }
+            });
+            isSuccess(resConnect.json);
+
+            const connectionBefore = await connectionService.checkIfConnectionExists(db.knex, {
+                connectionId: resConnect.json.connectionId,
+                providerConfigKey: resConnect.json.providerConfigKey,
+                environmentId: env.id
+            });
+            expect(connectionBefore?.tags).toStrictEqual({ department: 'sales', region: 'west' });
+
+            // Reconnect session token without tags
+            const resSessionReconnect = await api.fetch('/connect/sessions/reconnect', {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    connection_id: resConnect.json.connectionId,
+                    integration_id: resConnect.json.providerConfigKey,
+                    end_user: { id: '1', email: 'john@example.com' }
+                }
+            });
+            isSuccess(resSessionReconnect.json);
+
+            // Reconnect connect
+            const resReconnect = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { connect_session_token: resSessionReconnect.json.data.token },
+                params: { providerConfigKey: config.unique_key }
+            });
+            isSuccess(resReconnect.json);
+
+            // Verify the connection still has the original tags
+            const connectionAfter = await connectionService.checkIfConnectionExists(db.knex, {
+                connectionId: resConnect.json.connectionId,
+                providerConfigKey: resConnect.json.providerConfigKey,
+                environmentId: env.id
+            });
+            expect(connectionAfter?.tags).toStrictEqual({ department: 'sales', region: 'west' });
+        });
+    });
 });

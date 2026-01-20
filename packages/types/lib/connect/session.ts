@@ -1,3 +1,4 @@
+import type { Tags } from '../db.js';
 import type { InternalEndUser } from '../endUser/index.js';
 
 export interface ConnectSession {
@@ -11,6 +12,7 @@ export interface ConnectSession {
     readonly integrationsConfigDefaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
     readonly overrides: Record<string, ConnectSessionOverrides> | null;
     readonly endUser: InternalEndUser | null;
+    readonly tags: Tags | null;
     readonly createdAt: Date;
     readonly updatedAt: Date | null;
 }

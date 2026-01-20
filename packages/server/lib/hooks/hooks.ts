@@ -14,9 +14,9 @@ import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { pubsub } from '../pubsub.js';
+import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
-import { slackService } from '../services/slack.js';
 import { postConnectionCreation } from './connection/on/post-connection-creation.js';
 import postConnection from './connection/post-connection.js';
 
@@ -334,7 +334,8 @@ export async function credentialsTest({
         last_refresh_failure: null,
         last_refresh_success: null,
         refresh_attempts: null,
-        refresh_exhausted: false
+        refresh_exhausted: false,
+        tags: null
     };
 
     void logCtx.info(`Running automatic credentials verification`);

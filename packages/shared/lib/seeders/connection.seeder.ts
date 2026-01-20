@@ -47,6 +47,7 @@ export const createConnectionSeed = async ({
 } & Partial<
     Omit<DBConnectionDecrypted, 'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id'>
 >): Promise<DBConnection> => {
+    // TODO: This is a test data seeder, add support for tags here?
     const name = connectionId ? connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
@@ -94,6 +95,7 @@ export function getTestConnection(override?: Partial<DBConnectionDecrypted>): DB
         last_refresh_success: null,
         refresh_attempts: null,
         refresh_exhausted: false,
+        tags: null,
         ...override
     };
 }

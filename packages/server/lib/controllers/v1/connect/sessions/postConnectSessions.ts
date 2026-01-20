@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { buildTagsFromEndUser } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -31,13 +32,19 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
 
     const body: PostInternalConnectSessions['Body'] = valBody.data;
 
-    // req.body is never but we want to fake it on purpose
+    // Add origin tag to end_user.tags (original behavior)
+    const endUserWithOrigin = { ...body.end_user, tags: { ...body.end_user.tags, origin: 'nango_dashboard' } };
+
+    // Derive tags from endUser and organization for the new tags field
+    const endUserTags = buildTagsFromEndUser(endUserWithOrigin, body.organization);
+    const tags = { ...endUserTags, origin: 'nango_dashboard' };
 
     const emulatedBody = {
         allowed_integrations: body.allowed_integrations,
-        end_user: { ...body.end_user, tags: { origin: 'nango_dashboard' } },
+        end_user: endUserWithOrigin,
         organization: body.organization,
-        integrations_config_defaults: body.integrations_config_defaults
+        integrations_config_defaults: body.integrations_config_defaults,
+        tags
     } satisfies PostConnectSessions['Body'];
 
     await generateSession(res, emulatedBody);

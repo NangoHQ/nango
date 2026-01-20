@@ -1,16 +1,17 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { EndUserMapper, configService, connectionService, linkConnection, upsertEndUser } from '@nangohq/shared';
+import { EndUserMapper, configService, connectionService, linkConnection, updateConnectionTags, upsertEndUser } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionIdSchema, connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PatchPublicConnection } from '@nangohq/types';
 
 const schemaBody = z.strictObject({
-    end_user: endUserSchema.optional()
+    end_user: endUserSchema.optional(),
+    tags: connectionTagsSchema.optional()
 });
 
 const queryStringValidation = z.strictObject({
@@ -71,6 +72,15 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
             if (!connection.end_user_id) {
                 await linkConnection(trx, { endUserId: endUserRes.value.id, connection });
             }
+        });
+    }
+
+    if (body.tags) {
+        await updateConnectionTags(db.knex, {
+            connection,
+            account,
+            environment,
+            tags: body.tags
         });
     }
 

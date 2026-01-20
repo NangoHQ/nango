@@ -156,7 +156,8 @@ class ConnectionService {
             refresh_attempts: null,
             refresh_exhausted: false,
             deleted: false,
-            deleted_at: null
+            deleted_at: null,
+            tags: null
         });
         const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
@@ -201,7 +202,8 @@ class ConnectionService {
                 refresh_attempts: null,
                 refresh_exhausted: false,
                 deleted: false,
-                deleted_at: null
+                deleted_at: null,
+                tags: {}
             });
 
             const [connection] = await db.knex

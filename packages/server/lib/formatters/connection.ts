@@ -29,6 +29,7 @@ export function connectionSimpleToApi({
         provider,
         errors: activeLog,
         endUser: endUser ? endUserToApi(endUser) : null,
+        tags: data.tags || null,
         created_at: String(data.created_at),
         updated_at: String(data.updated_at)
     };
@@ -43,6 +44,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConne
         connection_config: connection.connection_config,
         credentials: connection.credentials,
         metadata: connection.metadata,
+        tags: connection.tags,
         last_fetched_at: connection.last_fetched_at ? String(connection.last_fetched_at) : null,
         credentials_expires_at: connection.credentials_expires_at ? String(connection.credentials_expires_at) : null,
         last_refresh_failure: connection.last_refresh_failure ? String(connection.last_refresh_failure) : null,
@@ -72,6 +74,7 @@ export function connectionSimpleToPublicApi({
         provider,
         errors: activeLog,
         end_user: endUser ? endUserToApi(endUser) : null,
+        tags: data.tags || null,
         metadata: data.metadata || null,
         created: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at)
     };
@@ -95,6 +98,7 @@ export function connectionFullToPublicApi({
         provider,
         errors: activeLog,
         end_user: endUser ? endUserToApi(endUser) : null,
+        tags: data.tags || null,
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
         created_at: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at),

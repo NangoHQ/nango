@@ -225,7 +225,96 @@ describe(`POST ${endpoint}`, () => {
             metadata: {},
             provider: 'github',
             provider_config_key: 'github',
+            tags: null,
             updated_at: expect.toBeIsoDate()
+        });
+    });
+
+    describe('tags', () => {
+        it('should import connection with valid tags and return tags in response', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const tags = { projectId: '123', environment: 'production' };
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' },
+                    tags
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toMatchObject({
+                provider_config_key: 'github',
+                tags
+            });
+        });
+
+        it('should import connection without tags', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toMatchObject({
+                provider_config_key: 'github',
+                tags: null
+            });
+        });
+
+        it('should fail with invalid tags', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' },
+                    tags: { '123invalid': 'value' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
+        });
+
+        it('should import connection with both tags and end_user', async () => {
+            const { env } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const tags = { projectId: '456' };
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: env.secret_key,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' },
+                    end_user: { id: 'user-123', display_name: 'Test User' },
+                    tags
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toMatchObject({
+                provider_config_key: 'github',
+                tags,
+                end_user: {
+                    id: 'user-123',
+                    display_name: 'Test User'
+                }
+            });
         });
     });
 });

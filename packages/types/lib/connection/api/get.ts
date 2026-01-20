@@ -9,6 +9,7 @@ import type {
     TbaCredentials
 } from '../../auth/api.js';
 import type { EndUserInput } from '../../connect/api.js';
+import type { Tags } from '../../db.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
@@ -19,6 +20,7 @@ export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' 
     provider: string;
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
+    tags: Tags | null;
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';
@@ -53,6 +55,7 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
     provider: string;
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
+    tags: Tags | null;
 };
 export type GetPublicConnections = Endpoint<{
     Method: 'GET';
@@ -88,6 +91,7 @@ export type PostPublicConnection = Endpoint<{
             | { type: 'CUSTOM'; app_id: string; installation_id: string }
             | { type: 'NONE' };
         end_user?: EndUserInput | undefined;
+        tags?: Tags | undefined;
     };
     Success: ApiPublicConnectionFull;
 }>;
@@ -126,6 +130,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     provider: string;
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
+    tags: Tags | null;
     credentials: AllAuthCredentials;
 };
 export type GetPublicConnection = Endpoint<{
@@ -155,6 +160,7 @@ export type PatchPublicConnection = Endpoint<{
     };
     Body: {
         end_user?: EndUserInput | undefined;
+        tags?: Tags | undefined;
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config'>;

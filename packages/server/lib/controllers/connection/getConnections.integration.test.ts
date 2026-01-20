@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
@@ -62,7 +63,43 @@ describe(`GET ${endpoint}`, () => {
                     id: conn.id,
                     metadata: null,
                     provider: 'github',
-                    provider_config_key: 'github'
+                    provider_config_key: 'github',
+                    tags: null
+                }
+            ]
+        });
+    });
+
+    it('should list connection with tags', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        // Add tags to the connection directly
+        await db.knex
+            .update({ tags: { department: 'sales', tier: 'enterprise' } })
+            .from('_nango_connections')
+            .where('id', conn.id);
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {}
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            connections: [
+                {
+                    connection_id: conn.connection_id,
+                    created: expect.toBeIsoDateTimezone(),
+                    end_user: null,
+                    errors: [],
+                    id: conn.id,
+                    metadata: null,
+                    provider: 'github',
+                    provider_config_key: 'github',
+                    tags: { department: 'sales', tier: 'enterprise' }
                 }
             ]
         });

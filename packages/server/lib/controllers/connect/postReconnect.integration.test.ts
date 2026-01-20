@@ -254,4 +254,68 @@ describe(`POST ${endpoint}`, () => {
             });
         });
     });
+
+    describe('tags', () => {
+        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan };
+        let connection: DBConnection;
+
+        beforeEach(async () => {
+            seed = await seeders.seedAccountEnvAndUser();
+            const endUser = await seeders.createEndUser({ environment: seed.env, account: seed.account });
+
+            await seeders.createConfigSeed(seed.env, 'github', 'github');
+            connection = await seeders.createConnectionSeed({ env: seed.env, provider: 'github' });
+            await linkConnection(db.knex, { endUserId: endUser.id, connection });
+        });
+
+        it('should create reconnect session with tags', async () => {
+            const tags = { projectId: '123', orgId: '456' };
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    tags
+                }
+            });
+
+            isSuccess(res.json);
+
+            // Verify tags were stored in session
+            const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
+            expect(session.connectSession.tags).toStrictEqual(tags);
+        });
+
+        it('should succeed without tags', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github'
+                }
+            });
+
+            isSuccess(res.json);
+        });
+
+        it('should fail with invalid tags', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.env.secret_key,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    tags: { '123invalid': 'value' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
+        });
+    });
 });

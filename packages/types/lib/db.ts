@@ -14,3 +14,9 @@ export interface DeletedCorrect {
 
 export interface TimestampsAndDeleted extends Timestamps, Deleted {}
 export interface TimestampsAndDeletedCorrect extends Timestamps, DeletedCorrect {}
+
+/**
+ * Key-value tags for categorization and filtering.
+ * Keys and values must be lowercase with no spaces.
+ */
+export type Tags = Record<string, string>;

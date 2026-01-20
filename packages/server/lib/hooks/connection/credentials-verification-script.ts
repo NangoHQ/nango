@@ -59,7 +59,8 @@ async function execute(
         last_refresh_failure: null,
         last_refresh_success: null,
         refresh_attempts: null,
-        refresh_exhausted: false
+        refresh_exhausted: false,
+        tags: null
     };
 
     const activeSpan = tracer.scope().active();

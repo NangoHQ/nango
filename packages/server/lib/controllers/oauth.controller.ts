@@ -26,7 +26,8 @@ import {
     makeUrl,
     oauth2Client,
     providerClientManager,
-    syncEndUserToConnection
+    syncEndUserToConnection,
+    syncTagsToConnection
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -510,6 +511,7 @@ class OAuthController {
 
             if (isConnectSession) {
                 await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
+                await syncTagsToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -1215,6 +1217,12 @@ class OAuthController {
                         account,
                         environment
                     });
+                    await syncTagsToConnection(db.knex, {
+                        connectSession: connectSession.connectSession,
+                        connection: upsertedConnection.connection,
+                        account,
+                        environment
+                    });
                 }
             }
 
@@ -1616,6 +1624,12 @@ class OAuthController {
                     account,
                     environment
                 });
+                await syncTagsToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
             }
 
             void logCtx.debug(
@@ -1872,6 +1886,12 @@ class OAuthController {
                         account,
                         environment
                     });
+                    await syncTagsToConnection(db.knex, {
+                        connectSession: connectSession.connectSession,
+                        connection: updatedConnection.connection,
+                        account,
+                        environment
+                    });
                 }
 
                 void logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
@@ -2037,6 +2057,12 @@ class OAuthController {
 
                 connectSession = connectSessionRes.value;
                 await syncEndUserToConnection(db.knex, {
+                    connectSession: connectSession.connectSession,
+                    connection: updatedConnection.connection,
+                    account,
+                    environment
+                });
+                await syncTagsToConnection(db.knex, {
                     connectSession: connectSession.connectSession,
                     connection: updatedConnection.connection,
                     account,

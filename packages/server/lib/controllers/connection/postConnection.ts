@@ -10,6 +10,7 @@ import {
     getProvider,
     githubAppClient,
     linkConnection,
+    updateConnectionTags,
     upsertEndUser
 } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -23,6 +24,7 @@ import {
     connectionCredentialsOauth2CCSchema,
     connectionCredentialsOauth2Schema,
     connectionCredentialsTBASchema,
+    connectionTagsSchema,
     endUserSchema
 } from '../../helpers/validation.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess } from '../../hooks/hooks.js';
@@ -86,7 +88,8 @@ const schemaBody = z.strictObject({
             })
             .extend(connectionCredentialsGithubAppSchema.shape)
     ]),
-    end_user: endUserSchema.optional()
+    end_user: endUserSchema.optional(),
+    tags: connectionTagsSchema.optional()
 });
 
 export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (req, res) => {
@@ -340,6 +343,16 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
 
             await linkConnection(trx, { endUserId: endUserRes.value.id, connection: updatedConnection.connection });
         });
+    }
+
+    if (body.tags) {
+        await updateConnectionTags(db.knex, {
+            connection: updatedConnection.connection,
+            account,
+            environment,
+            tags: body.tags
+        });
+        updatedConnection.connection.tags = body.tags;
     }
 
     const connection = encryptionManager.decryptConnection(updatedConnection.connection);
