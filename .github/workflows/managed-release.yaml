@@ -421,7 +421,7 @@ jobs:
                   git tag -a "$TAG_NAME" "$SHA" -m "Managed release ${TAG_NAME}"
                   git push origin "$TAG_NAME"
 
-            - name: Commit and create PR for version changes
+            - name: Update version manifest in master
               if: ${{ !env.ACT }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
