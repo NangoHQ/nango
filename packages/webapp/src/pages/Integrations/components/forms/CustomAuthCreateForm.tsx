@@ -13,7 +13,7 @@ import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
 const formSchema = z.object({
     appId: z.string().optional(),
-    appLink: z.string().optional(),
+    appLink: z.string().url('Must be a valid URL (e.g., https://example.com)').optional(),
     clientId: z.string().optional(),
     clientSecret: z.string().optional(),
     privateKey: z.string().startsWith('-----BEGIN RSA PRIVATE KEY-----').endsWith('-----END RSA PRIVATE KEY-----').optional()

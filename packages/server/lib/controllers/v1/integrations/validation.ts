@@ -26,7 +26,7 @@ export const integrationAuthTypeAppSchema = z
     .object({
         authType: z.enum(['APP']),
         appId: z.string().min(1).max(255).optional(),
-        appLink: z.string().min(1).optional(),
+        appLink: z.url().min(1).optional(),
         privateKey: privateKeySchema.optional()
     })
     .strict();
@@ -37,7 +37,7 @@ export const integrationAuthTypeCustomSchema = z
         clientId: z.string().min(1).max(255).optional(),
         clientSecret: z.string().min(1).optional(),
         appId: z.string().min(1).max(255).optional(),
-        appLink: z.string().min(1).optional(),
+        appLink: z.url().min(1).optional(),
         privateKey: privateKeySchema.optional()
     })
     .strict();

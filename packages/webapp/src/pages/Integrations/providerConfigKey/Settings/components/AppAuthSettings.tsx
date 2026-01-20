@@ -1,5 +1,3 @@
-import z from 'zod';
-
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 import { InfoTooltip } from './InfoTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
@@ -8,6 +6,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -21,14 +20,6 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { toast } = useToast();
 
     const setupUrl = (environment.callback_url || defaultCallback()).replace('oauth/callback', 'app-auth/connect');
-
-    const validateUrl = (value: string): string | null => {
-        if (!value) {
-            return null; // Empty values are allowed (optional fields)
-        }
-        const result = z.string().url('Must be a valid URL (e.g., https://example.com)').safeParse(value);
-        return result.success ? null : result.error.issues[0]?.message || null;
-    };
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {

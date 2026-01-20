@@ -1,11 +1,10 @@
-import z from 'zod';
-
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -19,14 +18,6 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
     const { toast } = useToast();
 
     const callbackUrl = environment.callback_url || defaultCallback();
-
-    const validateUrl = (value: string): string | null => {
-        if (!value) {
-            return null; // Empty values are allowed (optional fields)
-        }
-        const result = z.string().url('Must be a valid URL (e.g., https://example.com)').safeParse(value);
-        return result.success ? null : result.error.issues[0]?.message || null;
-    };
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
