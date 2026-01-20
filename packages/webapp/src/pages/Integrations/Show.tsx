@@ -73,6 +73,12 @@ export const IntegrationsList = () => {
 
     const debouncedFilterIntegrations = useMemo(() => debounce(filterIntegrations, 300), [filterIntegrations]);
 
+    useEffect(() => {
+        return () => {
+            debouncedFilterIntegrations.cancel();
+        };
+    }, [debouncedFilterIntegrations]);
+
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
             debouncedFilterIntegrations(event.currentTarget.value);

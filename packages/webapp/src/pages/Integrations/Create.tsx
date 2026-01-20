@@ -110,6 +110,12 @@ export const CreateIntegration = () => {
 
     const debouncedFilterProviders = useMemo(() => debounce(filterProviders, 300), [filterProviders]);
 
+    useEffect(() => {
+        return () => {
+            debouncedFilterProviders.cancel();
+        };
+    }, [debouncedFilterProviders]);
+
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
             debouncedFilterProviders(event.currentTarget.value);
