@@ -13,6 +13,7 @@ import { Button } from '@/components-v2/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components-v2/ui/form';
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -64,9 +65,20 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
     };
 
     return (
-        <Navigation defaultValue="template" orientation="horizontal">
+        <Navigation defaultValue={provider.preConfigured ? 'template' : 'custom'} orientation="horizontal">
             <NavigationList>
-                <NavigationTrigger value="template">Nango developer app</NavigationTrigger>
+                {provider.preConfigured ? (
+                    <NavigationTrigger value="template">Nango developer app</NavigationTrigger>
+                ) : (
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <NavigationTrigger value="template" disabled>
+                                Nango developer app
+                            </NavigationTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">Nango doesn&apos;t provide test credentials for this API yet</TooltipContent>
+                    </Tooltip>
+                )}
                 <NavigationTrigger value="custom">Custom developer app</NavigationTrigger>
             </NavigationList>
             <NavigationContent value="template">
