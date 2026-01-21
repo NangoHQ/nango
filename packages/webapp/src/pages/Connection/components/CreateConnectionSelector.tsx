@@ -107,7 +107,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return;
         }
 
-        analyticsTrack('Authorize Connection Clicked', {
+        analyticsTrack('web:create_connection_button:clicked', {
             provider: integration?.provider || 'unknown'
         });
 
