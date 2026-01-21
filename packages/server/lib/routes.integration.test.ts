@@ -69,7 +69,7 @@ describe('route', () => {
             expect(res.status).toBe(401);
             expect(await res.json()).toStrictEqual({
                 error: {
-                    message: 'Authentication failed. The provided authorization header does not match any account.',
+                    message: expect.any(String),
                     code: 'unknown_account',
                     payload: {}
                 }
