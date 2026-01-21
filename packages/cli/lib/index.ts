@@ -17,6 +17,7 @@ import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { initAI } from './ai/init.js';
 import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
+import { cloneTemplate } from './services/clone.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
@@ -593,6 +594,27 @@ program
             }
         } else {
             console.log(chalk.red(`Failed to generate tests`));
+        }
+    });
+
+program
+    .command('clone')
+    .description('Clone integration templates from the integration-templates repository')
+    .argument('<template>', 'Template to clone (e.g., "github", "github/actions", "github/actions/list-repos")')
+    .option('-f, --force', 'Overwrite existing files without prompting', false)
+    .action(async function (this: Command, template: string) {
+        const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
+        const fullPath = process.cwd();
+
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Clone skipped - only available for zero yaml projects`));
+            return;
+        }
+
+        const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
+        if (!success) {
+            process.exitCode = 1;
         }
     });
 
