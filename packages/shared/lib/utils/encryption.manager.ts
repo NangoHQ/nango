@@ -8,6 +8,7 @@ import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
+import type { Knex } from '@nangohq/database';
 import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
@@ -272,7 +273,10 @@ export class EncryptionManager extends Encryption {
             }
 
             environment = await this.encryptEnvironment(environment);
-            await db.knex.from<DBEnvironment>(`_nango_environments`).where({ id: environment.id }).update(environment);
+            await db.knex.transaction(async (txr) => {
+                await txr<DBEnvironment>(`_nango_environments`).where({ id: environment.id }).update(environment);
+                await this.upsertDefaultAPISecret(txr, environment);
+            });
         }
 
         const connections = await db.knex.select('*').from<DBConnectionDecrypted>(`_nango_connections`);
@@ -313,6 +317,28 @@ export class EncryptionManager extends Encryption {
         }
 
         logger.info('🔐✅ Encryption of database complete!');
+    }
+
+    public async upsertDefaultAPISecret(trx: Knex, env: DBEnvironment) {
+        // Note: Some environments' secrets are unencrypted. They don't have an IV or AuthTag.
+        await trx<DBAPISecret>('api_secrets')
+            .insert({
+                environment_id: env.id,
+                display_name: 'default',
+                secret: env.secret_key,
+                iv: env.secret_key_iv ?? '',
+                tag: env.secret_key_tag ?? '',
+                hashed: env.secret_key_hashed!,
+                is_default: true,
+                updated_at: new Date()
+            })
+            .onConflict(trx.raw('(environment_id) where is_default = true'))
+            .merge(['secret', 'iv', 'tag', 'hashed', 'updated_at']);
+    }
+
+    public async getDefaultAPISecret(trx: Knex, environmentId: number): Promise<DBAPISecret | null> {
+        const rows = await trx<DBAPISecret>('api_secrets').select('*').where({ environment_id: environmentId, is_default: true });
+        return rows[0] ?? null;
     }
 }
 

@@ -63,7 +63,7 @@ export interface DBExternalWebhook extends Timestamps {
 export interface DBAPISecret extends Timestamps {
     id: number;
     environment_id: number;
-    name: string;
+    display_name: string;
     secret: string;
     iv: string;
     tag: string;

@@ -58,7 +58,7 @@ describe('Environment service', () => {
         const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
         expect(env.secret_key).toBeUUID();
 
-        const defaultSecret = await environmentService.getDefaultAPISecret(db.knex, env.id);
+        const defaultSecret = await encryptionManager.getDefaultAPISecret(db.knex, env.id);
         expect(defaultSecret).not.toBeNull();
         expect(defaultSecret!.hashed).toEqual(env.secret_key_hashed);
         expect(defaultSecret?.is_default).toBe(true);
@@ -83,7 +83,7 @@ describe('Environment service', () => {
         expect(env3.secret_key).toEqual(env2.pending_secret_key);
         expect(env3.secret_key_hashed).toEqual(await hashSecretKey(env3.secret_key));
 
-        const defaultSecret2 = await environmentService.getDefaultAPISecret(db.knex, env.id);
+        const defaultSecret2 = await encryptionManager.getDefaultAPISecret(db.knex, env.id);
         expect(defaultSecret2).not.toBeNull();
         expect(defaultSecret2!.hashed).toEqual(env3.secret_key_hashed);
         expect(defaultSecret2?.is_default).toBe(true);

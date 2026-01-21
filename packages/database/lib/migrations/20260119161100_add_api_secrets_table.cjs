@@ -4,36 +4,40 @@ exports.config = { transaction: false };
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
+    /*
+     * Corresponding model: DBAPISecret.
+     * Column is_default indicates whether this is the default API key for this environment, e.g. for use in runners.
+     */
     await knex.raw(`
-        create table if not exists api_secrets (
-            id             serial primary key,
-            environment_id integer not null references _nango_environments(id),
-            name           varchar(255) not null,
-            secret         varchar(255) not null,
-            iv             varchar(255) not null,
-            tag            varchar(255) not null,
-            hashed         varchar(255) not null,
-            is_default     boolean not null default false,
-            created_at     timestamptz not null default CURRENT_TIMESTAMP,
-            updated_at     timestamptz not null default CURRENT_TIMESTAMP
+        CREATE TABLE IF NOT EXISTS api_secrets (
+            id             SERIAL PRIMARY KEY,
+            environment_id INTEGER NOT NULL REFERENCES _nango_environments(id),
+            display_name   VARCHAR(255) NOT NULL,
+            secret         VARCHAR(255) NOT NULL,
+            iv             VARCHAR(255) NOT NULL,
+            tag            VARCHAR(255) NOT NULL,
+            hashed         VARCHAR(255) NOT NULL,
+            is_default     BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
 
-        create index if not exists api_secrets_environment_id on api_secrets (environment_id);
+        CREATE INDEX IF NOT EXISTS api_secrets_environment_id ON api_secrets (environment_id);
 
-        create unique index if not exists api_secrets_one_default_per_environment
-            on api_secrets (environment_id)
-            where is_default = true;
+        CREATE UNIQUE INDEX IF NOT EXISTS api_secrets_one_default_per_environment
+            ON api_secrets (environment_id)
+            WHERE is_default = true;
 
-        insert into api_secrets (environment_id, name, secret, iv, tag, hashed, is_default)
-            select
-                id                              as environment_id,
-                'default'                       as name,
-                coalesce(secret_key, '')        as secret,
-                coalesce(secret_key_iv, '')     as iv,
-                coalesce(secret_key_tag, '')    as tag,
-                coalesce(secret_key_hashed, '') as hashed,
-                true                            as is_default
-            from
+        INSERT INTO api_secrets (environment_id, display_name, secret, iv, tag, hashed, is_default)
+            SELECT
+                id                              AS environment_id,
+                'default'                       AS display_name,
+                coalesce(secret_key, '')        AS secret,
+                coalesce(secret_key_iv, '')     AS iv,
+                coalesce(secret_key_tag, '')    AS tag,
+                coalesce(secret_key_hashed, '') AS hashed,
+                TRUE                            AS is_default
+            FROM
                 _nango_environments;
     `);
 };
@@ -43,6 +47,6 @@ exports.up = async function (knex) {
  */
 exports.down = async function (knex) {
     await knex.raw(`
-        drop table if exists api_secrets;
+        DROP TABLE IF EXISTS api_secrets;
     `);
 };
