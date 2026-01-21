@@ -67,7 +67,7 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
 
     const kvStore = await getKVStore('customer');
     const abort = setInterval(async () => {
-        const shouldAbort = await kvStore.exists(`function:sync:${request.taskId}:abort`);
+        const shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
         if (shouldAbort) {
             logger.info('Aborting task', { taskId: request.taskId });
             abortController.abort();
