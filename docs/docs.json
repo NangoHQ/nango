@@ -314,6 +314,10 @@
     {
       "source": "/integrations/all/zoho-crm",
       "destination": "/api-integrations/zoho-crm"
+    },
+    {
+      "source": "/implementation-guides/building-integrations/extend-reference-implementation",
+      "destination": "/implementation-guides/building-integrations/customize-integration-template"
     }
   ],
   "navigation": {
@@ -449,7 +453,7 @@
             "pages": [
               "implementation-guides/building-integrations/functions-setup",
               "implementation-guides/building-integrations/leverage-ai-agents",
-              "implementation-guides/building-integrations/extend-reference-implementation",
+              "implementation-guides/building-integrations/customize-integration-template",
               "implementation-guides/building-integrations/unified-apis",
               "implementation-guides/building-integrations/rate-limits",
               "implementation-guides/building-integrations/customer-configuration",
