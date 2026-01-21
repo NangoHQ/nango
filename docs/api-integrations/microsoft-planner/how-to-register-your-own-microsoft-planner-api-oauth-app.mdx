@@ -1,0 +1,53 @@
+---
+title: 'How to register your own Microsoft Planner OAuth app'
+sidebarTitle: 'Microsoft Planner Setup'
+description: 'Register an OAuth app with Microsoft Planner and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Microsoft Planner (via Microsoft Entra ID) to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Microsoft Planner account.
+
+<Steps>
+  <Step title="Create a Microsoft account and Azure account">
+    If you don't already have them, sign up for a [Microsoft account](https://account.microsoft.com/account) and an [Azure account](https://azure.microsoft.com/free).
+  </Step>
+  <Step title="Register an application in Microsoft Entra ID">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as at least an Application Developer.
+    2. If you have access to multiple tenants, use the Settings icon in the top menu to switch to the tenant in which you want to register the application.
+    3. From the search bar at the top of the Azure portal, search for **App registrations** and select it. Then choose **New registration**. Or from your left navigation tab, navigate to **Applications** > **App registrations** then choose **New registration**.
+    4. Enter a meaningful name for your application, for example "Nango Integration".
+    5. Under **Supported account types** you need to decide who can install your integration:
+       - **Accounts in any organizational directory** - Any user account in a professional Microsoft organization (Business, School, etc.)
+       - **Accounts in any organizational directory and personal Microsoft accounts** - The accounts from the first option, plus personal Microsoft accounts (pick this unless you want to restrict your integration to business accounts)
+    6. Leave the **Redirect URI** section blank for now; we'll configure it in a later step.
+    7. Click **Register** to complete the app registration.
+  </Step>
+  <Step title="Note your application (client) ID">
+    After registration, you'll be taken to the application's Overview page. Record the **Application (client) ID**, which uniquely identifies your application and is used in your application's code as part of validating security tokens.
+  </Step>
+  <Step title="Add a redirect URI">
+    1. In the left sidebar, select **Authentication**.
+    2. Under **Platform configurations**, select **Add a platform**.
+    3. Select **Web** as the platform type.
+    4. Enter `https://api.nango.dev/oauth/callback` as the Redirect URI.
+    5. Under **Advanced settings**, keep **Allow public client flows** set to the default **No** for web applications.
+    6. Click **Configure** to save your changes.
+  </Step>
+  <Step title="Add API permissions">
+    1. In the left sidebar, select **API permissions**.
+    2. Click **Add a permission**.
+    3. Select **Microsoft Graph** to integrate with **Microsoft Planner**.
+    4. Select the required permissions from the **Delegated permissions section**.
+    5. Select the specific permissions your app requires. Please refer to the table below for some of the [commonly used scopes](#common-scopes).
+  </Step>
+  <Step title="Add a client secret">
+    1. In the left sidebar, select **Certificates & secrets**.
+    2. Under **Client secrets**, select **New client secret**.
+    3. Enter a description and choose an expiry period.
+    4. Click **Add** and record the value of the client secret immediately (it will not be shown again).
+  </Step>
+  <Step title="Configure credentials in Nango">
+    1. In the [Nango dashboard](https://app.nango.dev/dev/integrations), select your Microsoft Planner integration.
+    2. Enter the **Client ID** and **Client Secret** you obtained from Azure.
+    3. Save your changes.
+  </Step>
+</Steps>
