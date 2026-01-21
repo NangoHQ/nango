@@ -4,7 +4,6 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -30,13 +29,11 @@ root.render(
     <React.StrictMode>
         <SentryErrorBoundary fallback={<ErrorBoundary />}>
             <PostHogProvider client={posthog}>
-                <BrowserRouter>
-                    <NuqsAdapter>
-                        <QueryClientProvider client={queryClient}>
-                            <App />
-                        </QueryClientProvider>
-                    </NuqsAdapter>
-                </BrowserRouter>
+                <NuqsAdapter>
+                    <QueryClientProvider client={queryClient}>
+                        <App />
+                    </QueryClientProvider>
+                </NuqsAdapter>
             </PostHogProvider>
         </SentryErrorBoundary>
     </React.StrictMode>
