@@ -10310,6 +10310,39 @@ onelogin:
             suffix: .onelogin.com
             doc_section: '#step-1-finding-your-subdomain'
 
+oomnitza:
+    display_name: Oomnitza
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.oomnitza.com
+        headers:
+            authorization2: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/v3/assets/meta
+    docs: https://nango.dev/docs/api-integrations/oomnitza
+    docs_connect: https://nango.dev/docs/api-integrations/oomnitza/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Oomnitza Subdomain
+            description: The subdomain of your Oomnitza instance
+            example: mycompany
+            prefix: https://
+            suffix: .oomnitza.com
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Oomnitza API token
+            doc_section: '#step-2-generating-your-api-token'
+
 openai:
     display_name: OpenAI
     categories:
@@ -12835,6 +12868,19 @@ sap-success-factors:
         grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
         assertion: ${credentials.assertion}
         new_token: true
+    assertion:
+        key: ${assertionOption.privateKey}
+        issuer: www.successfactors.com
+        lifetimeInSeconds: '315360000'
+        audiences: www.successfactors.com
+        attributes:
+            api_key: ${credentials.apiKey}
+            use_username: true
+            use_email: false
+            external_user: false
+        sessionIndex: ${random}
+        nameIdentifier: ${assertionOption.userName}
+        recipient: https://${connectionConfig.apiServer}/oauth/token
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
@@ -12843,8 +12889,8 @@ sap-success-factors:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/sap-success-factors
-    docs_connect: https://nango.dev/docs/integrations/all/sap-success-factors/connect
+    docs: https://nango.dev/docs/api-integrations/sap-success-factors
+    docs_connect: https://nango.dev/docs/api-integrations/sap-success-factors/connect
     connection_config:
         apiServer:
             type: string
@@ -12871,13 +12917,24 @@ sap-success-factors:
             secret: true
             example: YzA4MTVhMTQzZTUzMjc3NTk0ZDY2Nzc1ZmVkOA
             pattern: ^[A-Za-z0-9+/]{32,44}={0,2}$
-            doc_section: '#step-3-generating-your-api-key'
+            doc_section: '#step-3-finding-your-api-key-and-private-key'
         assertion:
             type: string
-            title: SAML Assertion
-            description: The SAML Assertion generated for your SAP SuccessFactors account
-            secret: true
-            doc_section: '#step-4-generating-your-saml-assertion'
+            title: ''
+            description: ''
+            automated: true
+    assertion_option:
+        userName:
+            type: string
+            title: Username
+            description: The username of your SAP SuccessFactors account
+            example: johnDoe
+            doc_section: '#step-4-finding-your-username'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The Private Key for your SAP SuccessFactors Oauth Client
+            doc_section: '#step-3-finding-your-api-key-and-private-key'
 
 sap-odata-oauth2-cc:
     display_name: SAP S/4HANA Cloud (Client Credentials)
