@@ -11,7 +11,7 @@ exports.up = async function (knex) {
     await knex.raw(`
         CREATE TABLE IF NOT EXISTS api_secrets (
             id             SERIAL PRIMARY KEY,
-            environment_id INTEGER NOT NULL REFERENCES _nango_environments(id),
+            environment_id INTEGER NOT NULL REFERENCES _nango_environments(id) ON DELETE CASCADE,
             display_name   VARCHAR(255) NOT NULL,
             secret         VARCHAR(255) NOT NULL,
             iv             VARCHAR(255) NOT NULL,
