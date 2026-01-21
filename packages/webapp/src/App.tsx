@@ -1,7 +1,7 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { useEffect, useRef } from 'react';
-import { Navigate, RouterProvider, useParams } from 'react-router-dom';
+import { Navigate, RouterProvider } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { SWRConfig } from 'swr';
@@ -60,14 +60,129 @@ const GettingStartedRoute = () => {
     return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
 };
 
-// Wrapper component for activity redirect that uses route params
-const ActivityRedirect = () => {
-    const { env } = useParams<{ env: string }>();
-    return <Navigate to={`/${env}/logs`} replace={true} />;
-};
-
-const buildRoutes = () => {
-    const authRoutes = globalEnv.features.auth
+const router = sentryCreateBrowserRouter([
+    {
+        path: '/',
+        element: <Root />
+    },
+    {
+        element: <PrivateRoute />,
+        children: [
+            {
+                path: '/:env',
+                element: <Homepage />,
+                handle: {
+                    breadcrumb: 'Metrics'
+                }
+            },
+            {
+                path: '/dev/getting-started',
+                element: <GettingStartedRoute />,
+                handle: { breadcrumb: 'Getting started' } as BreadcrumbHandle
+            },
+            {
+                path: '/:env/integrations',
+                handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
+                children: [
+                    {
+                        index: true,
+                        element: <IntegrationsList />
+                    },
+                    {
+                        path: 'create',
+                        element: <CreateIntegration />,
+                        handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle
+                    },
+                    {
+                        path: ':providerConfigKey',
+                        handle: {
+                            breadcrumb: (params) => params.providerConfigKey || 'Integration'
+                        } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <ShowIntegration />
+                            },
+                            {
+                                path: 'functions/:functionName',
+                                element: <FunctionsOne />,
+                                handle: {
+                                    breadcrumb: (params) => params.functionName || 'Function'
+                                } as BreadcrumbHandle
+                            },
+                            {
+                                path: '*',
+                                element: <ShowIntegration />
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                path: '/:env/connections',
+                handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
+                children: [
+                    {
+                        index: true,
+                        element: <ConnectionList />
+                    },
+                    {
+                        path: 'create',
+                        element: <ConnectionCreate />,
+                        handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'create-legacy',
+                        element: <ConnectionCreateLegacy />,
+                        handle: { breadcrumb: 'Create Connection (Legacy)' } as BreadcrumbHandle
+                    },
+                    {
+                        path: ':providerConfigKey/:connectionId',
+                        element: <ConnectionShow />,
+                        handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
+                    }
+                ]
+            },
+            {
+                path: '/:env/logs',
+                element: <LogsShow />,
+                handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
+            },
+            {
+                path: '/:env/environment-settings',
+                element: <EnvironmentSettings />,
+                handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
+            },
+            {
+                path: '/:env/project-settings',
+                element: <Navigate to="/environment-settings" />
+            },
+            {
+                path: '/:env/account-settings',
+                element: <Navigate to="/team-settings" />
+            },
+            {
+                path: '/:env/team-settings',
+                element: <TeamSettings />,
+                handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+            },
+            {
+                path: '/:env/team/billing',
+                element: <TeamBilling />,
+                handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
+            },
+            {
+                path: '/:env/user-settings',
+                element: <UserSettings />,
+                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+            }
+        ]
+    },
+    {
+        path: '/hn-demo',
+        element: <Navigate to={'/signup'} />
+    },
+    ...(globalEnv.features.auth
         ? [
               {
                   path: '/signin',
@@ -102,143 +217,12 @@ const buildRoutes = () => {
                   element: <Signup />
               }
           ]
-        : [];
-
-    return [
-        {
-            path: '/',
-            element: <Root />
-        },
-        {
-            element: <PrivateRoute />,
-            children: [
-                {
-                    path: '/:env',
-                    element: <Homepage />,
-                    handle: {
-                        breadcrumb: 'Metrics'
-                    }
-                },
-                {
-                    path: '/dev/getting-started',
-                    element: <GettingStartedRoute />,
-                    handle: { breadcrumb: 'Getting started' } as BreadcrumbHandle
-                },
-                {
-                    path: '/:env/integrations',
-                    handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
-                    children: [
-                        {
-                            index: true,
-                            element: <IntegrationsList />
-                        },
-                        {
-                            path: 'create',
-                            element: <CreateIntegration />,
-                            handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle
-                        },
-                        {
-                            path: ':providerConfigKey',
-                            handle: {
-                                breadcrumb: (params) => params.providerConfigKey || 'Integration'
-                            } as BreadcrumbHandle,
-                            children: [
-                                {
-                                    index: true,
-                                    element: <ShowIntegration />
-                                },
-                                {
-                                    path: 'functions/:functionName',
-                                    element: <FunctionsOne />,
-                                    handle: {
-                                        breadcrumb: (params) => params.functionName || 'Function'
-                                    } as BreadcrumbHandle
-                                },
-                                {
-                                    path: '*',
-                                    element: <ShowIntegration />
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    path: '/:env/connections',
-                    handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
-                    children: [
-                        {
-                            index: true,
-                            element: <ConnectionList />
-                        },
-                        {
-                            path: 'create',
-                            element: <ConnectionCreate />,
-                            handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
-                        },
-                        {
-                            path: 'create-legacy',
-                            element: <ConnectionCreateLegacy />,
-                            handle: { breadcrumb: 'Create Connection (Legacy)' } as BreadcrumbHandle
-                        },
-                        {
-                            path: ':providerConfigKey/:connectionId',
-                            element: <ConnectionShow />,
-                            handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
-                        }
-                    ]
-                },
-                {
-                    path: '/:env/activity',
-                    element: <ActivityRedirect />
-                },
-                {
-                    path: '/:env/logs',
-                    element: <LogsShow />,
-                    handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
-                },
-                {
-                    path: '/:env/environment-settings',
-                    element: <EnvironmentSettings />,
-                    handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
-                },
-                {
-                    path: '/:env/project-settings',
-                    element: <Navigate to="/environment-settings" />
-                },
-                {
-                    path: '/:env/account-settings',
-                    element: <Navigate to="/team-settings" />
-                },
-                {
-                    path: '/:env/team-settings',
-                    element: <TeamSettings />,
-                    handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
-                },
-                {
-                    path: '/:env/team/billing',
-                    element: <TeamBilling />,
-                    handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
-                },
-                {
-                    path: '/:env/user-settings',
-                    element: <UserSettings />,
-                    handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
-                }
-            ]
-        },
-        {
-            path: '/hn-demo',
-            element: <Navigate to={'/signup'} />
-        },
-        ...authRoutes,
-        {
-            path: '*',
-            element: <NotFound />
-        }
-    ];
-};
-
-const router = sentryCreateBrowserRouter(buildRoutes());
+        : []),
+    {
+        path: '*',
+        element: <NotFound />
+    }
+]);
 
 const App = () => {
     const env = useStore((state) => state.env);
