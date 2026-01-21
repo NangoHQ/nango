@@ -1,7 +1,7 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { useEffect, useRef } from 'react';
-import { Navigate, RouterProvider } from 'react-router-dom';
+import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { SWRConfig } from 'swr';
@@ -58,6 +58,17 @@ const GettingStartedRoute = () => {
     }
 
     return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+};
+
+const RedirectWithEnv = ({ path }: { path: string }) => {
+    const env = useStore((state) => state.env);
+    const params = useParams<Record<string, string>>();
+
+    const pathWithParams = Object.entries(params)
+        .filter(([_, value]) => value !== undefined)
+        .reduce((acc, [key, value]) => acc.replace(`:${key}`, value!), path);
+
+    return <Navigate to={`/${env}/${pathWithParams}`} replace />;
 };
 
 const router = sentryCreateBrowserRouter([
@@ -119,6 +130,10 @@ const router = sentryCreateBrowserRouter([
                 ]
             },
             {
+                path: '/:env/integration/:providerConfigKey',
+                element: <RedirectWithEnv path="integrations/:providerConfigKey" />
+            },
+            {
                 path: '/:env/connections',
                 handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
                 children: [
@@ -147,6 +162,10 @@ const router = sentryCreateBrowserRouter([
                 path: '/:env/logs',
                 element: <LogsShow />,
                 handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
+            },
+            {
+                path: '/:env/activity',
+                element: <RedirectWithEnv path="logs" />
             },
             {
                 path: '/:env/environment-settings',
