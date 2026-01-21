@@ -14,9 +14,10 @@ import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
 import { Err, Ok, errorToObject, isEnterprise, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
-import { Locks } from './sdk/locks.js';
+import { MapLocks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
 
+import type { Locks } from './sdk/locks.js';
 import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
@@ -41,7 +42,7 @@ export async function exec({
     code,
     codeParams,
     abortController = new AbortController(),
-    locks = new Locks()
+    locks = new MapLocks()
 }: {
     nangoProps: NangoProps;
     code: string;

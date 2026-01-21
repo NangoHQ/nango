@@ -12,7 +12,7 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
@@ -124,9 +124,14 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
+        const runtimeContext: RuntimeContext = {
+            plan: plan
+        };
+
         const res = await startScript({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx
         });
 

@@ -28,6 +28,7 @@ on:
                     - metering
                     - connect_ui
                     - app_ui
+                    - lambda
 
 jobs:
     deploy_app_ui:
@@ -135,7 +136,7 @@ jobs:
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy:
-        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda'
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -195,4 +196,48 @@ jobs:
                   curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_k8s/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
-                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
+                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
+    deploy_lambda:
+        if: inputs.service == 'lambda' && inputs.stage != 'replit'
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+        environment: ${{ inputs.stage }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.DEPLOY_LAMBDA_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+            - name: Build and Push Lambda Image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: packages/lambda-runner/Dockerfile.lambda
+                  platforms: linux/arm64
+                  push: true
+                  provenance: false
+                  tags: |
+                      ${{ steps.login-ecr.outputs.registry }}/${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}
+                  cache-from: type=gha,scope=lambda
+                  cache-to: type=gha,scope=lambda,mode=max
+            - name: Rollout image
+              env:
+                  ENVIRONMENT: ${{ inputs.stage }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+              run: |
+                  curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_lambda/rollout" \
+                    --header "authorization: Bearer $INTERNAL_API_KEY"\
+                    --header "content-type: application/json"\
+                    --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
