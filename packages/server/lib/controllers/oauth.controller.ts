@@ -1235,7 +1235,7 @@ class OAuthController {
                 }
                 // FIX: Assign the connect session value
                 connectSession = connectSessionRes.value;
-                console.log('[CUSTOM AUTH UPDATE] Connect session found:', { endUserId: connectSession?.connectSession?.endUser?.id });
+                console.log('[CUSTOM AUTH UPDATE] Connect session found:', { endUserId: connectSession?.connectSession?.endUser?.endUserId });
             }
 
             const connCreatedHook = (res: ConnectionUpsertResponse) => {
