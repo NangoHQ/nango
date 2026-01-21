@@ -35,6 +35,7 @@ interface CreateConnectionSelectorProps {
     overrideClientId: string | undefined;
     overrideClientSecret: string | undefined;
     overrideDocUrl: string | undefined;
+    defaultDocUrl?: string;
     isFormValid?: boolean;
 }
 
@@ -50,6 +51,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     overrideClientId,
     overrideClientSecret,
     overrideDocUrl,
+    defaultDocUrl,
     isFormValid = true
 }) => {
     const paramIntegrationId = useSearchParam('integration_id');
@@ -128,6 +130,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
 
             const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || overrideOauthScopes !== undefined;
+            const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
 
             const res = await apiConnectSessions(env, {
                 allowed_integrations: integration ? [integration.unique_key] : undefined,
@@ -151,7 +154,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 overrides: integration
                     ? {
                           [integration.unique_key]: {
-                              docs_connect: overrideDocUrl ? overrideDocUrl : undefined
+                              docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
                           }
                       }
                     : undefined

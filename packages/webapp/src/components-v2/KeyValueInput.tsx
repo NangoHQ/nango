@@ -13,6 +13,7 @@ interface KeyValueInputProps {
     placeholderValue?: string;
     disabled?: boolean;
     isSecret?: boolean;
+    alwaysShowEmptyRow?: boolean;
 }
 
 export const KeyValueInput: React.FC<KeyValueInputProps> = ({
@@ -21,12 +22,25 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     placeholderKey = 'Key',
     placeholderValue = 'Value',
     disabled = false,
-    isSecret = false
+    isSecret = false,
+    alwaysShowEmptyRow = false
 }) => {
-    const [pairs, setPairs] = useState<{ key: string; value: string }[]>(() => {
-        const entries = Object.entries(initialValues);
-        return entries.length > 0 ? entries.map(([key, value]) => ({ key, value })) : [{ key: '', value: '' }];
-    });
+    const buildPairsFromValues = (values: Record<string, string>) => {
+        const entries = Object.entries(values);
+        if (entries.length > 0) {
+            const mapped = entries.map(([key, value]) => ({ key, value }));
+            return alwaysShowEmptyRow ? [...mapped, { key: '', value: '' }] : mapped;
+        }
+        return [{ key: '', value: '' }];
+    };
+
+    const [pairs, setPairs] = useState<{ key: string; value: string }[]>(() => buildPairsFromValues(initialValues));
+
+    const initialValuesKey = JSON.stringify(initialValues);
+    useEffect(() => {
+        setPairs(buildPairsFromValues(initialValues));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialValuesKey, alwaysShowEmptyRow]);
 
     useEffect(() => {
         const validPairs = pairs.filter((p) => p.key !== '' || p.value !== '');

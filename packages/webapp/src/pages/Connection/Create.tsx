@@ -1,5 +1,5 @@
 import { IconBook, IconChevronRight } from '@tabler/icons-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSearchParam } from 'react-use';
 import { z } from 'zod';
@@ -47,16 +47,31 @@ export const ConnectionCreate: React.FC = () => {
     const overrideClientId = overrideDevAppCredentials ? '' : undefined;
     const overrideClientSecret = overrideDevAppCredentials ? '' : undefined;
 
+    const prevIntegrationKeyRef = useRef<string | undefined>(undefined);
+    const integrationKey = integration?.unique_key;
+
+    const effectiveAuthParams = useMemo(() => {
+        if (integrationKey !== prevIntegrationKeyRef.current) {
+            return integration?.meta.authorizationParams ?? {};
+        }
+        return overrideAuthParams;
+    }, [integrationKey, integration?.meta.authorizationParams, overrideAuthParams]);
+
     useEffect(() => {
         setTestUserEmail(user!.email);
         setTestUserId(`test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`);
         setTestUserName(user!.name);
         setTestUserTags({});
-        setOverrideAuthParams({});
+        setOverrideAuthParams(integration?.meta.authorizationParams ?? {});
         setOverrideDevAppCredentials(false);
         setOverrideOauthScopes(integration?.oauth_scopes || undefined);
-        setOverrideDocUrl(provider?.data.docs_connect);
-    }, [user, integration, provider]);
+        setOverrideDocUrl('');
+        prevIntegrationKeyRef.current = integrationKey;
+    }, [user, integration, integrationKey]);
+
+    useEffect(() => {
+        setOverrideDocUrl(provider?.data.docs_connect || '');
+    }, [provider]);
 
     useEffect(() => {
         analyticsTrack('web:create_connection:viewed');
@@ -126,11 +141,12 @@ export const ConnectionCreate: React.FC = () => {
                             testUserEmail={testUserEmail}
                             testUserName={testUserName}
                             testUserTags={testUserTags}
-                            overrideAuthParams={overrideAuthParams}
+                            overrideAuthParams={effectiveAuthParams}
                             overrideOauthScopes={overrideOauthScopes}
                             overrideClientId={overrideClientId}
                             overrideClientSecret={overrideClientSecret}
                             overrideDocUrl={overrideDocUrl}
+                            defaultDocUrl={provider?.data.docs_connect}
                             isFormValid={validation.success}
                         />
                         <ConnectionAdvancedConfig
@@ -142,7 +158,7 @@ export const ConnectionCreate: React.FC = () => {
                             setTestUserName={setTestUserName}
                             testUserTags={testUserTags}
                             setTestUserTags={setTestUserTags}
-                            overrideAuthParams={overrideAuthParams}
+                            overrideAuthParams={effectiveAuthParams}
                             setOverrideAuthParams={setOverrideAuthParams}
                             overrideOauthScopes={overrideOauthScopes}
                             setOverrideOauthScopes={setOverrideOauthScopes}

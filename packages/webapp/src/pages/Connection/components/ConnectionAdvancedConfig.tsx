@@ -101,7 +101,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                 </label>
                                 <Input
                                     id="test_user_id"
-                                    placeholder="Your user internal ID"
+                                    placeholder="User ID"
                                     value={testUserId}
                                     onChange={(e) => setTestUserId(e.target.value)}
                                     aria-invalid={!!errors.testUserId}
@@ -111,11 +111,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <div className="flex flex-col gap-4">
                                 <label htmlFor="test_user_email" className="flex gap-2 items-center text-sm font-medium">
                                     Email
-                                    <span className="text-alert-400">*</span>
-                                    <SimpleTooltip
-                                        side="right"
-                                        align="center"
-                                        tooltipContent={
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" align="center">
                                             <p className="text-s">
                                                 User&apos;s email.
                                                 <br />
@@ -168,7 +168,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                 </label>
                                 <Input
                                     id="test_user_display_name"
-                                    placeholder="Your user internal ID"
+                                    placeholder="Display name"
                                     value={testUserName}
                                     onChange={(e) => setTestUserName(e.target.value)}
                                     aria-invalid={!!errors.testUserName}
@@ -233,6 +233,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                             onChange={setOverrideAuthParams}
                                             placeholderKey="Param Name"
                                             placeholderValue="Param Value"
+                                            alwaysShowEmptyRow={true}
                                         />
                                     </div>
                                     <div className="flex flex-col gap-4">
