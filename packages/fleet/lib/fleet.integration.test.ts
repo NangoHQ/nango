@@ -47,7 +47,9 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
@@ -63,6 +65,8 @@ describe('fleet', () => {
                 isTracingEnabled: props.isTracingEnabled,
                 isProfilingEnabled: props.isProfilingEnabled,
                 idleMaxDurationMs: props.idleMaxDurationMs,
+                executionTimeoutSecs: props.executionTimeoutSecs,
+                provisionedConcurrency: props.provisionedConcurrency,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -125,7 +129,9 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -138,6 +144,8 @@ describe('fleet', () => {
                 isTracingEnabled: props.isTracingEnabled,
                 isProfilingEnabled: props.isProfilingEnabled,
                 idleMaxDurationMs: props.idleMaxDurationMs,
+                executionTimeoutSecs: props.executionTimeoutSecs,
+                provisionedConcurrency: props.provisionedConcurrency,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -151,7 +159,9 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: true,
                 isProfilingEnabled: true,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             await fleet.overrideNodeConfig(props);
             const updatedProps = {
@@ -162,7 +172,9 @@ describe('fleet', () => {
                 storageMb: 2000,
                 isTracingEnabled: true,
                 isProfilingEnabled: true,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(updatedProps)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -175,6 +187,8 @@ describe('fleet', () => {
                 isTracingEnabled: updatedProps.isTracingEnabled,
                 isProfilingEnabled: updatedProps.isProfilingEnabled,
                 idleMaxDurationMs: updatedProps.idleMaxDurationMs,
+                executionTimeoutSecs: updatedProps.executionTimeoutSecs,
+                provisionedConcurrency: updatedProps.provisionedConcurrency,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -188,7 +202,9 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             await fleet.overrideNodeConfig(props);
 
@@ -211,7 +227,9 @@ describe('fleet', () => {
                 storageMb: 100,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             await fleet.overrideNodeConfig(props);
 
@@ -223,7 +241,9 @@ describe('fleet', () => {
                 storageMb: null,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             };
             await fleet.overrideNodeConfig(defaultProps);
 
@@ -238,6 +258,8 @@ describe('fleet', () => {
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });

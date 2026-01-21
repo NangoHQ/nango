@@ -53,7 +53,7 @@ The following data types are encrypted at rest:
 ### Key management
 
 - **Nango Cloud**: Encryption keys are securely managed by Nango. All credentials are encrypted at rest.
-- **Self-hosted**: You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
+- **Self-hosted**: You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted. **This key is also crucial for the Connect UI**. It's required to generate sessions for the [Connect UI](/reference/sdks/frontend#connect-using-nango-connect-ui). Without it, the Connect UI will not work.
 
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.

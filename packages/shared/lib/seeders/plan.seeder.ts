@@ -39,6 +39,10 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         can_disable_connect_ui_watermark: false,
         created_at: new Date(),
         updated_at: new Date(),
+        sync_function_runtime: 'runner',
+        action_function_runtime: 'runner',
+        webhook_function_runtime: 'runner',
+        on_event_function_runtime: 'runner',
         ...override
     };
 }

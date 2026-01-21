@@ -29,6 +29,7 @@ describe('Nodes', () => {
     it('should be successfully created', async () => {
         const node = (
             await nodes.create(db, {
+                fleetId: 'fleet-id',
                 routingId: 'my-routing-id',
                 deploymentId: activeDeployment.id,
                 image: 'nangohq/my-image:latest',
@@ -37,11 +38,14 @@ describe('Nodes', () => {
                 storageMb: 512,
                 isTracingEnabled: false,
                 isProfilingEnabled: false,
-                idleMaxDurationMs: 1_800_000
+                idleMaxDurationMs: 1_800_000,
+                executionTimeoutSecs: -1,
+                provisionedConcurrency: -1
             })
         ).unwrap();
         expect(node).toStrictEqual({
             id: expect.any(Number),
+            fleetId: 'fleet-id',
             routingId: 'my-routing-id',
             deploymentId: activeDeployment.id,
             url: null,
@@ -53,6 +57,8 @@ describe('Nodes', () => {
             isTracingEnabled: false,
             isProfilingEnabled: false,
             idleMaxDurationMs: 1_800_000,
+            executionTimeoutSecs: -1,
+            provisionedConcurrency: -1,
             error: null,
             createdAt: expect.any(Date),
             lastStateTransitionAt: expect.any(Date)

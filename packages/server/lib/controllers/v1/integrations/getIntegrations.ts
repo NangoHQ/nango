@@ -3,7 +3,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../../../utils/utils.js';
+import { parseAssertionOptionParamsFromTemplate, parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../../../utils/utils.js';
 
 import type { ApiIntegrationList, GetIntegrations, ProviderTwoStep } from '@nangohq/types';
 
@@ -50,6 +50,10 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
             // Check if provider is of type ProviderTwoStep or JWT
             if (provider.auth_mode === 'TWO_STEP' || provider.auth_mode === 'JWT') {
                 formatted.meta['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
+            }
+
+            if (provider.auth_mode === 'TWO_STEP' && 'assertion_option' in provider) {
+                formatted.meta['assertionOptionParams'] = parseAssertionOptionParamsFromTemplate(provider as ProviderTwoStep);
             }
         }
 
