@@ -11039,6 +11039,32 @@ peopledatalabs:
             title: API Key
             description: The API key for your People Data Labs account
 
+perdoo:
+    display_name: Perdoo
+    categories:
+        - productivity
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://eu.perdoo.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /user
+    docs: https://nango.dev/docs/api-integrations/perdoo
+    docs_connect: https://nango.dev/docs/api-integrations/perdoo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Perdoo API token
+            example: '5037c64a83d34725a13131b9b28856c0e499887b16c84b6d9bba2756d1e61634'
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-token'
+
 perplexity:
     display_name: Perplexity
     categories:
