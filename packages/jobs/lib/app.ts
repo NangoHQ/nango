@@ -9,7 +9,7 @@ import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/ut
 
 import { envs } from './env.js';
 import { Processor } from './processor/processor.js';
-import { runnersFleet } from './runner/fleet.js';
+import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
 
@@ -72,7 +72,7 @@ try {
             otlp.stop();
             await processor.stop();
             await destroyLogs();
-            await runnersFleet.stop();
+            await stopFleets();
             await db.knex.destroy();
             await db.readOnly.destroy();
             await destroyKvstore();
@@ -97,9 +97,10 @@ try {
         // when running locally, the runners (running as processes) are being killed
         // when the main process is killed and the fleet entries are therefore not associated with any running process
         // we then must fake a new deployment so fleet replaces runners with new ones
+        const runnersFleet = getDefaultFleet();
         await runnersFleet.rollout(generateImage(), { verifyImage: false });
     }
-    runnersFleet.start();
+    await startFleets();
 
     processor.start();
 

@@ -1,4 +1,5 @@
 import type { TelemetryBag } from './sdk.js';
+import type { DBPlan } from '../plans/db.js';
 
 export interface RunnerOutputError {
     type: string;
@@ -20,4 +21,8 @@ export interface RunnerFlags {
     validateActionOutput: boolean;
     validateSyncRecords: boolean;
     validateSyncMetadata: boolean;
+}
+
+export interface RuntimeContext {
+    plan: DBPlan | null;
 }

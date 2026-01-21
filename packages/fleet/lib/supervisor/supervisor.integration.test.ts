@@ -21,11 +21,15 @@ const mockNodeProvider = {
         storageMb: 1000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1_800_000
+        idleMaxDurationMs: 1_800_000,
+        executionTimeoutSecs: -1,
+        provisionedConcurrency: -1
     },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
     verifyUrl: vi.fn().mockResolvedValue(Ok(undefined)),
+    finish: vi.fn().mockResolvedValue(Ok(undefined)),
+    waitUntilHealthy: vi.fn().mockResolvedValue(Ok(undefined)),
     mockClear: () => {
         mockNodeProvider.start.mockClear();
         mockNodeProvider.terminate.mockClear();
@@ -34,7 +38,7 @@ const mockNodeProvider = {
 
 describe('Supervisor', () => {
     const dbClient = getTestDbClient('supervisor');
-    const supervisor = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+    const supervisor = new Supervisor({ dbClient, nodeProvider: mockNodeProvider, fleetId: 'fleet_id' });
     let previousDeployment: Deployment;
     let activeDeployment: Deployment;
 
@@ -50,8 +54,8 @@ describe('Supervisor', () => {
     });
 
     describe('instances', () => {
-        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
-        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider, fleetId: 'fleet_id' });
+        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider, fleetId: 'fleet_id' });
 
         afterEach(async () => {
             await supervisor1.stop();
@@ -74,8 +78,8 @@ describe('Supervisor', () => {
     });
 
     it('should start PENDING nodes', async () => {
-        const node1 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
-        const node2 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
+        const node1 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
+        const node2 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
 
         await supervisor.tick();
 
@@ -118,7 +122,7 @@ describe('Supervisor', () => {
         expect(nodeAfter.state).toBe('OUTDATED');
     });
     it('should mark nodes with resource override as OUTDATED', async () => {
-        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
         await nodeConfigOverrides.upsert(dbClient.db, {
             routingId: node.routingId,
             image: node.image,
@@ -137,6 +141,7 @@ describe('Supervisor', () => {
         const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
+            fleetId: node.fleetId,
             routingId: node.routingId,
             deploymentId: activeDeployment.id,
             image: node.image,
@@ -144,12 +149,14 @@ describe('Supervisor', () => {
             memoryMb: 1234,
             storageMb: 567890,
             error: null,
-            idleMaxDurationMs: 1_800_000
+            idleMaxDurationMs: 1_800_000,
+            executionTimeoutSecs: -1,
+            provisionedConcurrency: -1
         });
     });
 
     it('should mark nodes with image override as OUTDATED', async () => {
-        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
         const imageOverride = `${mockNodeProvider.defaultNodeConfig.image}:12345`;
         await nodeConfigOverrides.upsert(dbClient.db, {
             routingId: node.routingId,
@@ -159,7 +166,9 @@ describe('Supervisor', () => {
             storageMb: node.storageMb,
             isTracingEnabled: node.isTracingEnabled,
             isProfilingEnabled: node.isProfilingEnabled,
-            idleMaxDurationMs: node.idleMaxDurationMs
+            idleMaxDurationMs: node.idleMaxDurationMs,
+            executionTimeoutSecs: node.executionTimeoutSecs,
+            provisionedConcurrency: node.provisionedConcurrency
         });
 
         await supervisor.tick();
@@ -172,6 +181,7 @@ describe('Supervisor', () => {
         const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
+            fleetId: node.fleetId,
             routingId: node.routingId,
             deploymentId: activeDeployment.id,
             image: imageOverride,
@@ -180,7 +190,10 @@ describe('Supervisor', () => {
             storageMb: node.storageMb,
             error: null,
             isTracingEnabled: node.isTracingEnabled,
-            isProfilingEnabled: node.isProfilingEnabled
+            isProfilingEnabled: node.isProfilingEnabled,
+            idleMaxDurationMs: node.idleMaxDurationMs,
+            executionTimeoutSecs: node.executionTimeoutSecs,
+            provisionedConcurrency: node.provisionedConcurrency
         });
     });
 
