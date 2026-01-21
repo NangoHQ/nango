@@ -42,6 +42,8 @@ import { LocalStorageKeys } from './utils/local-storage';
 import { sentryCreateBrowserRouter } from './utils/sentry';
 import { useSignout } from './utils/user';
 
+import type { BreadcrumbHandle } from './hooks/useBreadcrumbs';
+
 import 'react-toastify/dist/ReactToastify.css';
 
 const theme = createTheme({
@@ -105,8 +107,7 @@ const buildRoutes = () => {
     return [
         {
             path: '/',
-            element: <Root />,
-            handle: { breadcrumb: 'Home' }
+            element: <Root />
         },
         {
             element: <PrivateRoute />,
@@ -121,11 +122,11 @@ const buildRoutes = () => {
                 {
                     path: '/dev/getting-started',
                     element: <GettingStartedRoute />,
-                    handle: { breadcrumb: 'Getting Started' }
+                    handle: { breadcrumb: 'Getting started' } as BreadcrumbHandle
                 },
                 {
                     path: '/:env/integrations',
-                    handle: { breadcrumb: 'Integrations' },
+                    handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
                     children: [
                         {
                             index: true,
@@ -134,13 +135,13 @@ const buildRoutes = () => {
                         {
                             path: 'create',
                             element: <CreateIntegration />,
-                            handle: { breadcrumb: 'Create Integration' }
+                            handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle
                         },
                         {
                             path: ':providerConfigKey',
                             handle: {
-                                breadcrumb: (params: Record<string, string | undefined>) => params.providerConfigKey || 'Integration'
-                            },
+                                breadcrumb: (params) => params.providerConfigKey || 'Integration'
+                            } as BreadcrumbHandle,
                             children: [
                                 {
                                     index: true,
@@ -149,7 +150,9 @@ const buildRoutes = () => {
                                 {
                                     path: 'functions/:functionName',
                                     element: <FunctionsOne />,
-                                    handle: { breadcrumb: (params: Record<string, string | undefined>) => params.functionName || 'Function' }
+                                    handle: {
+                                        breadcrumb: (params) => params.functionName || 'Function'
+                                    } as BreadcrumbHandle
                                 },
                                 {
                                     path: '*',
@@ -161,7 +164,7 @@ const buildRoutes = () => {
                 },
                 {
                     path: '/:env/connections',
-                    handle: { breadcrumb: 'Connections' },
+                    handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
                     children: [
                         {
                             index: true,
@@ -170,17 +173,17 @@ const buildRoutes = () => {
                         {
                             path: 'create',
                             element: <ConnectionCreate />,
-                            handle: { breadcrumb: 'Create Connection' }
+                            handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
                         },
                         {
                             path: 'create-legacy',
                             element: <ConnectionCreateLegacy />,
-                            handle: { breadcrumb: 'Create Connection (Legacy)' }
+                            handle: { breadcrumb: 'Create Connection (Legacy)' } as BreadcrumbHandle
                         },
                         {
                             path: ':providerConfigKey/:connectionId',
                             element: <ConnectionShow />,
-                            handle: { breadcrumb: (params: Record<string, string | undefined>) => params.connectionId || 'Connection' }
+                            handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
                         }
                     ]
                 },
@@ -191,12 +194,12 @@ const buildRoutes = () => {
                 {
                     path: '/:env/logs',
                     element: <LogsShow />,
-                    handle: { breadcrumb: 'Logs' }
+                    handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
                 },
                 {
                     path: '/:env/environment-settings',
                     element: <EnvironmentSettings />,
-                    handle: { breadcrumb: 'Environment Settings' }
+                    handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
                 },
                 {
                     path: '/:env/project-settings',
@@ -209,17 +212,17 @@ const buildRoutes = () => {
                 {
                     path: '/:env/team-settings',
                     element: <TeamSettings />,
-                    handle: { breadcrumb: 'Team Settings' }
+                    handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
                 },
                 {
                     path: '/:env/team/billing',
                     element: <TeamBilling />,
-                    handle: { breadcrumb: 'Billing' }
+                    handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
                 },
                 {
                     path: '/:env/user-settings',
                     element: <UserSettings />,
-                    handle: { breadcrumb: 'User Settings' }
+                    handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
                 }
             ]
         },
