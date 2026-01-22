@@ -7,8 +7,8 @@ import { useSWRConfig } from 'swr';
 import Nango from '@nangohq/frontend';
 
 import { IntegrationDropdown } from './IntegrationDropdown';
-import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { Button } from '../../../components-v2/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/ui/tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
@@ -244,13 +244,16 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                     />
                 </div>
                 <div className="flex flex-col w-full items-start">
-                    <SimpleTooltip tooltipContent={tooltipContent} side="bottom" delay={0}>
-                        <span className="inline-block" tabIndex={0}>
-                            <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields || !isFormValid}>
-                                Authorize
-                            </Button>
-                        </span>
-                    </SimpleTooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="inline-block" tabIndex={0}>
+                                <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields || !isFormValid}>
+                                    Authorize
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
+                    </Tooltip>
                 </div>
             </CardContent>
         </Card>

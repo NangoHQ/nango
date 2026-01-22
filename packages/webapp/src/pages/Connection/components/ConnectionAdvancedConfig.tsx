@@ -2,13 +2,13 @@ import { IconChevronRight, IconHelpCircle } from '@tabler/icons-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../components/ui/Collapsible';
 import { KeyValueInput } from '../../../components-v2/KeyValueInput';
 import { ScopesInput } from '../../../components-v2/ScopesInput';
 import { BinaryToggle } from '../../../components-v2/ui/binary-toggle';
 import { Input } from '../../../components-v2/ui/input';
 import { Separator } from '../../../components-v2/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
 
 interface ConnectionAdvancedConfigProps {
@@ -79,10 +79,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                 <label htmlFor="test_user_id" className="flex gap-2 items-center text-sm font-medium">
                                     ID
                                     <span className="text-alert-400">*</span>
-                                    <SimpleTooltip
-                                        side="right"
-                                        align="center"
-                                        tooltipContent={
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" align="center">
                                             <p className="text-s">
                                                 Uniquely identifies the end user.
                                                 <br />
@@ -94,10 +95,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     Documentation
                                                 </Link>
                                             </p>
-                                        }
-                                    >
-                                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                    </SimpleTooltip>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </label>
                                 <Input
                                     id="test_user_id"
@@ -127,10 +126,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     Documentation
                                                 </Link>
                                             </p>
-                                        }
-                                    >
-                                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                    </SimpleTooltip>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </label>
                                 <Input
                                     id="test_user_email"
@@ -146,10 +143,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <div className="flex flex-col gap-4">
                                 <label htmlFor="test_user_display_name" className="flex gap-2 items-center text-sm font-medium">
                                     Display Name
-                                    <SimpleTooltip
-                                        side="right"
-                                        align="center"
-                                        tooltipContent={
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" align="center">
                                             <p className="text-s">
                                                 User display name.
                                                 <br />
@@ -161,10 +159,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     Documentation
                                                 </Link>
                                             </p>
-                                        }
-                                    >
-                                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                    </SimpleTooltip>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </label>
                                 <Input
                                     id="test_user_display_name"
@@ -178,10 +174,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <div className="flex flex-col gap-4">
                                 <label className="flex gap-2 items-center text-sm font-medium">
                                     Tags
-                                    <SimpleTooltip
-                                        side="right"
-                                        align="center"
-                                        tooltipContent={
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" align="center">
                                             <p className="text-s">
                                                 Tags associated with the end user. Only accepts strings values, up to 64 keys.
                                                 <br />
@@ -189,10 +186,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     Documentation
                                                 </Link>
                                             </p>
-                                        }
-                                    >
-                                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                    </SimpleTooltip>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </label>
                                 <KeyValueInput initialValues={testUserTags} onChange={setTestUserTags} placeholderKey="Tag Name" placeholderValue="Tag Value" />
                                 <ErrorMessage message={errors.testUserTags?.[0]} />
@@ -208,10 +203,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     <div className="flex flex-col gap-4">
                                         <label className="flex gap-2 items-center text-sm font-medium">
                                             Override authorization parameters
-                                            <SimpleTooltip
-                                                side="right"
-                                                align="center"
-                                                tooltipContent={
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                                </TooltipTrigger>
+                                                <TooltipContent side="right" align="center">
                                                     <p className="text-s">
                                                         Query params passed to the OAuth flow (for OAuth2 only)
                                                         <br />
@@ -223,10 +219,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             Documentation
                                                         </Link>
                                                     </p>
-                                                }
-                                            >
-                                                <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                            </SimpleTooltip>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </label>
                                         <KeyValueInput
                                             initialValues={overrideAuthParams}
@@ -239,10 +233,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     <div className="flex flex-col gap-4">
                                         <label className="flex gap-2 items-center text-sm font-medium">
                                             Override developer app credentials
-                                            <SimpleTooltip
-                                                side="right"
-                                                align="center"
-                                                tooltipContent={
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                                </TooltipTrigger>
+                                                <TooltipContent side="right" align="center">
                                                     <p className="text-s">
                                                         Allow end users to provide their own OAuth client ID and secret.
                                                         <br />
@@ -254,10 +249,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             Documentation
                                                         </Link>
                                                     </p>
-                                                }
-                                            >
-                                                <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                            </SimpleTooltip>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </label>
                                         <BinaryToggle
                                             value={overrideDevAppCredentials}
@@ -271,10 +264,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     <div className="flex flex-col gap-4">
                                         <label htmlFor="override_scopes" className="flex gap-2 items-center text-sm font-medium">
                                             Override OAuth scopes
-                                            <SimpleTooltip
-                                                side="right"
-                                                align="center"
-                                                tooltipContent={
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                                </TooltipTrigger>
+                                                <TooltipContent side="right" align="center">
                                                     <p className="text-s">
                                                         Override oauth scopes
                                                         <br />
@@ -286,10 +280,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             Documentation
                                                         </Link>
                                                     </p>
-                                                }
-                                            >
-                                                <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                            </SimpleTooltip>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </label>
                                         <ScopesInput
                                             scopesString={overrideOauthScopes}
@@ -304,10 +296,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <div className="flex flex-col gap-4">
                                 <label htmlFor="override_doc_url" className="flex gap-2 items-center text-sm font-medium">
                                     Override end-user documentation URL
-                                    <SimpleTooltip
-                                        side="right"
-                                        align="center"
-                                        tooltipContent={
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" align="center">
                                             <p className="text-s">
                                                 Override the documentation URL we show on the Connect UI for this connection.
                                                 <br />
@@ -319,10 +312,8 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     Documentation
                                                 </Link>
                                             </p>
-                                        }
-                                    >
-                                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                                    </SimpleTooltip>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </label>
                                 <Input
                                     id="override_doc_url"
