@@ -260,7 +260,7 @@ Payload received following a successful sync execution:
 The `modifiedAfter` is an ISO-8601 format string (e.g. `2025-05-21T18:52:49.838Z`) that represents the start time of the last sync.  When the webhook target application receives this payload, it should store this value against the `connectionId` as a "bookmark".  On the next sync webhook event, use the stored bookmark to retrieve the changed records and store the new `modifiedAfter` as the next bookmark.  This mechanism ensures that no deltas are missed.
 
 <Warning>
-**Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/retention-policies#synced-records), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and syncs not executed for 60 days will have all records deleted.
+**Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and syncs not executed for 60 days will have all records deleted.
 </Warning>
 
 By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
