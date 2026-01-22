@@ -38,7 +38,8 @@ exports.up = async function (knex) {
                 coalesce(secret_key_hashed, '') AS hashed,
                 TRUE                            AS is_default
             FROM
-                _nango_environments;
+                _nango_environments
+        ON CONFLICT DO NOTHING;
     `);
 };
 
