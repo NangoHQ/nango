@@ -11,7 +11,12 @@ import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
 export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ schema }) => {
     if (!isObjectSchema(schema)) {
-        throw new Error('Expected object schema.');
+        return (
+            <div className="flex flex-col gap-1.5">
+                <CatalogBadge variant="light">{schema.type}</CatalogBadge>
+                {schema.description && <p className="text-text-tertiary text-body-small-medium">{schema.description}</p>}
+            </div>
+        );
     }
 
     return (

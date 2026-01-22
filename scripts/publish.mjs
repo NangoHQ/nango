@@ -112,7 +112,7 @@ async function npmPublish(packageName) {
 
         await $`npm version ${nextVersion} -w "${packageName}"`;
         if (!dryRun) {
-            await $`npm publish --access public -w "${packageName}"`;
+            await $`npm publish --access public --provenance -w "${packageName}"`;
         }
 
         echo(chalk.green(`${figures.tick} Published ${packageName}      `));
