@@ -11,7 +11,7 @@ import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
 const formSchema = z.object({
     clientName: z.string().optional(),
-    clientUri: z.string().url('Must be a valid URL (e.g., https://example.com)').optional(),
+    clientUri: z.string().optional(),
     clientLogoUri: z.string().url('Must be a valid URL (e.g., https://example.com/logo.png)').optional()
 });
 
@@ -74,7 +74,7 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                                     <FormLabel>OAuth Client URI</FormLabel>
                                     <FormControl>
                                         <InputGroup>
-                                            <InputGroupInput {...field} placeholder="e.g., https://example.com" aria-invalid={!!fieldState.error} />
+                                            <InputGroupInput {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
                                     <FormMessage />
@@ -90,7 +90,7 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                                     <FormLabel>OAuth Client Logo URI</FormLabel>
                                     <FormControl>
                                         <InputGroup>
-                                            <InputGroupInput {...field} placeholder="e.g., https://example.com/logo.png" aria-invalid={!!fieldState.error} />
+                                            <InputGroupInput {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
                                     <FormMessage />

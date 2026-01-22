@@ -49,22 +49,13 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
             {/* OAuth Client Name */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_name">OAuth Client Name</Label>
-                <EditableInput
-                    initialValue={integration.custom?.oauth_client_name || ''}
-                    onSave={(value) => onSave({ clientName: value })}
-                    placeholder="e.g., My Application"
-                />
+                <EditableInput initialValue={integration.custom?.oauth_client_name || ''} onSave={(value) => onSave({ clientName: value })} />
             </div>
 
             {/* OAuth Client URI */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_uri">OAuth Client URI</Label>
-                <EditableInput
-                    initialValue={integration.custom?.oauth_client_uri || ''}
-                    onSave={(value) => onSave({ clientUri: value })}
-                    placeholder="e.g., https://example.com"
-                    validate={validateUrl}
-                />
+                <EditableInput initialValue={integration.custom?.oauth_client_uri || ''} onSave={(value) => onSave({ clientUri: value })} />
             </div>
 
             {/* OAuth Client Logo URI */}
