@@ -844,6 +844,7 @@
               "integrations/all/mcp-generic",
               "integrations/all/medallia",
               "integrations/all/metabase",
+              "api-integrations/meta-marketing-api",
               "api-integrations/microsoft",
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
