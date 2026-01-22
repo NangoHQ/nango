@@ -22,9 +22,6 @@ export const AppPrivateKeyInput: React.FC<AppPrivateKeyInputProps> = ({ initialV
                 initialValue={initialValue}
                 hintText='Private key must start with "-----BEGIN RSA PRIVATE KEY----" and end with "-----END RSA PRIVATE KEY-----"'
                 validate={(value) => {
-                    if (!value.trim()) {
-                        return 'Private key is required';
-                    }
                     if (!value.trim().startsWith('-----BEGIN RSA PRIVATE KEY----') || !value.trim().endsWith('-----END RSA PRIVATE KEY-----')) {
                         return 'Private key must start with "-----BEGIN RSA PRIVATE KEY----" and end with "-----END RSA PRIVATE KEY-----"';
                     }

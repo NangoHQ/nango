@@ -2,7 +2,7 @@ import { EditableInput } from '@/components-v2/EditableInput';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
-import { validateUrl } from '@/pages/Integrations/utils';
+import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration, ProviderInstallPlugin } from '@nangohq/types';
@@ -42,13 +42,23 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
                     {/* Username */}
                     <div className="flex flex-col gap-2">
                         <Label htmlFor="username">Username</Label>
-                        <EditableInput secret initialValue={integration.custom?.['username'] || ''} onSave={(value) => onSave({ username: value } as any)} />
+                        <EditableInput
+                            secret
+                            initialValue={integration.custom?.['username'] || ''}
+                            onSave={(value) => onSave({ username: value } as any)}
+                            validate={validateNotEmpty}
+                        />
                     </div>
 
                     {/* Password */}
                     <div className="flex flex-col gap-2">
                         <Label htmlFor="password">Password</Label>
-                        <EditableInput secret initialValue={integration.custom?.['password'] || ''} onSave={(value) => onSave({ password: value } as any)} />
+                        <EditableInput
+                            secret
+                            initialValue={integration.custom?.['password'] || ''}
+                            onSave={(value) => onSave({ password: value } as any)}
+                            validate={validateNotEmpty}
+                        />
                     </div>
                 </>
             )}
