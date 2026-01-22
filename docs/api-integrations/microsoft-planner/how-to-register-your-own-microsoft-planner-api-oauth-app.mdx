@@ -38,16 +38,47 @@ This guide shows you how to register your own app with Microsoft Planner (via Mi
     3. Select **Microsoft Graph** to integrate with **Microsoft Planner**.
     4. Select the required permissions from the **Delegated permissions section**.
     5. Select the specific permissions your app requires. Please refer to the table below for some of the [commonly used scopes](#common-scopes).
+    6. Click **Add permissions**.
+    7. If your application requires admin consent, click **Grant admin consent for [tenant]** to pre-authorize the permissions.
   </Step>
-  <Step title="Add a client secret">
+  <Step title="Create a client secret">
     1. In the left sidebar, select **Certificates & secrets**.
-    2. Under **Client secrets**, select **New client secret**.
-    3. Enter a description and choose an expiry period.
-    4. Click **Add** and record the value of the client secret immediately (it will not be shown again).
+    2. Under **Client secrets**, click **New client secret**.
+    3. Enter a description for the secret and select an expiration period (6 months, 12 months, 24 months, or custom). Please select a date further in the future to avoid interruptions, note that the **Custom** date can only be set to a maximum of 1 year from the current date. If the secret expires, you will need to regenerate a new one and update your integration within Nango.
+    4. Click **Add**.
+    5. **Important**: Copy the secret value immediately and store it securely. You won't be able to see it again after you leave this page.
   </Step>
-  <Step title="Configure credentials in Nango">
-    1. In the [Nango dashboard](https://app.nango.dev/dev/integrations), select your Microsoft Planner integration.
-    2. Enter the **Client ID** and **Client Secret** you obtained from Azure.
-    3. Save your changes.
+  <Step title="Configure token settings (optional)">
+    1. In the left sidebar, select **Token configuration**. Here you can configure optional claims to be included in the access tokens issued for your application.
+    2. Click **Add optional claim** and select the claims you want to include in your access tokens.
+  </Step>
+  <Step title="Configure app visibility (optional)">
+    If you want users to see your app on their My Apps page:
+
+    1. From the search bar at the top of the Azure portal, search for **Enterprise applications**, select it, and then choose your app.
+    2. On the **Properties** page, set **Visible to users?** to **Yes**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
 </Steps>
+
+## Common Scopes
+
+You can find permissions required for each API call in their corresponding API methods section. For example, to get planner details, see [Microsoft Graph Planner API permissions](https://learn.microsoft.com/en-us/graph/api/resources/planner-overview?view=graph-rest-1.0#permissions).
+
+Here are some commonly used scopes for Microsoft Planner:
+
+| Scope                  | Description                                                      |
+| ---------------------- | ---------------------------------------------------------------- |
+| `offline_access`       | Access to refresh tokens for offline access                      |
+| `Tasks.Read`           | Read the signed-in user's tasks and task lists                   |
+| `Tasks.ReadWrite`      | Read and write the user's tasks and task lists                   |
+| `Group.Read.All`       | Read all groups (required to access plans associated with groups)|
+| `Group.ReadWrite.All`  | Read and write all groups                                        |
+| `User.Read`            | Read the signed-in user's profile                                |
+| `User.Read.All`        | Read user profiles in the organization                           |
+
+For a complete list of available scopes, see [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference).
+
+---
