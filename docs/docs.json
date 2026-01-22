@@ -947,6 +947,7 @@
               "integrations/all/rapidapi",
               "integrations/all/readwise",
               "integrations/all/readwise-reader",
+              "api-integrations/reapit",
               "api-integrations/recall-ai",
               "integrations/all/recharge",
               "integrations/all/recruitcrm",
