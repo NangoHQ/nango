@@ -41,7 +41,7 @@ function AlertActions({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="alert-actions"
-            className={cn('col-start-3 row-start-1 row-span-2 inline-flex gap-1 text-body-medium-regular self-center', className)}
+            className={cn('col-start-3 row-start-1 row-span-2 inline-flex gap-3 text-body-medium-regular self-center', className)}
             {...props}
         />
     );

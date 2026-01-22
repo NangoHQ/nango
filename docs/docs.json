@@ -865,6 +865,7 @@
               "integrations/all/miro",
               "integrations/all/miro-scim",
               "integrations/all/missive",
+              "api-integrations/juniper-mist",
               "integrations/all/mixpanel",
               "api-integrations/modmed",
               "api-integrations/monday",

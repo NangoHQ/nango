@@ -9705,6 +9705,41 @@ missive:
             type: string
             title: API Key
             description: The API key for your Missive account
+
+juniper-mist:
+    display_name: Juniper Mist
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.mist.com
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v1/self
+    docs: https://nango.dev/docs/api-integrations/juniper-mist
+    docs_connect: https://nango.dev/docs/api-integrations/juniper-mist/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain for your Juniper Mist region
+            example: api
+            pattern: '^api(\.[a-z0-9]+)*$'
+            doc_section: '#step-1-finding-your-api-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Juniper Mist API token
+            doc_section: '#step-2-generating-your-api-token'
+            example: 3n69xDYMlT36fulLwIq7PDaDopc5W0b*****************************************************************
+            pattern: '^[A-Za-z0-9]{96}$'
+
 monday:
     display_name: Monday
     categories:
