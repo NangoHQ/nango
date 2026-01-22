@@ -8,6 +8,7 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Badge } from '@/components-v2/ui/badge';
 import { ButtonLink } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton.js';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
@@ -59,7 +60,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     );
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Skeleton className="w-full max-w-2xl h-50" />;
     }
 
     return (
