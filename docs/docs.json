@@ -864,6 +864,7 @@
               "integrations/all/missive",
               "api-integrations/juniper-mist",
               "integrations/all/mixpanel",
+              "api-integrations/mollie",
               "api-integrations/modmed",
               "api-integrations/monday",
               "integrations/all/momentum-io",
