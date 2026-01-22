@@ -6,8 +6,10 @@ import parseLinksHeader from 'parse-link-header';
 import { vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
+import paginateService from '@nangohq/runner-sdk/lib/paginate.service.js';
 
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 interface FixtureProvider {
     getBatchSaveData(modelName: string): Promise<any>;
@@ -19,9 +21,29 @@ interface FixtureProvider {
     getCachedResponse(identity: ConfigIdentity): Promise<any>;
     getUpdateMetadata(): Promise<any>;
     getDeleteRecordsFromPreviousExecutions(): Promise<any>;
+    isUnifiedMocks(): boolean;
+}
+
+interface LegacyMockFile {
+    method: string;
+    endpoint: string;
+    requestIdentityHash: string;
+    requestIdentity: {
+        method: string;
+        endpoint: string;
+        params: [string, string][];
+        headers: [string, string][];
+        data?: unknown;
+    };
+    response: unknown;
+    status?: number;
+    headers?: Record<string, string>;
 }
 
 class LegacyFixtureProvider implements FixtureProvider {
+    private fileCache = new Map<string, string[]>();
+    private mockFileCache = new Map<string, LegacyMockFile>();
+
     constructor(
         private dirname: string,
         private name: string
@@ -52,13 +74,119 @@ class LegacyFixtureProvider implements FixtureProvider {
         }
     }
 
+    private async getFilesInDir(dir: string): Promise<string[]> {
+        if (this.fileCache.has(dir)) {
+            return this.fileCache.get(dir)!;
+        }
+
+        const dirPath = path.resolve(this.dirname, `../mocks/${dir}`);
+        try {
+            const entries = await fs.readdir(dirPath);
+            const jsonFiles = entries.filter((f) => f.endsWith('.json'));
+            this.fileCache.set(dir, jsonFiles);
+            return jsonFiles;
+        } catch (_) {
+            this.fileCache.set(dir, []);
+            return [];
+        }
+    }
+
+    private async parseMockFile(dir: string, filename: string): Promise<LegacyMockFile | null> {
+        const cacheKey = `${dir}/${filename}`;
+        if (this.mockFileCache.has(cacheKey)) {
+            return this.mockFileCache.get(cacheKey)!;
+        }
+
+        const filePath = path.resolve(this.dirname, `../mocks/${dir}/${filename}`);
+        try {
+            const content = await fs.readFile(filePath, 'utf-8');
+            const parsed = JSON.parse(content) as LegacyMockFile;
+            this.mockFileCache.set(cacheKey, parsed);
+            return parsed;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    private paramsMatch(stored: [string, string][], incoming: [string, unknown][]): boolean {
+        if (stored.length !== incoming.length) {
+            return false;
+        }
+
+        const sortedStored = [...stored].sort((a, b) => a[0].localeCompare(b[0]));
+        const sortedIncoming = [...incoming].sort((a, b) => a[0].localeCompare(b[0]));
+
+        for (const [index, storedEntry] of sortedStored.entries()) {
+            const incomingEntry = sortedIncoming[index];
+            if (!incomingEntry) {
+                return false;
+            }
+
+            if (storedEntry[0] !== incomingEntry[0]) {
+                return false;
+            }
+
+            if (String(storedEntry[1]) !== String(incomingEntry[1])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private async findMockByParams(dir: string, identity: ConfigIdentity): Promise<LegacyMockFile | null> {
+        const files = await this.getFilesInDir(dir);
+
+        for (const filename of files) {
+            const mockFile = await this.parseMockFile(dir, filename);
+            if (!mockFile || !mockFile.requestIdentity) {
+                continue;
+            }
+
+            if (this.paramsMatch(mockFile.requestIdentity.params, identity.requestIdentity.params)) {
+                if (mockFile.requestIdentity.headers.length > 0 || identity.requestIdentity.headers.length > 0) {
+                    if (!this.paramsMatch(mockFile.requestIdentity.headers, identity.requestIdentity.headers)) {
+                        continue;
+                    }
+                }
+
+                if (mockFile.requestIdentity.data !== undefined || identity.requestIdentity.data !== undefined) {
+                    const storedDataIdentity = mockFile.requestIdentity.data;
+                    const incomingDataIdentity = identity.requestIdentity.data;
+                    if (String(storedDataIdentity) !== String(incomingDataIdentity)) {
+                        continue;
+                    }
+                }
+
+                return mockFile;
+            }
+        }
+
+        return null;
+    }
+
     async getCachedResponse(identity: ConfigIdentity) {
         const dir = `nango/${identity.method}/proxy/${identity.endpoint}/${this.name}/`;
         const hashBasedPath = `${dir}/${identity.requestIdentityHash}`;
 
         if (await this.hashDirExists(dir)) {
-            const data = await this.getMockFile(hashBasedPath, true, identity);
-            return data;
+            const exactMatch = await this.getMockFile(hashBasedPath, false, identity);
+            if (exactMatch) {
+                return exactMatch;
+            }
+
+            // Hash didn't match - try to find by params (handles legacy pagination bug)
+            const paramMatch = await this.findMockByParams(dir, identity);
+            if (paramMatch) {
+                return paramMatch;
+            }
+
+            throw new Error(
+                `Failed to load mock data for ${identity.method.toUpperCase()} ${identity.endpoint}\n` +
+                    `Hash ${identity.requestIdentityHash} not found in ${dir}\n` +
+                    `Request params: ${JSON.stringify(identity.requestIdentity.params)}\n` +
+                    `This may be due to missing pagination mock files. Re-record with: nango dryrun <sync> <connection> --save`
+            );
         } else {
             return { response: await this.getMockFile(`nango/${identity.method}/proxy/${identity.endpoint}/${this.name}`, true, identity) };
         }
@@ -95,6 +223,51 @@ class LegacyFixtureProvider implements FixtureProvider {
     async getDeleteRecordsFromPreviousExecutions() {
         return this.getMockFile('nango/deleteRecordsFromPreviousExecutions', false);
     }
+
+    isUnifiedMocks(): boolean {
+        return false;
+    }
+
+    async getAllMocksForEndpoint(method: string, endpoint: string): Promise<LegacyMockFile[]> {
+        const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+        const dir = `nango/${method.toLowerCase()}/proxy/${normalizedEndpoint}/${this.name}/`;
+
+        // Check for hash-based directory format (used for paginated endpoints)
+        if (await this.hashDirExists(dir)) {
+            const files = await this.getFilesInDir(dir);
+            const mocks: LegacyMockFile[] = [];
+
+            for (const filename of files) {
+                const mockFile = await this.parseMockFile(dir, filename);
+                if (mockFile) {
+                    mocks.push(mockFile);
+                }
+            }
+
+            return mocks;
+        }
+
+        const nameBasedPath = `nango/${method.toLowerCase()}/proxy/${normalizedEndpoint}/${this.name}`;
+        const response = await this.getMockFile(nameBasedPath, false);
+
+        if (response) {
+            const syntheticMock: LegacyMockFile = {
+                method: method.toLowerCase(),
+                endpoint: normalizedEndpoint,
+                requestIdentityHash: '',
+                requestIdentity: {
+                    method: method.toLowerCase(),
+                    endpoint: normalizedEndpoint,
+                    params: [],
+                    headers: []
+                },
+                response
+            };
+            return [syntheticMock];
+        }
+
+        return [];
+    }
 }
 
 interface MockResponse {
@@ -127,10 +300,16 @@ interface UnifiedMockData {
         deleteRecordsFromPreviousExecutions?: any;
     };
     api?: Record<string, Record<string, ApiMockResponse | ApiMockResponse[]>>;
+    /** Indicates this mock file was migrated from the legacy format */
+    _migrated?: boolean;
 }
 
 class UnifiedFixtureProvider implements FixtureProvider {
-    constructor(private mockData: UnifiedMockData) {}
+    private isMigrated: boolean;
+
+    constructor(private mockData: UnifiedMockData) {
+        this.isMigrated = mockData._migrated === true;
+    }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     async getBatchSaveData(modelName: string) {
@@ -190,8 +369,6 @@ class UnifiedFixtureProvider implements FixtureProvider {
 
         const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
 
-        // The endpoint in the mock file can be stored with or without a leading slash.
-        // This ensures we can find it in both cases.
         let apiMock = this.mockData.api?.[method.toUpperCase()]?.[normalizedEndpoint];
 
         if (!apiMock) {
@@ -199,48 +376,91 @@ class UnifiedFixtureProvider implements FixtureProvider {
         }
 
         if (apiMock) {
-            if (Array.isArray(apiMock)) {
-                const matchedMock = apiMock.find((mock: ApiMockResponse) => {
-                    if (mock.hash && mock.hash === requestIdentityHash) {
-                        return true;
+            // Normalize to array for consistent matching logic
+            const mocks = Array.isArray(apiMock) ? apiMock : [apiMock];
+
+            const matchedMock = mocks.find((mock: ApiMockResponse) => {
+                // Try exact hash match first
+                if (mock.hash && mock.hash === requestIdentityHash) {
+                    return true;
+                }
+
+                // Try matching by request params/headers/data
+                if (mock.request) {
+                    const mockParamCount = mock.request.params ? Object.keys(mock.request.params).length : 0;
+                    const requestParamCount = identity.requestIdentity.params.length;
+
+                    // Params must match exactly (same count and same values)
+                    if (mockParamCount !== requestParamCount) {
+                        return false;
                     }
-                    if (mock.request) {
-                        if (mock.request.params) {
-                            for (const [key, value] of Object.entries(mock.request.params)) {
-                                const actualParam = identity.requestIdentity.params.find(([k]) => k === key);
-                                if (!actualParam || String(actualParam[1]) !== String(value)) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (mock.request.headers) {
-                            for (const [key, value] of Object.entries(mock.request.headers)) {
-                                const actualHeader = identity.requestIdentity.headers.find(([k]) => k.toLowerCase() === key.toLowerCase());
-                                if (!actualHeader || String(actualHeader[1]) !== String(value)) {
-                                    return false;
-                                }
-                            }
-                        }
-                        if (mock.request.data !== undefined) {
-                            const expectedDataIdentity = computeDataIdentity({ data: mock.request.data } as UserProvidedProxyConfiguration);
-                            if (expectedDataIdentity !== identity.requestIdentity.data) {
+
+                    if (mock.request.params) {
+                        for (const [key, value] of Object.entries(mock.request.params)) {
+                            const actualParam = identity.requestIdentity.params.find(([k]) => k === key);
+                            if (!actualParam || String(actualParam[1]) !== String(value)) {
                                 return false;
                             }
                         }
-                        return true;
                     }
-                    return false;
-                });
 
-                if (matchedMock) {
-                    return matchedMock;
+                    const mockHeaderCount = mock.request.headers ? Object.keys(mock.request.headers).length : 0;
+                    const requestHeaderCount = identity.requestIdentity.headers.length;
+
+                    // Headers must match exactly (same count and same values)
+                    if (mockHeaderCount !== requestHeaderCount) {
+                        return false;
+                    }
+
+                    if (mock.request.headers) {
+                        for (const [key, value] of Object.entries(mock.request.headers)) {
+                            const actualHeader = identity.requestIdentity.headers.find(([k]) => k.toLowerCase() === key.toLowerCase());
+                            if (!actualHeader || String(actualHeader[1]) !== String(value)) {
+                                return false;
+                            }
+                        }
+                    }
+                    if (mock.request.data !== undefined) {
+                        const expectedDataIdentity = computeDataIdentity({ data: mock.request.data } as UserProvidedProxyConfiguration);
+                        if (expectedDataIdentity !== identity.requestIdentity.data) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
-            } else {
-                return apiMock;
+
+                // For mocks without request info or hash, only match if there's exactly one mock
+                // and no params in the request (i.e., it's an unpaginated endpoint)
+                if (mocks.length === 1 && identity.requestIdentity.params.length === 0) {
+                    return true;
+                }
+
+                return false;
+            });
+
+            if (matchedMock) {
+                return matchedMock;
             }
         }
 
-        throw new Error(`No mock found for ${method.toUpperCase()} ${endpoint} (normalized: ${normalizedEndpoint}) with hash ${requestIdentityHash}`);
+        const baseError = `No mock found for ${method.toUpperCase()} ${endpoint} (normalized: ${normalizedEndpoint}) with hash ${requestIdentityHash}`;
+
+        if (this.isMigrated) {
+            throw new Error(
+                `${baseError}\n\n` +
+                    `This mock file was migrated from the legacy format.\n` +
+                    `The migration only captures mocks that were accessed during the test run.\n` +
+                    `Due to a pagination bug in the legacy format, some pagination responses may not have been recorded.\n\n` +
+                    `To fix this, re-record your mocks by running:\n` +
+                    `  nango dryrun <sync-name> <connection-id> --save`
+            );
+        }
+
+        throw new Error(`${baseError}\n\n` + `To fix this, record the missing mock by running:\n` + `  nango dryrun <sync-name> <connection-id> --save`);
+    }
+
+    isUnifiedMocks(): boolean {
+        return true;
     }
 }
 
@@ -249,11 +469,12 @@ class RecordingFixtureProvider implements FixtureProvider {
         input: null,
         output: null,
         nango: {},
-        api: {}
+        api: {},
+        _migrated: true
     };
 
     constructor(
-        private delegate: FixtureProvider,
+        private delegate: LegacyFixtureProvider,
         private outputPath: string
     ) {}
 
@@ -345,40 +566,42 @@ class RecordingFixtureProvider implements FixtureProvider {
         if (!this.recordedData.api[method]) this.recordedData.api[method] = {};
         if (!this.recordedData.api[method][endpoint]) this.recordedData.api[method][endpoint] = [];
 
-        const params = Object.fromEntries(identity.requestIdentity.params);
-        const headers = Object.fromEntries(identity.requestIdentity.headers);
+        // Fetch ALL mocks for this endpoint from the legacy provider
+        // This captures pagination pages that weren't accessed due to the legacy pagination bug
+        const allMocksForEndpoint = await this.delegate.getAllMocksForEndpoint(identity.method, endpoint);
 
-        let requestData = identity.requestIdentity.data;
-        if (typeof requestData === 'string') {
-            try {
-                requestData = JSON.parse(requestData);
-            } catch (err) {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                return Promise.reject(err);
+        for (const legacyMock of allMocksForEndpoint) {
+            const mockParams = Object.fromEntries(legacyMock.requestIdentity.params);
+            const mockHeaders = Object.fromEntries(legacyMock.requestIdentity.headers);
+
+            const record: ApiMockResponse = {
+                request: {
+                    params: Object.keys(mockParams).length > 0 ? mockParams : undefined,
+                    headers: Object.keys(mockHeaders).length > 0 ? mockHeaders : undefined,
+                    data: legacyMock.requestIdentity.data
+                },
+                response: legacyMock.response,
+                hash: legacyMock.requestIdentityHash,
+                ...(legacyMock.headers && { headers: legacyMock.headers }),
+                ...(legacyMock.status !== undefined && { status: legacyMock.status })
+            };
+
+            const currentMocks = this.recordedData.api[method][endpoint];
+            const mocksArray = Array.isArray(currentMocks) ? currentMocks : [currentMocks];
+
+            // Use requestIdentityHash from the file content (not filename) for deduplication
+            const exists = mocksArray.some((r: ApiMockResponse) => r.hash === record.hash);
+            if (!exists) {
+                (this.recordedData.api[method][endpoint] as ApiMockResponse[]).push(record);
             }
         }
 
-        const record: ApiMockResponse = {
-            request: {
-                params: Object.keys(params).length > 0 ? params : undefined,
-                headers: Object.keys(headers).length > 0 ? headers : undefined,
-                data: requestData
-            },
-            response: data.response,
-            hash: identity.requestIdentityHash
-        };
-
-        const currentMocks = this.recordedData.api[method][endpoint];
-        // Ensure it's treated as an array for the recorder
-        const mocksArray = Array.isArray(currentMocks) ? currentMocks : [currentMocks];
-
-        const exists = mocksArray.some((r: ApiMockResponse) => r.hash === record.hash);
-        if (!exists) {
-            (this.recordedData.api[method][endpoint] as ApiMockResponse[]).push(record);
-            await this.save();
-        }
-
+        await this.save();
         return data;
+    }
+
+    isUnifiedMocks(): boolean {
+        return false;
     }
 }
 
@@ -434,7 +657,6 @@ async function getFixtureProvider(dirname: string, name: string): Promise<Fixtur
     // to the new unified format (a single `.test.json` file). When the `MIGRATE_MOCKS` environment variable is set,
     // it uses the `RecordingFixtureProvider` to intercept calls to the old mock loader, run the test, and then
     // save all the mock data that was accessed into a single new `.test.json` file.
-    // This is a developer utility, not a production runtime feature.
     if (process.env?.['MIGRATE_MOCKS']) {
         const legacyLoader = new LegacyFixtureProvider(dirname, name);
         return new RecordingFixtureProvider(legacyLoader, unifiedMockPath);
@@ -551,6 +773,37 @@ class NangoActionMock {
             updatedBodyOrParams[limitParameterName] = args.paginate['limit'];
         }
 
+        const fixtureProvider = await this.fixtureProvider;
+
+        // For unified mocks, use Nango's pagination implementation to be consistent on how Nango would do it on an actual run
+        // For legacy mocks, use the legacy (bugged) pagination implementation to avoid breaking existing tests
+        if (fixtureProvider.isUnifiedMocks()) {
+            const paginationConfig = args.paginate as Pagination;
+            paginateService.validateConfiguration(paginationConfig);
+            const proxyAdapter = async (config: UserProvidedProxyConfiguration): Promise<AxiosResponse> => {
+                const response = await this.proxyData(config);
+                return {
+                    data: response.data,
+                    status: response.status || 200,
+                    statusText: 'OK',
+                    headers: response.headers || {},
+                    config: {} as any
+                };
+            };
+
+            switch (paginationConfig.type) {
+                case 'cursor':
+                    return yield* paginateService.cursor(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                case 'link':
+                    return yield* paginateService.link(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                case 'offset':
+                    return yield* paginateService.offset(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                default:
+                    throw new Error(`Invalid pagination type: ${(paginationConfig as Pagination).type}`);
+            }
+        }
+
+        // Legacy pagination implementation for tests using legacy mocks format
         if (args.paginate?.type === 'cursor') {
             yield* this.cursorPaginate(args, updatedBodyOrParams, paginateInBody);
         } else if (args.paginate?.type === 'link') {

@@ -330,19 +330,50 @@ This means:
 
 If you have tests using the old multi-file mock format, you can automatically migrate them to the new unified format.
 
-Set the `MIGRATE_MOCKS` environment variable to `true` and run your tests:
+Set the `MIGRATE_MOCKS` environment variable to `2026-01` and run your tests:
 
 ```bash
-MIGRATE_MOCKS=true npm test
+MIGRATE_MOCKS=2026-01 npm test
 ```
 
 This will:
 1. Run your tests using the old mock files.
 2. Intercept all mock data accessed during the test run.
 3. Save the data into a new `.test.json` file.
-4. The old mock directory can then be safely deleted.
+4. The old mock directory  (`mocks` and `fixtures`) can then be safely deleted once a clean green test run is achieved.
 
 > **Note:** This migration tool works by intercepting the mock data loaded by your existing tests. It requires that your tests are using the standard Nango mock utilities (`NangoSyncMock` or `NangoActionMock`) imported from `nango/test`.
+
+<Warning>
+**Pagination Bug in Legacy Test Utilities**
+
+The legacy test utilities had a bug where pagination would sometimes stop after the first page. This means:
+
+1. **Tests appeared to pass** but were only testing the first page of results
+2. **Mock files may exist** for subsequent pages, but might be incorrect (hashes or params were never checked)
+3. **Some mock files may be missing entirely** if they were never recorded
+
+**How the migration handles this:**
+
+The migration tool performs a **best-effort recovery**:
+- It first tries to match mock files by their exact request hash
+- If that fails, it scans all available mock files and matches by comparing the actual request parameters (endpoint, query params, headers)
+- This handles cases where the hash in the filename is wrong but the request data inside the file is correct
+
+**What to do if tests fail after migration:**
+
+If your tests fail after running the migration, it means one of:
+- The mock file for a paginated request doesn't exist at all (it was never recorded due to the bug)
+- The request parameters stored in the mock file don't match what Nango's pagination now sends
+
+**To fix failing tests, re-record your mocks:**
+
+```bash
+nango dryrun <sync-name> <connection-id> --save
+```
+
+This will generate a complete `.test.json` file with all paginated responses using Nango's actual pagination implementation.
+</Warning>
 
 ### Running tests
 
