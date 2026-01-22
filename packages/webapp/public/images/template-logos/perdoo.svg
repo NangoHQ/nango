@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="62" height="62"
+     viewBox="0 0 62 62">
+
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#175ECA"/>
+      <stop offset="100%" stop-color="#3B9FF4"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#175ECA"/>
+      <stop offset="100%" stop-color="#175ECA"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#05A9F4"/>
+      <stop offset="100%" stop-color="#4CC8F2"/>
+    </linearGradient>
+    <linearGradient id="g4" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#05A9F4"/>
+      <stop offset="100%" stop-color="#175ECA"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(12.5 14)" fill="none" fill-rule="nonzero">
+
+    <polygon fill="url(#g1)"
+      points="6.04965812 34 18.4747009 10.5357367 30.8986895 34 18.4747009 34"/>
+
+    <polygon fill="url(#g2)"
+      points="18.4747009 10.5357367 30.8986895 34 18.4747009 34"/>
+
+    <polygon fill="#FFFFFF"
+      points="10.0985755 26.3537304 18.4747009 10.5357367 26.8497721 26.3537304 18.4747009 21.9838245"/>
+
+    <path fill="url(#g3)"
+      d="M14.2971795,2.64752351 L0.557635326,28.1784326
+         C0.192721478,28.7796926 0,29.4714236 0,30.1768652
+         C0,32.2520376 1.72877493,34 3.78116809,34
+         L6.04965812,34 L18.4747009,10.5144201
+         L14.2971795,2.64752351 Z"/>
+
+    <path fill="url(#g4)"
+      d="M36.9483476,30.1768652
+         C36.9489614,29.4715259 36.7563102,28.7798023 36.3917664,28.1784326
+         L24.5464957,6.16689655
+         C24.5464957,6.16689655 24.4484615,5.98677116 24.4168376,5.92601881
+         C18.4747009,-5.10639498 14.2971795,2.64752351 14.2971795,2.64752351
+         L30.8986895,34 L33.275755,34
+         C35.3281481,34 36.9483476,32.2509718 36.9483476,30.1768652 Z"/>
+  </g>
+</svg>

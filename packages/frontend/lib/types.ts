@@ -27,6 +27,7 @@ export interface ConnectionConfig {
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;
     installation?: 'outbound';
+    assertionOption?: Record<string, string>;
     credentials?:
         | OAuthCredentialsOverride
         | BasicApiCredentials

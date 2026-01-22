@@ -6592,6 +6592,17 @@ google-drive:
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
+google-meet:
+    display_name: Google Meet
+    categories:
+        - communication
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://meet.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-meet
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-meet/how-to-register-your-own-google-meet-api-oauth-app
+
 google-ads:
     display_name: Google Ads
     categories:
@@ -6956,6 +6967,68 @@ greenhouse-harvest:
             # Greenhouse is using basic auth with an api key
             default_value: ''
             hidden: true
+
+greenhouse-harvest-partner:
+    display_name: Greenhouse Harvest Partner (V3)
+    categories:
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://auth.greenhouse.io/authorize
+    token_url: https://auth.greenhouse.io/token
+    token_request_auth_method: basic
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/greenhouse-harvest-partner
+    setup_guide_url: https://nango.dev/docs/api-integrations/greenhouse-harvest-partner/how-to-register-your-own-greenhouse-harvest-partner-oauth-app
+
+greenhouse-harvest-oauth2-cc:
+    display_name: Greenhouse Harvest (Client Credentials V3)
+    categories:
+        - ats
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.greenhouse.io/token?grant_type=client_credentials
+    token_request_auth_method: basic
+    body_format: json
+    token_params:
+        sub: ${connectionConfig.sub}
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/greenhouse-harvest-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/greenhouse-harvest-oauth2-cc/connect
+    connection_config:
+        sub:
+            type: string
+            title: User ID
+            description: The optional ID of the user to act on-behalf-of.
+            optional: true
+            example: '4212952002'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-finding-your-user-id'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Greenhouse client ID for authentication
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Greenhouse client secret for authentication
+            doc_section: '#step-1-generating-your-client-credentials'
 
 greenhouse-job-board:
     display_name: Greenhouse (Job Board API)
@@ -9642,6 +9715,41 @@ missive:
             type: string
             title: API Key
             description: The API key for your Missive account
+
+juniper-mist:
+    display_name: Juniper Mist
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.mist.com
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v1/self
+    docs: https://nango.dev/docs/api-integrations/juniper-mist
+    docs_connect: https://nango.dev/docs/api-integrations/juniper-mist/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain for your Juniper Mist region
+            example: api
+            pattern: '^api(\.[a-z0-9]+)*$'
+            doc_section: '#step-1-finding-your-api-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Juniper Mist API token
+            doc_section: '#step-2-generating-your-api-token'
+            example: 3n69xDYMlT36fulLwIq7PDaDopc5W0b*****************************************************************
+            pattern: '^[A-Za-z0-9]{96}$'
+
 monday:
     display_name: Monday
     categories:
@@ -9681,6 +9789,68 @@ momentum-io:
             title: API Key
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
+
+modmed:
+    display_name: ModMed
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.environment}/firm/${connectionConfig.firmUrlPrefix}/ema/ws/oauth2/grant
+    token_params:
+        grant_type: password
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-api-key: ${credentials.apiKey}
+        accept: application/json
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.environment}/firm/${connectionConfig.firmUrlPrefix}
+        headers:
+            accept: application/fhir+json
+            x-api-key: ${credentials.apiKey}
+    token_response:
+        token: access_token
+    docs: https://nango.dev/docs/api-integrations/modmed
+    docs_connect: https://nango.dev/docs/api-integrations/modmed/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The ModMed API environment
+            example: stage.ema-api.com/ema-dev
+            pattern: '^(stage|mmapi)\.ema-api\.com\/(ema-dev|ema-training|ema-prod)$'
+            doc_section: '#step-3-selecting-your-environment'
+            order: 1
+        firmUrlPrefix:
+            type: string
+            title: Firm URL Prefix
+            description: The firm URL prefix for your practice
+            example: emapmsandbox01
+            doc_section: '#step-2-finding-your-firm-url-prefix'
+            order: 2
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your API username
+            example: fhir_QfLlo
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+        password:
+            type: string
+            title: Password
+            description: Your API password
+            secret: true
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API key (x-api-key)
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-request-access-to-modmed-sandbox'
 
 mural:
     display_name: Mural
@@ -10193,6 +10363,39 @@ onelogin:
             prefix: https://
             suffix: .onelogin.com
             doc_section: '#step-1-finding-your-subdomain'
+
+oomnitza:
+    display_name: Oomnitza
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.oomnitza.com
+        headers:
+            authorization2: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/v3/assets/meta
+    docs: https://nango.dev/docs/api-integrations/oomnitza
+    docs_connect: https://nango.dev/docs/api-integrations/oomnitza/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Oomnitza Subdomain
+            description: The subdomain of your Oomnitza instance
+            example: mycompany
+            prefix: https://
+            suffix: .oomnitza.com
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Oomnitza API token
+            doc_section: '#step-2-generating-your-api-token'
 
 openai:
     display_name: OpenAI
@@ -10889,6 +11092,32 @@ peopledatalabs:
             type: string
             title: API Key
             description: The API key for your People Data Labs account
+
+perdoo:
+    display_name: Perdoo
+    categories:
+        - productivity
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://eu.perdoo.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /user
+    docs: https://nango.dev/docs/api-integrations/perdoo
+    docs_connect: https://nango.dev/docs/api-integrations/perdoo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Perdoo API token
+            example: '5037c64a83d34725a13131b9b28856c0e499887b16c84b6d9bba2756d1e61634'
+            pattern: '^[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-token'
 
 perplexity:
     display_name: Perplexity
@@ -12244,6 +12473,32 @@ rootly:
             pattern: '^rootly_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
 
+reapit:
+    display_name: Reapit Connect
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://connect.reapit.cloud/authorize
+    token_url: https://connect.reapit.cloud/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.reapit.cloud
+        headers:
+            api-version: ${connectionConfig.version} || 2020-01-31
+    docs: https://nango.dev/docs/api-integrations/reapit
+    setup_guide_url: https://nango.dev/docs/api-integrations/reapit/how-to-register-your-own-reapit-oauth-app
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 segment:
     display_name: Segment
     categories:
@@ -12693,6 +12948,19 @@ sap-success-factors:
         grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
         assertion: ${credentials.assertion}
         new_token: true
+    assertion:
+        key: ${assertionOption.privateKey}
+        issuer: www.successfactors.com
+        lifetimeInSeconds: '315360000'
+        audiences: www.successfactors.com
+        attributes:
+            api_key: ${credentials.apiKey}
+            use_username: true
+            use_email: false
+            external_user: false
+        sessionIndex: ${random}
+        nameIdentifier: ${assertionOption.userName}
+        recipient: https://${connectionConfig.apiServer}/oauth/token
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
@@ -12701,8 +12969,8 @@ sap-success-factors:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/sap-success-factors
-    docs_connect: https://nango.dev/docs/integrations/all/sap-success-factors/connect
+    docs: https://nango.dev/docs/api-integrations/sap-success-factors
+    docs_connect: https://nango.dev/docs/api-integrations/sap-success-factors/connect
     connection_config:
         apiServer:
             type: string
@@ -12729,13 +12997,24 @@ sap-success-factors:
             secret: true
             example: YzA4MTVhMTQzZTUzMjc3NTk0ZDY2Nzc1ZmVkOA
             pattern: ^[A-Za-z0-9+/]{32,44}={0,2}$
-            doc_section: '#step-3-generating-your-api-key'
+            doc_section: '#step-3-finding-your-api-key-and-private-key'
         assertion:
             type: string
-            title: SAML Assertion
-            description: The SAML Assertion generated for your SAP SuccessFactors account
-            secret: true
-            doc_section: '#step-4-generating-your-saml-assertion'
+            title: ''
+            description: ''
+            automated: true
+    assertion_option:
+        userName:
+            type: string
+            title: Username
+            description: The username of your SAP SuccessFactors account
+            example: johnDoe
+            doc_section: '#step-4-finding-your-username'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The Private Key for your SAP SuccessFactors Oauth Client
+            doc_section: '#step-3-finding-your-api-key-and-private-key'
 
 sap-odata-oauth2-cc:
     display_name: SAP S/4HANA Cloud (Client Credentials)

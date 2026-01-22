@@ -1,0 +1,84 @@
+---
+title: 'Juniper Mist'
+sidebarTitle: 'Juniper Mist'
+description: 'Integrate your application with the Juniper Mist API'
+---
+
+## 🚀 Quickstart
+
+Connect to Juniper Mist with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Juniper Mist_.
+    </Step>
+    <Step title="Authorize Juniper Mist">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Juniper Mist API">
+    Let's make your first request to the Juniper Mist API (retrieve your user information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/api/v1/self" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/self',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+
+        </Tab>
+
+        <Tab title="Python">
+
+        Install Nango's backend SDK with `pip install nango`. Then run:
+
+        ```python
+        from nango import Nango
+
+        nango = Nango(secret_key='<NANGO-SECRET-KEY>')
+
+        res = nango.get(
+            endpoint='/api/v1/self',
+            provider_config_key='<INTEGRATION-ID>',
+            connection_id='<CONNECTION-ID>'
+        )
+
+        print(res)
+        ```
+
+        </Tab>
+    </Tabs>
+    </Step>
+    <Step title="Next steps">
+    You're all set! Check out the [integration guides](#integration-guides) below to learn more about what you can do with the Juniper Mist API.
+    </Step>
+</Steps>
+
+## Integration Guides
+
+- [How to link your Juniper Mist account](/api-integrations/juniper-mist/connect) - Step-by-step guide to connect your Juniper Mist account
+
+## Official Documentation
+
+For more information about the Juniper Mist API, visit the [Juniper Mist API documentation](https://www.juniper.net/documentation/us/en/software/mist/api/http/getting-started/how-to-get-started).

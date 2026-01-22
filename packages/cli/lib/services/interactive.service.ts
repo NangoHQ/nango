@@ -1,9 +1,10 @@
+import chalk from 'chalk';
 import inquirer from 'inquirer';
 
 import { Nango } from '@nangohq/node';
 
 import { FUNCTION_TYPES } from '../types.js';
-import { parseSecretKey } from '../utils.js';
+import { getEnvironments, parseSecretKey } from '../utils.js';
 
 import type { FunctionType } from '../types.js';
 import type { GetPublicConnections } from '@nangohq/types';
@@ -68,13 +69,26 @@ export async function promptForFunctionName(type: FunctionType): Promise<string>
     return name;
 }
 
-export async function promptForEnvironment(): Promise<string> {
+export async function promptForEnvironment(debug = false): Promise<string> {
+    let choices = ['dev', 'prod', new inquirer.Separator(), OTHER_CHOICE];
+
+    const environments = await getEnvironments(debug);
+    if (environments) {
+        if (environments.data.length > 0) {
+            choices = environments.data.map((e) => e.name);
+        } else {
+            console.log(chalk.yellow('Warning: No environments found. Using default options.'));
+        }
+    } else {
+        console.log(chalk.yellow('Warning: Could not fetch environments. Using default options.'));
+    }
+
     const { env } = await inquirer.prompt([
         {
             type: 'rawlist',
             name: 'env',
             message: 'Which environment do you want to use?',
-            choices: ['dev', 'prod', new inquirer.Separator(), OTHER_CHOICE]
+            choices
         }
     ]);
 
