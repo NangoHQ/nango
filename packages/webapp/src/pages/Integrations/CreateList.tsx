@@ -13,6 +13,7 @@ import { useStore } from '../../store.js';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Badge } from '@/components-v2/ui/badge';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
+import { Skeleton } from '@/components-v2/ui/skeleton.js';
 
 import type { ApiProviderListItem } from '@nangohq/types';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
@@ -22,9 +23,9 @@ type Provider = ApiProviderListItem;
 export const CreateIntegrationList = () => {
     const env = useStore((state) => state.env);
 
+    const { data: providersData, isLoading: loadingProviders } = useProviders(env);
     const [providers, setProviders] = useState<Provider[] | null>(null);
 
-    const { data: providersData } = useProviders(env);
     const navigate = useNavigate();
 
     const initialProviders = useMemo(() => {
@@ -59,20 +60,12 @@ export const CreateIntegrationList = () => {
 
     const filterProviders = useCallback(
         (value: string) => {
-            if (!value.trim()) {
+            if (!value.trim() || !fuse) {
                 setProviders(initialProviders);
                 return;
             }
 
-            if (!fuse) {
-                setProviders(initialProviders);
-                return;
-            }
-
-            // Perform fuzzy search
             const results = fuse.search(value);
-
-            // Extract providers from results, sorted by relevance (lower score = better match)
             const filtered = results.map((result) => result.item);
 
             setProviders(filtered);
@@ -81,6 +74,12 @@ export const CreateIntegrationList = () => {
     );
 
     const debouncedFilterProviders = useMemo(() => debounce(filterProviders, 300), [filterProviders]);
+
+    useEffect(() => {
+        return () => {
+            debouncedFilterProviders.cancel();
+        };
+    }, [debouncedFilterProviders]);
 
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
@@ -104,18 +103,24 @@ export const CreateIntegrationList = () => {
             </header>
 
             <InputGroup className="bg-bg-subtle">
-                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} onKeyUp={handleInputChange} />
+                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
                 </InputGroupAddon>
             </InputGroup>
 
-            <ProviderList providers={providers} onSelectProvider={onSelectProvider} />
+            <ProviderList providers={providers ?? initialProviders} onSelectProvider={onSelectProvider} loading={loadingProviders} />
         </DashboardLayout>
     );
 };
 
-const ProviderList = ({ providers, onSelectProvider }: { providers: Provider[] | null; onSelectProvider: (provider: Provider) => void }) => {
+interface ProviderListProps {
+    providers: Provider[] | null;
+    onSelectProvider: (provider: Provider) => void;
+    loading: boolean;
+}
+
+const ProviderList = ({ providers, onSelectProvider, loading }: ProviderListProps) => {
     const parentRef = useRef<HTMLDivElement>(null);
 
     const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
@@ -126,8 +131,22 @@ const ProviderList = ({ providers, onSelectProvider }: { providers: Provider[] |
         gap: 8
     });
 
+    if (loading) {
+        return (
+            <div className="flex flex-col gap-2">
+                {Array.from({ length: 10 }).map((_, index) => (
+                    <Skeleton key={index} className="h-16.5 w-full" />
+                ))}
+            </div>
+        );
+    }
+
     if (!providers || providers.length === 0) {
-        return null;
+        return (
+            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+                <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
+            </div>
+        );
     }
 
     return (

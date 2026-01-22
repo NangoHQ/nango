@@ -102,8 +102,18 @@ const router = sentryCreateBrowserRouter([
                     },
                     {
                         path: 'create',
-                        element: <CreateIntegration />,
-                        handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle
+                        handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <CreateIntegrationList />
+                            },
+                            {
+                                path: ':providerConfigKey',
+                                element: <CreateIntegration />,
+                                handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                            }
+                        ]
                     },
                     {
                         path: ':providerConfigKey',
