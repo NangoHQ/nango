@@ -1193,6 +1193,7 @@ class OAuthController {
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
 
+        console.log('GENERAL CALLBACK!!');
         if (authMode === 'CUSTOM') {
             console.log('[CUSTOM AUTH] Callback received:', {
                 setupAction,
