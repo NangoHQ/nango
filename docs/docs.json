@@ -68,6 +68,10 @@
       "destination": "/api-integrations/microsoft-teams"
     },
     {
+      "source": "/integrations/all/microsoft-planner",
+      "destination": "/api-integrations/microsoft-planner"
+    },
+    {
       "source": "/integrations/all/microsoft",
       "destination": "/api-integrations/microsoft"
     },
@@ -848,6 +852,7 @@
               "integrations/all/microsoft-business-central",
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
+              "api-integrations/microsoft-planner",
               "integrations/all/microsoft-power-bi",
               "api-integrations/microsoft-teams",
               "integrations/all/microsoft-tenant-specific",
