@@ -161,7 +161,7 @@ export const CreateIntegration = () => {
             </header>
 
             <InputGroup className="bg-bg-subtle">
-                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} onKeyUp={handleInputChange} autoFocus />
+                <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
                 </InputGroupAddon>

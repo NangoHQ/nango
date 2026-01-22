@@ -103,7 +103,7 @@ export const IntegrationsList = () => {
             </header>
 
             <InputGroup className="bg-bg-subtle">
-                <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} onKeyUp={handleInputChange} autoFocus />
+                <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
                 </InputGroupAddon>
