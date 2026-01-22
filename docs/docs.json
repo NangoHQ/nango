@@ -739,6 +739,7 @@
               "api-integrations/google-docs",
               "api-integrations/google-drive",
               "api-integrations/google-mail",
+              "api-integrations/google-meet",
               "integrations/all/google-play",
               "api-integrations/google-search-console",
               "api-integrations/google-sheet",

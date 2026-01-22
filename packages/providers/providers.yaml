@@ -6592,6 +6592,17 @@ google-drive:
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
+google-meet:
+    display_name: Google Meet
+    categories:
+        - communication
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://meet.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-meet
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-meet/how-to-register-your-own-google-meet-api-oauth-app
+
 google-ads:
     display_name: Google Ads
     categories:
