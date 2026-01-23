@@ -1171,6 +1171,112 @@ class OAuthController {
         }
     }
 
+    /**
+     * Finish a GitHub App connection without token exchange.
+     * Used when the installation already exists or when GitHub sends an update without auth code.
+     */
+    private async finishGithubAppConnectionWithoutTokenExchange({
+        session,
+        config,
+        provider,
+        installationId,
+        connectionId,
+        providerConfigKey,
+        channel,
+        environment,
+        account,
+        logCtx,
+        res
+    }: {
+        session: OAuthSession;
+        config: ProviderConfig;
+        provider: ProviderOAuth2 | ProviderCustom;
+        installationId: string | undefined;
+        connectionId: string;
+        providerConfigKey: string;
+        channel: string | undefined;
+        environment: DBEnvironment;
+        account: DBTeam;
+        logCtx: LogContext;
+        res: Response;
+    }): Promise<void> {
+        const connectionConfig = {
+            ...session.connectionConfig,
+            app_id: config?.custom?.['app_id'],
+            installation_id: installationId
+        };
+
+        let connectSession: ConnectSessionAndEndUser | undefined;
+
+        if (session.connectSessionId) {
+            const connectSessionRes = await getConnectSession(db.knex, {
+                id: session.connectSessionId,
+                accountId: account.id,
+                environmentId: environment.id
+            });
+            if (connectSessionRes.isErr()) {
+                void logCtx.error('Failed to get session', { error: connectSessionRes.error });
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                return;
+            }
+            connectSession = connectSessionRes.value;
+        }
+
+        const connCreatedHook = (upsertResult: ConnectionUpsertResponse) => {
+            void connectionCreatedHook(
+                {
+                    connection: upsertResult.connection,
+                    environment,
+                    account,
+                    auth_mode: 'APP',
+                    operation: upsertResult.operation,
+                    endUser: connectSession?.connectSession.endUser ?? undefined
+                },
+                account,
+                config,
+                logContextGetter,
+                { initiateSync: true, runPostConnectionScript: false }
+            );
+        };
+
+        const connectionResponse = await connectionService.getAppCredentialsAndFinishConnection(
+            connectionId,
+            config,
+            provider as unknown as ProviderGithubApp,
+            connectionConfig,
+            logCtx,
+            connCreatedHook
+        );
+
+        if (connectionResponse.isErr()) {
+            void logCtx.error('Failed to finish connection', { error: connectionResponse.error });
+            await logCtx.failed();
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to finish connection'));
+            return;
+        }
+
+        const upsertedConnection = connectionResponse.value;
+        if (session.connectSessionId && upsertedConnection?.connection && connectSession) {
+            await syncEndUserToConnection(db.knex, {
+                connectSession: connectSession.connectSession,
+                connection: upsertedConnection.connection,
+                account,
+                environment
+            });
+        }
+
+        await logCtx.success();
+
+        await publisher.notifySuccess({
+            res,
+            wsClientId: channel,
+            providerConfigKey,
+            connectionId: upsertedConnection?.connection.connection_id ?? connectionId,
+            isPending: false
+        });
+    }
+
     private async oauth2Callback(
         provider: ProviderOAuth2 | ProviderCustom,
         config: ProviderConfig,
@@ -1193,120 +1299,57 @@ class OAuthController {
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
 
-        if (authMode === 'CUSTOM') {
-            void logCtx.info('[CUSTOM AUTH] Callback received', {
-                setupAction,
-                hasAuthorizationCode: !!authorizationCode,
-                installationId,
-                connectionId,
-                providerConfigKey,
-                connectSessionId: session.connectSessionId,
-                channel
-            });
-            void logCtx.info('[CUSTOM AUTH] Flow decision', {
-                willEnterUpdateFlow: !authorizationCode && authMode === 'CUSTOM' && setupAction === 'update',
-                willEnterNoCodeError: !authorizationCode,
-                willEnterUpdateWithInstallation: authMode === 'CUSTOM' && setupAction === 'update' && !!installationId
-            });
+        // When there's an installationId in CUSTOM mode, check if this installation already exists
+        // This handles the case where GitHub sends setup_action=install even when just adding repos
+        if (authMode === 'CUSTOM' && installationId) {
+            const existingConnections = await connectionService.findConnectionsByMultipleConnectionConfigValues(
+                { installation_id: installationId },
+                session.environmentId
+            );
+
+            // Only skip token exchange if we find an existing connection for the same provider config
+            const existingConnection = existingConnections?.find((c) => c.provider_config_key === providerConfigKey);
+            if (existingConnection) {
+                // Connection with this installation_id already exists for this integration
+                // Skip token exchange and use app credentials to create/update the connection
+                void logCtx.info('Existing installation found, skipping token exchange', {
+                    installationId,
+                    existingConnectionId: existingConnection.connection_id
+                });
+
+                await this.finishGithubAppConnectionWithoutTokenExchange({
+                    session,
+                    config,
+                    provider,
+                    installationId,
+                    connectionId,
+                    providerConfigKey,
+                    channel,
+                    environment,
+                    account,
+                    logCtx,
+                    res
+                });
+                return;
+            }
         }
+
         if (!authorizationCode && authMode === 'CUSTOM' && setupAction === 'update') {
             // this means the app was already installed and another user is trying to update the app
             // in this case we don't need the auth token
-            void logCtx.info('[CUSTOM AUTH UPDATE] Processing update flow for installation', { installationId });
-
-            const connectionConfig = {
-                ...session.connectionConfig,
-                app_id: config?.custom?.['app_id'],
-                installation_id: installationId
-            };
-
-            let connectSession: ConnectSessionAndEndUser | undefined;
-
-            if (session.connectSessionId) {
-                void logCtx.info('[CUSTOM AUTH UPDATE] Looking up connect session', { connectSessionId: session.connectSessionId });
-                const connectSessionRes = await getConnectSession(db.knex, {
-                    id: session.connectSessionId,
-                    accountId: account.id,
-                    environmentId: environment.id
-                });
-                if (connectSessionRes.isErr()) {
-                    void logCtx.error('[CUSTOM AUTH UPDATE] Failed to get connect session', { error: connectSessionRes.error });
-                    void logCtx.error('Failed to get session', { error: connectSessionRes.error });
-                    await logCtx.failed();
-                    if (res) {
-                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
-                    }
-                    return;
-                }
-                // FIX: Assign the connect session value
-                connectSession = connectSessionRes.value;
-                void logCtx.info('[CUSTOM AUTH UPDATE] Connect session found', { endUserId: connectSession?.connectSession?.endUser?.endUserId });
-            }
-
-            const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                void logCtx.info('[CUSTOM AUTH UPDATE] Connection created/updated', { operation: res.operation, connectionId: res.connection.id });
-                void connectionCreatedHook(
-                    {
-                        connection: res.connection,
-                        environment,
-                        account,
-                        auth_mode: 'APP',
-                        operation: res.operation,
-                        endUser: connectSession?.connectSession.endUser ?? undefined
-                    },
-                    account,
-                    config,
-                    logContextGetter,
-                    { initiateSync: true, runPostConnectionScript: false }
-                );
-            };
-
-            void logCtx.info('[CUSTOM AUTH UPDATE] Getting app credentials and finishing connection');
-            const connectionResponse = await connectionService.getAppCredentialsAndFinishConnection(
-                connectionId,
+            await this.finishGithubAppConnectionWithoutTokenExchange({
+                session,
                 config,
-                provider as unknown as ProviderGithubApp,
-                connectionConfig,
-                logCtx,
-                connCreatedHook
-            );
-
-            // FIX: Handle connection response error
-            if (connectionResponse.isErr()) {
-                void logCtx.error('[CUSTOM AUTH UPDATE] Failed to finish connection', { error: connectionResponse.error });
-                void logCtx.error('Failed to finish connection', { error: connectionResponse.error });
-                await logCtx.failed();
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to finish connection'));
-                return;
-            }
-
-            void logCtx.info('[CUSTOM AUTH UPDATE] Connection response success', { connectionId: connectionResponse.value?.connection?.id });
-
-            if (session.connectSessionId && connectionResponse.isOk()) {
-                const upsertedConnection = connectionResponse.value;
-                if (upsertedConnection?.connection && connectSession) {
-                    void logCtx.info('[CUSTOM AUTH UPDATE] Syncing end user to connection');
-                    await syncEndUserToConnection(db.knex, {
-                        connectSession: connectSession.connectSession,
-                        connection: upsertedConnection.connection,
-                        account,
-                        environment
-                    });
-                }
-            }
-
-            await logCtx.success();
-
-            void logCtx.info('[CUSTOM AUTH UPDATE] Notifying success to frontend via WebSocket', { channel });
-            await publisher.notifySuccess({
-                res,
-                wsClientId: channel,
-                providerConfigKey,
+                provider,
+                installationId,
                 connectionId,
-                isPending: false
+                providerConfigKey,
+                channel,
+                environment,
+                account,
+                logCtx,
+                res
             });
-
-            void logCtx.info('[CUSTOM AUTH UPDATE] Flow completed successfully');
             return;
         }
 
@@ -1367,15 +1410,6 @@ class OAuthController {
         if (session.connectionConfig['oauth_scopes']) {
             config.oauth_scopes = session.connectionConfig['oauth_scopes'];
         }
-
-        void logCtx.info('[CUSTOM AUTH] About to call handleTokenExchangeAndConnectionCreation', {
-            hasProvider: !!provider,
-            hasConfig: !!config,
-            hasSession: !!session,
-            authorizationCode: authorizationCode?.substring(0, 10) + '...',
-            installationId,
-            hasRes: !!res
-        });
 
         return this.handleTokenExchangeAndConnectionCreation(
             provider,
@@ -1465,14 +1499,6 @@ class OAuthController {
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
 
-        void logCtx.info('[CUSTOM AUTH] handleTokenExchangeAndConnectionCreation started', {
-            providerConfigKey,
-            connectionId,
-            channel,
-            installationId,
-            authMode: provider.auth_mode
-        });
-
         let connectionConfig: Record<string, any> = {
             ...callbackMetadata,
             ...webhookMetadata,
@@ -1501,8 +1527,6 @@ class OAuthController {
 
         try {
             let rawCredentials: object;
-
-            void logCtx.info('[CUSTOM AUTH] About to initiate token request');
 
             void logCtx.info('Initiating token request', {
                 provider: session.provider,
@@ -1539,7 +1563,6 @@ class OAuthController {
                 rawCredentials = accessToken.token;
             }
 
-            void logCtx.info('[CUSTOM AUTH] Token response received');
             void logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
 
             const tokenMetadata = getConnectionMetadata(rawCredentials, provider, 'token_response_metadata');
@@ -1650,7 +1673,6 @@ class OAuthController {
                     : connectionConfig['oauth_scopes_override'];
             }
 
-            void logCtx.info('[CUSTOM AUTH] About to upsert connection');
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
@@ -1658,8 +1680,6 @@ class OAuthController {
                 connectionConfig,
                 environmentId: session.environmentId
             });
-
-            void logCtx.info('[CUSTOM AUTH] Connection upserted', { success: !!updatedConnection, operation: updatedConnection?.operation });
 
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
@@ -1751,7 +1771,6 @@ class OAuthController {
             );
 
             if (provider.auth_mode === 'CUSTOM' && installationId) {
-                void logCtx.info('[CUSTOM AUTH] CUSTOM mode with installationId, calling getAppCredentialsAndFinishConnection');
                 pending = false;
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
                     void connectionCreatedHook(
@@ -1777,7 +1796,6 @@ class OAuthController {
                     logCtx,
                     connCreatedHook
                 );
-                void logCtx.info('[CUSTOM AUTH] getAppCredentialsAndFinishConnection result', { isOk: createRes.isOk(), isErr: createRes.isErr() });
                 if (createRes.isErr()) {
                     let responseData = null;
                     if (
@@ -1806,7 +1824,6 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
 
             if (res) {
-                void logCtx.info('[CUSTOM AUTH] About to notify success', { channel, providerConfigKey, connectionId, isPending: pending });
                 await publisher.notifySuccess({
                     res,
                     wsClientId: channel,
@@ -1814,11 +1831,9 @@ class OAuthController {
                     connectionId,
                     isPending: pending
                 });
-                void logCtx.info('[CUSTOM AUTH] notifySuccess completed');
             }
             return;
         } catch (err) {
-            void logCtx.error('[CUSTOM AUTH] Error in handleTokenExchangeAndConnectionCreation', { error: err });
             const prettyError = stringifyEnrichedError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
