@@ -15,6 +15,7 @@ import { useStore } from '../../../store';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Badge } from '@/components-v2/ui/badge';
 import { Skeleton } from '@/components-v2/ui/skeleton';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
 
 import type { ReactNode } from 'react';
 
@@ -31,6 +32,7 @@ export const EnvironmentSettings: React.FC = () => {
     const { team } = useTeam(env);
 
     const { environmentAndAccount } = useEnvironment(env);
+    const [activeTab, setActiveTab] = useHashNavigation('general');
 
     if (!environmentAndAccount || !team) {
         return (
@@ -67,7 +69,7 @@ export const EnvironmentSettings: React.FC = () => {
                 </div>
             </div>
             <div className="flex h-fit justify-center" key={env}>
-                <Navigation defaultValue="general" className="max-w-[1153px] mx-auto 4xl:max-w-full">
+                <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-[1153px] mx-auto 4xl:max-w-full">
                     <NavigationList className="w-[209px] 4xl:w-[236px]">
                         <NavigationTrigger value="general">General</NavigationTrigger>
                         <NavigationTrigger value="backend">Backend</NavigationTrigger>
