@@ -2,15 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import {
-    configService,
-    connectionService,
-    errorManager,
-    getConnectionConfig,
-    getProvider,
-    syncEndUserToConnection,
-    syncTagsToConnection
-} from '@nangohq/shared';
+import { configService, connectionService, errorManager, getConnectionConfig, getProvider, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -137,7 +129,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             connectionId,
             providerConfigKey,
             connectionConfig,
-            environment
+            environment,
+            tags: connectSession?.tags
         });
 
         if (!updatedConnection) {
@@ -177,7 +170,6 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         if (isConnectSession) {
             await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
-            await syncTagsToConnection(db.knex, { connectSession, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

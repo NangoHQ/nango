@@ -3,7 +3,7 @@ import db from '@nangohq/database';
 import connectionService from '../services/connection.service.js';
 import { linkConnection } from '../services/endUser.service.js';
 
-import type { AllAuthCredentials, ConnectionConfig, DBConnection, DBConnectionDecrypted, DBEnvironment, EndUser } from '@nangohq/types';
+import type { AllAuthCredentials, ConnectionConfig, DBConnection, DBConnectionDecrypted, DBEnvironment, EndUser, Tags } from '@nangohq/types';
 
 export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[]> => {
     const connectionIds = [];
@@ -15,7 +15,8 @@ export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[
             providerConfigKey: `provider-${name}`,
             parsedRawCredentials: {} as AllAuthCredentials,
             connectionConfig: {},
-            environmentId: env.id
+            environmentId: env.id,
+            tags: {}
         });
 
         for (const res of result) {
@@ -36,6 +37,7 @@ export const createConnectionSeed = async ({
     connectionId,
     rawCredentials,
     connectionConfig,
+    tags,
     ...rest
 }: {
     env: DBEnvironment;
@@ -44,8 +46,9 @@ export const createConnectionSeed = async ({
     connectionId?: string;
     rawCredentials?: AllAuthCredentials;
     connectionConfig?: ConnectionConfig;
+    tags?: Tags;
 } & Partial<
-    Omit<DBConnectionDecrypted, 'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id'>
+    Omit<DBConnectionDecrypted, 'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id' | 'tags'>
 >): Promise<DBConnection> => {
     const name = connectionId ? connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
@@ -54,6 +57,7 @@ export const createConnectionSeed = async ({
         parsedRawCredentials: rawCredentials || ({} as AllAuthCredentials),
         connectionConfig: connectionConfig || {},
         environmentId: env.id,
+        tags: tags || {},
         ...rest
     });
 

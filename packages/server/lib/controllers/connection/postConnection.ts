@@ -220,7 +220,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
                 environmentId: environment.id,
-                metadata: body.metadata || {}
+                metadata: body.metadata || {},
+                tags: body.tags || {}
             });
 
             if (imported) {
@@ -252,7 +253,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
                 environmentId: environment.id,
-                metadata: body.metadata || {}
+                metadata: body.metadata || {},
+                tags: body.tags || {}
             });
 
             if (imported) {
@@ -281,7 +283,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 },
                 metadata: body.metadata || {},
                 config: integration,
-                environment
+                environment,
+                tags: body.tags || {}
             });
 
             if (imported) {
@@ -296,7 +299,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 environment,
                 metadata: body.metadata || {},
-                connectionConfig: body.connection_config || {}
+                connectionConfig: body.connection_config || {},
+                tags: body.tags || {}
             });
 
             if (imported) {

@@ -26,8 +26,7 @@ import {
     makeUrl,
     oauth2Client,
     providerClientManager,
-    syncEndUserToConnection,
-    syncTagsToConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
@@ -479,7 +478,8 @@ class OAuthController {
                 providerConfigKey,
                 parsedRawCredentials: credentials,
                 connectionConfig,
-                environmentId: environment.id
+                environmentId: environment.id,
+                tags: connectSession?.tags
             });
 
             if (!updatedConnection) {
@@ -521,7 +521,6 @@ class OAuthController {
 
             if (isConnectSession) {
                 await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
-                await syncTagsToConnection(db.knex, { connectSession, connection: updatedConnection.connection });
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
@@ -1220,6 +1219,7 @@ class OAuthController {
                     }
                     return;
                 }
+                connectSession = connectSessionRes.value;
             }
 
             const connCreatedHook = (res: ConnectionUpsertResponse) => {
@@ -1239,13 +1239,16 @@ class OAuthController {
                 );
             };
 
+            const tags = connectSession?.connectSession.tags || {};
+
             const connectionResponse = await connectionService.getAppCredentialsAndFinishConnection(
                 connectionId,
                 config,
                 provider as unknown as ProviderGithubApp,
                 connectionConfig,
                 logCtx,
-                connCreatedHook
+                connCreatedHook,
+                tags
             );
 
             if (session.connectSessionId && connectionResponse.isOk()) {
@@ -1256,10 +1259,6 @@ class OAuthController {
                         connection: upsertedConnection.connection,
                         account,
                         environment
-                    });
-                    await syncTagsToConnection(db.knex, {
-                        connectSession: connectSession.connectSession,
-                        connection: upsertedConnection.connection
                     });
                 }
             }
@@ -1597,12 +1596,33 @@ class OAuthController {
                     : connectionConfig['oauth_scopes_override'];
             }
 
+            let connectSession: ConnectSessionAndEndUser | undefined;
+            if (session.connectSessionId) {
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
+                    void logCtx.error('Failed to get session');
+                    await logCtx.failed();
+                    if (res) {
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    }
+                    return;
+                }
+                connectSession = connectSessionRes.value;
+            }
+
+            const tags = connectSession?.connectSession.tags || {};
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig,
-                environmentId: session.environmentId
+                environmentId: session.environmentId,
+                tags
             });
 
             if (!updatedConnection) {
@@ -1639,32 +1659,12 @@ class OAuthController {
                 return;
             }
 
-            let connectSession: ConnectSessionAndEndUser | undefined;
-            if (session.connectSessionId) {
-                const connectSessionRes = await getConnectSession(db.knex, {
-                    id: session.connectSessionId,
-                    accountId: account.id,
-                    environmentId: environment.id
-                });
-                if (connectSessionRes.isErr()) {
-                    void logCtx.error('Failed to get session');
-                    await logCtx.failed();
-                    if (res) {
-                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
-                    }
-                    return;
-                }
-
-                connectSession = connectSessionRes.value;
+            if (connectSession) {
                 await syncEndUserToConnection(db.knex, {
                     connectSession: connectSession.connectSession,
                     connection: updatedConnection.connection,
                     account,
                     environment
-                });
-                await syncTagsToConnection(db.knex, {
-                    connectSession: connectSession.connectSession,
-                    connection: updatedConnection.connection
                 });
             }
 
@@ -1722,7 +1722,8 @@ class OAuthController {
                     provider as unknown as ProviderGithubApp,
                     connectionConfig,
                     logCtx,
-                    connCreatedHook
+                    connCreatedHook,
+                    connectSession?.connectSession.tags || {}
                 );
                 if (createRes.isErr()) {
                     let responseData = null;
@@ -1841,7 +1842,8 @@ class OAuthController {
             providerConfigKey,
             parsedRawCredentials: credentials,
             connectionConfig,
-            environmentId: session.environmentId
+            environmentId: session.environmentId,
+            tags: {}
         });
 
         if (!updatedConnection) {
@@ -1989,12 +1991,30 @@ class OAuthController {
                     }, {})
                 };
 
+                let connectSession: ConnectSessionAndEndUser | undefined;
+                if (session.connectSessionId) {
+                    const connectSessionRes = await getConnectSession(db.knex, {
+                        id: session.connectSessionId,
+                        accountId: account.id,
+                        environmentId: environment.id
+                    });
+                    if (connectSessionRes.isErr()) {
+                        void logCtx.error('Failed to get session');
+                        await logCtx.failed();
+                        return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    }
+                    connectSession = connectSessionRes.value;
+                }
+
+                const tags = connectSession?.connectSession.tags || {};
+
                 const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
                     parsedRawCredentials: parsedAccessTokenResult,
                     connectionConfig,
-                    environmentId: environment.id
+                    environmentId: environment.id,
+                    tags
                 });
 
                 if (!updatedConnection) {
@@ -2028,29 +2048,12 @@ class OAuthController {
                     return;
                 }
 
-                let connectSession: ConnectSessionAndEndUser | undefined;
-                if (session.connectSessionId) {
-                    const connectSessionRes = await getConnectSession(db.knex, {
-                        id: session.connectSessionId,
-                        accountId: account.id,
-                        environmentId: environment.id
-                    });
-                    if (connectSessionRes.isErr()) {
-                        void logCtx.error('Failed to get session');
-                        await logCtx.failed();
-                        return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
-                    }
-
-                    connectSession = connectSessionRes.value;
+                if (connectSession) {
                     await syncEndUserToConnection(db.knex, {
                         connectSession: connectSession.connectSession,
                         connection: updatedConnection.connection,
                         account,
                         environment
-                    });
-                    await syncTagsToConnection(db.knex, {
-                        connectSession: connectSession.connectSession,
-                        connection: updatedConnection.connection
                     });
                 }
 
@@ -2185,23 +2188,7 @@ class OAuthController {
                 raw: tokens
             };
 
-            const [updatedConnection] = await connectionService.upsertConnection({
-                connectionId,
-                providerConfigKey,
-                parsedRawCredentials,
-                connectionConfig: session.connectionConfig,
-                environmentId: session.environmentId
-            });
-
-            if (!updatedConnection) {
-                void logCtx.error('Failed to create connection');
-                await logCtx.failed();
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
-                return;
-            }
-
             let connectSession: ConnectSessionAndEndUser | undefined;
-
             if (session.connectSessionId) {
                 const connectSessionRes = await getConnectSession(db.knex, {
                     id: session.connectSessionId,
@@ -2214,17 +2201,33 @@ class OAuthController {
                     await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                     return;
                 }
-
                 connectSession = connectSessionRes.value;
+            }
+
+            const tags = connectSession?.connectSession.tags || {};
+
+            const [updatedConnection] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey,
+                parsedRawCredentials,
+                connectionConfig: session.connectionConfig,
+                environmentId: session.environmentId,
+                tags
+            });
+
+            if (!updatedConnection) {
+                void logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
+            }
+
+            if (connectSession) {
                 await syncEndUserToConnection(db.knex, {
                     connectSession: connectSession.connectSession,
                     connection: updatedConnection.connection,
                     account,
                     environment
-                });
-                await syncTagsToConnection(db.knex, {
-                    connectSession: connectSession.connectSession,
-                    connection: updatedConnection.connection
                 });
             }
 

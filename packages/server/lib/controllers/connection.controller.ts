@@ -524,7 +524,8 @@ class ConnectionController {
                     parsedRawCredentials: credentialsRes.value,
                     connectionConfig,
                     environmentId: environment.id,
-                    metadata
+                    metadata,
+                    tags: {}
                 });
 
                 if (imported) {
@@ -575,7 +576,8 @@ class ConnectionController {
                     },
                     metadata,
                     config,
-                    environment
+                    environment,
+                    tags: {}
                 });
 
                 if (imported) {
@@ -588,7 +590,8 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     environment,
                     metadata,
-                    connectionConfig: { ...connection_config }
+                    connectionConfig: { ...connection_config },
+                    tags: {}
                 });
 
                 if (imported) {

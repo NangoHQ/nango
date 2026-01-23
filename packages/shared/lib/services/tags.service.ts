@@ -3,7 +3,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { validateTags } from './tags/utils.js';
 
 import type { Knex } from '@nangohq/database';
-import type { ConnectSession, DBConnection, Result, Tags } from '@nangohq/types';
+import type { DBConnection, Result, Tags } from '@nangohq/types';
 
 export { normalizeTags, validateTags } from './tags/utils.js';
 
@@ -25,19 +25,4 @@ export async function updateConnectionTags<T extends ConnectionWithTags>(db: Kne
     connection.tags = validation.tags;
 
     return Ok(connection);
-}
-
-/**
- * Syncs tags from a connect session to a connection.
- * If the session has tags, updates the connection with normalized tags.
- */
-export async function syncTagsToConnection<T extends ConnectionWithTags>(
-    db: Knex,
-    { connectSession, connection }: { connectSession: ConnectSession; connection: T }
-): Promise<Result<T | null>> {
-    if (Object.keys(connectSession.tags).length === 0) {
-        return Ok(null);
-    }
-
-    return await updateConnectionTags(db, { connection, tags: connectSession.tags });
 }

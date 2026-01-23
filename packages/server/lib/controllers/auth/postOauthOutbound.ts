@@ -10,8 +10,7 @@ import {
     errorManager,
     getConnectionConfig,
     getProvider,
-    syncEndUserToConnection,
-    syncTagsToConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -143,7 +142,8 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             providerConfigKey,
             parsedRawCredentials: { type: 'OAUTH2' } as any,
             connectionConfig: updatedConnectionConfig,
-            environmentId: environment.id
+            environmentId: environment.id,
+            tags: connectSession?.tags
         });
 
         if (!updatedConnection) {
@@ -183,7 +183,6 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
 
         if (isConnectSession) {
             await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
-            await syncTagsToConnection(db.knex, { connectSession, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({

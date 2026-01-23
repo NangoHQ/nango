@@ -11,8 +11,7 @@ import {
     getConnectionConfig,
     getConnectionMetadata,
     getProvider,
-    syncEndUserToConnection,
-    syncTagsToConnection
+    syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -176,7 +175,8 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             connectionConfig,
             metadata: {},
             config,
-            environment
+            environment,
+            tags: connectSession?.tags
         });
 
         if (!updatedConnection) {
@@ -216,7 +216,6 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         if (isConnectSession) {
             await syncEndUserToConnection(db.knex, { connectSession, connection: updatedConnection.connection, account, environment });
-            await syncTagsToConnection(db.knex, { connectSession, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

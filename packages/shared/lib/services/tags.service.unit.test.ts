@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { syncTagsToConnection, updateConnectionTags } from './tags.service.js';
-import { getTestConnectSession } from '../seeders/connectSession.seeder.js';
+import { updateConnectionTags } from './tags.service.js';
 import { getTestConnection } from '../seeders/connection.seeder.js';
 
 import type { DBConnection } from '@nangohq/types';
@@ -64,60 +63,6 @@ describe('tags.service', () => {
             const updatedConnection = result.unwrap();
             expect(updatedConnection).toBe(connectionToUpdate);
             expect(updatedConnection.tags).toEqual({ env: 'prod' });
-        });
-    });
-
-    describe('syncTagsToConnection', () => {
-        it('should return Ok() when session has empty tags', async () => {
-            const mockDb = vi.fn() as unknown as Knex;
-            const sessionWithoutTags = getTestConnectSession({ tags: {} });
-
-            const result = await syncTagsToConnection(mockDb, {
-                connectSession: sessionWithoutTags,
-                connection: mockConnection
-            });
-
-            expect(result.isOk()).toBe(true);
-            expect(result.unwrap()).toBeNull();
-            expect(mockDb).not.toHaveBeenCalled();
-        });
-
-        it('should update connection tags when session has tags', async () => {
-            const tags = { projectid: '123' };
-            const mockUpdate = vi.fn().mockResolvedValue(1);
-            const mockWhere = vi.fn().mockReturnValue({ update: mockUpdate });
-            const mockDb = vi.fn().mockReturnValue({ where: mockWhere }) as unknown as Knex;
-
-            const sessionWithTags = getTestConnectSession({ tags });
-            const connectionToUpdate = getTestConnection() as unknown as DBConnection;
-
-            const result = await syncTagsToConnection(mockDb, {
-                connectSession: sessionWithTags,
-                connection: connectionToUpdate
-            });
-
-            expect(result.isOk()).toBe(true);
-            expect(result.unwrap()).toBe(connectionToUpdate);
-            expect(mockUpdate).toHaveBeenCalledWith({ tags });
-        });
-
-        it('should mutate connection.tags after sync with normalized tags', async () => {
-            const tags = { env: 'production' };
-            const mockUpdate = vi.fn().mockResolvedValue(1);
-            const mockWhere = vi.fn().mockReturnValue({ update: mockUpdate });
-            const mockDb = vi.fn().mockReturnValue({ where: mockWhere }) as unknown as Knex;
-
-            const sessionWithTags = getTestConnectSession({ tags });
-            const connectionToUpdate = getTestConnection({ tags: {} }) as unknown as DBConnection;
-
-            expect(connectionToUpdate.tags).toEqual({});
-
-            await syncTagsToConnection(mockDb, {
-                connectSession: sessionWithTags,
-                connection: connectionToUpdate
-            });
-
-            expect(connectionToUpdate.tags).toStrictEqual(tags);
         });
     });
 });
