@@ -8,7 +8,7 @@ This guide has two parts:
 - How to create your own action
 - How to use an action in your own app
 
-If you are using a pre-built reference implementation sync, you can [skip to the second section](#how-to-use-an-action).
+If you are using a pre-built integration template, you can [skip to the second section](#how-to-use-an-action).
 
 ## How to build an action
 
@@ -84,7 +84,7 @@ In the `exec` method, implement the logic of your action. Edit `MyObject` to con
 
 The following can help you with your implementation:
 - [`nango` object reference](/reference/functions) to understand the SDK methods available in actions
-- [Our reference implementations repo](https://www.nango.dev/templates) has 600+ examples of syncs and actions implemented by Nango
+- [Our integration templates repo](https://www.nango.dev/templates) has 600+ examples of syncs and actions implemented by Nango
 - [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build actions with Claude Code, Cursor, and other AI agents
 
 Example implementation of the Salesforce contact fields action:
@@ -180,13 +180,13 @@ To fetch the synced data in your product, follow the steps in the next section.
 
 ## How to use an action
 
-### Pre-built reference implementations
+### Pre-built integration templates
 
-For common use cases, [pre-built reference implementations](https://www.nango.dev/templates) are available to help you get started fast.
+For common use cases, [pre-built integration templates](https://www.nango.dev/templates) are available to help you get started fast.
 
 Select your integration in the **Integrations** tab and navigate to the **Endpoints** tab. Available pre-built action integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
 
-Reference implementations are a starting point. You will likely need to [customize them](/implementation-guides/building-integrations/extend-reference-implementation) or [create your own custom action](#how-to-build-an-action).
+Integration templates are a starting point. You will likely need to [customize them](/implementation-guides/building-integrations/customize-integration-template) or [create your own custom action](#how-to-build-an-action).
 
 ### Triggering an action synchronously
 

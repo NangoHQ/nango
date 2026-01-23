@@ -8,7 +8,7 @@ This guide has two parts:
 - How to create your own sync
 - How to use a sync in your own app
 
-If you are using a pre-built reference implementation sync, you can [skip to the second section](#how-to-use-a-sync).
+If you are using a pre-built integration template sync, you can [skip to the second section](#how-to-use-a-sync).
 
 ## How to build a sync
 
@@ -89,7 +89,7 @@ In the `exec` method, implement the logic of your sync. Edit `MyObject` to conta
 
 The following can help you with your implementation:
 - [`nango` object reference](/reference/scripts) to understand the SDK methods available in syncs
-- [Our reference implementations repo](https://www.nango.dev/templates) has 600+ examples of syncs & actions implemented by Nango
+- [Our integration templates repo](https://www.nango.dev/templates) has 800+ examples of syncs & actions implemented by Nango
 - [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build syncs with claude code, cursor & other AI agents
 
 Example implementation of the Salesforce contacts sync:
@@ -227,15 +227,15 @@ To fetch the synced data in your product, follow the steps in the next setion.
 
 ## How to use a sync
 
-### Pre-built reference implementations
+### Pre-built integration templates
 
-For common use cases, [pre-built reference implementations](https://www.nango.dev/templates) are available to help you get started fast.
+For common use cases, [pre-built integration templates](https://www.nango.dev/templates) are available to help you get started fast.
 
 Select your integration in the _Integrations_ tab, and navigate to the _Endpoints_ tab. Available pre-built sync integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
 
 Nango will automatically sync the corresponding data in the background for each relevant connection.
 
-Reference implementations are a starting point. You will likely need to [customize them](/implementation-guides/building-integrations/extend-reference-implementation) or [create your own custom sync](#how-to-build-a-sync).
+Integration templates are a starting point. You will likely need to [customize them](/implementation-guides/building-integrations/customize-integration-template) or [create your own custom sync](#how-to-build-a-sync).
 
 ### Step 1 - Setup webhooks from Nango
 
