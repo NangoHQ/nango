@@ -1311,7 +1311,8 @@ class OAuthController {
             const existingConnection = existingConnections?.find((c) => c.provider_config_key === providerConfigKey);
             if (existingConnection) {
                 // Connection with this installation_id already exists for this integration
-                // Skip token exchange and use app credentials to create/update the connection
+                // Skip token exchange and use app credentials to update the existing connection
+                // We use existingConnection.connection_id to avoid creating duplicates
                 void logCtx.info('Existing installation found, skipping token exchange', {
                     installationId,
                     existingConnectionId: existingConnection.connection_id
@@ -1322,7 +1323,7 @@ class OAuthController {
                     config,
                     provider,
                     installationId,
-                    connectionId,
+                    connectionId: existingConnection.connection_id,
                     providerConfigKey,
                     channel,
                     environment,
