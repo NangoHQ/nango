@@ -168,7 +168,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
 
             try {
                 if (!dryRun) {
-                    await webflow.collections.items.updateItem(apiCollectionId, item.id, update);
+                    await webflow.collections.items.updateItem(apiCollectionId, item.id, { isDraft: false, ...update });
                 }
 
                 console.log(`Updated ${slug} ${dryRun ? '(dry run)' : ''}`);
@@ -184,6 +184,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
 
             if (!dryRun) {
                 await webflow.collections.items.createItem(apiCollectionId, {
+                    isDraft: false,
                     fieldData: {
                         name: provider.display_name,
                         slug: slug,
@@ -221,7 +222,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                     };
 
                     if (!dryRun) {
-                        await webflow.collections.items.updateItem(apiCollectionId, foundInOriginal.id, update);
+                        await webflow.collections.items.updateItem(apiCollectionId, foundInOriginal.id, { isDraft: false, ...update });
                     }
                     console.log(`Updated ${slug} ${dryRun ? '(dry run)' : ''}`);
                     await setTimeout(rateLimitSleep);
