@@ -16131,6 +16131,13 @@ workday-oauth:
             example: yourtenant
             order: 2
             doc_section: '#step-3-finding-your-tenant'
+        oauth_refresh_token_override:
+            type: string
+            title: Refresh Token
+            example: Your Refresh Token
+            description: The Refresh Token for your Client
+            optional: true
+
 wrike:
     display_name: Wrike
     categories:
