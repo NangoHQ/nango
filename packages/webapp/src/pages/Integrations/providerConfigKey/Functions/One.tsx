@@ -169,26 +169,36 @@ export const FunctionsOne: React.FC = () => {
                             )}
                         </div>
                         <TabsContent value="input" className="flex flex-col gap-4">
-                            <InfoCallout type={func.type as 'action' | 'sync'} variant="input" />
-                            {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No inputs.`} />}
+                            {inputSchema ? (
+                                <>
+                                    <InfoCallout type={func.type as 'action' | 'sync'} variant="input" />
+                                    <JsonSchemaTopLevelObject schema={inputSchema} />
+                                </>
+                            ) : (
+                                <EmptyCard content={`No inputs.`} />
+                            )}
                         </TabsContent>
                         <TabsContent value="output" className="flex flex-col gap-4">
-                            <InfoCallout type={func.type as 'action' | 'sync'} variant="output" />
                             {outputSchemas && outputSchemas.length > 0 ? (
-                                <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
-                                    <NavigationList>
+                                <>
+                                    <InfoCallout type={func.type as 'action' | 'sync'} variant="output" />
+                                    <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
+                                        {outputSchemas.length > 1 && (
+                                            <NavigationList>
+                                                {outputSchemas.map((outputSchema) => (
+                                                    <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
+                                                        {outputSchema.name}
+                                                    </NavigationTrigger>
+                                                ))}
+                                            </NavigationList>
+                                        )}
                                         {outputSchemas.map((outputSchema) => (
-                                            <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
-                                                {outputSchema.name}
-                                            </NavigationTrigger>
+                                            <NavigationContent key={outputSchema.name} value={outputSchema.name}>
+                                                <JsonSchemaTopLevelObject schema={outputSchema.schema} />
+                                            </NavigationContent>
                                         ))}
-                                    </NavigationList>
-                                    {outputSchemas.map((outputSchema) => (
-                                        <NavigationContent key={outputSchema.name} value={outputSchema.name}>
-                                            <JsonSchemaTopLevelObject schema={outputSchema.schema} />
-                                        </NavigationContent>
-                                    ))}
-                                </Navigation>
+                                    </Navigation>
+                                </>
                             ) : (
                                 <EmptyCard content="No outputs." />
                             )}

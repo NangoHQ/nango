@@ -5,12 +5,12 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { ScopesInput } from '@/components-v2/ScopesInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { Badge } from '@/components-v2/ui/badge';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -105,12 +105,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_id">Client ID</Label>
                 {isSharedCredentials ? (
-                    <InputGroup>
-                        <InputGroupInput disabled value="••••••••••••••••••••••••••••••••" />
-                        <InputGroupAddon align="inline-end">
-                            <Badge variant="gray">Nango provided</Badge>
-                        </InputGroupAddon>
-                    </InputGroup>
+                    <NangoProvidedInput fakeValueSize={24} />
                 ) : (
                     <>
                         <EditableInput initialValue={integration.oauth_client_id || ''} onSave={handleClientIdSave} onEditingChange={setIsEditingClientId} />
@@ -130,12 +125,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_secret">Client Secret</Label>
                 {isSharedCredentials ? (
-                    <InputGroup>
-                        <InputGroupInput disabled value="••••••••••••••••••••••••••••••••••••••••••••••••" />
-                        <InputGroupAddon align="inline-end">
-                            <Badge variant="gray">Nango provided</Badge>
-                        </InputGroupAddon>
-                    </InputGroup>
+                    <NangoProvidedInput fakeValueSize={48} />
                 ) : (
                     <EditableInput secret initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ clientSecret: value })} />
                 )}

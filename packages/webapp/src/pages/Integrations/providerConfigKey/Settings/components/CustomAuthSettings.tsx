@@ -11,6 +11,7 @@ import { Label } from '@/components-v2/ui/label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -99,7 +100,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
                     <Label htmlFor="app_link">App Public Link</Label>
                     <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
                 </div>
-                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} />
+                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
             </div>
 
             {/* Client ID */}

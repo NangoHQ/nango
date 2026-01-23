@@ -1,84 +1,11 @@
-import * as z from 'zod';
-
 import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
-import {
-    integrationDisplayNameSchema,
-    integrationForwardWebhooksSchema,
-    privateKeySchema,
-    providerConfigKeySchema,
-    publicKeySchema
-} from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { patchIntegrationBodySchema } from '../validation.js';
 
 import type { PatchIntegration } from '@nangohq/types';
-
-const validationBody = z
-    .object({
-        integrationId: providerConfigKeySchema.optional(),
-        webhookSecret: z.union([z.string().min(0).max(255), publicKeySchema]).optional(),
-        displayName: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
-    })
-    .strict()
-    .or(
-        z.discriminatedUnion(
-            'authType',
-            [
-                z
-                    .object({
-                        authType: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-                        clientId: z.string().min(1).max(255).optional(),
-                        clientSecret: z.string().min(1).optional(),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)]).optional()
-                    })
-                    .strict(),
-                z
-                    .object({
-                        authType: z.enum(['APP']),
-                        appId: z.string().min(1).max(255).optional(),
-                        appLink: z.string().min(1).optional(),
-                        privateKey: privateKeySchema.optional()
-                    })
-                    .strict(),
-                z
-                    .object({
-                        authType: z.enum(['CUSTOM']),
-                        clientId: z.string().min(1).max(255).optional(),
-                        clientSecret: z.string().min(1).optional(),
-                        appId: z.string().min(1).max(255).optional(),
-                        appLink: z.string().min(1).optional(),
-                        privateKey: privateKeySchema.optional()
-                    })
-                    .strict(),
-                z
-                    .object({
-                        authType: z.enum(['MCP_OAUTH2']),
-                        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)]).optional()
-                    })
-                    .strict(),
-                z
-                    .object({
-                        authType: z.enum(['MCP_OAUTH2_GENERIC']),
-                        clientName: z.string().min(1).max(255).optional(),
-                        clientUri: z.url().max(255).optional(),
-                        clientLogoUri: z.url().max(255).optional()
-                    })
-                    .strict(),
-                z
-                    .object({
-                        authType: z.enum(['INSTALL_PLUGIN']),
-                        appLink: z.url().max(255).optional(),
-                        username: z.string().min(1).max(255).optional(),
-                        password: z.string().min(1).max(255).optional()
-                    })
-                    .strict()
-            ],
-            { error: () => ({ message: 'invalid credentials object' }) }
-        )
-    );
 
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -95,7 +22,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         return;
     }
 
-    const valBody = validationBody.safeParse(req.body);
+    const valBody = patchIntegrationBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({
             error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) }

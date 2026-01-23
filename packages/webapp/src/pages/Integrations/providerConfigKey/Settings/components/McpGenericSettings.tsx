@@ -1,11 +1,10 @@
-import z from 'zod';
-
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -19,17 +18,6 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
     const { toast } = useToast();
 
     const callbackUrl = environment.callback_url || defaultCallback();
-
-    const validateUrl = (value: string): string | null => {
-        if (!value) {
-            return null; // Empty values are allowed (optional fields)
-        }
-        const result = z.string().url().safeParse(value);
-        if (!result.success) {
-            return 'Must be a valid URL (e.g., https://example.com)';
-        }
-        return null;
-    };
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
@@ -61,22 +49,13 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
             {/* OAuth Client Name */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_name">OAuth Client Name</Label>
-                <EditableInput
-                    initialValue={integration.custom?.oauth_client_name || ''}
-                    onSave={(value) => onSave({ clientName: value })}
-                    placeholder="e.g., My Application"
-                />
+                <EditableInput initialValue={integration.custom?.oauth_client_name || ''} onSave={(value) => onSave({ clientName: value })} />
             </div>
 
             {/* OAuth Client URI */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_uri">OAuth Client URI</Label>
-                <EditableInput
-                    initialValue={integration.custom?.oauth_client_uri || ''}
-                    onSave={(value) => onSave({ clientUri: value })}
-                    placeholder="e.g., https://example.com"
-                    validate={validateUrl}
-                />
+                <EditableInput initialValue={integration.custom?.oauth_client_uri || ''} onSave={(value) => onSave({ clientUri: value })} />
             </div>
 
             {/* OAuth Client Logo URI */}

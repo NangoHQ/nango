@@ -23,7 +23,9 @@ export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimiti
             className={cn(
                 'w-full p-2.5 cursor-pointer text-text-secondary !text-body-medium-medium text-start rounded transition-colors hover:bg-bg-surface hover:text-text-primary data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default',
                 // Horizontal
-                'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-full data-[orientation=horizontal]:px-3 data-[orientation=horizontal]:py-0.5'
+                'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-full data-[orientation=horizontal]:px-3 data-[orientation=horizontal]:py-0.5',
+                // Disabled
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary'
             )}
             {...props}
         />

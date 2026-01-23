@@ -90,7 +90,11 @@ class EnvironmentService {
             ...environment,
             secret_key_hashed: await hashSecretKey(environment.secret_key)
         });
-        await trx.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
+
+        await trx.transaction(async (trx) => {
+            await trx<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
+            await encryptionManager.upsertDefaultAPISecret(trx, encryptedEnvironment);
+        });
 
         const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
         return env;
@@ -238,9 +242,6 @@ class EnvironmentService {
         }
 
         const pending_secret_key = uuid.v4();
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ pending_secret_key });
-
         environment.pending_secret_key = pending_secret_key;
 
         const encryptedEnvironment = await encryptionManager.encryptEnvironment(environment);
@@ -290,27 +291,21 @@ class EnvironmentService {
         if (!environment) {
             return false;
         }
-
         const decrypted = encryptionManager.decryptEnvironment(environment);
-        await db.knex
-            .from<DBEnvironment>(TABLE)
-            .where({ id })
-            .update({
-                secret_key: environment.pending_secret_key as string,
-                secret_key_iv: environment.pending_secret_key_iv as string,
-                secret_key_tag: environment.pending_secret_key_tag as string,
-                secret_key_hashed: await hashSecretKey(decrypted.pending_secret_key!),
-                pending_secret_key: null,
-                pending_secret_key_iv: null,
-                pending_secret_key_tag: null
-            });
-
-        const updatedEnvironment = await this.getById(id);
-
-        if (!updatedEnvironment) {
-            return false;
-        }
-
+        const update = {
+            secret_key: environment.pending_secret_key!,
+            secret_key_iv: environment.pending_secret_key_iv!,
+            secret_key_tag: environment.pending_secret_key_tag!,
+            secret_key_hashed: await hashSecretKey(decrypted.pending_secret_key!),
+            pending_secret_key: null,
+            pending_secret_key_iv: null,
+            pending_secret_key_tag: null
+        };
+        await db.knex.transaction(async (trx) => {
+            await trx<DBEnvironment>(TABLE).where({ id }).update(update);
+            Object.assign(environment, update);
+            await encryptionManager.upsertDefaultAPISecret(trx, environment);
+        });
         return true;
     }
 

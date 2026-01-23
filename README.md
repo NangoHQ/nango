@@ -7,7 +7,7 @@
 <h1 align="center">Infrastructure for product integrations.</h1>
 
 <div align="center">
-Easily integrate your SaaS product & AI agent with 500+ APIs.
+Easily integrate your SaaS product & AI agent with 600+ APIs.
 </div>
 
 <p align="center">
@@ -16,7 +16,7 @@ Easily integrate your SaaS product & AI agent with 500+ APIs.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">500+ supported APIs</a>
+    <a href="https://nango.dev/integrations">600+ supported APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
@@ -27,7 +27,7 @@ Easily integrate your SaaS product & AI agent with 500+ APIs.
 
 Nango is a complete infrastructure for engineers to build **product integrations**.[<sup>1</sup>](#what-are-product-integrations)
 
-- **[API Auth](https://nango.dev/docs/guides/use-cases/api-auth)** for [500+ APIs](https://www.nango.dev/api-integrations)
+- **[API Auth](https://nango.dev/docs/guides/use-cases/api-auth)** for [600+ APIs](https://www.nango.dev/api-integrations)
     - **Embedded, white-label auth UI**: With appropriate input forms and guidance.
     - **Secure credential management**: Retrieval, storage, and refreshing of API credentials.
     - **Credential monitoring**: Notifies via webhooks when credentials become invalid.
