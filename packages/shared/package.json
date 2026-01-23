@@ -26,6 +26,7 @@
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
+        "@xmldom/xmldom": "0.8.11",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
@@ -48,8 +49,8 @@
         "simple-oauth2": "5.1.0",
         "undici": "6.21.2",
         "uuid": "9.0.0",
+        "webflow-api": "^3.2.1",
         "xml-crypto": "6.1.2",
-        "@xmldom/xmldom": "0.8.11",
         "zod": "4.0.5"
     },
     "devDependencies": {
