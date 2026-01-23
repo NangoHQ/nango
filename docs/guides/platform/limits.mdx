@@ -4,29 +4,70 @@ sidebarTitle: 'Limits'
 description: 'Overview of resource limits on Nango Cloud.'
 ---
 
+Nango Cloud has several resource limits to ensure platform stability and fair usage across all customers.
+
 <Note>
-    For plan-specific limits, please refer to our [pricing page](https://www.nango.dev/pricing) and the [Usage & Billing](https://app.nango.dev/dev/team/billing) page in your Nango account.
+For plan-specific limits, refer to the [pricing page](https://www.nango.dev/pricing) and the Usage & Billing page in your account.
 </Note>
 
-## Global limits
+## API rate limits
 
-### API rate limit
+Rate limits apply to API requests from your application to Nango:
 
-These limits apply to API requests from your application to Nango.
+| Plan | Requests per Minute |
+| - | - |
+| Free tier | 200 |
+| Starter | 1,000 |
+| Growth | 5,000 |
+| Enterprise | Custom |
 
-- Free tier: 200 requests per minute
-- If the limit is exceeded, use the standard rate-limit headers to determine when to resume requests
-- Higher limits are available for paying customers
+<Info>
+If you exceed the rate limit, use the standard rate-limit headers to determine when to resume requests.
+</Info>
 
-### Functions
+## Function execution limits
 
-Functions have the following limits:
+Different function types have varying execution and enqueuing time limits:
 
-| Function Type | Max execution time | Max enqueuing time |
-| - | - | - |
-| [Syncs](/guides/use-cases/syncs) | 24h | 1h |
-| [Actions](/guides/use-cases/actions) | 15min | 1h |
-| [External webhooks](/guides/use-cases/webhooks) | 1h | 1min |
+| Function Type | Max Execution Time |
+| - | - |
+| [Syncs](/guides/use-cases/syncs) | 24 hours |
+| [Actions](/guides/use-cases/actions) | 15 minutes |
+| [External webhooks](/guides/use-cases/webhooks) | 1 hour |
+
+### Action output limits
+
+Actions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/use-cases/proxy) instead.
+
+## Data retention policies
+
+Nango automatically manages data retention for records in the sync cache:
+
+### Payload pruning (30 days)
+
+If a record hasn't been updated for **30 days**, Nango automatically prunes its payload while preserving:
+- Record ID
+- Sync state
+- Payload hash (for change detection)
+
+The record still exists and Nango can detect future changes, but the data fields are no longer retrievable from the cache.
+
+### Hard deletion (60 days)
+
+If a sync hasn't executed for **60 days**, all associated records (payload + metadata) are permanently deleted.
+
+<Note>
+These policies ensure sensitive data isn't stored indefinitely. If you need to access record payloads long after updates (30+ days), please reach out in the [Slack community](https://nango.dev/slack).
+</Note>
+
+## Webhook limits
+
+Webhooks sent from Nango to your application have the following limits:
+
+- **Timeout**: 20 seconds
+- **Retries**: 2 attempts
+
+These limits apply to all webhook types: auth, syncs, async actions, and webhook forwards.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

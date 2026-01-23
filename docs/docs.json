@@ -341,11 +341,11 @@
     },
     {
       "source": "/guides/self-hosting/enterprise-self-hosting/overview",
-      "destination": "/guides/platform/self-hosting/self-host"
+      "destination": "/guides/platform/self-hosting"
     },
     {
       "source": "/guides/self-hosting/infrastructure",
-      "destination": "/guides/platform/self-hosting/self-host"
+      "destination": "/guides/platform/self-hosting"
     },
     {
       "source": "/changelog/overview",
@@ -357,9 +357,9 @@
     }
   ],
   "navigation": {
-    "anchors": [
+    "tabs": [
       {
-        "anchor": "Documentation",
+        "tab": "Documentation",
         "groups": [
           {
             "group": "Getting Started",
@@ -390,20 +390,13 @@
               "guides/platform/environments",
               "guides/platform/limits",
               "guides/platform/security",
-              {
-                "group": "Self-hosting",
-                "pages": [
-                  "guides/platform/self-hosting/self-host",
-                  "guides/platform/self-hosting/embed"
-                ]
-              }
+              "guides/platform/self-hosting"
             ]
           }
         ]
       },
       {
-        "anchor": "Implementation Guides",
-        "icon": "pen",
+        "tab": "Implementation Guides",
         "groups": [
           {
             "group": "API Auth",
@@ -491,8 +484,7 @@
         ]
       },
       {
-        "anchor": "APIs & Integrations",
-        "icon": "bars",
+        "tab": "APIs & Integrations",
         "groups": [
           {
             "group": "API Guides",
@@ -1158,8 +1150,7 @@
         ]
       },
       {
-        "anchor": "Reference",
-        "icon": "book",
+        "tab": "Reference",
         "groups": [
           {
             "group": "Reference",
@@ -1294,8 +1285,7 @@
         ]
       },
       {
-        "anchor": "Updates",
-        "icon": "rss",
+        "tab": "Updates",
         "groups": [
           {
             "group": "Updates",
