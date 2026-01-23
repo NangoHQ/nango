@@ -1,12 +1,36 @@
 ---
 title: 'AI builder'
 sidebarTitle: 'AI builder'
-description: 'Overview on AI-generated integrations with Nango'
+description: 'Generate integrations with AI using Nango Functions'
 ---
 
-Building product integrations with Nango is much faster when using AI tools.
+## Overview
 
-## Demo video: generate integrations with Cursor
+Nango's AI builder allows you to fully generate or assist in implementing [Functions](/guides/primitives/functions). You can use the IDE and models of your choice to generate and write Functions with minimal manual effort.
+
+AI is a game-changer for building many custom integrations fast, instead of having to use pre-built standard integrations provided by integration platforms.
+
+Nango, as a fully code-based interface for building integrations, is perfectly positioned to leverage the fast advances in code generation to help you build your integrations quickly.
+
+## How it works
+
+Nango's AI builder feeds the necessary context to the model of your choice. This includes:
+- All the knowledge about using Nango's interface
+- Coding practices to write best-in-class integrations
+- Testing patterns for robust, production-ready code
+
+The model handles the tedious process of researching and understanding the external API's syntax and translates your integration use case into Nango Functions.
+
+This means you can easily use Nango's solid infrastructure in combination with AI models for the business logic, mostly offloading the integration implementation and maintenance burden.
+
+### Example workflow
+
+When using the AI builder, you'll be prompted for the necessary information about your use case to generate the relevant Nango Functions:
+
+1. **Describe your use case**: Specify what data you need to sync or what action you want to perform
+2. **Review generated code**: The AI builder generates Functions with proper error handling, pagination, and rate limiting
+3. **Test against live API**: The AI builder tests the integration using connections you've set up on Nango
+4. **Get production-ready code**: Receive tested Functions ready to deploy
 
 <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
     <iframe
@@ -19,16 +43,38 @@ Building product integrations with Nango is much faster when using AI tools.
     ></iframe>
 </div>
 
-## How to leverage AI agents for integrations
+## Capabilities
 
-AI agents accelerate integration work. They quickly read API docs, explore endpoints, and draft transformation logic. They are particularly effective at generating request/response handling, schema mapping, and other boilerplate so you can focus on product behavior.
+### Automatic testing
 
-Nango provides the production framework and infrastructure that makes these agents effective.
+The AI builder has instructions to test integrations against the external API using connections that you have set up on Nango. This gives you certainty that an integration fully works when the AI builder completes its task.
 
-Define your integrations as [Actions](/guides/use-cases/actions) and [Syncs](/guides/use-cases/syncs) with strongly typed inputs and outputs, while our SDK handles pagination, retries, and rate limits.
+### Mock-based test generation
 
-The Nango infrastructure handles code execution, secure credentials management, detailed logs and observability, and seamless scaling to any customer size.
+By default, the AI builder generates tests for your Nango Functions, easily integratable in your CI/CD pipeline. These tests use mock API responses, so they run deterministically and don't introduce noise in your CI/CD.
 
-## Build integrations with AI
+### Battle-tested patterns
 
-Follow our implementation guide for step-by-step instructions: [Build Nango integrations with AI](/implementation-guides/building-integrations/leverage-ai-agents).
+The AI Builder leverages years of experience building hundreds of integrations for Nango customers, ensuring generated code follows production best practices.
+
+## Supported models & interfaces
+
+Nango's AI builder works out of the box with:
+
+- **Claude Code** - Anthropic's Claude via command line
+- **Gemini CLI** - Google's Gemini models
+- **Cursor** - AI-powered IDE
+- **Cursor CLI** - Command line interface for Cursor
+- **Cody CLI** - Sourcegraph's AI coding assistant
+- **VS Code with Copilot** - GitHub Copilot integration
+- **Opencode** - Open-source AI coding assistant
+- **Droid by Factory** - Factory's AI development tool
+- And more...
+
+## Next step
+
+<CardGroup cols={2}>
+    <Card title="Build with AI" icon="wand-magic-sparkles" href="/implementation-guides/building-integrations/leverage-ai-agents">
+        Learn how to leverage AI agents to build integrations faster.
+    </Card>
+</CardGroup>
