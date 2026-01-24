@@ -205,7 +205,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                 >
                                     Tags
                                 </FormLabel>
-                                <KeyValueInput initialValues={testUserTags} onChange={setTestUserTags} placeholderKey="Tag Name" placeholderValue="Tag Value" />
+                                <KeyValueInput
+                                    initialValues={testUserTags}
+                                    onChange={setTestUserTags}
+                                    placeholderKey="Tag Name"
+                                    placeholderValue="Tag Value"
+                                    alwaysShowEmptyRow={true}
+                                />
                                 <FormError message={errors.testUserTags?.[0]} />
                             </FormItem>
                         </div>

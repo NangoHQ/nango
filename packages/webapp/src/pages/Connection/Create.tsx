@@ -43,7 +43,7 @@ export const ConnectionCreate: React.FC = () => {
     const [overrideAuthParams, setOverrideAuthParams] = useState<Record<string, string>>({});
     const [overrideOauthScopes, setOverrideOauthScopes] = useState<string | undefined>(undefined);
     const [overrideDevAppCredentials, setOverrideDevAppCredentials] = useState(false);
-    const [overrideDocUrl, setOverrideDocUrl] = useState<string | undefined>(provider?.data.docs_connect);
+    const [overrideDocUrl, setOverrideDocUrl] = useState<string | undefined>('');
 
     const overrideClientId = overrideDevAppCredentials ? '' : undefined;
     const overrideClientSecret = overrideDevAppCredentials ? '' : undefined;
