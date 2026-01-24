@@ -424,7 +424,8 @@ class Kubernetes {
             { name: 'DD_TRACE_ENABLED', value: String(node.isTracingEnabled || node.isProfilingEnabled) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
-            { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
+            { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
+            { name: 'NANGO_CONNECT_UI_PORT', value: envs.NANGO_CONNECT_UI_PORT.toString() }
         ];
     }
 
