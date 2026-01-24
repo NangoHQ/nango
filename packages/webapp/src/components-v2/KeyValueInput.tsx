@@ -1,9 +1,9 @@
-import { Trash2 } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Input } from '@/components/ui/input/Input';
-import SecretInput from '@/components/ui/input/SecretInput';
 import { Button } from '@/components-v2/ui/button';
+import { Input } from '@/components-v2/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { cn } from '@/utils/utils';
 
 interface KeyValueInputProps {
@@ -121,6 +121,12 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
         }, {});
     }, [pairs]);
 
+    const [visibleSecrets, setVisibleSecrets] = useState<Record<number, boolean>>({});
+
+    const toggleSecretVisibility = (index: number) => {
+        setVisibleSecrets((prev) => ({ ...prev, [index]: !prev[index] }));
+    };
+
     return (
         <div className="flex flex-col gap-3">
             {pairs.map((pair, i) => {
@@ -131,33 +137,33 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                             <Input
                                 value={pair.key}
                                 onChange={(e) => onUpdate('key', e.target.value, i)}
-                                inputSize={'lg'}
-                                variant={'black'}
                                 onPaste={onPaste}
                                 placeholder={placeholderKey}
                                 disabled={disabled}
                                 aria-invalid={isDuplicate}
-                                className={isDuplicate ? '!border-feedback-error-border' : ''}
                             />
                         </div>
                         <div className="flex flex-1">
                             {isSecret ? (
-                                <SecretInput
-                                    value={pair.value}
-                                    onChange={(e) => onUpdate('value', e.target.value, i)}
-                                    copy={true}
-                                    inputSize={'lg'}
-                                    variant={'black'}
-                                    onPaste={onPaste}
-                                    placeholder={placeholderValue}
-                                    disabled={disabled}
-                                />
+                                <InputGroup>
+                                    <InputGroupInput
+                                        value={pair.value}
+                                        onChange={(e) => onUpdate('value', e.target.value, i)}
+                                        onPaste={onPaste}
+                                        placeholder={placeholderValue}
+                                        disabled={disabled}
+                                        type={visibleSecrets[i] ? 'text' : 'password'}
+                                    />
+                                    <InputGroupAddon align="inline-end">
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => toggleSecretVisibility(i)}>
+                                            {visibleSecrets[i] ? <EyeIcon className="size-4" /> : <EyeOffIcon className="size-4" />}
+                                        </Button>
+                                    </InputGroupAddon>
+                                </InputGroup>
                             ) : (
                                 <Input
                                     value={pair.value}
                                     onChange={(e) => onUpdate('value', e.target.value, i)}
-                                    inputSize={'lg'}
-                                    variant={'black'}
                                     onPaste={onPaste}
                                     placeholder={placeholderValue}
                                     disabled={disabled}

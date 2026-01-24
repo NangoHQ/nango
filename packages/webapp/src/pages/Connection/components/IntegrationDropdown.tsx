@@ -1,4 +1,5 @@
-import { IconCheck, IconChevronDown, IconSearch } from '@tabler/icons-react';
+import Fuse from 'fuse.js';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
@@ -20,18 +21,33 @@ interface IntegrationDropdownProps {
 export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integrations, selectedIntegration, onSelect, loading, disabled }) => {
     const [search, setSearch] = useState('');
 
+    const fuse = useMemo(() => {
+        if (!integrations || integrations.length === 0) {
+            return null;
+        }
+
+        return new Fuse(integrations, {
+            keys: [
+                { name: 'display_name', weight: 0.4 },
+                { name: 'meta.displayName', weight: 0.3 },
+                { name: 'unique_key', weight: 0.3 }
+            ],
+            threshold: 0.4,
+            includeScore: true,
+            minMatchCharLength: 1,
+            ignoreLocation: true,
+            findAllMatches: true
+        });
+    }, [integrations]);
+
     const filteredIntegrations = useMemo(() => {
-        if (!search) {
+        if (!search.trim() || !fuse) {
             return integrations;
         }
-        return integrations.filter((integration) => {
-            return (
-                integration.display_name?.toLowerCase().includes(search.toLowerCase()) ||
-                integration.meta.displayName?.toLowerCase().includes(search.toLowerCase()) ||
-                integration.unique_key?.toLowerCase().includes(search.toLowerCase())
-            );
-        });
-    }, [integrations, search]);
+
+        const results = fuse.search(search);
+        return results.map((result) => result.item);
+    }, [integrations, search, fuse]);
 
     return (
         <DropdownMenu modal={false}>
@@ -47,10 +63,10 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 ) : (
                     'Choose from the list'
                 )}
-                <IconChevronDown stroke={1} size={18} className="text-text-secondary" />
+                <ChevronsUpDown className="size-4.5 text-text-secondary" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[var(--radix-dropdown-menu-trigger-width)] p-2"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] p-2 bg-bg-subtle border-none"
                 side="bottom"
                 align="start"
                 onInteractOutside={(e) => {
@@ -61,15 +77,15 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 }}
             >
                 <div
-                    className="flex items-center px-2 pb-2 border-b border-border-muted mb-2"
+                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-bg-muted rounded-md border border-grayscale-600"
                     onKeyDown={(e) => {
                         e.stopPropagation();
                     }}
                 >
-                    <IconSearch className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <Search className="size-5 shrink-0 text-icon-disabled" />
                     <Input
-                        placeholder="Search integrations..."
-                        className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-text-placeholder disabled:cursor-not-allowed disabled:opacity-50 border-none focus-visible:ring-0 px-0"
+                        placeholder="Github, accounting, oauth..."
+                        className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 text-text-secondary h-auto p-0"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         autoFocus
@@ -77,9 +93,9 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                     {loading ? (
-                        <div className="py-6 text-center text-sm text-text-secondary">Loading integrations...</div>
+                        <div className="py-6 text-center text-text-secondary">Loading integrations...</div>
                     ) : filteredIntegrations.length === 0 ? (
-                        <div className="py-6 text-center text-sm text-text-secondary">No integrations found.</div>
+                        <div className="py-6 text-center text-text-secondary">No integrations found.</div>
                     ) : (
                         filteredIntegrations.map((item) => {
                             const isSelected = selectedIntegration?.unique_key === item.unique_key;
@@ -90,13 +106,13 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                                         onSelect(isSelected ? undefined : item);
                                         setSearch('');
                                     }}
-                                    className="flex items-center justify-between cursor-pointer"
+                                    className={cn('flex items-center justify-between cursor-pointer py-3 px-3 rounded-md', isSelected && 'bg-pure-black')}
                                 >
-                                    <div className="flex gap-3 items-center">
-                                        <IntegrationLogo provider={item.provider} className="w-5 h-5" />
+                                    <div className="flex gap-3 items-center text-[15px]">
+                                        <IntegrationLogo provider={item.provider} className="size-8" />
                                         {item.display_name || item.meta.displayName}
                                     </div>
-                                    {isSelected && <IconCheck className="h-4 w-4" />}
+                                    {isSelected && <Check className="size-5" />}
                                 </DropdownMenuItem>
                             );
                         })

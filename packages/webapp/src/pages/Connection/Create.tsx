@@ -1,4 +1,5 @@
-import { IconBook, IconChevronRight } from '@tabler/icons-react';
+import { IconBook } from '@tabler/icons-react';
+import { ExternalLink } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSearchParam } from 'react-use';
@@ -174,8 +175,9 @@ export const ConnectionCreate: React.FC = () => {
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
                                 size="md"
                                 variant={'link'}
+                                className={'text-breadcrumb-default'}
                             >
-                                Or use deprecated flow <IconChevronRight stroke={1} size={18} />
+                                Use deprecated flow <ExternalLink className="size-4.5 text-breadcrumb-default" />
                             </ButtonLink>
                         </div>
                     </div>

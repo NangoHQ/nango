@@ -1,7 +1,7 @@
-import { IconHelpCircle } from '@tabler/icons-react';
+import { CircleHelp } from 'lucide-react';
 import * as React from 'react';
 
-import { SimpleTooltip } from '@/components/SimpleTooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { cn } from '@/utils/utils';
 
 interface BinaryToggleProps {
@@ -46,9 +46,14 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
             >
                 <span>{offLabel}</span>
                 {offTooltip && (
-                    <SimpleTooltip side="top" align="center" tooltipContent={<p className="text-s">{offTooltip}</p>}>
-                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                    </SimpleTooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <CircleHelp className="size-4 text-text-tertiary" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="center">
+                            {offTooltip}
+                        </TooltipContent>
+                    </Tooltip>
                 )}
             </div>
             <div
@@ -59,9 +64,14 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
             >
                 <span>{onLabel}</span>
                 {onTooltip && (
-                    <SimpleTooltip side="top" align="center" tooltipContent={<p className="text-s">{onTooltip}</p>}>
-                        <IconHelpCircle stroke={1} size={16} className="text-grayscale-500" />
-                    </SimpleTooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <CircleHelp className="size-4 text-text-tertiary" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="center">
+                            {onTooltip}
+                        </TooltipContent>
+                    </Tooltip>
                 )}
             </div>
         </div>
