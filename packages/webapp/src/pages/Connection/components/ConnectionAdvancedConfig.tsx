@@ -1,7 +1,8 @@
-import { ChevronRight, CircleHelp } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../components/ui/Collapsible';
+import { InfoTooltip } from '../../../components-v2/InfoTooltip';
 import { KeyValueInput } from '../../../components-v2/KeyValueInput';
 import { ScopesInput } from '../../../components-v2/ScopesInput';
 import { StyledLink } from '../../../components-v2/StyledLink';
@@ -9,7 +10,6 @@ import { BinaryToggle } from '../../../components-v2/ui/binary-toggle';
 import { Input } from '../../../components-v2/ui/input';
 import { Label } from '../../../components-v2/ui/label';
 import { Separator } from '../../../components-v2/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { cn } from '@/utils/utils';
 
@@ -55,16 +55,7 @@ const FormLabel = ({
         <Label htmlFor={htmlFor} className="flex gap-2 items-center">
             {children}
             {required && <span className="text-alert-400">*</span>}
-            {tooltip && (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <CircleHelp className="size-4 text-text-tertiary" />
-                    </TooltipTrigger>
-                    <TooltipContent side="right" align="center">
-                        {tooltip}
-                    </TooltipContent>
-                </Tooltip>
-            )}
+            {tooltip && <InfoTooltip side="right">{tooltip}</InfoTooltip>}
         </Label>
     );
 };

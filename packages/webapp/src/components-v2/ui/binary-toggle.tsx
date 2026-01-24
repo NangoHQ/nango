@@ -1,7 +1,6 @@
-import { CircleHelp } from 'lucide-react';
 import * as React from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { cn } from '@/utils/utils';
 
 interface BinaryToggleProps {
@@ -45,16 +44,7 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
                 )}
             >
                 <span>{offLabel}</span>
-                {offTooltip && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <CircleHelp className="size-4 text-text-tertiary" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="center">
-                            {offTooltip}
-                        </TooltipContent>
-                    </Tooltip>
-                )}
+                {offTooltip && <InfoTooltip>{offTooltip}</InfoTooltip>}
             </div>
             <div
                 className={cn(
@@ -63,16 +53,7 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
                 )}
             >
                 <span>{onLabel}</span>
-                {onTooltip && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <CircleHelp className="size-4 text-text-tertiary" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="center">
-                            {onTooltip}
-                        </TooltipContent>
-                    </Tooltip>
-                )}
+                {onTooltip && <InfoTooltip>{onTooltip}</InfoTooltip>}
             </div>
         </div>
     );
