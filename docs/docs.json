@@ -68,10 +68,6 @@
       "destination": "/api-integrations/microsoft-teams"
     },
     {
-      "source": "/integrations/all/microsoft-planner",
-      "destination": "/api-integrations/microsoft-planner"
-    },
-    {
       "source": "/integrations/all/microsoft",
       "destination": "/api-integrations/microsoft"
     },
