@@ -92,6 +92,7 @@ const result = await nango.triggerFunction({
 - Runs inside Nango
 - Isolated execution per customer and per run
 - Elastic scaling & fast startup time (less than 100ms)
+- Flexible use-cases: long-running syncs, rapid-fire actions, etc.
 - Triggered by API calls, schedules, webhooks, or life-cycle events
 
 ### Developer experience
@@ -104,13 +105,14 @@ const result = await nango.triggerFunction({
 ### Runtime SDK
 - Authenticated API requests
 - Retries & rate-limit handling
+- Sync engine with caching & checkpointing for ETL & RAG
 - Data transformation utilities
 - Runtime and compile-time data validation & auto-completion
 
 ### State and configuration
 - Per-customer configuration & logical branching
 - Per-customer key-value storage
-- Sync engine with caching for ETL & RAG
+- Compose functions into workflows
 
 ### Observability
 - Execution & custom logs
@@ -122,13 +124,13 @@ const result = await nango.triggerFunction({
 
 Functions are a powerful & flexible primitive to support any complex integration use-case:
 
-- Tool calling and MCP servers
-- Data syncing and incremental updates
-- RAG pipelines and large dataset ingestion
-- Triggers and change detection
-- Webhook ingestion and processing
-- API unification
-- Per-customer integration logic
+- **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling/overview)**
+- **[Data syncing & incremental updates](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[RAG pipelines and large dataset ingestion](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[Triggers and change detection](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[Webhook ingestion and processing](/implementation-guides/use-cases/webhooks-from-external-apis)**
+- **[Per-customer integration logic](/implementation-guides/use-cases/customer-configuration)**
+- **[API unification](/implementation-guides/use-cases/unified-apis)** 
 
 ## Next step
 

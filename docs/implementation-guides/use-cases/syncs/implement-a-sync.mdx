@@ -4,11 +4,66 @@ sidebarTitle: 'Implement a sync'
 description: 'How to create & use syncs in Nango'
 ---
 
-This guide has two parts:
-- How to create your own sync
-- How to use a sync in your own app
+Syncs let you continuously sync data from external APIs. They work with any data the external API exposes and keep a cached copy in Nango that stays up to date.
 
-If you are using a pre-built integration template sync, you can [skip to the second section](#how-to-use-a-sync).
+## When to use syncs
+
+Syncs are ideal when you want to:
+- **Store a copy** of external API data in your app and keep it up to date
+- **Detect changes** in external APIs that don't offer webhooks
+- **Combine polling and webhooks** for a reliable, real-time stream of changes
+
+Common examples:
+- Syncing contacts, companies, or deals from CRMs (HubSpot, Salesforce, Attio, etc.)
+- Syncing files from drives (Google Drive, SharePoint, Box, etc.)
+- Syncing call transcripts from video recorders (Gong, Fathom, Zoom, etc.)
+
+You can implement two-way syncs by combining syncs with [Actions](/guides/use-cases/actions).
+
+## Key facts
+
+- Syncs run in Nango's infrastructure, powered by [Functions](/guides/platform/functions)
+- You control the code: which data to fetch, transformations, data models, etc.
+- All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination
+- Syncs run in the context of each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (API key or access token of your user)
+- Syncs can be **incremental** (only fetch changed data) or **full refresh** (always fetch all data)
+- Synced data is cached in Nango (encrypted at rest and in transit)
+- Nango detects changes (additions, updates, deletes) and sends webhooks to your app
+- You set the polling frequency (15 seconds minimum interval)
+- All sync runs and API requests are logged in [Nango's logs](/guides/platform/logs)
+
+Syncs are defined on the integration (e.g., GitHub, Google Drive) by implementing a [Function](/guides/platform/functions) with the sync's logic. Nango then executes the sync for each Connection of this integration, letting you customize logic and frequency per customer if needed.
+
+This guide covers:
+- [How to build a sync](#how-to-build-a-sync)
+- [How to use a sync](#how-to-use-a-sync)
+
+If you are using a pre-built reference implementation sync, you can [skip to using a sync](#how-to-use-a-sync).
+
+## Syncs in detail
+
+### Incremental vs. full-refresh syncs
+
+Nango supports both modes and automatically detects changes to records in either.
+
+| Mode | Description | Best for |
+|------|-------------|----------|
+| **Incremental** | Only fetches data changed since last execution | Large datasets; requires API support for querying modified records |
+| **Full refresh** | Retrieves entire dataset each execution | APIs without last-modified filtering; fallback option |
+
+Set `syncType: 'incremental'` or `syncType: 'full'` in your sync definition.
+
+### Deletion detection
+
+Nango can detect deleted records on external APIs. For incremental syncs, this requires specific API support. For full-refresh syncs, deletes are always detectable.
+
+Follow the [deletion detection guide](/implementation-guides/syncs/deletion-detection) for implementation details.
+
+### Real-time syncs with webhooks
+
+Nango supports real-time syncs using [webhooks](/guides/use-cases/webhooks). You can rely entirely on webhooks or combine them with polling to ensure you never miss data.
+
+Follow the [real-time syncs guide](/implementation-guides/syncs/realtime-syncs) to add real-time support.
 
 ## How to build a sync
 

@@ -1,12 +1,31 @@
 ---
-title: 'Implement webhooks'
-sidebarTitle: 'Implement webhooks'
-description: 'Step by Step guide to listen to webhooks from external APIs'
+title: 'Process webhooks from external APIs'
+sidebarTitle: 'Webhooks from external APIs'
+description: 'Step by Step guide to process real-time webhooks from external APIs'
 ---
 
 Nango can process, or forward, webhooks from external APIs for you.
 
 This guide explains how this works, and how you can set this up with your application.
+
+## When should you use webhooks?
+
+- You want to know about changes in the external API in real time
+- You want to build a real-time data sync from the external API to your product
+- You don't want to deal with how each API implements webhooks, subscriptions, or attributing webhooks to users
+- You don't want to build and maintain infrastructure to handle webhook floods, debouncing, etc.
+
+Common examples:
+- Listen to "contact updated" webhooks from HubSpot, Attio, etc.
+- Trigger an "order" sync run whenever Shopify sends a "new order" webhook
+
+## Key facts
+
+- Incoming webhooks are processed by Nango's infrastructure, which auto-scales and provides tools to handle webhook floods, debouncing, etc.
+- Each webhook gets attributed to its corresponding [connection](/guides/use-cases/api-auth#what-is-a-connection) (a user or organization that has set up a specific integration)
+- Webhooks can be forwarded to your app or trigger a [function](/guides/platform/functions) in Nango for processing
+- Webhooks can be combined with [syncs](/guides/use-cases/syncs) to create real-time syncs to your product
+- All incoming webhooks create detailed logs in Nango's [logs](/guides/platform/logs)
 
 ## How webhooks work in Nango
 
@@ -29,7 +48,23 @@ Once the integration is determined, Nango attributes the webhook to the correct 
 
 The same routing code contains the logic to verify the origin of the webhook for security purposes.
 
-Based on your configuration, Nango will either [forward the webhook](/implementation-guides/webhooks/implement-webhooks#forwarding-webhooks-to-your-app) to your app as is, use it for [real-time syncing](/implementation-guides/syncs/realtime-syncs), or both. 
+### Forwarding vs. processing in Nango
+
+**Forwarding**: Nango forwards the webhook from the external API to your webhooks endpoint. This is the default behavior.
+
+**Processing in Nango**: The webhook from the external API triggers a [function](/guides/platform/functions) in Nango. This lets you make additional API requests to the external API and store data in Nango's [sync](/guides/use-cases/syncs) cache.
+
+You can also combine the two: Process the webhook in Nango, fetch additional data from the external API, and then forward the final object as a webhook to your app.
+
+### Real-time syncs with webhooks + polling
+
+You can combine webhooks and polling syncs into a single, real-time sync.
+
+With this setup, both webhooks and polling syncs update the same [sync](/guides/use-cases/syncs) cache in Nango. Nango applies change detection to the objects in the cache and notifies your application when new data is available.
+
+This gives you the best of both worlds: the reliability of polling syncs and the real-time updates of webhooks.
+
+To set this up, follow our [implementation guide for real-time syncs](/implementation-guides/syncs/realtime-syncs).
 
 ### Supported APIs
 

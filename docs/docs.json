@@ -399,86 +399,88 @@
         "tab": "Implementation Guides",
         "groups": [
           {
-            "group": "API Auth",
+            "group": "Use Cases",
             "pages": [
-              "implementation-guides/api-auth/configure-integration",
-              "implementation-guides/api-auth/implement-api-auth",
-              "implementation-guides/api-auth/customize-connect-ui"
-            ]
-          },
-          {
-            "group": "AI tool calling",
-            "pages": [
-              "implementation-guides/ai-tool-calling/openai-sdk",
-              "implementation-guides/ai-tool-calling/anthropic-sdk",
-              "implementation-guides/ai-tool-calling/vercel-sdk",
-              "implementation-guides/ai-tool-calling/mastra-sdk",
-              "implementation-guides/ai-tool-calling/google-sdk",
-              "implementation-guides/ai-tool-calling/langchain-sdk",
-              "implementation-guides/ai-tool-calling/llamaindex-sdk",
-              "implementation-guides/ai-tool-calling/openai-agents-sdk",
-              "implementation-guides/ai-tool-calling/any-llm",
-              "implementation-guides/ai-tool-calling/implement-mcp-server"
-            ]
-          },
-          {
-            "group": "Proxy",
-            "pages": [
-              "implementation-guides/requests-proxy/implement-requests-proxy"
-            ]
-          },
-          {
-            "group": "Syncs",
-            "pages": [
-              "implementation-guides/syncs/implement-a-sync",
-              "implementation-guides/syncs/deletion-detection",
-              "implementation-guides/syncs/realtime-syncs",
-              "implementation-guides/syncs/large-datasets",
-              "implementation-guides/syncs/sync-partitioning"
-            ]
-          },
-          {
-            "group": "Actions",
-            "pages": [
-              "implementation-guides/actions/implement-an-action",
-              "implementation-guides/actions/async-actions"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "implementation-guides/webhooks/implement-webhooks"
-            ]
-          },
-          {
-            "group": "Building integrations",
-            "pages": [
-              "implementation-guides/building-integrations/functions-setup",
-              "implementation-guides/building-integrations/leverage-ai-agents",
-              "implementation-guides/building-integrations/customize-integration-template",
-              "implementation-guides/building-integrations/unified-apis",
-              "implementation-guides/building-integrations/rate-limits",
-              "implementation-guides/building-integrations/customer-configuration",
-              "implementation-guides/building-integrations/data-validation",
-              "implementation-guides/building-integrations/testing",
-              "implementation-guides/building-integrations/ci-cd"
+              "implementation-guides/use-cases/sample-app",
+              {
+                "group": "AI tool calling & MCP",
+                "pages": [
+                  "implementation-guides/use-cases/tool-calling/overview",
+                  "implementation-guides/use-cases/tool-calling/openai-sdk",
+                  "implementation-guides/use-cases/tool-calling/anthropic-sdk",
+                  "implementation-guides/use-cases/tool-calling/vercel-sdk",
+                  "implementation-guides/use-cases/tool-calling/mastra-sdk",
+                  "implementation-guides/use-cases/tool-calling/google-sdk",
+                  "implementation-guides/use-cases/tool-calling/langchain-sdk",
+                  "implementation-guides/use-cases/tool-calling/llamaindex-sdk",
+                  "implementation-guides/use-cases/tool-calling/openai-agents-sdk",
+                  "implementation-guides/use-cases/tool-calling/any-llm",
+                  "implementation-guides/use-cases/tool-calling/implement-mcp-server"
+                ]
+              },
+              {
+                "group": "Syncs, RAG & triggers",
+                "pages": [
+                  "implementation-guides/use-cases/syncs/implement-a-sync",
+                  "implementation-guides/use-cases/syncs/deletion-detection",
+                  "implementation-guides/use-cases/syncs/realtime-syncs",
+                  "implementation-guides/use-cases/syncs/large-datasets",
+                  "implementation-guides/use-cases/syncs/sync-partitioning"
+                ]
+              },
+              {
+                "group": "Actions",
+                "pages": [
+                  "implementation-guides/use-cases/actions/implement-an-action",
+                  "implementation-guides/use-cases/actions/async-actions"
+                ]
+              },
+              "implementation-guides/use-cases/webhooks-from-external-apis",
+              "implementation-guides/use-cases/unified-apis",
+              "implementation-guides/use-cases/customer-configuration",
+              "implementation-guides/use-cases/implement-event-handler"
             ]
           },
           {
             "group": "Platform",
             "pages": [
+              {
+                "group": "Auth",
+                "pages": [
+                  "implementation-guides/platform/auth/configure-integration",
+                  "implementation-guides/platform/auth/implement-api-auth",
+                  "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/contribute-new-api"
+                ]
+              },
+              {
+                "group": "Proxy",
+                "pages": [
+                  "implementation-guides/platform/proxy/implement-requests-proxy"
+                ]
+              },
+              {
+                "group": "Functions",
+                "pages": [
+                  "implementation-guides/platform/functions/functions-setup",
+                  "implementation-guides/platform/functions/leverage-ai-agents",
+                  "implementation-guides/platform/functions/customize-template",
+                  "implementation-guides/platform/functions/rate-limits",
+                  "implementation-guides/platform/functions/data-validation",
+                  "implementation-guides/platform/functions/testing",
+                  "implementation-guides/platform/functions/ci-cd"
+                ]
+              },
               "implementation-guides/platform/webhooks-from-nango",
-              "implementation-guides/platform/contribute-new-api",
-              "implementation-guides/platform/implement-event-handler",
               "implementation-guides/platform/open-telemetry-export",
+              {
+                "group": "Migrations",
+                "pages": [
+                  "implementation-guides/platform/migrations/migrate-from-public-key",
+                  "implementation-guides/platform/migrations/migrate-to-zero-yaml"
+                ]
+              },
               "implementation-guides/platform/common-issues"
-            ]
-          },
-          {
-            "group": "Migrations",
-            "pages": [
-              "implementation-guides/migrations/migrate-from-public-key",
-              "implementation-guides/migrations/migrate-to-zero-yaml"
             ]
           }
         ]
@@ -1169,13 +1171,6 @@
                   "reference/api/authentication",
                   "reference/api/rate-limits",
                   {
-                    "group": "Providers",
-                    "pages": [
-                      "reference/api/providers/list",
-                      "reference/api/providers/get"
-                    ]
-                  },
-                  {
                     "group": "Integrations",
                     "pages": [
                       "reference/api/integration/list",
@@ -1186,16 +1181,12 @@
                     ]
                   },
                   {
-                    "group": "Connections (deprecated)",
+                    "group": "Connect",
                     "pages": [
-                      "reference/api/connection/list",
-                      "reference/api/connection/get",
-                      "reference/api/connection/post",
-                      "reference/api/connection/set-metadata",
-                      "reference/api/connection/set-metadata-legacy",
-                      "reference/api/connection/update-metadata",
-                      "reference/api/connection/update-metadata-legacy",
-                      "reference/api/connection/delete"
+                      "reference/api/connect/sessions/create",
+                      "reference/api/connect/sessions/reconnect",
+                      "reference/api/connect/session/get",
+                      "reference/api/connect/session/delete"
                     ]
                   },
                   {
@@ -1248,12 +1239,10 @@
                     ]
                   },
                   {
-                    "group": "Connect",
+                    "group": "Providers",
                     "pages": [
-                      "reference/api/connect/sessions/create",
-                      "reference/api/connect/sessions/reconnect",
-                      "reference/api/connect/session/get",
-                      "reference/api/connect/session/delete"
+                      "reference/api/providers/list",
+                      "reference/api/providers/get"
                     ]
                   }
                 ]
@@ -1278,8 +1267,7 @@
             "pages": [
               "reference/cli",
               "reference/functions",
-              "reference/api-configuration",
-              "reference/integration-configuration"
+              "reference/api-configuration"            
             ]
           }
         ]

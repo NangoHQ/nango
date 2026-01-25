@@ -1,16 +1,16 @@
 ---
-title: 'Customize an integration template'
-sidebarTitle: 'Customize an integration template'
-description: 'Guide on how to customize an integration template in Nango.'
+title: 'Customize a function template'
+sidebarTitle: 'Customize a template'
+description: 'Guide on how to build a custom integration from an existing function template.'
 ---
 
-Nango publishes integration templates for the most popular APIs and use cases. Integration templates are a starting point for your custom integrations to reuse and customize.
+Nango publishes function templates for the most popular APIs and use cases. Function templates are a starting point for your custom integrations to reuse and extend.
 
-You can find all 800+ integration templates on the [integration templates GitHub repo](https://www.nango.dev/templates).
+You can find thousands of function templates on the [templates GitHub repo](https://www.nango.dev/templates).
 
-This guide walks you through how you can customize them.
+This guide walks you through how you can extend and customize them.
 
-## How to customize an integration template
+## How to extend a function template
 
 ### Step 1 - Initial Functions setup
 
@@ -18,7 +18,7 @@ If you don't have a `nango-integrations` folder yet, follow the [initial Functio
 
 Otherwise, you can skip to the next step.
 
-### Step 2 - Download the integration template code
+### Step 2 - Download the function template code
 
 Use the CLI to clone the integration template. 
 You can clone an entire integration folder (e.g. `github`), subfolders with a specific type of functions (e.g. `github/actions`) or individual functions (e.g. `github/actions/list-repos` action).
@@ -33,7 +33,7 @@ nango clone github/actions/list-repos           # Clones just the list-repos act
 You can also download the integration template files manually from our [integration templates GitHub repo](https://www.nango.dev/templates).
 If you do that, make sure to also copy imported functions that may be in other files and import the new files in your `index.ts` file.
 
-### Step 3 - Customize the implementation
+### Step 3 - Customize the template
 
 Edit the sync and action functions as required for your integration.
 
@@ -44,7 +44,7 @@ You may want to reference:
 These two guides explain the SDK available in custom sync and action functions. They also explain how to test your functions locally and how to deploy them.
 
 <Info>
-If a custom sync or action function name conflicts with an integration template name, the custom function will override the integration template in the Nango UI (once you deploy your custom integrations to Nango).
+If a custom sync or action function name conflicts with a function template name, the custom function will override the template in the Nango UI (once you deploy your custom integrations to Nango).
 </Info>
 
 <Tip>

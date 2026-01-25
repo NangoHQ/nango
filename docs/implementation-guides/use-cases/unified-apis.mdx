@@ -1,10 +1,38 @@
 ---
-title: 'How to build a unified API'
-sidebarTitle: 'Unified APIs'
-description: 'How to build a unified API in Nango'
+title: 'API unification'
+sidebarTitle: 'API unification'
+description: 'How to use & implement unified APIs in Nango'
 ---
 
-Read more about the advantages and disadvantages of unified APIs here: [How Nango thinks about unified APIs](/guides/platform/unified-apis).
+Nango supports API unification, the process of standardizing multiple APIs with varying endpoints and schemas into a single, consistent interface for easier integration.
+
+Nango lets you build unified APIs with your own data models, avoiding the fundamental constraints of pre-built unified APIs. AI code generation makes the process of building custom unified APIs faster and easier.
+
+## API unification in Nango
+
+Unification is treated as a first-class citizen in Nango, but it is **optional**.
+
+If you opt in for API unification, Nango lets you define your own unified endpoints and models so that they fit your specific use case. When API unification becomes limiting, Nango preserves your ability to have integrations that fully leverage an API's specific data and capabilities.
+
+## Challenges and opportunities of unification
+
+### When unification is difficult
+
+Not all use cases and APIs are good fits for unification. You might need to leverage specific capabilities of an API that are impossible to standardize with others.
+
+For example, Notion's block-based structure reflects unique ways its API is consumed, making it difficult to unify with other knowledge management APIs like Google Drive or SharePoint. While basic use cases such as listing files or exporting plain-text documents can be unified, advanced capabilities like complex handling of Notion blocks cannot. APIs with no standard equivalent capabilities are sometimes referred to as *unstructured* APIs.
+
+Even when APIs have standard models—such as CRMs (contacts, companies), accounting systems (transactions, invoices), or HR platforms (employees, teams)—often called *structured* APIs—unification can still be imperfect due to discrepancies across providers. For instance, an Applicant Tracking System (ATS) might have 5 candidate statuses, another 10, and a third might allow fully customizable statuses. Mapping these statuses into a single unified model requires decisions that cannot follow a "one-size-fits-all" approach.
+
+For SaaS companies, these decisions often need to adapt to the specific logic of each customer, especially if they use custom fields or statuses. Nango streamlines this process while giving you full control over how you unify APIs to match your exact needs.
+
+### When unification delivers value
+
+Most SaaS products integrate with core systems of record, such as CRMs, accounting platforms, HR systems, or support tools. These systems typically include models with shared capabilities and fields—for example, a support ticket will usually have a title, description, author, and status.
+
+Integrating with these systems often means covering multiple providers chosen by your customers, which is where API unification provides the most value. By unifying external models into a common internal model, you encapsulate the per-API logic (fetching and mapping data) into clean, reusable components.
+
+**API unification doesn't need to be perfect to deliver value.** Even partial alignment across APIs is often sufficient. You might unify most fields across multiple APIs but include special handling for certain APIs that support additional fields or lack certain data.
 
 ## Best practices for API unification
 
@@ -27,7 +55,7 @@ Adopt the same data model for both reading data (e.g., syncing) and writing data
 
 ### Enforce custom data validation rules in your custom integrations
 
-When building custom integrations in Nango, leverage Nango’s built-in support for [data validation using the zod library](/implementation-guides/building-integrations/data-validation). By enforcing validation rules in Nango functions, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
+When building custom integrations in Nango, leverage Nango's [built-in support for data validation](/guides/platform/data-validation) using the zod library. By enforcing validation rules in Nango functions, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
 
 ## How to build a unified API in Nango
 

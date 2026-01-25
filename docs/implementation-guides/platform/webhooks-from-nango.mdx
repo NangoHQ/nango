@@ -1,8 +1,21 @@
 ---
-title: 'Implement webhooks from Nango'
-sidebarTitle: 'Implement webhooks from Nango'
+title: 'Receive webhooks from Nango'
+sidebarTitle: 'Webhooks from Nango'
 description: 'Step by step guide to receive webhooks from Nango'
 ---
+
+Nango uses webhooks to notify your application of important events.
+
+<Info>
+This page covers webhooks that Nango sends to your application. To process webhooks from external APIs, please read the [Webhooks from external APIs](/guides/use-cases/webhooks) guide.
+</Info>
+
+## Overview of Nango webhooks
+
+The most common webhooks are:
+- **New connection created**: Sent whenever a new [connection](/guides/use-cases/api-auth#what-is-a-connection) has been created
+- **Sync execution finished**: Sent whenever a [sync](/guides/use-cases/syncs) execution completes
+- **Forwarded webhook**: Sent when Nango forwards [webhooks from an external API](/guides/use-cases/webhooks) to your app
 
 ## Set up webhooks from Nango
 
