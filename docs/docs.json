@@ -795,7 +795,7 @@
               "integrations/all/ukg-ready",
               "integrations/all/unanet",
               "integrations/all/unauthenticated",
-              "integrations/all/upsales",
+              "api-integrations/upsales",
               "integrations/all/unipile",
               "integrations/all/valley",
               "integrations/all/valley-api-key",
