@@ -12,6 +12,7 @@ import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
@@ -72,7 +73,11 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* Display name */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="display_name">Display name</Label>
-                <EditableInput initialValue={integration.display_name || template.display_name} onSave={(value) => onSave({ displayName: value })} />
+                <EditableInput
+                    initialValue={integration.display_name || template.display_name}
+                    onSave={(value) => onSave({ displayName: value })}
+                    validate={validateNotEmpty}
+                />
             </div>
 
             {/* Integration ID */}
