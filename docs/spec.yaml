@@ -1770,6 +1770,7 @@ paths:
                                                     enum: ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS', 'ERROR']
                                                     description: The current status of the sync.
                                                 type:
+                                                    deprecated: true
                                                     type: string
                                                     description: The most recent sync type completed
                                                     enum: ['INCREMENTAL', 'INITIAL']
