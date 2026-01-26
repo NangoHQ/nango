@@ -1,9 +1,9 @@
 import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout } from '../../components/CardLayout';
+import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { EmptyCard } from '../../components/EmptyCard';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
@@ -11,6 +11,7 @@ import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
@@ -32,9 +33,10 @@ export const FunctionsOne: React.FC = () => {
     const { data: integrationData, loading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
 
-    const func = useMemo(() => {
-        return data?.flows.find((flow) => flow.name === functionName);
-    }, [data, functionName]);
+    const func = data?.flows.find((flow) => flow.name === functionName);
+
+    const gitDir = func ? `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}` : '';
+    const gitUrl = `https://github.com/NangoHQ/integration-templates/tree/main/integrations/${gitDir}.ts`;
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -149,6 +151,29 @@ export const FunctionsOne: React.FC = () => {
                         {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
                     </div>
                 </CardHeader>
+
+                {func.pre_built && (
+                    <CardSubheader>
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-text-primary text-body-medium-semi">Customize this template</span>
+                                <Link
+                                    to="https://nango.dev/docs/reference/cli"
+                                    type="external"
+                                    className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
+                                >
+                                    Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                                </Link>
+                            </div>
+                            <div className="inline-flex gap-3">
+                                <LineSnippet snippet={`nango clone ${gitDir}`} />
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                                    View code <ExternalLink />
+                                </ButtonLink>
+                            </div>
+                        </div>
+                    </CardSubheader>
+                )}
 
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
