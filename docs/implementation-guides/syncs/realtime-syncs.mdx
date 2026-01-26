@@ -61,8 +61,6 @@ export default createSync({
 });
 ```
 
-After processing an external webhook, Nango sends [a sync finished webhook](/implementation-guides/platform/webhooks-from-nango#sync-webhooks) to your app with `"syncType": "WEBHOOK"`.
-
 To check if a sync supports webhooks, navigate to the _Integrations_ tab > select an integration > _Endpoints_ sub-tab > check the script settings for webhook subscriptions.
 
 ## Sync concurrency considerations

@@ -21,8 +21,6 @@ description: "Full reference of the SDK available in Nango functions"
       endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
       frequency: 'every hour',
       autoStart: true,
-      syncType: 'full',
-
       metadata: z.void(),
       models: {
         GithubIssueDemo: githubIssueDemoSchema
@@ -134,7 +132,7 @@ Read more about [integration functions](/guides/platform/functions) to understan
   ```
 </ResponseField>
 
-<ResponseField name="syncType" type="'full' | 'incremental'" required>
+<ResponseField name="syncType" type="'full' | 'incremental'" deprecated>
   The type of the sync.
 </ResponseField>
 

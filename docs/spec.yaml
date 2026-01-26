@@ -1158,6 +1158,7 @@ paths:
                                                 json_schema:
                                                     type: object
                                                 sync_type:
+                                                    deprecated: true
                                                     type: string
                                                     example: 'full'
                                                 runs:
@@ -1531,6 +1532,7 @@ paths:
                                 sync_mode:
                                     type: string
                                     enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
+                                    deprecated: true
                                     description: |
                                         The mode in which to trigger the syncs.
                                         - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
@@ -1741,6 +1743,7 @@ paths:
                                                     enum: ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS', 'ERROR']
                                                     description: The current status of the sync.
                                                 type:
+                                                    deprecated: true
                                                     type: string
                                                     description: The most recent sync type completed
                                                     enum: ['INCREMENTAL', 'INITIAL']

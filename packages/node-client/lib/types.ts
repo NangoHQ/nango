@@ -162,10 +162,12 @@ export interface Action extends Timestamps {
     name: string;
 }
 
+/** @deprecated */
 export type SyncType = 'INCREMENTAL' | 'INITIAL';
 
 export interface SyncStatus {
     id: string;
+    /** @deprecated **/
     type: SyncType;
     finishedAt: string | undefined;
     nextScheduledSyncAt: string;

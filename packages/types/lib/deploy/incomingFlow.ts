@@ -85,6 +85,7 @@ export interface CLIDeployFlowConfig {
     syncName: string;
     fileBody: IncomingScriptFiles;
     version?: string | undefined;
+    /** @deprecated **/
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
 }

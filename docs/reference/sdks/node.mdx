@@ -753,7 +753,7 @@ const scriptsConfig = await nango.getScriptsConfig();
                         ]
                     }
                 ],
-                "sync_type": "FULL",
+                "sync_type": "FULL", // DEPRECATED
                 "runs": "every half hour",
                 "track_deletes": false,
                 "auto_start": false,
@@ -1334,13 +1334,13 @@ Triggers an additional, one-off execution of specified sync(s) for a given conne
 
 ```ts
 // Simple usage with sync names
-const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>', 'incremental');
+const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
 
 // Using variants
 const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
   { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
   'SYNC_NAME2' // Uses default base variant
-], '<CONNECTION_ID>', 'incremental');
+], '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -1358,7 +1358,7 @@ const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
-    <ResponseField name="sync_mode" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'">
+    <ResponseField name="sync_mode" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'" deprecated>
         The mode in which to trigger the syncs.
         - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
         - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
@@ -1489,7 +1489,7 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
             "name": "<string>",
             "variant": "<string>",
             "status": "RUNNING",
-            "type": "INCREMENTAL",
+            "type": "INCREMENTAL", // DEPRECATED
             "finishedAt": "<string>",
             "nextScheduledSyncAt": "<string>",
             "frequency": "<string>",

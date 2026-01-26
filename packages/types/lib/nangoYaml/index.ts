@@ -2,6 +2,7 @@ import type { OnEventType } from '../scripts/on-events/api.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+/** @deprecated **/
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
 export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
@@ -103,6 +104,7 @@ export interface ParsedNangoSync {
     type: 'sync';
     endpoints: NangoSyncEndpointV2[];
     description: string;
+    /** @deprecated **/
     sync_type: SyncTypeLiteral;
     track_deletes: boolean;
     auto_start: boolean;

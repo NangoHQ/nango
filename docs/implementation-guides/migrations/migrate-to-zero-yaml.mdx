@@ -126,7 +126,6 @@ models:
 const sync = createSync({
     description: 'Fetches GitHub issues',
     frequency: 'every hour',
-    syncType: 'full',
     endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
     models: { GithubIssue: issueSchema }
 });
@@ -190,7 +189,6 @@ const issueSchema = z.object({
 const sync = createSync({
     description: 'Fetches GitHub issues',
     frequency: 'every hour',
-    syncType: 'full',
     endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
     models: { GithubIssue: issueSchema },
     exec: async (nango) => {

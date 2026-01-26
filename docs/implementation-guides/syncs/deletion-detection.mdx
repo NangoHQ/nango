@@ -43,7 +43,6 @@ const AccountSchema = z.object({
 export default createSync({
   description: 'Incrementally sync Accounts & handle deletions',
   frequency: 'every 2 hours',
-  syncType: 'incremental',
   endpoints: [{ method: 'GET', path: '/accounts', group: 'Accounts' }],
   models: { Account: AccountSchema },
 
@@ -94,7 +93,6 @@ const TicketSchema = z.object({
 export default createSync({
   description: 'Fetch all help-desk tickets',
   frequency: 'every day',
-  syncType: 'full',
   endpoints: [{ method: 'GET', path: '/tickets', group: 'Tickets' }],
   models: { Ticket: TicketSchema },
 

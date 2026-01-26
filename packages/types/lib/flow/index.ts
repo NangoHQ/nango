@@ -21,6 +21,7 @@ export interface NangoSyncConfig {
     last_deployed?: string | null;
     id?: number;
     input?: string | undefined;
+    /** @deprecated **/
     sync_type?: SyncTypeLiteral;
     webhookSubscriptions?: string[];
     enabled?: boolean;

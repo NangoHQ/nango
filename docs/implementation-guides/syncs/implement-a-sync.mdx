@@ -66,7 +66,6 @@ export default createSync({
     endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
     frequency: 'every hour', // Default sync interval
     autoStart: true, // Should the sync start immediately when a new connection is created?
-    syncType: 'full', // incremental or full (full refresh or incremental sync)
     trackDeletes: true, // detect deletes? See separate implementation guide
     models: {
         MyObject: MyObject,
@@ -111,7 +110,6 @@ export default createSync({
   endpoints: [{ method: 'GET', path: '/salesforce/contacts', group: 'Contacts' }],
   frequency: 'every hour',
   autoStart: true,
-  syncType: 'full',
   models: {
     SalesforceContact: SalesforceContact,
   },

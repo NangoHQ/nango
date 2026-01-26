@@ -22,6 +22,7 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     is_public: boolean;
     metadata: NangoConfigMetadata;
     input: string | null;
+    /** @deprecated **/
     sync_type: SyncTypeLiteral | null;
     webhook_subscriptions: string[] | null;
     enabled: boolean;

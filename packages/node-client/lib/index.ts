@@ -659,7 +659,7 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param syncMode - An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
+     * @param syncMode - @deprecated An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
      * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(

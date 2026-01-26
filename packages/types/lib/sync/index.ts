@@ -1,5 +1,6 @@
 export type SyncStatus = 'RUNNING' | 'PAUSED' | 'STOPPED' | 'SUCCESS' | 'ERROR';
 
+/** @deprecated **/
 export type SyncJobsType = 'INCREMENTAL' | 'FULL' | 'WEBHOOK' | 'ON_EVENT_SCRIPT' | 'ACTION';
 
 export interface SyncResult {
@@ -12,6 +13,7 @@ export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface ReportedSyncJobStatus {
     id?: string;
+    /** @deprecated **/
     type: SyncJobsType | 'INITIAL';
     name?: string;
     variant?: string;
