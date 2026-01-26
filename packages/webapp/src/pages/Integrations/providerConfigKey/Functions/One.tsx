@@ -158,7 +158,7 @@ export const FunctionsOne: React.FC = () => {
                                 <span className="text-text-primary text-body-medium-semi">Customize this template</span>
                                 <Link
                                     to="https://nango.dev/docs/reference/cli"
-                                    type="external"
+                                    target="_blank"
                                     className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
                                 >
                                     Get started with the Nango CLI <ExternalLink className="size-3.5" />
