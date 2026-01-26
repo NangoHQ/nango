@@ -66,6 +66,7 @@
         "jscodeshift": "17.3.0",
         "npm-package-arg": "10.1.0",
         "ora": "8.2.0",
+        "parse-link-header": "2.0.0",
         "promptly": "3.2.0",
         "semver": "7.5.4",
         "serialize-error": "11.0.3",
