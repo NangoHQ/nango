@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
+import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -34,9 +35,6 @@ export const FunctionsOne: React.FC = () => {
     const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
 
     const func = data?.flows.find((flow) => flow.name === functionName);
-
-    const gitDir = func ? `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}` : '';
-    const gitUrl = `https://github.com/NangoHQ/integration-templates/tree/main/integrations/${gitDir}.ts`;
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -83,17 +81,15 @@ export const FunctionsOne: React.FC = () => {
                 <CardLayout>
                     <CardHeader>
                         <div className="flex items-center justify-between gap-2">
-                            <div className="inline-flex gap-2">
+                            <div className="inline-flex items-center gap-2.5">
                                 <Skeleton className="bg-bg-subtle size-10.5" />
-                                <div className="flex flex-col gap-1">
-                                    <Skeleton className="bg-bg-subtle w-36 h-5" />
-                                    <Skeleton className="bg-bg-subtle w-24 h-4" />
-                                </div>
+                                <Skeleton className="bg-bg-subtle w-36 h-5" />
+                                <Skeleton className="bg-bg-subtle w-24 h-4" />
                             </div>
                             <Skeleton className="bg-bg-subtle w-8 h-5" />
                         </div>
-                        <Skeleton className="bg-bg-subtle w-full h-6" />
                         <Skeleton className="bg-bg-subtle w-1/2 h-6" />
+                        <Skeleton className="bg-bg-subtle w-full h-6" />
                     </CardHeader>
                     <CardContent>
                         <Skeleton className="bg-bg-subtle w-full h-50" />
@@ -106,6 +102,9 @@ export const FunctionsOne: React.FC = () => {
     if (!func || !integrationData) {
         return <PageNotFound />;
     }
+
+    const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
+    const gitUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${gitDir}.ts`;
 
     return (
         <DashboardLayout>
