@@ -49,7 +49,7 @@
         "simple-oauth2": "5.1.0",
         "undici": "6.21.2",
         "uuid": "9.0.0",
-        "webflow-api": "^3.2.1",
+        "webflow-api": "3.2.1",
         "xml-crypto": "6.1.2",
         "zod": "4.0.5"
     },
