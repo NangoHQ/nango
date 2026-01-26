@@ -5745,7 +5745,7 @@ freshsales:
         - crm
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.subdomain}.freshsales.io
+        base_url: https://${connectionConfig.bundleAlias} || https://${connectionConfig.subdomain}.freshsales.io
         verification:
             method: GET
             headers:
@@ -5757,18 +5757,22 @@ freshsales:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/freshsales
-    docs_connect: https://nango.dev/docs/integrations/all/freshsales/connect
+    docs: https://nango.dev/docs/api-integrations/freshsales
+    docs_connect: https://nango.dev/docs/api-integrations/freshsales/connect
     connection_config:
+        bundleAlias:
+            type: string
+            title: Bundle Alias
+            description: The bundle alias for your Freshsales account
+            prefix: https://
+            example: acme.myfreshworks.com/crm/sales
+            doc_section: '#step-2-finding-your-bundle-alias'
         subdomain:
             type: string
-            title: Freshsales subdomain
-            description: The subdomain of your Freshsales account
-            pattern: '^[a-z0-9_-]+$'
-            example: subdomain
-            suffix: .freshsales.io
-            prefix: https://
-            doc_section: '#step-2-finding-your-freshsales-subdomain'
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of bundleAlias
     credentials:
         apiKey:
             type: string

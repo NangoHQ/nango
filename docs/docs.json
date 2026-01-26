@@ -709,7 +709,7 @@
               "integrations/all/folk",
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
-              "integrations/all/freshsales",
+              "api-integrations/freshsales",
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
