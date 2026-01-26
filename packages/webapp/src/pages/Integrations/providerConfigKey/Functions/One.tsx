@@ -114,20 +114,20 @@ export const FunctionsOne: React.FC = () => {
             <CardLayout>
                 <CardHeader>
                     <div className="flex items-center justify-between gap-2">
-                        <div className="inline-flex gap-2">
+                        <div className="inline-flex items-center gap-2.5">
                             <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-text-primary text-body-medium-semi">
-                                    {integrationData.integration.display_name ?? integrationData.template.display_name}
-                                </span>
-                                <div className="inline-flex gap-1">
-                                    <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
-                                    <CopyButton text={func.name} />
-                                </div>
+                            <span className="text-text-primary text-body-large-semi">
+                                {integrationData.integration.display_name ?? integrationData.template.display_name}
+                            </span>
+                            <div className="inline-flex gap-1">
+                                <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
+                                <CopyButton text={func.name} />
                             </div>
                         </div>
                         <FunctionSwitch flow={func} integration={integrationData.integration} />
                     </div>
+
+                    <span className="text-text-secondary text-body-medium-medium">{func.description}</span>
 
                     <div className="flex flex-wrap gap-4 gap-y-2">
                         <IntegrationsBadge label="Type">
@@ -148,7 +148,6 @@ export const FunctionsOne: React.FC = () => {
                         {func.version && <IntegrationsBadge label="Version">v{func.version}</IntegrationsBadge>}
                         {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
                     </div>
-                    <span className="text-text-tertiary text-body-medium-medium">{func.description}</span>
                 </CardHeader>
 
                 <CardContent>
@@ -159,11 +158,11 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}

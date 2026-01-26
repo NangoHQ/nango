@@ -135,18 +135,16 @@ export const FunctionSwitch: React.FC<{
                 e.stopPropagation();
             }}
         >
-            <div>
-                <Switch
-                    name="script"
-                    checked={flow.enabled === true}
-                    className="cursor-pointer"
-                    disabled={loading}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        toggleSync();
-                    }}
-                />
-            </div>
+            <Switch
+                name="script"
+                checked={flow.enabled === true}
+                className="cursor-pointer"
+                disabled={loading}
+                onClick={(e) => {
+                    e.preventDefault();
+                    toggleSync();
+                }}
+            />
             {flow.type === 'action' && loading && <Loader2 className="animate-spin size-4" />}
             {DialogComponent}
         </div>
