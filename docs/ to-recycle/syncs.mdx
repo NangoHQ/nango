@@ -19,21 +19,21 @@ Common examples:
 - Syncing files from drives (Google Drive, SharePoint, Box, etc.)
 - Syncing call transcripts from video recorders (Gong, Fathom, Zoom, etc.)
 
-You can also implement two-way syncs by combining syncs with [Actions](/guides/use-cases/actions).
+You can also implement two-way syncs by combining syncs with [Actions](/implementation-guides/use-cases/actions/implement-an-action).
 
 
 ## Key facts
 
-- Syncs run in Nango's infrastructure, powered by [Functions](/guides/platform/functions)
+- Syncs run in Nango's infrastructure, powered by [Functions](/guides/primitives/functions)
     - You control the code of the sync: which data to fetch, transformations, data models, etc.
     - All platform features, like data validation, per-customer config, retries, and rate-limit handling, are available for syncs
-- Syncs are defined once and run in the context of each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) (API key or access token of your user)
+- Syncs are defined once and run in the context of each [Connection](/guides/primitives/auth#what-is-a-connection%3F) (API key or access token of your user)
 - Syncs can be incremental (only fetch changed data) or full refresh (always fetch all data)
 - Synced data is cached in Nango (encrypted at rest and in transit)
 - Nango detects changes to synced data (additions, updates, and deletes) and sends a webhook to your app
 - You set the frequency at which the sync polls for new data (15 seconds minimum interval)
 - Syncs handle rate limits, retries, and pagination
-- All sync runs and API requests are logged in Nango's [logs](/guides/platform/logs)
+- All sync runs and API requests are logged in Nango's [logs](/guides/platform/observability)
 
 ## How syncs work
 
@@ -41,11 +41,11 @@ You can also implement two-way syncs by combining syncs with [Actions](/guides/u
   ![](/images/diagrams/nango-syncs-diagram.png)
 </Frame>
 
-Syncs are defined on the integration (e.g., GitHub, Google Drive, etc.) by implementing a [Function](/guides/platform/functions) with the sync's logic.
+Syncs are defined on the integration (e.g., GitHub, Google Drive, etc.) by implementing a [Function](/guides/primitives/functions) with the sync's logic.
 
-Nango then executes the sync for each [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F) of this integration. This lets you customize the sync's logic, execution frequency, etc., for each customer, if necessary.
+Nango then executes the sync for each [Connection](/guides/primitives/auth#what-is-a-connection%3F) of this integration. This lets you customize the sync's logic, execution frequency, etc., for each customer, if necessary.
 
-Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync) guide for step-by-step instructions to create your own syncs.
+Follow our [implement a sync](/implementation-guides/use-cases/syncs/implement-a-sync) guide for step-by-step instructions to create your own syncs.
 
 ## Syncs in detail
 
@@ -59,7 +59,7 @@ These only fetch data that has changed since the last execution, appending it to
 **Full refresh sync**
 These syncs retrieve the entire dataset during each execution. They take longer to execute, especially for large datasets. Often used as a fallback if the external API endpoint offers no way to filter or sort records by last modified date.
 
-Refer to the [implement a sync](/implementation-guides/syncs/implement-a-sync) guide for more information on how to implement either in Nango.
+Refer to the [implement a sync](/implementation-guides/use-cases/syncs/implement-a-sync) guide for more information on how to implement either in Nango.
 
 ### Deletion detection
 
@@ -67,12 +67,12 @@ Nango supports detecting deleted records on external APIs.
 
 Deletion detection for incremental syncs requires specific support for this by the external API. For full-refresh syncs, deletes can always be detected.
 
-Follow our [implementation guide for deletion detection in syncs](/implementation-guides/syncs/deletion-detection) to implement this in your own syncs.
+Follow our [implementation guide for deletion detection in syncs](/implementation-guides/use-cases/syncs/deletion-detection) to implement this in your own syncs.
 
 ### Real-time syncs with webhooks
 
-Nango supports real-time syncs with [webhooks](/guides/use-cases/webhooks).
+Nango supports real-time syncs with [webhooks](/implementation-guides/use-cases/webhooks-from-external-apis).
 
 You can either rely entirely on webhooks for the sync or combine webhooks with polling sync runs to ensure you never miss data.
 
-Follow our [implement real-time syncs with webhooks](/implementation-guides/syncs/realtime-syncs) guide to add real-time support for your sync.
+Follow our [implement real-time syncs with webhooks](/implementation-guides/use-cases/syncs/realtime-syncs) guide to add real-time support for your sync.

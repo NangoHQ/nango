@@ -33,7 +33,7 @@ For those not using HMAC, the risk of attack was minimal but theoretically possi
 1. The new Connect session flow is **secure by default** and replaces the HMAC signature. Randomly generated connection IDs further enhance security
 2. Connection IDs are now **unique across integrations**, which will allow us to simplify API endpoints by transitioning from composite keys (`connection ID` + `integration ID`) to a single **unique connection ID**
 3. The Connect session will let us provide additional API capabilities that can be called directly and securely from the frontend
-4. The Connect session unlocks our [pre-built authorization UI](/implementation-guides/api-auth/implement-api-auth), which simplifies collecting API keys, basic credentials, and OAuth flows with custom parameters. This UI also validates end-user inputs and provides guidance on required credentials
+4. The Connect session unlocks our [pre-built authorization UI](/implementation-guides/platform/auth/implement-api-auth), which simplifies collecting API keys, basic credentials, and OAuth flows with custom parameters. This UI also validates end-user inputs and provides guidance on required credentials
 
 <Note>
 The Connect session works with both the pre-built authorization UI and custom authorization UIs. Custom authorization UIs are not being deprecated; they remain a critical feature and fully supported.
@@ -94,7 +94,7 @@ Check endpoint documentation [here](/reference/api/connections/patch).
 
 ## Step 2: Implement the Connect and reconnect flows
 
-Follow the steps in this [guide](/implementation-guides/api-auth/implement-api-auth), focusing on these key changes:
+Follow the steps in this [guide](/implementation-guides/platform/auth/implement-api-auth), focusing on these key changes:
 
 Connect session token is now required to be passed to the frontend SDK. This improves security and allows you to pass additional information to the connection.
 

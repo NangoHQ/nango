@@ -17,7 +17,7 @@ Token refresh can fail for various reasons:
 - The external API revoked the refresh token
 - The external API experienced an outage
 
-When a refresh fails, Nango can [notify your app via webhook](/guides/platform/webhooks-from-nango) so you can prompt the user to reconnect.
+When a refresh fails, Nango can [notify your app via webhook](/implementation-guides/platform/webhooks-from-nango) so you can prompt the user to reconnect.
 
 ## Best practices
 
@@ -25,7 +25,7 @@ Revoked access tokens and refresh failures happen to all integrations. To handle
 
 1. **Monitor for failures**: Set up [webhooks from Nango](/implementation-guides/platform/webhooks-from-nango) to receive notifications when token refresh fails
 2. **Handle revoked tokens**: Follow our [guide on handling revoked access tokens](/implementation-guides/platform/common-issues#token-refresh-error-from-the-external-api)
-3. **Implement re-authentication**: Make sure you have the [re-authentication flow](/implementation-guides/api-auth/implement-api-auth#6-re-authorize-an-existing-connection) in place so users can easily reconnect broken connections
+3. **Implement re-authentication**: Make sure you have the [re-authentication flow](/implementation-guides/platform/auth/implement-api-auth#6-re-authorize-an-existing-connection) in place so users can easily reconnect broken connections
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

@@ -21,23 +21,23 @@ Use Nango whenever your AI needs to **take action** in the real world.
 - Running automations triggered by an LLM (e.g., "schedule a meeting" or "create a task").
 
 <Tip>
-For RAG-style use cases where data must be replicated locally, use [Syncs](/guides/use-cases/syncs) instead.
+For RAG-style use cases where data must be replicated locally, use [Syncs](/implementation-guides/use-cases/syncs/implement-a-sync) instead.
 </Tip>
 
 ## Key facts
 
 - **Framework-agnostic:** Works with any agentic or LLM framework (or none at all).  
   Compatible with OpenAI Agents SDK, Vercel AI SDK, LangChain, LlamaIndex, and more.
-- **Unified API auth:** Securely authorize access to third-party APIs via Nango’s [Auth](/guides/use-cases/api-auth) system.  
+- **Unified API auth:** Securely authorize access to third-party APIs via Nango’s [Auth](/guides/primitives/auth) system.  
   You can even surface [Connect Links](/reference/api/connect/sessions/create#response-data-connect-link) directly in your chat UI for user-driven OAuth.
 - **Tool execution via Actions:**  
-  - Tools in Nango are powered by [Actions](/guides/use-cases/actions).  
+  - Tools in Nango are powered by [Actions](/implementation-guides/use-cases/actions/implement-an-action).  
   - Use prebuilt templates for common tools (e.g. “Create Lead”, “Send Message”).  
   - Or build your own Actions for full control and reliability.
   - Autonomous tool introspection & selection ([reference](/reference/api/scripts/config))
 - **MCP-compatible:**  
   - Expose your integrations through Nango’s built-in MCP Server.  
-  - Follow our [implement the MCP Server](/implementation-guides/ai-tool-calling/implement-mcp-server) guide.
+  - Follow our [implement the MCP Server](/implementation-guides/use-cases/tool-calling/implement-mcp-server) guide.
   - Check out the [MCP server demo](https://www.youtube.com/embed/80W3AZMM9KY)
   - Connect to existing official MCP servers (e.g. Notion, Linear) with Nango's MCP auth.
 - **Secure, scalable, and observable:**  
@@ -51,19 +51,19 @@ For RAG-style use cases where data must be replicated locally, use [Syncs](/guid
 1. **Authorize**: Your users connect their accounts via Nango.  
 2. **Expose tools**: You configure which Actions your LLM or agent can call.  
 3. **Call tools**: The agent invokes Nango-hosted Actions via API or MCP.  
-4. **Observe & optimize**: Track results and performance in Nango’s [Logs](/guides/platform/logs).
+4. **Observe & optimize**: Track results and performance in Nango’s [Logs](/guides/platform/observability).
 
 
 ## Implementation guides
 
 Nango works with any framework or SDK that supports tool calling. Here are some example guides to perform tool calling with:
-- [OpenAI](/implementation-guides/ai-tool-calling/openai-sdk) SDK
-- [Anthropic](/implementation-guides/ai-tool-calling/anthropic-sdk) SDK
-- [Vercel](/implementation-guides/ai-tool-calling/vercel-sdk) SDK
-- [Mastra](/implementation-guides/ai-tool-calling/mastra-sdk) SDK
-- [Google](/implementation-guides/ai-tool-calling/google-sdk) SDK
-- [LangChain](/implementation-guides/ai-tool-calling/langchain-sdk) SDK
-- [LlamaIndex](/implementation-guides/ai-tool-calling/llamaindex-sdk) SDK
-- [OpenAI Agents](/implementation-guides/ai-tool-calling/openai-agents-sdk) SDK
-- [Any LLM](/implementation-guides/ai-tool-calling/any-llm)
-- [MCP](/implementation-guides/ai-tool-calling/implement-mcp-server)
+- [OpenAI](/implementation-guides/use-cases/tool-calling/openai-sdk) SDK
+- [Anthropic](/implementation-guides/use-cases/tool-calling/anthropic-sdk) SDK
+- [Vercel](/implementation-guides/use-cases/tool-calling/vercel-sdk) SDK
+- [Mastra](/implementation-guides/use-cases/tool-calling/mastra-sdk) SDK
+- [Google](/implementation-guides/use-cases/tool-calling/google-sdk) SDK
+- [LangChain](/implementation-guides/use-cases/tool-calling/langchain-sdk) SDK
+- [LlamaIndex](/implementation-guides/use-cases/tool-calling/llamaindex-sdk) SDK
+- [OpenAI Agents](/implementation-guides/use-cases/tool-calling/openai-agents-sdk) SDK
+- [Any LLM](/implementation-guides/use-cases/tool-calling/any-llm)
+- [MCP](/implementation-guides/use-cases/tool-calling/implement-mcp-server)

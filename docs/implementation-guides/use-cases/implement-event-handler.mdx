@@ -6,13 +6,13 @@ description: 'Guide on how to implement a lifecycle event handler in Nango'
 
 ## What are lifecycle events?
 
-Lifecycle events let you customize Nango's behavior at different points in a [Connection](/guides/use-cases/api-auth#what-is-a-connection%3F)'s lifecycle.
+Lifecycle events let you customize Nango's behavior at different points in a [Connection](/guides/primitives/auth#what-is-a-connection%3F)'s lifecycle.
 
-When certain things happen for a Connection, Nango triggers an event. You can register an event handler [Function](/guides/platform/functions) for a specific event and integration.
+When certain things happen for a Connection, Nango triggers an event. You can register an event handler [Function](/guides/primitives/functions) for a specific event and integration.
 
 **Example:** You register a `post-connection-creation` event handler on your Salesforce integration. Nango will call this function once for each Salesforce connection, immediately after it has been created.
 
-All lifecycle event executions are logged in Nango's [logs](/guides/platform/logs).
+All lifecycle event executions are logged in Nango's [logs](/guides/platform/observability).
 
 ## Supported lifecycle events
 
@@ -35,7 +35,7 @@ See the [lifecycle events reference](/reference/integration-configuration#on-eve
 
 ### Step 1 - Initial Functions setup
 
-If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/building-integrations/functions-setup) first.
+If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/platform/functions/functions-setup) first.
 
 ### Step 2 - Create your event function file
 
@@ -83,7 +83,7 @@ Implement your handler logic in the `exec` function. The function kicks off when
 Helpful resources:
 - [`nango` object reference](/reference/functions) for SDK methods available in event functions
 - [Reference implementations repo](https://www.nango.dev/templates) for examples (search for `onEvent(`)
-- [Leveraging AI agents guide](/implementation-guides/building-integrations/leverage-ai-agents) to build with Claude Code, Cursor & other AI agents
+- [Leveraging AI agents guide](/implementation-guides/platform/functions/leverage-ai-agents) to build with Claude Code, Cursor & other AI agents
 
 ### Step 4 - Deploy your integrations
 

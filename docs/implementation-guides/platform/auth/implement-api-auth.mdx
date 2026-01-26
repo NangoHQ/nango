@@ -5,7 +5,7 @@ description: "Guide to letting your users authorize an external API from your ap
 ---
 
 <Info>
-  Pre-requisite: complete the [Configuration](/implementation-guides/api-auth/configure-integration) guide.
+  Pre-requisite: complete the [Configuration](/implementation-guides/platform/auth/configure-integration) guide.
 </Info>
 
 <Frame caption="Authorization overview.">
@@ -123,7 +123,7 @@ connect.setSessionToken(res.sessionToken); // A loading indicator is shown until
 
 For more details refer to our [Frontend SDK reference](/reference/sdks/frontend#connect-using-nango-connect-ui).
 
-The pre-built Connect UI is recommended, but optional. If you want full control over the connection UX, follow the [Customize Connect UI](/implementation-guides/api-auth/customize-connect-ui) guide.
+The pre-built Connect UI is recommended, but optional. If you want full control over the connection UX, follow the [Customize Connect UI](/implementation-guides/platform/auth/customize-connect-ui) guide.
 
 ## 3. Listen for webhooks & save the Connection ID (backend)
 
@@ -331,7 +331,7 @@ Next steps:
 
 - View new connections & associated credentials in the _Connections_ tab of the Nango UI
 - Retrieve connection credentials with the [API](/reference/api/connection/get) or [Node SDK](/reference/sdks/node#get-a-connection-with-credentials)
-- Use [Syncs](/guides/use-cases/syncs), [Actions](/guides/use-cases/actions), [Webhooks](/guides/use-cases/webhooks), or any other Nango tool with your connection
+- Use [Syncs](/implementation-guides/use-cases/syncs/implement-a-sync), [Actions](/implementation-guides/use-cases/actions/implement-an-action), [Webhooks](/implementation-guides/use-cases/webhooks-from-external-apis), or any other Nango tool with your connection
 
 <Tip>
   **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

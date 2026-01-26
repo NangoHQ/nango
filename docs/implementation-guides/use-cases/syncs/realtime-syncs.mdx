@@ -6,7 +6,7 @@ description: 'Guide on how to sync data in real-time with Nango'
 
 ## What is a real-time sync
 
-Real-time sync involves receiving webhooks from external APIs and processing them in Nango via [syncs](/guides/use-cases/syncs). By default, syncs poll data at a set frequency, but they can also be configured to handle webhooks for real-time updates.
+Real-time sync involves receiving webhooks from external APIs and processing them in Nango via [syncs](/implementation-guides/use-cases/syncs/implement-a-sync). By default, syncs poll data at a set frequency, but they can also be configured to handle webhooks for real-time updates.
 
 When processed in a sync:
 - The webhook triggers the execution of a Nango sync script
@@ -25,15 +25,15 @@ If you use webhooks for realtime syncs, we recommend to always combine them with
 
 As an alternative to real-time syncing, consider **near**-real-time syncing by polling at a higher frequency, which is simpler. Our high-frequency syncing add-on allows polling every 30 seconds.
 
-This is more resource intensive, but can be a good compromise if you are only syncing data for a handful of [Connections](/guides/use-cases/api-auth#what-is-a-connection%3F).
+This is more resource intensive, but can be a good compromise if you are only syncing data for a handful of [Connections](/guides/primitives/auth#what-is-a-connection%3F).
 
 ## Implement a realtime sync
 
 ### Step 1 - Setup prerequisites
 
 To create a realtime sync, you need to have:
-- Webhooks from the external API enabled. Follow our [implement webhooks processing](/implementation-guides/webhooks/implement-webhooks) guide.
-- A sync for the object you want to sync. Follow our [implement a sync](/implementation-guides/syncs/implement-a-sync#how-to-build-a-sync) guide.
+- Webhooks from the external API enabled. Follow our [implement webhooks processing](/implementation-guides/use-cases/webhooks-from-external-apis) guide.
+- A sync for the object you want to sync. Follow our [implement a sync](/implementation-guides/use-cases/syncs/implement-a-sync#how-to-build-a-sync) guide.
 
 ### Step 2 - Enable webhooks processing
 

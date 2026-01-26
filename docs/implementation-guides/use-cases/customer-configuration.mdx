@@ -10,7 +10,7 @@ Per-customer configuration lets you adapt without forking code. The core logic s
 
 **How Nango helps:**
 - Store customer configuration on the connection as **metadata**—it lives alongside the integration instance for each customer
-- Access metadata from any [function](/guides/platform/functions) to read mappings, filters, and flags at runtime
+- Access metadata from any [function](/guides/primitives/functions) to read mappings, filters, and flags at runtime
 
 ## Best practices
 
@@ -116,12 +116,12 @@ The next sync execution will always have access to the latest metadata.
 
 ## Use custom field mappings
 
-Field mappings are necessary when a [sync](/guides/use-cases/syncs) needs to access information stored in external custom fields.
+Field mappings are necessary when a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) needs to access information stored in external custom fields.
 
 ### 1. Prompt your customers for field mappings
 
 In your app:
-- Fetch the list of custom fields from the external API using an [action](/guides/use-cases/actions)
+- Fetch the list of custom fields from the external API using an [action](/implementation-guides/use-cases/actions/implement-an-action)
 - Display the full list of external custom fields to the user
 - Prompt the user to associate your data fields to the relevant external custom fields
 

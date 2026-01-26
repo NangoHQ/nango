@@ -28,7 +28,7 @@ Nango consists of several core services, each handling specific responsibilities
 
 ## Cloud vs. self-hosted architecture
 
-The Nango architecture is largely the same for both Cloud and [Enterprise self-hosting](/guides/self-hosting/enterprise-self-hosting). This ensures self-hosted instances benefit from continuous dogfooding and load testing.
+The Nango architecture is largely the same for both Cloud and [Enterprise self-hosting](/guides/platform/self-hosting). This ensures self-hosted instances benefit from continuous dogfooding and load testing.
 
 The primary differences are:
 - In the Cloud version, the Runner service runs as isolated instances per customer.
@@ -69,7 +69,7 @@ Customers should **pin their CLI version to the `application-version`** specifie
 
 You can find the latest version by checking the [`managed-manifest.json`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json).
 
-See the full [changelog](https://nango.dev/docs/changelog/overview) for details on each release.
+See the full [changelog](https://nango.dev/docs/updates) for details on each release.
 
 ## Cloud provider support
 
@@ -122,6 +122,10 @@ Yes, metrics and logs can be exported to any monitoring tool using our OpenTelem
 Nango uses emails for account verification, password reset, and sending invitations, etc...
 
 Any SMTP server can be configured to be used by Nango for these email communications.
+
+<Info>
+A limited [free self-hosting](/guides/platform/free-self-hosting/configuration) option is available for hobbby projects.
+</Info>
 
 <Tip>
 If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
