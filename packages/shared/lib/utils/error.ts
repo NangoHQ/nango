@@ -529,6 +529,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Unknown provider';
                 break;
 
+            case 'no_default_api_secret':
+                this.status = status ?? 500;
+                this.message = 'Environment does not have a default API secret';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

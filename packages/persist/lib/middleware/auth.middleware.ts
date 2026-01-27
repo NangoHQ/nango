@@ -3,12 +3,13 @@ import tracer from 'dd-trace';
 import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
-import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 export interface AuthLocals {
     account: DBTeam;
     environment: DBEnvironment;
+    secret: DBAPISecret;
     plan: DBPlan | null;
 }
 
@@ -51,6 +52,7 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
 
         res.locals['account'] = accountContext.account;
         res.locals['environment'] = accountContext.environment;
+        res.locals['secret'] = accountContext.secret;
         res.locals['plan'] = accountContext.plan;
         tagTraceUser({ ...accountContext });
         next();
