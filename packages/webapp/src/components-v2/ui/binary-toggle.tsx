@@ -39,7 +39,7 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
         >
             <div
                 className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all',
+                    'flex items-center gap-1.5 px-3 py-1.5 text-body-small-medium rounded-md transition-all',
                     !value ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-secondary'
                 )}
             >
@@ -48,7 +48,7 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
             </div>
             <div
                 className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all',
+                    'flex items-center gap-1.5 px-3 py-1.5 text-body-small-medium rounded-md transition-all',
                     value ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-secondary'
                 )}
             >

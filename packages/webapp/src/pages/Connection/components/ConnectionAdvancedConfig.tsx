@@ -34,12 +34,13 @@ interface ConnectionAdvancedConfigProps {
     errors: Record<string, string[] | undefined>;
 }
 
-// Form field wrapper component matching the Form component styling
+// Lightweight form components that match the styling of react-hook-form's Form components.
+// We use these instead of the actual Form components because this component uses controlled
+// inputs (useState) passed from the parent, rather than react-hook-form's FormProvider context.
 const FormItem = ({ children, className }: { children: React.ReactNode; className?: string }) => {
     return <div className={cn('grid gap-2', className)}>{children}</div>;
 };
 
-// Label with tooltip support
 const FormLabel = ({
     children,
     htmlFor,
@@ -113,10 +114,15 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     htmlFor="test_user_id"
                                     required
                                     tooltip={
-                                        <p className="text-s">
+                                        <p>
                                             Uniquely identifies the end user.
                                             <br />
-                                            <StyledLink to="https://nango.dev/docs/reference/api/connect/sessions/create#body-end-user-id" type="external" icon>
+                                            <StyledLink
+                                                to="https://nango.dev/docs/reference/api/connect/sessions/create#body-end-user-id"
+                                                type="external"
+                                                size="sm"
+                                                icon
+                                            >
                                                 Documentation
                                             </StyledLink>
                                         </p>
@@ -137,12 +143,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                 <FormLabel
                                     htmlFor="test_user_email"
                                     tooltip={
-                                        <p className="text-s">
+                                        <p>
                                             User&apos;s email.
                                             <br />
                                             <StyledLink
                                                 to="https://nango.dev/docs/reference/api/connect/sessions/create#body-end-user-email"
                                                 type="external"
+                                                size="sm"
                                                 icon
                                             >
                                                 Documentation
@@ -167,12 +174,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                 <FormLabel
                                     htmlFor="test_user_display_name"
                                     tooltip={
-                                        <p className="text-s">
+                                        <p>
                                             User display name.
                                             <br />
                                             <StyledLink
                                                 to="https://nango.dev/docs/reference/api/connect/sessions/create#body-end-user-display-name"
                                                 type="external"
+                                                size="sm"
                                                 icon
                                             >
                                                 Documentation
@@ -194,10 +202,10 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <FormItem>
                                 <FormLabel
                                     tooltip={
-                                        <p className="text-s">
+                                        <p>
                                             Tags associated with the end user. Only accepts strings values, up to 64 keys.
                                             <br />
-                                            <StyledLink to="https://nango.dev/docs/reference/api/connect/sessions/create" type="external" icon>
+                                            <StyledLink to="https://nango.dev/docs/reference/api/connect/sessions/create" type="external" size="sm" icon>
                                                 Documentation
                                             </StyledLink>
                                         </p>
@@ -225,12 +233,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     <FormItem>
                                         <FormLabel
                                             tooltip={
-                                                <p className="text-s">
+                                                <p>
                                                     Query params passed to the OAuth flow (for OAuth2 only)
                                                     <br />
                                                     <StyledLink
                                                         to="https://nango.dev/docs/reference/api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params"
                                                         type="external"
+                                                        size="sm"
                                                         icon
                                                     >
                                                         Documentation
@@ -251,12 +260,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     <FormItem>
                                         <FormLabel
                                             tooltip={
-                                                <p className="text-s">
+                                                <p>
                                                     Allow end users to provide their own OAuth client ID and secret.
                                                     <br />
                                                     <StyledLink
                                                         to="https://nango.dev/docs/reference/api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override"
                                                         type="external"
+                                                        size="sm"
                                                         icon
                                                     >
                                                         Documentation
@@ -279,12 +289,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                         <FormLabel
                                             htmlFor="override_scopes"
                                             tooltip={
-                                                <p className="text-s">
+                                                <p>
                                                     Override oauth scopes
                                                     <br />
                                                     <StyledLink
                                                         to="https://nango.dev/docs/reference/api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override"
                                                         type="external"
+                                                        size="sm"
                                                         icon
                                                     >
                                                         Documentation
@@ -307,12 +318,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                             <FormLabel
                                                 htmlFor="override_doc_url"
                                                 tooltip={
-                                                    <p className="text-s">
+                                                    <p>
                                                         Override the documentation URL we show on the Connect UI for this connection.
                                                         <br />
                                                         <StyledLink
                                                             to="https://nango.dev/docs/reference/api/connect/sessions/create#body-overrides-additional-properties-docs-connect"
                                                             type="external"
+                                                            size="sm"
                                                             icon
                                                         >
                                                             Documentation
