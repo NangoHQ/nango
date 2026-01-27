@@ -260,7 +260,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         getConnection
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
-                analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
+                analyticsTrack('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
                 void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })

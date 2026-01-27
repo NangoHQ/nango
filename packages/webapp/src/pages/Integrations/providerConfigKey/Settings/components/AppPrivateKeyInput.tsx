@@ -1,5 +1,5 @@
-import { InfoTooltip } from './InfoTooltip';
 import { EditableInput } from '@/components-v2/EditableInput';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { Label } from '@/components-v2/ui/label';
 
 interface AppPrivateKeyInputProps {

@@ -24,6 +24,8 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
     useEffect(() => {
         if (scopesString) {
             setScopes(scopesString.split(',').map((scope) => scope.trim()));
+        } else {
+            setScopes([]);
         }
     }, [scopesString]);
 
