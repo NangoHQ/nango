@@ -86,6 +86,7 @@ class EnvironmentService {
         return trx.transaction(async (trx) => {
             const [environment] = await trx<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
             if (!environment) {
+                trx.rollback();
                 return null;
             }
             // Invariant: Every environment always has one default key.
@@ -161,6 +162,7 @@ class EnvironmentService {
                 .update(data)
                 .returning('*');
             if (!environment) {
+                trx.rollback();
                 return null;
             }
             await this.setSecretsOnEnv(trx, environment);
@@ -247,6 +249,7 @@ class EnvironmentService {
         const created = await db.knex.transaction(async (trx) => {
             const environment = await this.getByIdWithoutSecrets(trx, envId);
             if (!environment) {
+                trx.rollback();
                 return null;
             }
             // Note: For now, we enforce the invariant that only one non-default API secret
@@ -276,6 +279,7 @@ class EnvironmentService {
         const defaultSecret = await db.knex.transaction(async (trx) => {
             const environment = await this.getByIdWithoutSecrets(trx, envId);
             if (!environment) {
+                trx.rollback();
                 return null;
             }
             await trx<DBAPISecret>('api_secrets').delete().where({
@@ -303,6 +307,7 @@ class EnvironmentService {
         return await db.knex.transaction(async (trx) => {
             const environment = await this.getByIdWithoutSecrets(trx, envId);
             if (!environment) {
+                trx.rollback();
                 return false;
             }
             // Note: For now, only one non-default secret can exist: the 'pending' secret.
@@ -311,6 +316,7 @@ class EnvironmentService {
                 is_default: false
             });
             if (!secret) {
+                trx.rollback();
                 return false;
             }
             await secretService.markDefault(trx, secret.id);

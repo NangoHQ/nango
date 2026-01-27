@@ -130,6 +130,7 @@ class AccountService {
             const result = await trx.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
             if (!result[0]) {
+                trx.rollback();
                 return null;
             }
 
