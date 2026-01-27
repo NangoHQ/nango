@@ -1100,7 +1100,7 @@ apollo-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://app.apollo.io/api
-    docs: https://nango.dev/docs/integrations/all/apollo-oauth
+    docs: https://nango.dev/docs/api-integrations/apollo-oauth
 
 apple-app-store:
     display_name: Apple App Store
@@ -1179,7 +1179,7 @@ asana-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/asana
+    docs: https://nango.dev/docs/api-integrations/asana
 
 asana-scim:
     display_name: Asana (SCIM API)
@@ -1197,8 +1197,8 @@ asana-scim:
                 - /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/asana-scim
-    docs_connect: https://nango.dev/docs/integrations/all/asana-scim/connect
+    docs: https://nango.dev/docs/api-integrations/asana-scim
+    docs_connect: https://nango.dev/docs/api-integrations/asana-scim/connect
     credentials:
         apiKey:
             type: string
@@ -3647,8 +3647,8 @@ confluence-basic:
                 content-type: application/json
             endpoints:
                 - /wiki/api/v2/spaces
-    docs: https://nango.dev/docs/integrations/all/confluence-basic
-    docs_connect: https://nango.dev/docs/integrations/all/confluence-basic/connect
+    docs: https://nango.dev/docs/api-integrations/confluence-basic
+    docs_connect: https://nango.dev/docs/api-integrations/confluence-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -3685,8 +3685,8 @@ confluence-data-center:
             after:
                 - 'retry-after'
         base_url: https://${connectionConfig.endpointURL}
-    docs: https://nango.dev/docs/integrations/all/confluence-data-center
-    docs_connect: https://nango.dev/docs/integrations/all/confluence-data-center/connect
+    docs: https://nango.dev/docs/api-integrations/confluence-data-center
+    docs_connect: https://nango.dev/docs/api-integrations/confluence-data-center/connect
     connection_config:
         endpointURL:
             type: string
@@ -13607,8 +13607,8 @@ sharepoint-online-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
-    docs: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc
-    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect
+    docs: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -13643,8 +13643,8 @@ sharepoint-online-v1:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/sharepoint-online-v1
-    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect
+    docs: https://nango.dev/docs/api-integrations/sharepoint-online-v1
+    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-v1/connect
     connection_config:
         tenantId:
             type: string

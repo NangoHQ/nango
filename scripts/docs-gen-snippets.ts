@@ -199,7 +199,7 @@ ${endpoints
 function emptyUseCases() {
     return `_No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>`;
+<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/primitives/functions) independently.</Tip>`;
 }
 
 interface Endpoint {

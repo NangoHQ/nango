@@ -4,26 +4,31 @@ sidebarTitle: 'Environments'
 description: 'Organize your integrations & data with environments'
 ---
 
-Environments help you segment your integration configuration and customer data.
+Environments help you segment your integration configuration and customer data across different stages of your development lifecycle.
 
-## How environments work in Nango
+## Overview
 
-Environments in your Nango account are completely separated.
+Each environment in your Nango account is completely isolated with its own:
 
-Each environment contains its own:
-- Integration configuration
-- Version of your [Syncs](/guides/use-cases/syncs), [Actions](/guides/use-cases/actions), etc.
-- [Connections](/guides/use-cases/api-auth#what-is-a-connection%3F)
-- Environment settings
+- Integration configurations
+- [Functions](/guides/primitives/functions)
+- [Connections](/guides/primitives/auth)
+- Environment-specific settings
 
-We recommend that your environments in Nango reflect the environments of your application. For example, if you have a local development environment, a staging environment, a demo environment, and a production environment, we recommend you have the same four environments in your Nango account.
+<Info>
+Each Nango account comes with **dev** and **prod** environments by default. Additional environments are available depending on your [pricing plan](https://www.nango.dev/pricing).
+</Info>
 
-When you deploy a new version of your [Functions](/guides/platform/functions), you always deploy them to a specific environment.
+## Best practices
 
-All users in your account can currently access all environments. Any changes you make to them are visible to all team members. We plan to add RBAC functionality and may introduce team-member-specific environments in the future.
+**Mirror your application environments**
 
-## Additional environments
+We recommend creating Nango environments that match your application's deployment stages. For example:
+- Local development → dev environment
+- Staging → staging environment  
+- Production → prod environment
+- Demo → demo environment
 
-By default, each Nango account has a "dev" and a "prod" environment.
+**Deploy to specific environments**
 
-Depending on your [pricing plan](https://www.nango.dev/pricing), you may be able to create additional environments.
+When you deploy [Functions](/guides/primitives/functions), you always target a specific environment. This ensures changes are tested before reaching production.

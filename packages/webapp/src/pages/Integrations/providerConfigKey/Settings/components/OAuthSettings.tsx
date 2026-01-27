@@ -11,6 +11,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
+import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -108,7 +109,12 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                     <NangoProvidedInput fakeValueSize={24} />
                 ) : (
                     <>
-                        <EditableInput initialValue={integration.oauth_client_id || ''} onSave={handleClientIdSave} onEditingChange={setIsEditingClientId} />
+                        <EditableInput
+                            initialValue={integration.oauth_client_id || ''}
+                            onSave={handleClientIdSave}
+                            onEditingChange={setIsEditingClientId}
+                            validate={validateNotEmpty}
+                        />
                         {isEditingClientId && hasExistingClientId && (
                             <Alert variant="warning">
                                 <AlertTriangle />
@@ -127,7 +133,12 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                 {isSharedCredentials ? (
                     <NangoProvidedInput fakeValueSize={48} />
                 ) : (
-                    <EditableInput secret initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ clientSecret: value })} />
+                    <EditableInput
+                        secret
+                        initialValue={integration.oauth_client_secret || ''}
+                        onSave={(value) => onSave({ clientSecret: value })}
+                        validate={validateNotEmpty}
+                    />
                 )}
             </div>
 
