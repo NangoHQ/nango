@@ -1,7 +1,9 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { IconBook } from '@tabler/icons-react';
 import { ExternalLink } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useForm } from 'react-hook-form';
 import { useSearchParam } from 'react-use';
 import { z } from 'zod';
 
@@ -9,6 +11,7 @@ import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig'
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ButtonLink } from '../../components/ui/button/Button';
+import { Form } from '../../components-v2/ui/form';
 import { useListIntegration } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -23,8 +26,13 @@ const schema = z.object({
     testUserEmail: z.string().email('Invalid email address').min(5).optional().or(z.literal('')),
     testUserName: z.string().max(255, 'Display name must be less than 255 characters').optional(),
     testUserTags: z.record(z.string(), z.string()).refine((tags) => Object.keys(tags).length < 64, 'Max 64 tags allowed'),
+    overrideAuthParams: z.record(z.string(), z.string()),
+    overrideOauthScopes: z.string().optional(),
+    overrideDevAppCredentials: z.boolean(),
     overrideDocUrl: z.string().optional().or(z.literal(''))
 });
+
+export type ConnectionFormData = z.infer<typeof schema>;
 
 export const ConnectionCreate: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -36,43 +44,47 @@ export const ConnectionCreate: React.FC = () => {
 
     const [integration, setIntegration] = useState<ApiIntegrationList | undefined>();
     const { data: provider } = useProvider(env, integration?.provider);
-    const [testUserEmail, setTestUserEmail] = useState(user!.email);
-    const [testUserId, setTestUserId] = useState(`test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`);
-    const [testUserName, setTestUserName] = useState(user!.name);
-    const [testUserTags, setTestUserTags] = useState<Record<string, string>>({});
-    const [overrideAuthParams, setOverrideAuthParams] = useState<Record<string, string>>({});
-    const [overrideOauthScopes, setOverrideOauthScopes] = useState<string | undefined>(undefined);
-    const [overrideDevAppCredentials, setOverrideDevAppCredentials] = useState(false);
-    const [overrideDocUrl, setOverrideDocUrl] = useState<string | undefined>('');
 
-    const overrideClientId = overrideDevAppCredentials ? '' : undefined;
-    const overrideClientSecret = overrideDevAppCredentials ? '' : undefined;
+    const form = useForm<ConnectionFormData>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            testUserId: `test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`,
+            testUserEmail: user!.email,
+            testUserName: user!.name,
+            testUserTags: {},
+            overrideAuthParams: {},
+            overrideOauthScopes: undefined,
+            overrideDevAppCredentials: false,
+            overrideDocUrl: ''
+        },
+        mode: 'onChange'
+    });
 
-    const prevIntegrationKeyRef = useRef<string | undefined>(undefined);
-    const integrationKey = integration?.unique_key;
+    const formValues = form.watch();
 
-    const effectiveAuthParams = useMemo(() => {
-        if (integrationKey !== prevIntegrationKeyRef.current) {
-            return integration?.meta.authorizationParams ?? {};
+    const overrideClientId = formValues.overrideDevAppCredentials ? '' : undefined;
+    const overrideClientSecret = formValues.overrideDevAppCredentials ? '' : undefined;
+
+    // Reset form when integration changes
+    useEffect(() => {
+        form.reset({
+            testUserId: `test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`,
+            testUserEmail: user!.email,
+            testUserName: user!.name,
+            testUserTags: {},
+            overrideAuthParams: integration?.meta.authorizationParams ?? {},
+            overrideOauthScopes: integration?.oauth_scopes || undefined,
+            overrideDevAppCredentials: false,
+            overrideDocUrl: ''
+        });
+    }, [user, integration, form]);
+
+    // Update docUrl when provider loads
+    useEffect(() => {
+        if (provider?.data.docs_connect) {
+            form.setValue('overrideDocUrl', provider.data.docs_connect);
         }
-        return overrideAuthParams;
-    }, [integrationKey, integration?.meta.authorizationParams, overrideAuthParams]);
-
-    useEffect(() => {
-        setTestUserEmail(user!.email);
-        setTestUserId(`test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`);
-        setTestUserName(user!.name);
-        setTestUserTags({});
-        setOverrideAuthParams(integration?.meta.authorizationParams ?? {});
-        setOverrideDevAppCredentials(false);
-        setOverrideOauthScopes(integration?.oauth_scopes || undefined);
-        setOverrideDocUrl('');
-        prevIntegrationKeyRef.current = integrationKey;
-    }, [user, integration, integrationKey]);
-
-    useEffect(() => {
-        setOverrideDocUrl(provider?.data.docs_connect || '');
-    }, [provider]);
+    }, [provider, form]);
 
     useEffect(() => {
         analyticsTrack('web:create_connection:viewed');
@@ -87,22 +99,9 @@ export const ConnectionCreate: React.FC = () => {
         }
     }, [paramIntegrationId, listIntegration]);
 
-    const validation = useMemo(() => {
-        return schema.safeParse({
-            testUserId,
-            testUserEmail,
-            testUserName,
-            testUserTags,
-            overrideDocUrl
-        });
-    }, [testUserId, testUserEmail, testUserName, testUserTags, overrideDocUrl]);
-
-    const errors = useMemo(() => {
-        if (validation.success) {
-            return {};
-        }
-        return validation.error.flatten().fieldErrors;
-    }, [validation]);
+    const isOauth2 = useMemo(() => {
+        return integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
+    }, [integration]);
 
     if (loading) {
         return (
@@ -124,8 +123,6 @@ export const ConnectionCreate: React.FC = () => {
         );
     }
 
-    const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
-
     return (
         <DashboardLayout fullWidth className={'max-w-[1250px]'}>
             <Helmet>
@@ -138,38 +135,21 @@ export const ConnectionCreate: React.FC = () => {
                         <CreateConnectionSelector
                             integration={integration}
                             setIntegration={setIntegration}
-                            testUserId={testUserId}
-                            testUserEmail={testUserEmail}
-                            testUserName={testUserName}
-                            testUserTags={testUserTags}
-                            overrideAuthParams={effectiveAuthParams}
-                            overrideOauthScopes={overrideOauthScopes}
+                            testUserId={formValues.testUserId ?? ''}
+                            testUserEmail={formValues.testUserEmail ?? ''}
+                            testUserName={formValues.testUserName ?? ''}
+                            testUserTags={formValues.testUserTags ?? {}}
+                            overrideAuthParams={formValues.overrideAuthParams ?? {}}
+                            overrideOauthScopes={formValues.overrideOauthScopes}
                             overrideClientId={overrideClientId}
                             overrideClientSecret={overrideClientSecret}
-                            overrideDocUrl={overrideDocUrl}
+                            overrideDocUrl={formValues.overrideDocUrl}
                             defaultDocUrl={provider?.data.docs_connect}
-                            isFormValid={validation.success}
+                            isFormValid={form.formState.isValid}
                         />
-                        <ConnectionAdvancedConfig
-                            testUserId={testUserId}
-                            setTestUserId={setTestUserId}
-                            testUserEmail={testUserEmail}
-                            setTestUserEmail={setTestUserEmail}
-                            testUserName={testUserName}
-                            setTestUserName={setTestUserName}
-                            testUserTags={testUserTags}
-                            setTestUserTags={setTestUserTags}
-                            overrideAuthParams={effectiveAuthParams}
-                            setOverrideAuthParams={setOverrideAuthParams}
-                            overrideOauthScopes={overrideOauthScopes}
-                            setOverrideOauthScopes={setOverrideOauthScopes}
-                            overrideDevAppCredentials={overrideDevAppCredentials}
-                            setOverrideDevAppCredentials={setOverrideDevAppCredentials}
-                            overrideDocUrl={overrideDocUrl}
-                            setOverrideDocUrl={(val) => setOverrideDocUrl(val)}
-                            isOauth2={isOauth2}
-                            errors={errors}
-                        />
+                        <Form {...form}>
+                            <ConnectionAdvancedConfig isOauth2={isOauth2} />
+                        </Form>
                         <div className="flex gap-4">
                             <ButtonLink
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
