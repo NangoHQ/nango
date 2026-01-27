@@ -2826,6 +2826,36 @@ canva:
     docs: https://nango.dev/docs/integrations/all/canva
     token_request_auth_method: basic
 
+canvas-lms:
+    display_name: Canvas LMS
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/login/oauth2/auth
+    token_url: https://${connectionConfig.hostname}/login/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/canvas-lms
+    setup_guide_url: https://nango.dev/docs/api-integrations/canvas-lms/how-to-register-your-own-canvas-lms-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/canvas-lms/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Canvas Install URL
+            description: The base URL of your Canvas instance
+            example: canvas.instructure.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-canvas-install-url'
+
 canva-scim:
     display_name: Canva (SCIM API)
     categories:

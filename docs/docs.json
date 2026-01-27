@@ -298,6 +298,7 @@
               "integrations/all/callrail",
               "integrations/all/canny",
               "integrations/all/canva",
+              "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
               "integrations/all/certn",
               "integrations/all/certn-partner",
