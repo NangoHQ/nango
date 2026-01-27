@@ -182,11 +182,19 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                                <ButtonLink
+                                    variant="tertiary"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
+                                    target="_blank"
+                                >
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                                <ButtonLink
+                                    variant="tertiary"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
+                                    target="_blank"
+                                >
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}
@@ -249,7 +257,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/actions/implement-an-action#triggering-an-action-synchronously"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
                                     type="external"
                                     variant="info"
                                 >
@@ -262,14 +270,14 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Actions return a response returned synchronously from the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/actions/implement-an-action#triggering-an-action-synchronously"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
                                     type="external"
                                     variant="info"
                                 >
                                     Nango API
                                 </StyledLink>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/actions/async-actions" type="external" variant="info">
+                                <StyledLink to="https://nango.dev/docs/implementation-guides/use-cases/actions/async-actions" type="external" variant="info">
                                     async actions
                                 </StyledLink>
                                 .
@@ -283,7 +291,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/building-integrations/customer-configuration#store-customer-specific-data"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration#store-customer-specific-data"
                                     type="external"
                                     variant="info"
                                 >
@@ -296,7 +304,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
                                     type="external"
                                     variant="info"
                                 >
@@ -304,7 +312,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                                 </StyledLink>
                                 .{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
                                     type="external"
                                     variant="info"
                                 >
