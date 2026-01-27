@@ -182,11 +182,19 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" target="_blank">
+                                <ButtonLink
+                                    variant="tertiary"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
+                                    target="_blank"
+                                >
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" target="_blank">
+                                <ButtonLink
+                                    variant="tertiary"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
+                                    target="_blank"
+                                >
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}
