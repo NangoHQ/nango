@@ -4839,7 +4839,7 @@ ecu360:
             title: API Key
             description: Your ECU360 API Key
             secret: true
-            doc_section: '#step-2-finding-your-api-key'
+            doc_section: '#step-2-obtaining-your-api-key'
         userName:
             type: string
             title: Username
@@ -4880,7 +4880,7 @@ ecu360-production:
             title: API Key
             description: Your ECU360 API Key
             secret: true
-            doc_section: '#step-2-finding-your-api-key'
+            doc_section: '#step-2-obtaining-your-api-key'
         userName:
             type: string
             title: Username
