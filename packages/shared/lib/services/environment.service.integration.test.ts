@@ -53,7 +53,7 @@ describe('Environment service', () => {
             deprecated_secret_key_tag: null
         });
 
-        expect(env.secret_key).not.toEqual('');
+        expect(env.secret_key).toBeUUID();
     });
 
     it('should rotate secretKey', async () => {
