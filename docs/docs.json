@@ -1114,6 +1114,7 @@
               "integrations/all/wordpress",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
+              "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "integrations/all/workday-oauth",
               "integrations/all/wrike",

@@ -16131,6 +16131,64 @@ workday-oauth:
             example: yourtenant
             order: 2
             doc_section: '#step-3-finding-your-tenant'
+
+workday-refresh-token:
+    display_name: Workday (Refresh Token Auth)
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: refresh_token
+        refresh_token: ${credentials.refreshToken}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://nango.dev/docs/api-integrations/workday-refresh-token
+    docs_connect: https://nango.dev/docs/api-integrations/workday-refresh-token/connect
+    connection_config:
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The domain used to obtain the token for your Workday account
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account
+            example: mytenant
+            order: 2
+            doc_section: '#step-2-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID
+            doc_section: '#step-3-registering-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret
+            secret: true
+            doc_section: '#step-3-registering-an-api-client'
+        refreshToken:
+            type: string
+            title: Refresh Token
+            description: Your Workday refresh token for the Integration System User
+            secret: true
+            doc_section: '#step-4-generating-a-refresh-token'
+
 wrike:
     display_name: Wrike
     categories:
