@@ -23,11 +23,7 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
     const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
     const untrusted = Buffer.from(headerSignature, 'ascii');
 
-    if (trusted.length !== untrusted.length) {
-        return false;
-    }
-
-    return crypto.timingSafeEqual(trusted, untrusted);
+    return trusted.length === untrusted.length && crypto.timingSafeEqual(trusted, untrusted);
 }
 
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
