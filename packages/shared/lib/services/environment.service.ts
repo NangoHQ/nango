@@ -255,8 +255,11 @@ class EnvironmentService {
                 environment_id: environment.id,
                 is_default: false
             });
-            return secretService.createSecret(db.knex, {
+            return secretService.createSecret(trx, {
                 environmentId: environment.id,
+                displayName: `rotated-${new Date().toISOString()}`,
+                isDefault: false
+            });
                 displayName: `rotated-${new Date().toISOString()}`,
                 isDefault: false
             });
