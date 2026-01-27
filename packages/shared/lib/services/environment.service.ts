@@ -397,7 +397,7 @@ class EnvironmentService {
         // Note: For now, exactly one default secret per environment exists
         // and zero or one non-default secret: The pending secret (during rotation).
         const envByID = new Map(envs.map((env) => [env.id, env]));
-        const allSecrets = await secretService.getAllSecretsForAllEnvs(trx, envByID.keys().toArray());
+        const allSecrets = await secretService.getAllSecretsForAllEnvs(trx, Array.from(envByID.keys()));
         for (const [envId, secrets] of allSecrets) {
             const env = envByID.get(envId)!;
             env.pending_secret_key = null;
