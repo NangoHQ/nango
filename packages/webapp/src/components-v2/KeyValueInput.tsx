@@ -1,10 +1,16 @@
 import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components-v2/ui/button';
 import { Input } from '@/components-v2/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { cn } from '@/utils/utils';
+
+interface KeyValuePair {
+    id: number;
+    key: string;
+    value: string;
+}
 
 interface KeyValueInputProps {
     initialValues?: Record<string, string>;
@@ -16,6 +22,9 @@ interface KeyValueInputProps {
     alwaysShowEmptyRow?: boolean;
 }
 
+let nextId = 0;
+const generateId = () => nextId++;
+
 export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     initialValues = {},
     onChange,
@@ -25,41 +34,50 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     isSecret = false,
     alwaysShowEmptyRow = false
 }) => {
-    const buildPairsFromValues = (values: Record<string, string>) => {
+    const buildPairsFromValues = (values: Record<string, string>): KeyValuePair[] => {
         const entries = Object.entries(values);
         if (entries.length > 0) {
-            const mapped = entries.map(([key, value]) => ({ key, value }));
-            return alwaysShowEmptyRow ? [...mapped, { key: '', value: '' }] : mapped;
+            const mapped = entries.map(([key, value]) => ({ id: generateId(), key, value }));
+            return alwaysShowEmptyRow ? [...mapped, { id: generateId(), key: '', value: '' }] : mapped;
         }
-        return [{ key: '', value: '' }];
+        return [{ id: generateId(), key: '', value: '' }];
     };
 
-    const [pairs, setPairs] = useState<{ key: string; value: string }[]>(() => buildPairsFromValues(initialValues));
+    const [pairs, setPairs] = useState<KeyValuePair[]>(() => buildPairsFromValues(initialValues));
 
+    const lastReportedRef = useRef<string>(JSON.stringify(initialValues));
     const initialValuesKey = JSON.stringify(initialValues);
+
     useEffect(() => {
-        setPairs(buildPairsFromValues(initialValues));
+        if (initialValuesKey !== lastReportedRef.current) {
+            setPairs(buildPairsFromValues(initialValues));
+            lastReportedRef.current = initialValuesKey;
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialValuesKey, alwaysShowEmptyRow]);
 
     useEffect(() => {
-        const validPairs = pairs.filter((p) => p.key !== '' || p.value !== '');
-        const newValues = validPairs.reduce<Record<string, string>>((acc, curr) => {
+        const newValues = pairs.reduce<Record<string, string>>((acc, curr) => {
             if (curr.key) {
                 acc[curr.key] = curr.value;
             }
             return acc;
         }, {});
-        onChange(newValues);
+
+        const newValuesKey = JSON.stringify(newValues);
+        if (newValuesKey !== lastReportedRef.current) {
+            lastReportedRef.current = newValuesKey;
+            onChange(newValues);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pairs]);
 
     const onUpdate = (field: 'key' | 'value', value: string, index: number) => {
         setPairs((prev) => {
-            const copy = [...prev];
+            const copy = prev.map((p) => ({ ...p }));
             copy[index][field] = value;
             if (copy.length === index + 1 && value !== '') {
-                copy.push({ key: '', value: '' });
+                copy.push({ id: generateId(), key: '', value: '' });
             }
             return copy;
         });
@@ -67,7 +85,7 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
 
     const onRemove = (index: number) => {
         if (index === 0 && pairs.length === 1) {
-            setPairs([{ key: '', value: '' }]);
+            setPairs([{ id: generateId(), key: '', value: '' }]);
         } else {
             setPairs((prev) => prev.filter((_, i) => i !== index));
         }
@@ -80,7 +98,7 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
         }
 
         const split = clip.split(/[\n, ]/g);
-        const newPairs: { key: string; value: string }[] = [];
+        const newPairs: KeyValuePair[] = [];
 
         for (const item of split) {
             if (!item.includes('=')) {
@@ -95,7 +113,7 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
             const key = line[0].trim();
             const value = line[1] ? line[1].trim().replaceAll(/['"]/g, '') : '';
 
-            newPairs.push({ key, value });
+            newPairs.push({ id: generateId(), key, value });
         }
 
         if (newPairs.length === 0) {
@@ -105,9 +123,9 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
         e.preventDefault();
 
         setPairs((prev) => {
-            const copy = [...prev].filter((p) => p.key !== '' || p.value !== '');
+            const copy = prev.filter((p) => p.key !== '' || p.value !== '');
             copy.push(...newPairs);
-            copy.push({ key: '', value: '' });
+            copy.push({ id: generateId(), key: '', value: '' });
             return copy;
         });
     };
@@ -132,7 +150,7 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
             {pairs.map((pair, i) => {
                 const isDuplicate = Boolean(pair.key && keyCounts[pair.key] > 1);
                 return (
-                    <div key={i} className="flex gap-3">
+                    <div key={pair.id} className="flex gap-3">
                         <div className="flex-1">
                             <Input
                                 value={pair.key}
