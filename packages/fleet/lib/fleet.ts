@@ -16,7 +16,7 @@ import { withPgLock } from './utils/locking.js';
 
 import type { ImageVerifier } from './image-verifier/verifier.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
-import type { Node, NodeConfigOverride } from './types.js';
+import type { Node, NodeConfigOverride, NodeState } from './types.js';
 import type { Deployment, ImageType, RoutingId } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
@@ -25,6 +25,8 @@ const defaultDbUrl =
     envs.RUNNERS_DATABASE_URL ||
     envs.NANGO_DATABASE_URL ||
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}?application_name=${envs.NANGO_DB_APPLICATION_NAME}${envs.NANGO_DB_SSL ? '&sslmode=no-verify' : ''}`;
+
+const defaultNodeSearchStates: [NodeState, ...NodeState[]] = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED'];
 
 export class Fleet {
     public fleetId: string;
@@ -157,6 +159,30 @@ export class Fleet {
             return recurse(supervisor, start);
         };
         return recurse(this.supervisor, new Date());
+    }
+
+    public async getNodesByRoutingId({
+        routingId,
+        states = defaultNodeSearchStates
+    }: {
+        routingId: RoutingId;
+        states?: [NodeState, ...NodeState[]];
+    }): Promise<Result<Node[]>> {
+        const search = await nodes.search(this.dbClient.db, {
+            states,
+            routingId
+        });
+        if (search.isErr()) {
+            return Err(search.error);
+        }
+
+        const byState = search.value.get(routingId);
+        if (!byState) {
+            return Ok([]);
+        }
+
+        const nodesByState = Object.values(byState);
+        return Ok(nodesByState.flat());
     }
 
     public async registerNode({ nodeId, url }: { nodeId: number; url: string }): Promise<Result<Node>> {
