@@ -3,10 +3,10 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import environmentService, { hashSecretKey } from './environment.service.js';
+import environmentService from './environment.service.js';
+import secretService from './secret.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import encryptionManager from '../utils/encryption.manager.js';
 
 describe('Environment service', () => {
     beforeAll(async () => {
@@ -32,13 +32,8 @@ describe('Environment service', () => {
             name: envName,
             pending_public_key: null,
             pending_secret_key: null,
-            pending_secret_key_iv: null,
-            pending_secret_key_tag: null,
             public_key: expect.any(String),
             secret_key: expect.any(String),
-            secret_key_hashed: expect.any(String),
-            secret_key_iv: expect.any(String),
-            secret_key_tag: expect.any(String),
             send_auth_webhook: false,
             slack_notifications: false,
             updated_at: expect.toBeIsoDate(),
@@ -47,32 +42,39 @@ describe('Environment service', () => {
             webhook_url_secondary: null,
             otlp_settings: null,
             deleted: false,
-            deleted_at: null
+            deleted_at: null,
+            // Deprecated fields:
+            deprecated_pending_secret_key: null,
+            deprecated_pending_secret_key_iv: null,
+            deprecated_pending_secret_key_tag: null,
+            deprecated_secret_key: expect.any(String),
+            deprecated_secret_key_hashed: null,
+            deprecated_secret_key_iv: null,
+            deprecated_secret_key_tag: null
         });
 
-        expect(env.secret_key).not.toEqual(env.secret_key_hashed);
+        expect(env.secret_key).not.toEqual('');
     });
 
     it('should rotate secretKey', async () => {
         const account = await createAccount();
         const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
         expect(env.secret_key).toBeUUID();
+        expect(env.pending_secret_key).toBeNull();
 
-        const defaultSecret = await encryptionManager.getDefaultAPISecret(db.knex, env.id);
-        expect(defaultSecret).not.toBeNull();
-        expect(defaultSecret!.hashed).toEqual(env.secret_key_hashed);
-        expect(defaultSecret?.is_default).toBe(true);
-        const decryptedDefaultSecret = encryptionManager.decryptAPISecret(defaultSecret!);
-        expect(decryptedDefaultSecret).toEqual(env.secret_key);
+        const secret = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+        expect(secret.is_default).toBe(true);
+        expect(secret.secret).toEqual(env.secret_key);
 
         // Rotate
         await environmentService.rotateSecretKey(env.id);
 
         const env2 = (await environmentService.getById(env.id))!;
-        expect(env2.pending_secret_key).not.toBeNull();
-        expect(env2.pending_secret_key).not.toEqual(env2.secret_key);
-        expect(env2.secret_key_hashed).not.toEqual(env.secret_key);
-        expect(env2.secret_key_hashed).toEqual(await hashSecretKey(env.secret_key));
+        expect(env2.secret_key).toEqual(env.secret_key);
+        expect(env2.pending_secret_key).toBeUUID();
+
+        const secret2 = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+        expect(secret2).toEqual(secret);
 
         // Activate
         await environmentService.activateSecretKey(env.id);
@@ -80,15 +82,11 @@ describe('Environment service', () => {
         const env3 = (await environmentService.getById(env.id))!;
         expect(env3.secret_key).toBeUUID();
         expect(env3.pending_secret_key).toBeNull();
-        expect(env3.secret_key).toEqual(env2.pending_secret_key);
-        expect(env3.secret_key_hashed).toEqual(await hashSecretKey(env3.secret_key));
 
-        const defaultSecret2 = await encryptionManager.getDefaultAPISecret(db.knex, env.id);
-        expect(defaultSecret2).not.toBeNull();
-        expect(defaultSecret2!.hashed).toEqual(env3.secret_key_hashed);
-        expect(defaultSecret2?.is_default).toBe(true);
-        const decryptedDefaultSecret2 = encryptionManager.decryptAPISecret(defaultSecret2!);
-        expect(decryptedDefaultSecret2).toEqual(env3.secret_key);
+        const secret3 = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+        expect(secret3).not.toEqual(secret2);
+        expect(secret3.is_default).toBe(true);
+        expect(secret3.secret).toEqual(env3.secret_key);
     });
 
     describe('environment variables', () => {

@@ -4,6 +4,7 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import {
     Err,
     Ok,
@@ -23,7 +24,7 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -37,6 +38,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             plan: DBPlan | null;
         }>
     > {
@@ -86,6 +88,7 @@ export class AccessMiddleware {
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
+            res.locals['secret'] = result.value.secret;
             res.locals['plan'] = result.value.plan;
             tagTraceUser(result.value);
             next();
@@ -104,6 +107,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             plan: DBPlan | null;
         }>
     > {
@@ -188,6 +192,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             connectSession: ConnectSession;
             endUser: InternalEndUser | null;
             plan: DBPlan | null;
@@ -217,6 +222,7 @@ export class AccessMiddleware {
         return Ok({
             account: accountContext.account,
             environment: accountContext.environment,
+            secret: accountContext.secret,
             connectSession: getConnectSession.value.connectSession,
             endUser: getConnectSession.value.connectSession.endUser,
             plan: accountContext.plan
@@ -252,6 +258,7 @@ export class AccessMiddleware {
             res.locals['authType'] = 'connectSession';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
+            res.locals['secret'] = result.value.secret;
             res.locals['connectSession'] = result.value.connectSession;
             res.locals['endUser'] = result.value.endUser;
             res.locals['plan'] = result.value.plan;
@@ -295,6 +302,7 @@ export class AccessMiddleware {
             res.locals['authType'] = 'connectSession';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
+            res.locals['secret'] = result.value.secret;
             res.locals['connectSession'] = result.value.connectSession;
             res.locals['endUser'] = result.value.endUser;
             res.locals['plan'] = result.value.plan;
@@ -351,6 +359,7 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'secretKey';
                 res.locals['account'] = secretKeyResult.value.account;
                 res.locals['environment'] = secretKeyResult.value.environment;
+                res.locals['secret'] = secretKeyResult.value.secret;
                 res.locals['plan'] = secretKeyResult.value.plan;
 
                 tagTraceUser(secretKeyResult.value);
@@ -358,6 +367,7 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
+                res.locals['secret'] = connectSessionResult.value.secret;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
                 res.locals['plan'] = connectSessionResult.value.plan;
@@ -394,6 +404,7 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
+                res.locals['secret'] = connectSessionResult.value.secret;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
                 res.locals['plan'] = connectSessionResult.value.plan;
@@ -432,6 +443,7 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'publicKey';
                 res.locals['account'] = result.value.account;
                 res.locals['environment'] = result.value.environment;
+                res.locals['secret'] = result.value.secret;
                 res.locals['plan'] = result.value.plan;
                 tagTraceUser(result.value);
 
@@ -490,6 +502,7 @@ export class AccessMiddleware {
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
+            res.locals['secret'] = result.value.secret;
             res.locals['plan'] = result.value.plan;
             tagTraceUser(result.value);
             next();
@@ -603,6 +616,8 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         }
 
         res.locals['environment'] = environment;
+        res.locals['secret'] = await secretService.getDefaultSecretForEnv(db.knex, environment.id);
+
         tagTraceUser({ account, environment, plan });
         next();
     } catch (err) {

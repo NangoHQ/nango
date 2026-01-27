@@ -17,18 +17,20 @@ import {
     environmentService,
     getProvider
 } from '@nangohq/shared';
+import secretService from '@nangohq/shared/lib/services/secret.service.js';
 
 import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Job as SyncJob, Sync } from '@nangohq/shared';
-import type { AllAuthCredentials, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
 interface testSeed {
     account: DBTeam;
     env: DBEnvironment;
+    secret: DBAPISecret;
     plan: DBPlan;
     activityLogId: string;
     connection: Exclude<Awaited<ReturnType<typeof connectionService.getConnectionById>>, null>;
@@ -50,7 +52,12 @@ describe('Persist API', () => {
 
         vi.spyOn(accountService, 'getAccountContextBySecretKey').mockImplementation((secretKey) => {
             if (secretKey === mockSecretKey) {
-                return Promise.resolve({ account: seed.account, environment: seed.env, plan: seed.plan });
+                return Promise.resolve({
+                    account: seed.account,
+                    environment: seed.env,
+                    secret: seed.secret,
+                    plan: seed.plan
+                });
             }
             return Promise.resolve(null);
         });
@@ -458,6 +465,7 @@ const initDb = async () => {
     const now = new Date();
     const env = await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' });
     if (!env) throw new Error('Environment not created');
+    const secret = await secretService.getDefaultSecretForEnv(db.knex, env.id);
 
     const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
 
@@ -540,6 +548,7 @@ const initDb = async () => {
     return {
         account: (await accountService.getAccountById(db.knex, 0))!,
         env,
+        secret,
         plan,
         activityLogId: logCtx.id,
         connection,
