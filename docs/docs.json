@@ -374,6 +374,7 @@
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
               "api-integrations/ecu360",
+              "api-integrations/ecu360-production",
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
               "integrations/all/elevio",
