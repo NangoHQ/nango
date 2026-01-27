@@ -4854,44 +4854,12 @@ ecu360:
 
 ecu360-production:
     display_name: ECU360 (Production)
-    categories:
-        - other
-    auth_mode: TWO_STEP
-    body_format: json
+    alias: ecu360
     token_url: https://apim.ecu360.com/auth/v1/authenticate
-    token_params:
-        userName: ${credentials.userName}
-        password: ${credentials.password}
-        isEncrypted: false
-        mfaToken: ''
-    token_headers:
-        ecu360-api-key: ${credentials.apiKey}
-        content-type: application/json
-    token_response:
-        token: jwtToken
-    token_expires_in_ms: 900000
     proxy:
         base_url: https://apim.ecu360.com
     docs: https://nango.dev/docs/api-integrations/ecu360-production
     docs_connect: https://nango.dev/docs/api-integrations/ecu360-production/connect
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: Your ECU360 API Key
-            secret: true
-            doc_section: '#step-2-obtaining-your-api-key'
-        userName:
-            type: string
-            title: Username
-            description: Your ECU360 username
-            doc_section: '#step-1-finding-your-credentials'
-        password:
-            type: string
-            title: Password
-            description: Your ECU360 password
-            secret: true
-            doc_section: '#step-1-finding-your-credentials'
 
 egnyte:
     display_name: Egnyte
