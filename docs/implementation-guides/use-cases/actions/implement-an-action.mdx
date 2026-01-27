@@ -20,9 +20,9 @@ Actions are ideal when you want to:
 - Actions take an input and return an output—you control the code, API requests, transformations, and data models
 - All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination helpers
 - Actions run **synchronously by default** but can also run [asynchronously](/implementation-guides/use-cases/actions/async-actions) for batch writes
-- Actions run in the context of a [Connection](/guides/primitives/auth#what-is-a-connection%3F) (API key or access token of your user)
+- Actions run in the context of a [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
 - Actions can call other actions to build workflows
-- Actions can be exposed to LLMs via the [MCP Server](/implementation-guides/use-cases/tool-calling/overview)
+- Actions can be exposed to LLMs via the [MCP Server](/implementation-guides/use-cases/tool-calling/implement-mcp-server)
 - Actions can be used to build [unified APIs](/implementation-guides/use-cases/unified-apis)
 - All action invocations and API requests are logged in [Nango's logs](/guides/platform/observability)
 

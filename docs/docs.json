@@ -69,13 +69,7 @@
             "group": "Getting Started",
             "pages": [
               "getting-started/intro-to-nango",
-              {
-                "group": "Quickstart",
-                "pages": [
-                  "getting-started/quickstart/access-an-api",
-                  "getting-started/quickstart/embed-in-your-app"
-                ]
-              }
+              "getting-started/quickstart"
             ]
           },
           {
@@ -89,7 +83,7 @@
           {
             "group": "Platform",
             "pages": [
-              "guides/platform/ai-builder",
+              "guides/platform/ai-integration-builder",
               "guides/platform/observability",
               "guides/platform/environments",
               "guides/platform/limits",

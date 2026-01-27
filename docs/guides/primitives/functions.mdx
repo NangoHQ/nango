@@ -10,6 +10,10 @@ description: 'Build custom integrations with serverless functions.'
 
 You write integration logic in TypeScript and deploy it to Nango. Functions execute with built-in access to authenticated APIs, retries, storage, and observability.
 
+Functions are a flexible primitive that you can use to build any [integration use-case](#use-cases), from simple API actions to complex data syncs, RAG pipelines & real-time webhook ingestion.
+
+Pair Functions with the [AI integration builder](/guides/platform/ai-integration-builder) to generate and maintain integration code faster—combining the speed of AI with human-reviewable code you fully control.
+
 ## How it works
 
 **1. Define a function**
@@ -47,7 +51,7 @@ Call the function via Nango's API using the connection ID and function name:
     <Tab title="Typescript">
 
     ```typescript
-const result = await nango.triggerFunction({
+const result = await nango.trigger({
         integrationId: 'github',
         connectionId: connectionId,
         functionName: 'create-issue',

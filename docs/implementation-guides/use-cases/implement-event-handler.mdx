@@ -6,7 +6,7 @@ description: 'Guide on how to implement a lifecycle event handler in Nango'
 
 ## What are lifecycle events?
 
-Lifecycle events let you customize Nango's behavior at different points in a [Connection](/guides/primitives/auth#what-is-a-connection%3F)'s lifecycle.
+Lifecycle events let you customize Nango's behavior at different points in a [Connection](/guides/primitives/auth#overview)'s lifecycle.
 
 When certain things happen for a Connection, Nango triggers an event. You can register an event handler [Function](/guides/primitives/functions) for a specific event and integration.
 
@@ -22,7 +22,7 @@ All lifecycle event executions are logged in Nango's [logs](/guides/platform/obs
 | `post-connection-creation` | Occurs immediately after a connection has been created. |
 | `pre-connection-deletion` | Occurs before a connection is deleted. |
 
-See the [lifecycle events reference](/reference/integration-configuration#on-events-fields) for details.
+See the [lifecycle events reference](/reference/functions#createonevent) for details.
 
 ## Common use cases
 

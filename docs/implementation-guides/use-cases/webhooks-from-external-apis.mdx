@@ -22,14 +22,14 @@ Common examples:
 ## Key facts
 
 - Incoming webhooks are processed by Nango's infrastructure, which auto-scales and provides tools to handle webhook floods, debouncing, etc.
-- Each webhook gets attributed to its corresponding [connection](/guides/primitives/auth#what-is-a-connection) (a user or organization that has set up a specific integration)
+- Each webhook gets attributed to its corresponding [connection](/guides/primitives/auth#overview) (a user or organization that has set up a specific integration)
 - Webhooks can be forwarded to your app or trigger a [function](/guides/primitives/functions) in Nango for processing
 - Webhooks can be combined with [syncs](/implementation-guides/use-cases/syncs/implement-a-sync) to create real-time syncs to your product
 - All incoming webhooks create detailed logs in Nango's [logs](/guides/platform/observability)
 
 ## How webhooks work in Nango
 
-When Nango receives a webhook from an external API, it first reconciles the webhook with the appropriate integration and [connection](/guides/primitives/auth#what-is-a-connection%3F).
+When Nango receives a webhook from an external API, it first reconciles the webhook with the appropriate integration and [connection](/guides/primitives/auth#overview).
 
 <Frame caption="How Nango routes webhooks from external APIs.">
   <img src="/images/diagrams/external-webhook-routing.png" />

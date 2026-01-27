@@ -25,7 +25,7 @@ You can implement two-way syncs by combining syncs with [Actions](/implementatio
 - Syncs run in Nango's infrastructure, powered by [Functions](/guides/primitives/functions)
 - You control the code: which data to fetch, transformations, data models, etc.
 - All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination
-- Syncs run in the context of each [Connection](/guides/primitives/auth#what-is-a-connection%3F) (API key or access token of your user)
+- Syncs run in the context of each [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
 - Syncs can be **incremental** (only fetch changed data) or **full refresh** (always fetch all data)
 - Synced data is cached in Nango (encrypted at rest and in transit)
 - Nango detects changes (additions, updates, deletes) and sends webhooks to your app

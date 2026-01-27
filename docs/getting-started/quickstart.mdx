@@ -1,0 +1,72 @@
+---
+title: 'Quickstart'
+sidebarTitle: '🚀 Quickstart' 
+description: 'Authorize any API in minutes'
+---
+
+<Steps>
+  <Step title="Configure an integration">
+    [Sign up](https://app.nango.dev/signup) (free, no credit card) then, on the **Integrations** tab, set up a new integration.
+  </Step>
+  <Step title="Authorize the API">
+    On the **Connections** tab, create a new connection and complete the auth flow. Later, you'll embed the auth flow in your product with code like this:
+    ```typescript
+    nango.openConnectUI({ onEvent: (event) => { /* handle completion */ } });
+    ```
+  </Step>
+  <Step title="Access the API">
+    Retrieve the API credentials from your connection, at scale:
+
+    <Tabs>
+        <Tab title="Node">
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' }); // Find in your Environment Settings
+
+        const connection = await nango.getConnection(
+            '<INTEGRATION-ID>', // Find in your Integrations
+            '<CONNECTION-ID>'   // Find in your Connections
+        );
+
+        console.log(connection.credentials);
+        ```
+        </Tab>
+
+        <Tab title="cURL">
+
+        ```bash
+        # <NANGO-SECRET-KEY>: Find in your Environment Settings
+        # <INTEGRATION-ID>: Find in your Integrations
+        # <CONNECTION-ID>: Find in your Connections
+        curl -X GET \
+        -H 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+        'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>'
+        ```
+
+        </Tab>
+    </Tabs>
+
+    🎉 You're ready to consume any external API!
+        
+  </Step>
+  <Step title="Next steps">
+    <CardGroup cols={2}>
+        <Card title="Embed in your app" icon="code" href="/implementation-guides/platform/auth/implement-api-auth">
+            Embed Nango Auth in your application and let your users connect external APIs.
+        </Card>
+        <Card title="Make authenticated requests" icon="plug" href="/guides/primitives/proxy">
+            Use the Proxy to make authenticated API requests on behalf of your users.
+        </Card>
+        <Card title="Custom integrations" icon="wand-magic-sparkles" href="/guides/primitives/functions">
+            Implement custom integrations with Functions & the AI code generation.
+        </Card>
+    </CardGroup>
+  </Step>
+</Steps>
+
+
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
