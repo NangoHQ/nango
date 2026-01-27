@@ -28,6 +28,8 @@ This guide will walk you through finding your connection configuration values an
 4. The **Token Domain** is everything after `https://` and before `ccx`.
 - Example: If the endpoint is ` https://wd2-impl-services1.workday.com/ccx/oauth2/acme/token`, your **Token Domain** is `wd2-impl-services1.workday.com`.
 
+<img src="/integrations/all/workday-oauth/hostname.png" />
+
 #### Step 2: Finding your Tenant
 1. In the same **Token Endpoint** field from the **View API Clients** report, the **Tenant** is the final part of the URL after `/oauth2/` and before `/token`.
 - Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/oauth2/acme/token`, your **Tenant** is `acme`.
@@ -38,7 +40,7 @@ This guide will walk you through finding your connection configuration values an
 1. Navigate to **Register API Client for integration** in your Workday instance
 2. Click **Register API Client for Integrations**
 
-<img src="/api-integrations/workday-refresh-token/form.png"/>
+<img src="/api-integrations/workday-refresh-token/register_client.png"/>
 
 3. Enter a meaningful name to indicate that this API client is used for your integration (e.g., "Nango Integration")
 4. Select **Non-Expiring Refresh Tokens** to ensure long lived access
