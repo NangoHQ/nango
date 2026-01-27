@@ -1305,7 +1305,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
                                 <a
-                                    href="https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth"
+                                    href="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth"
                                     className="text-text-blue"
                                     target="_blank"
                                     rel="noreferrer"

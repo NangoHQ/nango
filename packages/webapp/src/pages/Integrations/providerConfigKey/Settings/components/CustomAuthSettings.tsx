@@ -11,7 +11,7 @@ import { Label } from '@/components-v2/ui/label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
-import { validateUrl } from '@/pages/Integrations/utils';
+import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -91,7 +91,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
                     <Label htmlFor="app_id">App ID</Label>
                     <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
                 </div>
-                <EditableInput initialValue={integration.custom?.app_id || ''} onSave={(value) => onSave({ appId: value })} />
+                <EditableInput initialValue={integration.custom?.app_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
             </div>
 
             {/* App Public Link */}
@@ -107,7 +107,12 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_id">Client ID</Label>
                 <>
-                    <EditableInput initialValue={integration.oauth_client_id || ''} onSave={handleClientIdSave} onEditingChange={setIsEditingClientId} />
+                    <EditableInput
+                        initialValue={integration.oauth_client_id || ''}
+                        onSave={handleClientIdSave}
+                        onEditingChange={setIsEditingClientId}
+                        validate={validateNotEmpty}
+                    />
                     {isEditingClientId && hasExistingClientId && (
                         <Alert variant="warning">
                             <AlertTriangle />
@@ -122,7 +127,12 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
             {/* Client Secret */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_secret">Client Secret</Label>
-                <EditableInput secret initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ clientSecret: value })} />
+                <EditableInput
+                    secret
+                    initialValue={integration.oauth_client_secret || ''}
+                    onSave={(value) => onSave({ clientSecret: value })}
+                    validate={validateNotEmpty}
+                />
             </div>
 
             {/* App Private Key */}
