@@ -260,9 +260,6 @@ class EnvironmentService {
                 displayName: `rotated-${new Date().toISOString()}`,
                 isDefault: false
             });
-                displayName: `rotated-${new Date().toISOString()}`,
-                isDefault: false
-            });
         });
         return created?.secret || null;
     }
