@@ -26,7 +26,7 @@ export const integrationAuthTypeAppSchema = z
     .object({
         authType: z.enum(['APP']),
         appId: z.string().min(1).max(255).optional(),
-        appLink: z.string().min(1).optional(),
+        appLink: z.url().min(1).optional(),
         privateKey: privateKeySchema.optional()
     })
     .strict();
@@ -37,7 +37,7 @@ export const integrationAuthTypeCustomSchema = z
         clientId: z.string().min(1).max(255).optional(),
         clientSecret: z.string().min(1).optional(),
         appId: z.string().min(1).max(255).optional(),
-        appLink: z.string().min(1).optional(),
+        appLink: z.url().min(1).optional(),
         privateKey: privateKeySchema.optional()
     })
     .strict();
@@ -53,7 +53,7 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
     .object({
         authType: z.enum(['MCP_OAUTH2_GENERIC']),
         clientName: z.string().min(1).max(255).optional(),
-        clientUri: z.url().max(255).optional(),
+        clientUri: z.string().max(255).optional(),
         clientLogoUri: z.url().max(255).optional()
     })
     .strict();
@@ -61,9 +61,9 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
 export const integrationAuthTypeInstallPluginSchema = z
     .object({
         authType: z.enum(['INSTALL_PLUGIN']),
-        appLink: z.string().min(1).optional(),
-        username: z.string().min(1).optional(),
-        password: z.string().min(1).optional()
+        appLink: z.url().max(255).optional(),
+        username: z.string().min(1).max(255).optional(),
+        password: z.string().min(1).max(255).optional()
     })
     .strict();
 

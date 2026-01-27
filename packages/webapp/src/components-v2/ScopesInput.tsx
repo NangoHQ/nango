@@ -60,7 +60,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
                     disabled={loading || isSharedCredentials}
-                    placeholder="Single scope or comma-separated list of scopes"
+                    placeholder={isSharedCredentials ? 'Nango provided scopes' : 'Single scope or comma-separated list of scopes'}
                 />
 
                 <InputGroupAddon align="inline-end">

@@ -1100,7 +1100,7 @@ apollo-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://app.apollo.io/api
-    docs: https://nango.dev/docs/integrations/all/apollo-oauth
+    docs: https://nango.dev/docs/api-integrations/apollo-oauth
 
 apple-app-store:
     display_name: Apple App Store
@@ -1179,7 +1179,7 @@ asana-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/asana
+    docs: https://nango.dev/docs/api-integrations/asana
 
 asana-scim:
     display_name: Asana (SCIM API)
@@ -1197,8 +1197,8 @@ asana-scim:
                 - /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/asana-scim
-    docs_connect: https://nango.dev/docs/integrations/all/asana-scim/connect
+    docs: https://nango.dev/docs/api-integrations/asana-scim
+    docs_connect: https://nango.dev/docs/api-integrations/asana-scim/connect
     credentials:
         apiKey:
             type: string
@@ -2432,7 +2432,8 @@ brex:
         - offline_access
     proxy:
         base_url: https://platform.brexapis.com
-    docs: https://nango.dev/docs/integrations/all/brex
+    docs: https://nango.dev/docs/api-integrations/brex
+    setup_guide_url: https://nango.dev/docs/api-integrations/brex/how-to-register-your-own-brex-oauth-app
 
 brex-api-key:
     display_name: Brex (API Key)
@@ -2441,8 +2442,8 @@ brex-api-key:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
-    docs: https://nango.dev/docs/integrations/all/brex-api-key
-    docs_connect: https://nango.dev/docs/integrations/all/brex-api-key/connect
+    docs: https://nango.dev/docs/api-integrations/brex-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/brex-api-key/connect
     credentials:
         apiKey:
             type: string
@@ -2458,8 +2459,9 @@ brex-staging:
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
     proxy:
-        base_url: https://platform.staging.brexapis.com
-    docs: https://nango.dev/docs/integrations/all/brex-staging
+        base_url: https://platform.staging.brexapps.com
+    docs: https://nango.dev/docs/api-integrations/brex-staging
+    setup_guide_url: https://nango.dev/docs/api-integrations/brex-staging/how-to-register-your-own-brex-staging-oauth-app
 
 brightcrowd:
     display_name: BrightCrowd
@@ -2823,6 +2825,36 @@ canva:
                 - /rest/v1/users/me
     docs: https://nango.dev/docs/integrations/all/canva
     token_request_auth_method: basic
+
+canvas-lms:
+    display_name: Canvas LMS
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/login/oauth2/auth
+    token_url: https://${connectionConfig.hostname}/login/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/canvas-lms
+    setup_guide_url: https://nango.dev/docs/api-integrations/canvas-lms/how-to-register-your-own-canvas-lms-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/canvas-lms/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Canvas Install URL
+            description: The base URL of your Canvas instance
+            example: canvas.instructure.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-canvas-install-url'
 
 canva-scim:
     display_name: Canva (SCIM API)
@@ -3645,8 +3677,8 @@ confluence-basic:
                 content-type: application/json
             endpoints:
                 - /wiki/api/v2/spaces
-    docs: https://nango.dev/docs/integrations/all/confluence-basic
-    docs_connect: https://nango.dev/docs/integrations/all/confluence-basic/connect
+    docs: https://nango.dev/docs/api-integrations/confluence-basic
+    docs_connect: https://nango.dev/docs/api-integrations/confluence-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -3683,8 +3715,8 @@ confluence-data-center:
             after:
                 - 'retry-after'
         base_url: https://${connectionConfig.endpointURL}
-    docs: https://nango.dev/docs/integrations/all/confluence-data-center
-    docs_connect: https://nango.dev/docs/integrations/all/confluence-data-center/connect
+    docs: https://nango.dev/docs/api-integrations/confluence-data-center
+    docs_connect: https://nango.dev/docs/api-integrations/confluence-data-center/connect
     connection_config:
         endpointURL:
             type: string
@@ -9796,6 +9828,25 @@ momentum-io:
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
 
+mollie:
+    display_name: Mollie
+    categories:
+        - payment
+    auth_mode: OAUTH2
+    authorization_url: https://my.mollie.com/oauth2/authorize
+    token_url: https://api.mollie.com/oauth2/tokens
+    scope_separator: ' '
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.mollie.com
+    docs: https://nango.dev/docs/api-integrations/mollie
+    setup_guide_url: https://nango.dev/docs/api-integrations/mollie/how-to-register-your-own-mollie-oauth-app
 modmed:
     display_name: ModMed
     categories:
@@ -11759,6 +11810,39 @@ productboard:
         base_url: https://api.productboard.com
     docs: https://nango.dev/docs/integrations/all/productboard
 
+procore:
+    display_name: Procore
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://login.procore.com/oauth/authorize
+    token_url: https://login.procore.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    post_connection_script: procorePostConnection
+    proxy:
+        headers:
+            procore-company-id: ${connectionConfig.companyId}
+        base_url: https://api.procore.com
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/procore
+    setup_guide_url: https://nango.dev/docs/api-integrations/procore/how-to-register-your-own-procore-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/procore/connect
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: Your Procore company ID
+            optional: true
+            example: '598134325779301'
+            pattern: '^[0-9]+$'
+
 qualtrics:
     display_name: Qualtrics
     categories:
@@ -13516,8 +13600,8 @@ sharepoint-online-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
-    docs: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc
-    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect
+    docs: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -13552,8 +13636,8 @@ sharepoint-online-v1:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/sharepoint-online-v1
-    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect
+    docs: https://nango.dev/docs/api-integrations/sharepoint-online-v1
+    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-v1/connect
     connection_config:
         tenantId:
             type: string

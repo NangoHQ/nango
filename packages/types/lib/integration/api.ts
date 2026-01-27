@@ -104,44 +104,49 @@ export type GetIntegrations = Endpoint<{
     };
 }>;
 
-// Shared auth type union for integration body
-export type IntegrationAuthBody =
-    | {
-          authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-          clientId?: string | undefined;
-          clientSecret?: string | undefined;
-          scopes?: string | undefined;
-      }
-    | {
-          authType: Extract<AuthModeType, 'APP'>;
-          appId?: string | undefined;
-          appLink?: string | undefined;
-          privateKey?: string | undefined;
-      }
-    | {
-          authType: Extract<AuthModeType, 'CUSTOM'>;
-          clientId?: string | undefined;
-          clientSecret?: string | undefined;
-          appId?: string | undefined;
-          appLink?: string | undefined;
-          privateKey?: string | undefined;
-      }
-    | {
-          authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
-          scopes?: string | undefined;
-      }
-    | {
-          authType: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
-          clientName?: string | undefined;
-          clientUri?: string | undefined;
-          clientLogoUri?: string | undefined;
-      }
-    | {
-          authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
-          appLink?: string | undefined;
-          username?: string | undefined;
-          password?: string | undefined;
-      };
+export interface OAuthAuthBody {
+    authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
+    clientId?: string | undefined;
+    clientSecret?: string | undefined;
+    scopes?: string | undefined;
+}
+
+export interface AppAuthBody {
+    authType: Extract<AuthModeType, 'APP'>;
+    appId?: string | undefined;
+    appLink?: string | undefined;
+    privateKey?: string | undefined;
+}
+
+export interface CustomAuthBody {
+    authType: Extract<AuthModeType, 'CUSTOM'>;
+    clientId?: string | undefined;
+    clientSecret?: string | undefined;
+    appId?: string | undefined;
+    appLink?: string | undefined;
+    privateKey?: string | undefined;
+}
+
+export interface MCPOAuth2AuthBody {
+    authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
+    scopes?: string | undefined;
+}
+
+export interface MCPOAuth2GenericAuthBody {
+    authType: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
+    clientName?: string | undefined;
+    clientUri?: string | undefined;
+    clientLogoUri?: string | undefined;
+}
+
+export interface InstallPluginAuthBody {
+    authType: Extract<AuthModeType, 'INSTALL_PLUGIN'>;
+    appLink?: string | undefined;
+    username?: string | undefined;
+    password?: string | undefined;
+}
+
+export type IntegrationAuthBody = OAuthAuthBody | AppAuthBody | CustomAuthBody | MCPOAuth2AuthBody | MCPOAuth2GenericAuthBody | InstallPluginAuthBody;
 
 export type PostIntegration = Endpoint<{
     Method: 'POST';

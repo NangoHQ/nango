@@ -28,7 +28,7 @@ export const LogsShow: React.FC = () => {
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-gray-400">
                         Follow{' '}
-                        <Link to="https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview#logs" className="text-blue-400">
+                        <Link to="https://nango.dev/docs/guides/platform/free-self-hosting/configuration#logs" className="text-blue-400">
                             these instructions
                         </Link>{' '}
                         to configure logs.

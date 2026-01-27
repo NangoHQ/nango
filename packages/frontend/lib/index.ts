@@ -587,6 +587,10 @@ export default class Nango {
                     query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
                 }
 
+                if ('oauth_refresh_token_override' in credentials) {
+                    query.push(`credentials[oauth_refresh_token_override]=${encodeURIComponent(credentials.oauth_refresh_token_override)}`);
+                }
+
                 if ('token_id' in credentials) {
                     query.push(`token_id=${encodeURIComponent(credentials.token_id)}`);
                 }
