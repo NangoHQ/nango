@@ -7,9 +7,9 @@ export function toAcronym(name: string): string {
         // remove ad-hoc key words
         .replace(/(https?|www|test|dev|(pre)?prod(uction| |$)|demo|poc|wip)/gi, '');
 
-    const firstLetters = clean.match(/\b(\w)/g)?.join('');
+    const firstLetters = clean.split(' ').map((word) => word[0]);
     if (firstLetters && firstLetters.length > 1) {
-        return firstLetters.slice(0, 2).toUpperCase();
+        return firstLetters[0].toUpperCase() + firstLetters[firstLetters.length - 1].toUpperCase();
     }
 
     // Rollback to something generic if nothing is left

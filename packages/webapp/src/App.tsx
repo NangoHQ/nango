@@ -20,6 +20,7 @@ import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredT
 import { ConnectionCreate } from './pages/Connection/Create';
 import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { ConnectionList } from './pages/Connection/List';
+import { OldConnectionList } from './pages/Connection/ListOld';
 import { ConnectionShow } from './pages/Connection/Show';
 import { EnvironmentSettings } from './pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
@@ -151,6 +152,10 @@ const router = sentryCreateBrowserRouter([
                     {
                         index: true,
                         element: <ConnectionList />
+                    },
+                    {
+                        path: 'old',
+                        element: <OldConnectionList />
                     },
                     {
                         path: 'create',
