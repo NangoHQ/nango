@@ -2,6 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Lock, RefreshCcw, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useDebounce } from 'react-use';
 
 import { ConnectionCount } from './components/ConnectionCount';
 import { Avatar } from '@/components-v2/Avatar';
@@ -9,6 +10,7 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { MultiSelect } from '@/components-v2/MultiSelect';
 import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
+import { StyledLink } from '@/components-v2/StyledLink';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
@@ -133,15 +135,39 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
 
+    const [search, setSearch] = useState<string>('');
+    const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
     const [selectedErrors, setSelectedErrors] = useState<string[]>([]);
 
+    useDebounce(() => setDebouncedSearch(search), 300, [search]);
+
     const { list: listIntegration, loading: integrationsLoading } = useListIntegration(env);
-    const { data: connectionsData } = useConnections({ env });
+
+    const withError = useMemo(() => {
+        if (selectedErrors.length === 0) return undefined;
+        if (selectedErrors.includes('error')) return true;
+        if (selectedErrors.includes('ok')) return false;
+        return undefined;
+    }, [selectedErrors]);
+
+    const integrationIds = useMemo(() => {
+        if (selectedIntegrations.length === 0) return undefined;
+        return selectedIntegrations;
+    }, [selectedIntegrations]);
+
+    const { data: connectionsData } = useConnections({
+        env,
+        search: debouncedSearch,
+        integrationIds,
+        withError
+    });
 
     const connections = useMemo(() => {
         return connectionsData?.flatMap((d) => d.data) || [];
     }, [connectionsData]);
+
+    const hasFiltered = debouncedSearch || selectedIntegrations.length > 0 || selectedErrors.length > 0;
 
     const table = useReactTable({
         data: connections,
@@ -168,79 +194,107 @@ export const ConnectionList = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h2 className="text-title-subsection text-text-primary">Connections</h2>
-                    <ButtonLink to={`/${env}/connections/create`} size="lg">
-                        Add Test Connection
-                    </ButtonLink>
+                    {connections && connections.length > 0 && (
+                        <ButtonLink to={`/${env}/connections/create`} size="lg">
+                            Add Test Connection
+                        </ButtonLink>
+                    )}
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-col gap-3.5">
-                    {/* Connection count */}
-                    <ConnectionCount className="self-end" />
+                    {connections && (connections.length > 0 || hasFiltered) && (
+                        <>
+                            {/* Connection count */}
+                            <ConnectionCount className="self-end" />
+                            {/* Filters */}
+                            <div className="flex items-center gap-3.5">
+                                <InputGroup className="bg-bg-subtle h-10">
+                                    <InputGroupInput type="text" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
+                                    <InputGroupAddon>
+                                        <Search />
+                                    </InputGroupAddon>
+                                </InputGroup>
+                                <MultiSelect
+                                    label={selectedIntegrations.length > 0 ? `${selectedIntegrations.length} integrations` : 'All integrations'}
+                                    options={integrationsOptions}
+                                    loading={integrationsLoading}
+                                    selected={selectedIntegrations}
+                                    onChange={(selected) => setSelectedIntegrations(selected as string[])}
+                                />
+                                <MultiSelect
+                                    label="Filter errors"
+                                    options={errorOptions}
+                                    selected={selectedErrors}
+                                    onChange={(selected) => setSelectedErrors(selected as string[])}
+                                />
+                            </div>
 
-                    {/* Filters */}
-                    <div className="flex items-center gap-3.5">
-                        <InputGroup className="bg-bg-subtle h-10">
-                            <InputGroupInput type="text" placeholder="Search" onChange={() => {}} />
-                            <InputGroupAddon>
-                                <Search />
-                            </InputGroupAddon>
-                        </InputGroup>
-                        <MultiSelect
-                            label={selectedIntegrations.length > 0 ? `${selectedIntegrations.length} integrations` : 'All integrations'}
-                            options={integrationsOptions}
-                            loading={integrationsLoading}
-                            selected={selectedIntegrations}
-                            onChange={(selected) => setSelectedIntegrations(selected as string[])}
-                        />
-                        <MultiSelect
-                            label="Filter errors"
-                            options={errorOptions}
-                            selected={selectedErrors}
-                            onChange={(selected) => setSelectedErrors(selected as string[])}
-                        />
-                    </div>
-
-                    {/* Table */}
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <TableHead
-                                                key={header.id}
-                                                style={{
-                                                    maxWidth: header.getSize() !== 0 ? header.getSize() : undefined,
-                                                    width: header.getSize() !== 0 ? header.getSize() : undefined
-                                                }}
-                                                className="h-11"
-                                            >
-                                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                            </TableHead>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length > 0 &&
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id} className="h-16">
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell
-                                                key={cell.id}
-                                                style={{
-                                                    maxWidth: cell.column.getSize() !== 0 ? cell.column.getSize() : undefined
-                                                }}
-                                            >
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
+                            {/* Table */}
+                            {connections.length > 0 && (
+                                <Table>
+                                    <TableHeader>
+                                        {table.getHeaderGroups().map((headerGroup) => (
+                                            <TableRow key={headerGroup.id}>
+                                                {headerGroup.headers.map((header) => {
+                                                    return (
+                                                        <TableHead
+                                                            key={header.id}
+                                                            style={{
+                                                                maxWidth: header.getSize() !== 0 ? header.getSize() : undefined,
+                                                                width: header.getSize() !== 0 ? header.getSize() : undefined
+                                                            }}
+                                                            className="h-11"
+                                                        >
+                                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                                        </TableHead>
+                                                    );
+                                                })}
+                                            </TableRow>
                                         ))}
-                                    </TableRow>
-                                ))}
-                        </TableBody>
-                    </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {table.getRowModel().rows?.length > 0 &&
+                                            table.getRowModel().rows.map((row) => (
+                                                <TableRow key={row.id} className="h-16">
+                                                    {row.getVisibleCells().map((cell) => (
+                                                        <TableCell
+                                                            key={cell.id}
+                                                            style={{
+                                                                maxWidth: cell.column.getSize() !== 0 ? cell.column.getSize() : undefined
+                                                            }}
+                                                        >
+                                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+
+                            {connections.length === 0 && (
+                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+                                    <p className="text-text-secondary text-body-medium-regular">No connections found.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                    {connections && connections.length === 0 && !hasFiltered && (
+                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+                            <h3 className="text-title-body text-text-primary">Connect to an external API</h3>
+                            <p className="text-text-secondary text-body-medium-regular">
+                                Connections can be created by using{' '}
+                                <StyledLink to="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth" type="external">
+                                    Nango Connect
+                                </StyledLink>
+                                , or manually here.
+                            </p>
+                            <ButtonLink to={`/${env}/connections/create`} size="lg">
+                                Add test connection
+                            </ButtonLink>
+                        </div>
+                    )}
                 </div>
             </div>
         </DashboardLayout>
