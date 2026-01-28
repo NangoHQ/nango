@@ -108,7 +108,7 @@ class SecretService {
                 })
                 .update({
                     is_default: false,
-                    updated_at: new Date()
+                    updated_at: trx.fn.now()
                 });
             await trx<DBAPISecret>(API_SECRETS_TABLE)
                 .where({
@@ -118,7 +118,7 @@ class SecretService {
                 })
                 .update({
                     is_default: true,
-                    updated_at: new Date()
+                    updated_at: trx.fn.now()
                 });
         });
     }
