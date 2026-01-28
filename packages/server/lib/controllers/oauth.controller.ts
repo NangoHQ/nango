@@ -238,6 +238,13 @@ class OAuthController {
                     };
                 }
 
+                if (overrideCredentials['oauth_refresh_token_override']) {
+                    session.connectionConfig = {
+                        ...session.connectionConfig,
+                        oauth_refresh_token_override: overrideCredentials['oauth_refresh_token_override']
+                    };
+                }
+
                 const obfuscatedClientSecret = config.oauth_client_secret ? config.oauth_client_secret.slice(0, 4) + '***' : '';
 
                 void logCtx.info('Credentials override', {
@@ -1672,6 +1679,28 @@ class OAuthController {
                 connectionConfig['oauth_scopes_override'] = !Array.isArray(connectionConfig['oauth_scopes_override'])
                     ? connectionConfig['oauth_scopes_override'].split(',')
                     : connectionConfig['oauth_scopes_override'];
+            }
+
+            // override refresh_token during connection creation
+            if (connectionConfig['oauth_refresh_token_override']) {
+                parsedRawCredentials = {
+                    ...parsedRawCredentials,
+                    refresh_token: connectionConfig['oauth_refresh_token_override'],
+                    raw: {
+                        ...parsedRawCredentials.raw,
+                        refresh_token: connectionConfig['oauth_refresh_token_override']
+                    }
+                };
+
+                connectionConfig = Object.keys(session.connectionConfig).reduce(
+                    (acc: Record<string, string | boolean>, key: string) => {
+                        if (key !== 'oauth_refresh_token_override') {
+                            acc[key] = connectionConfig[key] as string;
+                        }
+                        return acc;
+                    },
+                    { overrideTokenRefresh: true }
+                );
             }
 
             const [updatedConnection] = await connectionService.upsertConnection({

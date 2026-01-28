@@ -1,0 +1,192 @@
+---
+title: 'Per-customer configuration'
+sidebarTitle: 'Per-customer config'
+description: 'How to add per-customer configuration to your Nango integrations'
+---
+
+Many integrations need customer-specific behavior: custom field mappings, record filters, or feature toggles. Larger customers often run custom schemas in CRMs, ERPs, or productivity tools, so a one-size-fits-all approach won't work.
+
+Per-customer configuration lets you adapt without forking code. The core logic stays the same, while each connection supplies the rules that shape requests, transformations, and validations.
+
+**How Nango helps:**
+- Store customer configuration on the connection as **metadata**—it lives alongside the integration instance for each customer
+- Access metadata from any [function](/guides/primitives/functions) to read mappings, filters, and flags at runtime
+
+## Best practices
+
+1. **Start with defaults.** Only add configuration when real needs recur across customers.
+
+2. **Design a minimal, typed schema.** Mirror actual use cases (field mappings, record filters, feature flags). Avoid open-ended key/value bags.
+
+3. **Build UI in your app** to capture config, persist it on the connection, and reference it in your functions.
+
+4. **Roll out incrementally** and version the schema when it changes.
+
+5. **Monitor and refine.** If a rule becomes universal, fold it back into default behavior to reduce configuration surface area.
+
+## Store customer-specific data
+
+Connection metadata can be set, updated, and retrieved with the SDK ([reference](/reference/sdks/node#set-connection-metadata)) and API ([reference](/reference/api/connection/set-metadata)). You can also view it in the Nango UI: **Connections** tab > **Select Connection** > **Authorization** tab.
+
+### Set connection metadata
+
+<Tabs>
+<Tab title="Node">
+
+```typescript
+await nango.setMetadata(
+    '<INTEGRATION-ID>', 
+    '<CONNECTION-ID>', 
+    { any_key: 'Any Value' }
+);
+```
+</Tab>
+
+<Tab title="REST API">
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/connection/<CONNECTION-ID>/metadata \
+  --header 'Authorization: Bearer <TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+  --data '{ "any_key": "Any Value" }'
+```
+
+</Tab>
+
+</Tabs>
+
+### Update connection metadata
+
+<Tabs>
+<Tab title="Node">
+
+```typescript
+await nango.updateMetadata(
+    '<INTEGRATION-ID>', 
+    '<CONNECTION-ID>', 
+    { any_key: 'Any Value' }
+);
+```
+</Tab>
+
+<Tab title="REST API">
+
+```bash
+curl --request PATCH \
+  --url https://api.nango.dev/connection/<CONNECTION-ID>/metadata \
+  --header 'Authorization: Bearer <TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+  --data '{ "any-key": "Any Value" }'
+```
+
+</Tab>
+
+</Tabs>
+
+### Get connection metadata
+
+<Tabs>
+<Tab title="Node">
+
+```typescript
+await nango.getMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>');
+```
+</Tab>
+
+<Tab title="REST API">
+
+```bash
+curl --request GET \
+  --url 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
+  --header 'Authorization: Bearer <TOKEN>'
+```
+
+</Tab>
+
+</Tabs>
+
+<Warning>
+When accessing metadata from within a sync using `nango.getMetadata()`, the metadata is cached for up to 60 seconds. Changes made while a sync is running may not be visible until the cache expires.
+
+The next sync execution will always have access to the latest metadata.
+</Warning>
+
+## Use custom field mappings
+
+Field mappings are necessary when a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) needs to access information stored in external custom fields.
+
+### 1. Prompt your customers for field mappings
+
+In your app:
+- Fetch the list of custom fields from the external API using an [action](/implementation-guides/use-cases/actions/implement-an-action)
+- Display the full list of external custom fields to the user
+- Prompt the user to associate your data fields to the relevant external custom fields
+
+The output should be a field mapping object:
+```json
+{
+    "internal_field_1": "custom_field_1",
+    "internal_field_2": "custom_field_2"
+}
+```
+
+### 2. Store field mappings in the connection metadata
+
+Update the connection's metadata with the field mapping object:
+
+<Tabs>
+<Tab title="Node">
+
+```typescript
+await nango.setMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', { internal_field_1: 'custom_field_1' });
+```
+</Tab>
+
+<Tab title="REST API">
+
+```bash
+curl --request PATCH \
+  --url https://api.nango.dev/connection/<CONNECTION-ID>/metadata \
+  --header 'Authorization: Bearer <TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+  --data '{ "internal_field_1": "custom_field_1" }'
+```
+
+</Tab>
+
+</Tabs>
+
+### 3. Start the sync for each connection
+
+Start the sync schedule programmatically with the SDK ([reference](/reference/sdks/node#start-schedule-for-syncs)) or API ([reference](/reference/api/sync/start)):
+
+<Tabs>
+<Tab title="Node">
+```typescript
+await nango.startSync('<INTEGRATION-ID>', ['hubspot-sync'], '<CONNECTION-ID>');
+```
+</Tab>
+<Tab title="REST API">
+```bash
+curl --request POST \
+  --url https://api.nango.dev/sync/start \
+  --header 'Authorization: Bearer <TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "connection_id": "<CONNECTION-ID>",
+  "provider_config_key": "<INTEGRATION-ID>",
+  "syncs": [ "hubspot-sync" ]
+}'
+```
+</Tab>
+</Tabs>
+
+The sync's internal logic will use the field mappings to fetch the relevant data from custom fields.
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

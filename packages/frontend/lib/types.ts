@@ -43,6 +43,7 @@ export interface ConnectionConfig {
 export interface OAuthCredentialsOverride {
     oauth_client_id_override: string;
     oauth_client_secret_override: string;
+    oauth_refresh_token_override?: string;
 }
 
 export interface BasicApiCredentials {

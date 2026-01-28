@@ -1,0 +1,56 @@
+---
+title: 'How to register your own Meta Marketing API OAuth app'
+sidebarTitle: 'Meta Marketing API Setup'
+description: 'Register an OAuth app with Meta Marketing API and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Meta to obtain your OAuth credentials (client ID and client secret) for the Meta Marketing API. These are required to let your users grant your app access to their Meta Marketing API account.
+
+<Steps>
+  <Step title="Create a Meta Developer account">
+    If you don't already have one, go to [Meta for Developers](https://developers.facebook.com/) and create a developer account.
+  </Step>
+  <Step title="Create a Business-type app">
+    1. Go to the [Meta Developer Dashboard](https://developers.facebook.com/apps/).
+    2. Click **Create App**, enter your **App name** then click **Next**.
+    3. Select **Other**, then click **Next**.
+    4. Select **Business**, then click **Next**.
+    5. Select which Business portfolio you want to associate with the app, then click **Create app**.
+  </Step>
+  <Step title="Add Facebook Login for Business product">
+    1. In the left sidebar, click **Add product**.
+    2. Scroll to the bottom of the page and click **Set up** for **Facebook Login for Business**.
+    3. Once done, click **Settings** from the left navigation for **Facebook Login for Business**.
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. In the **Facebook Login for Business** > **Settings** page, enable the following OAuth settings:
+       - **Client OAuth Login** ✅
+       - **Web OAuth Login** ✅
+    2. In **Valid OAuth Redirect URIs**, add: `https://api.nango.dev/oauth/callback`
+    3. Click **Save Changes**.
+  </Step>
+  <Step title="Request Marketing permissions">
+    1. In the left sidebar, navigate to **App Review** > **Permissions and Features**.
+    2. Request the Marketing API permissions your app needs:
+       - `ads_read` - Read ads data (required)
+       - `ads_management` - Manage ads and campaigns (required if you need write access)
+    3. These permissions unlock the Marketing API functionality.
+    <Note>Some [permissions](https://developers.facebook.com/docs/facebook-login/guides/permissions/review) may require App Review before going live.</Note>
+  </Step>
+  <Step title="Obtain your App credentials">
+    1. Go to **App Settings** > **Basic** in the left sidebar.
+    2. Copy your **App ID** (this is your **Client ID**) and **App Secret** (this is your **Client Secret**). You'll need these credentials when configuring your integration in Nango.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [how to create an application](https://developers.facebook.com/docs/development/create-an-app/).
+
+## Important notes for Meta Marketing API
+
+- Facebook tokens expire after 60 days and cannot be refreshed. Once a token expires, users must re-authenticate by [re-authorizing the connection](/implementation-guides/platform/auth/implement-api-auth#6-re-authorize-an-existing-connection).
+
+---

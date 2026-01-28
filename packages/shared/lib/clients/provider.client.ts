@@ -188,7 +188,8 @@ class ProviderClient {
                     interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
-                    config.oauth_client_secret
+                    config.oauth_client_secret,
+                    connection.connection_config
                 );
             case 'fanvue':
                 return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
@@ -926,7 +927,8 @@ class ProviderClient {
         refreshTokenUrl: string,
         refreshToken: string,
         client_id: string,
-        client_secret: string
+        client_secret: string,
+        connectionConfig: ConnectionConfig
     ): Promise<RefreshTokenResponse> {
         try {
             const body = {
@@ -940,8 +942,9 @@ class ProviderClient {
 
             const response = await axios.post(refreshTokenUrl, body, { headers: headers });
             if (response.status === 200 && response.data) {
+                const refreshTokenToUse = connectionConfig['overrideTokenRefresh'] ? refreshToken : response.data['refresh_token'];
                 return {
-                    refresh_token: response.data['refresh_token'],
+                    refresh_token: refreshTokenToUse,
                     access_token: response.data['access_token'],
                     expires_in: workdayOauthExpiresIn
                 };

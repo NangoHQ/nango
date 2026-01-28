@@ -1,0 +1,123 @@
+---
+title: 'Build integrations with AI'
+sidebarTitle: 'Build integrations with AI'
+description: 'How to use AI agents to generate function code and build custom integrations in Nango'
+---
+
+Building custom integrations for Nango is much faster when using AI tools. This guide shows you how to leverage AI tooling to build high-quality integrations quickly.
+
+## Automated Integrations Building
+
+The fastest way to build Nango integrations is using our automated function builder. With a single command, you can install everything needed to generate a fully working sync or action through an interactive AI workflow.
+
+This uses [prpm](https://prpm.dev) to install pre-built workflows directly into your development environment.
+
+<Tip>
+[prpm](https://prpm.dev) (Prompt Package Manager) is a universal package manager for AI tool configurations. It lets you discover, install, and share prompts, skills, and agents across AI development platforms with a single CLI.
+</Tip>
+
+## Quick Start
+
+### [Claude Code](https://claude.com/product/claude-code)
+```bash
+npx prpm install collections/nango-function-builder --as claude
+claude
+/build-actions
+```
+
+### [Gemini CLI](https://geminicli.com/)
+<Note>
+For Gemini, you need to set `GEMINI_SANDBOX=true` in your `.env` file or export it in your environment before running the CLI.
+</Note>
+
+```bash
+npx prpm install collections/nango-function-builder --as gemini
+gemini
+/build-actions
+```
+
+### [Cursor CLI](https://cursor.com/cli)
+```bash
+npx prpm install collections/nango-function-builder --as cursor
+cursor-agent
+/build-actions
+```
+### [Cursor IDE](https://cursor.com/)
+```bash
+npx prpm install collections/nango-function-builder --as cursor
+code .
+/build-actions
+```
+
+### [Codex CLI](https://developers.openai.com/codex/cli/)
+```bash
+npx prpm install collections/nango-function-builder --as codex
+codex
+build-actions
+```
+
+### [VS Code With Copilot](https://code.visualstudio.com/docs/copilot/overview)
+```bash
+npx prpm install collections/nango-function-builder --as copilot
+# open the VS Code Application
+build-actions
+```
+
+### [Opencode](https://opencode.ai/)
+```bash
+npx prpm install collections/nango-function-builder --as opencode
+opencode
+/build-actions
+```
+
+### [Droid By Factory](https://factory.ai/)
+```bash
+npx prpm install collections/nango-function-builder --as droid
+droid
+/build-actions
+```
+
+### Using the Builder
+
+The builder will first ask what you want to build:
+
+1. **Action** - One-time operations (create, update, delete, get)
+2. **Sync** - Continuous data synchronization (fetch records periodically)
+
+### Example Inputs
+
+**Action Example:**
+```
+Integration ID: slack
+Connection ID: my-slack-connection
+Use Case: Gets channel information
+Inputs: channel_id
+Outputs: id, name, is_private
+API Reference: https://api.slack.com/methods/conversations.info
+```
+
+**Sync Example:**
+```
+Integration ID: figma
+Connection ID: my-figma-connection
+Model Name: Project
+Frequency: every hour
+Sync Type: full
+Metadata: {"team_id": "1234567890"}
+API Reference: https://www.figma.com/developers/api#projects-endpoints
+```
+
+### What Gets Generated
+
+Once you provide your input, the agent automatically:
+
+1. **Generates the function code** - Creates a complete action or sync implementation
+2. **Creates a full test suite** - Writes comprehensive tests
+3. **Validates with dry run** - Runs `nango dryrun` to verify against your connection
+4. **Iterates on failures** - Automatically debugs and fixes issues
+
+You'll end up with a fully tested, working function ready to deploy.
+
+<Tip>
+The more detail you provide, the better the generated function will be. Include API documentation links when available.
+</Tip>

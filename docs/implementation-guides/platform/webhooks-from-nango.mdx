@@ -1,8 +1,21 @@
 ---
-title: 'Implement webhooks from Nango'
-sidebarTitle: 'Implement webhooks from Nango'
+title: 'Receive webhooks from Nango'
+sidebarTitle: 'Webhooks from Nango'
 description: 'Step by step guide to receive webhooks from Nango'
 ---
+
+Nango uses webhooks to notify your application of important events.
+
+<Info>
+This page covers webhooks that Nango sends to your application. To process webhooks from external APIs, please read the [Webhooks from external APIs](/implementation-guides/use-cases/webhooks-from-external-apis) guide.
+</Info>
+
+## Overview of Nango webhooks
+
+The most common webhooks are:
+- **New connection created**: Sent whenever a new [connection](/guides/primitives/auth#overview) has been created
+- **Sync execution finished**: Sent whenever a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution completes
+- **Forwarded webhook**: Sent when Nango forwards [webhooks from an external API](/implementation-guides/use-cases/webhooks-from-external-apis) to your app
 
 ## Set up webhooks from Nango
 
@@ -222,7 +235,7 @@ Payload received following a refresh token error:
 
 ### Sync webhooks
 
-Sync webhooks are sent when a [sync](/guides/use-cases/syncs) execution finishes, whether successful or not.
+Sync webhooks are sent when a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution finishes, whether successful or not.
 
 Payload received following a successful sync execution:
 
@@ -301,9 +314,9 @@ Nango retries each webhook with non-2xx responses 2 times with exponential backo
 
 Webhooks time out after 20 seconds.
 
-Each webhook attempt is logged in Nango's [logs](/guides/platform/logs).
+Each webhook attempt is logged in Nango's [logs](/guides/platform/observability).
 
-You can also use the [OpenTelemetry exporter](/guides/platform/logs#opentelemetry-logs-export) to monitor Nango webhooks in your own observability stack.
+You can also use the [OpenTelemetry exporter](/guides/platform/observability#opentelemetry-logs-export) to monitor Nango webhooks in your own observability stack.
 
 <Tip>
   **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

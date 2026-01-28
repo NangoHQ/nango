@@ -93,7 +93,7 @@ export const ClassicGettingStarted: React.FC = () => {
             <div className="grid grid-cols-2 text-white gap-7">
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                    href="https://nango.dev/docs/guides/api-authorization/authorize-in-your-app-default-ui"
+                    href="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth"
                     onClick={() => analyticsTrack('web:getting_started:authorize')}
                     target="_blank"
                     rel="noreferrer"
@@ -119,7 +119,7 @@ export const ClassicGettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://nango.dev/docs/guides/syncs/use-a-sync"
+                    href="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#how-to-use-a-sync"
                     onClick={() => analyticsTrack('web:getting_started:read')}
                     target="_blank"
                     rel="noreferrer"
@@ -145,7 +145,7 @@ export const ClassicGettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://nango.dev/docs/guides/actions/use-an-action"
+                    href="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
                     onClick={() => analyticsTrack('web:getting_started:perform')}
                     target="_blank"
                     rel="noreferrer"
@@ -171,7 +171,7 @@ export const ClassicGettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://nango.dev/docs/guides/platform/functions"
+                    href="https://nango.dev/docs/guides/primitives/functions"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"
                     rel="noreferrer"
