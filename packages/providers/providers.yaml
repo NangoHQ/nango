@@ -10145,6 +10145,41 @@ ninjaone-rmm:
     docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
     docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
 
+nocrm:
+    display_name: nocrm.io
+    categories:
+        - crm
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.nocrm.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/ping
+    docs: https://nango.dev/docs/api-integrations/nocrm
+    docs_connect: https://nango.dev/docs/api-integrations/nocrm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your nocrm.io API key
+            pattern: ^[a-f0-9]{48}$
+            example: 4b945b************************************4991
+            doc_section: '#step-2-obtaining-your-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Account subdomain
+            description: Your nocrm.io account subdomain
+            example: acme
+            prefix: https://
+            suffix: .nocrm.io
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+
 notion:
     display_name: Notion
     categories:
