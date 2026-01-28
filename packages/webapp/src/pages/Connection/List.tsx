@@ -13,6 +13,7 @@ import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
+import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { useConnections } from '@/hooks/useConnections';
 import { useListIntegration } from '@/hooks/useIntegration';
@@ -156,7 +157,7 @@ export const ConnectionList = () => {
         return selectedIntegrations;
     }, [selectedIntegrations]);
 
-    const { data: connectionsData } = useConnections({
+    const { data: connectionsData, loading } = useConnections({
         env,
         search: debouncedSearch,
         integrationIds,
@@ -168,6 +169,11 @@ export const ConnectionList = () => {
     }, [connectionsData]);
 
     const hasFiltered = debouncedSearch || selectedIntegrations.length > 0 || selectedErrors.length > 0;
+
+    const connectionCount = connections.length;
+    const hasConnections = connectionCount > 0;
+    const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
+    const showEmptyStateWithFilters = !loading && connectionCount === 0 && hasFiltered;
 
     const table = useReactTable({
         data: connections,
@@ -194,7 +200,7 @@ export const ConnectionList = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h2 className="text-title-subsection text-text-primary">Connections</h2>
-                    {connections && connections.length > 0 && (
+                    {!loading && (hasConnections || hasFiltered) && (
                         <ButtonLink to={`/${env}/connections/create`} size="lg">
                             Add Test Connection
                         </ButtonLink>
@@ -203,7 +209,7 @@ export const ConnectionList = () => {
 
                 {/* Content */}
                 <div className="flex flex-col gap-3.5">
-                    {connections && (connections.length > 0 || hasFiltered) && (
+                    {(loading || hasConnections || hasFiltered) && (
                         <>
                             {/* Connection count */}
                             <ConnectionCount className="self-end" />
@@ -231,56 +237,73 @@ export const ConnectionList = () => {
                             </div>
 
                             {/* Table */}
-                            {connections.length > 0 && (
-                                <Table>
-                                    <TableHeader>
-                                        {table.getHeaderGroups().map((headerGroup) => (
-                                            <TableRow key={headerGroup.id}>
-                                                {headerGroup.headers.map((header) => {
-                                                    return (
-                                                        <TableHead
-                                                            key={header.id}
-                                                            style={{
-                                                                maxWidth: header.getSize() !== 0 ? header.getSize() : undefined,
-                                                                width: header.getSize() !== 0 ? header.getSize() : undefined
-                                                            }}
-                                                            className="h-11"
-                                                        >
-                                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                                        </TableHead>
-                                                    );
-                                                })}
+                            <Table>
+                                <TableHeader>
+                                    {table.getHeaderGroups().map((headerGroup) => (
+                                        <TableRow key={headerGroup.id}>
+                                            {headerGroup.headers.map((header) => {
+                                                return (
+                                                    <TableHead
+                                                        key={header.id}
+                                                        style={{
+                                                            maxWidth: header.getSize() !== 0 ? header.getSize() : undefined,
+                                                            width: header.getSize() !== 0 ? header.getSize() : undefined
+                                                        }}
+                                                        className="h-11"
+                                                    >
+                                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                                    </TableHead>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    ))}
+                                </TableHeader>
+                                {loading && (
+                                    <TableBody>
+                                        {Array.from({ length: 5 }).map((_, rowIndex) => (
+                                            <TableRow key={rowIndex} className="h-16">
+                                                {table.getAllColumns().map((col, colIndex) => (
+                                                    <TableCell
+                                                        key={colIndex}
+                                                        style={{
+                                                            maxWidth: col.getSize() !== 0 ? col.getSize() : undefined
+                                                        }}
+                                                    >
+                                                        <Skeleton className="h-4" style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
+                                                    </TableCell>
+                                                ))}
                                             </TableRow>
                                         ))}
-                                    </TableHeader>
-                                    <TableBody>
-                                        {table.getRowModel().rows?.length > 0 &&
-                                            table.getRowModel().rows.map((row) => (
-                                                <TableRow key={row.id} className="h-16">
-                                                    {row.getVisibleCells().map((cell) => (
-                                                        <TableCell
-                                                            key={cell.id}
-                                                            style={{
-                                                                maxWidth: cell.column.getSize() !== 0 ? cell.column.getSize() : undefined
-                                                            }}
-                                                        >
-                                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                        </TableCell>
-                                                    ))}
-                                                </TableRow>
-                                            ))}
                                     </TableBody>
-                                </Table>
-                            )}
+                                )}
+                                {!loading && hasConnections && (
+                                    <TableBody>
+                                        {table.getRowModel().rows.map((row) => (
+                                            <TableRow key={row.id} className="h-16">
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <TableCell
+                                                        key={cell.id}
+                                                        style={{
+                                                            maxWidth: cell.column.getSize() !== 0 ? cell.column.getSize() : undefined
+                                                        }}
+                                                    >
+                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                )}
+                            </Table>
 
-                            {connections.length === 0 && (
+                            {showEmptyStateWithFilters && (
                                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                                     <p className="text-text-secondary text-body-medium-regular">No connections found.</p>
                                 </div>
                             )}
                         </>
                     )}
-                    {connections && connections.length === 0 && !hasFiltered && (
+                    {showEmptyStateNoFilters && (
                         <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                             <h3 className="text-title-body text-text-primary">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
