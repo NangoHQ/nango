@@ -85,25 +85,22 @@ class SecretService {
 
         const encrypted = encryptionManager.encryptAPISecret(secret);
 
-        const rows = await trx<DBAPISecret>(API_SECRETS_TABLE).insert(encrypted).returning('*');
-        if (!rows || rows.length === 0) {
+        const [created] = await trx<DBAPISecret>(API_SECRETS_TABLE).insert(encrypted).returning('*');
+        if (!created) {
             // The insert above throws if it fails.
             // But we're defensive: If for any reason it were to fail without throwing, we throw.
             throw new NangoError('impossible_condition');
         }
-
-        const created = rows[0]!;
         created.secret = plainText; // Callers expect unencrypted secret.
         return created;
     }
 
     public async markDefault(trx: Knex, secretId: number): Promise<void> {
         return trx.transaction(async (trx) => {
-            const rows = await trx<DBAPISecret>(API_SECRETS_TABLE).select('environment_id').where({ id: secretId });
-            if (!rows || rows.length === 0) {
+            const [secret] = await trx<DBAPISecret>(API_SECRETS_TABLE).select('environment_id').where({ id: secretId });
+            if (!secret) {
                 throw new NangoError('no_such_api_secret', { id: secretId });
             }
-            const secret = rows[0]!;
             await trx<DBAPISecret>(API_SECRETS_TABLE)
                 .where({
                     environment_id: secret.environment_id,
