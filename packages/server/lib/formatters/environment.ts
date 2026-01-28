@@ -2,15 +2,7 @@ import { getGlobalOAuthCallbackUrl } from '@nangohq/shared';
 
 import type { ApiEnvironment, DBEnvironment } from '@nangohq/types';
 
-export function environmentToApi({
-    secret_key_iv,
-    secret_key_tag,
-    secret_key_hashed,
-    pending_secret_key_iv,
-    pending_secret_key_tag,
-    pending_public_key,
-    ...env
-}: DBEnvironment): ApiEnvironment {
+export function environmentToApi(env: DBEnvironment): ApiEnvironment {
     return {
         ...env,
         callback_url: env.callback_url || getGlobalOAuthCallbackUrl(),

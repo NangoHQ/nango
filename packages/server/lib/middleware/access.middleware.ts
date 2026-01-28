@@ -23,7 +23,7 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -37,6 +37,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             plan: DBPlan | null;
         }>
     > {
@@ -104,6 +105,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             plan: DBPlan | null;
         }>
     > {
@@ -188,6 +190,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             connectSession: ConnectSession;
             endUser: InternalEndUser | null;
             plan: DBPlan | null;
@@ -217,6 +220,7 @@ export class AccessMiddleware {
         return Ok({
             account: accountContext.account,
             environment: accountContext.environment,
+            secret: accountContext.secret,
             connectSession: getConnectSession.value.connectSession,
             endUser: getConnectSession.value.connectSession.endUser,
             plan: accountContext.plan
@@ -603,6 +607,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         }
 
         res.locals['environment'] = environment;
+
         tagTraceUser({ account, environment, plan });
         next();
     } catch (err) {
