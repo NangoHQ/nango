@@ -819,6 +819,7 @@
               "integrations/all/workable-oauth",
               "integrations/all/workday",
               "api-integrations/workday-oauth",
+              "api-integrations/workos",
               "integrations/all/wrike",
               "integrations/all/xai",
               "api-integrations/xero",
