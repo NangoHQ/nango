@@ -562,6 +562,24 @@ aimfox-oauth:
         base_url: https://api.aimfox.com/api
     docs: https://nango.dev/docs/integrations/all/aimfox-oauth
 
+ahrefs:
+    display_name: Ahrefs
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.ahrefs.com
+    docs: https://docs.nango.dev/integrations/all/ahrefs
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Ahrefs account
+            pattern: '^[^_]+$'
+            example: xxxxxx
+
 aircall:
     display_name: Aircall (OAuth)
     categories:
@@ -3930,6 +3948,24 @@ cursor-admin:
             default_value: ''
             hidden: true
 
+crustdata:
+    display_name: Crustdata
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://crustdata.com
+    docs: https://docs.nango.dev/integrations/all/crustdata
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Crustdata account
+            pattern: '^[^_]+$'
+            example: xxxxxx
+
 databricks-account:
     display_name: Databricks (Account Level)
     categories:
@@ -4821,6 +4857,24 @@ ebay-sandbox:
         base_url: https://api.sandbox.ebay.com/
     docs: https://nango.dev/docs/integrations/all/ebay-sandbox
 
+e2b:
+    display_name: E2B Code Sandbox
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.e2b.dev
+    docs: https://docs.nango.dev/integrations/all/e2b
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your E2B account
+            pattern: '^e2b_[a-zA-Z0-9]+$'
+            example: e2b_xxxxxx
+
 e-conomic:
     display_name: e-conomic
     categories:
@@ -5294,6 +5348,24 @@ fathom-oauth:
                 - 'ratelimit-reset'
     docs: https://nango.dev/docs/api-integrations/fathom-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/fathom-oauth/how-to-register-your-own-fathom-oauth-app
+
+firecrawl:
+    display_name: Firecrawl
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.firecrawl.dev
+    docs: https://docs.nango.dev/integrations/all/firecrawl
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Firecrawl account
+            pattern: '^fc-[^_]+$'
+            example: fc-***
 
 fellow:
     display_name: Fellow
@@ -7335,6 +7407,24 @@ harvest:
             description: The details of your app
             automated: true
 
+hashnode:
+    display_name: Hashnode
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.hashnode.com
+    docs: https://docs.nango.dev/integrations/all/hashnode
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Hashnode account
+            pattern: '^[^_]+$'
+            example: xxxxxx
+
 health-gorilla:
     display_name: Health Gorilla
     auth_mode: OAUTH2
@@ -7407,6 +7497,24 @@ heyreach:
             pattern: '^[A-Za-z0-9+/]+={0,2}$'
             example: 'FoVLZoM+nVyMELhqr7vH120O2FS1gZcAG5d2qs1bndg='
             doc_section: '#step-1-generating-an-api-key'
+
+heygen:
+    display_name: Heygen
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://heygen.com
+    docs: https://docs.nango.dev/integrations/all/heygen
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Heygen account
+            pattern: '^[^_]+$'
+            example: xxxxxx
 
 hibob-service-user:
     display_name: Hibob Service User
@@ -10008,6 +10116,24 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+neon:
+    display_name: Neon
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://neon.tech
+    docs: https://docs.nango.dev/integrations/all/neon
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Neon account
+            pattern: '^[^_]+$'
+            example: xxxxxx
+
 nerdio:
     display_name: Nerdio
     categories:
@@ -12120,6 +12246,24 @@ readwise-reader:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-generating-your-access-token'
 
+resend:
+    display_name: Resend
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.resend.com
+    docs: https://docs.nango.dev/integrations/all/resend
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Resend account
+            pattern: '^re_[^_]+$'
+            example: re_xxxxxx
+
 recharge:
     display_name: Recharge
     categories:
@@ -13588,6 +13732,24 @@ skio:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-generating-your-api-key'
 
+serpapi:
+    display_name: SerpApi
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.serpapi.com
+    docs: https://docs.nango.dev/integrations/all/serpapi
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your SerpApi account
+            pattern: '^[^_]+$'
+            example: xxxxxx
+
 sharepoint-online:
     display_name: SharePoint Online (v2)
     categories:
@@ -14679,6 +14841,24 @@ tableau:
             example: '3.26'
             doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
+
+tavily:
+    display_name: Tavily
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.tavily.com
+    docs: https://docs.nango.dev/integrations/all/tavily
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Tavily account
+            pattern: '^tvly-[^_]+$'
+            example: tvly-dev-xxxxxx
 
 teamtailor:
     display_name: Teamtailor
