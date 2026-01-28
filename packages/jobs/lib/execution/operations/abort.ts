@@ -5,7 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { orchestratorClient } from '../../clients.js';
 import { envs } from '../../env.js';
 import { logger } from '../../logger.js';
-import { getRunner } from '../../runner/runner.js';
+import { getRunners } from '../../runner/runner.js';
 
 import type { TaskAbort } from '@nangohq/nango-orchestrator';
 import type { Result } from '@nangohq/utils';
@@ -38,12 +38,15 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
 export async function abortTaskWithId({ taskId, teamId }: { taskId: string; teamId: number }): Promise<Result<void>> {
     try {
         await setAbortFlag(taskId);
-        const runner = await getRunner(teamId);
-        if (runner.isErr()) {
-            return Err(runner.error);
+        const runners = await getRunners(teamId);
+        if (runners.isErr()) {
+            return Err(runners.error);
         }
-        const isAborted = await runner.value.client.abort.mutate({ taskId });
-        if (!isAborted) {
+
+        const results = await Promise.allSettled(runners.value.map((runner) => runner.client.abort.mutate({ taskId })));
+        const didAbort = results.some((result) => result.status === 'fulfilled' && result.value);
+
+        if (!didAbort) {
             return Err(`Error aborting script for task: ${taskId}`);
         }
         return Ok(undefined);
