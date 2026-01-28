@@ -38,14 +38,18 @@ export function validateCheckpoint(data: unknown): Result<Checkpoint> {
 }
 
 /**
- * Get a checkpoint by environment ID and key.
+ * Get a checkpoint by environment ID, connection ID, and key.
  * @param environmentId - The environment ID the checkpoint belongs to.
+ * @param connectionId - The connection ID the checkpoint belongs to.
  * @param key - The key of the checkpoint.
  * @returns The checkpoint if found, or null if not found.
  */
-export async function getCheckpoint(db: Knex, { environmentId, key }: { environmentId: number; key: string }): Promise<Result<DBCheckpoint | null>> {
+export async function getCheckpoint(
+    db: Knex,
+    { environmentId, connectionId, key }: { environmentId: number; connectionId: number; key: string }
+): Promise<Result<DBCheckpoint | null>> {
     try {
-        const result = await db.from<DBCheckpoint>(TABLE).where({ environment_id: environmentId, key }).first();
+        const result = await db.from<DBCheckpoint>(TABLE).where({ environment_id: environmentId, connection_id: connectionId, key }).first();
         return Ok(result ?? null);
     } catch (err) {
         return Err(new Error('failed_to_get_checkpoint', { cause: err }));
@@ -56,6 +60,7 @@ export async function getCheckpoint(db: Knex, { environmentId, key }: { environm
  * Upsert a checkpoint with optimistic locking.
  *
  * @param environmentId - The environment ID the checkpoint belongs to.
+ * @param connectionId - The connection ID the checkpoint belongs to.
  * @param key - The key of the checkpoint.
  * @param checkpoint - The checkpoint data to save.
  * @param expectedVersion - Required for updates. Must match the current version.
@@ -65,7 +70,13 @@ export async function getCheckpoint(db: Knex, { environmentId, key }: { environm
  */
 export async function upsertCheckpoint(
     db: Knex,
-    { environmentId, key, checkpoint, expectedVersion }: { environmentId: number; key: string; checkpoint: Checkpoint; expectedVersion?: number }
+    {
+        environmentId,
+        connectionId,
+        key,
+        checkpoint,
+        expectedVersion
+    }: { environmentId: number; connectionId: number; key: string; checkpoint: Checkpoint; expectedVersion?: number }
 ): Promise<Result<DBCheckpoint>> {
     if (key.length > MAX_KEY_LENGTH) {
         return Err(new Error('checkpoint_key_too_long'));
@@ -81,9 +92,9 @@ export async function upsertCheckpoint(
     try {
         const result = await db.raw<{ rows: DBCheckpoint[] }>(
             `
-            INSERT INTO ${TABLE} (environment_id, key, checkpoint, version, created_at, updated_at)
-            VALUES (?, ?, ?::jsonb, 1, NOW(), NOW())
-            ON CONFLICT (environment_id, key)
+            INSERT INTO ${TABLE} (environment_id, connection_id, key, checkpoint, version, created_at, updated_at)
+            VALUES (?, ?, ?, ?::jsonb, 1, NOW(), NOW())
+            ON CONFLICT (environment_id, connection_id, key)
             DO UPDATE SET
                 checkpoint = EXCLUDED.checkpoint,
                 version = ${TABLE}.version + 1,
@@ -93,7 +104,7 @@ export async function upsertCheckpoint(
                 ${TABLE}.version = ?
             RETURNING *
             `,
-            [environmentId, key, JSON.stringify(validatedCheckpoint), expectedVersion ?? null]
+            [environmentId, connectionId, key, JSON.stringify(validatedCheckpoint), expectedVersion ?? null]
         );
 
         const row = result.rows[0];
@@ -110,17 +121,18 @@ export async function upsertCheckpoint(
  * Soft delete checkpoint with optimistic locking
  *
  * @param environmentId - The environment ID the checkpoint belongs to.
+ * @param connectionId - The connection ID the checkpoint belongs to.
  * @param key - The key of the checkpoint to delete.
  * @param expectedVersion - The expected version of the checkpoint. Delete will fail if version doesn't match.
  */
 export async function deleteCheckpoint(
     db: Knex,
-    { environmentId, key, expectedVersion }: { environmentId: number; key: string; expectedVersion: number }
+    { environmentId, connectionId, key, expectedVersion }: { environmentId: number; connectionId: number; key: string; expectedVersion: number }
 ): Promise<Result<void>> {
     try {
         const count = await db
             .from<DBCheckpoint>(TABLE)
-            .where({ environment_id: environmentId, key, version: expectedVersion })
+            .where({ environment_id: environmentId, connection_id: connectionId, key, version: expectedVersion })
             .whereNull('deleted_at')
             .update({
                 deleted_at: db.fn.now(),
@@ -137,30 +149,33 @@ export async function deleteCheckpoint(
 }
 
 /**
- * Hard delete all checkpoints matching a key prefix (e.g., all checkpoints for a connection).
+ * Hard delete all checkpoints for a connection, optionally filtered by key prefix.
  * This does not use optimistic locking as it's typically used for cleanup operations.
  *
  * @param environmentId - The environment ID the checkpoints belong to.
- * @param keyPrefix - The prefix of the keys to delete.
+ * @param connectionId - The connection ID the checkpoints belong to.
+ * @param keyPrefix - Optional prefix to filter keys. If not provided, all checkpoints for the connection are deleted.
  * @example
- * deleteCheckpointsByPrefix(db, { environmentId: 1, keyPrefix: "connection:123:" })
+ * hardDeleteCheckpoints(db, { environmentId: 1, connectionId: 123 }) // deletes all
+ * hardDeleteCheckpoints(db, { environmentId: 1, connectionId: 123, keyPrefix: "sync:" }) // deletes by prefix
  */
-export async function hardDeleteCheckpointsByPrefix(
+export async function hardDeleteCheckpoints(
     db: Knex,
-    { environmentId, keyPrefix }: { environmentId: number; keyPrefix: string }
+    { environmentId, connectionId, keyPrefix }: { environmentId: number; connectionId: number; keyPrefix?: string }
 ): Promise<Result<number>> {
     try {
-        // Escape special characters for SQL LIKE query
-        // % and _ are wildcards, \ is the escape character
-        const escapedPrefix = keyPrefix.replace(/[%_\\]/g, '\\$&');
+        let query = db.from<DBCheckpoint>(TABLE).where('environment_id', environmentId).where('connection_id', connectionId);
 
-        const count = await db
-            .from<DBCheckpoint>(TABLE)
-            .where('environment_id', environmentId)
-            .whereRaw("key LIKE ? ESCAPE '\\'", [`${escapedPrefix}%`])
-            .delete();
+        if (keyPrefix) {
+            // Escape special characters for SQL LIKE query
+            // % and _ are wildcards, \ is the escape character
+            const escapedPrefix = keyPrefix.replace(/[%_\\]/g, '\\$&');
+            query = query.whereRaw("key LIKE ? ESCAPE '\\'", [`${escapedPrefix}%`]);
+        }
+
+        const count = await query.delete();
         return Ok(count);
     } catch (err) {
-        return Err(new Error('failed_to_delete_checkpoints_by_prefix', { cause: err }));
+        return Err(new Error('failed_to_hard_delete_checkpoints', { cause: err }));
     }
 }

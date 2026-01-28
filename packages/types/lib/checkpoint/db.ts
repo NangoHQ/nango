@@ -33,6 +33,7 @@ export type Checkpoint = Record<string, CheckpointValue>;
 export interface DBCheckpoint extends Timestamps {
     id: number;
     environment_id: number;
+    connection_id: number;
     key: string;
     checkpoint: Checkpoint;
     version: number;
