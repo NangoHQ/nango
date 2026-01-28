@@ -10176,6 +10176,7 @@ nocrm:
             description: Your nocrm.io account subdomain
             example: acme
             prefix: https://
+            pattern: '^[a-z0-9-]+$'
             suffix: .nocrm.io
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
