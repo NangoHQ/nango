@@ -5,6 +5,7 @@ import db from '@nangohq/database';
 import { Encryption, getLogger } from '@nangohq/utils';
 
 import { isConnectionJsonRow } from '../services/connections/utils.js';
+import secretService from '../services/secret.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironmentVariable } from '@nangohq/types';
@@ -234,6 +235,7 @@ export class EncryptionManager extends Encryption {
                 continue; // Already encrypted.
             }
             const encrypted = this.encryptAPISecret(secret);
+            encrypted.hashed = await secretService.hashSecret(secret.secret);
             encrypted.updated_at = new Date();
             await db.knex<DBAPISecret>(`api_secrets`).where({ id: secret.id }).update(encrypted);
         }
