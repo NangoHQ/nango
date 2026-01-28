@@ -3,13 +3,12 @@ import tracer from 'dd-trace';
 import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 export interface AuthLocals {
     account: DBTeam;
     environment: DBEnvironment;
-    secret: DBAPISecret;
     plan: DBPlan | null;
 }
 
