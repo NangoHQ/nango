@@ -16147,8 +16147,7 @@ workday-refresh-token:
         authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
     token_response:
         token: access_token
-        token_expiration: expires_in
-        token_expiration_strategy: expireIn
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.tokenDomain}/ccx/api
     docs: https://nango.dev/docs/api-integrations/workday-refresh-token
