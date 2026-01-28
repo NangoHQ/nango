@@ -26,6 +26,7 @@ import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStar
 import { GettingStarted } from './pages/GettingStarted/Show';
 import { Homepage } from './pages/Homepage/Show';
 import { CreateIntegration } from './pages/Integrations/Create';
+import { CreateIntegrationList } from './pages/Integrations/CreateList';
 import { IntegrationsList } from './pages/Integrations/Show';
 import { FunctionsOne } from './pages/Integrations/providerConfigKey/Functions/One';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
@@ -101,8 +102,18 @@ const router = sentryCreateBrowserRouter([
                     },
                     {
                         path: 'create',
-                        element: <CreateIntegration />,
-                        handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle
+                        handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <CreateIntegrationList />
+                            },
+                            {
+                                path: ':providerConfigKey',
+                                element: <CreateIntegration />,
+                                handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                            }
+                        ]
                     },
                     {
                         path: ':providerConfigKey',

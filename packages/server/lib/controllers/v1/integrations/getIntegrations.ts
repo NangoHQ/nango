@@ -55,6 +55,10 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
             if (provider.auth_mode === 'TWO_STEP' && 'assertion_option' in provider) {
                 formatted.meta['assertionOptionParams'] = parseAssertionOptionParamsFromTemplate(provider as ProviderTwoStep);
             }
+
+            if (provider.authorization_params) {
+                formatted.meta['authorizationParams'] = provider.authorization_params;
+            }
         }
 
         return formatted;

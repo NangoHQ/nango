@@ -1,0 +1,86 @@
+---
+title: 'Managed API authorization'
+sidebarTitle: 'Auth'
+description: 'Let your users connect external APIs to your agents & apps.'
+---
+
+## Overview
+
+Nango **Auth** lets your users connect 600+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
+
+**Connections** are created after each successful authorization. A Connection stores one user's credentials for one external API and keeps them valid over time. 
+
+Credentials are retrievable at scale or available to the rest of the Nango platform without ever passing through your codebase.
+
+## How it works
+
+**1. Embed the Nango Auth flow in your frontend**
+
+```TypeScript
+nango.openConnectUI({
+  onEvent: (event) => {
+    // Handle completion.
+  },
+});
+```
+
+<Frame caption="Example of the Auth UI">
+  ![](/images/screenshots/connect-ui.gif)
+</Frame>
+
+**2. Fetch API credentials from your backend before making requests**
+
+<Tabs>
+  <Tab title="Typescript">
+  ```TypeScript
+    await nango.getConnection(integrationId, connectionId);
+  ```
+  </Tab>
+
+  <Tab title="Other languages (cURL)">
+
+  ```bash
+    curl \
+      "https://api.nango.dev/connections/{connectionId}?integration_id={integrationId}" \
+      -H "Authorization: Bearer {nangoSecretKey}"
+  ```
+
+  </Tab>
+</Tabs>
+
+## Capabilities
+
+### Authorization flows
+- OAuth 2.0, OAuth 1.0a, API keys, basic auth, and custom auth schemes
+- Embedded flow designed to run inside your product
+- API-specific guidance shown to end-users when needed
+- Automatic token refresh
+
+### Secure credential management
+- Encrypted credential storage
+- Retrieve credentials at scale to make API requests
+- Combine with [Proxy](/guides/primitives/proxy) & [Functions](/guides/primitives/functions) to avoid handling credentials directly
+
+### Control
+- Fully white-labeled user experience
+- Customizable UI and branding
+- Ability to export credentials at any time
+- Doesn't require using other Nango primitives
+
+### Coverage and extensibility
+- 600+ supported APIs
+- New APIs added on demand within days
+- Ability to extend or contribute APIs yourself
+
+### Observability
+- Credential failure detection and re-connection flow
+- Logged authorization attempts
+- Connection-level diagnostics and monitoring
+
+## Next step
+
+<CardGroup cols={2}>
+    <Card title="Auth guide" icon="lock" href="/implementation-guides/platform/auth/implement-api-auth">
+        Embed Nango Auth in your application and let your users connect external APIs.
+    </Card>
+</CardGroup>

@@ -1,0 +1,33 @@
+---
+title: 'How to register your own Brex Staging OAuth app'
+sidebarTitle: 'Brex Staging Setup'
+description: 'Register an OAuth app with Brex Staging and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Brex Staging to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Brex Staging account.
+
+<Note>
+**This guide is for Brex developer partners only.** Brex Staging is a testing environment for Brex integrations. You will get access to the staging environment when you register as a Brex developer partner.
+</Note>
+
+<Warning>
+**There are no availability guarantees in staging**–data stored in staging environments may be purged at any time. Use staging for point-in-time testing only.
+</Warning>
+
+<Steps>
+  <Step title="Register as a Brex Partner">
+    Go to [Brex Partners](https://www.brex.com/partners) and register as a Brex developer partner. This is required to access OAuth functionality.
+  </Step>
+  <Step title="Get your credentials">
+    Contact the Brex developer support team to be issued a **Client ID** and **Client Secret** for partner authentication. The scopes for your client and the Nango callback URL (`https://api.nango.dev/oauth/callback`) will be provided to you.
+    
+    Once your application is set up, you'll receive your **Client ID** and **Client Secret**. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Brex's Partner Authentication documentation](https://developer.brex.com/docs/partner_authentication/) and the [Brex Developers Slack Community](https://join.slack.com/t/brexdev/shared_invite/zt-vgwh6rja-CjydrUA4uJSB90ZO~gnI8Q).
+
+---

@@ -181,7 +181,7 @@ export async function exec({
                     if (!isEnterprise) {
                         if (outputSizeInBytes > maxSizeInBytes) {
                             throw new Error(
-                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/changelog/dev-updates#action-payload-output-limit`
+                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22%2C-2025`
                             );
                         }
                     }

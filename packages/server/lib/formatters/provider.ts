@@ -8,6 +8,7 @@ export function providerListItemToAPI(providerName: string, properties: Provider
         authMode: properties.auth_mode,
         categories: properties.categories,
         docs: properties.docs,
+        docs_connect: properties.docs_connect,
         preConfigured,
         preConfiguredScopes
     };

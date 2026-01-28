@@ -12,7 +12,8 @@ const bodySchema = z
         allowed_integrations: originalBodySchema.shape.allowed_integrations,
         end_user: originalBodySchema.shape.end_user,
         organization: originalBodySchema.shape.organization,
-        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults
+        integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
+        overrides: originalBodySchema.shape.overrides
     })
     .strict();
 
@@ -37,8 +38,9 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
         allowed_integrations: body.allowed_integrations,
         end_user: { ...body.end_user, tags: { origin: 'nango_dashboard' } },
         organization: body.organization,
-        integrations_config_defaults: body.integrations_config_defaults
+        integrations_config_defaults: body.integrations_config_defaults,
+        overrides: body.overrides
     } satisfies PostConnectSessions['Body'];
 
-    await generateSession(res, emulatedBody);
+    await generateSession(res, emulatedBody, res.locals.plan);
 });
