@@ -52,7 +52,6 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
 
         res.locals['account'] = accountContext.account;
         res.locals['environment'] = accountContext.environment;
-        res.locals['secret'] = accountContext.secret;
         res.locals['plan'] = accountContext.plan;
         tagTraceUser({ ...accountContext });
         next();
