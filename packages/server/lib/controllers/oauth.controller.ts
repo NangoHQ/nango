@@ -1089,7 +1089,7 @@ class OAuthController {
             const err = new Error('No state found in callback');
 
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
-            authHtml({ res, error: err.message });
+            authHtml({ res, error: err.message, queryParams: req.query });
             return;
         }
 
@@ -1098,7 +1098,7 @@ class OAuthController {
             session = await oAuthSessionService.findById(state as string);
         } catch (err) {
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
-            authHtml({ res, error: 'invalid_oauth_state' });
+            authHtml({ res, error: 'invalid_oauth_state', queryParams: req.query });
             return;
         }
 
@@ -1106,7 +1106,7 @@ class OAuthController {
             const err = new Error(`No session found for state: ${JSON.stringify(state)}`);
 
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
-            authHtml({ res, error: err.message });
+            authHtml({ res, error: err.message, queryParams: req.query });
             return;
         } else {
             await oAuthSessionService.delete(state as string);
