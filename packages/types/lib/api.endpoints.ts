@@ -40,6 +40,7 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
+    PatchPublicConnection,
     PostConnectionRefresh,
     PostPublicConnection
 } from './connection/api/get.js';
@@ -120,6 +121,7 @@ export type PublicApiEndpoints =
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
     | PostPublicConnection
+    | PatchPublicConnection
     | PostPublicSyncStart
     | PostPublicSyncPause
     | GetPublicSyncStatus

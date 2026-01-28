@@ -3,10 +3,10 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { EndUserMapper, configService } from '@nangohq/shared';
+import { EndUserMapper, buildTagsFromEndUser, configService } from '@nangohq/shared';
 import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -49,7 +49,8 @@ export const bodySchema = z
                     docs_connect: z.string().optional()
                 })
             )
-            .optional()
+            .optional(),
+        tags: connectionTagsSchema.optional()
     })
     .strict();
 
@@ -154,6 +155,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
         }
 
         const endUser = body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null;
+        const endUserTags = buildTagsFromEndUser(body.end_user, body.organization);
+        const tags = { ...endUserTags, ...body.tags };
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
@@ -181,7 +184,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 : null,
             operationId: logCtx.id,
             overrides: body.overrides || null,
-            endUser
+            endUser,
+            tags
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

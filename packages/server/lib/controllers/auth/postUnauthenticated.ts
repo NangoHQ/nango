@@ -129,7 +129,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             connectionId,
             providerConfigKey,
             connectionConfig,
-            environment
+            environment,
+            tags: connectSession?.tags
         });
 
         if (!updatedConnection) {

@@ -142,7 +142,8 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             providerConfigKey,
             parsedRawCredentials: { type: 'OAUTH2' } as any,
             connectionConfig: updatedConnectionConfig,
-            environmentId: environment.id
+            environmentId: environment.id,
+            tags: connectSession?.tags
         });
 
         if (!updatedConnection) {

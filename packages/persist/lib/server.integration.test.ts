@@ -514,7 +514,8 @@ const initDb = async () => {
         providerConfigKey: `provider-test`,
         parsedRawCredentials: {} as AllAuthCredentials,
         connectionConfig: {},
-        environmentId: env.id
+        environmentId: env.id,
+        tags: {}
     });
     const connectionId = connectionRes[0]?.connection.id;
     if (!connectionId) throw new Error('Connection not created');
