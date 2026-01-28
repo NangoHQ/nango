@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { InfoTooltip } from '../../providerConfigKey/Settings/components/InfoTooltip';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { Button } from '@/components-v2/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
 import { InputGroup, InputGroupInput, InputGroupTextarea } from '@/components-v2/ui/input-group';

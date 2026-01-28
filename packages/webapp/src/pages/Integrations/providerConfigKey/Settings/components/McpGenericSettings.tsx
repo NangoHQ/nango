@@ -4,7 +4,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
-import { validateUrl } from '@/pages/Integrations/utils';
+import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -49,13 +49,21 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
             {/* OAuth Client Name */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_name">OAuth Client Name</Label>
-                <EditableInput initialValue={integration.custom?.oauth_client_name || ''} onSave={(value) => onSave({ clientName: value })} />
+                <EditableInput
+                    initialValue={integration.custom?.oauth_client_name || ''}
+                    onSave={(value) => onSave({ clientName: value })}
+                    validate={validateNotEmpty}
+                />
             </div>
 
             {/* OAuth Client URI */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_uri">OAuth Client URI</Label>
-                <EditableInput initialValue={integration.custom?.oauth_client_uri || ''} onSave={(value) => onSave({ clientUri: value })} />
+                <EditableInput
+                    initialValue={integration.custom?.oauth_client_uri || ''}
+                    onSave={(value) => onSave({ clientUri: value })}
+                    validate={validateNotEmpty}
+                />
             </div>
 
             {/* OAuth Client Logo URI */}

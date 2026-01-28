@@ -23,7 +23,7 @@ export const CreateIntegration = () => {
     const navigate = useNavigate();
 
     const { providerConfigKey } = useParams();
-    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey!);
+    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey);
 
     const provider = providerData?.data;
 

@@ -42,3 +42,10 @@ export function validateUrl(value: string): string | null {
         return message;
     }
 }
+
+export function validateNotEmpty(value: string): string | null {
+    if (value.trim() === '') {
+        return 'Must not be empty';
+    }
+    return null;
+}
