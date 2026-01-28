@@ -151,7 +151,7 @@ describe('Checkpoint service', () => {
             expect(res).toBeNull();
         });
 
-        it('should return null for deleted checkpoint', async () => {
+        it('should return soft-deleted checkpoint with deleted_at set', async () => {
             const key = 'connection:11:function:11';
             const checkpoint = { test: true };
 
@@ -159,19 +159,26 @@ describe('Checkpoint service', () => {
             await deleteCheckpoint(db.knex, { environmentId, key, expectedVersion: created.version });
 
             const res = (await getCheckpoint(db.knex, { environmentId, key })).unwrap();
-            expect(res).toBeNull();
+            expect(res).not.toBeNull();
+            expect(res?.checkpoint).toEqual(checkpoint);
+            expect(res?.deleted_at).not.toBeNull();
+            expect(res?.version).toBe(2);
         });
     });
 
     describe('deleteCheckpoint', () => {
         it('should soft delete existing checkpoint with correct version', async () => {
             const key = 'connection:20:function:20';
-            const created = (await upsertCheckpoint(db.knex, { environmentId, key, checkpoint: { test: true } })).unwrap();
+            const checkpoint = { test: true };
+            const created = (await upsertCheckpoint(db.knex, { environmentId, key, checkpoint })).unwrap();
 
             await deleteCheckpoint(db.knex, { environmentId, key, expectedVersion: created.version });
 
             const res = (await getCheckpoint(db.knex, { environmentId, key })).unwrap();
-            expect(res).toBeNull();
+            expect(res).not.toBeNull();
+            expect(res?.checkpoint).toEqual(checkpoint);
+            expect(res?.deleted_at).not.toBeNull();
+            expect(res?.version).toBe(2);
         });
 
         it('should fail to delete with wrong version', async () => {

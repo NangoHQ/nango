@@ -39,14 +39,13 @@ export function validateCheckpoint(data: unknown): Result<Checkpoint> {
 
 /**
  * Get a checkpoint by environment ID and key.
- * Only returns non-deleted checkpoints.
  * @param environmentId - The environment ID the checkpoint belongs to.
  * @param key - The key of the checkpoint.
  * @returns The checkpoint if found, or null if not found.
  */
 export async function getCheckpoint(db: Knex, { environmentId, key }: { environmentId: number; key: string }): Promise<Result<DBCheckpoint | null>> {
     try {
-        const result = await db.from<DBCheckpoint>(TABLE).where({ environment_id: environmentId, key }).whereNull('deleted_at').first();
+        const result = await db.from<DBCheckpoint>(TABLE).where({ environment_id: environmentId, key }).first();
         return Ok(result ?? null);
     } catch (err) {
         return Err(new Error('failed_to_get_checkpoint', { cause: err }));
