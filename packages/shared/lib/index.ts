@@ -39,6 +39,7 @@ export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
+export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
