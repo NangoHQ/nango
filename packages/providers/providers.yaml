@@ -4288,7 +4288,7 @@ demodesk:
             type: string
             title: API Key
             description: Your DemoDesk API key
-            doc_section: '#step-1-determining-which-api-key-you-need'
+            doc_section: '#step-1-obtaining-your-api-key'
 
 dialpad:
     display_name: Dialpad
