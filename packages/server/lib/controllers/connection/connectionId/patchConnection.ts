@@ -1,16 +1,17 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { EndUserMapper, configService, connectionService, linkConnection, upsertEndUser } from '@nangohq/shared';
+import { EndUserMapper, buildTagsFromEndUser, configService, connectionService, linkConnection, updateConnectionTags, upsertEndUser } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionIdSchema, connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PatchPublicConnection } from '@nangohq/types';
 
 const schemaBody = z.strictObject({
-    end_user: endUserSchema.optional()
+    end_user: endUserSchema.optional(),
+    tags: connectionTagsSchema.optional()
 });
 
 const queryStringValidation = z.strictObject({
@@ -60,6 +61,10 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
 
     const connection = connectionRes.response;
 
+    // Generate tags from end_user (similar to postSessions.ts and postReconnect.ts)
+    const endUserTags = body.end_user ? buildTagsFromEndUser(body.end_user, null) : {};
+    const mergedTags = { ...endUserTags, ...body.tags };
+
     if (body.end_user) {
         await db.knex.transaction(async (trx) => {
             const endUserRes = await upsertEndUser(trx, { account, environment, connection, endUser: EndUserMapper.apiToEndUser(body.end_user!) });
@@ -72,6 +77,17 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
                 await linkConnection(trx, { endUserId: endUserRes.value.id, connection });
             }
         });
+    }
+
+    if (body.end_user || body.tags !== undefined) {
+        const tagsRes = await updateConnectionTags(db.knex, {
+            connection,
+            tags: mergedTags
+        });
+        if (tagsRes.isErr()) {
+            res.status(400).send({ error: { code: 'invalid_body', message: tagsRes.error.message } });
+            return;
+        }
     }
 
     res.status(200).send({ success: true });

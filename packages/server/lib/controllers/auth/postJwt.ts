@@ -177,7 +177,8 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             connectionConfig,
             metadata: {},
             config,
-            environment
+            environment,
+            tags: connectSession?.tags
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

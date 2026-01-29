@@ -138,7 +138,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(resReconnect.json);
 
         // Check that the connection was updated
-        // Nothing is different except the dates
+        // Nothing is different except the dates and tags (which reflect the updated end_user email)
         const connectionAfter = await connectionService.checkIfConnectionExists(db.knex, {
             connectionId: resConnect.json.connectionId,
             providerConfigKey: resConnect.json.providerConfigKey,
@@ -146,6 +146,7 @@ describe(`GET ${endpoint}`, () => {
         });
         expect(connectionAfter).toMatchObject({
             ...connectionBefore,
+            tags: { end_user_id: '1', end_user_email: 'john.updated@example.com' },
             credentials_expires_at: expect.toBeIsoDate(), // new credentials means new date
             last_refresh_success: expect.toBeIsoDate(),
             updated_at: expect.toBeIsoDate()
