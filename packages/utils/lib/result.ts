@@ -2,6 +2,10 @@ import type { Left, Result, Right } from '@nangohq/types';
 
 export type { Left, Result, Right };
 
+// Note that `Error` in this file refers specifically to the ES5 Error interface.
+// - Not to the ES2022 Error interface.
+// - Not to the builtin Error class.
+
 export function Ok<E extends Error>(): Result<void, E>;
 export function Ok<T, E extends Error>(value: T): Result<T, E>;
 export function Ok<T, E extends Error>(value?: any): Result<T | void, E> {
@@ -46,5 +50,25 @@ export function Err<T>(error: unknown): Result<T> {
 }
 
 function ensureError(err: unknown): Error {
-    return err instanceof Error ? err : new Error(String(err));
+    if (err === null || err === undefined) {
+        return new Error();
+    }
+    if (isError(err)) {
+        return err;
+    }
+    if (typeof err === 'object') {
+        return new Error(JSON.stringify(err));
+    }
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    return new Error(String(err));
+}
+
+function isError(value: any): value is Error {
+    if (value instanceof Error) {
+        return true;
+    }
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
+    return 'name' in value && typeof value.name === 'string' && 'message' in value && typeof value.message === 'string';
 }
