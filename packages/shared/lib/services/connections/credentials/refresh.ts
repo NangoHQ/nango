@@ -395,7 +395,6 @@ export async function refreshCredentialsIfNeeded({
                 refreshGithubAppJwtToken
             });
 
-            console.log('this is the should refresh token here', shouldRefresh);
             return {
                 connection,
                 shouldRefresh,
@@ -570,7 +569,8 @@ export async function shouldRefreshCredentials({
     }
 
     if (credentials.type === 'OAUTH2') {
-        // microsoft-admin doesn't return a refresh_token but we need to refresh it using the client_credentials flow
+        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and doesn't return a refresh_token.
+        // so we allow token refresh either if we have a refresh_token or if the provider is microsoft-admin.
         if (credentials.refresh_token || providerConfig.provider === 'microsoft-admin') {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
         }
