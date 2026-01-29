@@ -491,7 +491,7 @@
                 },
                 "token_response": {
                     "type": "object",
-                    "additionalProperties": true,
+                    "additionalProperties": false,
                     "properties": {
                         "token": {
                             "type": "string"
@@ -500,6 +500,9 @@
                             "type": "string"
                         },
                         "token_expiration_strategy": {
+                            "type": "string"
+                        },
+                        "refresh_token": {
                             "type": "string"
                         }
                     }

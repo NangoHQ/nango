@@ -1255,8 +1255,6 @@ class ConnectionService {
             credentials['assertion'] = create.value;
 
             Object.assign(dynamicCredentials, credentials);
-
-            delete dynamicCredentials['assertionOption'];
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1411,6 +1409,10 @@ class ConnectionService {
             }
             if ('refresh_token' in dynamicCredentials) {
                 delete dynamicCredentials['refresh_token'];
+            }
+
+            if ('assertionOption' in dynamicCredentials) {
+                delete dynamicCredentials['assertionOption'];
             }
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
