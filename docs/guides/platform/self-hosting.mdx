@@ -1,0 +1,132 @@
+---
+title: 'Self-host Nango'
+sidebarTitle: 'Self-hosting'
+description: 'Overview of self-hosted deployments.'
+---
+
+Nango offers a self-hosted deployment option for Enterprise customers. This guide covers deployment, scaling, updates, and other key operational details.
+
+## Architecture overview
+
+<Frame caption="Nango's infrastructure components">
+  <img src="/images/diagrams/nango-architecture.png" />
+</Frame>
+
+## Architecture components
+
+Nango consists of several core services, each handling specific responsibilities:
+
+- **Server (Node service)**: Powers the dashboard, API, proxy requests, and incoming/outgoing webhooks.
+- **Orchestrator (Node service)**: Manages task scheduling and state tracking.
+- **Jobs (Node service)**: Processes tasks and dispatches them to the Runner.
+- **Runner (Node service)**: Executes integration code and interacts with external APIs.
+- **Persist (Node service)**: Stores synced records and logs.
+- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
+- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **ElasticSearch**: Stores execution data.
+- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
+
+## Cloud vs. self-hosted architecture
+
+The Nango architecture is largely the same for both Cloud and Enterprise self-hosting. This ensures self-hosted instances benefit from continuous dogfooding and load testing.
+
+The primary differences are:
+- In the Cloud version, the Runner service runs as isolated instances per customer.
+- The Postgres database is segmented by use case (control plane, task scheduling, synced records).
+
+## Features
+
+All paid features available on Nango Cloud are also included in the Enterprise self-hosted edition.
+
+## Plan requirement
+
+An [Enterprise plan](https://www.nango.dev/pricing) subscription is required.
+
+Enterprise Self-Hosted pricing contain a fixed annual license and maintenance fee, plus a fraction of the cloud usage-based fees since infrastructure is on the customer side.
+
+## Intended users
+
+Inteded for large and/or regulated enterprises.
+
+## Deployment
+
+By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nango-helm-charts). Custom deployments (e.g., ECS) are possible with our guidance.
+
+## Updates
+
+Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed. Notifications about new releases will be posted to your dedicated Nango Slack channel.
+
+Managed image tags follow this format:
+
+```
+nangohq/nango:managed-{managed-release-version}-{application-version}-{commit-sha}
+```
+
+* `managed-release-version`: Semantic versioning for the image lifecycle (major = breaking, minor/patch = features/fixes)
+* `application-version`: Semantic version of the Nango application baked into the image
+
+Customers should **pin their CLI version to the `application-version`** specified in the tag for compatibility.
+
+You can find the latest version by checking the [`managed-manifest.json`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json).
+
+See the full [changelog](https://nango.dev/docs/updates) for details on each release.
+
+## Cloud provider support
+
+Supports all major cloud providers (AWS, GCP, Azure).
+
+## Recommended configuration
+
+- **5 Node services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
+- **Postgres database**: 2 CPU, 8GB RAM, 128GB storage
+- **Redis data store**: 128MB
+- **ElasticSearch data store**: 2 vCPU, 1GB RAM, 30GB storage
+- **Object storage (e.g. S3)**: less than 500MB of storage
+
+## Scaling
+
+The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
+
+Auto-scaling is not provided out-of-the-box yet, but the default configuration scales far. We can guide you on configuring auto-scaling when needed.
+
+Bottlenecks mostly depend on:
+- **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
+- **Cached records & size (for syncs only)**: solved by scaling Postgres vertically.
+
+## Data storage
+
+- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
+- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **ElasticSearch**: Stores execution data.
+- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
+
+## Using existing data stores
+
+Yes, Nango is flexible with data store setups. However, we recommend a separate instance for independent scaling.
+
+## Internet access requirements
+
+- **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
+- **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
+
+## Exporting billing metrics
+
+For usage-based billing, certain anonymous metrics must be exported to Nango. This can be done automatically or manually, depending on your preference. We’ll coordinate with your team during setup.
+
+## Exporting metrics & logs
+
+Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
+
+## Email service
+
+Nango uses emails for account verification, password reset, and sending invitations, etc...
+
+Any SMTP server can be configured to be used by Nango for these email communications.
+
+<Info>
+A limited [free self-hosting](/guides/platform/free-self-hosting/configuration) option is available for hobbby projects.
+</Info>
+
+<Tip>
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
+</Tip>

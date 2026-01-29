@@ -37,3 +37,4 @@ export { default as oneloginPreConnectionDeletion } from './providers/onelogin/p
 export { default as sellsyPostConnection } from './providers/sellsy/post-connection.js';
 export { default as zohoPostConnection } from './providers/zoho/post-connection.js';
 export { default as sophosCentralPostConnection } from './providers/sophos-central/post-connection.js';
+export { default as procorePostConnection } from './providers/procore/post-connection.js';
