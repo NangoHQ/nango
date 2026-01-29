@@ -584,6 +584,7 @@
               "integrations/all/netsuite",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
+              "api-integrations/nocrm",
               "api-integrations/notion",
               "integrations/all/notion-scim",
               "integrations/all/odoo",
