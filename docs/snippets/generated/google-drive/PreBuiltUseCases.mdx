@@ -2,18 +2,18 @@
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `upload-document` | Uploads a file to Google Drive. The file is uploaded to the root directory of the authenticated user's Google Drive account. If a folder ID is provided, the file is uploaded to the specified folder. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/upload-document.ts) |
-| `documents` | Sync the metadata of a specified file or folders from Google Drive, handling both individual files and nested folders. Metadata required to filter on a particular folder, or file(s). Metadata fields should be `{"files": ["<some-id>"]}` OR `{"folders": ["<some-id>"]}`. The ID should be able to be provided by using the Google Picker API (https://developers.google.com/drive/picker/guides/overview) and using the ID field provided by the response (https://developers.google.com/drive/picker/reference/results) | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/documents.ts) |
+| `upload-document` | Uploads a file to Google Drive. The file is uploaded to the root directory of the authenticated user's Google Drive account. If a folder ID is provided, the file is uploaded to the specified folder. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/upload-document.ts) |
+| `documents` | Sync the metadata of a specified file or folders from Google Drive, handling both individual files and nested folders. Metadata required to filter on a particular folder, or file(s). Metadata fields should be `{"files": ["<some-id>"]}` OR `{"folders": ["<some-id>"]}`. The ID should be able to be provided by using the Google Picker API (https://developers.google.com/drive/picker/guides/overview) and using the ID field provided by the response (https://developers.google.com/drive/picker/reference/results) | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/documents.ts) |
 
 ### Drives
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `list-drives` | Lists all shared drives the user has access to. Returns paginated results with up to 100 drives per page. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-drives.ts) |
+| `list-drives` | Lists all shared drives the user has access to. Returns paginated results with up to 100 drives per page. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-drives.ts) |
 
 ### Folders
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `folder-content` | Fetches the top-level content (files and folders) of a folder given its ID. If no folder ID is provided, it fetches content from the root folder. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/folder-content.ts) |
-| `folders` | Sync the folders at the root level of a google drive. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/folders.ts) |
+| `folder-content` | Fetches the top-level content (files and folders) of a folder given its ID. If no folder ID is provided, it fetches content from the root folder. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/folder-content.ts) |
+| `folders` | Sync the folders at the root level of a google drive. | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/folders.ts) |
