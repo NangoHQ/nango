@@ -29,6 +29,7 @@ export interface ApiProviderListItem {
     authMode: AuthModeType;
     categories?: string[] | undefined;
     docs: string;
+    docs_connect?: string | undefined;
     preConfigured: boolean;
     preConfiguredScopes: string[];
 }

@@ -32,7 +32,9 @@ export { default as bullhornPostConnection } from './providers/bullhorn/post-con
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';
 export { default as onedrivePostConnection } from './providers/one-drive/post-connection.js';
 export { default as atlassianGovernmentCloudPostConnection } from './providers/jira/post-connection.js';
+export { default as atlassianServicAccountPostConnection } from './providers/jira/post-connection.js';
 export { default as oneloginPreConnectionDeletion } from './providers/onelogin/pre-connection-deletion.js';
 export { default as sellsyPostConnection } from './providers/sellsy/post-connection.js';
 export { default as zohoPostConnection } from './providers/zoho/post-connection.js';
 export { default as sophosCentralPostConnection } from './providers/sophos-central/post-connection.js';
+export { default as procorePostConnection } from './providers/procore/post-connection.js';

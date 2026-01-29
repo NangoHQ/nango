@@ -10,6 +10,14 @@ export type ApiEnvironment = Omit<
 >;
 export type ApiWebhooks = Omit<DBExternalWebhook, 'id' | 'environment_id' | 'created_at' | 'updated_at'>;
 
+export type GetEnvironments = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/environments';
+    Success: {
+        data: Pick<DBEnvironment, 'name'>[];
+    };
+}>;
+
 export type PostEnvironment = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/environments';

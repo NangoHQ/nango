@@ -8,6 +8,7 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Badge } from '@/components-v2/ui/badge';
 import { ButtonLink } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton.js';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
@@ -59,7 +60,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     );
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Skeleton className="w-full max-w-2xl h-50" />;
     }
 
     return (
@@ -70,11 +71,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
                 {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" target="_blank">
                         How to use Actions <ExternalLink />
                     </ButtonLink>
                 ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" target="_blank">
                         How to use Syncs <ExternalLink />
                     </ButtonLink>
                 )}

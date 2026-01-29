@@ -47,11 +47,11 @@ export const Layout: React.FC = () => {
 
     return (
         <div
-            className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center p-14 ${isAuthLink ? (isDarkTheme ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80'}`}
+            className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center sm:p-14 ${isAuthLink ? (isDarkTheme ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80'}`}
         >
-            <div ref={ref} className="flex flex-col w-[500px] h-[700px] rounded-md bg-elevated p-px overflow-hidden">
-                <div className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto">
-                    <div className="min-h-full p-10 flex flex-col">
+            <div ref={ref} className="flex flex-col w-full h-full sm:w-[500px] sm:h-[700px] sm:rounded-md bg-elevated p-px overflow-hidden">
+                <div className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto">
+                    <div className="min-h-full p-5 sm:p-10 flex flex-col">
                         <Outlet />
                     </div>
                 </div>

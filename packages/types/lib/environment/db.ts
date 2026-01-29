@@ -59,3 +59,14 @@ export interface DBExternalWebhook extends Timestamps {
     on_sync_error: boolean;
     on_async_action_completion: boolean;
 }
+
+export interface DBAPISecret extends Timestamps {
+    id: number;
+    environment_id: number;
+    display_name: string;
+    secret: string;
+    iv: string;
+    tag: string;
+    hashed: string;
+    is_default: boolean;
+}

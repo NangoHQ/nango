@@ -1,0 +1,26 @@
+---
+title: 'How to register your own Reapit Connect OAuth app'
+sidebarTitle: 'Reapit Connect Setup'
+description: 'Register an OAuth app with Reapit Connect and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Reapit Connect to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Reapit account.
+
+<Steps>
+  <Step title="Register your application and get credentials">
+    1. Navigate to [application submission page](https://marketplace.reapit.cloud/developer/submit-app) and register your application.
+    2. The registration form will capture information about your application, including the details required for integration with Reapit.
+    3. Select **Authenticate with Reapit Connect** as your required authentication flow.
+    4. Provide `https://api.nango.dev/oauth/callback` as the redirect URL.
+    5. Select the scopes (permissions) your application needs to interact with the API endpoints.
+    6. Once you have successfully registered, navigate to the [My Apps](https://marketplace.reapit.cloud/developer/apps) area of our developer portal and click on your app.
+    7. Copy your **Client ID** and **Client Secret** from the application settings. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Reapit Connect Documentation](https://foundations-documentation.reapit.cloud/api/reapit-connect).
+
+---

@@ -1,0 +1,48 @@
+---
+title: 'Oomnitza - How do I link my account?'
+sidebarTitle: 'Oomnitza'
+---
+
+# Overview
+
+To authenticate with Oomnitza, you will need:
+1. **Subdomain** - The subdomain of your Oomnitza instance (e.g., `mycompany` for `mycompany.oomnitza.com`).
+2. **API Token** - A key that grants Nango permission to interact with Oomnitza's API resources and services.
+
+This guide will walk you through finding your **Subdomain** and generating your **API Token** within Oomnitza.
+
+### Prerequisites:
+
+- You must have an Oomnitza account with API access
+
+### Instructions:
+
+#### Step 1: Finding your Subdomain
+
+Your Oomnitza subdomain is the part of your Oomnitza URL that appears before `.oomnitza.com`. 
+
+For example, if your Oomnitza URL is `https://mycompany.oomnitza.com`, your subdomain is `mycompany`.
+
+You can find your subdomain by checking the URL in your browser when you're logged into Oomnitza.
+
+#### Step 2: Generating your API Token
+
+1. Log in to your **Oomnitza** account.
+2. Navigate to **Configuration** > **Security** > **API tokens**.
+3. Click **+** to add a new token.
+4. Enter a name for the token.
+5. Enter the name of the user to whom the token will be assigned and click **SUBMIT**. 
+
+Your API token will be generated. Copy it immediately, as you'll need it for authentication.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Subdomain** and **API Token**:
+
+1. Open the form where you need to authenticate with Oomnitza.
+2. Enter your **Subdomain** and **API Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/oomnitza/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Oomnitza.

@@ -3,14 +3,14 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { multipleMigrations } from '@nangohq/database';
 import { connectionService, environmentService, seeders } from '@nangohq/shared';
 
-import { Locks } from './locks.js';
+import { MapLocks } from './locks.js';
 import { NangoActionRunner } from './sdk.js';
 
 import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
-    const locks = new Locks();
+    const locks = new MapLocks();
     beforeAll(async () => {
         await multipleMigrations();
         env = await seeders.createEnvironmentSeed();

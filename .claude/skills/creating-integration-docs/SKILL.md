@@ -125,7 +125,7 @@ Official docs: [[Integration Name] API docs]([API_DOCS_URL])
 
 ## 🧩 Pre-built syncs & actions for [Integration Name]
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) to fit your needs.
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/[slug]/PreBuiltUseCases.mdx"
 
@@ -181,7 +181,7 @@ For more details, see [[Integration Name]'s OAuth documentation]([OAUTH_DOCS_URL
 ```mdx
 _No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/primitives/functions) independently.</Tip>
 ```
 
 ## Configuration Updates

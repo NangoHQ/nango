@@ -20,12 +20,13 @@
     "dependencies": {
         "@aws-sdk/client-s3": "3.796.0",
         "@hapi/boom": "10.0.1",
-        "@modelcontextprotocol/sdk": "1.24.3",
+        "@modelcontextprotocol/sdk": "1.25.2",
         "@nangohq/database": "file:../database",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
+        "@xmldom/xmldom": "0.8.11",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
@@ -48,6 +49,8 @@
         "simple-oauth2": "5.1.0",
         "undici": "6.21.2",
         "uuid": "9.0.0",
+        "webflow-api": "3.2.1",
+        "xml-crypto": "6.1.2",
         "zod": "4.0.5"
     },
     "devDependencies": {
@@ -62,6 +65,7 @@
         "@types/parse-link-header": "2.0.3",
         "@types/semver": "7.7.0",
         "@types/uuid": "9.0.0",
+        "@types/xmldom": "0.1.34",
         "express": "5.1.0",
         "json-schema": "0.4.0",
         "knex": "3.1.0",

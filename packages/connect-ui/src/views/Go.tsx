@@ -85,6 +85,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.client_private_key': { secret: true, title: 'Private Key', example: 'Your Private Key' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
+    'credentials.oauth_refresh_token_override': { secret: true, title: 'Refresh Token', example: 'Your Refresh Token' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
@@ -153,6 +154,10 @@ export const Go: React.FC = () => {
 
         // Modify base form with credentials specific
         for (const [name, schema] of Object.entries(provider.credentials || [])) {
+            if (schema.automated) {
+                continue;
+            }
+
             baseForm.shape[name] = jsonSchemaToZod(schema);
 
             // In case the field only exists in provider.yaml (TWO_STEP)
@@ -188,9 +193,23 @@ export const Go: React.FC = () => {
             }
         }
 
+        const assertionOptionFields: Record<string, z.ZodType> = {};
+        for (const [name, schema] of Object.entries(provider.assertion_option || [])) {
+            assertionOptionFields[name] = jsonSchemaToZod(schema);
+
+            const fullName = `assertion_option.${name}`;
+            if (!orderedFields[fullName]) {
+                order += 1;
+                orderedFields[fullName] = order;
+            }
+            if (preconfigured[name] ?? schema.hidden) {
+                hiddenFields += 1;
+            }
+        }
+
         if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfigured).length > 0) {
             // For OAUTH2, allow users to override client credentials if preconfigured with empty values
-            const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override'];
+            const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override', 'oauth_refresh_token_override'];
             for (const key of allowedOverrides) {
                 if (key in preconfigured && !additionalFields[key] && !(key in baseForm.shape)) {
                     baseForm.shape[key] = z.string().optional();
@@ -203,12 +222,14 @@ export const Go: React.FC = () => {
         // Only add objects if they have something otherwise it breaks react-form
         const fields = z.object({
             ...(Object.keys(baseForm.shape).length > 0 ? { credentials: baseForm } : {}),
-            ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {})
+            ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {}),
+            ...(Object.keys(assertionOptionFields).length > 0 ? { assertion_option: z.object(assertionOptionFields) } : {})
         });
 
         const fieldCount =
             (fields.shape.credentials ? Object.keys(fields.shape.credentials.shape).length : 0) +
-            (fields.shape.params ? Object.keys(fields.shape.params?.shape).length : 0);
+            (fields.shape.params ? Object.keys(fields.shape.params?.shape).length : 0) +
+            (fields.shape.assertion_option ? Object.keys(fields.shape.assertion_option.shape).length : 0);
         const resolver = zodResolver(fields);
         return {
             shouldAutoTrigger: fieldCount - hiddenFields <= 0,
@@ -247,7 +268,7 @@ export const Go: React.FC = () => {
                 return;
             }
 
-            const values = v as { credentials: Record<string, string>; params: Record<string, string> };
+            const values = v as { credentials: Record<string, string>; params: Record<string, string>; assertion_option?: Record<string, string> };
 
             telemetry('click:connect');
             setLoading(true);
@@ -278,7 +299,8 @@ export const Go: React.FC = () => {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode } as Record<string, string>,
                         detectClosedAuthWindow,
-                        ...(provider.installation && { installation: provider.installation })
+                        ...(provider.installation && { installation: provider.installation }),
+                        assertionOption: values['assertion_option'] || {}
                     });
                 }
                 setResult(res);
@@ -439,9 +461,10 @@ export const Go: React.FC = () => {
                         {orderedFields.length > 0 && (
                             <div className={cn('flex flex-col gap-5')}>
                                 {orderedFields.map(([name]) => {
-                                    const [type, key] = name.split('.') as ['credentials' | 'params', string];
+                                    const [type, key] = name.split('.') as ['credentials' | 'params' | 'assertion_option', string];
 
-                                    const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
+                                    const definition =
+                                        provider[type === 'credentials' ? 'credentials' : type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
                                     const isPreconfigured = typeof preconfigured[key] !== 'undefined';
@@ -462,7 +485,11 @@ export const Go: React.FC = () => {
                                                             (isPreconfigured &&
                                                                 (provider.auth_mode !== 'OAUTH2' ||
                                                                     preconfigured[key] !== '' ||
-                                                                    !['oauth_client_id_override', 'oauth_client_secret_override'].includes(key))) ||
+                                                                    ![
+                                                                        'oauth_client_id_override',
+                                                                        'oauth_client_secret_override',
+                                                                        'oauth_refresh_token_override'
+                                                                    ].includes(key))) ||
                                                                 definition?.hidden ||
                                                                 definition?.automated
                                                                 ? 'hidden'

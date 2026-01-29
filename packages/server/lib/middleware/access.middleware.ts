@@ -45,7 +45,7 @@ export class AccessMiddleware {
         }
         const accountContext = await accountService.getAccountContextBySecretKey(secret);
         if (!accountContext) {
-            return Err('unknown_user_account');
+            return Err('unknown_account');
         }
 
         if (flagHasPlan && !accountContext.plan) {
@@ -113,7 +113,7 @@ export class AccessMiddleware {
 
         const accountContext = await accountService.getAccountContextByPublicKey(publicKey);
         if (!accountContext) {
-            return Err('unknown_user_account');
+            return Err('unknown_account');
         }
 
         if (flagHasPlan && !accountContext.plan) {

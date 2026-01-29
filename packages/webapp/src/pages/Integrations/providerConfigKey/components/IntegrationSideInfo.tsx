@@ -1,5 +1,7 @@
+import { ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 import { CopyButton } from '@/components-v2/CopyButton';
-import { StyledLink } from '@/components-v2/StyledLink';
 import { useApiStatus } from '@/hooks/useApiStatus';
 import { StatusWidget } from '@/pages/Integrations/components/StatusWidget';
 import { getDisplayName } from '@/pages/Integrations/utils';
@@ -30,9 +32,9 @@ export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provid
             </InfoRow>
             <InfoRow label="API documentation">
                 <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
-                    <StyledLink to={provider.docs} icon type="external">
-                        {provider.display_name}
-                    </StyledLink>
+                    <Link to={provider.docs} target="_blank" className="group w-fit inline-flex items-center gap-1">
+                        {provider.display_name} <ExternalLink className="size-3.5 text-link-disabled group-hover:text-link-default" />
+                    </Link>
                 </span>
             </InfoRow>
             {apiStatus?.status && apiStatus?.status !== 'unknown' && (
