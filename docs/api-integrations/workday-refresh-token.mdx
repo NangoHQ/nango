@@ -1,0 +1,84 @@
+---
+title: 'Workday (Refresh Token)'
+sidebarTitle: 'Workday (Refresh Token)'
+description: 'Integrate your application with the Workday API using refresh token authentication'
+---
+
+## 🚀 Quickstart
+
+Connect to Workday (Refresh Token) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Workday (Refresh Token)_.
+    </Step>
+    <Step title="Authorize Workday (Refresh Token)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your token domain, tenant, client ID, client secret, and refresh token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Workday API">
+    Let's make your first request to the Workday API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v1/{connectionConfig.tenant}/workers" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const connectionId = '<CONNECTION-ID>';
+            const providerConfigKey = '<INTEGRATION-ID>';
+            const connection = await nango.getConnection(providerConfigKey, connectionId);
+
+            const res = await nango.get({
+                endpoint: `/v1/${connection.connection_config['tenant']}/workers`,
+                providerConfigKey,
+                connectionId
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+        </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Workday (Refresh Token) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/workday-refresh-token/connect)  
+Connect your Workday account using the Connect UI and configure your refresh token credentials
+
+Official docs: [Workday API documentation](https://community.workday.com/sites/default/files/file-hosting/restapi/index.html)
+
+## 🧩 Pre-built syncs & actions for Workday (Refresh Token)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+ 
+import PreBuiltUseCases from "/snippets/generated/workday-refresh-token/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
