@@ -465,7 +465,7 @@ const initDb = async () => {
     const now = new Date();
     const env = await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' });
     if (!env) throw new Error('Environment not created');
-    const secret = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+    const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
 

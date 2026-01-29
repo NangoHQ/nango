@@ -50,21 +50,25 @@ describe('Secret service', () => {
 
     it('can mark a non-default as default', async () => {
         const env = await newEnv();
-        const secret = await secretService.createSecret(db.knex, {
-            environmentId: env.id,
-            isDefault: false
-        });
+        const secret = (
+            await secretService.createSecret(db.knex, {
+                environmentId: env.id,
+                isDefault: false
+            })
+        ).unwrap();
         await expect(secretService.markDefault(db.knex, secret.id)).resolves.not.toThrow();
-        const newDefault = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+        const newDefault = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
         expect(newDefault.id).toEqual(secret.id);
     });
 
     it('marks default secrets idempotently', async () => {
         const env = await newEnv();
-        const secret = await secretService.createSecret(db.knex, {
-            environmentId: env.id,
-            isDefault: false
-        });
+        const secret = (
+            await secretService.createSecret(db.knex, {
+                environmentId: env.id,
+                isDefault: false
+            })
+        ).unwrap();
         for (let i = 0; i < 8; i++) {
             await expect(secretService.markDefault(db.knex, secret.id)).resolves.not.toThrow();
         }
@@ -78,16 +82,18 @@ describe('Secret service', () => {
                 isDefault: false
             });
         }
-        const allSecrets = await secretService.getAllSecretsForEnv(db.knex, env.id);
+        const allSecrets = (await secretService.getAllSecretsForEnv(db.knex, env.id)).unwrap();
         expect(allSecrets.length).toBe(9); // 1 default + 8 non-defaults.
     });
 
     it('fetches default secrets for all given environments', async () => {
         const envs = [await newEnv(), await newEnv(), await newEnv()];
-        const fetched = await secretService.getDefaultSecretsForAllEnvs(
-            db.knex,
-            envs.map((env) => env.id)
-        );
+        const fetched = (
+            await secretService.getDefaultSecretsForAllEnvs(
+                db.knex,
+                envs.map((env) => env.id)
+            )
+        ).unwrap();
         expect(fetched.size).toBe(envs.length);
         for (const env of envs) {
             expect(fetched.get(env.id)).toBeDefined();

@@ -11,7 +11,7 @@ import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangoh
 export async function seedAccountEnvAndUser(): Promise<{ account: DBTeam; env: DBEnvironment; secret: DBAPISecret; user: DBUser; plan: DBPlan }> {
     const account = await createAccount();
     const env = await createEnvironmentSeed(account.id, 'dev');
-    const secret = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+    const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
     const user = await seedUser(account.id);
     return { account, env, secret, user, plan };

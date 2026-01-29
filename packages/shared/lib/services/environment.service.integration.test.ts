@@ -62,7 +62,7 @@ describe('Environment service', () => {
         expect(env.secret_key).toBeUUID();
         expect(env.pending_secret_key).toBeNull();
 
-        const secret = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+        const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
         expect(secret.is_default).toBe(true);
         expect(secret.secret).toEqual(env.secret_key);
 
@@ -83,7 +83,7 @@ describe('Environment service', () => {
         expect(env3.secret_key).toBeUUID();
         expect(env3.pending_secret_key).toBeNull();
 
-        const secret3 = await secretService.getDefaultSecretForEnv(db.knex, env.id);
+        const secret3 = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
         expect(secret3).not.toEqual(secret2);
         expect(secret3.is_default).toBe(true);
         expect(secret3.secret).toEqual(env3.secret_key);

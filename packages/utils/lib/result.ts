@@ -2,7 +2,9 @@ import type { Left, Result, Right } from '@nangohq/types';
 
 export type { Left, Result, Right };
 
-export function Ok<T, E extends Error>(value: T): Result<T, E> {
+export function Ok<E extends Error>(): Result<void, E>;
+export function Ok<T, E extends Error>(value: T): Result<T, E>;
+export function Ok<T, E extends Error>(value?: any): Result<T | void, E> {
     return {
         value,
         unwrap: () => value,
@@ -21,23 +23,28 @@ export function Ok<T, E extends Error>(value: T): Result<T, E> {
     };
 }
 
-export function Err<T, E extends Error>(error: E | string): Result<T, E> {
+export function Err<T, E extends Error>(error: E): Result<T, E>;
+export function Err<T>(error: unknown): Result<T>;
+export function Err<T>(error: unknown): Result<T> {
+    const err = ensureError(error);
     return {
-        error: typeof error === 'string' ? (new Error(error) as E) : error,
+        error: err,
         unwrap: () => {
-            throw error as Error;
+            throw err;
         },
-        isErr: (): this is Left<T, E> => true,
-        isOk: (): this is Right<T, E> => false,
-        map: <U>(_fn: (value: T) => U): Result<T, E> => {
-            return Err(error);
-        },
-        mapError: <U extends Error>(fn: (error: E) => U): Result<T, U> => {
+        isErr: (): this is Left<T, Error> => true,
+        isOk: (): this is Right<T, Error> => false,
+        map: <U>(_fn: (value: T) => U): Result<U> => Err(err),
+        mapError: <U extends Error>(fn: (e: Error) => U): Result<T, U> => {
             try {
-                return Err(fn(typeof error === 'string' ? (new Error(error) as E) : error));
+                return Err(fn(err));
             } catch (err) {
-                return Err(err as U);
+                return Err(ensureError(err) as U);
             }
         }
     };
+}
+
+function ensureError(err: unknown): Error {
+    return err instanceof Error ? err : new Error(String(err));
 }
