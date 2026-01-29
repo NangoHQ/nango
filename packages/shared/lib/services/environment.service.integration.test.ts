@@ -43,14 +43,11 @@ describe('Environment service', () => {
             otlp_settings: null,
             deleted: false,
             deleted_at: null,
-            // Deprecated fields:
-            deprecated_pending_secret_key: null,
-            deprecated_pending_secret_key_iv: null,
-            deprecated_pending_secret_key_tag: null,
-            deprecated_secret_key: expect.any(String),
-            deprecated_secret_key_hashed: null,
-            deprecated_secret_key_iv: null,
-            deprecated_secret_key_tag: null
+            pending_secret_key_iv: null,
+            pending_secret_key_tag: null,
+            secret_key_hashed: null,
+            secret_key_iv: null,
+            secret_key_tag: null
         });
 
         expect(env.secret_key).toBeUUID();
