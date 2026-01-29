@@ -157,7 +157,7 @@ export const connectionEndUserTagsSchema = z
     // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that
     // + It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
     // But they complained a lot about concatenation of string, so an object solves that cleanly
-    .record(z.string(), z.string())
+    .record(z.string(), z.string().max(255))
     .refine((v) => Object.keys(v).length < 64, { message: 'Tags can not contain more than 64 keys' });
 
 export const endUserSchema = z.strictObject({
