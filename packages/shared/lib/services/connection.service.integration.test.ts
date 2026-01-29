@@ -188,6 +188,24 @@ describe('Connection service integration tests', () => {
             expect(connectionIds).toEqual([notionError.connection_id]);
         });
 
+        it('should filter connections by tags', async () => {
+            const env = await createEnvironmentSeed();
+
+            await createConfigSeed(env, 'notion', 'notion');
+
+            const tagged = await createConnectionSeed({ env, provider: 'notion', tags: { team: 'backend', region: 'us' } });
+            await createConnectionSeed({ env, provider: 'notion', tags: { team: 'frontend', region: 'eu' } });
+            await createConnectionSeed({ env, provider: 'notion', tags: {} });
+
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                tags: { team: 'backend' }
+            });
+
+            const connectionIds = dbConnections.map((c) => c.connection.connection_id);
+            expect(connectionIds).toEqual([tagged.connection_id]);
+        });
+
         it('should return connections without errors', async () => {
             const env = await createEnvironmentSeed();
 

@@ -173,7 +173,8 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
             providerConfigKey,
             parsedRawCredentials: credentialsRes.value,
             connectionConfig,
-            environmentId: environment.id
+            environmentId: environment.id,
+            tags: connectSession?.tags
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

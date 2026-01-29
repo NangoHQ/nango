@@ -26,6 +26,7 @@ export interface ConnectSessionInput {
               display_name?: string | undefined;
           }
         | undefined;
+    tags?: Record<string, string> | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
 }
 
@@ -65,6 +66,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
         end_user?: ConnectSessionInput['end_user'] | undefined;
         organization?: ConnectSessionInput['organization'];
         overrides?: ConnectSessionInput['overrides'];
+        tags?: ConnectSessionInput['tags'];
     };
     Success: {
         data: {
