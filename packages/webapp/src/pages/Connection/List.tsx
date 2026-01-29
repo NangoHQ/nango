@@ -1,5 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Lock, RefreshCcw, Search } from 'lucide-react';
+import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useDebounce } from 'react-use';
@@ -29,6 +30,10 @@ const errorOptions = [
     { name: 'OK', value: 'ok' },
     { name: 'Error', value: 'error' }
 ];
+
+const parseSearch = parseAsString.withDefault('');
+const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
+const parseErrors = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
 const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
@@ -136,24 +141,24 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
 
-    const [search, setSearch] = useState<string>('');
+    const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-    const [selectedIntegrations, setSelectedIntegrations] = useState<string[]>([]);
-    const [selectedErrors, setSelectedErrors] = useState<string[]>([]);
+    const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
+    const [selectedErrors, setSelectedErrors] = useQueryState('errors', parseErrors);
 
-    useDebounce(() => setDebouncedSearch(search), 300, [search]);
+    useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
     const { list: listIntegration, loading: integrationsLoading } = useListIntegration(env);
 
     const withError = useMemo(() => {
-        if (selectedErrors.length === 0) return undefined;
-        if (selectedErrors.includes('error')) return true;
-        if (selectedErrors.includes('ok')) return false;
+        if (selectedErrors && selectedErrors.length === 1) {
+            return selectedErrors[0] === 'error';
+        }
         return undefined;
     }, [selectedErrors]);
 
     const integrationIds = useMemo(() => {
-        if (selectedIntegrations.length === 0) return undefined;
+        if (!selectedIntegrations || selectedIntegrations.length === 0) return undefined;
         return selectedIntegrations;
     }, [selectedIntegrations]);
 
@@ -168,7 +173,7 @@ export const ConnectionList = () => {
         return connectionsData?.flatMap((d) => d.data) || [];
     }, [connectionsData]);
 
-    const hasFiltered = debouncedSearch || selectedIntegrations.length > 0 || selectedErrors.length > 0;
+    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedErrors && selectedErrors.length > 0);
 
     const connectionCount = connections.length;
     const hasConnections = connectionCount > 0;
@@ -216,22 +221,22 @@ export const ConnectionList = () => {
                             {/* Filters */}
                             <div className="flex items-center gap-3.5">
                                 <InputGroup className="bg-bg-subtle h-10">
-                                    <InputGroupInput type="text" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
+                                    <InputGroupInput type="text" placeholder="Search" value={search || ''} onChange={(e) => setSearch(e.target.value)} />
                                     <InputGroupAddon>
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
                                 <MultiSelect
-                                    label={selectedIntegrations.length > 0 ? `Integrations` : 'All integrations'}
+                                    label={selectedIntegrations && selectedIntegrations.length > 0 ? `Integrations` : 'All integrations'}
                                     options={integrationsOptions}
                                     loading={integrationsLoading}
-                                    selected={selectedIntegrations}
+                                    selected={selectedIntegrations || []}
                                     onChange={(selected) => setSelectedIntegrations(selected as string[])}
                                 />
                                 <MultiSelect
                                     label="Filter errors"
                                     options={errorOptions}
-                                    selected={selectedErrors}
+                                    selected={selectedErrors || []}
                                     onChange={(selected) => setSelectedErrors(selected as string[])}
                                 />
                             </div>
