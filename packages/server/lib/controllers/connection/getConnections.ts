@@ -17,7 +17,7 @@ const validationQuery = z
         integrationId: z.string().min(1).optional(),
         endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional(),
         tags: connectionTagsSchema.optional(),
-        limit: z.coerce.number().min(1).max(1000).optional(),
+        limit: z.coerce.number().min(1).max(2000).optional(),
         page: z.coerce.number().min(0).optional()
     })
     .strict();
