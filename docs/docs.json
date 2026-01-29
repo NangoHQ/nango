@@ -649,6 +649,7 @@
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
               "integrations/all/devin",
+              "api-integrations/demodesk",
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
               "integrations/all/digitalocean",

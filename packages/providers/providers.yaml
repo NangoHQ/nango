@@ -4240,6 +4240,24 @@ devin:
             example: 'apk_user_dGVzdF9vcmdfeDY1NzRBUElLRVl8Njc1OTdjNDQzMjFhOTZlODhlMmE4MTI0X29yZ194NnB5QlVJa042anVKWWtMOjQ3NzQxYTVmYWE5MTRiNjQ5'
             doc_section: '#step-1-finding-your-api-key'
 
+demodesk:
+    display_name: DemoDesk
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://demodesk.com
+        headers:
+            api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/demodesk
+    docs_connect: https://nango.dev/docs/api-integrations/demodesk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your DemoDesk API key
+            doc_section: '#step-1-determining-which-api-key-you-need'
+
 dialpad:
     display_name: Dialpad
     categories:
