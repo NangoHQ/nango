@@ -574,6 +574,7 @@
               "integrations/all/blackbaud",
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
+              "api-integrations/bird",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/box",
