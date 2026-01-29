@@ -12,7 +12,7 @@ import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { MultiSelect } from '@/components-v2/MultiSelect';
 import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
@@ -162,16 +162,21 @@ export const ConnectionList = () => {
         return selectedIntegrations;
     }, [selectedIntegrations]);
 
-    const { data: connectionsData, isLoading: loading } = useConnections({
+    const {
+        data: connectionsData,
+        isLoading: loading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useConnections({
         env,
         search: debouncedSearch,
         integrationIds,
-        withError,
-        page: 0
+        withError
     });
 
     const connections = useMemo(() => {
-        return connectionsData?.data || [];
+        return connectionsData?.pages.flatMap((page) => page.data) || [];
     }, [connectionsData]);
 
     const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedErrors && selectedErrors.length > 0);
@@ -323,6 +328,12 @@ export const ConnectionList = () => {
                                 Add test connection
                             </ButtonLink>
                         </div>
+                    )}
+
+                    {hasNextPage && (
+                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
+                            Load More
+                        </Button>
                     )}
                 </div>
             </div>

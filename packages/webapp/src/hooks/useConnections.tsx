@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import useSWR from 'swr';
 
 import { APIError, apiFetch, swrFetcher } from '../utils/api';
@@ -7,10 +7,10 @@ import type { SWRError } from '../utils/api';
 import type { DeleteConnection, GetConnection, GetConnections, GetConnectionsCount, PostConnectionRefresh } from '@nangohq/types';
 import type { Cache, useSWRConfig } from 'swr';
 
-export function useConnections(queries: GetConnections['Querystring']) {
-    return useQuery<GetConnections['Success'], APIError>({
+export function useConnections(queries: Omit<GetConnections['Querystring'], 'page'>) {
+    return useInfiniteQuery<GetConnections['Success'], APIError>({
         queryKey: ['connections', 'list', queries],
-        queryFn: async (): Promise<GetConnections['Success']> => {
+        queryFn: async ({ pageParam = 0 }): Promise<GetConnections['Success']> => {
             const usp = new URLSearchParams();
             if (queries.env) {
                 usp.set('env', queries.env);
@@ -26,9 +26,7 @@ export function useConnections(queries: GetConnections['Querystring']) {
             if (queries.withError !== undefined) {
                 usp.set('withError', String(queries.withError));
             }
-            if (queries.page !== undefined) {
-                usp.set('page', String(queries.page));
-            }
+            usp.set('page', String(pageParam));
 
             const res = await apiFetch(`/api/v1/connections?${usp.toString()}`, {
                 method: 'GET'
@@ -41,6 +39,15 @@ export function useConnections(queries: GetConnections['Querystring']) {
 
             return json;
         },
+        getNextPageParam: (lastPage, allPages) => {
+            // If last page has less than 20 items, we're on the last page
+            if (lastPage.data.length < 20) {
+                return undefined;
+            }
+            // Otherwise, return next page number
+            return allPages.length;
+        },
+        initialPageParam: 0,
         enabled: Boolean(queries.env)
     });
 }
