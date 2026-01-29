@@ -222,7 +222,7 @@ export const ConnectionList = () => {
                                     </InputGroupAddon>
                                 </InputGroup>
                                 <MultiSelect
-                                    label={selectedIntegrations.length > 0 ? `${selectedIntegrations.length} integrations` : 'All integrations'}
+                                    label={selectedIntegrations.length > 0 ? `Integrations` : 'All integrations'}
                                     options={integrationsOptions}
                                     loading={integrationsLoading}
                                     selected={selectedIntegrations}

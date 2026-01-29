@@ -88,7 +88,12 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger>
                 <Button loading={loading} disabled={options.length === 0} variant="tertiary" size="lg" className={cn(isDirty && 'bg-btn-tertiary-press')}>
-                    {label}
+                    {label}{' '}
+                    {selected.length > 0 && (
+                        <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center px-2">
+                            {selected.length}
+                        </span>
+                    )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="bg-btn-tertiary-press w-72 rounded border border-border-muted">
