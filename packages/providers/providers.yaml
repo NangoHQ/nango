@@ -16229,6 +16229,29 @@ workday-oauth:
             order: 2
             doc_section: '#step-3-finding-your-tenant'
 
+workos:
+    display_name: WorkOS
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.workos.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations?limit=1
+    docs: https://nango.dev/docs/api-integrations/workos
+    docs_connect: https://nango.dev/docs/api-integrations/workos/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your WorkOS API key
+            pattern: '^sk_[A-Za-z0-9_]+$'
+            example: sk_test_a2V5XzAxS0cyS********************************************NUSlZ
+            doc_section: '#step-1-obtaining-your-workos-api-key'
 workday-refresh-token:
     display_name: Workday (Refresh Token Auth)
     categories:

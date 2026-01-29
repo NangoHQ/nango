@@ -126,7 +126,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
         `| Tools | Status |`,
         `| - | - |`,
         `| HTTP request logging | ✅ |`,
-        `| End-to-type type safety | ✅ |`,
+        `| End-to-end type safety | ✅ |`,
         `| Data runtime validation | ✅ |`,
         `| OpenTelemetry export | ✅ |`,
         `| Slack alerts on errors | ✅ |`,
