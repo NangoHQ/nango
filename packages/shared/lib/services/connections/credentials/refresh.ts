@@ -395,6 +395,7 @@ export async function refreshCredentialsIfNeeded({
                 refreshGithubAppJwtToken
             });
 
+            console.log('this is the should refresh token here', shouldRefresh);
             return {
                 connection,
                 shouldRefresh,
@@ -564,12 +565,13 @@ export async function shouldRefreshCredentials({
 
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'instagram') {
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 
     if (credentials.type === 'OAUTH2') {
-        if (credentials.refresh_token) {
+        // microsoft-admin doesn't return a refresh_token but we need to refresh it using the client_credentials flow
+        if (credentials.refresh_token || providerConfig.provider === 'microsoft-admin') {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
         }
         // We can't refresh since we don't have a refresh token even if we force it
