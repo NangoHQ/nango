@@ -3,6 +3,7 @@ import { Lock, RefreshCcw, Search } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { ConnectionCount } from './components/ConnectionCount';
@@ -140,6 +141,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
+    const navigate = useNavigate();
 
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -290,7 +292,13 @@ export const ConnectionList = () => {
                                 {!loading && hasConnections && (
                                     <TableBody>
                                         {table.getRowModel().rows.map((row) => (
-                                            <TableRow key={row.id} className="h-16">
+                                            <TableRow
+                                                key={row.id}
+                                                className="h-16 cursor-pointer"
+                                                onClick={() => {
+                                                    navigate(`/${env}/connections/${row.original.provider_config_key}/${row.original.connection_id}`);
+                                                }}
+                                            >
                                                 {row.getVisibleCells().map((cell) => (
                                                     <TableCell
                                                         key={cell.id}
