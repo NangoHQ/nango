@@ -28,12 +28,11 @@ describe('Secret service', () => {
 
     it('refuses to create two default secrets', async () => {
         const env = await newEnv();
-        await expect(
-            secretService.createSecret(db.knex, {
-                environmentId: env.id,
-                isDefault: true
-            })
-        ).rejects.toThrow();
+        const result = await secretService.createSecret(db.knex, {
+            environmentId: env.id,
+            isDefault: true
+        });
+        expect(result.isErr()).toBeTruthy();
     });
 
     it('can create multiple non-default secrets', async () => {
