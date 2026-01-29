@@ -71,6 +71,7 @@ export async function sendAuth({
         provider: providerConfig?.provider || 'unknown',
         environment: environment.name,
         operation,
+        tags: 'tags' in connection ? (connection.tags ?? undefined) : undefined,
         endUser: endUser
             ? {
                   endUserId: endUser.endUserId,

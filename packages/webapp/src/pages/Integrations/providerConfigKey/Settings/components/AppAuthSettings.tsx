@@ -1,12 +1,12 @@
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
-import { InfoTooltip } from './InfoTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
-import { validateUrl } from '@/pages/Integrations/utils';
+import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -60,7 +60,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
                     <Label htmlFor="app_id">App ID</Label>
                     <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
                 </div>
-                <EditableInput initialValue={integration.oauth_client_id || ''} onSave={(value) => onSave({ appId: value })} />
+                <EditableInput initialValue={integration.oauth_client_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
             </div>
 
             {/* App Public Link */}

@@ -186,7 +186,7 @@ export const BackendSettings: React.FC = () => {
                             <Link
                                 className="flex gap-2 items-center"
                                 target="_blank"
-                                to="https://nango.dev/docs/implementation-guides/api-auth/configure-integration#2-create-an-integration"
+                                to="https://nango.dev/docs/implementation-guides/platform/auth/configure-integration#2-create-an-integration"
                             >
                                 <IconExternalLink stroke={1} size={18} />
                             </Link>
@@ -205,7 +205,7 @@ export const BackendSettings: React.FC = () => {
                                     Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
                                     providers. Otherwise authorization attempts will fail. Details in{' '}
                                     <StyledLink
-                                        to="https://nango.dev/docs/implementation-guides/api-auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional"
+                                        to="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional"
                                         type="external"
                                         variant="info"
                                     >

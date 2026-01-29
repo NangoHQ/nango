@@ -6,6 +6,11 @@ import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 export const Breadcrumbs = () => {
     const breadcrumbs = useBreadcrumbs();
 
+    // Single breadcrumbs are redundant
+    if (breadcrumbs.length <= 1) {
+        return <div />;
+    }
+
     return (
         <div className="flex gap-1.5 items-center">
             {breadcrumbs.map((breadcrumb) => (

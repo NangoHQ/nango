@@ -1100,7 +1100,7 @@ apollo-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://app.apollo.io/api
-    docs: https://nango.dev/docs/integrations/all/apollo-oauth
+    docs: https://nango.dev/docs/api-integrations/apollo-oauth
 
 apple-app-store:
     display_name: Apple App Store
@@ -1179,7 +1179,7 @@ asana-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/asana
+    docs: https://nango.dev/docs/api-integrations/asana
 
 asana-scim:
     display_name: Asana (SCIM API)
@@ -1197,8 +1197,8 @@ asana-scim:
                 - /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/asana-scim
-    docs_connect: https://nango.dev/docs/integrations/all/asana-scim/connect
+    docs: https://nango.dev/docs/api-integrations/asana-scim
+    docs_connect: https://nango.dev/docs/api-integrations/asana-scim/connect
     credentials:
         apiKey:
             type: string
@@ -2866,6 +2866,36 @@ canva:
     docs: https://nango.dev/docs/integrations/all/canva
     token_request_auth_method: basic
 
+canvas-lms:
+    display_name: Canvas LMS
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/login/oauth2/auth
+    token_url: https://${connectionConfig.hostname}/login/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/canvas-lms
+    setup_guide_url: https://nango.dev/docs/api-integrations/canvas-lms/how-to-register-your-own-canvas-lms-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/canvas-lms/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Canvas Install URL
+            description: The base URL of your Canvas instance
+            example: canvas.instructure.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-canvas-install-url'
+
 canva-scim:
     display_name: Canva (SCIM API)
     categories:
@@ -3687,8 +3717,8 @@ confluence-basic:
                 content-type: application/json
             endpoints:
                 - /wiki/api/v2/spaces
-    docs: https://nango.dev/docs/integrations/all/confluence-basic
-    docs_connect: https://nango.dev/docs/integrations/all/confluence-basic/connect
+    docs: https://nango.dev/docs/api-integrations/confluence-basic
+    docs_connect: https://nango.dev/docs/api-integrations/confluence-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -3725,8 +3755,8 @@ confluence-data-center:
             after:
                 - 'retry-after'
         base_url: https://${connectionConfig.endpointURL}
-    docs: https://nango.dev/docs/integrations/all/confluence-data-center
-    docs_connect: https://nango.dev/docs/integrations/all/confluence-data-center/connect
+    docs: https://nango.dev/docs/api-integrations/confluence-data-center
+    docs_connect: https://nango.dev/docs/api-integrations/confluence-data-center/connect
     connection_config:
         endpointURL:
             type: string
@@ -4852,7 +4882,7 @@ e-conomic:
             description: The Agreement Grant Token for your e-conomic account
 
 ecu360:
-    display_name: ECU360
+    display_name: ECU360 (Test)
     categories:
         - other
     auth_mode: TWO_STEP
@@ -4879,7 +4909,7 @@ ecu360:
             title: API Key
             description: Your ECU360 API Key
             secret: true
-            doc_section: '#step-2-finding-your-api-key'
+            doc_section: '#step-2-obtaining-your-api-key'
         userName:
             type: string
             title: Username
@@ -4891,6 +4921,15 @@ ecu360:
             description: Your ECU360 password
             secret: true
             doc_section: '#step-1-finding-your-credentials'
+
+ecu360-production:
+    display_name: ECU360 (Production)
+    alias: ecu360
+    token_url: https://apim.ecu360.com/auth/v1/authenticate
+    proxy:
+        base_url: https://apim.ecu360.com
+    docs: https://nango.dev/docs/api-integrations/ecu360-production
+    docs_connect: https://nango.dev/docs/api-integrations/ecu360-production/connect
 
 egnyte:
     display_name: Egnyte
@@ -5787,7 +5826,7 @@ freshsales:
         - crm
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.subdomain}.freshsales.io
+        base_url: https://${connectionConfig.bundleAlias} || https://${connectionConfig.subdomain}.freshsales.io
         verification:
             method: GET
             headers:
@@ -5799,18 +5838,22 @@ freshsales:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/freshsales
-    docs_connect: https://nango.dev/docs/integrations/all/freshsales/connect
+    docs: https://nango.dev/docs/api-integrations/freshsales
+    docs_connect: https://nango.dev/docs/api-integrations/freshsales/connect
     connection_config:
+        bundleAlias:
+            type: string
+            title: Bundle Alias
+            description: The bundle alias for your Freshsales account
+            prefix: https://
+            example: acme.myfreshworks.com/crm/sales
+            doc_section: '#step-2-finding-your-bundle-alias'
         subdomain:
             type: string
-            title: Freshsales subdomain
-            description: The subdomain of your Freshsales account
-            pattern: '^[a-z0-9_-]+$'
-            example: subdomain
-            suffix: .freshsales.io
-            prefix: https://
-            doc_section: '#step-2-finding-your-freshsales-subdomain'
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of bundleAlias
     credentials:
         apiKey:
             type: string
@@ -13606,8 +13649,8 @@ sharepoint-online-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
-    docs: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc
-    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect
+    docs: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -13642,8 +13685,8 @@ sharepoint-online-v1:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/sharepoint-online-v1
-    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect
+    docs: https://nango.dev/docs/api-integrations/sharepoint-online-v1
+    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-v1/connect
     connection_config:
         tenantId:
             type: string
@@ -16171,6 +16214,63 @@ workday-oauth:
             example: yourtenant
             order: 2
             doc_section: '#step-3-finding-your-tenant'
+
+workday-refresh-token:
+    display_name: Workday (Refresh Token Auth)
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: refresh_token
+        refresh_token: ${credentials.refreshToken}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+    token_expires_in_ms: 3600000
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://nango.dev/docs/api-integrations/workday-refresh-token
+    docs_connect: https://nango.dev/docs/api-integrations/workday-refresh-token/connect
+    connection_config:
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The domain used to obtain the token for your Workday account
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account
+            example: mytenant
+            order: 2
+            doc_section: '#step-2-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID
+            doc_section: '#step-3-registering-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret
+            secret: true
+            doc_section: '#step-3-registering-an-api-client'
+        refreshToken:
+            type: string
+            title: Refresh Token
+            description: Your Workday refresh token for the Integration System User
+            secret: true
+            doc_section: '#step-4-generating-a-refresh-token'
+
 wrike:
     display_name: Wrike
     categories:

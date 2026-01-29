@@ -175,7 +175,8 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             connectionConfig,
             metadata: {},
             config,
-            environment
+            environment,
+            tags: connectSession?.tags
         });
 
         if (!updatedConnection) {

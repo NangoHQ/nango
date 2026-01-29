@@ -13,7 +13,7 @@ This is useful for compliance requirements, ensuring Nango doesn't hold onto you
 
 <Tip>
 Pruning is not the same as marking a record as deleted from the external API.
-This endpoint prunes data from Nango’s cache only. It does not delete anything on the external API, and it is not the same as [detecting a deletion from the source](/guides/use-cases/syncs#deletion-detection).
+This endpoint prunes data from Nango’s cache only. It does not delete anything on the external API, and it is not the same as [detecting a deletion from the source](/implementation-guides/use-cases/syncs/implement-a-sync#deletion-detection).
 
 If you need to tell your customers that a record was deleted on the external API while keeping its last-known payload in cache, use `batchDelete` or `deleteRecordsFromPreviousExecutions` in your sync functions instead.
 </Tip>

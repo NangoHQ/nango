@@ -26,6 +26,7 @@ export interface ConnectSessionInput {
               display_name?: string | undefined;
           }
         | undefined;
+    tags?: Record<string, string> | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
 }
 
@@ -65,6 +66,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
         end_user?: ConnectSessionInput['end_user'] | undefined;
         organization?: ConnectSessionInput['organization'];
         overrides?: ConnectSessionInput['overrides'];
+        tags?: ConnectSessionInput['tags'];
     };
     Success: {
         data: {
@@ -93,7 +95,7 @@ export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults'>;
+    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults' | 'overrides'>;
 }>;
 
 export type PostPublicConnectTelemetry = Endpoint<{
