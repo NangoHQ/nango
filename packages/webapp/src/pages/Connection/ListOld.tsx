@@ -25,7 +25,7 @@ import { useStore } from '../../store.js';
 import { getConnectionDisplayName } from '../../utils/endUser.js';
 import { formatDateToInternationalFormat } from '../../utils/utils.js';
 
-import type { ApiConnectionSimple } from '@nangohq/types';
+import type { ApiConnectionSimple, ApiError } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 import type React from 'react';
 
@@ -128,13 +128,41 @@ export const OldConnectionList: React.FC = () => {
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [filterWithError, setFilterWithError] = useState<string>('all');
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
+    const [page, setPage] = useState<number>(0);
 
-    const { data, loading, error, hasNext, offset, setOffset } = useConnections({
+    const {
+        data,
+        isLoading: loading,
+        error
+    } = useConnections({
         env,
         search: debouncedSearch,
         integrationIds: selectedIntegration,
-        withError: filterWithError === 'all' ? undefined : filterWithError === 'error'
+        withError: filterWithError === 'all' ? undefined : filterWithError === 'error',
+        page
     });
+
+    // Reset to page 0 when filters change
+    const prevDebouncedSearch = useMemo(() => debouncedSearch, [debouncedSearch]);
+    const prevSelectedIntegration = useMemo(() => selectedIntegration, [selectedIntegration]);
+    const prevFilterWithError = useMemo(() => filterWithError, [filterWithError]);
+
+    useEffect(() => {
+        if (prevDebouncedSearch !== debouncedSearch || prevSelectedIntegration !== selectedIntegration || prevFilterWithError !== filterWithError) {
+            setPage(0);
+        }
+    }, [debouncedSearch, selectedIntegration, filterWithError, prevDebouncedSearch, prevSelectedIntegration, prevFilterWithError]);
+
+    const hasNext = useMemo(() => {
+        if (!data) return false;
+        return data.data.length >= 20;
+    }, [data]);
+
+    const setOffset = (newOffset: number) => {
+        setPage(newOffset);
+    };
+
+    const offset = page;
 
     useDebounce(() => setDebouncedSearch(search), 250, [search]);
 
@@ -174,7 +202,7 @@ export const OldConnectionList: React.FC = () => {
         }
     }, [data, readyToDisplay]);
     const connections = useMemo(() => {
-        return data?.flatMap((d) => d.data) || [];
+        return data?.data || [];
     }, [data]);
 
     const table = useReactTable({
@@ -185,7 +213,7 @@ export const OldConnectionList: React.FC = () => {
     const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError !== 'all';
 
     if (error) {
-        return <ErrorPageComponent title="Connections" error={error} />;
+        return <ErrorPageComponent title="Connections" error={error.json as ApiError<string>} />;
     }
 
     if (!connections || !readyToDisplay) {

@@ -162,15 +162,16 @@ export const ConnectionList = () => {
         return selectedIntegrations;
     }, [selectedIntegrations]);
 
-    const { data: connectionsData, loading } = useConnections({
+    const { data: connectionsData, isLoading: loading } = useConnections({
         env,
         search: debouncedSearch,
         integrationIds,
-        withError
+        withError,
+        page: 0
     });
 
     const connections = useMemo(() => {
-        return connectionsData?.flatMap((d) => d.data) || [];
+        return connectionsData?.data || [];
     }, [connectionsData]);
 
     const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedErrors && selectedErrors.length > 0);
