@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 import { Search, Square, SquareCheck } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from './ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group';
@@ -20,10 +20,29 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [filteredOptions, setFilteredOptions] = useState<typeof options>([]);
+    const [displayOrder, setDisplayOrder] = useState<typeof options>([]);
 
     const initialOptions = useMemo(() => {
         return options ?? [];
     }, [options]);
+
+    const sortOptionsWithSelectedFirst = useCallback((opts: typeof options, selectedValues: typeof selected) => {
+        const selectedItems: typeof options = [];
+        const unselectedItems: typeof options = [];
+
+        opts.forEach((option) => {
+            if (selectedValues.some((sel) => sel === option.value)) {
+                selectedItems.push(option);
+            } else {
+                unselectedItems.push(option);
+            }
+        });
+
+        return [...selectedItems, ...unselectedItems];
+    }, []);
+
+    const prevOpenRef = useRef(false);
+    const prevInitialOptionsRef = useRef(initialOptions);
 
     useEffect(() => {
         if (initialOptions) {
@@ -58,6 +77,20 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
         }
     }, [open]);
 
+    useEffect(() => {
+        // Only update displayOrder when popover transitions from closed to open, or when initialOptions changes
+        const isOpening = open && !prevOpenRef.current;
+        const optionsChanged = initialOptions !== prevInitialOptionsRef.current;
+
+        if ((isOpening || optionsChanged) && initialOptions.length > 0) {
+            const sorted = sortOptionsWithSelectedFirst(initialOptions, selected);
+            setDisplayOrder(sorted);
+        }
+        prevOpenRef.current = open;
+        prevInitialOptionsRef.current = initialOptions;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, initialOptions, sortOptionsWithSelectedFirst]);
+
     const handleInputChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
             setSearch(event.target.value);
@@ -84,6 +117,8 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
         return selected.some((sel, index) => sel !== defaultSelect[index]);
     }, [selected, defaultSelect]);
 
+    const optionsToRender = search.trim() ? filteredOptions : displayOrder.length > 0 ? displayOrder : initialOptions;
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger>
@@ -106,10 +141,10 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
                     </InputGroup>
                 </div>
                 <div className="p-2 max-h-64 overflow-y-auto">
-                    {filteredOptions.length === 0 ? (
+                    {optionsToRender.length === 0 ? (
                         <div className="p-2 text-center text-text-tertiary text-body-medium-medium">No options found</div>
                     ) : (
-                        filteredOptions.map((option) => {
+                        optionsToRender.map((option) => {
                             const checked = selected.some((sel) => sel === option.value);
                             return (
                                 <div

@@ -206,7 +206,7 @@ export const ConnectionList = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h2 className="text-title-subsection text-text-primary">Connections</h2>
-                    {!loading && (hasConnections || hasFiltered) && (
+                    {(hasConnections || hasFiltered) && (
                         <ButtonLink to={`/${env}/connections/create`} size="lg">
                             Add Test Connection
                         </ButtonLink>
@@ -266,7 +266,7 @@ export const ConnectionList = () => {
                                 </TableHeader>
                                 {loading && (
                                     <TableBody>
-                                        {Array.from({ length: 5 }).map((_, rowIndex) => (
+                                        {Array.from({ length: 3 }).map((_, rowIndex) => (
                                             <TableRow key={rowIndex} className="h-16">
                                                 {table.getAllColumns().map((col, colIndex) => (
                                                     <TableCell
