@@ -91,6 +91,17 @@ class SecretService {
         }
     ): Promise<Result<DBAPISecret>> {
         try {
+            // Note: For now, we enforce max 1 default + 1 non-default key.
+            // This will change in the near future.
+            const params = {
+                environment_id: environmentId,
+                is_default: isDefault
+            };
+            const [existing] = await trx<DBAPISecret>(API_SECRETS_TABLE).select('id').where(params);
+            if (existing) {
+                return Err(new NangoError('duplicate_api_secret', params));
+            }
+
             const plainText = uuid.v4();
 
             const hashed = await this.hashSecret(plainText);

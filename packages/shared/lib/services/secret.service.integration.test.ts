@@ -23,7 +23,7 @@ describe('Secret service', () => {
     it('creates a default secret for each environment', async () => {
         const env = await newEnv();
         // Note: getDefaultSecretForEnv will throw if no default secret exists.
-        await expect(secretService.getDefaultSecretForEnv(db.knex, env.id)).resolves.not.toThrow();
+        (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
     });
 
     it('refuses to create two default secrets', async () => {
@@ -35,15 +35,14 @@ describe('Secret service', () => {
         expect(result.isErr()).toBeTruthy();
     });
 
-    it('can create multiple non-default secrets', async () => {
+    it("can't create multiple non-default secrets", async () => {
         const env = await newEnv();
         for (let i = 0; i < 8; i++) {
-            await expect(
-                secretService.createSecret(db.knex, {
-                    environmentId: env.id,
-                    isDefault: false
-                })
-            ).resolves.not.toThrow();
+            const secret = await secretService.createSecret(db.knex, {
+                environmentId: env.id,
+                isDefault: false
+            });
+            expect(secret.isErr()).toBe(i !== 0);
         }
     });
 
@@ -55,7 +54,7 @@ describe('Secret service', () => {
                 isDefault: false
             })
         ).unwrap();
-        await expect(secretService.markDefault(db.knex, secret.id)).resolves.not.toThrow();
+        (await secretService.markDefault(db.knex, secret.id)).unwrap();
         const newDefault = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
         expect(newDefault.id).toEqual(secret.id);
     });
@@ -69,20 +68,20 @@ describe('Secret service', () => {
             })
         ).unwrap();
         for (let i = 0; i < 8; i++) {
-            await expect(secretService.markDefault(db.knex, secret.id)).resolves.not.toThrow();
+            (await secretService.markDefault(db.knex, secret.id)).unwrap();
         }
     });
 
     it('fetches all secrets for an environment', async () => {
         const env = await newEnv();
-        for (let i = 0; i < 8; i++) {
+        (
             await secretService.createSecret(db.knex, {
                 environmentId: env.id,
                 isDefault: false
-            });
-        }
+            })
+        ).unwrap();
         const allSecrets = (await secretService.getAllSecretsForEnv(db.knex, env.id)).unwrap();
-        expect(allSecrets.length).toBe(9); // 1 default + 8 non-defaults.
+        expect(allSecrets.length).toBe(2); // 1 default + 1 non-default.
     });
 
     it('fetches default secrets for all given environments', async () => {
