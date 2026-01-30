@@ -8,9 +8,9 @@ import type { Knex } from 'knex';
 
 const TABLE = 'checkpoints';
 
-const MAX_KEY_LENGTH = 255;
-const MAX_STRING_VALUE_LENGTH = 255;
-const MAX_FIELDS = 16;
+export const CHECKPOINT_KEY_MAX_LENGTH = 255;
+export const CHECKPOINT_STRING_VALUE_MAX_LENGTH = 255;
+export const CHECKPOINT_MAX_FIELDS = 16;
 
 /**
  * Zod schema for checkpoint validation.
@@ -19,16 +19,19 @@ const MAX_FIELDS = 16;
  * - Date values: converted to ISO string
  * - Max 16 fields
  */
-const checkpointValueSchema = z.union([z.string().max(MAX_STRING_VALUE_LENGTH), z.number(), z.boolean(), z.date().transform((d) => d.toISOString())]);
+const checkpointValueSchema = z.union([
+    z.string().max(CHECKPOINT_STRING_VALUE_MAX_LENGTH),
+    z.number(),
+    z.boolean(),
+    z.date().transform((d) => d.toISOString())
+]);
 
-const checkpointSchema = z.record(z.string().max(MAX_KEY_LENGTH), checkpointValueSchema).refine((data) => Object.keys(data).length <= MAX_FIELDS, {
-    message: `Checkpoint cannot have more than ${MAX_FIELDS} fields`
-});
+export const checkpointSchema = z
+    .record(z.string().max(CHECKPOINT_KEY_MAX_LENGTH), checkpointValueSchema)
+    .refine((data) => Object.keys(data).length <= CHECKPOINT_MAX_FIELDS, {
+        message: `Checkpoint cannot have more than ${CHECKPOINT_MAX_FIELDS} fields`
+    });
 
-/**
- * Validates that a checkpoint object only contains flat key-value pairs
- * with string, number, or boolean values.
- */
 export function validateCheckpoint(data: unknown): Result<Checkpoint> {
     const result = checkpointSchema.safeParse(data);
     if (result.success) {
@@ -78,7 +81,7 @@ export async function upsertCheckpoint(
         expectedVersion
     }: { environmentId: number; connectionId: number; key: string; checkpoint: Checkpoint; expectedVersion?: number }
 ): Promise<Result<DBCheckpoint>> {
-    if (key.length > MAX_KEY_LENGTH) {
+    if (key.length > CHECKPOINT_KEY_MAX_LENGTH) {
         return Err(new Error('checkpoint_key_too_long'));
     }
 

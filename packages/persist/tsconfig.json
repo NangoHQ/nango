@@ -33,5 +33,5 @@
             "path": "../pubsub"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
 }
