@@ -4620,6 +4620,38 @@ docuware:
             description: The Password to your DocuWare account
             doc_section: '#step-2-finding-your-credentials'
 
+domo:
+    display_name: Domo
+    categories:
+        - productivity
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.domo.com/oauth/token
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.domo.com
+    docs: https://nango.dev/docs/api-integrations/domo
+    docs_connect: https://nango.dev/docs/api-integrations/domo/connect
+    credentials:
+        client_id:
+            type: string
+            title: Your Client ID
+            description: The Client ID of your API client
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-1-creating-your-api-client'
+        client_secret:
+            type: string
+            title: Your Client Secret
+            secret: true
+            example: a14e6b49******************************768ece
+            pattern: '^[a-fA-F0-9]{64}$'
+            description: The Client secret of your API client
+            doc_section: '#step-1-creating-your-api-client'
+
 dropbox:
     display_name: Dropbox
     categories:
