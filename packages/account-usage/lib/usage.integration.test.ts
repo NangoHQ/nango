@@ -35,6 +35,9 @@ describe('Usage', () => {
 
     describe('get', () => {
         it('should return 0 for a non-existent-yet metric', async () => {
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
             const res = (await usageTracker.get({ accountId: 1, metric: 'connections' })).unwrap();
             expect(res).toEqual({ accountId: 1, metric: 'connections', current: 0 });
         });
@@ -43,6 +46,9 @@ describe('Usage', () => {
             const metric = 'connections';
             // Manually set an invalid entry in Redis
             await redis.set(`usageV2:${accountId}:${metric}`, 'invalid-json');
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
 
             const res = await usageTracker.get({ accountId, metric });
             expect(res.isErr()).toBe(true);
@@ -53,6 +59,10 @@ describe('Usage', () => {
         it('should return the current value for an existing metric', async () => {
             const accountId = 1;
             const metric = 'connections';
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
             await usageTracker.incr({ accountId, metric, delta: 5 });
             const res = (await usageTracker.get({ accountId, metric })).unwrap();
             expect(res).toEqual({ accountId, metric, current: 5 });
@@ -128,6 +138,10 @@ describe('Usage', () => {
         it('should increment monthly metric', async () => {
             const accountId = 2;
             const metric = 'proxy';
+
+            const revalidateSpy = vi.spyOn(usageTracker, 'revalidate');
+            revalidateSpy.mockReturnValue(Promise.resolve(Ok(undefined)));
+
             const res = (await usageTracker.incr({ accountId, metric, delta: 1 })).unwrap();
             expect(res).toEqual({ accountId, metric, current: 1 });
         });
