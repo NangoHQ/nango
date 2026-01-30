@@ -121,7 +121,7 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
                 <Button loading={loading} disabled={options.length === 0} variant="tertiary" size="lg" className={cn(isDirty && 'bg-btn-tertiary-press')}>
                     {label}{' '}
                     {selected.length > 0 && (
