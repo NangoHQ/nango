@@ -4602,7 +4602,7 @@ domo:
             description: The Client ID of your API client
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
-            doc_section: '#step-1-finding-your-client-credentials'
+            doc_section: '#step-1-creating-your-api-client'
         client_secret:
             type: string
             title: Your Client Secret
@@ -4610,7 +4610,7 @@ domo:
             example: a14e6b49******************************768ece
             pattern: '^[a-fA-F0-9]{64}$'
             description: The Client secret of your API client
-            doc_section: '#step-1-finding-your-client-credentials'
+            doc_section: '#step-1-creating-your-api-client'
 
 dropbox:
     display_name: Dropbox
