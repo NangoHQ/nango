@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { ConnectionCount } from './components/ConnectionCount';
+import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Avatar } from '@/components-v2/Avatar';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
@@ -24,7 +25,7 @@ import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
 
-import type { ApiConnectionSimple } from '@nangohq/types';
+import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 const errorOptions = [
@@ -169,7 +170,8 @@ export const ConnectionList = () => {
         isLoading: loading,
         fetchNextPage,
         hasNextPage,
-        isFetchingNextPage
+        isFetchingNextPage,
+        error: connectionsError
     } = useConnections({
         env,
         search: debouncedSearch,
@@ -202,6 +204,10 @@ export const ConnectionList = () => {
             return { name: integration.unique_key, value: integration.unique_key };
         });
     }, [listIntegration]);
+
+    if (connectionsError) {
+        return <ErrorPageComponent title="Connections" error={connectionsError.json as GetConnections['Errors']} />;
+    }
 
     return (
         <DashboardLayout>
