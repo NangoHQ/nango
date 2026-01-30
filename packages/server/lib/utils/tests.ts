@@ -53,9 +53,15 @@ export function apiFetch(baseUrl: string) {
                     for (const el of value) {
                         url.searchParams.append(name, el);
                     }
-                } else {
-                    url.searchParams.set(name, value || '');
+                    return;
                 }
+                if (value && typeof value === 'object') {
+                    for (const [childKey, childValue] of Object.entries(value)) {
+                        url.searchParams.append(`${name}[${childKey}]`, String(childValue));
+                    }
+                    return;
+                }
+                url.searchParams.set(name, value || '');
             });
         }
         const headers = new Headers();
@@ -151,7 +157,10 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
     await migrateLogsMapping();
     await migrateKeystore(db.knex);
 
-    const server = createServer(express().use(router));
+    const app = express();
+    app.set('query parser', 'extended');
+    app.use(router);
+    const server = createServer(app);
     const port = await getPort();
     return new Promise((resolve) => {
         server.listen(port, () => {

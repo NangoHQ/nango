@@ -126,7 +126,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
         `| Tools | Status |`,
         `| - | - |`,
         `| HTTP request logging | ✅ |`,
-        `| End-to-type type safety | ✅ |`,
+        `| End-to-end type safety | ✅ |`,
         `| Data runtime validation | ✅ |`,
         `| OpenTelemetry export | ✅ |`,
         `| Slack alerts on errors | ✅ |`,
@@ -186,7 +186,7 @@ function useCasesSnippet(useCases: any) {
 ${endpoints
     .map(
         (endpoint) =>
-            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/guides/use-cases/${endpoint.type}s) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/implementation-guides/use-cases/${endpoint.type}s/${endpoint.type === 'sync' ? 'implement-a-sync' : 'implement-an-action'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
     )
     .join('\n')}
             `.trim();
