@@ -48,7 +48,7 @@
         accept: application/json
     token_response:
         token: access_token
-        token_expires_in_ms: 3600000
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.domain}/xapi
     docs: https://nango.dev/docs/api-integrations/3cx
