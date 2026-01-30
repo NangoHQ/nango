@@ -107,6 +107,41 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         return missingFields.length > 0;
     }, [integration, overrideClientId, overrideClientSecret]);
 
+    const createConnectSession = useCallback(async () => {
+        const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
+
+        const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
+        const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
+        const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
+
+        return await apiConnectSessions(env, {
+            allowed_integrations: integration ? [integration.unique_key] : undefined,
+            end_user: testUser,
+            integrations_config_defaults: integration
+                ? {
+                      [integration.unique_key]: {
+                          authorization_params: isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
+                          connection_config:
+                              isOauth2 && hasConnectionConfigOverrides
+                                  ? {
+                                        oauth_client_id_override: overrideClientId,
+                                        oauth_client_secret_override: overrideClientSecret,
+                                        oauth_scopes_override: oauthScopesOverride
+                                    }
+                                  : undefined
+                      }
+                  }
+                : undefined,
+            overrides: integration
+                ? {
+                      [integration.unique_key]: {
+                          docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
+                      }
+                  }
+                : undefined
+        });
+    }, [integration, overrideOauthScopes, overrideClientId, overrideClientSecret, overrideDocUrl, defaultDocUrl, env, testUser, overrideAuthParams]);
+
     const onClickConnectUI = () => {
         if (!environmentAndAccount) {
             return;
@@ -130,40 +165,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         // We defer the token creation so the iframe can open and display a loading screen
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
-            const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
-
-            const oauthScopesOverride =
-                overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
-            const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
-            const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
-
-            const res = await apiConnectSessions(env, {
-                allowed_integrations: integration ? [integration.unique_key] : undefined,
-                end_user: testUser,
-                integrations_config_defaults: integration
-                    ? {
-                          [integration.unique_key]: {
-                              authorization_params:
-                                  isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
-                              connection_config:
-                                  isOauth2 && hasConnectionConfigOverrides
-                                      ? {
-                                            oauth_client_id_override: overrideClientId,
-                                            oauth_client_secret_override: overrideClientSecret,
-                                            oauth_scopes_override: oauthScopesOverride
-                                        }
-                                      : undefined
-                          }
-                      }
-                    : undefined,
-                overrides: integration
-                    ? {
-                          [integration.unique_key]: {
-                              docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
-                          }
-                      }
-                    : undefined
-            });
+            const res = await createConnectSession();
             if ('error' in res.json) {
                 return;
             }
@@ -181,40 +183,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         });
 
         setTimeout(async () => {
-            const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
-
-            const oauthScopesOverride =
-                overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
-            const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
-            const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
-
-            const res = await apiConnectSessions(env, {
-                allowed_integrations: integration ? [integration.unique_key] : undefined,
-                end_user: testUser,
-                integrations_config_defaults: integration
-                    ? {
-                          [integration.unique_key]: {
-                              authorization_params:
-                                  isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
-                              connection_config:
-                                  isOauth2 && hasConnectionConfigOverrides
-                                      ? {
-                                            oauth_client_id_override: overrideClientId,
-                                            oauth_client_secret_override: overrideClientSecret,
-                                            oauth_scopes_override: oauthScopesOverride
-                                        }
-                                      : undefined
-                          }
-                      }
-                    : undefined,
-                overrides: integration
-                    ? {
-                          [integration.unique_key]: {
-                              docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
-                          }
-                      }
-                    : undefined
-            });
+            const res = await createConnectSession();
             if (!res.res.ok || 'error' in res.json) {
                 toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
                 return;
@@ -231,7 +200,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                     description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
                     variant: 'success'
                 });
-            } catch (_) {
+            } catch (err) {
+                console.error('Clipboard write failed:', err);
                 toast.toast({ title: 'Failed to copy link', variant: 'error' });
             }
         }, 10);
