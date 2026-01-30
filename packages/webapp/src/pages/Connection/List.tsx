@@ -22,7 +22,7 @@ import { useConnections, useConnectionsCount } from '../../hooks/useConnections'
 import { useListIntegration } from '../../hooks/useIntegration';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { getConnectionDisplayName } from '../../utils/endUser';
+import { getConnectionDisplayName, getEndUserEmail } from '../../utils/endUser';
 import { formatDateToInternationalFormat } from '../../utils/utils';
 
 import type { ApiConnectionSimple } from '@nangohq/types';
@@ -58,8 +58,8 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             return (
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
-                        email={data.endUser?.email ? data.endUser.email : null}
-                        displayName={getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id })}
+                        email={getEndUserEmail(data.endUser, data.tags)}
+                        displayName={getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id, connectionTags: data.tags })}
                     />
 
                     {data.endUser ? (

@@ -25,7 +25,7 @@ import { useSyncs } from '../../hooks/useSyncs';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { getConnectionDisplayName } from '../../utils/endUser';
+import { getConnectionDisplayName, getEndUserEmail } from '../../utils/endUser';
 import { globalEnv } from '../../utils/env';
 import { connectSlack } from '../../utils/slack-connection';
 
@@ -175,8 +175,12 @@ export const ConnectionShow: React.FC = () => {
                             <div className="absolute -bottom-3 -right-3">
                                 <AvatarOrganization
                                     size={'sm'}
-                                    email={connection.endUser?.email ? connection.endUser.email : null}
-                                    displayName={getConnectionDisplayName({ endUser: connection.endUser, connectionId: connection.connection.connection_id })}
+                                    email={getEndUserEmail(connection.endUser, connection.connection.tags)}
+                                    displayName={getConnectionDisplayName({
+                                        endUser: connection.endUser,
+                                        connectionId: connection.connection.connection_id,
+                                        connectionTags: connection.connection.tags
+                                    })}
                                 />
                             </div>
                         </div>
