@@ -366,6 +366,7 @@
               "integrations/all/docusign",
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
+              "api-integrations/domo",
               "api-integrations/drata",
               "integrations/all/drchrono",
               "api-integrations/dropbox",
