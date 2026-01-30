@@ -48,7 +48,7 @@
         accept: application/json
     token_response:
         token: access_token
-        token_expires_in_ms: 3600000
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.domain}/xapi
     docs: https://nango.dev/docs/api-integrations/3cx
@@ -4311,6 +4311,24 @@ devin:
             pattern: '^apk_user_[A-Za-z0-9+/=]+$'
             example: 'apk_user_dGVzdF9vcmdfeDY1NzRBUElLRVl8Njc1OTdjNDQzMjFhOTZlODhlMmE4MTI0X29yZ194NnB5QlVJa042anVKWWtMOjQ3NzQxYTVmYWE5MTRiNjQ5'
             doc_section: '#step-1-finding-your-api-key'
+
+demodesk:
+    display_name: DemoDesk
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://demodesk.com
+        headers:
+            api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/demodesk
+    docs_connect: https://nango.dev/docs/api-integrations/demodesk/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your DemoDesk API key
+            doc_section: '#step-1-obtaining-your-api-key'
 
 dialpad:
     display_name: Dialpad
@@ -10184,6 +10202,42 @@ ninjaone-rmm:
             doc_section: '#step-2-copy-your-credentials'
     docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
     docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
+
+nocrm:
+    display_name: nocrm.io
+    categories:
+        - crm
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.nocrm.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/ping
+    docs: https://nango.dev/docs/api-integrations/nocrm
+    docs_connect: https://nango.dev/docs/api-integrations/nocrm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your nocrm.io API key
+            pattern: ^[a-f0-9]{48}$
+            example: 4b945b************************************4991
+            doc_section: '#step-2-obtaining-your-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Account subdomain
+            description: Your nocrm.io account subdomain
+            example: acme
+            prefix: https://
+            pattern: '^[a-z0-9-]+$'
+            suffix: .nocrm.io
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
 
 notion:
     display_name: Notion
@@ -16215,6 +16269,29 @@ workday-oauth:
             order: 2
             doc_section: '#step-3-finding-your-tenant'
 
+workos:
+    display_name: WorkOS
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.workos.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations?limit=1
+    docs: https://nango.dev/docs/api-integrations/workos
+    docs_connect: https://nango.dev/docs/api-integrations/workos/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your WorkOS API key
+            pattern: '^sk_[A-Za-z0-9_]+$'
+            example: sk_test_a2V5XzAxS0cyS********************************************NUSlZ
+            doc_section: '#step-1-obtaining-your-workos-api-key'
 workday-refresh-token:
     display_name: Workday (Refresh Token Auth)
     categories:

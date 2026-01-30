@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const TAG_MAX_COUNT = 10;
 export const TAG_KEY_MAX_LENGTH = 64;
-export const TAG_VALUE_MAX_LENGTH = 200;
+export const TAG_VALUE_MAX_LENGTH = 255;
 
 const connectionTagsKeySchema = z
     .string()

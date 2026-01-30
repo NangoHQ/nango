@@ -178,8 +178,8 @@ describe('connectionTagsSchema', () => {
             expect(result.success).toBe(true);
         });
 
-        it('should accept value at max length (200 chars)', () => {
-            const value = 'a'.repeat(200);
+        it('should accept value at max length (255 chars)', () => {
+            const value = 'a'.repeat(255);
             const result = connectionTagsSchema.safeParse({ key: value });
             expect(result.success).toBe(true);
         });
@@ -212,8 +212,8 @@ describe('connectionTagsSchema', () => {
             expect(result.success).toBe(false);
         });
 
-        it('should reject values longer than 200 chars', () => {
-            const value = 'a'.repeat(201);
+        it('should reject values longer than 255 chars', () => {
+            const value = 'a'.repeat(256);
             const result = connectionTagsSchema.safeParse({ key: value });
             expect(result.success).toBe(false);
         });

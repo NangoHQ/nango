@@ -401,7 +401,7 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should fail with tag value exceeding max length', async () => {
-            const longValue = 'a'.repeat(201);
+            const longValue = 'a'.repeat(256);
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: seed.env.secret_key,
