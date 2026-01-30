@@ -4,8 +4,10 @@ import type { DBEnvironment, DBExternalWebhook } from '../db.js';
 import type { ApiEnvironmentVariable } from '../variable/api.js';
 import type { Merge } from 'type-fest';
 
-export type ApiEnvironment = Merge<DBEnvironment, { callback_url: string } & ApiTimestamps>;
-
+export type ApiEnvironment = Omit<
+    Merge<DBEnvironment, { callback_url: string } & ApiTimestamps>,
+    'secret_key_iv' | 'secret_key_tag' | 'secret_key_hashed' | 'pending_secret_key_iv' | 'pending_secret_key_tag' | 'pending_public_key'
+>;
 export type ApiWebhooks = Omit<DBExternalWebhook, 'id' | 'environment_id' | 'created_at' | 'updated_at'>;
 
 export type GetEnvironments = Endpoint<{

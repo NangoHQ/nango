@@ -1,16 +1,15 @@
 import db from '@nangohq/database';
 import { FixedSizeMap, flagHasPlan, isCloud, metrics, report } from '@nangohq/utils';
 
-import environmentService from './environment.service.js';
-import secretService from './secret.service.js';
+import environmentService, { hashSecretKey } from './environment.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
-import encryptionManager from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { plansList } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 
@@ -86,17 +85,24 @@ class AccountService {
     }
 
     async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
-        const [account] = await db.knex<DBTeam>(`_nango_accounts`).select('id').where({ uuid: targetAccountUUID });
-        if (!account) {
+        const account = await db.knex.select('id').from<DBTeam>(`_nango_accounts`).where({ uuid: targetAccountUUID });
+
+        if (account == null || account.length == 0 || account[0] == null) {
             return null;
         }
 
-        const environment = await environmentService.getByEnvironmentName(account.id, targetEnvironment);
-        if (!environment) {
+        const accountId = account[0].id;
+
+        const environment = await db.knex.select('id').from<DBEnvironment>(`_nango_environments`).where({
+            account_id: accountId,
+            name: targetEnvironment
+        });
+
+        if (environment == null || environment.length == 0 || environment[0] == null) {
             return null;
         }
 
-        return { accountId: account.id, environmentId: environment.id };
+        return { accountId, environmentId: environment[0].id };
     }
 
     async getUUIDFromAccountId(accountId: number): Promise<string | null> {
@@ -130,7 +136,6 @@ class AccountService {
             const result = await trx.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
 
             if (!result[0]) {
-                trx.rollback();
                 return null;
             }
 
@@ -169,9 +174,7 @@ class AccountService {
         return result || null;
     }
 
-    async getAccountContextBySecretKey(
-        secretKey: string
-    ): Promise<{ account: DBTeam; environment: DBEnvironment; secret: DBAPISecret; plan: DBPlan | null } | null> {
+    async getAccountContextBySecretKey(secretKey: string): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
             if (environmentVariables.length > 0) {
@@ -202,9 +205,7 @@ class AccountService {
         return this.getAccountContext({ secretKey });
     }
 
-    async getAccountContextByPublicKey(
-        publicKey: string
-    ): Promise<{ account: DBTeam; environment: DBEnvironment; secret: DBAPISecret; plan: DBPlan | null } | null> {
+    async getAccountContextByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
             if (environmentVariables.length > 0) {
@@ -242,29 +243,19 @@ class AccountService {
             | { environmentId: number }
             | { environmentUuid: string }
             | { accountUuid: string; envName: string }
-    ): Promise<{ account: DBTeam; environment: DBEnvironment; secret: DBAPISecret; plan: DBPlan | null } | null> {
+    ): Promise<{ account: DBTeam; environment: DBEnvironment; plan: DBPlan | null } | null> {
         const q = db.readOnly
             .select<{
                 account: DBTeam;
                 environment: DBEnvironment;
                 plan: DBPlan | null;
-                default_secret: DBAPISecret;
-                pending_secret: DBAPISecret | null;
             }>(
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
                 db.knex.raw('row_to_json(_nango_accounts.*) as account'),
-                db.knex.raw('row_to_json(plans.*) as plan'),
-                db.knex.raw('row_to_json(default_secret.*) as default_secret'),
-                db.knex.raw('row_to_json(pending_secret.*) as pending_secret')
+                db.knex.raw('row_to_json(plans.*) as plan')
             )
             .from<DBEnvironment>('_nango_environments')
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-            .join({ default_secret: 'api_secrets' }, (j) =>
-                j.on('default_secret.environment_id', '_nango_environments.id').andOn('default_secret.is_default', db.knex.raw('true'))
-            )
-            .leftJoin({ pending_secret: 'api_secrets' }, (j) =>
-                j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
-            )
             .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
             .where('_nango_environments.deleted', false)
             .first();
@@ -273,15 +264,8 @@ class AccountService {
         if ('secretKey' in opts) {
             // Hashing is slow by design so it's very slow to recompute this hash all the time
             // We keep the hash in-memory to not compromise on security if the db leak
-            hash = hashLocalCache.get(opts.secretKey);
-            if (!hash) {
-                const hashed = await secretService.hashSecret(opts.secretKey);
-                if (hashed.isErr()) {
-                    throw hashed.error;
-                }
-                hash = hashed.value;
-            }
-            q.where('default_secret.hashed', hash);
+            hash = hashLocalCache.get(opts.secretKey) || (await hashSecretKey(opts.secretKey));
+            q.where('secret_key_hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
         } else if ('environmentUuid' in opts) {
@@ -306,9 +290,6 @@ class AccountService {
             hashLocalCache.set(opts.secretKey, hash);
         }
 
-        const defaultSecret = encryptionManager.decryptAPISecret(res.default_secret);
-        const pendingKey = res.pending_secret ? encryptionManager.decryptAPISecret(res.pending_secret) : null;
-
         return {
             // getting data with row_to_json breaks the automatic string to date parser
             account: {
@@ -317,9 +298,7 @@ class AccountService {
                 updated_at: new Date(res.account.updated_at)
             },
             environment: {
-                ...res.environment,
-                secret_key: defaultSecret.secret,
-                pending_secret_key: pendingKey?.secret || null,
+                ...encryptionManager.decryptEnvironment(res.environment),
                 created_at: new Date(res.environment.created_at),
                 updated_at: new Date(res.environment.updated_at),
                 deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
@@ -335,8 +314,7 @@ class AccountService {
                       orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
                       orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
                   }
-                : null,
-            secret: defaultSecret
+                : null
         };
     }
 }

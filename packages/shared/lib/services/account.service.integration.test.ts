@@ -6,7 +6,6 @@ import db, { multipleMigrations } from '@nangohq/database';
 import accountService from './account.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
-import secretService from './secret.service.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
 describe('Account service', () => {
@@ -48,7 +47,6 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
 
@@ -67,11 +65,6 @@ describe('Account service', () => {
                 ...plan,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
             }
         });
     });
@@ -80,7 +73,6 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byPublicKey = await accountService.getAccountContext({ publicKey: environment!.public_key });
 
@@ -99,11 +91,6 @@ describe('Account service', () => {
                 ...plan,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
             }
         });
     });
@@ -112,7 +99,6 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byUuid = await accountService.getAccountContext({ environmentUuid: environment!.uuid });
 
@@ -131,11 +117,6 @@ describe('Account service', () => {
                 ...plan,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
             }
         });
     });
@@ -144,7 +125,6 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byAccountUuid = await accountService.getAccountContext({ accountUuid: account.uuid, envName: environment!.name });
 
@@ -163,11 +143,6 @@ describe('Account service', () => {
                 ...plan,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
             }
         });
     });
@@ -176,7 +151,6 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byAccountId = await accountService.getAccountContext({ accountId: account.id, envName: environment!.name });
 
@@ -195,11 +169,6 @@ describe('Account service', () => {
                 ...plan,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
             }
         });
     });
@@ -208,7 +177,6 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byEnvironmentId = await accountService.getAccountContext({ environmentId: environment!.id });
 
@@ -225,11 +193,6 @@ describe('Account service', () => {
             },
             plan: {
                 ...plan,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
             }

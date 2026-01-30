@@ -64,7 +64,7 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
             return false;
         }
 
-        const environment = await environmentService.getById(integration.environment_id);
+        const environment = await environmentService.getRawById(integration.environment_id);
         const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.provider}`;
 
         if (payload.aud !== webhookUrl) {

@@ -32,7 +32,7 @@ export function Err<T, E extends Error>(error: E | string): Result<T, E> {
         },
         isErr: (): this is Left<T, E> => true,
         isOk: (): this is Right<T, E> => false,
-        map: <U>(_fn: (value: T) => U): Result<U, E> => {
+        map: <U>(_fn: (value: T) => U): Result<T, E> => {
             return Err(error);
         },
         mapError: <U extends Error>(fn: (error: E) => U): Result<T, U> => {
