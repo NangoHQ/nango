@@ -4,7 +4,7 @@ export const TAG_MAX_COUNT = 10;
 export const TAG_KEY_MAX_LENGTH = 64;
 export const TAG_VALUE_MAX_LENGTH = 255;
 
-const connectionTagsKeySchema = z
+export const connectionTagsKeySchema = z
     .string()
     .regex(/^[a-zA-Z][a-zA-Z0-9_\-./]*$/, {
         message: 'Tag keys must start with a letter and contain only alphanumerics, underscores, hyphens, periods, or slashes'

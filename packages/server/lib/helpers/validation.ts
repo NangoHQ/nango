@@ -1,8 +1,8 @@
 import * as z from 'zod';
 
-import { connectionTagsSchema } from '@nangohq/shared';
+import { connectionTagsKeySchema, connectionTagsSchema, TAG_MAX_COUNT } from '@nangohq/shared';
 
-export { connectionTagsSchema };
+export { connectionTagsKeySchema, connectionTagsSchema, TAG_MAX_COUNT };
 
 export const providerSchema = z
     .string()
@@ -157,8 +157,40 @@ export const connectionEndUserTagsSchema = z
     // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that
     // + It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
     // But they complained a lot about concatenation of string, so an object solves that cleanly
-    .record(z.string(), z.string().max(255))
-    .refine((v) => Object.keys(v).length < 64, { message: 'Tags can not contain more than 64 keys' });
+    .record(connectionTagsKeySchema, z.string().max(255))
+    .superRefine((tags, ctx) => {
+        const entries = Object.entries(tags);
+
+        if (entries.length > TAG_MAX_COUNT) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Tags cannot contain more than ${TAG_MAX_COUNT} keys`
+            });
+            return;
+        }
+
+        // Check for duplicate keys after normalization
+        const seen = new Set<string>();
+        for (const [key, value] of entries) {
+            const normalized = key.toLowerCase();
+            if (seen.has(normalized)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `Duplicate tag key after case normalization: "${normalized}"`
+                });
+            }
+            seen.add(normalized);
+            if (normalized === 'end_user_email') {
+                const emailResult = z.string().email().min(5).safeParse(value);
+                if (!emailResult.success) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: 'Tag "end_user_email" must be a valid email'
+                    });
+                }
+            }
+        }
+    });
 
 export const endUserSchema = z.strictObject({
     id: z.string().max(255).min(1),
