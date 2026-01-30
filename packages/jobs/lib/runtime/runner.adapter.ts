@@ -29,13 +29,17 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
             return Err(runner.error);
         }
 
-        const res = await runner.value.client.start.mutate({
-            taskId: params.taskId,
-            nangoProps: params.nangoProps,
-            code: params.code,
-            codeParams: params.codeParams
-        });
+        try {
+            const res = await runner.value.client.start.mutate({
+                taskId: params.taskId,
+                nangoProps: params.nangoProps,
+                code: params.code,
+                codeParams: params.codeParams
+            });
 
-        return Ok(res);
+            return Ok(res);
+        } catch (err) {
+            return Err(new Error(`Nango runner was unable to execute the function`, { cause: err }));
+        }
     }
 }

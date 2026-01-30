@@ -17,7 +17,7 @@ interface LambdaFunction {
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
     constructor(private readonly fleet: Fleet) {}
 
-    async getFunction(nangoProps: NangoProps): Promise<LambdaFunction> {
+    private async getFunction(nangoProps: NangoProps): Promise<LambdaFunction> {
         const routingId = getRoutingId(nangoProps);
         const node = await this.fleet.getRunningNode(routingId);
         if (node.isErr()) {
@@ -32,20 +32,24 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
-        const func = await this.getFunction(params.nangoProps);
-        const command = new InvokeCommand({
-            FunctionName: func.arn,
-            Payload: JSON.stringify({
-                taskId: params.taskId,
-                nangoProps: params.nangoProps,
-                code: params.code,
-                codeParams: params.codeParams
-            }),
-            //InvocationType is Event for async invocation, RequestResponse for sync invocation
-            InvocationType: 'Event'
-        });
-        await client.send(command);
-        return Ok(true);
+        try {
+            const func = await this.getFunction(params.nangoProps);
+            const command = new InvokeCommand({
+                FunctionName: func.arn,
+                Payload: JSON.stringify({
+                    taskId: params.taskId,
+                    nangoProps: params.nangoProps,
+                    code: params.code,
+                    codeParams: params.codeParams
+                }),
+                //InvocationType is Event for async invocation, RequestResponse for sync invocation
+                InvocationType: 'Event'
+            });
+            await client.send(command);
+            return Ok(true);
+        } catch (err) {
+            return Err(new Error(`Lambda was unable to execute the function`, { cause: err }));
+        }
     }
 
     async cancel(_params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
