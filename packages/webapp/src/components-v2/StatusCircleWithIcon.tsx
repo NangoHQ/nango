@@ -41,4 +41,6 @@ export const StatusCircleWithIcon: React.FC<StatusCircleWithIconProps> = ({ vari
             </Tooltip>
         );
     }
+
+    return circle;
 };
