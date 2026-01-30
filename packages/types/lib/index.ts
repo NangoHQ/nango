@@ -92,4 +92,6 @@ export type * from './fleet/index.js';
 export type * from './persist/api.js';
 export type * from './jobs/api.js';
 
+export type * from './checkpoint/db.js';
+
 export type * from './mcp/api.js';
