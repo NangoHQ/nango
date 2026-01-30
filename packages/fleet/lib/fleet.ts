@@ -16,7 +16,7 @@ import { withPgLock } from './utils/locking.js';
 
 import type { ImageVerifier } from './image-verifier/verifier.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
-import type { Node, NodeConfigOverride } from './types.js';
+import type { Node, NodeConfigOverride, NodeState } from './types.js';
 import type { Deployment, ImageType, RoutingId } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
@@ -157,6 +157,30 @@ export class Fleet {
             return recurse(supervisor, start);
         };
         return recurse(this.supervisor, new Date());
+    }
+
+    public async getNodesByRoutingId({
+        routingId,
+        states = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED']
+    }: {
+        routingId: RoutingId;
+        states?: [NodeState, ...NodeState[]];
+    }): Promise<Result<Node[]>> {
+        const search = await nodes.search(this.dbClient.db, {
+            states,
+            routingId
+        });
+        if (search.isErr()) {
+            return Err(search.error);
+        }
+
+        const byState = search.value.get(routingId);
+        if (!byState) {
+            return Ok([]);
+        }
+
+        const nodesByState = Object.values(byState);
+        return Ok(nodesByState.flat());
     }
 
     public async registerNode({ nodeId, url }: { nodeId: number; url: string }): Promise<Result<Node>> {
