@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.27] - 2026-01-29
+
+### Added
+
+- *(integrations)* Add support for Workday (Refresh Token Auth) (#5313) by @hassan254-prog
+- *(checkpoint)* Add checkpoint data model (#5316) by @TBonnin
+- *(github-app-oauth)* GitHub app when adding a repo doesnt return correctly (#5283) by @khaliqgant
+- Connection and connect session tags (#5274) by @marcindobry
+
+### Changed
+
+- Update version in manifest by @actions-user
+
+### Fixed
+
+- *(plans)* Free plans default to lambda for action runtime (#5319) by @rossmcewan
+- *(webapp)* Change nango cli docs link near clone snippet (#5320) by @kaposke
+
 ## [v0.69.26] - 2026-01-28
 
 ### Added
@@ -5713,6 +5731,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.27]: https://github.com/NangoHQ/nango/compare/v0.69.26..v0.69.27
 [v0.69.26]: https://github.com/NangoHQ/nango/compare/v0.69.22..v0.69.26
 [v0.69.22]: https://github.com/NangoHQ/nango/compare/v0.69.21..v0.69.22
 [v0.69.21]: https://github.com/NangoHQ/nango/compare/v0.69.20..v0.69.21
