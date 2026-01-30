@@ -7,7 +7,14 @@ import type { Response } from 'express';
  * Yet it also felt wrong to add another dependency to simply parse 1 template.
  * If you have an idea on how to improve this feel free to submit a pull request.
  */
-export function authHtml({ res, error }: { res: Response; error?: string }) {
+function escapeHtml(unsafe: string): string {
+    return unsafe.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+export function authHtml({ res, error, queryParams }: { res: Response; error?: string; queryParams?: Record<string, any> }) {
+    const escapedQueryParams = error && queryParams ? escapeHtml(JSON.stringify(queryParams)) : '';
+    const escapedError = error ? escapeHtml(error) : '';
+
     const resultHTML = `
 <!--
 Nango OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/nango
@@ -20,9 +27,10 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
   <body style="font-family: sans-serif;">
     <noscript>JavaScript is required to proceed with the authentication.</noscript>
 
-    <div id="content" style="display: flex; width: 100vw; height: 100vh; align-items: center; justify-content: center; font-size: 14px; opacity: 0">
+    <div id="content" style="display: flex; width: 100vw; height: 100vh; align-items: center; justify-content: center; font-size: 14px; ${error ? 'opacity: 1' : 'opacity: 0'}">
       <div style="text-align: center">
-        ${error ? `<p style="color: #ef665b;">An error occurred during authorization, please reach out to support (code: ${error}).</p>` : '<p>You are now connected.</p>'}
+        ${error ? `<p style="color: #ef665b;">An error occurred during authorization, please reach out to support (code: ${escapedError}).</p>` : '<p>You are now connected.</p>'}
+        ${error && queryParams ? `<p style="font-size: 12px; color: #666; margin-top: 10px;">Query params: <code>${escapedQueryParams}</code></p>` : ''}
         <p>You can close this window.</p>
       </div>
     </div>
@@ -44,6 +52,11 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
         }
       });
 
+      ${
+          error
+              ? `
+      `
+              : `
       // Close the modal
       window.setTimeout(function() {
         try {
@@ -60,6 +73,8 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
       window.setTimeout(function() {
         document.getElementById('content').style.opacity = 1
       }, 500);
+      `
+      }
     </script>
   </body>
 </html>
