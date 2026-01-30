@@ -235,7 +235,11 @@ export class EncryptionManager extends Encryption {
                 continue; // Already encrypted.
             }
             const encrypted = this.encryptAPISecret(secret);
-            encrypted.hashed = (await secretService.hashSecret(secret.secret)).unwrap();
+            const hashed = await secretService.hashSecret(secret.secret);
+            if (hashed.isErr()) {
+                throw hashed.error;
+            }
+            encrypted.hashed = hashed.value;
             encrypted.updated_at = new Date();
             await db.knex<DBAPISecret>(`api_secrets`).where({ id: secret.id }).update(encrypted);
         }

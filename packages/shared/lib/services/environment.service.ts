@@ -90,13 +90,15 @@ class EnvironmentService {
                 return null;
             }
             // Invariant: Every environment always has one default key.
-            const secret = (
-                await secretService.createSecret(trx, {
-                    environmentId: environment.id,
-                    displayName: 'default',
-                    isDefault: true
-                })
-            ).unwrap();
+            const created = await secretService.createSecret(trx, {
+                environmentId: environment.id,
+                displayName: 'default',
+                isDefault: true
+            });
+            if (created.isErr()) {
+                throw created.error;
+            }
+            const secret = created.value;
             environment.secret_key = secret.secret;
             environment.pending_secret_key = null;
             return environment;
@@ -269,7 +271,10 @@ class EnvironmentService {
         if (created === null) {
             return null;
         }
-        return created.unwrap().secret;
+        if (created.isErr()) {
+            throw created.error;
+        }
+        return created.value.secret;
     }
 
     async rotatePublicKey(id: number): Promise<string | null> {
@@ -296,7 +301,10 @@ class EnvironmentService {
         if (defaultSecret === null) {
             return null;
         }
-        return defaultSecret.unwrap().secret || null;
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
+        return defaultSecret.value.secret;
     }
 
     async revertPublicKey(id: number): Promise<string | null> {
@@ -411,8 +419,11 @@ class EnvironmentService {
         // Note: For now, exactly one default secret per environment exists
         // and zero or one non-default secret: The pending secret (during rotation).
         const envByID = new Map(envs.map((env) => [env.id, env]));
-        const allSecrets = (await secretService.getAllSecretsForAllEnvs(trx, Array.from(envByID.keys()))).unwrap();
-        for (const [envId, secrets] of allSecrets) {
+        const allSecrets = await secretService.getAllSecretsForAllEnvs(trx, Array.from(envByID.keys()));
+        if (allSecrets.isErr()) {
+            throw allSecrets.error;
+        }
+        for (const [envId, secrets] of allSecrets.value) {
             const env = envByID.get(envId)!;
             env.pending_secret_key = null;
             for (const secret of secrets) {
@@ -429,8 +440,11 @@ class EnvironmentService {
         // Note: For now, exactly one default secret per environment exists
         // and zero or one non-default secret: The pending secret (during rotation).
         env.pending_secret_key = null;
-        const secrets = (await secretService.getAllSecretsForEnv(trx, env.id)).unwrap();
-        for (const secret of secrets) {
+        const secrets = await secretService.getAllSecretsForEnv(trx, env.id);
+        if (secrets.isErr()) {
+            throw secrets.error;
+        }
+        for (const secret of secrets.value) {
             if (secret.is_default) {
                 env.secret_key = secret.secret;
             } else {

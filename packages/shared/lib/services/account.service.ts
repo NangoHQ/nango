@@ -273,8 +273,15 @@ class AccountService {
         if ('secretKey' in opts) {
             // Hashing is slow by design so it's very slow to recompute this hash all the time
             // We keep the hash in-memory to not compromise on security if the db leak
-            const hashed = hashLocalCache.get(opts.secretKey) || (await secretService.hashSecret(opts.secretKey)).unwrap();
-            q.where('default_secret.hashed', hashed);
+            hash = hashLocalCache.get(opts.secretKey);
+            if (!hash) {
+                const hashed = await secretService.hashSecret(opts.secretKey);
+                if (hashed.isErr()) {
+                    throw hashed.error;
+                }
+                hash = hashed.value;
+            }
+            q.where('default_secret.hashed', hash);
         } else if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
         } else if ('environmentUuid' in opts) {
