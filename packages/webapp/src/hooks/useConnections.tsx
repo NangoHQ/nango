@@ -1,44 +1,55 @@
-import { useMemo } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import useSWR from 'swr';
-import useSWRInfinite from 'swr/infinite';
 
-import { apiFetch, swrFetcher } from '../utils/api';
+import { APIError, apiFetch, swrFetcher } from '../utils/api';
 
 import type { SWRError } from '../utils/api';
 import type { DeleteConnection, GetConnection, GetConnections, GetConnectionsCount, PostConnectionRefresh } from '@nangohq/types';
 import type { Cache, useSWRConfig } from 'swr';
 
-export function useConnections(queries: GetConnections['Querystring']) {
-    const { data, error, size, setSize, mutate } = useSWRInfinite<GetConnections['Success'], SWRError<GetConnections['Errors']>>(
-        (offset, previousPageData: GetConnections['Success'] | null) => {
-            if (previousPageData && previousPageData.data.length <= 0) {
-                return null; // reached the end
+export function useConnections(queries: Omit<GetConnections['Querystring'], 'page'>) {
+    return useInfiniteQuery<GetConnections['Success'], APIError>({
+        queryKey: ['connections', 'list', queries],
+        queryFn: async ({ pageParam = 0 }): Promise<GetConnections['Success']> => {
+            const usp = new URLSearchParams();
+            if (queries.env) {
+                usp.set('env', queries.env);
             }
+            if (queries.search) {
+                usp.set('search', queries.search);
+            }
+            if (queries.integrationIds && queries.integrationIds.length > 0) {
+                queries.integrationIds.forEach((id) => {
+                    usp.append('integrationIds', id);
+                });
+            }
+            if (queries.withError !== undefined) {
+                usp.set('withError', String(queries.withError));
+            }
+            usp.set('page', String(pageParam));
 
-            const usp = new URLSearchParams(queries as any);
-            if (queries.integrationIds?.length === 1 && queries.integrationIds[0] === 'all') {
-                usp.delete('integrationIds');
-            }
-            [...usp.entries()].forEach(([key, value]) => {
-                if (value === 'undefined' || value === '') {
-                    usp.delete(key);
-                }
+            const res = await apiFetch(`/api/v1/connections?${usp.toString()}`, {
+                method: 'GET'
             });
-            usp.set('page', String(offset));
-            return `/api/v1/connections?${usp.toString()}`;
+
+            const json = (await res.json()) as GetConnections['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
         },
-        swrFetcher,
-        { revalidateFirstPage: true }
-    );
-
-    const hasNext = useMemo(() => {
-        if (!data) return false;
-        return data[data.length - 1].data.length >= 20;
-    }, [data]);
-
-    const loading = !data && !error;
-
-    return { loading, error: error?.json, data, hasNext, offset: size, setOffset: setSize, mutate };
+        getNextPageParam: (lastPage, allPages) => {
+            // If last page has less than 20 items, we're on the last page
+            if (lastPage.data.length < 20) {
+                return undefined;
+            }
+            // Otherwise, return next page number
+            return allPages.length;
+        },
+        initialPageParam: 0,
+        enabled: Boolean(queries.env)
+    });
 }
 
 export function clearConnectionsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
