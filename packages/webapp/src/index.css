@@ -509,6 +509,7 @@ layer(base);
             --color-btn-tertiary-fg: var(--color-gray-200);
             --color-btn-tertiary-hover: var(--color-gray-800);
             --color-btn-tertiary-press: var(--color-gray-700);
+            --color-btn-tertiary-loading: var(--color-gray-700);
 
             --color-btn-destructive-bg: var(--color-red-500);
             --color-btn-destructive-fg: var(--color-gray-50);
