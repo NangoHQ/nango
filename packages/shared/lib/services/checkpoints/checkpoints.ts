@@ -87,7 +87,7 @@ export async function upsertCheckpoint(
         return Err(validation.error);
     }
 
-    const validatedCheckpoint = validation.value;
+    const validatedCheckpoint = validation.unwrap();
 
     try {
         const result = await db.raw<{ rows: DBCheckpoint[] }>(

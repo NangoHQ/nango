@@ -7,7 +7,7 @@ export interface Left<T, E extends Error> {
     isErr(this: Result<T, E>): this is Left<T, E>;
     isOk(this: Result<T, E>): this is Right<T, E>;
     unwrap(): T;
-    map<U>(fn: (value: T) => U): Result<U, E>;
+    map<U>(fn: (value: T) => U): Result<T, E>;
     mapError<U extends Error>(fn: (error: E) => U): Result<T, U>;
 }
 
