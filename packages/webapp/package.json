@@ -86,7 +86,7 @@
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",
         "react-hook-form": "7.63.0",
-        "react-router-dom": "6.26.1",
+        "react-router-dom": "6.30.3",
         "react-toastify": "9.1.1",
         "react-use": "17.6.0",
         "recharts": "2.15.4",
