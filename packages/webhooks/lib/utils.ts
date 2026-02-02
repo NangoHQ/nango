@@ -9,7 +9,7 @@ import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker
 import { envs } from './envs.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
+import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
@@ -147,14 +147,14 @@ export const deliver = async ({
     body,
     webhookType,
     logCtx,
-    environment,
+    secret,
     endingMessage = '',
     incomingHeaders
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    environment: Pick<DBEnvironment, 'secret_key'>;
+    secret: Pick<DBAPISecret, 'secret'>;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
@@ -175,8 +175,8 @@ export const deliver = async ({
 
         const headers = {
             ...filteredHeaders,
-            'X-Nango-Signature': getSignatureHeaderUnsafe(environment.secret_key, bodyString.value),
-            'X-Nango-Hmac-Sha256': getHmacSignatureHeader(environment.secret_key, bodyString.value),
+            'X-Nango-Signature': getSignatureHeaderUnsafe(secret.secret, bodyString.value),
+            'X-Nango-Hmac-Sha256': getHmacSignatureHeader(secret.secret, bodyString.value),
             'content-type': 'application/json',
             'user-agent': userAgent
         };

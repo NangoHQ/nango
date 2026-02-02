@@ -26,6 +26,7 @@ import {
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
+import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
@@ -164,6 +165,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            return Err(defaultSecret.error);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
@@ -177,7 +183,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             syncId: task.syncId,
             syncVariant: task.syncVariant,
@@ -419,7 +425,10 @@ export async function handleSyncSuccess({
                         model
                     }
                 });
-
+                const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+                if (defaultSecret.isErr()) {
+                    throw defaultSecret.error;
+                }
                 void tracer.scope().activate(span, async () => {
                     try {
                         if (team && environment && providerConfig) {
@@ -427,6 +436,7 @@ export async function handleSyncSuccess({
                                 account: team,
                                 connection: connection,
                                 environment: environment,
+                                secret: defaultSecret.value,
                                 syncConfig: nangoProps.syncConfig,
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
@@ -873,6 +883,11 @@ async function onFailure({
         if (team && environment && syncConfig && providerConfig) {
             void tracer.scope().activate(span, async () => {
                 try {
+                    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+                    if (defaultSecret.isErr()) {
+                        throw defaultSecret.error;
+                    }
+
                     const res = await sendSyncWebhook({
                         account: team,
                         providerConfig,
@@ -880,6 +895,7 @@ async function onFailure({
                         syncVariant,
                         connection: connection,
                         environment: environment,
+                        secret: defaultSecret.value,
                         webhookSettings,
                         model: models.join(','),
                         success: false,
