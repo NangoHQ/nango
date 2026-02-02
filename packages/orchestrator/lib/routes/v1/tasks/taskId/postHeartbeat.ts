@@ -19,7 +19,7 @@ type PostHeartbeat = Endpoint<{
     Success: never;
 }>;
 
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<PostHeartbeat>({
     parseParams: (data) => paramsSchema.parse(data)

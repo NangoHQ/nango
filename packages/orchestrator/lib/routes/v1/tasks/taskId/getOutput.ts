@@ -29,7 +29,7 @@ const method = 'GET';
 const querySchema = z.object({
     longPolling: z.coerce.number().optional()
 });
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<GetOutput>({
     parseQuery: (data) => querySchema.parse(data),

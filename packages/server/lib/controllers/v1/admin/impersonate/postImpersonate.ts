@@ -12,7 +12,7 @@ import type { PostImpersonate } from '@nangohq/types';
 
 const schemaBody = z
     .object({
-        accountUUID: z.string().uuid(),
+        accountUUID: z.uuid(),
         loginReason: z.string().min(1).max(1024)
     })
     .strict();

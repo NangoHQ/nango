@@ -7,7 +7,7 @@ import { orchestratorClient } from '../../../clients.js';
 import type { PostHeartbeat } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<PostHeartbeat>({
     parseParams: (data) => paramsSchema.parse(data)

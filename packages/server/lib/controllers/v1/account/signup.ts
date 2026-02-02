@@ -26,7 +26,7 @@ const validation = z
         email: z.email(),
         password: passwordSchema,
         name: z.string(),
-        token: z.string().uuid().optional(),
+        token: z.uuid().optional(),
         foundUs: z.string().optional()
     })
     .strict();

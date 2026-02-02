@@ -52,7 +52,7 @@ export const frequencySchema = z
     );
 
 export const connectionCredential = z.union([
-    z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }),
+    z.object({ public_key: z.uuid(), hmac: z.string().optional() }),
     z.object({ connect_session_token: connectSessionTokenSchema })
 ]);
 
