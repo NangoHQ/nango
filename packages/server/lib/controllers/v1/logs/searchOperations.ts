@@ -50,7 +50,7 @@ const validation = z
         integrations: z.array(z.string()).max(20).optional().default(['all']),
         connections: z.array(z.string()).max(20).optional().default(['all']),
         syncs: z.array(z.string()).max(20).optional().default(['all']),
-        period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional(),
+        period: z.object({ from: z.iso.datetime(), to: z.iso.datetime() }).optional(),
         cursor: z.string().or(z.null()).optional()
     })
     .strict();
