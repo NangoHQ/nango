@@ -284,6 +284,18 @@ To fetch the synced data in your product, follow the steps in the next setion.
     Most teams automate deployments to production in their CI.
 </Tip>
 
+<Warning>
+**Data retention policies**
+
+Nango automatically manages data retention for synced records:
+- **Records not updated for 30 days**: Payload is pruned (metadata like record ID and sync state remain for change detection)
+- **Syncs not executed for 60 days**: All records from that sync are permanently deleted
+
+**Best practice**: Fetch records from Nango promptly after receiving webhook notifications and store them in your own system. Don't use Nango's cache as your primary long-term data store.
+
+[Learn more about data retention policies](/guides/platform/security#synced-records-retention)
+</Warning>
+
 ## How to use a sync
 
 ### Pre-built integration templates
