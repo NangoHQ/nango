@@ -13,7 +13,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     if (typeof resourceUri === 'string') {
         const match = resourceUri.match(/\/calendars\/([^/]+)\//);
-        if (match) {
+        if (match && match[1]) {
             emailAddress = decodeURIComponent(match[1]);
         }
     }
