@@ -5,6 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import encryptionManager, { EncryptionManager } from './encryption.manager.js';
 import { seedAccountEnvAndUser } from '../seeders/index.js';
 import environmentService from '../services/environment.service.js';
+import secretService from '../services/secret.service.js';
 
 describe('encryption', () => {
     beforeAll(async () => {
@@ -53,7 +54,7 @@ describe('encryption', () => {
     });
 
     describe('encryption', () => {
-        it('should encrypt environment', async () => {
+        it('should encrypt secrets', async () => {
             // we create a different schema because we have only one DB for all tests
             db.knex.client.config.searchPath = 'nango_encrypt';
             db.schema = () => 'nango_encrypt';
@@ -66,19 +67,25 @@ describe('encryption', () => {
             await db.knex.from(`_nango_db_config`).del();
 
             const { env } = await seedAccountEnvAndUser();
-            expect(env.secret_key_iv).toBeNull();
-            expect(env.secret_key_hashed).toBe(env.secret_key);
+            expect(env.secret_key).toBeUUID();
+
+            const defaultSecret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+            expect(defaultSecret.secret).toBeUUID();
+            expect(defaultSecret.secret).toEqual(env.secret_key);
+            expect(defaultSecret.iv).toEqual('');
+            expect(defaultSecret.tag).toEqual('');
 
             // Re-enable encryption
             // @ts-expect-error Modify the key on the fly
             encryptionManager.key = 'aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=';
             await encryptionManager.encryptDatabaseIfNeeded();
 
-            const envAfterEnc = (await environmentService.getRawById(env.id))!;
-            expect(envAfterEnc.secret_key_iv).not.toBeNull();
-            expect(envAfterEnc.secret_key_tag).not.toBeNull();
-            expect(envAfterEnc.secret_key).not.toBe(env.secret_key);
-            expect(envAfterEnc.secret_key_hashed).not.toBe(env.secret_key);
+            const envAfterEnc = (await environmentService.getById(env.id))!;
+            expect(envAfterEnc.secret_key).toEqual(env.secret_key);
+
+            const defaultSecretAfterEnc = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+            expect(defaultSecretAfterEnc.secret).toBeUUID();
+            expect(defaultSecretAfterEnc.secret).toEqual(env.secret_key);
         });
     });
 });
