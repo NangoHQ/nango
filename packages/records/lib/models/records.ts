@@ -1018,28 +1018,29 @@ export async function* paginateCounts({
     environmentIds?: number[];
     batchSize?: number;
 } = {}): AsyncGenerator<Result<RecordCount[]>> {
+    if (batchSize < 1) {
+        throw new RangeError(`batchSize must be > 0`);
+    }
     let offset = 0;
-
     try {
         while (true) {
             // TODO: optimize with cursor pagination
-            const query = db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
-            if (environmentIds && environmentIds.length > 0) {
-                query.whereIn('environment_id', environmentIds);
-            }
-            const results = await query;
+            let query = db<RecordCount>(RECORD_COUNTS_TABLE).select('*').orderBy(['connection_id', 'model']).limit(batchSize).offset(offset);
 
-            if (results.length === 0) break;
+            if (environmentIds && environmentIds.length > 0) {
+                query = query.whereIn('environment_id', environmentIds);
+            }
+
+            const results = await query;
+            if (results.length < batchSize) {
+                return yield Ok(results);
+            }
 
             yield Ok(results);
             offset += results.length;
-
-            if (results.length < batchSize) break;
         }
-        return Ok([]);
     } catch (err) {
-        yield Err(new Error(`Failed to fetch record counts: ${String(err)}`));
-        return;
+        return yield Err(`Failed to fetch record counts: ${String(err)}`);
     }
 }
 
