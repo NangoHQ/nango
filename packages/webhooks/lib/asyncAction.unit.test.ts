@@ -6,7 +6,7 @@ import { axiosInstance, stringifyStable } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from './asyncAction.js';
 import { TestWebhookServer } from './helpers/test.js';
 
-import type { DBEnvironment, DBExternalWebhook } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBExternalWebhook } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -27,9 +27,12 @@ const webhookSettings: DBExternalWebhook = {
 };
 const environment = {
     name: 'dev',
-    id: 1,
-    secret_key: 'secret'
+    id: 1
 } as DBEnvironment;
+
+const secret = {
+    secret: 'secret'
+} as Pick<DBAPISecret, 'secret'>;
 
 describe('AsyncAction webhookds', () => {
     beforeAll(async () => {
@@ -51,7 +54,7 @@ describe('AsyncAction webhookds', () => {
         );
         await sendAsyncActionWebhook({
             connectionId: '123',
-            environment,
+            secret,
             providerConfigKey: 'some-provider',
             webhookSettings: {
                 ...webhookSettings,
@@ -70,7 +73,7 @@ describe('AsyncAction webhookds', () => {
         );
         const props = {
             connectionId: '123',
-            environment,
+            secret,
             providerConfigKey: 'some-provider',
             webhookSettings: {
                 ...webhookSettings,

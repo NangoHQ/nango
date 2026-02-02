@@ -13,6 +13,7 @@ import {
     getEndUserByConnectionId,
     getSyncConfigRaw
 } from '@nangohq/shared';
+import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
@@ -113,6 +114,11 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            return Err(defaultSecret.error);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -126,7 +132,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: task.activityLogId,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
@@ -494,10 +500,14 @@ async function sendWebhookIfNeeded({
     if (!environment || !task.retryKey || !task.async) {
         return;
     }
+    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+    if (defaultSecret.isErr()) {
+        throw defaultSecret.error;
+    }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
         await sendAsyncActionWebhook({
-            environment: environment,
+            secret: defaultSecret.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
             payload: {
