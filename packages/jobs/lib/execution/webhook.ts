@@ -262,6 +262,11 @@ export async function handleWebhookSuccess({
     const environment = accountAndEnv.environment;
 
     if (environment) {
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
+
         for (const model of nangoProps.syncConfig.models || []) {
             const span = tracer.startSpan('jobs.webhook.webhook', {
                 tags: {
@@ -276,11 +281,6 @@ export async function handleWebhookSuccess({
 
             void tracer.scope().activate(span, async () => {
                 try {
-                    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-                    if (defaultSecret.isErr()) {
-                        throw defaultSecret.error;
-                    }
-
                     const res = await sendSyncWebhook({
                         account: team,
                         connection: {

@@ -323,6 +323,10 @@ export async function handleSyncSuccess({
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
         for (const model of nangoProps.syncConfig.models || []) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
@@ -425,10 +429,6 @@ export async function handleSyncSuccess({
                         model
                     }
                 });
-                const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-                if (defaultSecret.isErr()) {
-                    throw defaultSecret.error;
-                }
                 void tracer.scope().activate(span, async () => {
                     try {
                         if (team && environment && providerConfig) {
