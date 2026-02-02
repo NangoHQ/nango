@@ -34,7 +34,7 @@ const bodySchema = z
         nextExecutionInMs: z.number().int().nonnegative().optional()
     })
     .strict();
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<PutTask>({
     parseBody: (data) => bodySchema.parse(data),

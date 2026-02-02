@@ -14,7 +14,7 @@ export interface InviteAccountState {
 const validation = z
     .object({
         provider: z.enum(['GoogleOAuth']),
-        token: z.string().uuid().optional()
+        token: z.uuid().optional()
     })
     .strict();
 

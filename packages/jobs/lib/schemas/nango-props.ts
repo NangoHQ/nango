@@ -45,7 +45,7 @@ export const nangoPropsSchema = z.looseObject({
         // deleted: z.boolean().optional(),
         // deleted_at: z.coerce.date().optional().nullable(),
     }),
-    syncId: z.string().uuid().optional(),
+    syncId: z.uuid().optional(),
     syncJobId: z.number().optional(),
     activityLogId: operationIdRegex,
     secretKey: z.string().min(1),

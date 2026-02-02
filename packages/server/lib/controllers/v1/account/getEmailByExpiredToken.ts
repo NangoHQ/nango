@@ -12,7 +12,7 @@ const logger = getLogger('Server.GetEmailByExpiredToken');
 
 const validation = z
     .object({
-        token: z.string().uuid()
+        token: z.uuid()
     })
     .strict();
 
