@@ -30,10 +30,10 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should validate body with an empty connection id', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: '',
                 provider_config_key: 'test',
@@ -57,11 +57,11 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should validate body with an empty provider config key', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: 'abc',
                 provider_config_key: '',
@@ -85,14 +85,14 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should provide an unknown connection response if a bad connection is provided', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const connection_id = 'abc';
         const provider_config_key = 'test';
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id,
                 provider_config_key,
@@ -110,14 +110,14 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should provide an unknown connection response if bad connections are provided', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const connection_id = ['abc', 'def'];
         const provider_config_key = 'test';
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id,
                 provider_config_key,
@@ -135,7 +135,7 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('Should update metadata and not overwrite', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const unique_key = 'test-update';
         await seeders.createConfigSeed(env, unique_key, 'google');
         const connections = await seeders.createConnectionSeed({ env, provider: unique_key });
@@ -149,7 +149,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id,
                 provider_config_key,
@@ -174,7 +174,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const resTwo = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id,
                 provider_config_key,

@@ -28,10 +28,10 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should fail if using secret key', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key
+            token: secret.secret
         });
 
         isError(res.json);
@@ -63,14 +63,14 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should get a session', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create session
         const endUserId = 'knownId';
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -93,7 +93,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should get a session with custom connect UI settings when both customization flags are enabled', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, secret, plan } = await seeders.seedAccountEnvAndUser();
         // Enable both features so custom settings can be preserved
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -117,7 +117,7 @@ describe(`GET ${endpoint}`, () => {
         const endUserId = 'knownId';
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -140,7 +140,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should get a session with default connect UI settings when both customization flags are disabled', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create custom connect UI settings
@@ -162,7 +162,7 @@ describe(`GET ${endpoint}`, () => {
         const endUserId = 'knownId';
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
