@@ -3,17 +3,17 @@ import { metrics } from '@nangohq/utils';
 import { deliver, shouldSend } from './utils.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { AsyncActionResponse, DBEnvironment, DBExternalWebhook, NangoAsyncActionWebhookBody } from '@nangohq/types';
+import type { AsyncActionResponse, DBAPISecret, DBExternalWebhook, NangoAsyncActionWebhookBody } from '@nangohq/types';
 
 export const sendAsyncActionWebhook = async ({
-    environment,
+    secret,
     connectionId,
     providerConfigKey,
     webhookSettings,
     payload,
     logCtx
 }: {
-    environment: DBEnvironment;
+    secret: Pick<DBAPISecret, 'secret'>;
     connectionId: string;
     providerConfigKey: string;
     webhookSettings: DBExternalWebhook | null;
@@ -45,7 +45,7 @@ export const sendAsyncActionWebhook = async ({
         webhooks,
         body,
         webhookType: 'async_action',
-        environment,
+        secret,
         logCtx
     });
 
