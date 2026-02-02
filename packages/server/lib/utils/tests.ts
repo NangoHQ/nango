@@ -173,7 +173,7 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
 /**
  * Get connect session token
  * @param api
- * @param env
+ * @param secret
  * @returns connect session token
  * @throws Error if no connect session token
  * @example const token = await getConnectSessionToken(api, env);
