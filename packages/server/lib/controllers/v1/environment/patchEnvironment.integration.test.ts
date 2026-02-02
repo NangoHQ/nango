@@ -29,7 +29,7 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should successfully rename an environment', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const newName = 'renamed-env';
 
         const res = await api.fetch(endpoint, {
@@ -37,7 +37,7 @@ describe(`PATCH ${endpoint}`, () => {
             // @ts-expect-error query params are required
             query: { env: env.name },
             body: { name: newName },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -54,7 +54,7 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should not allow renaming to an existing environment name', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
         await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'existing' });
 
         const res = await api.fetch(endpoint, {
@@ -62,7 +62,7 @@ describe(`PATCH ${endpoint}`, () => {
             // @ts-expect-error query params are required
             query: { env: env.name },
             body: { name: 'existing' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(409);

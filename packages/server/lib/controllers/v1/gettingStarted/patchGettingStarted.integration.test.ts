@@ -23,10 +23,10 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should validate body schema', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             query: { env: env.name },
             // @ts-expect-error on purpose
             body: { step: 'invalid' }
@@ -43,10 +43,10 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should validate step is non-negative integer', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             query: { env: 'dev' },
             body: { step: -1 }
         });
