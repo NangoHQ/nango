@@ -9498,6 +9498,15 @@ microsoft-oauth2-cc:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-planner:
+    display_name: Microsoft Planner
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-planner
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
