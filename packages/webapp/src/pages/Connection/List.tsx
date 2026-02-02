@@ -45,7 +45,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         cell: ({ row }) => {
             const data = row.original;
 
-            const displayName = getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id });
+            const displayName = getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id, connectionTags: data.tags });
             const email = getEndUserEmail(data.endUser, data.tags);
 
             return (
