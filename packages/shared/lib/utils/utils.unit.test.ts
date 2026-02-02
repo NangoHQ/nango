@@ -41,6 +41,36 @@ describe('encodeParameters Function Tests', () => {
     });
 });
 
+describe('getConnectionConfig', () => {
+    it('should return only string values and exclude assertionOption/assertion_option', () => {
+        const queryParams = {
+            domain: 'mycompany.3cx.us',
+            clientId: 'client-123',
+            clientSecret: 'secret-456',
+            assertionOption: { foo: 'bar' },
+            assertion_option: '[object Object]'
+        };
+        const result = utils.getConnectionConfig(queryParams);
+        expect(result).toEqual({
+            domain: 'mycompany.3cx.us',
+            clientId: 'client-123',
+            clientSecret: 'secret-456'
+        });
+        expect(result['assertionOption']).toBeUndefined();
+        expect(result['assertion_option']).toBeUndefined();
+    });
+
+    it('should return empty object for null/undefined', () => {
+        expect(utils.getConnectionConfig(null)).toEqual({});
+        expect(utils.getConnectionConfig(undefined)).toEqual({});
+    });
+
+    it('should filter out non-string values', () => {
+        const queryParams = { domain: 'x.com', count: 42, flag: true };
+        expect(utils.getConnectionConfig(queryParams)).toEqual({ domain: 'x.com' });
+    });
+});
+
 describe('interpolateIfNeeded', () => {
     it('should interpolate both parts when "||" is present', () => {
         const input = '${connectionConfig.appDetails} || ${connectionConfig.userEmail}';

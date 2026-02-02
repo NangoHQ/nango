@@ -163,10 +163,13 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
         const tokenMetadata = getConnectionMetadata(credentials.raw, provider, 'token_response_metadata');
 
+        // Strip assertionOption/assertion_option so they are never stored in connection_config (e.g. 3CX only expects domain)
+        const { assertionOption: _ao, assertion_option: _ao2, ...cleanConnectionConfig } = connectionConfig;
+
         connectionConfig = {
-            ...connectionConfig,
+            ...cleanConnectionConfig,
             ...tokenMetadata
-        };
+        } as Record<string, string>;
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,

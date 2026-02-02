@@ -223,8 +223,14 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                         if (key === 'privateKey' && privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
                             value = `${privateKey.id}:${privateKey.secret}`;
                             label = 'PRIVATE KEY';
-                        } else if (!['type', 'token', 'expires_at', 'raw'].includes(key)) {
-                            value = (connection.credentials as Record<string, string>)[key];
+                        } else if (!['type', 'token', 'expires_at', 'raw', 'assertionOption', 'assertion_option'].includes(key)) {
+                            const rawValue = (connection.credentials as Record<string, string>)[key];
+                            value =
+                                typeof rawValue === 'string'
+                                    ? rawValue
+                                    : typeof rawValue === 'object' && rawValue !== null
+                                      ? JSON.stringify(rawValue)
+                                      : String(rawValue ?? '');
                             label = key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
                         } else {
                             return [];

@@ -1249,6 +1249,10 @@ class ConnectionService {
         connectionConfig: Record<string, string>,
         refreshToken?: boolean
     ): Promise<ServiceResponse<TwoStepCredentials>> {
+        // Strip assertionOption/assertion_option so they are never sent to the token endpoint (e.g. 3CX only expects clientId, clientSecret, domain)
+        const { assertionOption: _ao, assertion_option: _ao2, ...cleanConnectionConfig } = connectionConfig;
+        connectionConfig = cleanConnectionConfig as Record<string, string>;
+
         if (provider.signature) {
             const create = jwtClient.createCredentials({
                 config: providerConfig,

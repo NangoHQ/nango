@@ -397,8 +397,10 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
     return str;
 }
 
+const ASSERTION_OPTION_KEYS = ['assertionOption', 'assertion_option'];
+
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
+    const arr = Object.entries(queryParams || {}).filter(([k, v]) => typeof v === 'string' && !ASSERTION_OPTION_KEYS.includes(k)); // Filter to strings only; exclude assertionOption so it never gets stored or sent to token endpoint
     return Object.fromEntries(arr) as Record<string, string>;
 }
 
