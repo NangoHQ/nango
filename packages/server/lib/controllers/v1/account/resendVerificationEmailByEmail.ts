@@ -10,7 +10,7 @@ import type { ResendVerificationEmailByEmail } from '@nangohq/types';
 
 const validation = z
     .object({
-        email: z.string().email()
+        email: z.email()
     })
     .strict();
 
