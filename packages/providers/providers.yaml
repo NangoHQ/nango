@@ -48,7 +48,7 @@
         accept: application/json
     token_response:
         token: access_token
-        token_expires_in_ms: 3600000
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.domain}/xapi
     docs: https://nango.dev/docs/api-integrations/3cx
@@ -2238,6 +2238,46 @@ blandai:
             type: string
             title: API Key
             description: The API key for your BlandAI account
+
+bird:
+    display_name: Bird
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.bird.com
+        headers:
+            authorization: AccessKey ${apiKey}
+        connection_config:
+            workspaceId: ${connectionConfig.workspaceId}
+    docs: https://nango.dev/docs/api-integrations/bird
+    docs_connect: https://nango.dev/docs/api-integrations/bird/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Bird API instance
+            example: api
+            suffix: .bird.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+        workspaceId:
+            type: string
+            title: Workspaces Id
+            description: The  Workspaces Id of your Bird
+            format: uuid
+            order: 2
+            example: 332bb273-0caf-4240-a5b6-8046b5d3074f
+            doc_section: '#step-3-finding-your-workspace-id'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Key
+            description: Your Bird access key
+            example: 6BPC******************Rzh3F4x
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-2-creating-an-access-key'
 
 boldsign:
     display_name: BoldSign
@@ -4579,6 +4619,38 @@ docuware:
             secret: true
             description: The Password to your DocuWare account
             doc_section: '#step-2-finding-your-credentials'
+
+domo:
+    display_name: Domo
+    categories:
+        - productivity
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.domo.com/oauth/token
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.domo.com
+    docs: https://nango.dev/docs/api-integrations/domo
+    docs_connect: https://nango.dev/docs/api-integrations/domo/connect
+    credentials:
+        client_id:
+            type: string
+            title: Your Client ID
+            description: The Client ID of your API client
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-1-creating-your-api-client'
+        client_secret:
+            type: string
+            title: Your Client Secret
+            secret: true
+            example: a14e6b49******************************768ece
+            pattern: '^[a-fA-F0-9]{64}$'
+            description: The Client secret of your API client
+            doc_section: '#step-1-creating-your-api-client'
 
 dropbox:
     display_name: Dropbox
