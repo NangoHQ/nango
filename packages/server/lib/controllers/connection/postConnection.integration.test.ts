@@ -230,6 +230,56 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should import oauth2 connection with config_override', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                provider_config_key: 'github',
+                credentials: {
+                    type: 'OAUTH2',
+                    access_token: '123',
+                    config_override: { client_id: 'override_client_id', client_secret: 'override_client_secret' }
+                },
+                end_user: { id: '123', display_name: 'John Doe', tags: { projectId: '123' } }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            connection_config: {},
+            connection_id: expect.any(String),
+            created_at: expect.toBeIsoDate(),
+            credentials: {
+                access_token: '123',
+                config_override: { client_id: 'override_client_id', client_secret: 'override_client_secret' },
+                raw: {
+                    access_token: '123',
+                    config_override: { client_id: 'override_client_id', client_secret: 'override_client_secret' },
+                    type: 'OAUTH2'
+                },
+                type: 'OAUTH2'
+            },
+            end_user: {
+                id: '123',
+                email: null,
+                display_name: 'John Doe',
+                organization: null,
+                tags: { projectId: '123' }
+            },
+            errors: [],
+            id: expect.any(Number),
+            last_fetched_at: expect.toBeIsoDate(),
+            metadata: {},
+            provider: 'github',
+            provider_config_key: 'github',
+            tags: { end_user_id: '123', end_user_display_name: 'John Doe', projectid: '123' },
+            updated_at: expect.toBeIsoDate()
+        });
+    });
+
     describe('tags', () => {
         it('should import connection with valid tags and return tags in response', async () => {
             const { env, secret } = await seeders.seedAccountEnvAndUser();
