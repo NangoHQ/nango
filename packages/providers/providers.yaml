@@ -9498,6 +9498,15 @@ microsoft-oauth2-cc:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-planner:
+    display_name: Microsoft Planner
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-planner
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
@@ -13525,6 +13534,54 @@ setmore:
             example: r1/Ab12Cd34Ef56Gh78Ij90KlMnOpQr-StUvWxYz123456
             description: The access token provided to you by Setmore team
             doc_section: '#step-1-requesting-access-to-the-api'
+
+sellercloud:
+    display_name: Sellercloud
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: ${connectionConfig.restApiEndpoint}
+    token_request_method: GET
+    token_url: https://api.sellercloud.com/api/server-by-team/?team=${credentials.teamName}
+    additional_steps:
+        - body_format: json
+          token_params:
+              Username: ${credentials.username}
+              Password: ${credentials.password}
+          token_url: ${step1.restApiEndpoint}/api/token
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    token_response_metadata:
+        - restApiEndpoint
+    docs: https://nango.dev/docs/api-integrations/sellercloud
+    docs_connect: https://nango.dev/docs/api-integrations/sellercloud/connect
+    connection_config:
+        restApiEndpoint:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        teamName:
+            type: string
+            title: Team Name
+            description: Your Sellercloud team name
+            example: myteam
+            doc_section: '#step-1-finding-your-team-name'
+        username:
+            type: string
+            title: Username
+            description: Your Sellercloud username
+            doc_section: '#step-2-identifying-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Sellercloud password
+            secret: true
+            doc_section: '#step-2-identifying-your-credentials'
 
 sellsy:
     display_name: Sellsy
