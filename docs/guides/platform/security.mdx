@@ -6,6 +6,25 @@ description: 'How Nango secures your API credentials and customer data.'
 
 Nango is designed with security as a core principle. This page provides technical details about how Nango stores, encrypts, and manages API credentials.
 
+## Compliance
+
+Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** compliant.
+
+| Certification | Details |
+| - | - |
+| SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
+| GDPR | Data Processing Agreement (DPA) available for all customers. [View DPA →](https://nango.dev/terms#dpa) |
+| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/chat) |
+
+Our security practices include:
+
+- Regular security assessments and penetration testing
+- Secure development lifecycle
+- Incident response procedures
+- Continuous monitoring and alerting
+
+Visit our [Trust Center](https://trust.nango.dev) for the latest compliance documentation, security policies, and audit reports.
+
 ## Credential storage
 
 ### What credentials are stored
@@ -53,11 +72,7 @@ The following data types are encrypted at rest:
 ### Key management
 
 - **Nango Cloud**: Encryption keys are securely managed by Nango. All credentials are encrypted at rest.
-- **Self-hosted**: You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted. **This key is also crucial for the Connect UI**. It's required to generate sessions for the [Connect UI](/reference/sdks/frontend#connect-using-nango-connect-ui). Without it, the Connect UI will not work.
-
-<Note>
-The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
-</Note>
+- **Self-hosted**: You must provide your own encryption key to enable encryption at rest.
 
 ### Encryption in transit
 
@@ -85,7 +100,7 @@ When a connection is deleted:
 2. **Associated data cleanup**: Syncs are stopped, and scheduled tasks are cancelled
 3. **Hard delete after retention period**: Credentials and associated data are permanently removed from the database
 
-The default retention period is **31 days**. For self-hosted deployments, this is configurable via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
+The default retention period is **31 days**. For self-hosted deployments, this is configurable.
 
 This retention period allows for:
 - Recovery from accidental deletions
@@ -160,16 +175,6 @@ All credential access and modifications are logged:
 - API requests using credentials
 
 Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/implementation-guides/platform/open-telemetry-export).
-
-## Compliance
-
-Nango maintains security practices aligned with industry standards:
-
-- Regular security assessments
-- Secure development lifecycle
-- Incident response procedures
-
-For enterprise customers requiring specific compliance documentation (SOC 2, GDPR DPA, etc.), please contact our sales team.
 
 ## IP Allowlist
 
