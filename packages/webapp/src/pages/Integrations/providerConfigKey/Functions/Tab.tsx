@@ -20,7 +20,7 @@ import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfig[]> {
     const groups = new Map<string, NangoSyncConfig[]>();
     for (const flow of flows) {
-        const groupName = flow.endpoints[0].group || 'others';
+        const groupName = flow.endpoints?.[0]?.group || 'others';
 
         const existingGroup = groups.get(groupName);
         if (!existingGroup) {
