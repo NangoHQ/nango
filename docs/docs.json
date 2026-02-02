@@ -693,6 +693,7 @@
               "integrations/all/salesforce-cdp",
               "api-integrations/salesforce-sandbox",
               "integrations/all/salesloft",
+              "api-integrations/sellercloud",
               "integrations/all/sap-business-one",
               "integrations/all/sap-concur",
               "api-integrations/sap-success-factors",
