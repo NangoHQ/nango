@@ -22,10 +22,10 @@ describe(`POST ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error missing query on purpose
             query: {}
         });
@@ -34,11 +34,11 @@ describe(`POST ${route}`, () => {
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { test: 1 }
         });
@@ -53,7 +53,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should extend trial', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // start trial
         const endDate = new Date(Date.now() + TRIAL_DURATION);
@@ -62,7 +62,7 @@ describe(`POST ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         isSuccess(res.json);

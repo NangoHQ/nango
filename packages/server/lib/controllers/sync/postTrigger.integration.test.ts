@@ -36,11 +36,11 @@ describe(`POST ${endpoint}`, () => {
 
     describe('validation', () => {
         it('should return 400 for for invalid body', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { secret } = await seeders.seedAccountEnvAndUser();
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: env.secret_key,
+                token: secret.secret,
                 body: {
                     // @ts-expect-error on purpose
                     syncs: [{ invalid: 'object' }, 'valid-sync', null],
@@ -83,11 +83,11 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should return 400 if provider_config_key is missing from body and headers', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { secret } = await seeders.seedAccountEnvAndUser();
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: env.secret_key,
+                token: secret.secret,
                 body: {
                     syncs: ['sync1'],
                     sync_mode: 'full_refresh',
@@ -107,11 +107,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should take provider_config_key and connection_id from headers', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: ['sync1'],
                 connection_id: '123'
@@ -126,11 +126,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should handle syncs as strings', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: ['sync1', 'sync2'],
                 provider_config_key: 'test-key',
@@ -152,11 +152,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should handle syncs as object', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: [
                     { name: 'sync1', variant: 'v1' },
@@ -184,11 +184,11 @@ describe(`POST ${endpoint}`, () => {
         [true, 'RUN_FULL'],
         [false, 'RUN']
     ])('should handle valid full_resync parameter (%s -> %s)', async (full_resync, expectedCommand) => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: ['sync1'],
                 full_resync,
@@ -211,11 +211,11 @@ describe(`POST ${endpoint}`, () => {
         ['full_refresh_and_clear_cache', 'RUN_FULL', true],
         ['incremental', 'RUN', false]
     ])('should handle sync_mode parameter (%s -> %s)', async (sync_mode, expectedCommand, expectedShouldDeleteRecords) => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: ['sync1'],
                 // @ts-expect-error on purpose (sync_mode as a string)

@@ -5,11 +5,10 @@ import db from '@nangohq/database';
 import { Encryption, getLogger } from '@nangohq/utils';
 
 import { isConnectionJsonRow } from '../services/connections/utils.js';
-import { hashSecretKey } from '../services/environment.service.js';
+import secretService from '../services/secret.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
+import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -23,55 +22,20 @@ export class EncryptionManager extends Encryption {
         return Boolean(this?.key && this.key.length > 0);
     }
 
-    public async encryptEnvironment(environment: DBEnvironment) {
-        if (!this.shouldEncrypt()) {
-            return environment;
+    public decryptAPISecret<T extends Pick<DBAPISecret, 'secret' | 'iv' | 'tag'>>(secret: T): T & { iv: ''; tag: '' } {
+        if (!this.shouldEncrypt() || !secret.iv || !secret.tag) {
+            return {
+                ...secret,
+                iv: '',
+                tag: ''
+            };
         }
-
-        const encryptedEnvironment: DBEnvironment = Object.assign({}, environment);
-
-        const [encryptedClientSecret, iv, authTag] = this.encryptSync(environment.secret_key);
-        encryptedEnvironment.secret_key_hashed = await hashSecretKey(environment.secret_key);
-        encryptedEnvironment.secret_key = encryptedClientSecret;
-        encryptedEnvironment.secret_key_iv = iv;
-        encryptedEnvironment.secret_key_tag = authTag;
-
-        if (encryptedEnvironment.pending_secret_key) {
-            const [encryptedPendingClientSecret, pendingIv, pendingAuthTag] = this.encryptSync(encryptedEnvironment.pending_secret_key);
-            encryptedEnvironment.pending_secret_key = encryptedPendingClientSecret;
-            encryptedEnvironment.pending_secret_key_iv = pendingIv;
-            encryptedEnvironment.pending_secret_key_tag = pendingAuthTag;
-        }
-
-        return encryptedEnvironment;
-    }
-
-    public decryptEnvironment<TEnv extends DBEnvironment | null>(environment: TEnv): TEnv {
-        // Check if the individual row is encrypted.
-        if (environment == null || environment.secret_key_iv == null || environment.secret_key_tag == null) {
-            return environment;
-        }
-
-        const decryptedEnvironment: TEnv = Object.assign({}, environment);
-
-        decryptedEnvironment.secret_key = this.decryptSync(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
-
-        if (decryptedEnvironment.pending_secret_key) {
-            decryptedEnvironment.pending_secret_key = this.decryptSync(
-                environment.pending_secret_key as string,
-                environment.pending_secret_key_iv as string,
-                environment.pending_secret_key_tag as string
-            );
-        }
-
-        return decryptedEnvironment;
-    }
-
-    public decryptAPISecret(row: DBAPISecret): string {
-        if (!this.shouldEncrypt() || !row.iv || !row.tag) {
-            return row.secret;
-        }
-        return this.decryptSync(row.secret, row.iv, row.tag);
+        return {
+            ...secret,
+            secret: this.decryptSync(secret.secret, secret.iv, secret.tag),
+            iv: '',
+            tag: ''
+        };
     }
 
     public encryptConnection(connection: Omit<DBConnectionDecrypted, 'end_user_id' | 'credentials_iv' | 'credentials_tag'>): Omit<DBConnection, 'end_user_id'> {
@@ -265,18 +229,19 @@ export class EncryptionManager extends Encryption {
     private async encryptDatabase() {
         logger.info('🔐⚙️ Starting encryption of database...');
 
-        const environments: DBEnvironment[] = await db.knex.select('*').from<DBEnvironment>(`_nango_environments`);
-
-        for (let environment of environments) {
-            if (environment.secret_key_iv && environment.secret_key_tag) {
-                continue;
+        const secrets: DBAPISecret[] = await db.knex.select('*').from<DBAPISecret>(`api_secrets`);
+        for (const secret of secrets) {
+            if (secret.iv && secret.tag) {
+                continue; // Already encrypted.
             }
-
-            environment = await this.encryptEnvironment(environment);
-            await db.knex.transaction(async (txr) => {
-                await txr<DBEnvironment>(`_nango_environments`).where({ id: environment.id }).update(environment);
-                await this.upsertDefaultAPISecret(txr, environment);
-            });
+            const encrypted = this.encryptAPISecret(secret);
+            const hashed = await secretService.hashSecret(secret.secret);
+            if (hashed.isErr()) {
+                throw hashed.error;
+            }
+            encrypted.hashed = hashed.value;
+            encrypted.updated_at = new Date();
+            await db.knex<DBAPISecret>(`api_secrets`).where({ id: secret.id }).update(encrypted);
         }
 
         const connections = await db.knex.select('*').from<DBConnectionDecrypted>(`_nango_connections`);
@@ -319,26 +284,20 @@ export class EncryptionManager extends Encryption {
         logger.info('🔐✅ Encryption of database complete!');
     }
 
-    public async upsertDefaultAPISecret(trx: Knex, env: DBEnvironment) {
-        // Note: Some environments' secrets are unencrypted. They don't have an IV or AuthTag.
-        await trx<DBAPISecret>('api_secrets')
-            .insert({
-                environment_id: env.id,
-                display_name: 'default',
-                secret: env.secret_key,
-                iv: env.secret_key_iv ?? '',
-                tag: env.secret_key_tag ?? '',
-                hashed: env.secret_key_hashed!,
-                is_default: true,
-                updated_at: new Date()
-            })
-            .onConflict(trx.raw('(environment_id) where is_default = true'))
-            .merge(['secret', 'iv', 'tag', 'hashed', 'updated_at']);
-    }
-
-    public async getDefaultAPISecret(trx: Knex, environmentId: number): Promise<DBAPISecret | null> {
-        const rows = await trx<DBAPISecret>('api_secrets').select('*').where({ environment_id: environmentId, is_default: true });
-        return rows[0] ?? null;
+    encryptAPISecret<T extends Pick<DBAPISecret, 'iv' | 'tag' | 'secret'>>(secret: T): T {
+        if (!this.shouldEncrypt()) {
+            return secret;
+        }
+        if (secret.iv && secret.tag) {
+            return secret; // Already encrypted.
+        }
+        const [encrypted, iv, tag] = this.encryptSync(secret.secret);
+        return {
+            ...secret,
+            secret: encrypted,
+            tag,
+            iv
+        };
     }
 }
 

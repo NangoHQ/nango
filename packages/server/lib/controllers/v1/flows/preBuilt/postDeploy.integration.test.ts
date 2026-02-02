@@ -27,12 +27,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if no template exists for this provider and script name', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
@@ -44,12 +44,12 @@ describe(`POST ${endpoint}`, () => {
 
     it('should deploy a template', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable', 'airtable');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'airtable', providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
         });
 

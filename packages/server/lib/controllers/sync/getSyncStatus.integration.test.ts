@@ -40,11 +40,11 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should return 400 for for invalid body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             query: {},
             headers: {}
@@ -67,7 +67,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should handle syncs as comma-separated string', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: integration.provider, config_id: integration.id! });
         await seeders.createSyncSeeds({ connectionId: connection.id, environment_id: env.id, sync_name: 'sync1', nango_config_id: integration.id! });
@@ -75,7 +75,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             query: {
                 syncs: 'sync1,sync2',
                 provider_config_key: 'github'
@@ -100,7 +100,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should handle wildcard syncs parameter', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: integration.provider, config_id: integration.id! });
         await seeders.createSyncSeeds({ connectionId: connection.id, environment_id: env.id, sync_name: 'sync1', nango_config_id: integration.id! });
@@ -108,7 +108,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             query: {
                 syncs: '*',
                 provider_config_key: integration.unique_key
@@ -133,7 +133,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should handle syncs with variants', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: integration.provider, config_id: integration.id! });
         await seeders.createSyncSeeds({ connectionId: connection.id, environment_id: env.id, sync_name: 'sync3', nango_config_id: integration.id! });
@@ -141,7 +141,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             query: {
                 syncs: 'sync3::v1,sync4::v2',
                 provider_config_key: 'github'
