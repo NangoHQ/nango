@@ -23,7 +23,7 @@ export const passwordSchema = z
 
 const validation = z
     .object({
-        email: z.string().email(),
+        email: z.email(),
         password: passwordSchema,
         name: z.string(),
         token: z.string().uuid().optional(),

@@ -10,7 +10,7 @@ import { resetPasswordSecret } from '../../../utils/utils.js';
 
 import type { PostForgotPassword } from '@nangohq/types';
 
-const validation = z.object({ email: z.string().email() }).strict();
+const validation = z.object({ email: z.email() }).strict();
 
 export const postForgotPassword = asyncWrapper<PostForgotPassword>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);

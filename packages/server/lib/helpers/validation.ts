@@ -166,7 +166,7 @@ export const connectionEndUserTagsSchema = z
 
 export const endUserSchema = z.strictObject({
     id: z.string().max(255).min(1),
-    email: z.string().email().min(5).optional(),
+    email: z.email().min(5).optional(),
     display_name: z.string().max(255).optional(),
     tags: connectionEndUserTagsSchema.optional()
 });
