@@ -74,7 +74,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 {
                     connectionId: connectionId,
                     providerConfigKey: providerConfigKey,
-                    secretKey: environmentAndAccount?.environment.secret_key
+                    secretKey: environmentAndAccount.pending_secret!
                 },
                 {
                     method: 'PUT'

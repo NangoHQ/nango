@@ -48,9 +48,9 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, environment!.id)).unwrap();
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: secret.secret });
 
         expect(bySecretKey).toStrictEqual({
             account: {
@@ -80,7 +80,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, environment!.id)).unwrap();
 
         const byPublicKey = await accountService.getAccountContext({ publicKey: environment!.public_key });
 
@@ -112,7 +112,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, environment!.id)).unwrap();
 
         const byUuid = await accountService.getAccountContext({ environmentUuid: environment!.uuid });
 
@@ -144,7 +144,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, environment!.id)).unwrap();
 
         const byAccountUuid = await accountService.getAccountContext({ accountUuid: account.uuid, envName: environment!.name });
 
@@ -176,7 +176,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, environment!.id)).unwrap();
 
         const byAccountId = await accountService.getAccountContext({ accountId: account.id, envName: environment!.name });
 
@@ -208,7 +208,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, environment!.id)).unwrap();
 
         const byEnvironmentId = await accountService.getAccountContext({ environmentId: environment!.id });
 

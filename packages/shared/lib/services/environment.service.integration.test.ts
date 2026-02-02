@@ -49,41 +49,27 @@ describe('Environment service', () => {
             secret_key_iv: null,
             secret_key_tag: null
         });
-
-        expect(env.secret_key).toBeUUID();
     });
 
     it('should rotate secretKey', async () => {
         const account = await createAccount();
         const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
-        expect(env.secret_key).toBeUUID();
-        expect(env.pending_secret_key).toBeNull();
 
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.readOnly, env.id)).unwrap();
         expect(secret.is_default).toBe(true);
-        expect(secret.secret).toEqual(env.secret_key);
 
         // Rotate
         await environmentService.rotateSecretKey(env.id);
 
-        const env2 = (await environmentService.getById(env.id))!;
-        expect(env2.secret_key).toEqual(env.secret_key);
-        expect(env2.pending_secret_key).toBeUUID();
-
-        const secret2 = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        const secret2 = (await secretService.getDefaultSecretForEnv(db.readOnly, env.id)).unwrap();
         expect(secret2).toEqual(secret);
 
         // Activate
         await environmentService.activateSecretKey(env.id);
 
-        const env3 = (await environmentService.getById(env.id))!;
-        expect(env3.secret_key).toBeUUID();
-        expect(env3.pending_secret_key).toBeNull();
-
-        const secret3 = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        const secret3 = (await secretService.getDefaultSecretForEnv(db.readOnly, env.id)).unwrap();
         expect(secret3).not.toEqual(secret2);
         expect(secret3.is_default).toBe(true);
-        expect(secret3.secret).toEqual(env3.secret_key);
     });
 
     describe('environment variables', () => {
