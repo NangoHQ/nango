@@ -27,7 +27,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBAPISecret, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -251,6 +251,7 @@ export async function handleActionSuccess({
 
     await sendWebhookIfNeeded({
         environment,
+        secret: { secret: nangoProps.secretKey },
         connectionId: nangoProps.connectionId,
         providerConfigKey: nangoProps.providerConfigKey,
         task: task.value,
@@ -352,6 +353,7 @@ export async function handleActionError({
         void logCtx.failed();
         await sendWebhookIfNeeded({
             environment,
+            secret: { secret: nangoProps.secretKey },
             connectionId: nangoProps.connectionId,
             providerConfigKey: nangoProps.providerConfigKey,
             task: task.value,
@@ -483,12 +485,14 @@ function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): stri
 
 async function sendWebhookIfNeeded({
     environment,
+    secret,
     connectionId,
     providerConfigKey,
     task,
     logCtx
 }: {
     environment: DBEnvironment | undefined;
+    secret: Pick<DBAPISecret, 'secret'>;
     connectionId: string;
     providerConfigKey: string;
     task: OrchestratorTask;
@@ -500,14 +504,10 @@ async function sendWebhookIfNeeded({
     if (!environment || !task.retryKey || !task.async) {
         return;
     }
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
-    }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
         await sendAsyncActionWebhook({
-            secret: defaultSecret.value,
+            secret,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
             payload: {
