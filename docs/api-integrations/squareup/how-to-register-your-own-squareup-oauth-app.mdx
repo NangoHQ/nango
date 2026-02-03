@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Square OAuth app'
+description: 'Register your own OAuth app and configure Square for production use in Nango'
+---
+
+This guide will show you how to register your application with Square to obtain your own production OAuth credentials (client id & secret).
+
+Once you complete this guide, your users can grant your app access to their Square account. You will have full access to the Square API, which lets you read and write data in the connected Square accounts.
+
+<Steps>
+    <Step title="Sign in to the Developer Console and create an application">
+        1. Sign in to the [Square Developer Console](https://developer.squareup.com/apps) and navigate to the apps section.
+        2. Click the **+** button to create a new application.
+        3. Enter a name for your application, then submit.
+        4. Select the products you wish to integrate with and the audience for the application.
+        5. Click **Complete** to finish registering your application.
+    </Step>
+    <Step title="Switch to Production and get your credentials">
+        1. At the top of the page, ensure the **Production** toggle is on (not Sandbox) so you retrieve production client credentials.
+        2. In the **Production.Redirect URL** section, update your **Redirect URL**: `https://api.nango.dev/oauth/callback`.
+        3. Copy your **Production.Application ID** (Client ID) and **Production.Application Secret** (Client Secret). You will need these when configuring your integration in Nango.
+    </Step>
+    <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+    </Step>
+</Steps>
+
+For more on the Square OAuth flow, see the [Square OAuth API reference](https://developer.squareup.com/reference/square/o-auth-api).
+
+## Important notes for Square (production)
+
+You must activate your Square account for payments by visiting [squareup.com/activate](https://squareup.com/activate) before you can process card payments in production.
