@@ -34,14 +34,46 @@ function getRunnerId(suffix: string): string {
     return `${env}-runner-account-${suffix}`;
 }
 
+function getRunnerIdForTeam(teamId: number): string {
+    return isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
+}
+
 export async function getRunner(teamId: number): Promise<Result<Runner>> {
     try {
-        // a runner per account in prod only
-        const runnerId = isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
+        const runnerId = getRunnerIdForTeam(teamId);
         const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
         return Ok(runner);
     } catch (err) {
         return Err(new Error(`Failed to get runner for team ${teamId}`, { cause: err }));
+    }
+}
+
+export async function getRunners(teamId: number): Promise<Result<Runner[]>> {
+    try {
+        const runnerId = getRunnerIdForTeam(teamId);
+        if (envs.RUNNER_TYPE === 'REMOTE') {
+            const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+            return Ok([runner]);
+        }
+
+        const runnersFleet = getDefaultFleet();
+        const nodes = await runnersFleet.getNodesByRoutingId({
+            routingId: runnerId,
+            states: ['RUNNING', 'OUTDATED']
+        });
+        if (nodes.isErr()) {
+            return Err(nodes.error);
+        }
+
+        const runners = nodes.value.filter((node) => node.url).map((node) => new FleetRunner(runnerId, node.url as string));
+        if (runners.length > 0) {
+            return Ok(runners);
+        }
+
+        const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+        return Ok([runner]);
+    } catch (err) {
+        return Err(new Error(`Failed to get runners for team ${teamId}`, { cause: err }));
     }
 }
 
