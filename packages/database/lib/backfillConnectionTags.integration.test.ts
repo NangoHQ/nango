@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from './index.js';
 
@@ -142,14 +142,45 @@ async function getConnectionTags(connectionId: number) {
 }
 
 describe('Connection tags backfill', () => {
+    // Track created records for cleanup
+    const createdConnectionIds: number[] = [];
+    const createdEndUserIds: number[] = [];
+    let createdConfigId: number;
+    let createdEnvId: number;
+    let createdAccountId: number;
+
     beforeAll(async () => {
         await multipleMigrations();
     });
 
+    afterAll(async () => {
+        // Delete in reverse order of foreign key dependencies
+        if (createdConnectionIds.length > 0) {
+            await db.knex('_nango_connections').whereIn('id', createdConnectionIds).del();
+        }
+        if (createdEndUserIds.length > 0) {
+            await db.knex('end_users').whereIn('id', createdEndUserIds).del();
+        }
+        if (createdConfigId) {
+            await db.knex('_nango_configs').where('id', createdConfigId).del();
+        }
+        if (createdEnvId) {
+            await db.knex('_nango_environments').where('id', createdEnvId).del();
+        }
+        if (createdAccountId) {
+            await db.knex('_nango_accounts').where('id', createdAccountId).del();
+        }
+    });
+
     it('backfills tags with edge cases', async () => {
         const account = await createTestAccount();
+        createdAccountId = account.id;
+
         const env = await createTestEnvironment(account.id);
+        createdEnvId = env.id;
+
         const config = await createTestConfig(env.id, 'github', 'github');
+        createdConfigId = config.id;
 
         // Test case 1: Special characters in all fields
         const specialEndUser = await createTestEndUser({
@@ -165,6 +196,8 @@ describe('Connection tags backfill', () => {
                 ip: '2001:db8::1'
             }
         });
+        createdEndUserIds.push(specialEndUser.id);
+
         const specialConn = await createTestConnection({
             environmentId: env.id,
             configId: config.id,
@@ -172,6 +205,7 @@ describe('Connection tags backfill', () => {
             endUser: specialEndUser,
             tags: {}
         });
+        createdConnectionIds.push(specialConn.id);
         const expectedSpecialTags = {
             end_user_id: 'user id/1?=+&',
             end_user_email: 'user+test@example.com',
@@ -190,6 +224,8 @@ describe('Connection tags backfill', () => {
             endUserId: 'user-override',
             email: 'original@example.com'
         });
+        createdEndUserIds.push(overrideEndUser.id);
+
         const overrideConn = await createTestConnection({
             environmentId: env.id,
             configId: config.id,
@@ -197,6 +233,7 @@ describe('Connection tags backfill', () => {
             endUser: overrideEndUser,
             tags: { end_user_email: 'override@example.com', custom: 'keep' }
         });
+        createdConnectionIds.push(overrideConn.id);
         const expectedOverrideTags = {
             end_user_id: 'user-override',
             end_user_email: 'override@example.com',
@@ -210,6 +247,7 @@ describe('Connection tags backfill', () => {
             providerConfigKey: 'github',
             tags: { existing: 'yes' }
         });
+        createdConnectionIds.push(noEndUserConn.id);
 
         await db.knex.raw(buildConnectionTagsBackfillUpdateSql());
 
