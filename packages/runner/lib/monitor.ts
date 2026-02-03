@@ -3,7 +3,7 @@ import os from 'os';
 
 import { metrics } from '@nangohq/utils';
 
-import { persistClient } from './clients/persist.js';
+import { PersistClient } from './clients/persist.js';
 import { envs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
@@ -14,6 +14,7 @@ const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|defau
 export class RunnerMonitor {
     private runnerId: number;
     private tracked = new Map<string, { nangoProps: NangoProps }>();
+    private persistClient: PersistClient | null = null;
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -41,6 +42,9 @@ export class RunnerMonitor {
     track(nangoProps: NangoProps, taskId: string): void {
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
+        if (!this.persistClient) {
+            this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+        }
     }
 
     untrack(taskId: string): void {
@@ -76,17 +80,20 @@ export class RunnerMonitor {
             }
         }
 
+        if (!this.persistClient) {
+            return;
+        }
+
         this.lastMemoryReportDate = new Date();
         for (const {
-            nangoProps: { environmentId, activityLogId, secretKey }
+            nangoProps: { environmentId, activityLogId }
         } of this.tracked.values()) {
             if (!environmentId || !activityLogId) {
                 continue;
             }
-            await persistClient.postLog({
-                secretKey,
+            await this.persistClient.postLog({
                 environmentId,
-                data: {
+                data: JSON.stringify({
                     activityLogId: activityLogId,
                     log: {
                         type: 'log',
@@ -94,7 +101,7 @@ export class RunnerMonitor {
                         message: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`,
                         createdAt: new Date().toISOString()
                     }
-                }
+                })
             });
         }
     }
