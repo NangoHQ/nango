@@ -27,11 +27,11 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should validate the body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { uniqueKey: 'github' },
             // @ts-expect-error on purpose
             body: { unique_key: '1832_@$ùé&', display_name: false, credentials: { type: 'INVALID' } }
@@ -51,11 +51,11 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should update an integration', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { uniqueKey: 'github' },
             body: { display_name: 'DISPLAY' }
         });
@@ -75,11 +75,11 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should be able to rename integration', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { uniqueKey: 'github' },
             body: { unique_key: 'renamed' }
         });
@@ -90,7 +90,7 @@ describe(`PATCH ${endpoint}`, () => {
         // Get renamed integration
         const resGet = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             query: {},
             params: { uniqueKey: 'renamed' }
         });
@@ -102,7 +102,7 @@ describe(`PATCH ${endpoint}`, () => {
         // Old name should not exists
         const resOld = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             query: {},
             params: { uniqueKey: 'github' }
         });
@@ -114,12 +114,12 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should not be able to rename integration with active connection', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({ env, provider: 'github' });
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { uniqueKey: 'github' },
             body: { unique_key: 'renamed' }
         });
@@ -131,12 +131,12 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should update webhook_secret for OAUTH2 integration', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { uniqueKey: 'github' },
             body: { credentials: { type: 'OAUTH2', client_id: 'client_id', client_secret: 'client_secret', webhook_secret: 'new_secret' } }
         });
@@ -156,7 +156,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         const resGet = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { uniqueKey: 'github' },
             query: { include: ['credentials'] }
         });

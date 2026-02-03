@@ -6,7 +6,7 @@ import { linkConnection, seeders } from '@nangohq/shared';
 import { getConnectSessionByToken } from '../../services/connectSession.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { DBConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { DBAPISecret, DBConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -31,10 +31,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if no connection_id or integration_id', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: {}
         });
@@ -53,7 +53,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should get a session token', async () => {
-        const { account, env } = await seeders.seedAccountEnvAndUser();
+        const { account, env, secret } = await seeders.seedAccountEnvAndUser();
 
         const endUser = await seeders.createEndUser({ environment: env, account });
 
@@ -64,7 +64,7 @@ describe(`POST ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: connection.connection_id,
                 integration_id: 'github'
@@ -85,7 +85,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if the connection was not created with a session token', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
 
         // Create an initial connection
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -93,7 +93,7 @@ describe(`POST ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: connection.connection_id,
                 integration_id: 'github'
@@ -109,7 +109,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if integration_id does not exist in allowed_integrations', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
 
         // Create an initial connection
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -117,7 +117,7 @@ describe(`POST ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { connection_id: connection.connection_id, integration_id: 'random' }
         });
         isError(res.json);
@@ -130,7 +130,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     describe('docs connect url override validation', () => {
-        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan };
+        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan; secret: DBAPISecret };
         let connection: DBConnection;
         beforeEach(async () => {
             seed = await seeders.seedAccountEnvAndUser();
@@ -148,7 +148,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -176,7 +176,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -204,7 +204,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -232,7 +232,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -256,7 +256,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     describe('tags', () => {
-        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan };
+        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan; secret: DBAPISecret };
         let connection: DBConnection;
 
         beforeEach(async () => {
@@ -271,7 +271,7 @@ describe(`POST ${endpoint}`, () => {
         it('should create reconnect session with tags', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -289,7 +289,7 @@ describe(`POST ${endpoint}`, () => {
         it('should succeed without tags', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github'
@@ -302,7 +302,7 @@ describe(`POST ${endpoint}`, () => {
         it('should fail with invalid tags', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',

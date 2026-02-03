@@ -28,12 +28,12 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should be able to rename integration', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'github' },
             body: { integrationId: 'renamed' }
         });
@@ -47,7 +47,7 @@ describe(`PATCH ${endpoint}`, () => {
         const resGet = await api.fetch(endpoint, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'renamed' }
         });
         isSuccess(resGet.json);
@@ -59,7 +59,7 @@ describe(`PATCH ${endpoint}`, () => {
         const resOld = await api.fetch(endpoint, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'github' }
         });
 
@@ -70,13 +70,13 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should not be able to rename integration with active connection', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({ env, provider: 'github' });
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'github' },
             body: { integrationId: 'renamed' }
         });
@@ -88,12 +88,12 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should allow scopes with spaces', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'github' },
             body: { authType: 'OAUTH2', clientId: 'test-client', clientSecret: 'test-secret', scopes: 'read write,admin access' }
         });

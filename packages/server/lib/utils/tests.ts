@@ -173,17 +173,17 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
 /**
  * Get connect session token
  * @param api
- * @param env
+ * @param secret
  * @returns connect session token
  * @throws Error if no connect session token
  * @example const token = await getConnectSessionToken(api, env);
  */
-export async function getConnectSessionToken(api: Awaited<ReturnType<typeof runServer>>, env: { secret_key: string }) {
+export async function getConnectSessionToken(api: Awaited<ReturnType<typeof runServer>>, secret: string) {
     const endUserId = Math.random().toString(36).substring(7);
     const getSession = await fetch(`${api.url}/connect/sessions`, {
         method: 'POST',
         body: JSON.stringify({ end_user: { id: endUserId, email: `${endUserId}@domain.com` } }),
-        headers: { Authorization: `Bearer ${env.secret_key}`, 'content-type': 'application/json' }
+        headers: { Authorization: `Bearer ${secret}`, 'content-type': 'application/json' }
     });
     const {
         data: { token }

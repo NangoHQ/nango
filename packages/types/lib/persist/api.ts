@@ -1,4 +1,5 @@
 import type { ApiError, Endpoint } from '../api.js';
+import type { Checkpoint } from '../checkpoint/types.js';
 import type { MessageRowInsert } from '../logs/messages.js';
 import type { MergingStrategy, NangoRecord } from '../record/api.js';
 
@@ -41,4 +42,15 @@ export interface GetCursorSuccess {
 export interface GetRecordsSuccess {
     records: NangoRecord[];
     nextCursor?: string;
+}
+
+export interface GetCheckpointSuccess {
+    checkpoint: Checkpoint;
+    version: number;
+    deletedAt: string | null;
+}
+
+export interface PutCheckpointSuccess {
+    checkpoint: Checkpoint;
+    version: number;
 }

@@ -33,6 +33,7 @@ You can also implement two-way syncs by combining syncs with [Actions](/implemen
 - You set the frequency at which the sync polls for new data (15 seconds minimum interval)
 - Syncs handle rate limits, retries, and pagination
 - All sync runs and API requests are logged in Nango's [logs](/guides/platform/observability)
+- **Data retention**: Records not updated for 30 days have their payload emptied; syncs not executed for 60 days have all records deleted ([learn more](/guides/platform/security#synced-records-retention))
 
 ## How syncs work
 
@@ -75,3 +76,17 @@ Nango supports real-time syncs with [webhooks](/implementation-guides/use-cases/
 You can either rely entirely on webhooks for the sync or combine webhooks with polling sync runs to ensure you never miss data.
 
 Follow our [implement real-time syncs with webhooks](/implementation-guides/use-cases/syncs/realtime-syncs) guide to add real-time support for your sync.
+
+### Data retention policies
+
+Nango automatically manages data retention for synced records to ensure compliance with modern data security standards:
+
+**Automated payload pruning (30 days)**
+Records that haven't been updated for 30 days will have their payload automatically pruned. The record metadata (including record ID and payload hash) remains intact for change detection purposes. After pruning, the record's data fields are no longer retrievable from the Nango cache, but Nango can still track the record and detect future changes.
+
+**Automated hard deletion (60 days)**
+If a sync hasn't executed for 60 days, all records belonging to that sync will be permanently deleted.
+
+**Best practice**: Fetch records from Nango promptly after receiving webhook notifications and store them in your own system. Don't use Nango's cache as your primary long-term data store.
+
+[Learn more about data retention policies](/guides/platform/security#synced-records-retention)

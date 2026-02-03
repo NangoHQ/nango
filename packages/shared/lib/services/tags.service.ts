@@ -5,7 +5,7 @@ import { connectionTagsSchema } from './tags/schema.js';
 import type { Knex } from '@nangohq/database';
 import type { DBConnection, Result, Tags } from '@nangohq/types';
 
-export { TAG_KEY_MAX_LENGTH, TAG_MAX_COUNT, TAG_VALUE_MAX_LENGTH, connectionTagsSchema } from './tags/schema.js';
+export { TAG_KEY_MAX_LENGTH, TAG_MAX_COUNT, TAG_VALUE_MAX_LENGTH, connectionTagsKeySchema, connectionTagsSchema } from './tags/schema.js';
 
 type ConnectionWithTags = Pick<DBConnection, 'id' | 'tags'>;
 

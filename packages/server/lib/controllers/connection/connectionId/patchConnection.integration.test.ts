@@ -31,11 +31,11 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should return 400 for unknown provider', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: 'test' },
             query: { provider_config_key: 'unknown' },
             body: {}
@@ -49,12 +49,12 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should return 404 for unknown connection', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: 'unknown' },
             query: { provider_config_key: 'github' },
             body: {}
@@ -69,13 +69,13 @@ describe(`PATCH ${endpoint}`, () => {
 
     describe('end_user', () => {
         it('should update end_user only', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: {
@@ -93,13 +93,13 @@ describe(`PATCH ${endpoint}`, () => {
 
     describe('tags', () => {
         it('should update tags only', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: { tags: { projectId: '123', orgId: '456' } }
@@ -114,13 +114,13 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         it('should update both tags and end_user', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: {
@@ -139,13 +139,13 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         it('should fail with invalid tag key format', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: {
@@ -161,13 +161,13 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         it('should allow tag values with spaces', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: {
@@ -183,7 +183,7 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         it('should replace existing tags completely', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -195,7 +195,7 @@ describe(`PATCH ${endpoint}`, () => {
             // Update with new tags (should replace, not merge)
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: { tags: { new: 'value' } }
@@ -210,7 +210,7 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         it('should set tags on connection without existing tags', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -219,7 +219,7 @@ describe(`PATCH ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: { tags: { first: 'tag' } }
@@ -232,7 +232,7 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         it('should allow empty tags object', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -243,7 +243,7 @@ describe(`PATCH ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'PATCH',
-                token: env.secret_key,
+                token: secret.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
                 body: { tags: {} }
