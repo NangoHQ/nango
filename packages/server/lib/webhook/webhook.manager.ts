@@ -110,14 +110,14 @@ export async function routeWebhook({
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        // Forward the webhook to the customer asynchronously to avoid provider timeouts.
-        // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
-        const forwardSpan = tracer.startSpan('webhook.forward');
-
         const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             throw defaultSecret.error;
         }
+
+        // Forward the webhook to the customer asynchronously to avoid provider timeouts.
+        // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
+        const forwardSpan = tracer.startSpan('webhook.forward');
 
         void forwardWebhook({
             integration,
