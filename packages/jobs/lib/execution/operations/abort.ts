@@ -38,7 +38,7 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
 export async function abortTaskWithId({ taskId, teamId }: { taskId: string; teamId: number }): Promise<Result<void>> {
     try {
         await setAbortFlag(taskId);
-        // Broadcast abort to all runners as a task might still be running on a different active runner during/after rollouts (e.g., after key rotation).
+        // Broadcast abort to all runners as a task might still be running on a different active runner during/after rollouts (e.g. deploying a new runner version).
         const runners = await getRunners(teamId);
         if (runners.isErr()) {
             return Err(runners.error);
