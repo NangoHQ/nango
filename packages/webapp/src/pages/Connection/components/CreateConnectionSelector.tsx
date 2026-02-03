@@ -203,7 +203,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return (
                 <p>
                     Connection limit reached.{' '}
-                    <Link to={`/${env}/team/billing`} className="underline">
+                    <Link to={`/team/billing`} className="underline">
                         Upgrade your plan
                     </Link>{' '}
                     to get rid of connection limits.
