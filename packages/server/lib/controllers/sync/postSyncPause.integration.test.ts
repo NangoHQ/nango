@@ -35,11 +35,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should return 400 for for invalid body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 // @ts-expect-error on purpose
                 syncs: [{ invalid: 'object' }, 'valid-sync', null]
@@ -61,11 +61,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should handle syncs as strings', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: ['sync1', 'sync2'],
                 provider_config_key: 'test-key',
@@ -87,11 +87,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should handle syncs as object', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 syncs: [
                     { name: 'sync1', variant: 'v1' },

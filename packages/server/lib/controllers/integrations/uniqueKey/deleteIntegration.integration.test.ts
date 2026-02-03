@@ -24,10 +24,10 @@ describe(`DELETE ${endpoint}`, () => {
     });
 
     it('should delete one', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'foo', oauth_client_secret: 'bar', oauth_scopes: 'hello, world' });
 
-        const res = await api.fetch(endpoint, { method: 'DELETE', token: env.secret_key, params: { uniqueKey: 'github' } });
+        const res = await api.fetch(endpoint, { method: 'DELETE', token: secret.secret, params: { uniqueKey: 'github' } });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
@@ -37,7 +37,7 @@ describe(`DELETE ${endpoint}`, () => {
     });
 
     it('should delete getting started meta', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
 
         // Getting started meta expects a preprovisioned provider config
         await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', 'github-getting-started', {
@@ -49,7 +49,7 @@ describe(`DELETE ${endpoint}`, () => {
         const metaResult = await gettingStartedService.getOrCreateMeta(db.knex, account.id, env.id);
         expect(metaResult.isOk()).toBe(true);
 
-        const res = await api.fetch(endpoint, { method: 'DELETE', token: env.secret_key, params: { uniqueKey: 'github-getting-started' } });
+        const res = await api.fetch(endpoint, { method: 'DELETE', token: secret.secret, params: { uniqueKey: 'github-getting-started' } });
         isSuccess(res.json);
 
         const metaAfter = await gettingStartedService.getMetaByAccountId(db.knex, account.id);

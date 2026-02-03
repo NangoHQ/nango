@@ -80,6 +80,7 @@ import type {
     ProviderSignature,
     ProviderTwoStep,
     SignatureCredentials,
+    Tags,
     TbaCredentials,
     TwoStepCredentials
 } from '@nangohq/types';
@@ -101,7 +102,8 @@ class ConnectionService {
         parsedRawCredentials,
         connectionConfig,
         environmentId,
-        metadata
+        metadata,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -109,6 +111,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         environmentId: number;
         metadata?: Metadata | null;
+        tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId });
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
@@ -127,7 +130,8 @@ class ConnectionService {
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                tags: tags ?? storedConnection.tags
             });
 
             const connection = await db.knex
@@ -157,7 +161,8 @@ class ConnectionService {
             refresh_attempts: null,
             refresh_exhausted: false,
             deleted: false,
-            deleted_at: null
+            deleted_at: null,
+            tags: tags ?? {}
         });
         const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
@@ -171,7 +176,8 @@ class ConnectionService {
         connectionConfig,
         metadata,
         config,
-        environment
+        environment,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -180,6 +186,7 @@ class ConnectionService {
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
+        tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
@@ -202,7 +209,8 @@ class ConnectionService {
                 refresh_attempts: null,
                 refresh_exhausted: false,
                 deleted: false,
-                deleted_at: null
+                deleted_at: null,
+                tags: tags ?? exists?.tags ?? {}
             });
 
             const [connection] = await db.knex
@@ -224,7 +232,8 @@ class ConnectionService {
                     last_refresh_failure: encryptedConnection.last_refresh_failure,
                     refresh_attempts: encryptedConnection.refresh_attempts,
                     refresh_exhausted: encryptedConnection.refresh_exhausted,
-                    updated_at: new Date()
+                    updated_at: new Date(),
+                    tags: encryptedConnection.tags
                 })
                 .returning('*');
 
@@ -237,13 +246,15 @@ class ConnectionService {
         providerConfigKey,
         metadata,
         connectionConfig,
-        environment
+        environment,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
         environment: DBEnvironment;
+        tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId: environment.id });
         const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
@@ -264,7 +275,8 @@ class ConnectionService {
                     last_refresh_success: new Date(),
                     last_refresh_failure: null,
                     refresh_attempts: null,
-                    refresh_exhausted: false
+                    refresh_exhausted: false,
+                    tags: tags ?? storedConnection.tags
                 })
                 .returning('*');
 
@@ -284,7 +296,8 @@ class ConnectionService {
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                tags: tags ?? {}
             })
             .returning('*');
 
@@ -298,7 +311,8 @@ class ConnectionService {
         metadata = null,
         connectionConfig = {},
         parsedRawCredentials,
-        connectionCreatedHook
+        connectionCreatedHook,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -307,6 +321,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
+        tags?: Tags;
     }) {
         const [importedConnection] = await this.upsertConnection({
             connectionId,
@@ -314,7 +329,8 @@ class ConnectionService {
             parsedRawCredentials,
             connectionConfig,
             environmentId: environment.id,
-            metadata
+            metadata,
+            tags
         });
 
         if (importedConnection) {
@@ -331,7 +347,8 @@ class ConnectionService {
         environment,
         connectionConfig = {},
         credentials,
-        connectionCreatedHook
+        connectionCreatedHook,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -340,6 +357,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
+        tags?: Tags;
     }) {
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -355,7 +373,8 @@ class ConnectionService {
             connectionConfig,
             metadata,
             config,
-            environment
+            environment,
+            tags
         });
 
         if (importedConnection) {
@@ -733,6 +752,7 @@ class ConnectionService {
         search,
         endUserId,
         endUserOrganizationId,
+        tags,
         limit = 1000,
         page = 0
     }: {
@@ -743,6 +763,7 @@ class ConnectionService {
         search?: string | undefined;
         endUserId?: string | undefined;
         endUserOrganizationId?: string | undefined;
+        tags?: Record<string, string> | undefined;
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
@@ -763,6 +784,11 @@ class ConnectionService {
                 // Filter by integration IDs
                 if (integrationIds) {
                     subQuery.join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id').whereIn('_nango_configs.unique_key', integrationIds);
+                }
+
+                // Filter by tags (JSONB containment using GIN index)
+                if (tags && Object.keys(tags).length > 0) {
+                    subQuery.whereRaw('_nango_connections.tags @> ?::jsonb', [JSON.stringify(tags)]);
                 }
 
                 // Filter by end user criteria or search
@@ -1015,7 +1041,8 @@ class ConnectionService {
         provider: ProviderGithubApp,
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
+        tags?: Tags
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
@@ -1034,7 +1061,8 @@ class ConnectionService {
             providerConfigKey: integration.unique_key,
             parsedRawCredentials: create.value,
             connectionConfig,
-            environmentId: integration.environment_id
+            environmentId: integration.environment_id,
+            tags
         });
 
         if (updatedConnection) {
@@ -1255,8 +1283,6 @@ class ConnectionService {
             credentials['assertion'] = create.value;
 
             Object.assign(dynamicCredentials, credentials);
-
-            delete dynamicCredentials['assertionOption'];
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1411,6 +1437,10 @@ class ConnectionService {
             }
             if ('refresh_token' in dynamicCredentials) {
                 delete dynamicCredentials['refresh_token'];
+            }
+
+            if ('assertionOption' in dynamicCredentials) {
+                delete dynamicCredentials['assertionOption'];
             }
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;

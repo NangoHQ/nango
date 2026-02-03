@@ -5,7 +5,7 @@ import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type { DBEnvironment } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -31,10 +31,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 // @ts-expect-error on purpose
                 debug: 'er'
@@ -58,10 +58,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should accept empty body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 debug: false,
                 flowConfigs: [],
@@ -81,15 +81,17 @@ describe(`POST ${endpoint}`, () => {
 
     describe('deploy', () => {
         let env: DBEnvironment;
+        let secret: DBAPISecret;
         // This describe must be executed in order
 
         it('should deploy', async () => {
             const seed = await seeders.seedAccountEnvAndUser();
             env = seed.env;
+            secret = seed.secret;
             await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: env.secret_key,
+                token: secret.secret,
                 body: {
                     debug: false,
                     jsonSchema: {
@@ -203,7 +205,7 @@ describe(`POST ${endpoint}`, () => {
         it('should have removed syncs from DB', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: env.secret_key,
+                token: secret.secret,
                 body: {
                     debug: false,
                     jsonSchema: {

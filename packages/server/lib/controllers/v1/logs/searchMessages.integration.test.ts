@@ -21,19 +21,19 @@ describe('POST /logs/messages', () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing query on purpose
-        const res = await api.fetch('/api/v1/logs/messages', { method: 'POST', token: env.secret_key, body: { operationId: '1' } });
+        const res = await api.fetch('/api/v1/logs/messages', { method: 'POST', token: secret.secret, body: { operationId: '1' } });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { limit: 'a', foo: 'bar' }
         });
@@ -64,7 +64,7 @@ describe('POST /logs/messages', () => {
     });
 
     it('should search messages and get empty results', async () => {
-        const { account, env } = await seeders.seedAccountEnvAndUser();
+        const { account, env, secret } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
         await logCtx.success();
@@ -72,7 +72,7 @@ describe('POST /logs/messages', () => {
         const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { operationId: logCtx.id, limit: 10 }
         });
 
@@ -85,7 +85,7 @@ describe('POST /logs/messages', () => {
     });
 
     it('should search messages and get one result', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
         await logCtx.info('test info');
@@ -94,7 +94,7 @@ describe('POST /logs/messages', () => {
         const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { operationId: logCtx.id, limit: 10 }
         });
 
@@ -128,7 +128,7 @@ describe('POST /logs/messages', () => {
         const res = await api.fetch('/api/v1/logs/messages', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env2.env.secret_key,
+            token: env2.secret.secret,
             body: { operationId: logCtx.id, limit: 10 }
         });
 

@@ -27,11 +27,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider: 'github', useSharedCredentials: 'invalid' }
         });
@@ -41,11 +41,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the provider', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'invalid-provider', useSharedCredentials: false }
         });
 
@@ -56,12 +56,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate integrationId uniqueness', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github-unique', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: false, integrationId: 'github-unique' }
         });
 
@@ -72,11 +72,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate authType compatibility', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider: 'github',
                 useSharedCredentials: false,
@@ -96,11 +96,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an empty integration', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: false }
         });
 
@@ -115,11 +115,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration with custom integrationId', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: false, integrationId: 'custom-github' }
         });
 
@@ -134,11 +134,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration with displayName', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: false, displayName: 'My GitHub Integration' }
         });
 
@@ -153,11 +153,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration with forward_webhooks set to false', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: false, forward_webhooks: false }
         });
 
@@ -171,11 +171,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration with OAUTH2 credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider: 'github',
                 useSharedCredentials: false,
@@ -200,7 +200,7 @@ describe(`POST ${endpoint}`, () => {
         const resGet = await api.fetch('/api/v1/integrations/:providerConfigKey', {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'github' }
         });
 
@@ -209,11 +209,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration with all fields', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider: 'github',
                 useSharedCredentials: false,
@@ -243,7 +243,7 @@ describe(`POST ${endpoint}`, () => {
         const resGet = await api.fetch('/api/v1/integrations/:providerConfigKey', {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { providerConfigKey: 'full-integration' }
         });
 
@@ -255,12 +255,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create integration with shared credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createSharedCredentialsSeed('github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: true }
         });
 
@@ -274,12 +274,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create integration with shared credentials and custom integrationId', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createSharedCredentialsSeed('github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider: 'github',
                 useSharedCredentials: true,
@@ -298,12 +298,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should generate unique key when provider name already exists', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: { provider: 'github', useSharedCredentials: false }
         });
 
@@ -312,11 +312,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should allow scopes with spaces', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: env.name },
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider: 'github',
                 useSharedCredentials: false,

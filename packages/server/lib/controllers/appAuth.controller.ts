@@ -138,20 +138,6 @@ class AppAuthController {
             const { jwtToken } = parsedRawCredentials;
             connectionConfig['jwtToken'] = jwtToken;
 
-            const [updatedConnection] = await connectionService.upsertConnection({
-                connectionId,
-                providerConfigKey,
-                parsedRawCredentials,
-                connectionConfig,
-                environmentId: environment.id
-            });
-            if (!updatedConnection) {
-                void logCtx.error('Failed to create connection');
-                await logCtx.failed();
-                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
-                return;
-            }
-
             let connectSession: ConnectSessionAndEndUser | undefined;
             if (session.connectSessionId) {
                 const connectSessionRes = await getConnectSession(db.knex, {
@@ -165,8 +151,27 @@ class AppAuthController {
                     await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                     return;
                 }
-
                 connectSession = connectSessionRes.value;
+            }
+
+            const tags = connectSession?.connectSession.tags;
+
+            const [updatedConnection] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey,
+                parsedRawCredentials,
+                connectionConfig,
+                environmentId: environment.id,
+                tags
+            });
+            if (!updatedConnection) {
+                void logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
+            }
+
+            if (connectSession) {
                 await syncEndUserToConnection(db.knex, {
                     connectSession: connectSession.connectSession,
                     connection: updatedConnection.connection,

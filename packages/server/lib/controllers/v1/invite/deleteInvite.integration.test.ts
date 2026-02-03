@@ -22,10 +22,10 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
-            token: env.secret_key,
+            token: secret.secret,
             body: { email: '' },
             // @ts-expect-error missing query on purpose
             query: {}
@@ -35,11 +35,11 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { email: 1 }
         });
@@ -54,19 +54,19 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should revoke an invite', async () => {
-        const { env, account, user } = await seeders.seedAccountEnvAndUser();
+        const { account, user, secret } = await seeders.seedAccountEnvAndUser();
 
         const email = 'foo@example.com';
         await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, trx: db.knex });
 
-        const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
+        const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: secret.secret });
         isSuccess(listBefore.json);
         expect(listBefore.json.data.invitedUsers).toHaveLength(1);
 
         const res = await api.fetch(route, {
             method: 'DELETE',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { email: email }
         });
 
@@ -76,7 +76,7 @@ describe(`DELETE ${route}`, () => {
             data: { success: true }
         });
 
-        const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
+        const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: secret.secret });
         isSuccess(listAfter.json);
         expect(listAfter.json.data.invitedUsers).toHaveLength(0);
     });

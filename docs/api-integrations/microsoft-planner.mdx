@@ -1,0 +1,79 @@
+---
+title: 'Microsoft Planner'
+sidebarTitle: 'Microsoft Planner'
+description: 'Integrate your application with the Microsoft Planner API'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft Planner with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft Planner_.
+    </Step>
+    <Step title="Authorize Microsoft Planner">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Microsoft Planner. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Microsoft Planner API">
+    Let's make your first request to the Microsoft Planner (Microsoft Graph) API to fetch a list of plans for the authenticated user. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1.0/me/planner/plans" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1.0/me/planner/plans',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Microsoft Planner Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Microsoft Planner OAuth app](/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app)  
+Register an OAuth app with Microsoft Planner and obtain credentials to connect it to Nango
+
+Official docs: [Microsoft Graph Planner API docs](https://learn.microsoft.com/en-us/graph/api/resources/planner-overview)
+
+## 🧩 Pre-built syncs & actions for Microsoft Planner
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-planner/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
