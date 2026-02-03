@@ -1103,18 +1103,6 @@ class OAuthController {
             return;
         }
 
-        const stateCookie = `oauth2-${state}`;
-        if (req.cookies[stateCookie] !== '1') {
-            const err = new Error('Invalid state parameter in OAuth callback');
-            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
-            authHtml({ res, error: err.message });
-            return;
-        }
-        res.clearCookie(stateCookie, {
-            secure: req.secure,
-            httpOnly: true
-        });
-
         let session;
         try {
             session = await oAuthSessionService.findById(state);
@@ -1330,6 +1318,21 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
+
+        const stateCookie = `oauth2-${session.id}`;
+        if (req.cookies[stateCookie] !== '1') {
+            void logCtx.error('Invalid state parameter in OAuth2 callback', {
+                session,
+                query: req.query
+            });
+            await logCtx.failed();
+            res.redirect('https://http.cat/403');
+            return;
+        }
+        res.clearCookie(stateCookie, {
+            secure: req.secure,
+            httpOnly: true
+        });
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
