@@ -21,24 +21,24 @@ describe(`GET ${route}`, () => {
     });
 
     it('should be authorized by private key', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch(route, { method: 'GET', token: env.secret_key, query: {} });
+        const { secret } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(route, { method: 'GET', token: secret.secret, query: {} });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should be authorized by connect session token', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
-        const token = await getConnectSessionToken(api, env);
+        const { secret } = await seeders.seedAccountEnvAndUser();
+        const token = await getConnectSessionToken(api, secret.secret);
         const res = await api.fetch(route, { method: 'GET', token, query: {} });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should list all', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: env.secret_key,
+            token: secret.secret,
             query: {}
         });
 
@@ -50,9 +50,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should allow search', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: env.secret_key,
+            token: secret.secret,
             query: { search: 'hubspot' }
         });
 
@@ -71,9 +71,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return empty array when search has no results', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: env.secret_key,
+            token: secret.secret,
             query: { search: 'foobar' }
         });
 

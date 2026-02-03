@@ -18,12 +18,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should create one connection with sessionToken', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: '1', email: 'john@example.com' } }
         });
         isSuccess(resSession.json);
@@ -42,13 +42,13 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not be allowed to connect to an integration if disallowed by sessionToken', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
         await seeders.createConfigSeed(env, 'not_this_one', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['not_this_one'] }
         });
         isSuccess(resSession.json);
@@ -66,12 +66,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not be allowed to pass a connection_id with session token', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
         });
         isSuccess(resSession.json);
@@ -92,13 +92,13 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be allowed to reconnect', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         // Initial session token
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
         });
         isSuccess(resSession.json);
@@ -120,7 +120,7 @@ describe(`GET ${endpoint}`, () => {
         // Reconnect session token
         const resSessionReconnect = await api.fetch('/connect/sessions/reconnect', {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: resConnect.json.connectionId,
                 integration_id: resConnect.json.providerConfigKey,

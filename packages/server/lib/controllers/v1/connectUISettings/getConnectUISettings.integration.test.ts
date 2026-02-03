@@ -41,15 +41,15 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing env query param
-        const res = await api.fetch(route, { token: env.secret_key });
+        const res = await api.fetch(route, { token: secret.secret });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should return default settings when no custom settings exist', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
 
         // Ensure no custom settings exist for this environment
         await db.knex('connect_ui_settings').where('environment_id', env.id).del();
@@ -57,7 +57,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -68,7 +68,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return custom settings when they exist and both plan features are enabled', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
 
@@ -81,7 +81,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -92,7 +92,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return default theme when plan does not have can_customize_connect_ui_theme flag', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         const testSettings = {
             ...getCustomSettings(),
@@ -108,7 +108,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -120,7 +120,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return default showWatermark when plan does not have can_disable_connect_ui_watermark flag', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Create custom settings with non-default watermark setting
         const testSettings = {
@@ -137,7 +137,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -149,7 +149,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return default values for both features when plan has neither flag', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Create custom settings with non-default values
         const testSettings = getCustomSettings();
@@ -163,7 +163,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -174,7 +174,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return default settings when no custom settings exist and plan has no feature flags', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Ensure no custom settings exist for this environment
         await db.knex('connect_ui_settings').where('environment_id', env.id).del();
@@ -185,7 +185,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);

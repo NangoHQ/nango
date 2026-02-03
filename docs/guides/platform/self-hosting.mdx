@@ -123,10 +123,22 @@ Nango uses emails for account verification, password reset, and sending invitati
 
 Any SMTP server can be configured to be used by Nango for these email communications.
 
+## Encryption key
+
+You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
+
+<Note>
+The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
+</Note>
+
+## Data retention configuration
+
+The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
+
 <Info>
 A limited [free self-hosting](/guides/platform/free-self-hosting/configuration) option is available for hobbby projects.
 </Info>
 
 <Tip>
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
 </Tip>
