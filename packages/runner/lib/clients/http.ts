@@ -82,7 +82,7 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
 
                 // Non-retryable error
                 return new Response(JSON.stringify({ error: stringifyError(err) }), {
-                    status: 503,
+                    status: 502,
                     headers: { 'Content-Type': 'application/json' }
                 });
             }
@@ -90,7 +90,7 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
     } catch (err) {
         // All retries exhausted
         return new Response(JSON.stringify({ error: stringifyError(err) }), {
-            status: 503,
+            status: 502,
             headers: { 'Content-Type': 'application/json' }
         });
     }

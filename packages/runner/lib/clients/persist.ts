@@ -1,6 +1,6 @@
 import { getUserAgent } from '@nangohq/node';
 import { getPersistAPIUrl } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { httpFetch } from './http.js';
 import { logger } from '../logger.js';
@@ -30,15 +30,19 @@ export class PersistClient {
 
     private async fetch<R>({
         method,
-        url,
+        path,
         data,
         params
     }: {
         method: string;
-        url: string;
+        path: string;
         data?: unknown;
         params?: Record<string, string | string[]>;
     }): Promise<Result<R>> {
+        if (path.length > 0 && !path.startsWith('/')) {
+            return Err(new Error(`Path must start with a '/' character.`));
+        }
+
         const searchParams = new URLSearchParams();
         if (params) {
             for (const [key, value] of Object.entries(params)) {
@@ -52,9 +56,9 @@ export class PersistClient {
             }
         }
         const queryString = searchParams.toString();
-        const fullUrl = queryString ? `${this.baseUrl}${url}?${queryString}` : `${this.baseUrl}${url}`;
+        const url = queryString ? `${this.baseUrl}${path}?${queryString}` : `${this.baseUrl}${path}`;
 
-        const response = await httpFetch(fullUrl, {
+        const response = await httpFetch(url, {
             method,
             headers: {
                 Authorization: `Bearer ${this.secretKey}`,
@@ -65,32 +69,30 @@ export class PersistClient {
         });
 
         if (!response.ok) {
-            const responseData = await response.json().catch(() => ({}));
-            logger.error(`${method} ${url} failed: errorCode=${response.status} response='${JSON.stringify(responseData)}'`);
-            const message =
-                responseData &&
-                typeof responseData === 'object' &&
-                'error' in responseData &&
-                responseData.error &&
-                typeof responseData.error === 'object' &&
-                'message' in responseData.error
-                    ? String(responseData.error.message)
-                    : JSON.stringify(responseData);
-            return Err(new Error(message));
+            const responseData = await response.text();
+            logger.error(`${method} ${path} failed: status=${response.status} response='${responseData}'`);
+            return Err(new Error(responseData || 'Request failed with status ' + response.status));
         }
 
-        const responseData = await response.json().catch(() => undefined);
-        return Ok(responseData as R);
+        try {
+            if (response.status === 204) {
+                return Ok(undefined as unknown as R);
+            }
+            const responseData = await response.json();
+            return Ok(responseData as R);
+        } catch (err) {
+            return Err(new Error(`Failed to parse response: ${stringifyError(err)}`));
+        }
     }
 
     public async postLog({ environmentId, data }: { environmentId: number; data: string }): Promise<Result<void>> {
         const res = await this.fetch<void>({
             method: 'POST',
-            url: `/environment/${environmentId}/log`,
+            path: `/environment/${environmentId}/log`,
             data: JSON.parse(data)
         });
         if (res.isErr()) {
-            return Err(new Error(`Failed to log: ${res.error.message}`));
+            return Err(new Error(`Failed to persist log entry: ${res.error.message}`));
         }
         return res;
     }
@@ -120,7 +122,7 @@ export class PersistClient {
     }): Promise<Result<PostRecordsSuccess>> {
         const res = await this.fetch<PostRecordsSuccess>({
             method: 'POST',
-            url: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
             data: {
                 model,
                 records,
@@ -161,7 +163,7 @@ export class PersistClient {
     }): Promise<Result<PutRecordsSuccess>> {
         const res = await this.fetch<PutRecordsSuccess>({
             method: 'PUT',
-            url: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
             data: {
                 model,
                 records,
@@ -202,7 +204,7 @@ export class PersistClient {
     }): Promise<Result<DeleteRecordsSuccess>> {
         const res = await this.fetch<DeleteRecordsSuccess>({
             method: 'DELETE',
-            url: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
             data: {
                 model,
                 records,
@@ -235,7 +237,7 @@ export class PersistClient {
     }): Promise<Result<DeleteOutdatedRecordsSuccess>> {
         const res = await this.fetch<{ deletedKeys: string[] }>({
             method: 'DELETE',
-            url: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`,
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`,
             data: {
                 model,
                 activityLogId
@@ -260,7 +262,7 @@ export class PersistClient {
     }): Promise<Result<GetCursorSuccess>> {
         const res = await this.fetch<GetCursorSuccess>({
             method: 'GET',
-            url: `/environment/${environmentId}/connection/${nangoConnectionId}/cursor`,
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/cursor`,
             params: {
                 model,
                 offset
@@ -287,7 +289,7 @@ export class PersistClient {
     }): Promise<Result<GetRecordsSuccess>> {
         const res = await this.fetch<GetRecordsSuccess>({
             method: 'GET',
-            url: `/environment/${environmentId}/connection/${nangoConnectionId}/records`,
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/records`,
             params: {
                 model,
                 ...(cursor && { cursor }),
