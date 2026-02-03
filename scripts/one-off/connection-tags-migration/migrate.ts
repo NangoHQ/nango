@@ -6,22 +6,15 @@ const require = createRequire(import.meta.url);
 const { buildConnectionTagsBackfillUpdateSql } = require('../../../packages/database/lib/migration-helpers/backfillConnectionTagsSql.cjs');
 
 interface ScriptOptions {
-    dryRun: boolean;
     markMigration: boolean;
 }
 
 function parseArgs(argv: string[]): ScriptOptions {
     const opts: ScriptOptions = {
-        dryRun: false,
         markMigration: false
     };
 
     for (const arg of argv) {
-        if (arg === '--dry-run') {
-            opts.dryRun = true;
-            continue;
-        }
-
         if (arg === '--mark-migration') {
             opts.markMigration = true;
             continue;
@@ -42,8 +35,12 @@ async function markMigrationApplied(knex: KnexDatabase['knex'], schemaName: stri
     }
 
     const batchResult = await knex.withSchema(schemaName).from(migrationTable).max('batch as max').first();
-    const maxBatch = Number(batchResult?.max ?? 0);
-    const nextBatch = Number.isNaN(maxBatch) ? 1 : maxBatch + 1;
+    const maxBatch = Number(batchResult?.max);
+    if (Number.isNaN(maxBatch) || maxBatch === 0) {
+        console.error(`Error: Invalid batch result. Expected a positive number, got: ${batchResult?.max}`);
+        process.exit(1);
+    }
+    const nextBatch = maxBatch + 1;
 
     await knex.withSchema(schemaName).from(migrationTable).insert({
         name: migrationName,
@@ -63,29 +60,26 @@ async function run() {
     const schemaName = database.schema();
 
     console.log('Starting connection tags migration');
-    console.log(`Dry run: ${options.dryRun ? 'true' : 'false'}`);
     console.log(`Mark migration: ${options.markMigration ? 'true' : 'false'}`);
 
     try {
-        if (options.dryRun) {
-            const trx = await knex.transaction();
-            try {
-                const updateResult = await trx.raw(updateSql);
-                const updatedCount = updateResult.rowCount ?? 0;
-                console.log(`Dry run updated rows (rolled back): ${updatedCount}`);
-            } finally {
-                await trx.rollback();
+        let summary: Record<string, unknown> | undefined;
+
+        await knex.transaction(async (trx) => {
+            const updateResult = await trx.raw(updateSql);
+            summary = updateResult?.rows?.[0];
+
+            if (options.markMigration) {
+                await markMigrationApplied(trx, schemaName);
             }
-            return;
+        });
+
+        if (summary) {
+            console.log('[connection tags backfill] summary', summary);
         }
 
-        const updateResult = await knex.raw(updateSql);
-        const updatedCount = updateResult.rowCount ?? 0;
+        const updatedCount = Number(summary?.['updated_rows'] ?? 0);
         console.log(`Updated rows: ${updatedCount}`);
-
-        if (options.markMigration) {
-            await markMigrationApplied(knex, schemaName);
-        }
     } finally {
         await database.destroy();
     }

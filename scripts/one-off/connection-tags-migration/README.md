@@ -4,12 +4,6 @@ Uses .env to figure out the DB connection
 
 ## Run
 
-Dry run (runs the query in a transaction and then rolls back):
-
-```bash
-npx tsx scripts/one-off/connection-tags-migration/migrate.ts --dry-run
-```
-
 Execute the update:
 
 ```bash
@@ -24,9 +18,8 @@ npx tsx scripts/one-off/connection-tags-migration/migrate.ts --mark-migration
 
 ## Options
 
-- `--dry-run` shows count of rows to update without making changes.
 - `--mark-migration` records the migration in `_nango_auth_migrations` after a successful update.
 
 ## Output
 
-- `Updated rows` shows actual count after execution (unless dry run).
+- `Updated rows` shows actual count after execution.

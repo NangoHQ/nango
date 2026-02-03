@@ -240,7 +240,106 @@ describe('Connection tags backfill', () => {
             custom: 'keep'
         };
 
-        // Test case 3: Connection without end_user should not be affected
+        // Test case 3: Truncate too-long keys and values from end_user.tags
+        const longKey = 'a'.repeat(70);
+        const longKeyTruncated = 'a'.repeat(64);
+        const longValue = 'b'.repeat(300);
+        const longValueTruncated = 'b'.repeat(255);
+        const longEndUser = await createTestEndUser({
+            accountId: account.id,
+            environmentId: env.id,
+            endUserId: 'user-long',
+            email: 'long@example.com',
+            tags: {
+                [longKey]: longValue
+            }
+        });
+        createdEndUserIds.push(longEndUser.id);
+
+        const longConn = await createTestConnection({
+            environmentId: env.id,
+            configId: config.id,
+            providerConfigKey: 'github',
+            endUser: longEndUser,
+            tags: {}
+        });
+        createdConnectionIds.push(longConn.id);
+        const expectedLongTags = {
+            end_user_id: 'user-long',
+            end_user_email: 'long@example.com',
+            [longKeyTruncated]: longValueTruncated
+        };
+
+        // Test case 4: Skip invalid end_user.tags keys (format)
+        const invalidKeyEndUser = await createTestEndUser({
+            accountId: account.id,
+            environmentId: env.id,
+            endUserId: 'user-invalid-keys',
+            email: 'invalid-keys@example.com',
+            tags: {
+                '123bad': 'v1',
+                _bad: 'v2',
+                '-bad': 'v3',
+                'bad key': 'v4',
+                'bad@key': 'v5',
+                'bad:key': 'v6',
+                'good/tag': 'ok',
+                'Good.Tag': 'keep'
+            }
+        });
+        createdEndUserIds.push(invalidKeyEndUser.id);
+
+        const invalidKeyConn = await createTestConnection({
+            environmentId: env.id,
+            configId: config.id,
+            providerConfigKey: 'github',
+            endUser: invalidKeyEndUser,
+            tags: {}
+        });
+        createdConnectionIds.push(invalidKeyConn.id);
+        const expectedInvalidKeyTags = {
+            end_user_id: 'user-invalid-keys',
+            end_user_email: 'invalid-keys@example.com',
+            'good/tag': 'ok',
+            'good.tag': 'keep'
+        };
+
+        // Test case 5: Too many keys -> drop end_user.tags, keep end_user/organization tags
+        const tooManyKeysEndUser = await createTestEndUser({
+            accountId: account.id,
+            environmentId: env.id,
+            endUserId: 'user-too-many',
+            email: 'too-many@example.com',
+            displayName: 'Too Many',
+            organization: { organizationId: 'org-too-many', displayName: 'Org Too Many' },
+            tags: {
+                tag1: '1',
+                tag2: '2',
+                tag3: '3',
+                tag4: '4',
+                tag5: '5',
+                tag6: '6'
+            }
+        });
+        createdEndUserIds.push(tooManyKeysEndUser.id);
+
+        const tooManyKeysConn = await createTestConnection({
+            environmentId: env.id,
+            configId: config.id,
+            providerConfigKey: 'github',
+            endUser: tooManyKeysEndUser,
+            tags: {}
+        });
+        createdConnectionIds.push(tooManyKeysConn.id);
+        const expectedTooManyKeysTags = {
+            end_user_id: 'user-too-many',
+            end_user_email: 'too-many@example.com',
+            end_user_display_name: 'Too Many',
+            organization_id: 'org-too-many',
+            organization_display_name: 'Org Too Many'
+        };
+
+        // Test case 6: Connection without end_user should not be affected
         const noEndUserConn = await createTestConnection({
             environmentId: env.id,
             configId: config.id,
@@ -253,6 +352,9 @@ describe('Connection tags backfill', () => {
 
         await expect(getConnectionTags(specialConn.id)).resolves.toEqual(expectedSpecialTags);
         await expect(getConnectionTags(overrideConn.id)).resolves.toEqual(expectedOverrideTags);
+        await expect(getConnectionTags(longConn.id)).resolves.toEqual(expectedLongTags);
+        await expect(getConnectionTags(invalidKeyConn.id)).resolves.toEqual(expectedInvalidKeyTags);
+        await expect(getConnectionTags(tooManyKeysConn.id)).resolves.toEqual(expectedTooManyKeysTags);
         await expect(getConnectionTags(noEndUserConn.id)).resolves.toEqual({ existing: 'yes' });
     });
 });
