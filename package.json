@@ -2,7 +2,7 @@
     "name": "@nangohq/nango",
     "packageManager": "npm@10.9.4",
     "type": "module",
-    "version": "0.69.28",
+    "version": "0.69.29",
     "workspaces": [
         "packages/*",
         "scripts"
