@@ -229,6 +229,52 @@ describe('Connection service integration tests', () => {
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notionOK.connection_id]);
         });
+
+        it('should filter errored connections before pagination', async () => {
+            const env = await createEnvironmentSeed();
+
+            await createConfigSeed(env, 'notion', 'notion');
+
+            // Create 10 connections, every other one with errors (5 with errors, 5 without)
+            const erroredConnections = [];
+            for (let i = 0; i < 10; i++) {
+                const conn = await createConnectionSeed({ env, provider: 'notion' });
+
+                if (i % 2 === 0) {
+                    await errorNotificationService.auth.create({
+                        type: 'auth',
+                        action: 'connection_test',
+                        connection_id: conn.id,
+                        log_id: Math.random().toString(36).substring(7),
+                        active: true
+                    });
+                    erroredConnections.push(conn);
+                }
+            }
+
+            // Get a single page with limit 5 and withError=true
+            // This should return all 5 errored connections, not just the first 5 connections
+            const page = await connectionService.listConnections({
+                environmentId: env.id,
+                withError: true,
+                limit: 5,
+                page: 0
+            });
+
+            // Verify we got all 5 errored connections on the first page
+            expect(page.length).toBe(5);
+
+            const returnedConnectionIds = page.map((c) => c.connection.connection_id).sort();
+            const expectedErroredConnectionIds = erroredConnections.map((c) => c.connection_id).sort();
+            expect(returnedConnectionIds).toEqual(expectedErroredConnectionIds);
+
+            // Verify all returned connections have errors
+            for (const conn of page) {
+                expect(conn.active_logs).toBeDefined();
+                expect(Array.isArray(conn.active_logs)).toBe(true);
+                expect(conn.active_logs.length).toBeGreaterThan(0);
+            }
+        });
     });
 
     describe('count', () => {
