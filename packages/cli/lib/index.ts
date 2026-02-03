@@ -266,7 +266,7 @@ program
     .description('Dry run the sync|action process to help with debugging against an existing connection in cloud.')
     .argument('[name]', 'The name of the sync or action to run.')
     .argument('[connection_id]', 'The ID of the connection to use.')
-    .option('-e, --environment [environment]', 'The Nango environment, defaults to dev.', 'dev')
+    .option('-e, --environment [environment]', 'The Nango environment. If not provided, you will be prompted to select one.')
     .option(
         '-l, --lastSyncDate [lastSyncDate]',
         'Optional (for syncs only): last sync date to retrieve records greater than this date. The format is any string that can be successfully parsed by `new Date()` in JavaScript'
@@ -291,11 +291,11 @@ program
     .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command) {
-        const { autoConfirm, debug, interactive, integrationId, validation, saveResponses } = this.opts();
+        const { autoConfirm, debug, interactive, integrationId, validation, saveResponses, input, lastSyncDate, variant, metadata, diagnostics } = this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
         let [name, connectionId] = this.args;
-        let { e: environment } = this.opts();
+        let { environment } = this.opts();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -360,7 +360,12 @@ program
             connectionId,
             optionalEnvironment: environment,
             optionalProviderConfigKey: integrationId,
-            saveResponses
+            saveResponses,
+            input,
+            lastSyncDate,
+            variant,
+            metadata,
+            diagnostics
         });
     });
 
