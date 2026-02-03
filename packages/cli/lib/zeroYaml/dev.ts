@@ -5,9 +5,9 @@ import { setTimeout } from 'node:timers/promises';
 
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import ora from 'ora';
 import ts from 'typescript';
 
+import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
 import { compileOne, tsToJsPath } from './compile.js';
 import { tsconfig } from './constants.js';
@@ -15,7 +15,7 @@ import { CompileError, fileErrorToText, syncTsConfig, tsDiagnosticToText } from 
 
 import type { Ora } from 'ora';
 
-export async function dev({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+export async function dev({ fullPath, debug, interactive = true }: { fullPath: string; debug: boolean; interactive?: boolean }) {
     const outDir = path.join(fullPath, 'build');
 
     if (!fs.existsSync(outDir)) {
@@ -24,7 +24,7 @@ export async function dev({ fullPath, debug }: { fullPath: string; debug: boolea
     }
 
     await syncTsConfig({ fullPath });
-    manualWatch({ fullPath, debug });
+    manualWatch({ fullPath, debug, interactive });
     typescriptWatchSimple({ fullPath, debug });
 }
 
@@ -38,10 +38,11 @@ let isReady = false;
  * Manual watch uses chokidar to listen to files changes and bundle what's declared in index.ts
  * We are not relying on tsc because it's not always sending the appropriate events on delete or rename.
  */
-function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+function manualWatch({ fullPath, debug, interactive }: { fullPath: string; debug: boolean; interactive: boolean }) {
     const watchPath = ['./**/*.ts'];
     printDebug(`Watching ${watchPath.join(', ')}`, debug);
 
+    const spinnerFactory = new Spinner({ interactive });
     const graph = new DependencyGraph({ fullPath });
     const indexTs = 'index.ts';
     const processing = new Set<string>();
@@ -113,7 +114,7 @@ function manualWatch({ fullPath, debug }: { fullPath: string; debug: boolean }) 
                 return;
             }
 
-            spinner = ora({ text: `Compiling ${filePath}` }).start();
+            spinner = spinnerFactory.start(`Compiling ${filePath}`);
 
             const res = await compileOne({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
             if (res.isErr()) {

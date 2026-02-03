@@ -8,8 +8,8 @@ import readline from 'readline';
 import axios from 'axios';
 import chalk from 'chalk';
 import ejs from 'ejs';
-import ora from 'ora';
 
+import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
 import { compileAll } from '../zeroYaml/compile.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
@@ -419,7 +419,8 @@ export async function generateTests({
     syncName,
     actionName,
     debug = false,
-    autoConfirm = false
+    autoConfirm = false,
+    interactive = true
 }: {
     absolutePath: string;
     integrationId?: string;
@@ -427,13 +428,15 @@ export async function generateTests({
     actionName?: string;
     debug?: boolean;
     autoConfirm?: boolean;
+    interactive?: boolean;
 }): Promise<{ success: boolean; generatedFiles: string[] }> {
     try {
         if (debug) {
             printDebug(`Generating test files in ${absolutePath}`);
         }
 
-        const spinner = ora({ text: 'Setting up test dependencies' }).start();
+        const spinnerFactory = new Spinner({ interactive });
+        const spinner = spinnerFactory.start('Setting up test dependencies');
         try {
             await injectTestDependencies({ debug });
             spinner.succeed();
@@ -472,7 +475,7 @@ export async function generateTests({
         }
 
         // compile then use js definitions
-        const compileResult = await compileAll({ fullPath: absolutePath, debug });
+        const compileResult = await compileAll({ fullPath: absolutePath, debug, interactive });
         if (compileResult.isErr()) {
             console.error(chalk.red(`Failed to compile TypeScript: ${compileResult.error}`));
             return { success: false, generatedFiles: [] };
