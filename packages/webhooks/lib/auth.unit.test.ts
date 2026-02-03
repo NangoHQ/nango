@@ -46,9 +46,7 @@ const providerConfig = {
     provider: 'hubspot'
 } as IntegrationConfig;
 
-const secret = {
-    secret: 'secret'
-} as Pick<DBAPISecret, 'secret'>;
+const secret = 'secret' as DBAPISecret['secret'];
 
 describe('Webhooks: auth notification tests', () => {
     beforeAll(async () => {

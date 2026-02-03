@@ -94,9 +94,7 @@ const webhookSettings: DBExternalWebhook = {
     updated_at: new Date()
 };
 
-const secret: Pick<DBAPISecret, 'secret'> = {
-    secret: 'secret'
-};
+const secret = 'secret' as DBAPISecret['secret'];
 
 describe('Webhooks: sync notification tests', () => {
     beforeAll(async () => {

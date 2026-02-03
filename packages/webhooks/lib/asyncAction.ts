@@ -13,7 +13,7 @@ export const sendAsyncActionWebhook = async ({
     payload,
     logCtx
 }: {
-    secret: Pick<DBAPISecret, 'secret'>;
+    secret: DBAPISecret['secret'];
     connectionId: string;
     providerConfigKey: string;
     webhookSettings: DBExternalWebhook | null;

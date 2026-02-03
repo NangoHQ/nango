@@ -251,7 +251,7 @@ export async function handleActionSuccess({
 
     await sendWebhookIfNeeded({
         environment,
-        secret: { secret: nangoProps.secretKey },
+        secret: nangoProps.secretKey,
         connectionId: nangoProps.connectionId,
         providerConfigKey: nangoProps.providerConfigKey,
         task: task.value,
@@ -353,7 +353,7 @@ export async function handleActionError({
         void logCtx.failed();
         await sendWebhookIfNeeded({
             environment,
-            secret: { secret: nangoProps.secretKey },
+            secret: nangoProps.secretKey,
             connectionId: nangoProps.connectionId,
             providerConfigKey: nangoProps.providerConfigKey,
             task: task.value,
@@ -492,7 +492,7 @@ async function sendWebhookIfNeeded({
     logCtx
 }: {
     environment: DBEnvironment | undefined;
-    secret: Pick<DBAPISecret, 'secret'>;
+    secret: DBAPISecret['secret'];
     connectionId: string;
     providerConfigKey: string;
     task: OrchestratorTask;

@@ -123,7 +123,7 @@ export async function routeWebhook({
             integration,
             account,
             environment,
-            secret: defaultSecret.value,
+            secret: defaultSecret.value.secret,
             webhookSettings,
             connectionIds,
             payload: webhookBodyToForward,

@@ -42,9 +42,7 @@ const integration = {
     forward_webhooks: true
 } as IntegrationConfig;
 
-const secret = {
-    secret: 'secret'
-} as Pick<DBAPISecret, 'secret'>;
+const secret = 'secret' as DBAPISecret['secret'];
 
 describe('Webhooks: forward notification tests', () => {
     beforeAll(async () => {

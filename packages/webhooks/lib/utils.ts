@@ -154,7 +154,7 @@ export const deliver = async ({
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    secret: Pick<DBAPISecret, 'secret'>;
+    secret: DBAPISecret['secret'];
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
@@ -175,8 +175,8 @@ export const deliver = async ({
 
         const headers = {
             ...filteredHeaders,
-            'X-Nango-Signature': getSignatureHeaderUnsafe(secret.secret, bodyString.value),
-            'X-Nango-Hmac-Sha256': getHmacSignatureHeader(secret.secret, bodyString.value),
+            'X-Nango-Signature': getSignatureHeaderUnsafe(secret, bodyString.value),
+            'X-Nango-Hmac-Sha256': getHmacSignatureHeader(secret, bodyString.value),
             'content-type': 'application/json',
             'user-agent': userAgent
         };

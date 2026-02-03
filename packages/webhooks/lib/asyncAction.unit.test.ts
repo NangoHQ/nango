@@ -30,9 +30,7 @@ const environment = {
     id: 1
 } as DBEnvironment;
 
-const secret = {
-    secret: 'secret'
-} as Pick<DBAPISecret, 'secret'>;
+const secret = 'secret' as DBAPISecret['secret'];
 
 describe('AsyncAction webhookds', () => {
     beforeAll(async () => {

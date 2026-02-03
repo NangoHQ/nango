@@ -152,7 +152,7 @@ export const connectionCreated = async (
     void sendAuthWebhook({
         connection,
         environment,
-        secret: defaultSecret.value,
+        secret: defaultSecret.value.secret,
         webhookSettings,
         auth_mode,
         endUser,
@@ -196,7 +196,7 @@ export const connectionCreationFailed = async (
         void sendAuthWebhook({
             connection,
             environment,
-            secret: defaultSecret.value,
+            secret: defaultSecret.value.secret,
             webhookSettings,
             auth_mode,
             success: false,
@@ -277,7 +277,7 @@ export const connectionRefreshFailed = async ({
     void sendAuthWebhook({
         connection,
         environment,
-        secret: defaultSecret.value,
+        secret: defaultSecret.value.secret,
         webhookSettings,
         auth_mode: provider.auth_mode,
         operation: 'refresh',

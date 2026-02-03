@@ -20,7 +20,7 @@ export const forwardWebhook = async ({
     integration: IntegrationConfig;
     account: DBTeam;
     environment: DBEnvironment;
-    secret: Pick<DBAPISecret, 'secret'>;
+    secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
     payload: Record<string, any> | null;

@@ -40,7 +40,7 @@ export async function sendAuth({
 }: {
     connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key'>; // Either a true connection or a fake one
     environment: DBEnvironment;
-    secret: Pick<DBAPISecret, 'secret'>;
+    secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;

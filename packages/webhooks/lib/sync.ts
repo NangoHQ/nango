@@ -42,7 +42,7 @@ export const sendSync = async ({
 }: {
     connection: ConnectionJobs;
     environment: Pick<DBEnvironment, 'id' | 'name'>;
-    secret: Pick<DBAPISecret, 'secret'>;
+    secret: DBAPISecret['secret'];
     account: Pick<DBTeam, 'id' | 'name'>;
     providerConfig: IntegrationConfig;
     webhookSettings: DBExternalWebhook | null;
