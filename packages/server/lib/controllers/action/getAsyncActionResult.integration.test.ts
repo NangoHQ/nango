@@ -26,10 +26,10 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should validate request', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { id: 'not-uuid' }
         });
 

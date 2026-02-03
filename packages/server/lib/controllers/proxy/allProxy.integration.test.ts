@@ -25,10 +25,10 @@ describe(`GET ${route}`, () => {
     });
 
     it('should require headers', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             headers: {}
         });
@@ -51,12 +51,12 @@ describe(`GET ${route}`, () => {
     });
 
     it('should call the proxy', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
         const res = await api.fetch(route, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { anyPath: 'users/octocat' },
             headers: { 'connection-id': connection.connection_id, 'provider-config-key': integration.unique_key }
         });
@@ -79,12 +79,12 @@ describe(`GET ${route}`, () => {
     });
 
     it('should use all the headers', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
         const res = await api.fetch(route, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { anyPath: 'users/octocat' },
             headers: {
                 'connection-id': connection.connection_id,

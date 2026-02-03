@@ -4640,6 +4640,38 @@ docuware:
             description: The Password to your DocuWare account
             doc_section: '#step-2-finding-your-credentials'
 
+domo:
+    display_name: Domo
+    categories:
+        - productivity
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.domo.com/oauth/token
+    scope_separator: ','
+    token_params:
+        grant_type: client_credentials
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.domo.com
+    docs: https://nango.dev/docs/api-integrations/domo
+    docs_connect: https://nango.dev/docs/api-integrations/domo/connect
+    credentials:
+        client_id:
+            type: string
+            title: Your Client ID
+            description: The Client ID of your API client
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-1-creating-your-api-client'
+        client_secret:
+            type: string
+            title: Your Client Secret
+            secret: true
+            example: a14e6b49******************************768ece
+            pattern: '^[a-fA-F0-9]{64}$'
+            description: The Client secret of your API client
+            doc_section: '#step-1-creating-your-api-client'
+
 dropbox:
     display_name: Dropbox
     categories:
@@ -9486,6 +9518,15 @@ microsoft-oauth2-cc:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-planner:
+    display_name: Microsoft Planner
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-planner
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
@@ -13514,6 +13555,54 @@ setmore:
             description: The access token provided to you by Setmore team
             doc_section: '#step-1-requesting-access-to-the-api'
 
+sellercloud:
+    display_name: Sellercloud
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: ${connectionConfig.restApiEndpoint}
+    token_request_method: GET
+    token_url: https://api.sellercloud.com/api/server-by-team/?team=${credentials.teamName}
+    additional_steps:
+        - body_format: json
+          token_params:
+              Username: ${credentials.username}
+              Password: ${credentials.password}
+          token_url: ${step1.restApiEndpoint}/api/token
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    token_response_metadata:
+        - restApiEndpoint
+    docs: https://nango.dev/docs/api-integrations/sellercloud
+    docs_connect: https://nango.dev/docs/api-integrations/sellercloud/connect
+    connection_config:
+        restApiEndpoint:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        teamName:
+            type: string
+            title: Team Name
+            description: Your Sellercloud team name
+            example: myteam
+            doc_section: '#step-1-finding-your-team-name'
+        username:
+            type: string
+            title: Username
+            description: Your Sellercloud username
+            doc_section: '#step-2-identifying-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Sellercloud password
+            secret: true
+            doc_section: '#step-2-identifying-your-credentials'
+
 sellsy:
     display_name: Sellsy
     auth_mode: OAUTH2
@@ -15698,6 +15787,33 @@ unipile:
             description: The port of your Unipile instance
             pattern: '^[0-9]+$'
             example: '13113'
+
+upsales:
+    display_name: Upsales
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://integration.upsales.com
+        query:
+            token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v2/users
+    docs: https://nango.dev/docs/api-integrations/upsales
+    docs_connect: https://nango.dev/docs/api-integrations/upsales/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Upsales API Token
+            doc_section: '#step-1-finding-your-api-token'
 
 vercel:
     display_name: Vercel

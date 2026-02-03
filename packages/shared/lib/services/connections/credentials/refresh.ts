@@ -564,12 +564,14 @@ export async function shouldRefreshCredentials({
 
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'instagram') {
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 
     if (credentials.type === 'OAUTH2') {
-        if (credentials.refresh_token) {
+        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and doesn't return a refresh_token.
+        // so we allow token refresh either if we have a refresh_token or if the provider is microsoft-admin.
+        if (credentials.refresh_token || providerConfig.provider === 'microsoft-admin') {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
         }
         // We can't refresh since we don't have a refresh token even if we force it

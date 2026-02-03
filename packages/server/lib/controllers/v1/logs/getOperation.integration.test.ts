@@ -21,25 +21,25 @@ describe('GET /logs/operations/:operationId', () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             '/api/v1/logs/operations/:operationId',
             // @ts-expect-error missing query on purpose
-            { token: env.secret_key, params: { operationId: '1' } }
+            { token: secret.secret, params: { operationId: '1' } }
         );
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/operations/:operationId', {
             query: {
                 env: 'dev',
                 // @ts-expect-error on purpose
                 foo: 'bar'
             },
-            token: env.secret_key,
+            token: secret.secret,
             params: { operationId: '1' }
         });
 
@@ -59,10 +59,10 @@ describe('GET /logs/operations/:operationId', () => {
     });
 
     it('should get empty result', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/operations/:operationId', {
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { operationId: '1741878251660_XQMgbkGG' }
         });
 
@@ -73,7 +73,7 @@ describe('GET /logs/operations/:operationId', () => {
     });
 
     it('should get one result', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
         await logCtx.info('test info');
@@ -81,7 +81,7 @@ describe('GET /logs/operations/:operationId', () => {
 
         const res = await api.fetch(`/api/v1/logs/operations/:operationId`, {
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             params: { operationId: logCtx.id }
         });
 
@@ -121,7 +121,7 @@ describe('GET /logs/operations/:operationId', () => {
 
         const res = await api.fetch(`/api/v1/logs/operations/:operationId`, {
             query: { env: 'dev' },
-            token: env2.env.secret_key,
+            token: env2.secret.secret,
             params: { operationId: logCtx.id }
         });
 

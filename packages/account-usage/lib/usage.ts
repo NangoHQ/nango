@@ -88,6 +88,9 @@ export class UsageTracker implements IUsageTracker {
         if (entry.isErr()) {
             return Err(entry.error);
         }
+        if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+            void this.revalidate({ accountId, metric });
+        }
         return Ok({
             accountId,
             metric,
@@ -104,6 +107,9 @@ export class UsageTracker implements IUsageTracker {
                 const entry = await this.cache.get(cacheKey);
                 if (entry.isErr()) {
                     return;
+                }
+                if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+                    void this.revalidate({ accountId, metric: metric as UsageMetric });
                 }
                 result[metric as UsageMetric] = {
                     accountId,

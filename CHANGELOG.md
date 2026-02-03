@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.28] - 2026-02-03
+
+### Added
+
+- *(integrations)* Add support for demodesk (#5327) by @hassan254-prog
+- *(integrations)* Add support for nocrm (#5325) by @hassan254-prog
+- *(server)* Increase `listConnections` limit (#5334) by @kaposke
+- *(integrations)* Add support for workos (#5324) by @hassan254-prog
+- *(server)* Increase the max value length of tags (#5333) by @marcindobry
+- *(multi-api-secret)* [BIG] Deprecate environment's secret_key. (#5314) by @thw-nango
+- *(integrations)* Add support for bird (#5328) by @hassan254-prog
+- *(integrations)* Add support for domo (#5345) by @hassan254-prog
+- *(multi-api-secret)* [BIG] Deprecate environment's secret_key. (#5350) by @thw-nango
+- *(integrations)* Add support for microsoft planner (#5289) by @digggy
+- *(integrations)* Add support for sellercloud (#5242) by @hassan254-prog
+- *(ui)* Use tags for email and display_name in AvatarOrganization (#5343) by @marcindobry
+- *(integrations)* Add Upsales API integration (#5112) by @frkst
+- *(persist)* Adds checkpoint endpoints to the persist (#5335) by @TBonnin
+- *(tags)* Match the validation of end_user tags to new tags (#5341) by @marcindobry
+- *(docs)* Add docs for records retention policies (#5217) by @TBonnin
+- Add test for `POST /connection` oauth2 with `config_override` (#5346) by @kaposke
+- *(webapp)* Redesign connections list (#5336) by @kaposke
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1b4cf22490f36551a932c65b8a3f4e524280f50c by Kellen Bolger by @github-actions[bot]
+- Feat(multi-api-secret): [BIG] Deprecate environment's secret_key. (#5339) by @thw-nango
+- *(deps)* Bump lodash from 4.17.21 to 4.17.23 in /scripts/one-off/backfill-orb-subscription-dates (#5304) by @dependabot[bot]
+- *(deps)* Bump lodash from 4.17.21 to 4.17.23 in /scripts/one-off/records-migration (#5287) by @dependabot[bot]
+- *(deps)* Bump fast-xml-parser from 4.5.0 to 5.3.4 in /packages/shared (#5348) by @dependabot[bot]
+- *(api-secrets)* Stop using env.secret_key in tests, use secret instead (#5354) by @thw-nango
+- Imrpove the security docs page (#5352) by @bastienbeurier
+- Update react-router versions to address vulnerability (#5353) by @marcindobry
+- Update README.md (#5364) by @bastienbeurier
+- Update demo link (#5365) by @rguldener
+
+### Fixed
+
+- *(main)* Npm i (#5330) by @thw-nango
+- *(tokenrefresh)* Fix token refresh for 3cx (#5332) by @hassan254-prog
+- *(tokenRefresh)* Fix token refresh for microsoft admin (#5329) by @hassan254-prog
+- *(records)* Flaky integration test. (#5340) by @thw-nango
+- Npm audit and install with node22/npm10 (#5337) by @TBonnin
+- Revalidate usage on get (#5116) by @kaposke
+- *(webhooks)* Decode email address from resource URI (#5358) by @thw-nango
+- *(cli)* Accept user args when running the dryrun command (#5356) by @hassan254-prog
+
 ## [v0.69.27] - 2026-01-29
 
 ### Added
@@ -5731,6 +5778,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.28]: https://github.com/NangoHQ/nango/compare/v0.69.27..v0.69.28
 [v0.69.27]: https://github.com/NangoHQ/nango/compare/v0.69.26..v0.69.27
 [v0.69.26]: https://github.com/NangoHQ/nango/compare/v0.69.22..v0.69.26
 [v0.69.22]: https://github.com/NangoHQ/nango/compare/v0.69.21..v0.69.22
