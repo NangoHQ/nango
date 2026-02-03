@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ClipboardCopy } from 'lucide-react';
-import { useCallback, useMemo, useRef } from 'react';
+import { Link2 } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
@@ -70,6 +70,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
     const { mutate, cache } = useSWRConfig();
+    const [isShareLinkLoading, setIsShareLinkLoading] = useState(false);
 
     const testUser = useMemo(() => {
         return {
@@ -182,27 +183,32 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             provider: integration?.provider || 'unknown'
         });
 
+        setIsShareLinkLoading(true);
         setTimeout(async () => {
-            const res = await createConnectSession();
-            if (!res.res.ok || 'error' in res.json) {
-                toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
-                return;
-            }
-
-            const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
-            const shareUrl = new URL(connectLink);
-            shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
-
             try {
-                await navigator.clipboard.writeText(shareUrl.toString());
-                toast.toast({
-                    title: 'Shareable link copied',
-                    description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
-                    variant: 'success'
-                });
-            } catch (err) {
-                console.error('Clipboard write failed:', err);
-                toast.toast({ title: 'Failed to copy link', variant: 'error' });
+                const res = await createConnectSession();
+                if (!res.res.ok || 'error' in res.json) {
+                    toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
+                    return;
+                }
+
+                const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
+                const shareUrl = new URL(connectLink);
+                shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
+
+                try {
+                    await navigator.clipboard.writeText(shareUrl.toString());
+                    toast.toast({
+                        title: 'Shareable link copied',
+                        description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
+                        variant: 'success'
+                    });
+                } catch (err) {
+                    console.error('Clipboard write failed:', err);
+                    toast.toast({ title: 'Failed to copy link', variant: 'error' });
+                }
+            } finally {
+                setIsShareLinkLoading(false);
             }
         }, 10);
     };
@@ -305,12 +311,11 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         onClick={onClickShareConnectionLink}
                                         size="lg"
                                         variant="secondary"
+                                        loading={isShareLinkLoading}
                                         disabled={usageCapReached || integrationHasMissingFields || !isFormValid}
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <ClipboardCopy className="size-4.5" />
-                                            Copy shareable link
-                                        </span>
+                                        <Link2 className="size-4.5" />
+                                        Share connect link
                                     </Button>
                                 </span>
                             </TooltipTrigger>
