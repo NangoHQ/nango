@@ -812,6 +812,24 @@ class ConnectionService {
                     }
                 }
 
+                if (withError === false) {
+                    // Only connections without active logs
+                    subQuery.whereNotExists(function () {
+                        this.select('*')
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                } else if (withError === true) {
+                    // Only connections with active logs
+                    subQuery.whereExists(function () {
+                        this.select('*')
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                }
+
                 return subQuery
                     .orderBy('_nango_connections.created_at', 'desc')
                     .limit(limit)
@@ -840,12 +858,6 @@ class ConnectionService {
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
             .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
             .orderBy('_nango_connections.created_at', 'desc');
-
-        if (withError === false) {
-            query.whereNull('active_logs_agg.connection_id');
-        } else if (withError === true) {
-            query.whereNotNull('active_logs_agg.connection_id');
-        }
 
         return await query;
     }
