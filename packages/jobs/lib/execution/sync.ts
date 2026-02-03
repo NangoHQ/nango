@@ -167,7 +167,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
-            return Err(defaultSecret.error);
+            throw defaultSecret.error;
         }
 
         const nangoProps: NangoProps = {
