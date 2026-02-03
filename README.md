@@ -56,7 +56,7 @@ By leveraging Nango, developers can save weeks per integration:
 - **Secure**: Secure handling of credentials and user data.
 - **Observable**: Full visibility into every API interaction.
 - **Modular**: Use only what you need, without vendor lock-in.
-- **Proven at scale**: Powers millions of users for companies like Replit, Linux, etc.
+- **Proven at scale**: Powers millions of users for companies like Replit, Mercor, Exa, etc.
 
 ## Getting started
 
