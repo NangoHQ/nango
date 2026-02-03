@@ -281,6 +281,7 @@ class OAuthController {
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
+                    req,
                     res,
                     connectionConfig,
                     authorizationParams,
@@ -592,6 +593,7 @@ class OAuthController {
         provider,
         providerConfig,
         session,
+        req,
         res,
         connectionConfig,
         authorizationParams,
@@ -602,6 +604,7 @@ class OAuthController {
         provider: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         authorizationParams: Record<string, string | undefined>;
@@ -728,6 +731,10 @@ class OAuthController {
                     scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
+                res.cookie(`oauth2-${session.id}`, '1', {
+                    maxAge: 60 * 60 * 1000, // 1h
+                    secure: req.secure // Note: Relies on app.set('trust proxy', true).
+                });
                 res.redirect(authorizationUri);
             } else {
                 const grantType = provider.token_params.grant_type;
@@ -1078,7 +1085,7 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
-        const state = req.query['state'] || req.query['payload']; // for crisp plugin install
+        const state = (req.query['state'] || req.query['payload']) as string | undefined; // for crisp plugin install
 
         const installation_id = req.query['installation_id'] as string | undefined;
         const action = req.query['setup_action'] as string;
@@ -1087,9 +1094,15 @@ class OAuthController {
             res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
             return;
         }
-        if (state == null) {
+        if (!state) {
             const err = new Error('No state found in callback');
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            authHtml({ res, error: err.message });
+            return;
+        }
 
+        if (req.cookies[`oauth2-${state}`] !== '1') {
+            const err = new Error('Invalid state parameter in OAuth callback');
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: err.message });
             return;
@@ -1097,7 +1110,7 @@ class OAuthController {
 
         let session;
         try {
-            session = await oAuthSessionService.findById(state as string);
+            session = await oAuthSessionService.findById(state);
         } catch (err) {
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: 'invalid_oauth_state' });
@@ -1111,7 +1124,7 @@ class OAuthController {
             authHtml({ res, error: err.message });
             return;
         } else {
-            await oAuthSessionService.delete(state as string);
+            await oAuthSessionService.delete(state);
         }
 
         let logCtx: LogContext | undefined;
@@ -1310,12 +1323,6 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
-
-        const state = req.query['state'] as string | undefined;
-        if (state !== session.id) {
-            res.redirect('https://http.cat/403');
-            return;
-        }
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
