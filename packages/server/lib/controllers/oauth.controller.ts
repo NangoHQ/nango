@@ -668,8 +668,9 @@ class OAuthController {
                 let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
                     scope: scopes,
-                    state: session.id,
-                    ...allAuthParams
+                    ...allAuthParams,
+                    // Security: `state` comes last. It cannot be overriden by allAuthParams.
+                    state: session.id
                 });
 
                 if (provider?.authorization_url_skip_encode?.includes('scopes')) {
@@ -1309,6 +1310,12 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
+
+        const state = req.query['state'] as string | undefined;
+        if (state !== session.id) {
+            res.redirect('https://http.cat/403');
+            return;
+        }
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
