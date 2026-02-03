@@ -731,9 +731,11 @@ class OAuthController {
                     scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
-                res.cookie(`oauth2-${session.id}`, '1', {
+                const stateCookie = `oauth2-${session.id}`;
+                res.cookie(stateCookie, '1', {
                     maxAge: 60 * 60 * 1000, // 1h
-                    secure: req.secure // Note: Relies on app.set('trust proxy', true).
+                    secure: req.secure, // Note: Relies on app.set('trust proxy', true).
+                    httpOnly: true
                 });
                 res.redirect(authorizationUri);
             } else {
@@ -1101,12 +1103,17 @@ class OAuthController {
             return;
         }
 
-        if (req.cookies[`oauth2-${state}`] !== '1') {
+        const stateCookie = `oauth2-${state}`;
+        if (req.cookies[stateCookie] !== '1') {
             const err = new Error('Invalid state parameter in OAuth callback');
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: err.message });
             return;
         }
+        res.clearCookie(stateCookie, {
+            secure: req.secure,
+            httpOnly: true
+        });
 
         let session;
         try {
