@@ -6,13 +6,16 @@ import { httpFetch } from './http.js';
 import { logger } from '../logger.js';
 
 import type {
+    Checkpoint,
     CursorOffset,
     DeleteOutdatedRecordsSuccess,
     DeleteRecordsSuccess,
+    GetCheckpointSuccess,
     GetCursorSuccess,
     GetRecordsSuccess,
     MergingStrategy,
     PostRecordsSuccess,
+    PutCheckpointSuccess,
     PutRecordsSuccess
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -298,6 +301,72 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to get records: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async getCheckpoint({
+        environmentId,
+        nangoConnectionId,
+        key
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        key: string;
+    }): Promise<Result<GetCheckpointSuccess>> {
+        const res = await this.fetch<GetCheckpointSuccess>({
+            method: 'GET',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/checkpoint`,
+            params: { key }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to get checkpoint: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async putCheckpoint({
+        environmentId,
+        nangoConnectionId,
+        key,
+        checkpoint,
+        expectedVersion
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        key: string;
+        checkpoint: Checkpoint;
+        expectedVersion: number;
+    }): Promise<Result<PutCheckpointSuccess>> {
+        const res = await this.fetch<PutCheckpointSuccess>({
+            method: 'PUT',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/checkpoint`,
+            data: { key, checkpoint, expectedVersion }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to save checkpoint: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async deleteCheckpoint({
+        environmentId,
+        nangoConnectionId,
+        key,
+        expectedVersion
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        key: string;
+        expectedVersion: number;
+    }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'DELETE',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/checkpoint`,
+            data: { key, expectedVersion }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to delete checkpoint: ${res.error.message}`));
         }
         return res;
     }
