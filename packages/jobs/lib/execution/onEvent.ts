@@ -1,7 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
+import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, secretService } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';

@@ -1,10 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { PROD_ENVIRONMENT_NAME, environmentService, getProvider, seeders } from '@nangohq/shared';
+import { PROD_ENVIRONMENT_NAME, environmentService, getProvider, secretService, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
 
 import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 

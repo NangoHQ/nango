@@ -15,9 +15,9 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
+    secretService,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 

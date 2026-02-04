@@ -1,8 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { NangoError, externalWebhookService, getProvider } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
+import { NangoError, externalWebhookService, getProvider, secretService } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
