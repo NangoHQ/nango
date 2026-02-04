@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.29] - 2026-02-03
+
+### Added
+
+- *(runner)* Add checkpoints function to persist client (#5363) by @TBonnin
+- *(jobs)* Broadcast task cancellation to all active runners (#5322) by @agusayerza
+
+### Changed
+
+- Update package-lock (#5367) by @hassan254-prog
+- *(runner)* Consolidate persist client logic (#5362) by @TBonnin
+
+### Fixed
+
+- *(webapp)* Fix crash on integrations functions tab when flows have empty endpoints (#5359) by @hassan254-prog
+- *(server)* Handle attempts to change to the same plan (#5370) by @kaposke
+- *(package.json)* Pin npm version to 10.9.4 (#5369) by @thw-nango
+- *(webapp)* Filtering connections by integrations (#5372) by @kaposke
+- *(cli)* NAN-4700: Pipe the getConnection parameters on the CLI SDK (#5375) by @agusayerza
+
 ## [v0.69.28] - 2026-02-03
 
 ### Added
@@ -5778,6 +5798,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.29]: https://github.com/NangoHQ/nango/compare/v0.69.28..v0.69.29
 [v0.69.28]: https://github.com/NangoHQ/nango/compare/v0.69.27..v0.69.28
 [v0.69.27]: https://github.com/NangoHQ/nango/compare/v0.69.26..v0.69.27
 [v0.69.26]: https://github.com/NangoHQ/nango/compare/v0.69.22..v0.69.26

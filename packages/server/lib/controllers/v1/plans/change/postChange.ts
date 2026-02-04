@@ -50,6 +50,11 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
     const newPlan = plansList.find((p) => p.code === body.orbId)!;
 
+    if (newPlan.code === currentDef.code) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'team is already on this plan' } });
+        return;
+    }
+
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
         if (!sub) {
@@ -128,6 +133,11 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         res.status(500).send({ error: { code: 'server_error' } });
         return;
     } else {
+        if (newPlan.code === plan.orb_future_plan) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is already scheduled to be downgraded' } });
+            return;
+        }
+
         // -- Downgrade
         if (newPlan.code !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
             res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
