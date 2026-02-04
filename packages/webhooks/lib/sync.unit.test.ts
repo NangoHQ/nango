@@ -6,16 +6,7 @@ import { axiosInstance, stringifyStable } from '@nangohq/utils';
 import { TestWebhookServer } from './helpers/test.js';
 import { sendSync } from './sync.js';
 
-import type {
-    ConnectionJobs,
-    DBAPISecret,
-    DBEnvironment,
-    DBExternalWebhook,
-    DBSyncConfig,
-    DBTeam,
-    IntegrationConfig,
-    NangoSyncWebhookBodySuccess
-} from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBExternalWebhook, DBSyncConfig, DBTeam, IntegrationConfig, NangoSyncWebhookBodySuccess } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -94,8 +85,6 @@ const webhookSettings: DBExternalWebhook = {
     updated_at: new Date()
 };
 
-const secret = 'secret' as DBAPISecret['secret'];
-
 describe('Webhooks: sync notification tests', () => {
     beforeAll(async () => {
         await testServer.start();
@@ -115,8 +104,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -140,8 +128,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -165,8 +152,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -189,8 +175,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -213,8 +198,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -237,8 +221,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -261,8 +244,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -286,8 +268,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -354,8 +335,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',
@@ -382,8 +362,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            environment: { name: 'dev', id: 1 } as DBEnvironment,
-            secret,
+            environment: { name: 'dev', id: 1, secret_key: 'secret' } as DBEnvironment,
             providerConfig,
             syncConfig,
             syncVariant: 'base',

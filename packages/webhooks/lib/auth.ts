@@ -6,7 +6,6 @@ import { deliver, shouldSend } from './utils.js';
 import type {
     AuthModeType,
     AuthOperationType,
-    DBAPISecret,
     DBConnection,
     DBEnvironment,
     DBExternalWebhook,
@@ -28,7 +27,6 @@ const AUTH_OPERATION_TO_TYPE = {
 export async function sendAuth({
     connection,
     environment,
-    secret,
     webhookSettings,
     auth_mode,
     success,
@@ -40,7 +38,6 @@ export async function sendAuth({
 }: {
     connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key'>; // Either a true connection or a fake one
     environment: DBEnvironment;
-    secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
@@ -122,7 +119,7 @@ export async function sendAuth({
         webhooks,
         body: success ? successBody : errorBody,
         webhookType: 'auth',
-        secret,
+        environment,
         logCtx
     });
 

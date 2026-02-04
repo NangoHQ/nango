@@ -4,13 +4,12 @@ import { Err, Ok, metrics } from '@nangohq/utils';
 import { deliver, shouldSend } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
-import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
+import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
 
 export const forwardWebhook = async ({
     integration,
     account,
     environment,
-    secret,
     webhookSettings,
     connectionIds,
     payload,
@@ -20,7 +19,6 @@ export const forwardWebhook = async ({
     integration: IntegrationConfig;
     account: DBTeam;
     environment: DBEnvironment;
-    secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
     payload: Record<string, any> | null;
@@ -64,7 +62,7 @@ export const forwardWebhook = async ({
             webhooks,
             body: payload,
             webhookType: 'forward',
-            secret,
+            environment,
             logCtx,
             incomingHeaders: webhookOriginalHeaders
         });
@@ -90,7 +88,7 @@ export const forwardWebhook = async ({
                 connectionId
             },
             webhookType: 'forward',
-            secret,
+            environment,
             logCtx,
             incomingHeaders: webhookOriginalHeaders
         });
