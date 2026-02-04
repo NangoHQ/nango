@@ -1,3 +1,4 @@
+import db from '@nangohq/database';
 import {
     accountService,
     connectionService,
@@ -7,6 +8,7 @@ import {
     getGlobalWebhookReceiveUrl,
     getWebsocketsPath
 } from '@nangohq/shared';
+import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -26,16 +28,31 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     const { environment, account, user, plan } = res.locals;
 
+    let defaultSecret: string = '';
+    let pendingSecret: string | null = null;
     if (!isCloud) {
         environment.websockets_path = getWebsocketsPath();
         if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
-            environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
+            defaultSecret = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
             environment.secret_key_rotatable = false;
         }
 
         if (process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`]) {
             environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
             environment.public_key_rotatable = false;
+        }
+    } else {
+        const secrets = await secretService.getAllSecretsForEnv(db.knex, environment.id);
+        if (secrets.isErr()) {
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        }
+        for (const secret of secrets.value) {
+            if (secret.is_default) {
+                defaultSecret = secret.secret;
+            } else {
+                pendingSecret = secret.secret;
+            }
         }
     }
 
@@ -91,7 +108,9 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             uuid: account.uuid,
             name: account.name,
             email: user.email,
-            slack_notifications_channel
+            slack_notifications_channel,
+            secret: defaultSecret,
+            pending_secret: pendingSecret
         }
     });
 });
