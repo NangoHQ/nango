@@ -712,12 +712,25 @@ await nango.getConnection();
 **Parameters**
 
 <Expandable>
-  <ResponseField name="forceRefresh" type="boolean">
-    Defaults to `false`. If `false`, the token will only be refreshed if it expires within 15 minutes. If `true`, a token refresh attempt will happen on each request. This is only useful for testing and should not be done at high traffic.
-  </ResponseField>
-  <ResponseField name="refreshToken" type="boolean">
-    Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
-  </ResponseField>
+    <ResponseField name="providerConfigKeyOverride" type="string">
+        An optional integration ID to override the one from the function context.
+    </ResponseField>
+    <ResponseField name="connectionIdOverride" type="string">
+        An optional connection ID to override the one from the function context.
+    </ResponseField>
+    <ResponseField name="options" type="object">
+        <Expandable>
+            <ResponseField name="forceRefresh" type="boolean">
+                Defaults to `false`. If `false`, the token will only be refreshed if it expires within 15 minutes. If `true`, a token refresh attempt will happen on each request. This is only useful for testing and should not be done at high traffic.
+            </ResponseField>
+            <ResponseField name="refreshToken" type="boolean">
+                Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
+            </ResponseField>
+            <ResponseField name="refreshGithubAppJwtToken" type="boolean">
+                Defaults to `false`. If true, this will refresh the JWT token for GitHub App / Github App OAuth connections
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
 </Expandable>
 
 **Example Response**

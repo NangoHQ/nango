@@ -4,8 +4,8 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import chalk from 'chalk';
-import ora from 'ora';
 
+import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { compileAll } from './compile.js';
@@ -21,13 +21,16 @@ const execAsync = promisify(exec);
 export async function initZero({
     absolutePath,
     debug = false,
-    onlyCopy = false
+    onlyCopy = false,
+    interactive = true
 }: {
     absolutePath: string;
     debug?: boolean;
     onlyCopy?: boolean;
+    interactive?: boolean;
 }): Promise<boolean> {
     printDebug(`Creating the nango integrations directory in ${absolutePath}`, debug);
+    const spinnerFactory = new Spinner({ interactive });
 
     const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
 
@@ -43,7 +46,7 @@ export async function initZero({
 
     // Copy example folder
     {
-        const spinner = ora({ text: 'Copy example' }).start();
+        const spinner = spinnerFactory.start('Copy example');
         try {
             printDebug(`Copy example folder`, debug);
 
@@ -81,7 +84,7 @@ export async function initZero({
 
     // Install dependencies
     {
-        const spinner = ora({ text: 'Install dependencies' }).start();
+        const spinner = spinnerFactory.start('Install dependencies');
         try {
             printDebug(`Running package manager install`, debug);
 
@@ -96,7 +99,7 @@ export async function initZero({
     }
 
     {
-        const res = await compileAll({ fullPath: absolutePath, debug });
+        const res = await compileAll({ fullPath: absolutePath, debug, interactive });
         if (res.isErr()) {
             return false;
         }
