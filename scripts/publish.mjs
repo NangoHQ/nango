@@ -63,8 +63,12 @@ if (!skipCli) {
 
 await $`npm version "${nextVersion}" --no-git-tag-version --allow-same-version`;
 
+// Clean regenerate lockfile to preserve cross-platform optional dependencies
+// See: https://github.com/npm/cli/issues/4828
 echo``;
-await npmInstall();
+echo`Regenerating package-lock.json with all platform dependencies...`;
+await $`rm -rf node_modules`;
+await $`rm -f package-lock.json`;
 echo(chalk.green(`${figures.tick} npm install`));
 echo(chalk.grey('done'));
 
