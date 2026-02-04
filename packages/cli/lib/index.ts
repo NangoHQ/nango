@@ -224,7 +224,7 @@ program
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
     .action(async function (this: Command) {
-        const { debug } = this.opts<GlobalOptions>();
+        const { debug, interactive } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -241,7 +241,7 @@ program
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug });
+            const res = await compileAll({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
             }
@@ -344,7 +344,7 @@ program
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug });
+            const res = await compileAll({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
                 return;
@@ -440,7 +440,7 @@ program
                 return;
             }
 
-            const resCompile = await compileAll({ fullPath, debug });
+            const resCompile = await compileAll({ fullPath, debug, interactive });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
                 return;
