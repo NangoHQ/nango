@@ -55,6 +55,7 @@ class ProviderClient {
             case 'salesforce':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
+            case 'salesforce-jwt':
                 return true;
             default:
                 return false;
@@ -199,23 +200,29 @@ class ProviderClient {
     }
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
-        if (connection.credentials.type !== 'OAUTH2') {
+        const { credentials } = connection;
+        const isOAuth2 = credentials.type === 'OAUTH2';
+        const isTwoStepSalesforceJwt = credentials.type === 'TWO_STEP';
+
+        if (!isOAuth2 && !isTwoStepSalesforceJwt) {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials;
-        const oauthConnection = connection;
+        const accessToken = isOAuth2 ? credentials.access_token : credentials.token;
+        if (!accessToken) {
+            throw new NangoError('access_token_missing');
+        }
+
+        const connectionConfig = connection.connection_config as Record<string, string>;
+        const clientId = isTwoStepSalesforceJwt ? credentials['clientId'] : config.oauth_client_id;
+        const clientSecret = isTwoStepSalesforceJwt ? credentials['clientSecret'] : config.oauth_client_secret;
 
         switch (config.provider) {
             case 'salesforce':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
-                return this.introspectedSalesforceTokenExpired(
-                    credentials.access_token,
-                    config.oauth_client_id,
-                    config.oauth_client_secret,
-                    oauthConnection.connection_config as Record<string, string>
-                );
+            case 'salesforce-jwt':
+                return this.introspectedSalesforceTokenExpired(accessToken, clientId, clientSecret, connectionConfig);
             default:
                 throw new NangoError('unknown_provider_client');
         }
