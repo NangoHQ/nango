@@ -6,9 +6,9 @@ import {
     externalWebhookService,
     generateSlackConnectionId,
     getGlobalWebhookReceiveUrl,
-    getWebsocketsPath
+    getWebsocketsPath,
+    secretService
 } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
