@@ -249,21 +249,16 @@ class AccountService {
                 environment: DBEnvironment;
                 plan: DBPlan | null;
                 default_secret: DBAPISecret;
-                pending_secret: DBAPISecret | null;
             }>(
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
                 db.knex.raw('row_to_json(_nango_accounts.*) as account'),
                 db.knex.raw('row_to_json(plans.*) as plan'),
-                db.knex.raw('row_to_json(default_secret.*) as default_secret'),
-                db.knex.raw('row_to_json(pending_secret.*) as pending_secret')
+                db.knex.raw('row_to_json(default_secret.*) as default_secret')
             )
             .from<DBEnvironment>('_nango_environments')
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
             .join({ default_secret: 'api_secrets' }, (j) =>
                 j.on('default_secret.environment_id', '_nango_environments.id').andOn('default_secret.is_default', db.knex.raw('true'))
-            )
-            .leftJoin({ pending_secret: 'api_secrets' }, (j) =>
-                j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
             )
             .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
             .where('_nango_environments.deleted', false)
@@ -307,7 +302,6 @@ class AccountService {
         }
 
         const defaultSecret = encryptionManager.decryptAPISecret(res.default_secret);
-        const pendingKey = res.pending_secret ? encryptionManager.decryptAPISecret(res.pending_secret) : null;
 
         return {
             // getting data with row_to_json breaks the automatic string to date parser
@@ -318,8 +312,6 @@ class AccountService {
             },
             environment: {
                 ...res.environment,
-                secret_key: defaultSecret.secret,
-                pending_secret_key: pendingKey?.secret || null,
                 created_at: new Date(res.environment.created_at),
                 updated_at: new Date(res.environment.updated_at),
                 deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
