@@ -22,11 +22,11 @@ import {
     getLastSyncDate,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    secretService,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 

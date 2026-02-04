@@ -9,9 +9,9 @@ import {
     externalWebhookService,
     getProxyConfiguration,
     productTracking,
+    secretService,
     syncManager
 } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 

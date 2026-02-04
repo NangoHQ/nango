@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
+import { secretService, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
