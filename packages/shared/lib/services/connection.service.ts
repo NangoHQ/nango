@@ -815,7 +815,7 @@ class ConnectionService {
                 if (withError === false) {
                     // Only connections without active logs
                     subQuery.whereNotExists(function () {
-                        this.select('*')
+                        this.select('1')
                             .from(ACTIVE_LOG_TABLE)
                             .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
                             .where(`${ACTIVE_LOG_TABLE}.active`, true);
@@ -823,7 +823,7 @@ class ConnectionService {
                 } else if (withError === true) {
                     // Only connections with active logs
                     subQuery.whereExists(function () {
-                        this.select('*')
+                        this.select('1')
                             .from(ACTIVE_LOG_TABLE)
                             .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
                             .where(`${ACTIVE_LOG_TABLE}.active`, true);
