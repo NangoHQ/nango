@@ -43,11 +43,11 @@ describe('route', () => {
 
     describe('GET /api/v1/environment/callback', () => {
         it('should handle invalid json', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { secret } = await seeders.seedAccountEnvAndUser();
             const res = await fetch(`${api.url}/api/v1/environment/callback`, {
                 method: 'POST',
                 body: 'undefined',
-                headers: { Authorization: `Bearer ${env.secret_key}`, 'content-type': 'application/json' }
+                headers: { Authorization: `Bearer ${secret.secret}`, 'content-type': 'application/json' }
             });
 
             expect(await res.json()).toStrictEqual({
