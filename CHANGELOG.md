@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.30] - 2026-02-04
+
+### Changed
+
+- *(5369)* Unpin npm version again, because our merge checks depend on a recent npm version (#5378) by @thw-nango
+- *(webhooks)* Stop using env.secret_key in webhooks/syncs/actions (#5361) by @thw-nango
+- Fix secretService imports (#5381) by @agusayerza
+
+### Fixed
+
+- *(server)* Filter connections with errors before paginating (#5373) by @kaposke
+- Fix `getConnection` parameters (#5374) by @kaposke
+- *(cli)* Disable ora spinner in non-interactive environments (#5376) by @agusayerza
+
 ## [v0.69.29] - 2026-02-03
 
 ### Added
@@ -5798,6 +5812,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.30]: https://github.com/NangoHQ/nango/compare/v0.69.29..v0.69.30
 [v0.69.29]: https://github.com/NangoHQ/nango/compare/v0.69.28..v0.69.29
 [v0.69.28]: https://github.com/NangoHQ/nango/compare/v0.69.27..v0.69.28
 [v0.69.27]: https://github.com/NangoHQ/nango/compare/v0.69.26..v0.69.27

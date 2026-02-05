@@ -5,9 +5,9 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import axios from 'axios';
 import chalk from 'chalk';
-import ora from 'ora';
 import promptly from 'promptly';
 
+import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
 
 import type { NodePath } from '@babel/traverse';
@@ -46,6 +46,7 @@ interface CloneOptions {
     debug: boolean;
     force: boolean;
     autoConfirm: boolean;
+    interactive?: boolean;
 }
 
 interface ResolvedTemplatePath {
@@ -453,9 +454,10 @@ async function updateIndexFile(fullPath: string, files: { relativePath: string; 
  * Main clone function - clones integration templates from the integration-templates repository
  */
 export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
-    const { fullPath, templatePath, debug, force, autoConfirm } = options;
+    const { fullPath, templatePath, debug, force, autoConfirm, interactive = true } = options;
+    const spinnerFactory = new Spinner({ interactive });
 
-    const spinner = ora({ text: `Resolving template path: ${templatePath}` }).start();
+    const spinner = spinnerFactory.start(`Resolving template path: ${templatePath}`);
 
     try {
         const resolved = await resolveTemplatePath(templatePath, debug);
@@ -477,7 +479,7 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
             return false;
         }
 
-        const downloadSpinner = ora({ text: 'Downloading files...' }).start();
+        const downloadSpinner = spinnerFactory.start('Downloading files');
         let downloadedCount = 0;
         let skippedCount = 0;
 
@@ -515,7 +517,7 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
         downloadSpinner.succeed(`Downloaded ${downloadedCount} files${skippedCount > 0 ? ` (${skippedCount} skipped)` : ''}`);
 
         // Update index.ts
-        const indexSpinner = ora({ text: 'Updating index.ts...' }).start();
+        const indexSpinner = spinnerFactory.start('Updating index.ts');
         await updateIndexFile(
             fullPath,
             files.filter((f) => !filesToSkip.has(f.relativePath)),
