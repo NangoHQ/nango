@@ -147,6 +147,7 @@
                 "pages": [
                   "implementation-guides/platform/auth/configure-integration",
                   "implementation-guides/platform/auth/implement-api-auth",
+                  "implementation-guides/platform/auth/tagging-new-connection",
                   "implementation-guides/platform/auth/customize-connect-ui",
                   "implementation-guides/platform/auth/contribute-new-api"
                 ]
@@ -174,6 +175,7 @@
               {
                 "group": "Migrations",
                 "pages": [
+                  "implementation-guides/platform/migrations/migrate-from-end-user",
                   "implementation-guides/platform/migrations/migrate-from-public-key",
                   "implementation-guides/platform/migrations/migrate-to-zero-yaml"
                 ]

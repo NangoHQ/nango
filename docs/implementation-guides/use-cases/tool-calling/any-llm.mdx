@@ -30,11 +30,14 @@ const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
 
 export async function runLLMAgent(modelClient: any) {
   const userId = "user1";
+  const userEmail = "user1@example.com";
+  const organizationId = "org1";
   const integrationId = "hubspot";
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking Hubspot authorization...");
-  let connectionId = (await nango.listConnections({ integrationId, userId })).connections[0]?.connection_id;
+  const connections = await nango.listConnections({ integrationId });
+  let connectionId = connections.connections.find((c) => c.tags?.end_user_id === userId)?.connection_id;
 
   // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
@@ -42,7 +45,11 @@ export async function runLLMAgent(modelClient: any) {
 
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
-      end_user: { id: userId },
+      tags: {
+        end_user_id: userId,
+        end_user_email: userEmail,
+        organization_id: organizationId
+      }
     });
 
     console.log(`Please authorize Hubspot here: ${session.data.connect_link}`);

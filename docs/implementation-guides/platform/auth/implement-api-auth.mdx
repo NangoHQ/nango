@@ -25,22 +25,19 @@ Here's an example of how your backend can retrieve a session token from Nango ([
     
     const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
     
-    api.post('/sessionToken', (req, res) => {
+    api.post('/sessionToken', async (req, res) => {
       // Ask Nango for a secure token
-      const res = await nango.createConnectSession({
-        end_user: {
-          id: '<END-USER-ID>',
-          email: '<OPTIONAL-END-USER-EMAIL>',
-          display_name: '<OPTIONAL-END-USER-DISPLAY-NAME>',
-          tags: { organizationId: '<ORGANIZATION-ID>' }
+      const { data } = await nango.createConnectSession({
+        tags: {
+          end_user_id: '<END-USER-ID>',
+          end_user_email: '<END-USER-EMAIL>',
+          organization_id: '<ORGANIZATION-ID>'
         },
-        allowed_integrations: ['<INTEGRATION-ID>'],
+        allowed_integrations: ['<INTEGRATION-ID>']
       });
-    
+
       // Send this token back to your frontend
-      res.status(200).send({
-        sessionToken: res.data.token
-      });
+      res.status(200).send({ sessionToken: data.token });
     });
     ```
   </Tab>
@@ -51,14 +48,10 @@ Here's an example of how your backend can retrieve a session token from Nango ([
       --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
-        "end_user": {
-          "id": "<REQUIRED-END-USER-ID>",
-          "email": "<OPTIONAL-END-USER-EMAIL>",
-          "display_name": "<OPTIONAL-END-USER-DISPLAY-NAME>"
-        },
-        "organization": {
-          "id": "<OPTIONAL-ORG-ID>",
-          "display_name": "<OPTIONAL-ORG-DISPLAY-NAME>"
+        "tags": {
+          "end_user_id": "<END-USER-ID>",
+          "end_user_email": "<END-USER-EMAIL>",
+          "organization_id": "<ORGANIZATION-ID>"
         },
         "allowed_integrations": [
           "<INTEGRATION-ID>"
@@ -69,18 +62,12 @@ Here's an example of how your backend can retrieve a session token from Nango ([
   </Tab>
 </Tabs>
 
-<Accordion title="ℹ️ Details on end user and organization information">
-  The `end_user` fields help identify which connection belongs to which end user. This information is also used for display purposes in the Nango UI.
+<Accordion title="ℹ️ Tags">
+  `tags` are copied onto the connection, included in auth webhooks, and can be used to filter connections.
 
-  <Info>
-    The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `tags`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhooks-%26-save-the-connection-id-backend)).
-  </Info>
-  <Info>
-    It's possible that the end use's email in your app will not match the email they use to connect their external account, which is fine.
-  </Info>
-  <Info>
-    An endUser is linked to a single connection even if the `end_user.id` is the same across multiple connections.
-  </Info>
+  Most apps start with: `end_user_id`, `end_user_email`, `organization_id`.
+
+  For more details, see [Tagging a new connection](/implementation-guides/platform/auth/tagging-new-connection).
 </Accordion>
 
 Passing a list of integration IDs in `allowed_integrations` will display a list of integrations that the end user can pick from:
@@ -178,10 +165,10 @@ Successful authorization webhooks sent by Nango are `POST` requests with the fol
     "operation": "creation",
     "success": true,
     "connectionId": "<CONNECTION-ID>",
-    "endUser": {
-      "endUserId": "<END-USER-ID>",
-      "endUserEmail": "<END-USER-EMAIL>",
-      "tags": { "organizationId": "<ORGANIZATION-ID>" }
+    "tags": {
+      "end_user_id": "<END-USER-ID>",
+      "end_user_email": "<END-USER-EMAIL>",
+      "organization_id": "<ORGANIZATION-ID>"
     },
     ...
 }
@@ -290,17 +277,15 @@ import { Nango } from '@nangohq/node';
 
 const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
 
-api.post('/sessionToken', (req, res) => {
+api.post('/sessionToken', async (req, res) => {
   // Ask Nango for a secure token to reconnect
-  const res = await nango.createReconnectSession({
-    connection_id: "<CONNECTION-ID>",
-    integration_id: '<INTEGRATION-ID>',
+  const { data } = await nango.createReconnectSession({
+    connection_id: '<CONNECTION-ID>',
+    integration_id: '<INTEGRATION-ID>'
   });
 
   // Send this token back to your frontend
-  res.status(200).send({
-    sessionToken: res.data.token
-  });
+  res.status(200).send({ sessionToken: data.token });
 });
 ```
 </Tab>

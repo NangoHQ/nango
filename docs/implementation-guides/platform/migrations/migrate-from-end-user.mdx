@@ -1,0 +1,121 @@
+---
+title: 'Migrate from end user'
+sidebarTitle: 'Migrate from end user'
+description: 'Guide to migrate away from using end users in connections and connect sessions'
+---
+
+# Who is impacted
+
+You are impacted if you use any of the following to identify who a connection belongs to:
+
+- `end_user` / `organization` in `POST /connect/sessions`
+- `end_user` / `organization` in auth webhooks (`endUser` payload)
+- `end_user` fields in the Connections list or connection details for reconciliation
+
+# What is changing
+
+Connections now have a first-class `tags` object. Connect sessions accept a top-level `tags` object as well.
+
+The legacy `end_user` and `organization` fields are deprecated. Tags exist because the end-user fields were not flexible enough for many real-world attribution and routing use cases.
+
+When a connection is created via a Connect session:
+
+- the Connect session `tags` are copied onto the newly created connection
+- the auth webhook includes those tags as top-level `tags`
+
+<Note>
+  Use `tags` as your source of truth for identifying who a connection belongs to.
+  The legacy `end_user` and `organization` fields are deprecated and will be removed in a future version.
+</Note>
+
+# Migration steps
+
+## Step 1: Start sending tags for new connect sessions
+
+Add a `tags` object when creating a Connect session token in your backend:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+
+    const { data } = await nango.createConnectSession({
+      // Recommended
+      tags: {
+        end_user_id: '<END-USER-ID>',
+        end_user_email: '<END-USER-EMAIL>',
+        organization_id: '<ORGANIZATION-ID>'
+      },
+
+      allowed_integrations: ['<INTEGRATION-ID>']
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "tags": {
+          "end_user_id": "<END-USER-ID>",
+          "end_user_email": "<END-USER-EMAIL>",
+          "organization_id": "<ORGANIZATION-ID>"
+        },
+        "allowed_integrations": ["<INTEGRATION-ID>"]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+For more details (including limitations and filtering), see [Tagging a new connection](/implementation-guides/platform/auth/tagging-new-connection).
+
+## Step 2: Update webhook reconciliation to use `tags`
+
+Auth webhooks include connection tags as top-level `tags`.
+
+If you previously used `endUser.endUserId`, switch to using `tags` as your primary source of truth. For compatibility during rollout, handle both:
+
+```ts
+function resolveOwnerFromWebhook(payload: any) {
+  // Preferred
+  if (payload.tags?.end_user_id) {
+    return { endUserId: payload.tags.end_user_id, endUserEmail: payload.tags.end_user_email, organizationId: payload.tags.organization_id };
+  }
+
+  // Legacy fallback
+  if (payload.endUser?.endUserId) {
+    return { endUserId: payload.endUser.endUserId, endUserEmail: payload.endUser.endUserEmail, organizationId: payload.endUser.organizationId };
+  }
+
+  return null;
+}
+```
+
+## Step 3: Existing connections are already backfilled
+
+You do not need to patch anything.
+
+Nango has already backfilled standard tags (like `end_user_id`, `end_user_email`, `organization_id`) onto existing connections based on your legacy end-user fields.
+
+During the deprecation period, if you still create new connections using the deprecated `end_user` / `organization` fields, Nango will also populate connection tags automatically using the same translation logic:
+
+- `end_user.id` -> `tags.end_user_id`
+- `end_user.email` (if present) -> `tags.end_user_email`
+- `end_user.display_name` (if present) -> `tags.end_user_display_name`
+- `organization.id` -> `tags.organization_id`
+- `organization.display_name` (if present) -> `tags.organization_display_name`
+- `end_user.tags` (if present) -> merged into `tags` (subject to the same validation and normalization rules)
+
+If you provide both deprecated end-user fields and a top-level `tags` object, the top-level `tags` values win.
+
+## Step 4: Stop using `end_user`
+
+Once your code relies on `tags`, stop sending or reading the deprecated `end_user` and `organization` fields.
+
+<Tip>
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
