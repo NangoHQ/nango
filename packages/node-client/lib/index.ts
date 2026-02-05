@@ -293,11 +293,14 @@ export class Nango {
                 url.searchParams.append('integrationId', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
             }
             if (tags && Object.keys(tags).length > 0) {
-                if (tags['displayName']) {
-                    url.searchParams.append('search', tags['displayName']);
-                }
-                if (tags['email']) {
-                    url.searchParams.append('email', tags['email']);
+                for (const [key, value] of Object.entries(tags)) {
+                    if (key === 'displayName') {
+                        url.searchParams.append('tags[end_user_display_name]', value);
+                    } else if (key === 'email') {
+                        url.searchParams.append('tags[end_user_email]', value);
+                    } else {
+                        url.searchParams.append(`tags[${key.toLowerCase()}]`, value);
+                    }
                 }
             }
             if (limit) {
