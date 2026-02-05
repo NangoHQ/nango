@@ -1,6 +1,16 @@
 import type { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicConnection, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
+import type {
+    ApiEndUser,
+    DBSyncConfig,
+    DBTeam,
+    GetPublicConnection,
+    GetPublicIntegration,
+    HTTP_METHOD,
+    RunnerFlags,
+    PostPublicTrigger,
+    Checkpoint
+} from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
 
 export declare const oldLevelToNewLevel: {
@@ -393,7 +403,7 @@ export declare class NangoAction {
     private sendLogToPersist;
     private logAPICall;
 }
-export declare class NangoSync extends NangoAction {
+export declare class NangoSync<TCheckpoint = Checkpoint> extends NangoAction {
     variant: string;
     lastSyncDate?: Date;
     track_deletes: boolean;
@@ -423,6 +433,9 @@ export declare class NangoSync extends NangoAction {
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
     deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }>;
     getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
+    getCheckpoint(): Promise<TCheckpoint | null>;
+    saveCheckpoint(checkpoint: TCheckpoint): Promise<void>;
+    clearCheckpoint(): Promise<void>;
 }
 /**
  * @internal

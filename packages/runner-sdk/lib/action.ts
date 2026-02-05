@@ -3,7 +3,7 @@ import { getProvider } from '@nangohq/providers';
 import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
 
-import type { ZodMetadata } from './types.js';
+import type { ZodCheckpoint, ZodMetadata } from './types.js';
 import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
@@ -49,7 +49,9 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
 
 export abstract class NangoActionBase<
     TMetadata extends ZodMetadata = never,
-    TMetadataInferred = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
+    TCheckpoint extends ZodCheckpoint = never,
+    TMetadataInferred = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>,
+    TCheckpointInferred = TCheckpoint extends never ? never : z.infer<Exclude<TCheckpoint, undefined>>
 > {
     abstract nango: Nango;
     private attributes = {};
@@ -471,4 +473,33 @@ export abstract class NangoActionBase<
      * Release all locks acquired during the execution of a script.
      */
     public abstract releaseAllLocks(): Promise<void>;
+
+    /**
+     * Retrieve the last saved checkpoint
+     *
+     * @example
+     * ```typescript
+     * const checkpoint = await nango.getCheckpoint();
+     * ```
+     * */
+    public abstract getCheckpoint(): Promise<TCheckpointInferred | null>;
+
+    /**
+     * Save a checkpoint object that can be used to store progress or state to resume from.
+     *
+     * @example
+     * ```typescript
+     * await nango.saveCheckpoint({
+     *     lastProcessedPage: 5,
+     *     lastCursor: "abc123",
+     *     lastRunAt: new Date(),
+     * });
+     * ```
+     * */
+    public abstract saveCheckpoint(checkpoint: TCheckpointInferred): Promise<void>;
+
+    /**
+     * Clear the function checkpoint
+     **/
+    public abstract clearCheckpoint(): Promise<void>;
 }
