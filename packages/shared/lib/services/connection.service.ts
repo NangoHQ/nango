@@ -38,6 +38,7 @@ import {
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
+    interpolateStringFromObject,
     makeUrl,
     parseTokenExpirationDate,
     stripCredential,
@@ -1192,8 +1193,8 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : '';
+        const url = new URL(interpolateStringFromObject(tokenUrl, { connectionConfig }));
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {

@@ -14303,6 +14303,7 @@ sap-ariba:
         base_url: https://openapi${connectionConfig.region}.ariba.com || https://openapi.ariba.com
         headers:
             apikey: ${connectionConfig.apiKey}
+            X-ARIBA-NETWORK-ID: ${connectionConfig.anid}
         retry:
             after:
                 - retry-after
@@ -14324,13 +14325,13 @@ sap-ariba:
             secret: true
             doc_section: '#step-2-get-your-api-key'
             order: 2
-        realm:
+        anid:
             type: string
-            title: Realm
-            description: Your SAP Ariba realm (organization identifier, e.g., mycompany-T)
-            example: mycompany-T
-            pattern: '^[a-zA-Z0-9-]+$'
-            doc_section: '#step-3-find-your-realm'
+            title: Ariba Network ID (ANID)
+            description: Your SAP Ariba Network ID (e.g., AN01234567890). Found in your SAP Ariba account settings.
+            example: AN01234567890
+            pattern: '^AN[0-9]+$'
+            doc_section: '#step-3-find-your-anid'
             order: 3
 
 salesforce:
