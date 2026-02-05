@@ -12979,7 +12979,6 @@ salesforce-jwt:
         clientId:
             type: string
             title: Consumer Key
-            pattern: '^[A-Za-z0-9_-]+$'
             example: 3MVG9dAEux2v1sLsg0e52***************CJpGsXgqg8E
             description: The Consumer Key from your Salesforce Connected App
             doc_section: '#step-4-get-consumer-key-and-consumer-secret'
@@ -13009,7 +13008,7 @@ salesforce-jwt:
             description: Your Salesforce authorization server URL.
             format: hostname
             example: 'login.salesforce.com'
-            doc_section: '#step-6-finding-the-authorization-servers-url'
+            doc_section: '#step-6-finding-the-authorization-server-url'
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
