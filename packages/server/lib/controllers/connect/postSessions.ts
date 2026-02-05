@@ -54,6 +54,13 @@ export const bodySchema = z
     })
     .strict();
 
+const bodySchemaWithTagsNoEndUser = bodySchema
+    .extend({
+        end_user: endUserSchema.optional(),
+        tags: connectionTagsSchema
+    })
+    .strict();
+
 interface Reply {
     status: number;
     response: PostConnectSessions['Reply'];
@@ -66,16 +73,32 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
+    const { plan } = res.locals;
+
     const val = bodySchema.safeParse(req.body);
-    if (!val.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+    if (val.success) {
+        const body: PostConnectSessions['Body'] = val.data;
+        await generateSession(res, body, plan);
         return;
     }
 
-    const { plan } = res.locals;
+    const bodyIsObject = req.body && typeof req.body === 'object' && !Array.isArray(req.body);
+    const hasTopLevelTags = bodyIsObject && 'tags' in req.body;
+    const hasEndUser = bodyIsObject && 'end_user' in req.body;
+    if (hasTopLevelTags && !hasEndUser) {
+        const valWithTagsNoEndUser = bodySchemaWithTagsNoEndUser.safeParse(req.body);
+        if (!valWithTagsNoEndUser.success) {
+            res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valWithTagsNoEndUser.error) } });
+            return;
+        }
 
-    const body: PostConnectSessions['Body'] = val.data;
-    await generateSession(res, body, plan);
+        const body: PostConnectSessions['Body'] = valWithTagsNoEndUser.data;
+        await generateSession(res, body, plan);
+        return;
+    }
+
+    res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+    return;
 });
 
 /**
