@@ -289,6 +289,50 @@ describe(`POST ${endpoint}`, () => {
     });
 
     describe('tags', () => {
+        it('should create session with tags but without end_user', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    tags: { projectId: '123' }
+                }
+            });
+
+            isSuccess(res.json);
+
+            const session = await db.knex
+                .select('*')
+                .from<DBConnectSession>('connect_sessions')
+                .where({ environment_id: seed.env.id })
+                .orderBy('id', 'desc')
+                .first();
+
+            expect(session?.end_user).toBeNull();
+            expect(session?.tags).toStrictEqual({ projectid: '123' });
+        });
+
+        it('should create session with empty tags object but without end_user', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    tags: {}
+                }
+            });
+
+            isSuccess(res.json);
+
+            const session = await db.knex
+                .select('*')
+                .from<DBConnectSession>('connect_sessions')
+                .where({ environment_id: seed.env.id })
+                .orderBy('id', 'desc')
+                .first();
+
+            expect(session?.end_user).toBeNull();
+            expect(session?.tags).toStrictEqual({});
+        });
+
         it('should create session with valid tags', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
