@@ -28,7 +28,7 @@ const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to 
 /**
  * Action SDK
  */
-export class NangoActionRunner extends NangoActionBase<never, Record<string, string>> {
+export class NangoActionRunner extends NangoActionBase {
     nango: Nango;
     protected persistClient: PersistClient;
     protected locking: Locking;
@@ -268,6 +268,21 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
 
     public override async releaseAllLocks(): Promise<void> {
         return this.locking.releaseAllLocks();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async getCheckpoint(): Promise<null> {
+        throw new Error('Method not implemented.');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async saveCheckpoint(): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async clearCheckpoint(): Promise<void> {
+        throw new Error('Method not implemented.');
     }
 }
 
@@ -533,6 +548,10 @@ export class NangoSyncRunner extends NangoSyncBase {
     public override async releaseAllLocks(): Promise<void> {
         return this.locking.releaseAllLocks();
     }
+
+    getCheckpoint = NangoActionRunner['prototype']['getCheckpoint'];
+    saveCheckpoint = NangoActionRunner['prototype']['saveCheckpoint'];
+    clearCheckpoint = NangoActionRunner['prototype']['clearCheckpoint'];
 }
 
 class Locking {
