@@ -202,9 +202,9 @@ class ProviderClient {
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
         const { credentials } = connection;
         const isOAuth2 = credentials.type === 'OAUTH2';
-        const isTwoStepSalesforceJwt = credentials.type === 'TWO_STEP';
+        const isTwoStep = credentials.type === 'TWO_STEP';
 
-        if (!isOAuth2 && !isTwoStepSalesforceJwt) {
+        if (!isOAuth2 && !isTwoStep) {
             throw new NangoError('wrong_credentials_type');
         }
 
@@ -214,8 +214,12 @@ class ProviderClient {
         }
 
         const connectionConfig = connection.connection_config as Record<string, string>;
-        const clientId = isTwoStepSalesforceJwt ? credentials['clientId'] : config.oauth_client_id;
-        const clientSecret = isTwoStepSalesforceJwt ? credentials['clientSecret'] : config.oauth_client_secret;
+        const clientId = isTwoStep ? credentials['clientId'] : config.oauth_client_id;
+        const clientSecret = isTwoStep ? credentials['clientSecret'] : config.oauth_client_secret;
+
+        if (!clientId || !clientSecret) {
+            throw new NangoError('client_credentials_missing');
+        }
 
         switch (config.provider) {
             case 'salesforce':
