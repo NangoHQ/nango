@@ -1,0 +1,67 @@
+---
+title: ConnectWise RMM - How do I link my account?
+sidebarTitle: ConnectWise RMM
+---
+
+# Overview
+
+To authenticate with ConnectWise RMM, you need:
+1. **API Hostname** - The region-specific OpenAPI hostname for your tenant
+2. **Scope** - OAuth scope(s) required for the endpoints you plan to call
+3. **Client ID** - Your OAuth client ID
+4. **Client Secret** - Your OAuth client secret
+
+### Prerequisites:
+
+- Access to your ConnectWise RMM tenant as an administrator.
+- Permission to create or manage API credentials.
+
+### Instructions:
+
+## Step 1: Find your API hostname
+
+Use the hostname that matches your tenant region:
+
+- US: `openapi.service.itsupport247.net`
+- EU: `openapi.service.euplatform.connectwise.com`
+- AU: `openapi.service.auplatform.connectwise.com`
+
+## Step 2: Create API credentials
+
+In your ConnectWise RMM tenant:
+
+1. Open the API/integration settings for your tenant.
+2. Create (or reuse) an OAuth client that supports the Client Credentials flow.
+3. Copy the generated **Client ID** and **Client Secret**.
+
+<Note>
+Store the Client Secret securely. If your admin portal only shows it once, save it in a secret manager immediately.
+</Note>
+
+## Step 3: Select your OAuth scopes
+
+Grant the scopes required by your use case. For example:
+
+- `platform.companies.read` for listing companies
+- `platform.devices.read` for device-oriented endpoints
+
+You can provide one or more scopes in Nango's **Scope** field.
+
+## Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ConnectWise RMM.
+2. Enter:
+   - **API Hostname**
+   - **Scope**
+   - **Client ID**
+   - **Client Secret**
+3. Submit the form. Nango will request tokens from `https://<API-HOSTNAME>/v1/token` and store/refresh them for you.
+
+You are now connected to ConnectWise RMM.
+
+---
+
+### Additional Information
+
+- ConnectWise RMM authentication in this integration uses OAuth 2.0 Client Credentials.
+- The OpenAPI spec example token lifetime is `3599` seconds (`expires_in`).

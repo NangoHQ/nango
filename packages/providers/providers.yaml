@@ -3712,6 +3712,53 @@ connectwise-psa-staging:
             title: Client ID
             description: The Client ID assigned to your integration
 
+connectwise-rmm:
+    display_name: ConnectWise RMM
+    categories:
+        - support
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://${connectionConfig.apiHost}/v1/token
+    token_params:
+        grant_type: client_credentials
+        scope: ${connectionConfig.scope}
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/integrations/all/connectwise-rmm
+    docs_connect: https://nango.dev/docs/integrations/all/connectwise-rmm/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: API Hostname
+            description: The ConnectWise RMM OpenAPI hostname for your region
+            pattern: '^(openapi\.service\.itsupport247\.net|openapi\.service\.euplatform\.connectwise\.com|openapi\.service\.auplatform\.connectwise\.com)$'
+            example: openapi.service.itsupport247.net
+            prefix: https://
+            doc_section: '#step-1-find-your-api-hostname'
+        scope:
+            type: string
+            title: Scope
+            description: OAuth scope(s) to request from ConnectWise RMM
+            example: platform.companies.read
+            default_value: platform.companies.read
+            doc_section: '#step-3-select-your-oauth-scopes'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your ConnectWise RMM OAuth client ID
+            example: '6500023'
+            pattern: '^[A-Za-z0-9._-]+$'
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your ConnectWise RMM OAuth client secret
+            secret: true
+            pattern: '^[A-Za-z0-9._~+/=-]{8,}$'
+            doc_section: '#step-2-create-api-credentials'
+
 confluence:
     display_name: Confluence
     categories:

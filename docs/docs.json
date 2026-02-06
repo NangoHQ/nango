@@ -331,6 +331,7 @@
               "integrations/all/confluence-data-center",
               "integrations/all/connectwise-psa",
               "integrations/all/connectwise-psa-staging",
+              "integrations/all/connectwise-rmm",
               "api-integrations/constant-contact",
               "integrations/all/contactout",
               "integrations/all/contentful",
