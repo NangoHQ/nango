@@ -665,6 +665,7 @@
               "integrations/all/readwise-reader",
               "api-integrations/reapit",
               "api-integrations/recall-ai",
+              "api-integrations/researchdesk",
               "integrations/all/recharge",
               "integrations/all/recruitcrm",
               "integrations/all/recruiterflow",
