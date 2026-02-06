@@ -6192,6 +6192,31 @@ grammarly-scim:
             doc_section: '#step-1-finding-grammarly-scim-credentials'
             example: 'Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz'
 
+granola:
+    display_name: Granola
+    categories:
+        - productivity
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.granola.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/notes?page_size=1
+    docs: https://nango.dev/docs/api-integrations/granola
+    docs_connect: https://nango.dev/docs/api-integrations/granola/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API key for your Granola account
+            example: grn_2isA***************_7HRD***********************
+            pattern: '^grn_[A-Za-z0-9]+_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-granola-api-token'
+
 guru:
     display_name: Guru
     categories:
