@@ -454,6 +454,7 @@
               "integrations/all/google-play",
               "api-integrations/google-search-console",
               "api-integrations/google-sheet",
+              "api-integrations/granola",
               "api-integrations/grist",
               "integrations/all/google-slides",
               "integrations/all/google-workspace-admin",
