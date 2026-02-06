@@ -1,0 +1,47 @@
+---
+title: ResearchDesk - How do I link my account?
+sidebarTitle: ResearchDesk
+---
+
+# Overview
+
+To authenticate with ResearchDesk, you will need:
+
+1. **Subdomain** – The subdomain for the environment you want to connect to.
+2. **Email** – Your ResearchDesk account email.
+3. **Password** – Your ResearchDesk account password.
+
+This guide walks you through choosing your environment and using your ResearchDesk credentials in the Connect UI.
+
+### Prerequisites
+
+- A ResearchDesk account.
+
+### Instructions
+
+#### Step 1: Choosing your subdomain
+
+ResearchDesk uses different base URLs for production and staging. In the Connect UI, you will be asked for the **Environment** (subdomain). Use one of these values:
+
+| Environment           | Subdomain       | Base URL                            |
+|-----------------------|-----------------|-------------------------------------|
+| Production            | `demand`        | https://demand.researchdesk.com     |
+| Integration Staging  | `stage-demand`  | https://stage-demand.researchdesk.com |
+
+Enter **demand** for production or **stage-demand** for integration staging.
+
+#### Step 2: Finding your credentials
+
+Use the **email** and **password** you use to sign in to ResearchDesk. These are the same credentials you use for the ResearchDesk dashboard.
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ResearchDesk.
+2. Enter the **Subdomain** (`demand` or `stage-demand`).
+3. Enter your **Email** and **Password** in their respective fields.
+4. Submit the form to create the connection.
+
+<img src="/api-integrations/researchdesk/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to ResearchDesk.

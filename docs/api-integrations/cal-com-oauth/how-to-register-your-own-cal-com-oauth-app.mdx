@@ -1,0 +1,36 @@
+---
+title: 'How to register your own Cal.com OAuth app'
+sidebarTitle: 'Cal.com (OAuth) Setup'
+description: 'Register an OAuth app with Cal.com and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth app with Cal.com to obtain your client ID and client secret. These are required to let your users grant your app access to their Cal.com account via the OAuth flow.
+
+## Creating a Cal.com OAuth App
+
+<Steps>
+  <Step title="Create or sign in to your Cal.com account">
+    If you don't already have one, [sign up for Cal.com](https://cal.com/signup).
+  </Step>
+
+  <Step title="Create an OAuth client">
+    1. Go to [OAuth clients](https://app.cal.com/settings/developer/oauth) in Cal.com.
+    2. Click **+ New**.
+    3. Enter a name and purpose for your app.
+    4. Add `https://api.nango.dev/oauth/callback` as the redirect URL.
+    5. Click **Create** to submit the form.
+    6. Copy your **Client ID** and **Client Secret**. You will need them when configuring your integration in Nango.
+
+    <Note>
+      A Cal.com admin will review your OAuth client. You will receive an email when it is approved or rejected. Once approved, your OAuth client is ready to use.
+    </Note>
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Cal.com OAuth2 documentation](https://cal.com/docs/api-reference/v2/oauth).
+
+---

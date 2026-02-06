@@ -4,12 +4,12 @@ import path from 'node:path';
 import * as babel from '@babel/core';
 import chalk from 'chalk';
 import { build } from 'esbuild';
-import ora from 'ora';
 import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
+import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { buildDefinitions } from './definitions.js';
@@ -26,8 +26,17 @@ import type { Result } from '@nangohq/types';
  * - Compile the code to .cjs
  * - Rebuild nango.yaml in memory
  */
-export async function compileAll({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<boolean>> {
-    let spinner = ora({ text: 'Typechecking' }).start();
+export async function compileAll({
+    fullPath,
+    debug,
+    interactive = true
+}: {
+    fullPath: string;
+    debug: boolean;
+    interactive?: boolean;
+}): Promise<Result<boolean>> {
+    const spinnerFactory = new Spinner({ interactive });
+    let spinner = spinnerFactory.start('Typechecking');
 
     try {
         // Read the index.ts content
@@ -60,7 +69,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
 
         // Build the entry points
         const text = `Building ${entryPoints.length} file(s)`;
-        spinner = ora({ text }).start();
+        spinner = spinnerFactory.start(text);
         printDebug('Building', debug);
         for (const entryPoint of entryPoints) {
             const entryPointFullPath = path.join(fullPath, entryPoint);
@@ -80,7 +89,7 @@ export async function compileAll({ fullPath, debug }: { fullPath: string; debug:
         spinner.succeed();
 
         // Build and export the definitions
-        spinner = ora({ text: `Exporting definitions` }).start();
+        spinner = spinnerFactory.start('Exporting definitions');
         const def = await buildDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
