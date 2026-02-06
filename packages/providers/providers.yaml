@@ -13321,6 +13321,7 @@ schwab:
     auth_mode: OAUTH2
     authorization_url: https://api.schwabapi.com/v1/oauth/authorize
     token_url: https://api.schwabapi.com/v1/oauth/token
+    token_request_auth_method: basic
     authorization_params:
         response_type: code
     token_params:
@@ -14435,7 +14436,8 @@ squareup:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.squareup.com
-    docs: https://nango.dev/docs/integrations/all/squareup
+    docs: https://nango.dev/docs/api-integrations/squareup
+    setup_guide_url: https://nango.dev/docs/api-integrations/squareup/how-to-register-your-own-squareup-oauth-app
 
 squareup-sandbox:
     display_name: Squareup (Sandbox)
@@ -14454,7 +14456,8 @@ squareup-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.squareupsandbox.com
-    docs: https://nango.dev/docs/integrations/all/squareup-sandbox
+    docs: https://nango.dev/docs/api-integrations/squareup-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/squareup-sandbox/how-to-register-your-own-squareup-sandbox-oauth-app
 
 stackexchange:
     display_name: Stack Exchange
