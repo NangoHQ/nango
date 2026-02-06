@@ -12520,6 +12520,53 @@ replicate:
             title: API Key
             description: The API key for your Replicate account
 
+researchdesk:
+    display_name: ResearchDesk
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.subdomain}.researchdesk.com/tokens
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+        token_expiration: expires
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.researchdesk.com
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/researchdesk
+    docs_connect: https://nango.dev/docs/api-integrations/researchdesk/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of the environment to which you want to connect to
+            pattern: '^(demand|stage-demand)$'
+            example: demand
+            suffix: .researchdesk.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-choosing-your-subdomain'
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: Your ResearchDesk account email
+            format: email
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your ResearchDesk account password
+            secret: true
+            doc_section: '#step-2-finding-your-credentials'
+
 retell-ai:
     display_name: Retell AI
     categories:
