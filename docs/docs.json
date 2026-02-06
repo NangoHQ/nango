@@ -692,6 +692,7 @@
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
               "api-integrations/salesforce",
+              "api-integrations/salesforce-jwt",
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "api-integrations/salesforce-sandbox",

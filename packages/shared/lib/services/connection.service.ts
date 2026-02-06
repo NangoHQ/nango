@@ -1025,8 +1025,9 @@ class ConnectionService {
                         }
                         expiresAt = new Date(Date.now() + durationMs);
                     }
-                } else if (template.token_expires_in_ms) {
-                    expiresAt = new Date(Date.now() + template.token_expires_in_ms);
+                    // token_expires_in_ms of 0 in the providers config is treated as undefined
+                } else if (template.token_expires_in_ms != null) {
+                    expiresAt = template.token_expires_in_ms > 0 ? new Date(Date.now() + template.token_expires_in_ms) : undefined;
                 } else {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
