@@ -1,0 +1,83 @@
+---
+title: 'Maximizer (On-Premise)'
+sidebarTitle: 'Maximizer On-Premise'
+description: 'Integrate your application with the Maximizer On-Premise API'
+---
+
+## 🚀 Quickstart
+
+Connect to Maximizer On-Premise with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Maximizer (On-Premise)_.
+    </Step>
+    <Step title="Authorize Maximizer On-Premise">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Web Access Server** (domain name of your Maximizer Web Access server) and log in to Maximizer. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Maximizer (On-Premise) API">
+    Let's make your first request to the Maximizer (On-Premise) API (get a list of cases). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/ferret/v2/cases" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: 'ferret/v2/cases',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    For other endpoints, see the [Ferret API](https://developer.maximizer.com/docs/ferret-api), [Octopus API](https://developer.maximizer.com/docs/octopus-api), or [Webhooks API](https://developer.maximizer.com/docs/webhooks-api). Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials and connection config, follow the guides linked below.
+    </Step>
+</Steps>
+
+## 📚 Maximizer On-Premise Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Maximizer On-Premise OAuth app](/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app)  
+  Register an OAuth client in Maximizer (On-Premise) and obtain client ID and secret.
+
+- [How do I link my Maximizer (Cloud) account?](/api-integrations/maximizer-on-premise/connect)
+Learn how to authenticate with Maximizer (On-Premise) and link your account
+
+Official docs: [Maximizer API docs](https://developer.maximizer.com/)
+
+## 🧩 Pre-built syncs & actions for Maximizer On-Premise
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/maximizer-on-premise/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

@@ -1,0 +1,24 @@
+---
+title: 'How to register your own Maximizer OAuth app'
+sidebarTitle: 'Maximizer Setup'
+description: 'Register an OAuth app with Maximizer Cloud and connect it to Nango'
+---
+
+This guide shows you how to obtain **client_id** and **client_secret** for Maximizer Cloud. These credentials are required so your users can grant your app access to their Maximizer account via Nango.
+
+<Steps>
+  <Step title="Obtaining client_id and client_secret">
+    To work with Maximizer OAuth (Cloud), you must have a **client_id** and **client_secret**. To obtain these credentials, send a request to [**devops@maximizer.com**](mailto:devops@maximizer.com) with the following information:
+    - **Full Name**
+    - **E-mail Address**
+    - **Organization Name**
+    - **Redirect URL**: `https://api.nango.dev/oauth/callback`
+    You will receive the **client_id** and **client_secret** from the Maximizer team.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Maximizer OAuth documentation](https://developer.maximizer.com/reference/oauth).
+

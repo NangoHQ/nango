@@ -9627,6 +9627,63 @@ microsoft-power-bi:
         base_url: https://api.powerbi.com
     docs: https://nango.dev/docs/integrations/all/microsoft-power-bi
 
+maximizer:
+    display_name: Maximizer (Cloud)
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/authorize
+    token_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.region}.maximizercrmlive.com
+    docs: https://nango.dev/docs/api-integrations/maximizer
+    setup_guide_url: https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/maximizer/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Region-specific subdomain.
+            pattern: '^(caw|ukw)$'
+            example: caw
+        company_alias:
+            type: string
+            title: Company Alias
+            description: The company alias of your Maximizer cloud account.
+            example: acme
+
+maximizer-on-premise:
+    display_name: Maximizer (On-Premise)
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Authorize
+    token_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/maximizer-on-premise
+    setup_guide_url: https://nango.dev/docs/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/maximizer-on-premise/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Maximizer on premise instance.
+            example: maximizer.mycompany.com
+            format: hostname
+
 mindbody:
     display_name: Mindbody
     categories:
