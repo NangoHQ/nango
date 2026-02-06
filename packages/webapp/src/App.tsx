@@ -21,6 +21,7 @@ import { ConnectionCreate } from './pages/Connection/Create';
 import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { ConnectionList } from './pages/Connection/List';
 import { ConnectionShow } from './pages/Connection/Show';
+import { OldConnectionShow } from './pages/Connection/ShowOld';
 import { EnvironmentSettings } from './pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from './pages/GettingStarted/Show';
@@ -165,6 +166,11 @@ const router = sentryCreateBrowserRouter([
                     {
                         path: ':providerConfigKey/:connectionId',
                         element: <ConnectionShow />,
+                        handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
+                    },
+                    {
+                        path: ':providerConfigKey/:connectionId/old',
+                        element: <OldConnectionShow />,
                         handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
                     }
                 ]
