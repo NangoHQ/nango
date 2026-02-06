@@ -136,9 +136,9 @@ export class NangoActionCLI extends NangoActionBase {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override async getCheckpoint(): Promise<null> {
+    public override async getCheckpoint<T = never>(): Promise<T> {
         // Not applicable to CLI
-        return null;
+        return null as T;
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await

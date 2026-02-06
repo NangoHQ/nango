@@ -9,7 +9,7 @@ import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import type { ApiPublicConnectionFull, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type { ApiPublicConnectionFull, Checkpoint, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 export const oldLevelToNewLevel = {
@@ -271,18 +271,18 @@ export class NangoActionRunner extends NangoActionBase {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override async getCheckpoint(): Promise<null> {
-        throw new Error('Method not implemented.');
+    public override async getCheckpoint<T = Checkpoint>(): Promise<T> {
+        throw new Error('Not implemented yet');
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override async saveCheckpoint(): Promise<void> {
-        throw new Error('Method not implemented.');
+    public override async saveCheckpoint<T = Checkpoint>(_checkpoint: T): Promise<void> {
+        throw new Error('Not implemented yet');
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public override async clearCheckpoint(): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error('Not implemented yet');
     }
 }
 
