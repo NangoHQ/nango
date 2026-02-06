@@ -2765,6 +2765,26 @@ cal-com-v2:
             example: cal_xxxxxx
             doc_section: '#step-1-finding-your-api-key'
 
+cal-com-oauth:
+    display_name: Cal.com (OAuth)
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    body_format: json
+    authorization_url: https://app.cal.com/auth/oauth2/authorize
+    token_url: https://api.cal.com/v2/auth/oauth2/token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cal.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/cal-com-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app
+
 calendly:
     display_name: Calendly
     categories:
