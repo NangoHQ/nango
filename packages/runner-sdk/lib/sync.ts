@@ -2,7 +2,7 @@ import { NangoActionBase } from './action.js';
 import { validateData } from './dataValidation.js';
 
 import type { ValidateDataError } from './dataValidation.js';
-import type { RawModel, ZodMetadata, ZodModel } from './types.js';
+import type { RawModel, ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
 import type { MaybePromise, NangoProps } from '@nangohq/types';
 import type * as z from 'zod';
 
@@ -11,8 +11,9 @@ export const BASE_VARIANT = 'base';
 export abstract class NangoSyncBase<
     TModels extends Record<string, ZodModel> = never,
     TMetadata extends ZodMetadata = never,
+    TCheckpoint extends ZodCheckpoint = never,
     TModelName extends keyof TModels = keyof TModels
-> extends NangoActionBase<TMetadata> {
+> extends NangoActionBase<TMetadata, TCheckpoint> {
     public variant = BASE_VARIANT;
 
     lastSyncDate?: Date;
