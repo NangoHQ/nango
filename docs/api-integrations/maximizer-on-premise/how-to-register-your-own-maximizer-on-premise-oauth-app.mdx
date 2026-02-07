@@ -1,0 +1,34 @@
+---
+title: 'How to register your own Maximizer OAuth app'
+sidebarTitle: 'Maximizer Setup'
+description: 'Register an OAuth app with Maximizer and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth client in Maximizer Administrator to obtain your **client_id** and **client_secret**. These credentials are required so your users can grant your app access to their Maximizer account via Nango.
+
+<Steps>
+  <Step title="Access Maximizer Administrator">
+    Log in to **Maximizer Administrator** with an account that has the **Administrator** role.
+  </Step>
+  <Step title="Navigate to OAuth Settings">
+    1. In the left pane, under **Preferences**, select **System Options**.
+    2. Click the **OAuth 2.0 Settings** tab.
+  </Step>
+  <Step title="Add a new OAuth client">
+    1. Click **Add**.
+    2. Enter the following details:
+       - **Name**: The name of your OAuth 2.0 client application (e.g. "Nango Integration").
+       - **Redirect URI**: add: `https://api.nango.dev/oauth/callback` as your redirect url
+  </Step>
+  <Step title="Save the client profile">
+    1. Click **Save** to generate the **client_id** and **client_secret**.
+    2. Copy and store both values; you will enter them when configuring the Maximizer integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Maximizer OAuth documentation](https://developer.maximizer.com/reference/oauth).
+
+---

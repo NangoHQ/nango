@@ -1,0 +1,41 @@
+---
+title: 'Maximizer – How do I link my account?'
+sidebarTitle: 'Maximizer Connect'
+description: 'Find your Maximizer Region and Company Alias for the connection form'
+---
+
+# Overview
+
+To connect **Maximizer Cloud** with Nango, you need two values in the connection form:
+
+1. **Region** – The region-specific subdomain.
+2. **Company Alias** – The alias of your Maximizer Cloud account.
+
+Both are visible in the URL you use to log in to Maximizer. This guide shows how to extract them.
+
+## Prerequisites
+
+- A Maximizer Cloud account.
+
+## Step 1: Find your Region and Company Alias
+
+The URL you use to log in to Maximizer Cloud has the form:
+
+`https://{region}.maximizercrmlive.com/{company_alias}`
+
+- **Region** – The subdomain before `maximizercrmlive.com` (e.g. `caw`, `ukw`).
+- **Company Alias** – The path segment after the host (your account alias).
+
+**Example:** If your client login URL is `https://caw.maximizercrmlive.com/acme`, then:
+- **Region** = `caw`
+- **Company Alias** = `acme`
+
+## Enter values in the Connect UI
+
+1. Open the form where you connect to Maximizer
+2. Enter your **Region** and **Company Alias** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/maximizer/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Maximizer.
