@@ -1,4 +1,5 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
@@ -100,6 +101,7 @@ publicAPI.use(
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
+publicAPI.use(cookieParser());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
