@@ -231,7 +231,7 @@ export const ConnectUISettings = () => {
                                 {!canCustomizeTheme && <ThemeColorPickers disabled={true} form={form} />}
                                 {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
 
-                                <ButtonLink to={`/${env}/team/billing#plans`} variant="secondary" target="_blank">
+                                <ButtonLink to={`/team/billing#plans`} variant="secondary" target="_blank">
                                     Upgrade to &apos;Growth&apos; plan
                                 </ButtonLink>
                             </div>
