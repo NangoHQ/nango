@@ -44,17 +44,15 @@ export async function startScript({
                   });
 
         if (!script) {
-            const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;
-            void logCtx.error(content);
-            return Err('Unable to find integration file');
+            throw new Error(`Unable to find integration file`);
         }
         if (!nangoProps.team) {
-            return Err(`No team provided (instead ${nangoProps.team})`);
+            throw new Error(`No team provided (instead ${nangoProps.team})`);
         }
 
         const runtimeAdapter = await getRuntimeAdapter({ nangoProps, runtimeContext });
         if (runtimeAdapter.isErr()) {
-            return Err(runtimeAdapter.error);
+            throw runtimeAdapter.error;
         }
         const res = await runtimeAdapter.value.invoke({
             taskId,
@@ -64,15 +62,14 @@ export async function startScript({
         });
 
         if (res.isErr()) {
-            span.setTag('error', true);
-            return Err(`Error starting script for sync ${nangoProps.syncId}`);
+            throw res.error;
         }
 
         await connectionService.trackExecution(nangoProps.nangoConnectionId);
         return Ok(undefined);
     } catch (err) {
         span.setTag('error', err);
-        const errMessage = `Error starting integration '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
+        const errMessage = `Error starting function '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
         void logCtx.error(errMessage, { error: err });
         return Err(errMessage);
     } finally {
