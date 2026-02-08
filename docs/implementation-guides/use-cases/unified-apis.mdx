@@ -69,7 +69,7 @@ Start by defining your unified model with a zod model in a file, e.g., `models.t
 export const UserUnified = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
 });
 ```
 

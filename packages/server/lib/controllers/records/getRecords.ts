@@ -13,8 +13,8 @@ export const validationQuery = z
     .object({
         model: modelSchema,
         variant: variantSchema.optional(),
-        delta: z.string().datetime().optional(),
-        modified_after: z.string().datetime().optional(),
+        delta: z.iso.datetime().optional(),
+        modified_after: z.iso.datetime().optional(),
         limit: z.coerce.number().min(1).max(10000).default(100).optional(),
         filter: z
             .string()
