@@ -3,5 +3,9 @@ title: 'Create a connect session'
 openapi: 'POST /connect/sessions'
 ---
 
-Creates a short-lived connect session (30m) for a given end user.
-The returned token can be used for instance to create connections for this end user.
+Creates a short-lived connect session (30m).
+The returned token can be used for instance to create connections through Connect UI.
+
+You can attach connection-level tags to the session via the `tags` field. These tags are copied onto the created connection and included in auth webhooks.
+
+Most apps start with these tags: `end_user_id`, `end_user_email`, `organization_id`.

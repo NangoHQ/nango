@@ -1,0 +1,251 @@
+---
+title: "Tagging a new connection"
+sidebarTitle: "Tagging a new connection"
+description: "Guide to tagging new connections created via connect sessions"
+---
+
+<Info>
+  Pre-requisite: complete the [Configuration](/implementation-guides/platform/auth/configure-integration) guide.
+</Info>
+
+Tags are small key/value strings you can attach to a connect session. Nango copies them to the resulting connection and includes them in auth webhooks.
+
+They are useful for:
+
+- attributing a connection to a user/org/workspace in your app
+- routing webhooks or background jobs based on connection context
+- filtering connections (e.g. list all connections for `organization_id = org_123`)
+
+Most apps start with these tags:
+
+- `end_user_id`
+- `end_user_email`
+- `organization_id`
+
+Then add whatever additional routing identifiers you need (e.g. `workspace_id`, `project_id`, `plan`).
+
+Tags are intentionally flexible so you can model your own tenant/user/workspace structure without being constrained to a fixed schema.
+
+<Note>
+  Tags are designed for identifiers and routing metadata. Avoid putting secrets or large/free-form payloads in tags.
+</Note>
+
+This guide extends the [Implement API Auth](/implementation-guides/platform/auth/implement-api-auth) flow.
+
+## 1. Add tags when creating a Connect session
+
+When requesting a new Connect session token from Nango, pass a `tags` object:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+    
+    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+    
+    api.post('/sessionToken', async (req, res) => {
+      const { data } = await nango.createConnectSession({
+        tags: {
+          end_user_id: '<END-USER-ID>',
+          end_user_email: '<END-USER-EMAIL>',
+          organization_id: '<ORGANIZATION-ID>',
+        },
+        allowed_integrations: ['<INTEGRATION-ID>']
+      });
+
+      res.status(200).send({ sessionToken: data.token });
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "tags": {
+          "end_user_id": "<END-USER-ID>",
+          "end_user_email": "<END-USER-EMAIL>",
+          "organization_id": "<ORGANIZATION-ID>",
+        },
+        "allowed_integrations": [
+          "<INTEGRATION-ID>"
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## 2. Read tags from the auth webhook
+
+These tags will appear in successful auth webhooks sent by Nango:
+
+```json
+{
+    "type": "auth",
+    "operation": "creation",
+    "success": true,
+    "connectionId": "<CONNECTION-ID>",
+    "tags": {
+      "end_user_id": "<END-USER-ID>",
+      "end_user_email": "<END-USER-EMAIL>",
+      "organization_id": "<ORGANIZATION-ID>"
+    },
+    ...
+}
+```
+
+Use these values to reconcile the generated `connectionId` with the user/org/workspace that initiated the flow in your application.
+
+## 3. Read tags from the connection
+
+Nango also stores these tags on the connection itself.
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+    
+    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+    const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+
+    console.log(connection.tags);
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request GET \
+      --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json' \
+    ```
+  </Tab>
+</Tabs>
+
+## 4. Filter connections by tags
+
+You can filter connections by tags when listing connections:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+    const { connections } = await nango.listConnections({
+      tags: {
+        end_user_id: '<END-USER-ID>',
+        end_user_email: '<END-USER-EMAIL>',
+        organization_id: '<ORGANIZATION-ID>'
+      },
+      limit: 100
+    });
+
+    console.log(connections);
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request GET \
+      --url 'https://api.nango.dev/connections?tags[end_user_id]=<END-USER-ID>&tags[end_user_email]=<END-USER-EMAIL>&tags[organization_id]=<ORGANIZATION-ID>' \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json'
+    ```
+  </Tab>
+</Tabs>
+
+Example response:
+
+```json
+{
+  "connections": [
+    {
+      "id": 1,
+      "connection_id": "<CONNECTION-ID>",
+      "provider": "<PROVIDER-KEY>",
+      "provider_config_key": "<INTEGRATION-ID>",
+      "created": "2026-01-01T00:00:00.000Z",
+      "metadata": null,
+      "tags": {
+        "end_user_id": "<END-USER-ID>",
+        "end_user_email": "<END-USER-EMAIL>",
+        "organization_id": "<ORGANIZATION-ID>",
+      },
+      "errors": []
+    }
+  ]
+}
+```
+
+Filtering uses an AND match: a connection must contain all provided tag keys and values.
+
+## 5. Update tags on an existing connection (optional)
+
+If you need to update tags after a connection is created, patch the connection:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+    await nango.patchConnection(
+      {
+        connectionId: '<CONNECTION-ID>',
+        provider_config_key: '<INTEGRATION-ID>'
+      },
+      {
+        tags: {
+          end_user_id: '<END-USER-ID>',
+          end_user_email: '<END-USER-EMAIL>',
+          organization_id: '<ORGANIZATION-ID>',
+          environment: '<ENVIRONMENT>'
+        }
+      }
+    );
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request PATCH \
+      --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "tags": {
+          "end_user_id": "<END-USER-ID>",
+          "end_user_email": "<END-USER-EMAIL>",
+          "organization_id": "<ORGANIZATION-ID>",
+          "environment": "<ENVIRONMENT>"
+        }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  Updating tags replaces the whole tag object. If you want to add or remove a single tag, fetch the current connection first, merge locally, then patch.
+</Note>
+
+## 6. Special keys
+
+Some tag keys have additional validation rules:
+
+- `end_user_email`: must be a valid email address (e.g. `user@example.com`).
+
+<Note>
+  Tag keys are lowercased, so `End_User_Email` and `end_user_email` are treated as the same key.
+</Note>
+
+## 7. Limitations and rules
+
+The tags have several limitations:
+- keys are automatically lowercased
+- keys are case-insensitive (duplicate keys after normalization are rejected)
+- keys must start with a letter and contain only alphanumerics, underscores, hyphens, periods, or slashes
+- keys can be up-to 64 characters long
+- only 10 tag keys per connection are allowed
+- values must be non-empty strings up to 255 characters long
