@@ -2773,6 +2773,7 @@ cal-com-oauth:
     body_format: json
     authorization_url: https://app.cal.com/auth/oauth2/authorize
     token_url: https://api.cal.com/v2/auth/oauth2/token
+    disable_pkce: true
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -11815,29 +11816,27 @@ posthog:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.posthog.com
-        verification:
-            method: GET
-            headers:
-                content-type: application/json
-            endpoints:
-                - /api/users/@me
-    docs: https://nango.dev/docs/integrations/all/posthog
-    docs_connect: https://nango.dev/docs/integrations/all/posthog/connect
+    docs: https://nango.dev/docs/api-integrations/posthog
+    docs_connect: https://nango.dev/docs/api-integrations/posthog/connect
     connection_config:
         subdomain:
             type: string
-            title: PostHog Domain
-            description: The subdomain of your PostHog account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
+            title: Subdomain
+            description: The subdomain of your PostHog cloud account
+            pattern: '^(us(\.i)?|eu(\.i)?)$'
+            example: us.i
             suffix: .posthog.com
             prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your PostHog account
-            doc_section: '#step-1-finding-your-posthog-api-key'
+            pattern: '^phx_[A-Za-z0-9]+$'
+            example: phx_1PPf***************************k3D
+            doc_section: '#step-2-finding-your-api-key'
 
 prive:
     display_name: Prive
