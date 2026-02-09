@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { AuthCredentials } from './AuthCredentials';
 import { ConnectionExtras } from './ConnectionExtras';
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/alert';
 import { useStore } from '@/store';
@@ -16,52 +17,56 @@ export const AuthTab = ({ connectionData }: { connectionData: GetConnection['Suc
     const { credentials } = connection;
 
     return (
-        <div className="flex flex-col gap-8">
-            {errorLog && (
-                <Alert variant="destructive">
-                    <Info />
-                    <AlertDescription>
-                        {credentials.type === 'BASIC' || credentials.type === 'API_KEY'
-                            ? 'There was an error while testing credentials validity.'
-                            : 'There was an error refreshing the credentials.'}
-                    </AlertDescription>
-                    <AlertActions>
-                        <AlertButtonLink
-                            to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
-                            variant="destructive"
-                        >
-                            View log <ArrowUpRight />
-                        </AlertButtonLink>
-                    </AlertActions>
-                </Alert>
-            )}
+        <div className="flex w-full gap-11 justify-between">
+            <div className="flex flex-col gap-8 max-w-2xl">
+                {errorLog && (
+                    <Alert variant="destructive">
+                        <Info />
+                        <AlertDescription>
+                            {credentials.type === 'BASIC' || credentials.type === 'API_KEY'
+                                ? 'There was an error while testing credentials validity.'
+                                : 'There was an error refreshing the credentials.'}
+                        </AlertDescription>
+                        <AlertActions>
+                            <AlertButtonLink
+                                to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
+                                variant="destructive"
+                            >
+                                View log <ArrowUpRight />
+                            </AlertButtonLink>
+                        </AlertActions>
+                    </Alert>
+                )}
 
-            {/* Tags */}
-            {Object.keys(connection.tags).length > 0 && (
-                <div className="flex flex-col gap-2">
-                    <div className="inline-flex gap-1 items-center">
-                        <span className="text-body-medium-medium text-text-primary">Tags</span>
-                        <Link to="https://nango.dev/docs" target="_blank">
-                            <ExternalLink className="size-3 text-icon-tertiary" />
-                        </Link>
+                {/* Tags */}
+                {Object.keys(connection.tags).length > 0 && (
+                    <div className="flex flex-col gap-2">
+                        <div className="inline-flex gap-1 items-center">
+                            <span className="text-body-medium-medium text-text-primary">Tags</span>
+                            <Link to="https://nango.dev/docs" target="_blank">
+                                <ExternalLink className="size-3 text-icon-tertiary" />
+                            </Link>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {Object.entries(connection.tags).map(([key, value]) => (
+                                <KeyValueBadge label={key} key={key} variant="lighter">
+                                    {value}
+                                </KeyValueBadge>
+                            ))}
+                        </div>
                     </div>
+                )}
 
-                    <div className="flex flex-wrap gap-2">
-                        {Object.entries(connection.tags).map(([key, value]) => (
-                            <KeyValueBadge label={key} key={key} variant="lighter">
-                                {value}
-                            </KeyValueBadge>
-                        ))}
-                    </div>
-                </div>
-            )}
+                <AuthCredentials credentials={credentials} />
+                <ConnectionExtras
+                    config={connection.connection_config}
+                    metadata={connection.metadata}
+                    rawTokenResponse={'raw' in credentials ? credentials.raw : null}
+                />
+            </div>
 
-            <AuthCredentials credentials={credentials} />
-            <ConnectionExtras
-                config={connection.connection_config}
-                metadata={connection.metadata}
-                rawTokenResponse={'raw' in credentials ? credentials.raw : null}
-            />
+            <ConnectionSideInfo connectionData={connectionData} />
         </div>
     );
 };
