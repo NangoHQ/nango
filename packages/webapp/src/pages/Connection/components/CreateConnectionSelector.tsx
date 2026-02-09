@@ -109,7 +109,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     }, [integration, overrideClientId, overrideClientSecret]);
 
     const createConnectSession = useCallback(async () => {
-        const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
+        const isOauth2 = integration && ['OAUTH2', 'OAUTH2_CC', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
 
         const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
         const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
@@ -171,10 +171,10 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 return;
             }
             connectUI.current!.setSessionToken(res.json.data.token);
-        }, 10);
+        }, 0);
     };
 
-    const onClickShareConnectionLink = () => {
+    const onClickShareConnectionLink = async () => {
         if (!environmentAndAccount) {
             return;
         }
@@ -184,33 +184,30 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         });
 
         setIsShareLinkLoading(true);
-        setTimeout(async () => {
-            try {
-                const res = await createConnectSession();
-                if (!res.res.ok || 'error' in res.json) {
-                    toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
-                    return;
-                }
-
-                const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
-                const shareUrl = new URL(connectLink);
-                shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
-
-                try {
-                    await navigator.clipboard.writeText(shareUrl.toString());
-                    toast.toast({
-                        title: 'Shareable link copied',
-                        description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
-                        variant: 'success'
-                    });
-                } catch (err) {
-                    console.error('Clipboard write failed:', err);
-                    toast.toast({ title: 'Failed to copy link', variant: 'error' });
-                }
-            } finally {
-                setIsShareLinkLoading(false);
+        try {
+            const res = await createConnectSession();
+            if (!res.res.ok || 'error' in res.json) {
+                toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
+                return;
             }
-        }, 10);
+
+            const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
+            const shareUrl = new URL(connectLink);
+            shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
+
+            try {
+                await navigator.clipboard.writeText(shareUrl.toString());
+                toast.toast({
+                    title: 'Shareable link copied',
+                    description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
+                    variant: 'success'
+                });
+            } catch (_) {
+                toast.toast({ title: 'Failed to copy link', variant: 'error' });
+            }
+        } finally {
+            setIsShareLinkLoading(false);
+        }
     };
 
     const onEvent: OnConnectEvent = useCallback(
@@ -321,7 +318,9 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                             </TooltipTrigger>
                             {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
                         </Tooltip>
-                        <InfoTooltip side="top">Anyone with this link can open Connect UI and finish auth. The link expires in 30 minutes.</InfoTooltip>
+                        <InfoTooltip side="top">
+                            Anyone with this link can open Connect UI and finish authenticating. The link expires in 30 minutes.
+                        </InfoTooltip>
                     </div>
                 </div>
             </CardContent>
