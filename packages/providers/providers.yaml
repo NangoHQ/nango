@@ -3722,12 +3722,10 @@ connectwise-rmm:
     token_params:
         grant_type: client_credentials
     scope_separator: ' '
-    default_scopes:
-        - platform.companies.read
     proxy:
         base_url: https://openapi.service.${connectionConfig.subdomain}
-    docs: https://nango.dev/docs/integrations/all/connectwise-rmm
-    docs_connect: https://nango.dev/docs/integrations/all/connectwise-rmm/connect
+    docs: https://nango.dev/docs/api-integrations/connectwise-rmm
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-rmm/connect
     connection_config:
         subdomain:
             type: string

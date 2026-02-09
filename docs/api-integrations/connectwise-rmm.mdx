@@ -12,7 +12,7 @@ Connect to ConnectWise RMM with Nango and see data flow in 2 minutes.
     <Step title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ConnectWise RMM_.
 
-    Scopes are configured at the integration level (default: `platform.companies.read`).
+    This integration uses OAuth2 Client Credentials with region-specific subdomain configuration.
     </Step>
     <Step title="Authorize ConnectWise RMM">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ConnectWise RMM **API Subdomain**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
@@ -80,6 +80,10 @@ Official docs:
 
 ## 🧩 Pre-built syncs & actions for ConnectWise RMM
 
-No pre-built syncs or actions are currently published for ConnectWise RMM.
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/connectwise-rmm/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
 
 ---
