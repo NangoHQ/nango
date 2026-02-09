@@ -482,7 +482,7 @@ export abstract class NangoActionBase<
      * const checkpoint = await nango.getCheckpoint();
      * ```
      * */
-    public abstract getCheckpoint<T = TCheckpointInferred>(): Promise<T>;
+    public abstract getCheckpoint(): Promise<TCheckpointInferred | null>;
 
     /**
      * Save a checkpoint object that can be used to store progress or state to resume from.
@@ -496,7 +496,7 @@ export abstract class NangoActionBase<
      * });
      * ```
      * */
-    public abstract saveCheckpoint<T = TCheckpointInferred>(checkpoint: T): Promise<void>;
+    public abstract saveCheckpoint(checkpoint: TCheckpointInferred): Promise<void>;
 
     /**
      * Clear the function checkpoint
