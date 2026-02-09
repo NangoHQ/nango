@@ -35,23 +35,19 @@ export async function runGoogleAgent() {
   const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
 
   const userId = "user1";
-  const userEmail = "user1@example.com";
-  const organizationId = "org1";
   const integrationId = "hubspot";
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking API authorization...");
-  const connections = await nango.listConnections({ integrationId });
-  let connectionId = connections.connections.find((c) => c.tags?.end_user_id === userId)?.connection_id;
+  const connections = await nango.listConnections({ integrationId, tags: { end_user_id: userId } });
+  let connectionId = connections.connections[0]?.connection_id;
 
   // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
       tags: {
-        end_user_id: userId,
-        end_user_email: userEmail,
-        organization_id: organizationId
+        end_user_id: userId
       },
     });
 
