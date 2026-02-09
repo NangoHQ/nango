@@ -1,7 +1,7 @@
 ---
 title: "Connection tags"
 sidebarTitle: "Connection tags"
-description: "Guide to tagging new connections created via connect sessions"
+description: "Use tags to attribute connections to users, orgs, and other entities in your system"
 ---
 
 <Info>
@@ -10,11 +10,19 @@ description: "Guide to tagging new connections created via connect sessions"
 
 Tags are small key/value strings you can attach to a connect session. Nango copies them to the resulting connection and includes them in auth webhooks.
 
-They are useful for:
+## Why tags exist
 
-- attributing a connection to a user/org/workspace in your app
-- routing webhooks or background jobs based on connection context
-- filtering connections (e.g. list all connections for `organization_id = org_123`)
+Nango uses random UUIDs as connection IDs. This means there is no built-in way to tie a Nango connection back to a user, organization, or any other entity in your system. Tags solve this: they are the bridge between a Nango connection and the entities it belongs to in your application.
+
+Their primary purpose is **attribution**. When a user completes an auth flow, Nango sends a success webhook containing the tags you set when creating the connect session. This lets you reconcile the webhook with the right user/org/entity on your side and store the resulting `connectionId` against it.
+
+Beyond attribution, tags are also useful for:
+
+- Filtering connections via the API (e.g. list all connections for `organization_id = org_123`)
+- Routing webhooks or background jobs based on connection context
+- Navigating the Nango Dashboard — all tags are visible on the Connections pages.
+
+## Recommended tags
 
 Most apps start with these tags:
 
@@ -48,7 +56,7 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
         tags: {
           end_user_id: '<END-USER-ID>',
           end_user_email: '<END-USER-EMAIL>',
-          organization_id: '<ORGANIZATION-ID>',
+          organization_id: '<ORGANIZATION-ID>'
         },
         allowed_integrations: ['<INTEGRATION-ID>']
       });
@@ -67,7 +75,7 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
         "tags": {
           "end_user_id": "<END-USER-ID>",
           "end_user_email": "<END-USER-EMAIL>",
-          "organization_id": "<ORGANIZATION-ID>",
+          "organization_id": "<ORGANIZATION-ID>"
         },
         "allowed_integrations": [
           "<INTEGRATION-ID>"
@@ -171,7 +179,7 @@ Example response:
       "tags": {
         "end_user_id": "<END-USER-ID>",
         "end_user_email": "<END-USER-EMAIL>",
-        "organization_id": "<ORGANIZATION-ID>",
+        "organization_id": "<ORGANIZATION-ID>"
       },
       "errors": []
     }
@@ -232,7 +240,20 @@ If you need to update tags after a connection is created, patch the connection:
 
 ## 6. Special keys
 
-Some tag keys have additional validation rules:
+Two tag keys receive special treatment in the Nango dashboard:
+
+- `end_user_display_name` — shown instead of the connection ID in the connections list, making it easier to identify who a connection belongs to.
+- `end_user_email` — shown alongside `end_user_display_name` in the connections list. The domain from the email address is also used to display the end user's company logo on the connection detail page.
+
+<Frame caption="end_user_display_name and end_user_email shown in the connections list">
+  ![](/images/screenshots/connection-tags-1.png)
+</Frame>
+
+<Frame caption="Company logo derived from the end_user_email domain on the connection detail page">
+  ![](/images/screenshots/connection-tags-2.png)
+</Frame>
+
+### Validation rules
 
 - `end_user_email`: must be a valid email address (e.g. `user@example.com`).
 

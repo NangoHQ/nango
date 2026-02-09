@@ -63,7 +63,9 @@ Here's an example of how your backend can retrieve a session token from Nango ([
 </Tabs>
 
 <Accordion title="ℹ️ Tags">
-  `tags` are copied onto the connection, included in auth webhooks, and can be used to filter connections.
+  Tags are an attribution mechanism: they let you reconcile the auth success webhook Nango sends with the right user, org, or entity in your system. Set the tags you need to identify who authorized the connection.
+
+  Tags are also useful for filtering connections via the API and are displayed on the Connections pages in the Nango UI. In addition, the special keys `end_user_email` and `end_user_display_name` are used in specific parts of the UI to help with navigation.
 
   Most apps start with: `end_user_id`, `end_user_email`, `organization_id`.
 
