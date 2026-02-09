@@ -2773,6 +2773,7 @@ cal-com-oauth:
     body_format: json
     authorization_url: https://app.cal.com/auth/oauth2/authorize
     token_url: https://api.cal.com/v2/auth/oauth2/token
+    disable_pkce: true
     token_params:
         grant_type: authorization_code
     refresh_params:
