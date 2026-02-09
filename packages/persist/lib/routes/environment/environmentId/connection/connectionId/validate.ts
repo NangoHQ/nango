@@ -29,10 +29,18 @@ const getRecordsQuerySchema = z
         activityLogId: operationIdRegex.optional(),
         externalIds: z
             .union([
-                z.string().min(1).max(256), // There is no diff between a normal query param and an array with one item
-                z.array(z.string().min(1).max(256)).max(100)
+                z.string().min(1).max(256),
+                z.array(z.string().min(1).max(256)).max(100),
+                z.record(z.string(), z.string()) // qs: index > 20 => object
             ])
-            .transform((val) => (Array.isArray(val) ? val : [val]))
+            .transform((val): string[] | undefined => {
+                if (typeof val === 'string') return [val];
+                if (Array.isArray(val)) return val;
+                const keys = Object.keys(val)
+                    .filter((k) => /^\d+$/.test(k))
+                    .sort((a, b) => Number(a) - Number(b));
+                return keys.length > 0 ? keys.map((k) => val[k]).filter((v): v is string => typeof v === 'string') : undefined;
+            })
             .optional()
     })
     .strict();
