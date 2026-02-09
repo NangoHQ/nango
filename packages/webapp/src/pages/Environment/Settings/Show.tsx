@@ -46,7 +46,7 @@ export const EnvironmentSettings: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex gap-6 h-[280px]">
-                    <Skeleton className="w-[209px] 4xl:w-[236px]" />
+                    <Skeleton className="w-[209px]" />
                     <Skeleton className="h-full w-full" />
                 </div>
             </DashboardLayout>
@@ -55,13 +55,13 @@ export const EnvironmentSettings: React.FC = () => {
     const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
 
     return (
-        <DashboardLayout fullWidth className="flex-col justify-center 4xl:px-51">
+        <DashboardLayout fullWidth className="flex-col justify-center">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
 
             <div className="flex mb-8 justify-center">
-                <div className="flex text-left text-3xl tracking-tight text-white w-[1153px] 4xl:w-full gap-2.5">
+                <div className="flex text-left text-3xl tracking-tight text-white w-[1153px] gap-2.5">
                     <h2 className="font-semibold">Environment Settings</h2>
                     <Badge size="custom" className="px-3.5 text-title-group">
                         {env}
@@ -69,8 +69,8 @@ export const EnvironmentSettings: React.FC = () => {
                 </div>
             </div>
             <div className="flex h-fit justify-center" key={env}>
-                <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-[1153px] mx-auto 4xl:max-w-full">
-                    <NavigationList className="w-[209px] 4xl:w-[236px]">
+                <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-[1153px] mx-auto">
+                    <NavigationList className="w-[209px]">
                         <NavigationTrigger value="general">General</NavigationTrigger>
                         <NavigationTrigger value="backend">Backend</NavigationTrigger>
                         <NavigationTrigger value="connect-ui">Connect UI</NavigationTrigger>
