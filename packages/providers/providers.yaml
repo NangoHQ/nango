@@ -11828,6 +11828,7 @@ posthog:
             suffix: .posthog.com
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         apiKey:
             type: string
@@ -11835,7 +11836,7 @@ posthog:
             description: The API key for your PostHog account
             pattern: '^phx_[A-Za-z0-9]+$'
             example: phx_1PPf***************************k3D
-            doc_section: '#step-1-finding-your-posthog-api-key'
+            doc_section: '#step-2-finding-your-api-key'
 
 prive:
     display_name: Prive
