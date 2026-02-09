@@ -6212,6 +6212,31 @@ grammarly-scim:
             doc_section: '#step-1-finding-grammarly-scim-credentials'
             example: 'Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz'
 
+granola:
+    display_name: Granola
+    categories:
+        - productivity
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.granola.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/notes?page_size=1
+    docs: https://nango.dev/docs/api-integrations/granola
+    docs_connect: https://nango.dev/docs/api-integrations/granola/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API key for your Granola account
+            example: grn_2isA***************_7HRD***********************
+            pattern: '^grn_[A-Za-z0-9]+_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-granola-api-token'
+
 guru:
     display_name: Guru
     categories:
@@ -13067,6 +13092,72 @@ salesforce:
             example: acme.my.salesforce.com
             prefix: https://
             optional: true
+
+salesforce-jwt:
+    display_name: Salesforce (JWT)
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    signature:
+        protocol: RSA
+    body_format: form
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 3600000
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.clientId}
+            aud: https://${credentials.authorizationUrl}
+            sub: ${credentials.username}
+    token_url: https://login.salesforce.com/services/oauth2/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${token}
+    token_response:
+        token: access_token
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    token_expires_in_ms: 0
+    docs: https://nango.dev/docs/api-integrations/salesforce-jwt
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce-jwt/connect
+    credentials:
+        clientId:
+            type: string
+            title: Consumer Key
+            example: 3MVG9dAEux2v1sLsg0e52***************CJpGsXgqg8E
+            description: The Consumer Key from your Salesforce Connected App.
+            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+        clientSecret:
+            type: string
+            title: Consumer Secret
+            example: 954F73F4C234***************9D069B8FCF83B5
+            pattern: '^[A-F0-9]{64}$'
+            description: The Consumer Secret from your Salesforce Connected App.
+            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+        username:
+            type: string
+            title: Username
+            description: The Salesforce username of the user the JWT will act on behalf of.
+            format: email
+            example: john@acme.com
+            doc_section: '#step-7-finding-the-username'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The private key that matches the certificate you uploaded to the Connected App.
+            example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
+            doc_section: '#step-1-create-a-private-key-and-self-signed-digital-certificate'
+        authorizationUrl:
+            type: string
+            title: Authorization Server URL
+            description: Your Salesforce authorization server URL.
+            format: hostname
+            example: 'login.salesforce.com'
+            doc_section: '#step-6-finding-the-authorization-server-url'
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
