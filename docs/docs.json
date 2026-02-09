@@ -646,7 +646,7 @@
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
               "integrations/all/podium",
-              "integrations/all/posthog",
+              "api-integrations/posthog",
               "api-integrations/practicefusion",
               "integrations/all/prive",
               "integrations/all/private-api-basic",
