@@ -1,25 +1,28 @@
 ---
 title: 'ConnectWise RMM'
 sidebarTitle: 'ConnectWise RMM'
-description: 'Connect to the ConnectWise RMM API using client credentials in 2 minutes 💨'
+description: 'Integrate your application with the ConnectWise RMM API'
 ---
 
-<Tabs>
-  <Tab title="🚀 Quickstart">
-    <Steps>
-      <Step title="Create an integration">
-        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _ConnectWise RMM_.
-      </Step>
+## 🚀 Quickstart
 
-      <Step title="Authorize ConnectWise RMM">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ConnectWise RMM **API Hostname**, **Scope**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
-      </Step>
+Connect to ConnectWise RMM with Nango and see data flow in 2 minutes.
 
-      <Step title="Call the ConnectWise RMM API">
-        Let's make your first request to ConnectWise RMM (fetch companies). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ConnectWise RMM_.
 
-        <Tabs>
-          <Tab title="cURL">
+    Scopes are configured at the integration level (default: `platform.companies.read`).
+    </Step>
+    <Step title="Authorize ConnectWise RMM">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ConnectWise RMM **API Subdomain**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the ConnectWise RMM API">
+    Let's make your first request to ConnectWise RMM (fetch companies). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    <Tabs>
+        <Tab title="cURL">
+
             ```bash
             curl -X GET "https://api.nango.dev/proxy/api/platform/v1/company/companies" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
@@ -27,62 +30,56 @@ description: 'Connect to the ConnectWise RMM API using client credentials in 2 m
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Accept: application/json"
             ```
-          </Tab>
 
-          <Tab title="Node">
-            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+        </Tab>
 
-            ```typescript
-            import { Nango } from '@nangohq/node';
+        <Tab title="Node">
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-            // Fetch companies from ConnectWise RMM
-            const res = await nango.get({
-              endpoint: '/api/platform/v1/company/companies',
-              providerConfigKey: '<INTEGRATION-ID>',
-              connectionId: '<CONNECTION-ID>'
-            });
+        ```typescript
+        import { Nango } from '@nangohq/node';
 
-            console.log(res.data);
-            ```
-          </Tab>
-        </Tabs>
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
-      </Step>
-    </Steps>
+        const res = await nango.get({
+            endpoint: '/api/platform/v1/company/companies',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
 
-    <Tip>
-      Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their ConnectWise RMM accounts.
-    </Tip>
-  </Tab>
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
 
-  <Tab title="🔗 Useful links">
-    | Topic | Links |
-    | - | - |
-    | Authorization | [Guide to connect to ConnectWise RMM using Connect UI](/integrations/all/connectwise-rmm/connect) |
-    | General | [ConnectWise](https://www.connectwise.com/) |
-    | Developer | [ConnectWise Developer Portal](https://developer.connectwise.com/) |
-    | API | `https://openapi.service.itsupport247.net` |
-    | API (EU) | `https://openapi.service.euplatform.connectwise.com` |
-    | API (AU) | `https://openapi.service.auplatform.connectwise.com` |
+        To connect with your own credentials, use the connect guide linked below.
+    </Step>
+</Steps>
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/connectwise-rmm.mdx)</Note>
-  </Tab>
+## 📚 ConnectWise RMM Integration Guides
 
-  <Tab title="🚨 API gotchas">
-    - ConnectWise RMM is region-based. Use the API hostname for your tenant's region.
-    - The OAuth token endpoint uses Client Credentials (`grant_type=client_credentials`).
-    - Access tokens are short-lived (the OpenAPI example response shows `expires_in: 3599`), and Nango refreshes them automatically.
-    - Your requested scope must include permissions for the endpoints you call (for example, `platform.companies.read` for listing companies).
+Nango maintained guides for common use cases.
 
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/connectwise-rmm.mdx)</Note>
-  </Tab>
-</Tabs>
+- [How do I link my account?](/api-integrations/connectwise-rmm/connect)
+Connect your ConnectWise RMM account using the Connect UI
 
-<Info>
-  Questions? Join us in the [Slack community](https://nango.dev/slack).
-</Info>
+Official docs:
+- [ConnectWise Developer Portal](https://developer.connectwise.com/)
+- [ConnectWise RMM OpenAPI (US)](https://openapi.service.itsupport247.net)
+- [ConnectWise RMM OpenAPI (EU)](https://openapi.service.euplatform.connectwise.com)
+- [ConnectWise RMM OpenAPI (AU)](https://openapi.service.auplatform.connectwise.com)
+
+## 🧩 Pre-built syncs & actions for ConnectWise RMM
+
+No pre-built syncs or actions are currently published for ConnectWise RMM.
+
+---

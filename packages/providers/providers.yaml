@@ -3718,31 +3718,25 @@ connectwise-rmm:
         - support
     auth_mode: OAUTH2_CC
     body_format: json
-    token_url: https://${connectionConfig.apiHost}/v1/token
+    token_url: https://openapi.service.${connectionConfig.subdomain}/v1/token
     token_params:
         grant_type: client_credentials
-        scope: ${connectionConfig.scope}
     scope_separator: ' '
+    default_scopes:
+        - platform.companies.read
     proxy:
-        base_url: https://${connectionConfig.apiHost}
+        base_url: https://openapi.service.${connectionConfig.subdomain}
     docs: https://nango.dev/docs/integrations/all/connectwise-rmm
     docs_connect: https://nango.dev/docs/integrations/all/connectwise-rmm/connect
     connection_config:
-        apiHost:
+        subdomain:
             type: string
-            title: API Hostname
-            description: The ConnectWise RMM OpenAPI hostname for your region
-            pattern: '^(openapi\.service\.itsupport247\.net|openapi\.service\.euplatform\.connectwise\.com|openapi\.service\.auplatform\.connectwise\.com)$'
-            example: openapi.service.itsupport247.net
-            prefix: https://
-            doc_section: '#step-1-find-your-api-hostname'
-        scope:
-            type: string
-            title: Scope
-            description: OAuth scope(s) to request from ConnectWise RMM
-            example: platform.companies.read
-            default_value: platform.companies.read
-            doc_section: '#step-3-select-your-oauth-scopes'
+            title: API Subdomain
+            description: The ConnectWise RMM OpenAPI subdomain for your region
+            pattern: '^(itsupport247\.net|euplatform\.connectwise\.com|auplatform\.connectwise\.com)$'
+            example: itsupport247.net
+            prefix: https://openapi.service.
+            doc_section: '#step-1-find-your-api-subdomain'
     credentials:
         client_id:
             type: string
