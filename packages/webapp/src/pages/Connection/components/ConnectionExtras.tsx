@@ -8,7 +8,7 @@ import type { ConnectionConfig, Metadata } from '@nangohq/types';
 
 const JSON_DISPLAY_LIMIT = 250_000;
 
-export const ConnectionConfiguration = ({
+export const ConnectionExtras = ({
     config,
     metadata,
     rawTokenResponse
