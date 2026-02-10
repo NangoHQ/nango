@@ -16872,24 +16872,19 @@ zapier:
     auth_mode: OAUTH2
     authorization_url: https://api.zapier.com/v2/authorize
     token_url: https://zapier.com/oauth/token
+    disable_pkce: true
     scope_separator: ' '
-    default_scopes:
-        - authentication
-        - authentication:write
-        - profile
-        - zap
-        - zap:write
     proxy:
         base_url: https://api.zapier.com
     authorization_params:
         response_type: code
         response_mode: query
-        state: N@nG0s%rinG
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/zapier
+    docs: https://nango.dev/docs/api-integrations/zapier
+    setup_guide_url: https://nango.dev/docs/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app
 
 zapier-nla:
     display_name: Zapier NLA

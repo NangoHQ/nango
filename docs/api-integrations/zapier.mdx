@@ -1,0 +1,82 @@
+---
+title: 'Zapier'
+sidebarTitle: 'Zapier'
+description: 'Integrate your application with the Zapier Workflow API'
+---
+
+## 🚀 Quickstart
+
+Connect to Zapier with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zapier_. You'll need to set up your own OAuth app by following the setup guide linked below. After that, add your Client ID, Client Secret, and scopes in the integration settings in Nango.
+    </Step>
+    <Step title="Authorize Zapier">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then complete the Zapier OAuth flow. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Zapier Workflow API">
+    Make your first request to the Zapier Workflow API (fetch a list of zaps). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/zaps" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/zaps',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Zapier Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to authenticate with a User Access Token (Zapier OAuth)](/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app)  
+Configure redirect URIs, get your Client ID and Client Secret, and connect Zapier to Nango
+
+Official docs: [Zapier Workflow API](https://docs.zapier.com/powered-by-zapier/introduction)
+
+## 🧩 Pre-built syncs & actions for Zapier
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/zapier/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
