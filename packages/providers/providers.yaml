@@ -10417,6 +10417,8 @@ ninjaone-rmm-oauth2:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     scope_separator: ' '
     default_scopes:
         - monitoring
@@ -10425,7 +10427,8 @@ ninjaone-rmm-oauth2:
         - offline_access
     proxy:
         base_url: https://app.ninjarmm.com
-    docs: https://app.ninjarmm.com/apidocs-beta/authorization/flows/authorization-code-flow
+    docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
+    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/connect
 
 nocrm:
     display_name: nocrm.io
