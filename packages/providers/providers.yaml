@@ -10442,6 +10442,45 @@ notion-scim:
             description: The API key for your Notion scim account
             doc_section: '#step-1-finding-your-scim-api-key-token'
 
+nyne:
+    display_name: Nyne AI
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.nyne.ai
+        headers:
+            x-api-key: ${connectionConfig.apiKey}
+            x-api-secret: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /person/events
+            data:
+                event: 'test'
+    docs: https://nango.dev/docs/api-integrations/nyne
+    docs_connect: https://nango.dev/docs/api-integrations/nyne/connect
+    connection_config:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Nyne AI API key.
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: '48f0****************************892'
+            order: 1
+            doc_section: '#step-1-getting-your-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            description: Your Nyne AI API secret.
+            pattern: '^[a-fA-F0-9]{16}$'
+            example: '97e7********0463'
+            doc_section: '#step-1-getting-your-api-credentials'
+
 odoo:
     display_name: Odoo (OAuth)
     categories:
