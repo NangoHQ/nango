@@ -5,3 +5,5 @@ export * from './resendVerificationEmailByEmail.js';
 export * from './signin.js';
 export * from './signup.js';
 export * from './validateEmailAndLogin.js';
+export * from './onboarding/getHearAboutUs.js';
+export * from './onboarding/postHearAboutUs.js';

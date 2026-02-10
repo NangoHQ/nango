@@ -79,6 +79,10 @@ class AccountService {
         await db.knex.update({ name, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id });
     }
 
+    async updateFoundUs(accountId: number, foundUs: string): Promise<void> {
+        await db.knex.update({ found_us: foundUs, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id: accountId });
+    }
+
     async getAccountByUUID(uuid: string): Promise<DBTeam | null> {
         const result = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ uuid }).first();
 

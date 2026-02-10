@@ -38,6 +38,12 @@ export const PrivateRoute: React.FC = () => {
             return;
         }
 
+        // Skip env validation to avoid 404 for paths under /onboarding/hear-about-us
+        if (location.pathname.startsWith('/onboarding/hear-about-us')) {
+            setReady(true);
+            return;
+        }
+
         let currentEnv = env;
 
         // sync path with datastore
