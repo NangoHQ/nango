@@ -3360,6 +3360,26 @@ cloudentity:
             description: The workspace ID of your Cloudentity account
             doc_section: '#step-4-retrieving-the-workspace-id'
 
+cloudflare:
+    display_name: Cloudflare
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cloudflare.com/client
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/cloudflare
+    docs_connect: https://nango.dev/docs/api-integrations/cloudflare/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Cloudflare user or account
+            example: lGlHlGZN3iPR9z7CupZlMB3nzMpTCdfxeUPNj_pf
+            pattern: '^[a-zA-Z0-9_-]+$'
+
 close:
     display_name: Close
     categories:
@@ -9691,6 +9711,63 @@ microsoft-power-bi:
     proxy:
         base_url: https://api.powerbi.com
     docs: https://nango.dev/docs/integrations/all/microsoft-power-bi
+
+maximizer:
+    display_name: Maximizer (Cloud)
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/authorize
+    token_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.region}.maximizercrmlive.com
+    docs: https://nango.dev/docs/api-integrations/maximizer
+    setup_guide_url: https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/maximizer/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Region-specific subdomain.
+            pattern: '^(caw|ukw)$'
+            example: caw
+        company_alias:
+            type: string
+            title: Company Alias
+            description: The company alias of your Maximizer cloud account.
+            example: acme
+
+maximizer-on-premise:
+    display_name: Maximizer (On-Premise)
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Authorize
+    token_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/maximizer-on-premise
+    setup_guide_url: https://nango.dev/docs/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/maximizer-on-premise/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Maximizer on premise instance.
+            example: maximizer.mycompany.com
+            format: hostname
 
 mindbody:
     display_name: Mindbody
@@ -16872,24 +16949,19 @@ zapier:
     auth_mode: OAUTH2
     authorization_url: https://api.zapier.com/v2/authorize
     token_url: https://zapier.com/oauth/token
+    disable_pkce: true
     scope_separator: ' '
-    default_scopes:
-        - authentication
-        - authentication:write
-        - profile
-        - zap
-        - zap:write
     proxy:
         base_url: https://api.zapier.com
     authorization_params:
         response_type: code
         response_mode: query
-        state: N@nG0s%rinG
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/zapier
+    docs: https://nango.dev/docs/api-integrations/zapier
+    setup_guide_url: https://nango.dev/docs/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app
 
 zapier-nla:
     display_name: Zapier NLA
