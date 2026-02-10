@@ -1,7 +1,17 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+import {
+    MAX_LOG_PAYLOAD,
+    getCheckpointKey,
+    isTest,
+    metrics,
+    redactHeaders,
+    redactURL,
+    stringifyAndTruncateValue,
+    stringifyObject,
+    truncateJson
+} from '@nangohq/utils';
 
 import { Checkpointing } from './checkpointing.js';
 import { PersistClient } from '../clients/persist.js';
@@ -69,7 +79,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             persistClient: this.persistClient,
             environmentId: this.environmentId,
             nangoConnectionId: this.nangoConnectionId,
-            key: `${this.scriptType}:${this.syncConfig.sync_name}`
+            key: getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name })
         });
     }
 
@@ -339,7 +349,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             persistClient: this.persistClient,
             environmentId: this.environmentId,
             nangoConnectionId: this.nangoConnectionId,
-            key: `${this.scriptType}:${this.syncConfig.sync_name}:${this.variant}`
+            key: getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant })
         });
     }
 

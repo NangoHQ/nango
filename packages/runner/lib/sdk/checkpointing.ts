@@ -46,7 +46,7 @@ export class Checkpointing {
 
         if (!this.from) this.from = this.last;
 
-        return this.last.checkpoint;
+        return this.last.deletedAt ? null : this.last.checkpoint;
     }
 
     public async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
