@@ -311,7 +311,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         loading={isShareLinkLoading}
                                         disabled={usageCapReached || integrationHasMissingFields || !isFormValid}
                                     >
-                                        <Link2 className="size-4.5" />
+                                        <Link2 />
                                         Share connect link
                                     </Button>
                                 </span>
