@@ -3302,6 +3302,41 @@ cloudbeds:
     docs: https://nango.dev/docs/api-integrations/cloudbeds
     setup_guide_url: https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app
 
+cloudtalk:
+    display_name: CloudTalk
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my.cloudtalk.io/api
+        retry:
+            at:
+                - 'x-cloudtalkapi-resettime'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /contacts/index.json?limit=1
+    docs: https://nango.dev/docs/api-integrations/cloudtalk
+    docs_connect: https://nango.dev/docs/api-integrations/cloudtalk/connect
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: Your CloudTalk API Access ID.
+            pattern: '^[A-Za-z0-9.%@?_-]+$'
+            example: 'E1ZH****************RRM'
+            doc_section: '#step-1-getting-your-api-credentials'
+        password:
+            type: string
+            title: Key
+            description: Your CloudTalk API Access Key.
+            secret: true
+            pattern: '^[A-Za-z0-9.%@?_-]+$'
+            example: 'bQI*******************************eZ'
+            doc_section: '#step-1-getting-your-api-credentials'
+
 clerk:
     display_name: Clerk
     categories:
