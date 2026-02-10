@@ -21,7 +21,6 @@ description: "Full reference of the SDK available in Nango functions"
       endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
       frequency: 'every hour',
       autoStart: true,
-      syncType: 'full',
 
       metadata: z.void(),
       models: {
@@ -134,8 +133,15 @@ Read more about [integration functions](/guides/primitives/functions) to underst
   ```
 </ResponseField>
 
-<ResponseField name="syncType" type="'full' | 'incremental'" required>
-  The type of the sync.
+<ResponseField name="checkpoint" type="ZodSchema">
+  Optional schema defining the shape of checkpoint data for this sync.
+  Use checkpoints to save progress and avoid re-fetching all data on every run.
+
+  ```ts
+  checkpoint: z.object({
+      cursor: z.string(),
+  }),
+  ```
 </ResponseField>
 
 <ResponseField name="autoStart" type="boolean">
@@ -772,6 +778,55 @@ await nango.getConnection();
 ## Sync-specific helper methods
 
 Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/use-cases/syncs/implement-a-sync)).
+
+### Checkpoints
+
+Checkpoints allow syncs to save their progress and resume from where they left off. This is useful for:
+- Resuming after failures without re-fetching all data
+- Tracking pagination state across sync runs
+- Storing custom cursor/offset values
+
+To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)).
+
+#### getCheckpoint()
+
+Retrieves the current checkpoint. Returns `null` on first run or after a reset.
+
+```ts
+const checkpoint = await nango.getCheckpoint();
+if (checkpoint) {
+    // Resume from checkpoint
+    startCursor = checkpoint.cursor;
+}
+```
+
+**Response**
+
+Returns the checkpoint object matching your schema, or `null` if no checkpoint exists.
+
+#### saveCheckpoint()
+
+Saves the current progress. Call this after processing each batch of data to enable resumption if the sync fails.
+
+```ts
+await nango.saveCheckpoint({ cursor: nextCursor });
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="checkpoint" type="object" required>
+    The checkpoint data matching your defined schema.
+  </ResponseField>
+</Expandable>
+
+#### clearCheckpoint()
+
+Clears the checkpoint. Rarely needed as checkpoints are automatically cleared when triggering a sync with `reset: true`.
+
+```ts
+await nango.clearCheckpoint();
+```
 
 ### Save records
 
