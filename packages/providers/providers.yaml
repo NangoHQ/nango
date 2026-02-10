@@ -2867,7 +2867,7 @@ canny:
 candis:
     display_name: Candis
     categories:
-        - other
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://id.my.candis.io/auth/realms/candis/protocol/openid-connect/auth
     token_url: https://id.my.candis.io/auth/realms/candis/protocol/openid-connect/token
