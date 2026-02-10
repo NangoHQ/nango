@@ -10442,10 +10442,10 @@ notion-scim:
             description: The API key for your Notion scim account
             doc_section: '#step-1-finding-your-scim-api-key-token'
 
-nyne:
+nyne-ai:
     display_name: Nyne AI
     categories:
-        - other
+        - analytics
     auth_mode: API_KEY
     proxy:
         base_url: https://api.nyne.ai
@@ -10461,8 +10461,8 @@ nyne:
                 - /person/events
             data:
                 event: 'test'
-    docs: https://nango.dev/docs/api-integrations/nyne
-    docs_connect: https://nango.dev/docs/api-integrations/nyne/connect
+    docs: https://nango.dev/docs/api-integrations/nyne-ai
+    docs_connect: https://nango.dev/docs/api-integrations/nyne-ai/connect
     connection_config:
         apiKey:
             type: string
