@@ -10145,6 +10145,27 @@ ninjaone-rmm:
     docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
     docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
 
+ninjaone-rmm-oauth2:
+    display_name: NinjaOne RMM (OAuth2)
+    categories:
+        - support
+    auth_mode: OAUTH2
+    authorization_url: https://app.ninjarmm.com/ws/oauth/authorize
+    token_url: https://app.ninjarmm.com/ws/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    scope_separator: ' '
+    default_scopes:
+        - monitoring
+        - management
+        - control
+        - offline_access
+    proxy:
+        base_url: https://app.ninjarmm.com
+    docs: https://app.ninjarmm.com/apidocs-beta/authorization/flows/authorization-code-flow
+
 notion:
     display_name: Notion
     categories:
