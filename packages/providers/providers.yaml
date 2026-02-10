@@ -3713,6 +3713,45 @@ connectwise-psa-staging:
             title: Client ID
             description: The Client ID assigned to your integration
 
+connectwise-rmm:
+    display_name: ConnectWise RMM
+    categories:
+        - support
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://openapi.service.${connectionConfig.subdomain}/v1/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://openapi.service.${connectionConfig.subdomain}
+    docs: https://nango.dev/docs/api-integrations/connectwise-rmm
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-rmm/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The ConnectWise RMM OpenAPI subdomain for your region
+            pattern: '^(itsupport247\.net|euplatform\.connectwise\.com|auplatform\.connectwise\.com)$'
+            example: itsupport247.net
+            prefix: https://openapi.service.
+            doc_section: '#step-1-find-your-api-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your ConnectWise RMM OAuth client ID
+            example: '6500023'
+            pattern: '^[A-Za-z0-9._-]+$'
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your ConnectWise RMM OAuth client secret
+            secret: true
+            pattern: '^[A-Za-z0-9._~+/=-]{8,}$'
+            doc_section: '#step-2-create-api-credentials'
+
 confluence:
     display_name: Confluence
     categories:
