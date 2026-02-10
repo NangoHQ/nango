@@ -20,8 +20,7 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
     return cancellableDaemon({
         tickIntervalMs: envs.PERSIST_AUTO_PRUNING_INTERVAL_MS,
         tick: async (): Promise<void> => {
-            const dryRun = true; // TODO: removed after grace period given to customer (Feb 8th 2026)
-            return tracer.trace('nango.persist.daemon.autopruning', { tags: { dryRun } }, async (span) => {
+            return tracer.trace('nango.persist.daemon.autopruning', async (span) => {
                 try {
                     const candidate = await records.autoPruningCandidate({ staleAfterMs: envs.PERSIST_AUTO_PRUNING_STALE_AFTER_MS });
                     if (candidate.isErr()) {
@@ -61,8 +60,7 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
                         model: candidate.value.model,
                         mode: 'prune',
                         toCursorIncluded: candidate.value.cursor,
-                        limit: envs.PERSIST_AUTO_PRUNING_LIMIT,
-                        dryRun
+                        limit: envs.PERSIST_AUTO_PRUNING_LIMIT
                     });
                     if (res.isErr()) {
                         span?.addTags({ error: res.error.message });

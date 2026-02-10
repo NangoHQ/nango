@@ -50,9 +50,9 @@ During the migration, both connect session and public key authentication will wo
     Existing connections will keep the custom id you have used until now but new connections will have a random id. Your code will need to support both.
 </Note>
 
-## Step 1: Attach a user to all existing connections
+## Step 1: Attach tags to all existing connections
 
-Attach a user to all existing connections.
+Attach tags to all existing connections.
 This step will allow you to use connect sessions with existing connections.
 This will also be used to attribute webhooks to the correct end user.
 
@@ -62,15 +62,16 @@ This will also be used to attribute webhooks to the correct end user.
   import { Nango } from '@nangohq/node';
 
 const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
-await nango.patchConnection({
-    connectionId: '<CONNECTION-ID>',
-    provider_config_key: '<INTEGRATION-ID>',
-}, {
-    end_user: {
-        id: '<USER-ID>',
-        [...]
+ await nango.patchConnection({
+     connectionId: '<CONNECTION-ID>',
+     provider_config_key: '<INTEGRATION-ID>',
+ }, {
+    tags: {
+        end_user_id: '<USER-ID>',
+        end_user_email: '<USER-EMAIL>',
+        organization_id: '<ORGANIZATION-ID>'
     }
-});
+ });
 ```
   </Tab>
   <Tab title="cURL">
@@ -78,12 +79,13 @@ await nango.patchConnection({
 curl -X PATCH https://api.nango.dev/v1/connections/<CONNECTION-ID> \
 -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
 -H "Content-Type: application/json" \
--d '{
-    "end_user": {
-        "id": "<USER-ID>",
-        [...]
-    }
-}'
+ -d '{
+     "tags": {
+         "end_user_id": "<USER-ID>",
+         "end_user_email": "<USER-EMAIL>",
+         "organization_id": "<ORGANIZATION-ID>"
+     }
+ }'
 ```
   </Tab>
 </Tabs>
