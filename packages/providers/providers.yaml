@@ -5397,7 +5397,7 @@ fanvue:
 fiber-ai:
     display_name: Fiber AI
     categories:
-        - other
+        - analytics
     auth_mode: API_KEY
     proxy:
         base_url: https://api.fiber.ai
