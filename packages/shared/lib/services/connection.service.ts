@@ -812,6 +812,24 @@ class ConnectionService {
                     }
                 }
 
+                if (withError === false) {
+                    // Only connections without active logs
+                    subQuery.whereNotExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                } else if (withError === true) {
+                    // Only connections with active logs
+                    subQuery.whereExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                }
+
                 return subQuery
                     .orderBy('_nango_connections.created_at', 'desc')
                     .limit(limit)
@@ -840,12 +858,6 @@ class ConnectionService {
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
             .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
             .orderBy('_nango_connections.created_at', 'desc');
-
-        if (withError === false) {
-            query.whereNull('active_logs_agg.connection_id');
-        } else if (withError === true) {
-            query.whereNotNull('active_logs_agg.connection_id');
-        }
 
         return await query;
     }
@@ -1013,8 +1025,9 @@ class ConnectionService {
                         }
                         expiresAt = new Date(Date.now() + durationMs);
                     }
-                } else if (template.token_expires_in_ms) {
-                    expiresAt = new Date(Date.now() + template.token_expires_in_ms);
+                    // token_expires_in_ms of 0 in the providers config is treated as undefined
+                } else if (template.token_expires_in_ms != null) {
+                    expiresAt = template.token_expires_in_ms > 0 ? new Date(Date.now() + template.token_expires_in_ms) : undefined;
                 } else {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }

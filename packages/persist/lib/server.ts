@@ -1,4 +1,5 @@
 import express from 'express';
+import qs from 'qs';
 
 import { createRoute } from '@nangohq/utils';
 
@@ -30,7 +31,9 @@ const maxSizeJsonRecords = '100mb';
 
 export const server = express();
 
-server.set('query parser', 'extended');
+server.set('query parser', (str: string) => {
+    return qs.parse(str, { arrayLimit: 100 });
+});
 
 server.use('/environment/:environmentId/*splat', authMiddleware);
 server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));

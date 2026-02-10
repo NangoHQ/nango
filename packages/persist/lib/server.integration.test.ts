@@ -15,9 +15,9 @@ import {
     createSync,
     createSyncJob,
     environmentService,
-    getProvider
+    getProvider,
+    secretService
 } from '@nangohq/shared';
-import secretService from '@nangohq/shared/lib/services/secret.service.js';
 
 import { server } from './server.js';
 

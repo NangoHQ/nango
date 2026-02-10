@@ -1,0 +1,85 @@
+---
+title: 'PostHog'
+sidebarTitle: 'PostHog'
+description: 'Integrate your application with the PostHog API'
+---
+
+## 🚀 Quickstart
+
+Connect to PostHog with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _PostHog_.
+    </Step>
+    <Step title="Authorize PostHog">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Subdomain** (e.g. `us` or `eu.i`) and **API Key**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the PostHog API">
+    Let's make your first request to the PostHog API (get current user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/users/@me" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const response = await nango.get({
+            endpoint: '/api/users/@me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials (subdomain and API key), follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 PostHog Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my PostHog account?](/api-integrations/posthog/connect)  
+  Connect your PostHog account using the Connect UI (subdomain and API key)
+
+<Note>
+**Subdomain:** Use the part of your PostHog URL after `https://` and before `.posthog.com` (e.g. `us`, `eu.i` for US/EU Cloud). PostHog enforces different [rate limits](https://posthog.com/docs/api#rate-limiting) per resource.
+</Note>
+
+Official docs: [PostHog API documentation](https://posthog.com/docs/api)
+
+## 🧩 Pre-built syncs & actions for PostHog
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/posthog/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

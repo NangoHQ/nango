@@ -43,6 +43,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
+        has_records_autopruning: true,
         ...override
     };
 }
