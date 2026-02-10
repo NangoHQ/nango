@@ -569,6 +569,8 @@
               "api-integrations/microsoft-planner",
               "integrations/all/microsoft-power-bi",
               "api-integrations/microsoft-teams",
+              "api-integrations/maximizer",
+              "api-integrations/maximizer-on-premise",
               "integrations/all/microsoft-tenant-specific",
               "integrations/all/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
