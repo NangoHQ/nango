@@ -85,7 +85,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                 nextCustom = rest;
                 continue;
             }
-            if (key === 'aws_sigv4_config') {
+            if (key === awsSigV4Client.AWS_SIGV4_CUSTOM_KEY) {
                 try {
                     JSON.parse(value);
                 } catch {
