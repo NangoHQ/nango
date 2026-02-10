@@ -61,8 +61,23 @@ describe('triggerSync', () => {
         );
     });
 
-    it('should default to incremental sync_mode when not provided', async () => {
-        await nango.triggerSync('test-provider', ['test-sync']);
+    it('should handle opts with reset: true', async () => {
+        await nango.triggerSync('test-provider', ['test-sync'], 'conn-123', { reset: true });
+
+        expect(mockHttp.post).toHaveBeenCalledWith(
+            expect.any(String),
+            {
+                syncs: ['test-sync'],
+                provider_config_key: 'test-provider',
+                connection_id: 'conn-123',
+                opts: { reset: true }
+            },
+            expect.any(Object)
+        );
+    });
+
+    it('should handle opts with emptyCache: true', async () => {
+        await nango.triggerSync('test-provider', ['test-sync'], undefined, { emptyCache: true });
 
         expect(mockHttp.post).toHaveBeenCalledWith(
             expect.any(String),
@@ -70,7 +85,22 @@ describe('triggerSync', () => {
                 syncs: ['test-sync'],
                 provider_config_key: 'test-provider',
                 connection_id: undefined,
-                sync_mode: 'incremental'
+                opts: { emptyCache: true }
+            },
+            expect.any(Object)
+        );
+    });
+
+    it('should handle opts with both reset and emptyCache', async () => {
+        await nango.triggerSync('test-provider', ['test-sync'], undefined, { reset: true, emptyCache: true });
+
+        expect(mockHttp.post).toHaveBeenCalledWith(
+            expect.any(String),
+            {
+                syncs: ['test-sync'],
+                provider_config_key: 'test-provider',
+                connection_id: undefined,
+                opts: { reset: true, emptyCache: true }
             },
             expect.any(Object)
         );

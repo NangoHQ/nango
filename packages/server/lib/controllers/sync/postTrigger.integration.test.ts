@@ -104,6 +104,31 @@ describe(`POST ${endpoint}`, () => {
                 }
             });
         });
+
+        it('should return 400 if opts is used with deprecated sync_mode/full_resync', async () => {
+            const { secret } = await seeders.seedAccountEnvAndUser();
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    syncs: ['sync1'],
+                    opts: { reset: true },
+                    sync_mode: 'incremental',
+                    provider_config_key: 'test-key',
+                    connection_id: '123'
+                },
+                headers: {}
+            });
+
+            expect(res.res.status).toEqual(400);
+            expect(res.json).toStrictEqual({
+                error: {
+                    code: 'invalid_body',
+                    message: 'Cannot use opts with deprecated sync_mode/full_resync parameters'
+                }
+            });
+        });
     });
 
     it('should take provider_config_key and connection_id from headers', async () => {
@@ -181,6 +206,32 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it.each([
+        [{ opts: { reset: true } }, 'RUN_FULL'],
+        [{ opts: { reset: false } }, 'RUN']
+    ])('should handle opts.reset parameter (%o -> %s)', async (opts, expectedCommand) => {
+        const { secret } = await seeders.seedAccountEnvAndUser();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: secret.secret,
+            body: {
+                syncs: ['sync1'],
+                ...opts,
+                provider_config_key: 'test-key',
+                connection_id: '123'
+            },
+            headers: {}
+        });
+
+        expect(res.res.status).toEqual(200);
+        expect(mockRunSyncCommand).toHaveBeenCalledWith(
+            expect.objectContaining({
+                command: expectedCommand
+            })
+        );
+    });
+
+    it.each([
         [true, 'RUN_FULL'],
         [false, 'RUN']
     ])('should handle valid full_resync parameter (%s -> %s)', async (full_resync, expectedCommand) => {
@@ -231,6 +282,29 @@ describe(`POST ${endpoint}`, () => {
             expect.objectContaining({
                 command: expectedCommand,
                 deleteRecords: expectedShouldDeleteRecords
+            })
+        );
+    });
+
+    it.each([[{ emptyCache: true }], [{ emptyCache: false }]])('should handle opts.emptyCache parameter (%o)', async (opts) => {
+        const { secret } = await seeders.seedAccountEnvAndUser();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: secret.secret,
+            body: {
+                syncs: ['sync1'],
+                opts,
+                provider_config_key: 'test-key',
+                connection_id: '123'
+            },
+            headers: {}
+        });
+
+        expect(res.res.status).toEqual(200);
+        expect(mockRunSyncCommand).toHaveBeenCalledWith(
+            expect.objectContaining({
+                deleteRecords: opts.emptyCache
             })
         );
     });
