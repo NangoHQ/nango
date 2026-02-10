@@ -403,6 +403,7 @@
               "integrations/all/falai",
               "integrations/all/fairing",
               "api-integrations/fanvue",
+              "api-integrations/fiber-ai",
               "integrations/all/fathom",
               "api-integrations/fathom-oauth",
               "integrations/all/figjam",

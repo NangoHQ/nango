@@ -5394,6 +5394,28 @@ fanvue:
             description: ''
             automated: true
 
+fiber-ai:
+    display_name: Fiber AI
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fiber.ai
+        query:
+            apiKey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/get-org-credits
+    docs: https://nango.dev/docs/api-integrations/fiber-ai
+    docs_connect: https://nango.dev/docs/api-integrations/fiber-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fiber AI API key.
+            doc_section: '#step-1-getting-your-api-key'
+
 fathom:
     display_name: Fathom
     categories:
