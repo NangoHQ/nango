@@ -7,6 +7,16 @@ const argv = minimist(process.argv.slice(2));
 const nextVersion = argv.version;
 const skipCli = argv['skip-cli'] === true;
 const dryRun = argv['dry-run'] === true;
+const publishedPackageNames = new Set([
+    '@nangohq/types',
+    '@nangohq/nango-yaml',
+    '@nangohq/providers',
+    '@nangohq/node',
+    '@nangohq/runner-sdk',
+    '@nangohq/frontend',
+    'nango'
+]);
+const lockfileDependencyFields = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
 
 if (!nextVersion) {
     echo`${chalk.red(`Please specify a version: "node publish.mjs 0.0.1"`)}`;
@@ -30,42 +40,42 @@ await bumpVersionTs();
 await tsBuild();
 
 // ---- Publish
+await bumpWorkspacePackageVersion('@nangohq/types');
 await npmPublish('@nangohq/types');
 await bumpReference('@nangohq/types');
-await npmInstall();
 
+await bumpWorkspacePackageVersion('@nangohq/nango-yaml');
 await npmPublish('@nangohq/nango-yaml');
 await bumpReference('@nangohq/nango-yaml');
-await npmInstall();
 
+await bumpWorkspacePackageVersion('@nangohq/providers');
 await npmPublish('@nangohq/providers');
 await bumpReference('@nangohq/providers');
-await npmInstall();
 
+await bumpWorkspacePackageVersion('@nangohq/node');
 await npmPublish('@nangohq/node');
 await bumpReference('@nangohq/node');
-await npmInstall();
 
+await bumpWorkspacePackageVersion('@nangohq/runner-sdk');
 await npmPublish('@nangohq/runner-sdk');
 await bumpReference('@nangohq/runner-sdk');
-await npmInstall();
 
 // TODO: to delete maybe, seems unnecessary
+await bumpWorkspacePackageVersion('@nangohq/frontend');
 await npmPublish('@nangohq/frontend');
 await bumpReference('@nangohq/frontend');
-await npmInstall();
 
 if (!skipCli) {
+    await bumpWorkspacePackageVersion('nango');
     await npmPublish('nango');
-    await npmInstall();
 }
 // ---- /Publish
 
-await $`npm version "${nextVersion}" --no-git-tag-version --allow-same-version`;
+await bumpRootVersion();
 
 echo``;
-await npmInstall();
-echo(chalk.green(`${figures.tick} npm install`));
+await bumpLockfileVersions();
+echo(chalk.green(`${figures.tick} package-lock.json`));
 echo(chalk.grey('done'));
 
 // Output for post deploy debug
@@ -110,13 +120,45 @@ async function npmPublish(packageName) {
             process.exit(1);
         }
 
-        await $`npm version ${nextVersion} -w "${packageName}"`;
-        if (!dryRun) {
-            await $`npm publish --access public --provenance -w "${packageName}"`;
+        if (dryRun) {
+            echo(chalk.yellow(`${figures.tick} Dry run, skipping publish ${packageName}`));
+            return;
         }
+
+        await $`npm publish --access public --provenance -w "${packageName}"`;
 
         echo(chalk.green(`${figures.tick} Published ${packageName}      `));
     });
+}
+
+async function bumpWorkspacePackageVersion(packageName) {
+    const packagesJson = await glob('packages/*/package.json');
+    for (const packageJson of packagesJson) {
+        const content = JSON.parse((await fs.readFile(packageJson)).toString());
+        if (content.name !== packageName) {
+            continue;
+        }
+
+        if (content.version !== nextVersion) {
+            content.version = nextVersion;
+            await fs.writeFile(packageJson, `${JSON.stringify(content, null, 4)}\n`);
+            echo(chalk.grey(`  ${figures.tick} Bumped ${packageName} version in ${packageJson}`));
+        }
+        return;
+    }
+
+    echo`${chalk.red(`Could not find workspace package ${packageName}`)}`;
+    process.exit(1);
+}
+
+async function bumpRootVersion() {
+    const rootPackageJson = 'package.json';
+    const content = JSON.parse((await fs.readFile(rootPackageJson)).toString());
+    if (content.version !== nextVersion) {
+        content.version = nextVersion;
+        await fs.writeFile(rootPackageJson, `${JSON.stringify(content, null, 4)}\n`);
+        echo(chalk.grey(`  ${figures.tick} Bumped root package version in ${rootPackageJson}`));
+    }
 }
 
 async function bumpReference(packageName) {
@@ -135,8 +177,47 @@ async function bumpReference(packageName) {
     }
 }
 
-async function npmInstall() {
-    await spinner('npm install', async () => {
-        await $`npm i`;
+async function bumpLockfileVersions() {
+    await spinner('update package-lock versions', async () => {
+        const lockfilePath = 'package-lock.json';
+        const lock = JSON.parse((await fs.readFile(lockfilePath)).toString());
+
+        if (lock.version) {
+            lock.version = nextVersion;
+        }
+        if (lock.packages?.['']?.version) {
+            lock.packages[''].version = nextVersion;
+        }
+
+        for (const [, packageMetadata] of Object.entries(lock.packages ?? {})) {
+            if (!packageMetadata || typeof packageMetadata !== 'object') {
+                continue;
+            }
+
+            if (
+                typeof packageMetadata.name === 'string' &&
+                typeof packageMetadata.version === 'string' &&
+                publishedPackageNames.has(packageMetadata.name) &&
+                versionRegex.test(packageMetadata.version)
+            ) {
+                packageMetadata.version = nextVersion;
+            }
+
+            for (const field of lockfileDependencyFields) {
+                const dependencies = packageMetadata[field];
+                if (!dependencies || typeof dependencies !== 'object') {
+                    continue;
+                }
+
+                for (const dependencyName of publishedPackageNames) {
+                    const currentValue = dependencies[dependencyName];
+                    if (typeof currentValue === 'string' && versionRegex.test(currentValue)) {
+                        dependencies[dependencyName] = nextVersion;
+                    }
+                }
+            }
+        }
+
+        await fs.writeFile(lockfilePath, `${JSON.stringify(lock, null, 4)}\n`);
     });
 }
