@@ -13,6 +13,8 @@ import syncController from './controllers/sync.controller.js';
 import {
     getEmailByExpiredToken,
     getEmailByUuid,
+    getOnboardingHearAboutUs,
+    postOnboardingHearAboutUs,
     resendVerificationEmailByEmail,
     resendVerificationEmailByUuid,
     signin,
@@ -152,6 +154,8 @@ if (flagHasManagedAuth) {
 
 // --- Protected
 web.route('/meta').get(webAuth, getMeta);
+web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
+web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
 web.route('/team').get(webAuth, getTeam);
 web.route('/team').put(webAuth, putTeam);
 web.route('/team/users/:id').delete(webAuth, deleteTeamUser);
