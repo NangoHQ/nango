@@ -282,6 +282,7 @@
               "integrations/all/aws",
               "integrations/all/aws-iam",
               "integrations/all/aws-scim",
+              "integrations/all/aws-sigv4",
               "integrations/all/avoma",
               "api-integrations/axiom",
               "integrations/all/azure-blob-storage",

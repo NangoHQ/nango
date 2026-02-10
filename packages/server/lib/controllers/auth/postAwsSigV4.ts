@@ -166,7 +166,14 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             return;
         }
 
-        const externalId = (connectionConfig['external_id'] as string) || uuidv4();
+        // Always generate ExternalId server-side; reuse stored value on reconnection
+        let externalId: string;
+        if (isConnectSession && connectSession.connectionId) {
+            const existingConn = await connectionService.getConnectionById(connectSession.connectionId);
+            externalId = (existingConn?.connection_config?.['external_id'] as string) || uuidv4();
+        } else {
+            externalId = uuidv4();
+        }
         connectionConfig['external_id'] = externalId;
         connectionConfig['role_arn'] = body.role_arn;
         connectionConfig['region'] = resolvedRegion;
