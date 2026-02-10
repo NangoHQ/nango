@@ -1,6 +1,6 @@
 import { EllipsisHorizontalIcon, QueueListIcon } from '@heroicons/react/24/outline';
 import { PopoverContent } from '@radix-ui/react-popover';
-import { IconClockPause, IconClockPlay, IconRefresh, IconX } from '@tabler/icons-react';
+import { IconClockPause, IconClockPlay, IconInfoCircle, IconRefresh, IconX } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { mutate } from 'swr';
@@ -9,7 +9,6 @@ import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/Select';
 import * as Table from '../../../components/ui/Table';
 import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Tag } from '../../../components/ui/label/Tag';
@@ -45,8 +44,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
 
     const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
     const [showInterruptLoader, setShowInterruptLoader] = useState(false);
-    const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type === 'full' ? 'full' : 'incremental');
-    const [deleteRecords, setDeleteRecords] = useState(false);
+    const [resyncEntireDataset, setResyncEntireDataset] = useState(false);
+    const [emptyCache, setEmptyCache] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
 
@@ -57,31 +56,20 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
 
         setSyncCommandButtonsDisabled(true);
         setModalShowSpinner(true);
-        const res =
-            triggerMode === 'incremental'
-                ? await apiRunSyncCommand(env, {
-                      command: 'RUN',
-                      schedule_id: sync.schedule_id,
-                      nango_connection_id: sync.nango_connection_id,
-                      sync_id: sync.id,
-                      sync_name: sync.name,
-                      sync_variant: sync.variant,
-                      provider
-                  })
-                : await apiRunSyncCommand(env, {
-                      command: 'RUN_FULL',
-                      schedule_id: sync.schedule_id,
-                      nango_connection_id: sync.nango_connection_id,
-                      sync_id: sync.id,
-                      sync_name: sync.name,
-                      sync_variant: sync.variant,
-                      provider,
-                      delete_records: deleteRecords
-                  });
+        const res = await apiRunSyncCommand(env, {
+            command: resyncEntireDataset ? 'RUN_FULL' : 'RUN',
+            schedule_id: sync.schedule_id,
+            nango_connection_id: sync.nango_connection_id,
+            sync_id: sync.id,
+            sync_name: sync.name,
+            sync_variant: sync.variant,
+            provider,
+            delete_records: emptyCache
+        });
 
         if (res.res.status === 200) {
             await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
-            toast({ title: `The full resync was successfully triggered`, variant: 'success' });
+            toast({ title: `The sync was successfully triggered`, variant: 'success' });
         } else {
             const data = res.json;
             toast({ title: data.error.message, variant: 'error' });
@@ -266,67 +254,64 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                 <div className="pl-2 flex gap-2 items-center">Trigger Execution</div>
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="h-[368px]">
+                                        <DialogContent className="h-[312px]">
                                             <div className="flex flex-col gap-8">
                                                 <DialogTitle>Trigger sync execution</DialogTitle>
-                                                <div className="flex flex-col gap-7">
-                                                    <div className="flex flex-col gap-4">
-                                                        <div className="flex gap-4 items-center">
-                                                            <label className="text-grayscale-100 text-sm">Sync mode</label>
-                                                            <Select defaultValue={triggerMode} onValueChange={(value) => setTriggerMode(value as any)}>
-                                                                <SelectTrigger className="w-[200px] h-8">
-                                                                    <SelectValue placeholder="Sync mode" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="incremental" disabled={sync.sync_type === 'full'}>
-                                                                        Incremental {sync.sync_type === 'full' && <Tag>Not supported by this sync</Tag>}
-                                                                    </SelectItem>
-                                                                    <SelectItem value="full">Full Refresh</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                <DialogDescription>
+                                                    Trigger a sync execution for function <span className="text-white">{sync.name}</span> and connection{' '}
+                                                    <span className="text-white">{connection.connection_id}</span>.
+                                                </DialogDescription>
+                                                <div className="flex flex-col gap-4">
+                                                    <div className="flex flex-col">
+                                                        <div className="flex gap-2 items-center">
+                                                            <Checkbox
+                                                                id="resync"
+                                                                checked={resyncEntireDataset}
+                                                                onCheckedChange={(e) => setResyncEntireDataset(e === true)}
+                                                            />
+                                                            <label className="text-grayscale-100 text-sm" htmlFor="resync">
+                                                                Resync entire dataset
+                                                            </label>
+                                                            <SimpleTooltip
+                                                                side="top"
+                                                                tooltipContent={
+                                                                    <div className="text-grayscale-400">
+                                                                        <code className="font-code text-grayscale-100">nango.lastSyncDate</code> will be set to{' '}
+                                                                        <code className="font-code text-grayscale-100">null</code>. The whole dataset will be
+                                                                        resynced.
+                                                                    </div>
+                                                                }
+                                                            >
+                                                                <IconInfoCircle className="h-4 w-4 text-grayscale-400" />
+                                                            </SimpleTooltip>
                                                         </div>
-                                                        <DialogDescription>
-                                                            {triggerMode === 'incremental' ? (
-                                                                <>
-                                                                    Incremental sync mode will fetch the data modified since the last execution.{' '}
-                                                                    <Link
-                                                                        to="https://nango.dev/docs/implementation-guides/use-cases/syncs/large-datasets#incremental-syncing"
-                                                                        className="underline"
-                                                                    >
-                                                                        Learn more
-                                                                    </Link>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    Full refresh sync mode will fetch all the data.{' '}
-                                                                    <Link
-                                                                        to="https://nango.dev/docs/implementation-guides/use-cases/syncs/large-datasets#full-refresh-syncing-small-datasets-only"
-                                                                        className="underline"
-                                                                    >
-                                                                        Learn more
-                                                                    </Link>{' '}
-                                                                </>
-                                                            )}
-                                                        </DialogDescription>
                                                     </div>
-                                                    {triggerMode === 'full' && (
-                                                        <div className="flex flex-col gap-4">
-                                                            <div className="flex gap-4 items-center">
-                                                                <label className="text-grayscale-100 text-sm" htmlFor="emptycache">
-                                                                    Empty cache
-                                                                </label>
-                                                                <Checkbox
-                                                                    id="emptycache"
-                                                                    checked={deleteRecords}
-                                                                    onCheckedChange={(e) => setDeleteRecords(e === true)}
-                                                                />
-                                                            </div>
-                                                            <DialogDescription>
-                                                                All records will be considered new. Cursors will be invalidated. Your backend should reprocess
-                                                                all records.
-                                                            </DialogDescription>
+                                                    <div className="flex flex-col">
+                                                        <div className="flex gap-2 items-center">
+                                                            <Checkbox id="emptycache" checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
+                                                            <label className="text-grayscale-100 text-sm" htmlFor="emptycache">
+                                                                Empty cache
+                                                            </label>
+                                                            <SimpleTooltip
+                                                                side="top"
+                                                                tooltipContent={
+                                                                    <div className="text-grayscale-400">
+                                                                        All records will be reported as new by Nango. Record cursors will be invalidated.
+                                                                        <br />
+                                                                        Your backend should reprocess all records.{' '}
+                                                                        <Link
+                                                                            to="https://nango.dev/docs/implementation-guides/use-cases/syncs/large-datasets#incremental-syncing"
+                                                                            className="underline"
+                                                                        >
+                                                                            Learn more
+                                                                        </Link>
+                                                                    </div>
+                                                                }
+                                                            >
+                                                                <IconInfoCircle className="h-4 w-4 text-grayscale-400" />
+                                                            </SimpleTooltip>
                                                         </div>
-                                                    )}
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -335,7 +320,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                     <Button variant="secondary">Cancel</Button>
                                                 </DialogClose>
                                                 <Button type="submit" disabled={modalSpinner} onClick={confirmTrigger} isLoading={modalSpinner}>
-                                                    Confirm
+                                                    Trigger
                                                 </Button>
                                             </DialogFooter>
                                         </DialogContent>
