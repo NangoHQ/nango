@@ -92,6 +92,64 @@ describe(`GET ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
     });
 
+    it('should get a session without endUser when created with tags', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        // Create session
+        const resCreate = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: secret.secret,
+            body: { tags: { projectId: '123' }, allowed_integrations: ['github'] }
+        });
+        isSuccess(resCreate.json);
+
+        // Get session
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: resCreate.json.data.token
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                endUser: null,
+                allowed_integrations: ['github'],
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+            }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should get a session without endUser when created with empty tags object', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        // Create session
+        const resCreate = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: secret.secret,
+            body: { tags: {}, allowed_integrations: ['github'] }
+        });
+        isSuccess(resCreate.json);
+
+        // Get session
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: resCreate.json.data.token
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                endUser: null,
+                allowed_integrations: ['github'],
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+            }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
     it('should get a session with custom connect UI settings when both customization flags are enabled', async () => {
         const { env, secret, plan } = await seeders.seedAccountEnvAndUser();
         // Enable both features so custom settings can be preserved

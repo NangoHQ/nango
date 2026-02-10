@@ -57,7 +57,7 @@ describe(`POST ${endpoint}`, () => {
 
         const endUser = await seeders.createEndUser({ environment: env, account });
 
-        // Create an initial connection
+        // Create an initial connection linked to an end user
         await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
         await linkConnection(db.knex, { endUserId: endUser.id, connection });
@@ -84,10 +84,10 @@ describe(`POST ${endpoint}`, () => {
         expect(session.connectSession.connectionId).toBe(connection.id);
     });
 
-    it('should fail if the connection was not created with a session token', async () => {
+    it('should get a session token when reconnecting with tags (no end user on connection)', async () => {
         const { env, secret } = await seeders.seedAccountEnvAndUser();
 
-        // Create an initial connection
+        // Create an initial connection without end user (tags-only session flow)
         await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -96,16 +96,16 @@ describe(`POST ${endpoint}`, () => {
             token: secret.secret,
             body: {
                 connection_id: connection.connection_id,
-                integration_id: 'github'
+                integration_id: 'github',
+                tags: { projectId: '123' }
             }
         });
-        isError(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            error: {
-                code: 'invalid_body',
-                message: "Can't update a connection that was not created with a session token"
-            }
-        });
+        isSuccess(res.json);
+
+        const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
+        expect(session.connectSession.connectionId).toBe(connection.id);
+        expect(session.connectSession.endUserId).toBeNull();
+        expect(session.connectSession.tags).toStrictEqual({ projectid: '123' });
     });
 
     it('should fail if integration_id does not exist in allowed_integrations', async () => {
