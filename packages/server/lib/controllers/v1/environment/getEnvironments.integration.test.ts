@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { secretService, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -27,9 +28,11 @@ describe(`GET ${route}`, () => {
         const env = await seeders.createEnvironmentSeed(account.id, 'test');
         await seeders.createEnvironmentSeed(account.id, 'prod');
 
+        const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+
         const res = await api.fetch(route, {
             method: 'GET',
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -50,7 +53,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should not return result from an other account', async () => {
-        const { account: account, env } = await seeders.seedAccountEnvAndUser();
+        const { account: account, secret } = await seeders.seedAccountEnvAndUser();
         const { account: account2 } = await seeders.seedAccountEnvAndUser();
 
         await seeders.createEnvironmentSeed(account.id, 'test');
@@ -59,7 +62,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: env.secret_key
+            token: secret.secret
         });
 
         expect(res.res.status).toBe(200);

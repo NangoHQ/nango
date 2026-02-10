@@ -15,20 +15,22 @@ import {
     createSync,
     createSyncJob,
     environmentService,
-    getProvider
+    getProvider,
+    secretService
 } from '@nangohq/shared';
 
 import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Job as SyncJob, Sync } from '@nangohq/shared';
-import type { AllAuthCredentials, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
 interface testSeed {
     account: DBTeam;
     env: DBEnvironment;
+    secret: DBAPISecret;
     plan: DBPlan;
     activityLogId: string;
     connection: Exclude<Awaited<ReturnType<typeof connectionService.getConnectionById>>, null>;
@@ -50,7 +52,12 @@ describe('Persist API', () => {
 
         vi.spyOn(accountService, 'getAccountContextBySecretKey').mockImplementation((secretKey) => {
             if (secretKey === mockSecretKey) {
-                return Promise.resolve({ account: seed.account, environment: seed.env, plan: seed.plan });
+                return Promise.resolve({
+                    account: seed.account,
+                    environment: seed.env,
+                    secret: seed.secret,
+                    plan: seed.plan
+                });
             }
             return Promise.resolve(null);
         });
@@ -452,12 +459,164 @@ describe('Persist API', () => {
             });
         });
     });
+
+    describe('checkpoint', () => {
+        it('should return 404 if checkpoint not found', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint?key=non-existent`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_not_found' } });
+        });
+
+        it('should create/get a new checkpoint', async () => {
+            const key = 'test-checkpoint-create';
+            const checkpoint = { status: 'running', count: 10 };
+
+            const createResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(createResponse.status).toEqual(200);
+            expect(await createResponse.json()).toStrictEqual({ checkpoint, version: 1 });
+
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint?key=${key}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toStrictEqual({ checkpoint, version: 1, deletedAt: null });
+        });
+
+        it('should update checkpoint', async () => {
+            const key = 'test-checkpoint-update';
+            const checkpoint1 = { step: 1 };
+            const checkpoint2 = { step: 2 };
+
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint: checkpoint1, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint: checkpoint2, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toStrictEqual({ checkpoint: checkpoint2, version: 2 });
+        });
+
+        it('should return 409 on version conflict for PUT', async () => {
+            const key = 'test-checkpoint-update-conflict';
+            const checkpoint = { data: 'initial' };
+
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint: { data: 'updated' }, expectedVersion: 99 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(409);
+            expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
+        });
+
+        it('should delete checkpoint', async () => {
+            const key = 'test-checkpoint-delete';
+            const checkpoint = { toDelete: true };
+
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const deleteResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'DELETE',
+                body: JSON.stringify({ key, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(deleteResponse.status).toEqual(204);
+
+            const getResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint?key=${key}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(getResponse.status).toEqual(200);
+            const body = (await getResponse.json()) as { checkpoint: object; version: number; deletedAt: string | null };
+            expect(body).toMatchObject({ checkpoint, version: 2, deletedAt: expect.toBeIsoDate() });
+        });
+
+        it('should return 409 on version conflict for DELETE', async () => {
+            const key = 'test-checkpoint-delete-conflict';
+            const checkpoint = { data: 'to-delete' };
+
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key, checkpoint, expectedVersion: 1 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint`, {
+                method: 'DELETE',
+                body: JSON.stringify({ key, expectedVersion: 99 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(409);
+            expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
+        });
+    });
 });
 
 const initDb = async () => {
     const now = new Date();
     const env = await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' });
     if (!env) throw new Error('Environment not created');
+    const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
 
@@ -514,7 +673,8 @@ const initDb = async () => {
         providerConfigKey: `provider-test`,
         parsedRawCredentials: {} as AllAuthCredentials,
         connectionConfig: {},
-        environmentId: env.id
+        environmentId: env.id,
+        tags: {}
     });
     const connectionId = connectionRes[0]?.connection.id;
     if (!connectionId) throw new Error('Connection not created');
@@ -539,6 +699,7 @@ const initDb = async () => {
     return {
         account: (await accountService.getAccountById(db.knex, 0))!,
         env,
+        secret,
         plan,
         activityLogId: logCtx.id,
         connection,

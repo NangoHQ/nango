@@ -14,3 +14,5 @@ export interface DeletedCorrect {
 
 export interface TimestampsAndDeleted extends Timestamps, Deleted {}
 export interface TimestampsAndDeletedCorrect extends Timestamps, DeletedCorrect {}
+
+export type Tags = Record<string, string>;

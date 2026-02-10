@@ -26,10 +26,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 // @ts-expect-error on purpose
                 debug: 'er'
@@ -51,10 +51,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should accept empty body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 debug: false,
                 flowConfigs: [],
@@ -83,13 +83,13 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should show correct on-events scripts diff', async () => {
-        const { account, env: environment } = await seeders.seedAccountEnvAndUser();
+        const { account, env: environment, secret } = await seeders.seedAccountEnvAndUser();
         const { unique_key: providerConfigKey } = await seeders.createConfigSeed(environment, 'notion-123', 'notion');
         const existingOnEvent = await seeders.createOnEventScript({ account, environment, providerConfigKey, sdkVersion: '0.0.0-yaml' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: environment.secret_key,
+            token: secret.secret,
             body: {
                 debug: false,
                 flowConfigs: [],

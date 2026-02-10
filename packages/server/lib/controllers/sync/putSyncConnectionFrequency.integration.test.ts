@@ -30,11 +30,11 @@ describe(`POST ${endpoint}`, () => {
 
     describe('validation', () => {
         it('should return 400 for for invalid body', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { secret } = await seeders.seedAccountEnvAndUser();
 
             const res = await api.fetch(endpoint, {
                 method: 'PUT',
-                token: env.secret_key,
+                token: secret.secret,
                 body: {
                     connection_id: 'a1-£$',
                     frequency: 'foobar',

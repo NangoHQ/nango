@@ -509,6 +509,7 @@ layer(base);
             --color-btn-tertiary-fg: var(--color-gray-200);
             --color-btn-tertiary-hover: var(--color-gray-800);
             --color-btn-tertiary-press: var(--color-gray-700);
+            --color-btn-tertiary-loading: var(--color-gray-700);
 
             --color-btn-destructive-bg: var(--color-red-500);
             --color-btn-destructive-fg: var(--color-gray-50);
@@ -635,6 +636,14 @@ layer(base);
     font-size: 10px;
     line-height: 14px;
     font-weight: 600;
+}
+
+@utility text-code-body-small-regular {
+    font-size: 12px;
+    line-height: 14px;
+    font-family: 'Roboto Mono';
+    font-weight: 400;
+    letter-spacing: -0.04em;
 }
 
 /*

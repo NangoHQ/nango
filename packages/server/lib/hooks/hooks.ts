@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import db from '@nangohq/database';
 import {
     NangoError,
     ProxyRequest,
@@ -8,15 +9,16 @@ import {
     externalWebhookService,
     getProxyConfiguration,
     productTracking,
+    secretService,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { pubsub } from '../pubsub.js';
+import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
-import { slackService } from '../services/slack.js';
 import { postConnectionCreation } from './connection/on/post-connection-creation.js';
 import postConnection from './connection/post-connection.js';
 
@@ -142,9 +144,15 @@ export const connectionCreated = async (
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
+    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+    if (defaultSecret.isErr()) {
+        throw defaultSecret.error;
+    }
+
     void sendAuthWebhook({
         connection,
         environment,
+        secret: defaultSecret.value.secret,
         webhookSettings,
         auth_mode,
         endUser,
@@ -180,9 +188,15 @@ export const connectionCreationFailed = async (
     if (error) {
         const webhookSettings = await externalWebhookService.get(environment.id);
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
+
         void sendAuthWebhook({
             connection,
             environment,
+            secret: defaultSecret.value.secret,
             webhookSettings,
             auth_mode,
             success: false,
@@ -254,9 +268,16 @@ export const connectionRefreshFailed = async ({
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
+
+    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+    if (defaultSecret.isErr()) {
+        throw defaultSecret.error;
+    }
+
     void sendAuthWebhook({
         connection,
         environment,
+        secret: defaultSecret.value.secret,
         webhookSettings,
         auth_mode: provider.auth_mode,
         operation: 'refresh',
@@ -335,7 +356,8 @@ export async function credentialsTest({
         last_refresh_failure: null,
         last_refresh_success: null,
         refresh_attempts: null,
-        refresh_exhausted: false
+        refresh_exhausted: false,
+        tags: {}
     };
 
     void logCtx.info(`Running automatic credentials verification`);

@@ -427,7 +427,7 @@ export default class Nango {
         if (credentials) {
             Object.assign(body, credentials);
         }
-        if (assertionOption) {
+        if (assertionOption && Object.keys(assertionOption).length > 0) {
             body['assertionOption'] = assertionOption;
         }
 

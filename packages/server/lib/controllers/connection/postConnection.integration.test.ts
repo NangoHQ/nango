@@ -27,10 +27,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate oauth2 credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'OAUTH2' } }
         });
@@ -45,10 +45,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate oauth2_cc credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'OAUTH2_CC' } }
         });
@@ -67,10 +67,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate oauth1 credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'OAUTH1' } }
         });
@@ -88,10 +88,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate api_key credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'API_KEY' } }
         });
@@ -106,10 +106,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate basic credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'BASIC' } }
         });
@@ -127,10 +127,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate none credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'unauthenticated', credentials: { type: 'NONE', foo: 'bar' } }
         });
@@ -145,10 +145,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate TBA credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'TBA' } }
         });
@@ -166,10 +166,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate APP credentials', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'APP' } }
         });
@@ -187,11 +187,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should import oauth2 connection', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider_config_key: 'github',
                 credentials: { type: 'OAUTH2', access_token: '123' },
@@ -225,7 +225,147 @@ describe(`POST ${endpoint}`, () => {
             metadata: {},
             provider: 'github',
             provider_config_key: 'github',
+            tags: { end_user_id: '123', end_user_display_name: 'John Doe', projectid: '123' },
             updated_at: expect.toBeIsoDate()
+        });
+    });
+
+    it('should import oauth2 connection with config_override', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                provider_config_key: 'github',
+                credentials: {
+                    type: 'OAUTH2',
+                    access_token: '123',
+                    config_override: { client_id: 'override_client_id', client_secret: 'override_client_secret' }
+                },
+                end_user: { id: '123', display_name: 'John Doe', tags: { projectId: '123' } }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            connection_config: {},
+            connection_id: expect.any(String),
+            created_at: expect.toBeIsoDate(),
+            credentials: {
+                access_token: '123',
+                config_override: { client_id: 'override_client_id', client_secret: 'override_client_secret' },
+                raw: {
+                    access_token: '123',
+                    config_override: { client_id: 'override_client_id', client_secret: 'override_client_secret' },
+                    type: 'OAUTH2'
+                },
+                type: 'OAUTH2'
+            },
+            end_user: {
+                id: '123',
+                email: null,
+                display_name: 'John Doe',
+                organization: null,
+                tags: { projectId: '123' }
+            },
+            errors: [],
+            id: expect.any(Number),
+            last_fetched_at: expect.toBeIsoDate(),
+            metadata: {},
+            provider: 'github',
+            provider_config_key: 'github',
+            tags: { end_user_id: '123', end_user_display_name: 'John Doe', projectid: '123' },
+            updated_at: expect.toBeIsoDate()
+        });
+    });
+
+    describe('tags', () => {
+        it('should import connection with valid tags and return tags in response', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const tags = { projectid: '123', environment: 'production' };
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' },
+                    tags
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toMatchObject({
+                provider_config_key: 'github',
+                tags
+            });
+        });
+
+        it('should import connection without tags', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toMatchObject({
+                provider_config_key: 'github',
+                tags: {}
+            });
+        });
+
+        it('should fail with invalid tags', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' },
+                    tags: { '123invalid': 'value' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
+        });
+
+        it('should import connection with both tags and end_user', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            const tags = { projectid: '456' };
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    provider_config_key: 'github',
+                    credentials: { type: 'OAUTH2', access_token: '123' },
+                    end_user: { id: 'user-123', display_name: 'Test User' },
+                    tags
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toMatchObject({
+                provider_config_key: 'github',
+                // Merged tags: end_user generated tags + explicit tags (explicit tags take priority)
+                tags: { end_user_id: 'user-123', end_user_display_name: 'Test User', projectid: '456' },
+                end_user: {
+                    id: 'user-123',
+                    display_name: 'Test User'
+                }
+            });
         });
     });
 });

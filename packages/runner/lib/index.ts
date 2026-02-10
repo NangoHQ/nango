@@ -11,5 +11,5 @@ export type { Locks } from './sdk/locks.js';
 export { KVLocks, MapLocks } from './sdk/locks.js';
 export { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
 export { jobsClient } from './clients/jobs.js';
-export { persistClient } from './clients/persist.js';
+export { PersistClient } from './clients/persist.js';
 export { httpFetch } from './clients/http.js';

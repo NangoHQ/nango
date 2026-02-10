@@ -124,10 +124,6 @@ export async function createSharedCredentialsSeed(providerName: string): Promise
             credentials
         })
         .into('providers_shared_credentials')
-        .onConflict('name')
-        .merge({
-            credentials
-        })
         .returning('*');
 
     const sharedCredentials = sharedCredentialsResult[0];

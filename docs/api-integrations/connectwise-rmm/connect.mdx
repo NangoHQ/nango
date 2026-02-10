@@ -1,0 +1,49 @@
+---
+title: ConnectWise RMM - How do I link my account?
+sidebarTitle: ConnectWise RMM
+---
+
+# Overview
+
+To authenticate with ConnectWise RMM, you need:
+1. **API Subdomain** - The region-specific OpenAPI subdomain for your tenant
+2. **Client ID** - Your OAuth client ID
+3. **Client Secret** - Your OAuth client secret
+
+### Prerequisites:
+
+- Access to your ConnectWise RMM tenant as an administrator.
+- Permission to create or manage API credentials.
+
+### Instructions:
+
+##### Step 1: Find your API subdomain
+
+Use the subdomain that matches your tenant region:
+
+- US: `itsupport247.net`
+- EU: `euplatform.connectwise.com`
+- AU: `auplatform.connectwise.com`
+
+##### Step 2: Create API credentials
+
+In your ConnectWise RMM tenant:
+
+1. Open the API/integration settings for your tenant.
+2. Create (or reuse) an OAuth client that supports the Client Credentials flow.
+3. Copy the generated **Client ID** and **Client Secret**.
+
+<Note>
+Store the Client Secret securely. If your admin portal only shows it once, save it in a secret manager immediately.
+</Note>
+
+##### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ConnectWise RMM.
+2. Enter:
+   - **API Subdomain**
+   - **Client ID**
+   - **Client Secret**
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to ConnectWise RMM.

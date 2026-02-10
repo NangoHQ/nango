@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId } from '@nangohq/shared';
+import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, secretService } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';
@@ -100,6 +100,11 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             updated_at: new Date()
         };
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            return Err(defaultSecret.error);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'on-event',
             host: getApiUrl(),
@@ -113,7 +118,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             syncConfig,
             debug: false,

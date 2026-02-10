@@ -26,6 +26,7 @@ export interface ConnectSessionInput {
               display_name?: string | undefined;
           }
         | undefined;
+    tags?: Record<string, string> | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
 }
 
@@ -37,15 +38,25 @@ export interface EndUserInput {
 }
 
 export type ConnectSessionOutput = Omit<ConnectSessionInput, 'end_user' | 'organization'> & {
-    endUser: ApiEndUser;
+    endUser: ApiEndUser | null;
     isReconnecting?: boolean;
     connectUISettings: ConnectUISettings;
 };
 
+export type PostConnectSessionsBody =
+    | ConnectSessionInput
+    | (Omit<ConnectSessionInput, 'end_user' | 'tags'> & {
+          /**
+           * When top-level tags is provided, end_user becomes optional.
+           */
+          tags: NonNullable<ConnectSessionInput['tags']>;
+          end_user?: ConnectSessionInput['end_user'] | undefined;
+      });
+
 export type PostConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/connect/sessions';
-    Body: ConnectSessionInput;
+    Body: PostConnectSessionsBody;
     Success: {
         data: {
             token: string;
@@ -65,6 +76,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
         end_user?: ConnectSessionInput['end_user'] | undefined;
         organization?: ConnectSessionInput['organization'];
         overrides?: ConnectSessionInput['overrides'];
+        tags?: ConnectSessionInput['tags'];
     };
     Success: {
         data: {

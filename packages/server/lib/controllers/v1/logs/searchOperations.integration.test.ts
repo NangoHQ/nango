@@ -22,19 +22,19 @@ describe('POST /logs/operations', () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing query on purpose
-        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', token: env.secret_key });
+        const res = await api.fetch('/api/v1/logs/operations', { method: 'POST', token: secret.secret });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { limit: 'a', foo: 'bar' }
         });
@@ -60,11 +60,11 @@ describe('POST /logs/operations', () => {
     });
 
     it('should search logs and get empty results', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { limit: 10 }
         });
 
@@ -77,7 +77,7 @@ describe('POST /logs/operations', () => {
     });
 
     it('should search logs and get one result', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create({ operation: { type: 'auth', action: 'create_connection' } }, { account, environment: env });
         await logCtx.info('test info');
@@ -86,7 +86,7 @@ describe('POST /logs/operations', () => {
         const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { limit: 10 }
         });
 
@@ -131,7 +131,7 @@ describe('POST /logs/operations', () => {
         const res = await api.fetch('/api/v1/logs/operations', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env2.env.secret_key,
+            token: env2.secret.secret,
             body: { limit: 10 }
         });
 
