@@ -251,14 +251,14 @@ export class Nango {
 
     /**
      * Returns a list of connections using object parameter syntax
-     * @param params - Object containing optional filter parameters
+     * @param params - Object containing optional filter parameters. `tags.displayName` and `tags.email` are legacy aliases mapped to `end_user_display_name` and `end_user_email`; other tag keys are sent as `tags[<lowercased-key>]`.
      * @returns A promise that resolves with an array of connection objects
      */
     public async listConnections(params: {
         connectionId?: string;
         userId?: string;
         integrationId?: string | string[];
-        tags?: Record<'displayName' | 'email', string>;
+        tags?: Record<string, string>;
         limit?: number;
     }): Promise<GetPublicConnections['Success']>;
 
@@ -269,7 +269,7 @@ export class Nango {
                   connectionId?: string;
                   userId?: string;
                   integrationId?: string | string[];
-                  tags?: Record<'displayName' | 'email', string>;
+                  tags?: Record<string, string>;
                   limit?: number;
                   page?: number;
               },
@@ -293,11 +293,14 @@ export class Nango {
                 url.searchParams.append('integrationId', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
             }
             if (tags && Object.keys(tags).length > 0) {
-                if (tags['displayName']) {
-                    url.searchParams.append('search', tags['displayName']);
-                }
-                if (tags['email']) {
-                    url.searchParams.append('email', tags['email']);
+                for (const [key, value] of Object.entries(tags)) {
+                    if (key === 'displayName') {
+                        url.searchParams.append('tags[end_user_display_name]', value);
+                    } else if (key === 'email') {
+                        url.searchParams.append('tags[end_user_email]', value);
+                    } else {
+                        url.searchParams.append(`tags[${key.toLowerCase()}]`, value);
+                    }
                 }
             }
             if (limit) {
