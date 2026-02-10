@@ -1,4 +1,4 @@
-import type { ApiTimestamps, Endpoint } from '../api.js';
+import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
 import type { IntegrationConfig } from './db.js';
 import type { AuthModeType, AuthModes } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
@@ -189,6 +189,11 @@ export type PatchIntegration = Endpoint<{
               clientUri?: string | undefined;
               clientLogoUri?: string | undefined;
           };
+    Error:
+        | ApiError<'missing_aws_sigv4_config'>
+        | ApiError<'invalid_aws_sigv4_config'>
+        | ApiError<'missing_aws_sigv4_service'>
+        | ApiError<'missing_aws_sigv4_sts_endpoint'>;
     Success: {
         data: {
             success: boolean;

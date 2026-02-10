@@ -7,6 +7,7 @@ import { CopyText } from '../../../../../components/CopyText';
 import { Info } from '../../../../../components/Info';
 import { InfoBloc } from '../../../../../components/InfoBloc';
 import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/ui/Select';
 import { Switch } from '../../../../../components/ui/Switch';
 import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
@@ -718,23 +719,27 @@ export const SettingsGeneral: React.FC<{
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="flex flex-col gap-1">
                                     <label className="text-xs text-white font-semibold">Auth Type</label>
-                                    <select
-                                        className="bg-active-gray text-white rounded-md border border-border-gray px-2 py-1 text-sm"
+                                    <Select
                                         value={awsSigV4Config?.stsEndpoint.authType || 'none'}
-                                        onChange={(e) =>
+                                        onValueChange={(value: string) =>
                                             setAwsSigV4Config((prev) => ({
                                                 ...(prev || defaultAwsSigV4Config()),
                                                 stsEndpoint: {
                                                     ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
-                                                    authType: e.target.value as 'none' | 'api_key' | 'basic'
+                                                    authType: value as 'none' | 'api_key' | 'basic'
                                                 }
                                             }))
                                         }
                                     >
-                                        <option value="none">None</option>
-                                        <option value="api_key">API Key</option>
-                                        <option value="basic">Basic</option>
-                                    </select>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None</SelectItem>
+                                            <SelectItem value="api_key">API Key</SelectItem>
+                                            <SelectItem value="basic">Basic</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 {awsSigV4Config?.stsEndpoint.authType === 'api_key' && (
