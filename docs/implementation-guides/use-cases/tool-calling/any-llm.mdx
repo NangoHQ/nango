@@ -34,7 +34,8 @@ export async function runLLMAgent(modelClient: any) {
 
   // Step 1: Ensure the user is authorized
   console.log("🔒 Checking Hubspot authorization...");
-  let connectionId = (await nango.listConnections({ integrationId, userId })).connections[0]?.connection_id;
+  const connections = await nango.listConnections({ integrationId, tags: { end_user_id: userId } });
+  let connectionId = connections.connections[0]?.connection_id;
 
   // Step 2: If the user is not authorized, redirect to the auth flow.
   if (!connectionId) {
@@ -42,7 +43,9 @@ export async function runLLMAgent(modelClient: any) {
 
     const session = await nango.createConnectSession({
       allowed_integrations: [integrationId],
-      end_user: { id: userId },
+      tags: {
+        end_user_id: userId
+      }
     });
 
     console.log(`Please authorize Hubspot here: ${session.data.connect_link}`);
