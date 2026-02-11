@@ -23,15 +23,15 @@ interface SyncsProps {
 export const Syncs: React.FC<SyncsProps> = ({ connection, provider }) => {
     const env = useStore((state) => state.env);
 
-    const { data: syncs, loading, mutate } = useSyncs({ env, provider_config_key: connection.provider_config_key, connection_id: connection.connection_id });
+    const { data: syncs, isLoading, refetch } = useSyncs({ env, provider_config_key: connection.provider_config_key, connection_id: connection.connection_id });
 
     const showSyncVariant = (target: SyncResponse): boolean => (syncs?.filter((sync) => sync.name === target.name) || []).length > 1;
 
     useInterval(async () => {
-        await mutate();
+        await refetch();
     }, 5000);
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex gap-2 flex-col">
                 <Skeleton className="w-full"></Skeleton>

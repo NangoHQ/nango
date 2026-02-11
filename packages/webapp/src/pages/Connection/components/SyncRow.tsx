@@ -3,7 +3,6 @@ import { PopoverContent } from '@radix-ui/react-popover';
 import { IconClockPause, IconClockPlay, IconInfoCircle, IconRefresh, IconX } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mutate } from 'swr';
 
 import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { Checkbox } from '../../../components/ui/Checkbox';
@@ -12,7 +11,7 @@ import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import * as Table from '../../../components/ui/Table';
 import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Tag } from '../../../components/ui/label/Tag';
-import { apiRunSyncCommand } from '../../../hooks/useSyncs';
+import { useRunSyncCommand } from '../../../hooks/useSyncs';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { UserFacingSyncCommand } from '../../../types.js';
@@ -39,6 +38,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
+    const runSyncCommand = useRunSyncCommand(env);
 
     const [syncCommandButtonsDisabled, setSyncCommandButtonsDisabled] = useState(false);
 
@@ -108,23 +108,31 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
         }
 
         setSyncCommandButtonsDisabled(true);
-        const res = await apiRunSyncCommand(env, {
-            command,
-            schedule_id: scheduleId,
-            nango_connection_id,
-            sync_id: syncId,
-            sync_name: syncName,
-            sync_variant: syncVariant,
-            provider
-        });
+        try {
+            const res = await runSyncCommand.mutateAsync({
+                command,
+                schedule_id: scheduleId,
+                nango_connection_id,
+                sync_id: syncId,
+                sync_name: syncName,
+                sync_variant: syncVariant,
+                provider
+            });
 
-        if (res.res.status === 200) {
-            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
-            const niceCommand = UserFacingSyncCommand[command];
-            toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
-        } else {
-            const data = res.json;
-            toast({ title: data.error.message, variant: 'error' });
+            if (res.res.status === 200) {
+                const niceCommand = UserFacingSyncCommand[command];
+                toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
+            } else {
+                const data = res.json as { error?: { message?: string } };
+                toast({ title: data.error?.message || 'Failed to update sync', variant: 'error' });
+            }
+        } catch (err) {
+            if (err instanceof Error && 'json' in err) {
+                const apiError = err as { json: { error?: { message?: string } } };
+                toast({ title: apiError.json.error?.message || 'Failed to update sync', variant: 'error' });
+            } else {
+                toast({ title: 'Failed to update sync', variant: 'error' });
+            }
         }
 
         setSyncCommandButtonsDisabled(false);
