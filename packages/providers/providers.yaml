@@ -12829,6 +12829,33 @@ researchdesk:
             secret: true
             doc_section: '#step-2-finding-your-credentials'
 
+resend:
+    display_name: Resend
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.resend.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /domains?limit=1
+    docs: https://nango.dev/docs/api-integrations/resend
+    docs_connect: https://nango.dev/docs/api-integrations/resend/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Resend API key.
+            pattern: '^re_[A-Za-z0-9_]+$'
+            example: 're_HW***************************65L'
+            doc_section: '#step-1-getting-your-api-key'
+
 retell-ai:
     display_name: Retell AI
     categories:
