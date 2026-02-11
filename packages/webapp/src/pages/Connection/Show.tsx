@@ -33,11 +33,25 @@ export const ConnectionShow = () => {
 
     if (connectionLoading || providerLoading || !connectionData || !integrationData) {
         return (
-            <DashboardLayout fullWidth>
+            <DashboardLayout>
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
-                <Skeleton className="w-full h-15" />
+                <div className="flex flex-col gap-5">
+                    <div className="flex gap-4 items-center">
+                        <Skeleton className="size-20" />
+                        <div className="flex flex-col gap-1">
+                            <span className="text-body-large-semi text-text-primary">
+                                <Skeleton className="w-64 h-6" />
+                            </span>
+                            <span className="text-body-medium-regular text-text-secondary">
+                                <Skeleton className="w-36 h-5" />
+                            </span>
+                        </div>
+                    </div>
+
+                    <Skeleton className="w-64 h-8 " />
+                </div>
             </DashboardLayout>
         );
     }
