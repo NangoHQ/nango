@@ -133,6 +133,12 @@ export const connectionCreated = async (
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
 
+    try {
+        await errorNotificationService.auth.clear({ connection_id: connection.id });
+    } catch (err) {
+        report(new Error('connection_created_clear_auth_error_failed', { cause: err }), { id: connection.id });
+    }
+
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, providerConfig.provider, logContextGetter);
         await postConnectionCreation(createdConnectionPayload, providerConfig.provider, logContextGetter);

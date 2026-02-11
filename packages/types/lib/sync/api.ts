@@ -6,11 +6,13 @@ export type PostPublicTrigger = Endpoint<{
     Path: '/sync/trigger';
     Body: {
         syncs: (string | { name: string; variant: string })[];
-        sync_mode?: 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache' | undefined;
         provider_config_key?: string | undefined;
         connection_id?: string | undefined;
-        // @deprecrated in favor of sync_mode
+        opts?: { reset?: boolean | undefined; emptyCache?: boolean | undefined } | undefined;
+        // @deprecated in favor of opts.reset
         full_resync?: boolean | undefined;
+        // @deprecated in favor of opts
+        sync_mode?: 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache' | undefined;
     };
     Headers: {
         'provider-config-key'?: string | undefined;

@@ -1,3 +1,4 @@
+export type { ZodCheckpoint } from './types.js';
 export * from './action.js';
 export * from './dataValidation.js';
 export * from './errors.js';

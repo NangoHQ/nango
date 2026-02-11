@@ -188,8 +188,24 @@ describe('Checkpoint service', () => {
             expect(res?.version).toBe(2);
         });
 
-        it('should fail to delete with wrong version', async () => {
+        it('should soft delete checkpoint without expectedVersion if forced', async () => {
             const key = 'function:21';
+            const checkpoint = { test: true };
+            await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint });
+
+            // Force delete
+            const result = await deleteCheckpoint(db.knex, { environmentId, connectionId, key, force: true });
+
+            expect(result.isOk()).toBe(true);
+
+            const res = (await getCheckpoint(db.knex, { environmentId, connectionId, key })).unwrap();
+            expect(res).not.toBeNull();
+            expect(res?.checkpoint).toEqual(checkpoint);
+            expect(res?.deleted_at).not.toBeNull();
+        });
+
+        it('should fail to delete with wrong version', async () => {
+            const key = 'function:22';
             await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint: { test: true } });
 
             const result = await deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: 99 });
@@ -212,7 +228,7 @@ describe('Checkpoint service', () => {
         });
 
         it('should fail to delete already deleted checkpoint', async () => {
-            const key = 'function:22';
+            const key = 'function:23';
             const created = (await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint: { test: true } })).unwrap();
             await deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: created.version });
 
@@ -262,6 +278,16 @@ describe('Checkpoint service', () => {
 
             expect(count).toBe(1);
             expect((await getCheckpoint(db.knex, { environmentId, connectionId, key: key1 })).unwrap()).toBeNull();
+        });
+
+        it('should also delete soft-deleted checkpoints', async () => {
+            const key = 'function:50';
+            const created = (await upsertCheckpoint(db.knex, { environmentId, connectionId, key, checkpoint: { a: 1 } })).unwrap();
+            await deleteCheckpoint(db.knex, { environmentId, connectionId, key, expectedVersion: created.version });
+
+            const count = (await hardDeleteCheckpoints(db.knex, { environmentId, connectionId, keyPrefix: 'function:50' })).unwrap();
+
+            expect(count).toBe(1);
         });
 
         it('should also delete soft-deleted checkpoints', async () => {

@@ -1,15 +1,26 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+import {
+    MAX_LOG_PAYLOAD,
+    getCheckpointKey,
+    isTest,
+    metrics,
+    redactHeaders,
+    redactURL,
+    stringifyAndTruncateValue,
+    stringifyObject,
+    truncateJson
+} from '@nangohq/utils';
 
+import { Checkpointing } from './checkpointing.js';
 import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
-import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import type { ApiPublicConnectionFull, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type { ApiPublicConnectionFull, Checkpoint, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 export const oldLevelToNewLevel = {
@@ -28,16 +39,15 @@ const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to 
 /**
  * Action SDK
  */
-export class NangoActionRunner extends NangoActionBase<never, Record<string, string>> {
+export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     nango: Nango;
     protected persistClient: PersistClient;
     protected locking: Locking;
+    protected checkpointing: Checkpointing;
     protected httpLogSample: number = 0;
 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
-        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
         this.nango = new Nango(
             {
@@ -62,6 +72,15 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
         if (!this.environmentId) throw new Error('Parameter environmentId is required');
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
+
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
+        this.checkpointing = new Checkpointing({
+            persistClient: this.persistClient,
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId,
+            key: getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name })
+        });
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -269,16 +288,29 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
     public override async releaseAllLocks(): Promise<void> {
         return this.locking.releaseAllLocks();
     }
+
+    public override async getCheckpoint(): Promise<Checkpoint | null> {
+        return this.checkpointing.getCheckpoint();
+    }
+
+    public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+        return this.checkpointing.saveCheckpoint(checkpoint);
+    }
+
+    public override async clearCheckpoint(): Promise<void> {
+        return this.checkpointing.clearCheckpoint();
+    }
 }
 
 /**
  * Sync SDK
  */
-export class NangoSyncRunner extends NangoSyncBase {
+export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> {
     nango: Nango;
 
     protected persistClient: PersistClient;
     protected locking: Locking;
+    protected checkpointing: Checkpointing;
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
@@ -286,9 +318,6 @@ export class NangoSyncRunner extends NangoSyncBase {
 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
-
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
-        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
         this.nango = new Nango(
             {
@@ -309,8 +338,19 @@ export class NangoSyncRunner extends NangoSyncBase {
             }
         );
 
+        if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
         if (!this.syncId) throw new Error('Parameter syncId is required');
         if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
+        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
+
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
+        this.checkpointing = new Checkpointing({
+            persistClient: this.persistClient,
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId,
+            key: getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant })
+        });
     }
 
     // Can't double extends
@@ -533,6 +573,18 @@ export class NangoSyncRunner extends NangoSyncBase {
     public override async releaseAllLocks(): Promise<void> {
         return this.locking.releaseAllLocks();
     }
+
+    public override async getCheckpoint(): Promise<Checkpoint | null> {
+        return this.checkpointing.getCheckpoint();
+    }
+
+    public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+        return this.checkpointing.saveCheckpoint(checkpoint);
+    }
+
+    public override async clearCheckpoint(): Promise<void> {
+        return this.checkpointing.clearCheckpoint();
+    }
 }
 
 class Locking {
@@ -584,7 +636,10 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
     'log',
     'triggerAction',
     'triggerSync',
-    'startSync'
+    'startSync',
+    'getCheckpoint',
+    'saveCheckpoint',
+    'clearCheckpoint'
 ];
 
 /**
@@ -593,7 +648,7 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
  * This function will enable tracing on the SDK
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */
-export function instrumentSDK(rawNango: NangoActionBase | NangoSyncBase) {
+export function instrumentSDK(rawNango: NangoActionRunner | NangoSyncRunner) {
     return new Proxy(rawNango, {
         get<T extends typeof rawNango, K extends keyof typeof rawNango>(target: T, propKey: K) {
             // Method name is not matching the allowList we don't do anything else

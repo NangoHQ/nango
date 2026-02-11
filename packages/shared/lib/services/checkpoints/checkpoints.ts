@@ -127,20 +127,26 @@ export async function upsertCheckpoint(
  * @param connectionId - The connection ID the checkpoint belongs to.
  * @param key - The key of the checkpoint to delete.
  * @param expectedVersion - The expected version of the checkpoint. Delete will fail if version doesn't match.
+ * @param force - If true, will delete without checking version.
  */
 export async function deleteCheckpoint(
     db: Knex,
-    { environmentId, connectionId, key, expectedVersion }: { environmentId: number; connectionId: number; key: string; expectedVersion: number }
+    props: { environmentId: number; connectionId: number; key: string } & ({ expectedVersion: number } | { force: true })
 ): Promise<Result<void>> {
     try {
-        const count = await db
+        const query = db
             .from<DBCheckpoint>(TABLE)
-            .where({ environment_id: environmentId, connection_id: connectionId, key, version: expectedVersion })
+            .where({ environment_id: props.environmentId, connection_id: props.connectionId, key: props.key })
             .whereNull('deleted_at')
             .update({
                 deleted_at: db.fn.now(),
                 version: db.raw('version + 1')
             });
+        if ('expectedVersion' in props && props.expectedVersion) {
+            query.where({ version: props.expectedVersion });
+        }
+
+        const count = await query;
 
         if (count === 0) {
             return Err(new Error('checkpoint_conflict'));

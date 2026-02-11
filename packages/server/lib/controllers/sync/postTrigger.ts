@@ -21,7 +21,13 @@ const bodyValidation = z
         sync_mode: z.enum(['incremental', 'full_refresh', 'full_refresh_and_clear_cache']).optional(),
         full_resync: z.boolean().optional(),
         connection_id: z.string().optional(),
-        provider_config_key: z.string().optional()
+        provider_config_key: z.string().optional(),
+        opts: z
+            .object({
+                reset: z.boolean().optional(),
+                emptyCache: z.boolean().optional()
+            })
+            .optional()
     })
     .strict();
 
@@ -65,21 +71,37 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 
     const connectionId: string | undefined = body.connection_id || headers['connection-id'];
 
-    const { syncs, sync_mode, full_resync } = body;
+    const { syncs, sync_mode, full_resync, opts } = body;
 
     const syncIdentifiers = normalizeSyncParams(syncs);
 
     const { environment } = res.locals;
 
-    const command = getCommandFromSyncModeOrFullResync(sync_mode, full_resync);
-    const shouldDeleteRecords = sync_mode === 'full_refresh_and_clear_cache';
+    // Reject conflicting parameters: opts is the new API, sync_mode/full_resync are deprecated
+    if (opts && (sync_mode || full_resync !== undefined)) {
+        res.status(400).send({
+            error: { code: 'invalid_body', message: 'Cannot use opts with deprecated sync_mode/full_resync parameters' }
+        });
+        return;
+    }
+
+    let command: SyncCommand;
+    let deleteRecords: boolean;
+
+    if (opts) {
+        command = opts.reset ? SyncCommand.RUN_FULL : SyncCommand.RUN;
+        deleteRecords = opts.emptyCache ?? false;
+    } else {
+        command = getCommandFromSyncModeOrFullResync(sync_mode, full_resync);
+        deleteRecords = sync_mode === 'full_refresh_and_clear_cache';
+    }
 
     const { success, error } = await syncManager.runSyncCommand({
         recordsService,
         orchestrator,
         environment,
         providerConfigKey,
-        deleteRecords: shouldDeleteRecords,
+        deleteRecords,
         syncIdentifiers,
         command,
         logContextGetter,

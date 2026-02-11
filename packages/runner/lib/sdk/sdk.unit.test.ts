@@ -91,7 +91,7 @@ describe('cache', () => {
 
         it('setMetadata should invalidate connection', async () => {
             await nangoAction.getConnection();
-            await nangoAction.setMetadata({});
+            await nangoAction.setMetadata({} as never);
             await nangoAction.getConnection();
             await nangoAction.getMetadata();
             expect(nango.getConnection).toHaveBeenCalledTimes(2);
