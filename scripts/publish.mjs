@@ -131,10 +131,22 @@ async function npmPublish(packageName) {
     });
 }
 
+// --- Version bump functions ---
+// We intentionally avoid `npm install` and `npm version` here and use direct JSON file manipulation instead.
+// npm install on Linux CI strips platform-specific optional dependencies (e.g. lightningcss-darwin-arm64)
+// from package-lock.json due to a long-standing npm bug (https://github.com/npm/cli/issues/4828).
+// A fix shipped in npm 11.3.0 but does not fully resolve the issue, we still see it on npm 11.5.1.
+// By never letting npm touch the lockfile during publish, we preserve all platform entries.
 async function bumpWorkspacePackageVersion(packageName) {
     const packagesJson = await glob('packages/*/package.json');
     for (const packageJson of packagesJson) {
-        const content = JSON.parse((await fs.readFile(packageJson)).toString());
+        let content;
+        try {
+            content = JSON.parse((await fs.readFile(packageJson)).toString());
+        } catch (err) {
+            echo`${chalk.red(`Failed to parse ${packageJson}: ${err.message}`)}`;
+            process.exit(1);
+        }
         if (content.name !== packageName) {
             continue;
         }
@@ -153,7 +165,13 @@ async function bumpWorkspacePackageVersion(packageName) {
 
 async function bumpRootVersion() {
     const rootPackageJson = 'package.json';
-    const content = JSON.parse((await fs.readFile(rootPackageJson)).toString());
+    let content;
+    try {
+        content = JSON.parse((await fs.readFile(rootPackageJson)).toString());
+    } catch (err) {
+        echo`${chalk.red(`Failed to parse ${rootPackageJson}: ${err.message}`)}`;
+        process.exit(1);
+    }
     if (content.version !== nextVersion) {
         content.version = nextVersion;
         await fs.writeFile(rootPackageJson, `${JSON.stringify(content, null, 4)}\n`);
@@ -163,7 +181,6 @@ async function bumpRootVersion() {
 
 async function bumpReference(packageName) {
     const packagesJson = await glob('packages/*/package.json');
-    // We don't use npm install, because it behaves incoherently with workspaces and different terminals
     for (const packageJson of packagesJson) {
         const fp = packageJson;
         const content = (await fs.readFile(fp)).toString();
@@ -180,7 +197,13 @@ async function bumpReference(packageName) {
 async function bumpLockfileVersions() {
     await spinner('update package-lock versions', async () => {
         const lockfilePath = 'package-lock.json';
-        const lock = JSON.parse((await fs.readFile(lockfilePath)).toString());
+        let lock;
+        try {
+            lock = JSON.parse((await fs.readFile(lockfilePath)).toString());
+        } catch (err) {
+            echo`${chalk.red(`Failed to parse ${lockfilePath}: ${err.message}`)}`;
+            process.exit(1);
+        }
 
         if (lock.version) {
             lock.version = nextVersion;
