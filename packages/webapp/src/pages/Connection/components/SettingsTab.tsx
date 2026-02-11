@@ -9,9 +9,12 @@ import { useStore } from '@/store';
 
 import type { GetConnection } from '@nangohq/types';
 
-export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['data'] }> = ({ connectionData }) => {
+export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['data']; providerConfigKey: string }> = ({
+    connectionData,
+    providerConfigKey
+}) => {
     const env = useStore((state) => state.env);
-    const { connection, provider } = connectionData;
+    const { connection } = connectionData;
     const navigate = useNavigate();
 
     const { toast } = useToast();
@@ -22,7 +25,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
         try {
             const { res } = await deleteConnection({
                 params: { connectionId: connection.connection_id },
-                query: { provider_config_key: provider, env }
+                query: { provider_config_key: providerConfigKey, env }
             });
 
             if (!res.ok) {

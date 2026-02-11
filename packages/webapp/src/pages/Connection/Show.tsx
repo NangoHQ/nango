@@ -77,10 +77,10 @@ export const ConnectionShow = () => {
                         <AuthTab connectionData={connectionData} />
                     </TabsContent>
                     <TabsContent value="syncs">
-                        <SyncsTab connectionData={connectionData} />
+                        <SyncsTab connectionData={connectionData} integrationData={integrationData} />
                     </TabsContent>
                     <TabsContent value="settings">
-                        <SettingsTab connectionData={connectionData} />
+                        <SettingsTab connectionData={connectionData} providerConfigKey={integrationData.integration.unique_key} />
                     </TabsContent>
                 </Tabs>
             </div>
