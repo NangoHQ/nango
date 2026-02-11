@@ -279,8 +279,12 @@ export class NangoSyncCLI extends NangoSyncBase {
         return super.getMetadata<TMetadata>();
     }
 
-    public override async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<GetPublicConnection['Success']> {
-        const fetchedConnection = await super.getConnection(providerConfigKeyOverride, connectionIdOverride);
+    public override async getConnection(
+        providerConfigKeyOverride?: string,
+        connectionIdOverride?: string,
+        options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
+    ): Promise<GetPublicConnection['Success']> {
+        const fetchedConnection = await super.getConnection(providerConfigKeyOverride, connectionIdOverride, options);
         if (this.stubbedMetadata) {
             return { ...fetchedConnection, metadata: this.stubbedMetadata };
         }

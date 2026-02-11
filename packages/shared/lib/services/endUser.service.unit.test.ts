@@ -97,5 +97,77 @@ describe('endUser.service', () => {
                 custom_key: 'custom_value'
             });
         });
+
+        it('should truncate too-long tag keys and values from end_user.tags', () => {
+            const longKey = 'a'.repeat(70);
+            const longKeyTruncated = 'a'.repeat(64);
+            const longValue = 'b'.repeat(300);
+            const longValueTruncated = 'b'.repeat(255);
+
+            const result = buildTagsFromEndUser(
+                {
+                    id: 'user-123',
+                    email: 'test@example.com',
+                    tags: { [longKey]: longValue }
+                },
+                null
+            );
+
+            expect(result).toEqual({
+                end_user_id: 'user-123',
+                end_user_email: 'test@example.com',
+                [longKeyTruncated]: longValueTruncated
+            });
+        });
+
+        it('should skip invalid end_user.tags keys (format) while keeping base tags', () => {
+            const result = buildTagsFromEndUser(
+                {
+                    id: 'user-123',
+                    email: 'test@example.com',
+                    tags: {
+                        '123bad': 'v1',
+                        'bad key': 'v2',
+                        'good/tag': 'ok',
+                        'Bad.Key': 'keep'
+                    }
+                },
+                null
+            );
+
+            expect(result).toEqual({
+                end_user_id: 'user-123',
+                end_user_email: 'test@example.com',
+                'good/tag': 'ok',
+                'bad.key': 'keep'
+            });
+        });
+
+        it('should drop end_user.tags when base + end_user.tags exceeds max key count (includes organization)', () => {
+            const result = buildTagsFromEndUser(
+                {
+                    id: 'user-123',
+                    email: 'test@example.com',
+                    display_name: 'Test',
+                    tags: {
+                        tag1: '1',
+                        tag2: '2',
+                        tag3: '3',
+                        tag4: '4',
+                        tag5: '5',
+                        tag6: '6'
+                    }
+                },
+                { id: 'org-456', display_name: 'Org' }
+            );
+
+            expect(result).toEqual({
+                end_user_id: 'user-123',
+                end_user_email: 'test@example.com',
+                end_user_display_name: 'Test',
+                organization_id: 'org-456',
+                organization_display_name: 'Org'
+            });
+        });
     });
 });

@@ -59,19 +59,14 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
             };
         }
 
-        if (!connection.end_user_id) {
-            return {
-                status: 400,
-                response: { error: { code: 'invalid_body', message: "Can't update a connection that was not created with a session token" } }
-            };
+        let endUser = null;
+        if (connection.end_user_id) {
+            const endUserRes = await getEndUser(trx, { id: connection.end_user_id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
+            if (endUserRes.isErr()) {
+                return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
+            }
+            endUser = endUserRes.value;
         }
-
-        const endUserRes = await getEndUser(trx, { id: connection.end_user_id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
-        if (endUserRes.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
-        }
-
-        const endUser = endUserRes.value;
         const endUserTags = buildTagsFromEndUser(body.end_user, body.organization);
         const tags = { ...endUserTags, ...body.tags };
 
@@ -110,7 +105,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserId: endUser.id,
+            endUserId: endUser?.id ?? null,
             endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
             accountId: account.id,
             environmentId: environment.id,

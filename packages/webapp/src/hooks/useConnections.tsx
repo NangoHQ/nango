@@ -19,9 +19,7 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
                 usp.set('search', queries.search);
             }
             if (queries.integrationIds && queries.integrationIds.length > 0) {
-                queries.integrationIds.forEach((id) => {
-                    usp.append('integrationIds', id);
-                });
+                usp.append('integrationIds', queries.integrationIds.join(','));
             }
             if (queries.withError !== undefined) {
                 usp.set('withError', String(queries.withError));

@@ -173,4 +173,10 @@ export interface DBPlan extends Timestamps {
      * @default "runner"
      */
     on_event_function_runtime: FunctionRuntime;
+
+    /**
+     * Enable or disable records autopruning
+     * @default true
+     */
+    has_records_autopruning: boolean;
 }

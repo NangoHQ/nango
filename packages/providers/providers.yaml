@@ -2765,6 +2765,27 @@ cal-com-v2:
             example: cal_xxxxxx
             doc_section: '#step-1-finding-your-api-key'
 
+cal-com-oauth:
+    display_name: Cal.com (OAuth)
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    body_format: json
+    authorization_url: https://app.cal.com/auth/oauth2/authorize
+    token_url: https://api.cal.com/v2/auth/oauth2/token
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.cal.com
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/cal-com-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app
+
 calendly:
     display_name: Calendly
     categories:
@@ -3691,6 +3712,45 @@ connectwise-psa-staging:
             type: string
             title: Client ID
             description: The Client ID assigned to your integration
+
+connectwise-rmm:
+    display_name: ConnectWise RMM
+    categories:
+        - support
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://openapi.service.${connectionConfig.subdomain}/v1/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://openapi.service.${connectionConfig.subdomain}
+    docs: https://nango.dev/docs/api-integrations/connectwise-rmm
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-rmm/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The ConnectWise RMM OpenAPI subdomain for your region
+            pattern: '^(itsupport247\.net|euplatform\.connectwise\.com|auplatform\.connectwise\.com)$'
+            example: itsupport247.net
+            prefix: https://openapi.service.
+            doc_section: '#step-1-find-your-api-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your ConnectWise RMM OAuth client ID
+            example: '6500023'
+            pattern: '^[A-Za-z0-9._-]+$'
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your ConnectWise RMM OAuth client secret
+            secret: true
+            pattern: '^[A-Za-z0-9._~+/=-]{8,}$'
+            doc_section: '#step-2-create-api-credentials'
 
 confluence:
     display_name: Confluence
@@ -6192,6 +6252,31 @@ grammarly-scim:
             doc_section: '#step-1-finding-grammarly-scim-credentials'
             example: 'Xk9t3HZbWqLp7AeGvM4sUdYjBnR2TfQxCVi81oNz'
 
+granola:
+    display_name: Granola
+    categories:
+        - productivity
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.granola.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/notes?page_size=1
+    docs: https://nango.dev/docs/api-integrations/granola
+    docs_connect: https://nango.dev/docs/api-integrations/granola/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API key for your Granola account
+            example: grn_2isA***************_7HRD***********************
+            pattern: '^grn_[A-Za-z0-9]+_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-granola-api-token'
+
 guru:
     display_name: Guru
     categories:
@@ -7850,7 +7935,7 @@ ironclad:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/authorize
+    authorization_url: https://ironcladapp.com/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
     disable_pkce: true
     authorization_params:
@@ -11770,29 +11855,27 @@ posthog:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.posthog.com
-        verification:
-            method: GET
-            headers:
-                content-type: application/json
-            endpoints:
-                - /api/users/@me
-    docs: https://nango.dev/docs/integrations/all/posthog
-    docs_connect: https://nango.dev/docs/integrations/all/posthog/connect
+    docs: https://nango.dev/docs/api-integrations/posthog
+    docs_connect: https://nango.dev/docs/api-integrations/posthog/connect
     connection_config:
         subdomain:
             type: string
-            title: PostHog Domain
-            description: The subdomain of your PostHog account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
+            title: Subdomain
+            description: The subdomain of your PostHog cloud account
+            pattern: '^(us(\.i)?|eu(\.i)?)$'
+            example: us.i
             suffix: .posthog.com
             prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your PostHog account
-            doc_section: '#step-1-finding-your-posthog-api-key'
+            pattern: '^phx_[A-Za-z0-9]+$'
+            example: phx_1PPf***************************k3D
+            doc_section: '#step-2-finding-your-api-key'
 
 prive:
     display_name: Prive
@@ -12500,6 +12583,53 @@ replicate:
             title: API Key
             description: The API key for your Replicate account
 
+researchdesk:
+    display_name: ResearchDesk
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.subdomain}.researchdesk.com/tokens
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+        token_expiration: expires
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.researchdesk.com
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/researchdesk
+    docs_connect: https://nango.dev/docs/api-integrations/researchdesk/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of the environment to which you want to connect to
+            pattern: '^(demand|stage-demand)$'
+            example: demand
+            suffix: .researchdesk.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-choosing-your-subdomain'
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: Your ResearchDesk account email
+            format: email
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your ResearchDesk account password
+            secret: true
+            doc_section: '#step-2-finding-your-credentials'
+
 retell-ai:
     display_name: Retell AI
     categories:
@@ -12944,6 +13074,72 @@ salesforce:
             prefix: https://
             optional: true
 
+salesforce-jwt:
+    display_name: Salesforce (JWT)
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    signature:
+        protocol: RSA
+    body_format: form
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 3600000
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.clientId}
+            aud: https://${credentials.authorizationUrl}
+            sub: ${credentials.username}
+    token_url: https://login.salesforce.com/services/oauth2/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${token}
+    token_response:
+        token: access_token
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    token_expires_in_ms: 0
+    docs: https://nango.dev/docs/api-integrations/salesforce-jwt
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce-jwt/connect
+    credentials:
+        clientId:
+            type: string
+            title: Consumer Key
+            example: 3MVG9dAEux2v1sLsg0e52***************CJpGsXgqg8E
+            description: The Consumer Key from your Salesforce Connected App.
+            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+        clientSecret:
+            type: string
+            title: Consumer Secret
+            example: 954F73F4C234***************9D069B8FCF83B5
+            pattern: '^[A-F0-9]{64}$'
+            description: The Consumer Secret from your Salesforce Connected App.
+            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+        username:
+            type: string
+            title: Username
+            description: The Salesforce username of the user the JWT will act on behalf of.
+            format: email
+            example: john@acme.com
+            doc_section: '#step-7-finding-the-username'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The private key that matches the certificate you uploaded to the Connected App.
+            example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
+            doc_section: '#step-1-create-a-private-key-and-self-signed-digital-certificate'
+        authorizationUrl:
+            type: string
+            title: Authorization Server URL
+            description: Your Salesforce authorization server URL.
+            format: hostname
+            example: 'login.salesforce.com'
+            doc_section: '#step-6-finding-the-authorization-server-url'
+
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
     auth_mode: OAUTH2
@@ -13321,6 +13517,7 @@ schwab:
     auth_mode: OAUTH2
     authorization_url: https://api.schwabapi.com/v1/oauth/authorize
     token_url: https://api.schwabapi.com/v1/oauth/token
+    token_request_auth_method: basic
     authorization_params:
         response_type: code
     token_params:
@@ -14435,7 +14632,8 @@ squareup:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.squareup.com
-    docs: https://nango.dev/docs/integrations/all/squareup
+    docs: https://nango.dev/docs/api-integrations/squareup
+    setup_guide_url: https://nango.dev/docs/api-integrations/squareup/how-to-register-your-own-squareup-oauth-app
 
 squareup-sandbox:
     display_name: Squareup (Sandbox)
@@ -14454,7 +14652,8 @@ squareup-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.squareupsandbox.com
-    docs: https://nango.dev/docs/integrations/all/squareup-sandbox
+    docs: https://nango.dev/docs/api-integrations/squareup-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/squareup-sandbox/how-to-register-your-own-squareup-sandbox-oauth-app
 
 stackexchange:
     display_name: Stack Exchange

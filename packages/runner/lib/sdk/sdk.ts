@@ -3,7 +3,7 @@ import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import { MAX_LOG_PAYLOAD, isTest, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 
-import { PersistClient } from './persist.js';
+import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
 
@@ -200,7 +200,7 @@ export class NangoActionRunner extends NangoActionBase<never, Record<string, str
                 });
             }
         }
-        const res = await this.persistClient.saveLog({
+        const res = await this.persistClient.postLog({
             environmentId: this.environmentId,
             data
         });
@@ -383,7 +383,7 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.saveRecords({
+            const res = await this.persistClient.postRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -446,7 +446,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.updateRecords({
+            const res = await this.persistClient.putRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,

@@ -27,7 +27,6 @@ export const getVersionOutput = (): string => {
     const version = NANGO_VERSION;
     return `${chalk.green('Nango CLI version:')} ${version}`;
 };
-
 export function generate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');

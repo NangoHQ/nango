@@ -77,6 +77,51 @@ describe('triggerSync', () => {
     });
 });
 
+describe('listConnections', () => {
+    const nango = new Nango({ secretKey: 'test', host: 'https://example.com' });
+    const mockHttp = {
+        get: vi.fn()
+    };
+
+    // @ts-expect-error - we're mocking the http instance
+    nango.http = mockHttp;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockHttp.get.mockResolvedValue({ data: { connections: [] } });
+    });
+
+    it('should serialize displayName/email tags as connection tag filters', async () => {
+        await nango.listConnections({
+            tags: { displayName: 'My User', email: 'user@example.com' }
+        });
+
+        expect(mockHttp.get).toHaveBeenCalledOnce();
+
+        const calledUrl = mockHttp.get.mock.calls[0]?.[0] as string;
+        const url = new URL(calledUrl);
+
+        expect(url.pathname).toBe('/connections');
+
+        expect(url.searchParams.get('tags[end_user_display_name]')).toBe('My User');
+        expect(url.searchParams.get('tags[end_user_email]')).toBe('user@example.com');
+
+        expect(url.searchParams.has('search')).toBe(false);
+        expect(url.searchParams.has('email')).toBe(false);
+    });
+
+    it('should serialize arbitrary tags using tags[...] query params', async () => {
+        await nango.listConnections({
+            tags: { Foo: 'Bar' }
+        });
+
+        const calledUrl = mockHttp.get.mock.calls[0]?.[0] as string;
+        const url = new URL(calledUrl);
+
+        expect(url.searchParams.get('tags[foo]')).toBe('Bar');
+    });
+});
+
 describe('verifySignature', () => {
     it('should verify an untampered payload', () => {
         const secretKey = 'test-secret-key';
