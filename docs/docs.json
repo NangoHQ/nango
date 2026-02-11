@@ -301,6 +301,7 @@
               "api-integrations/calendly",
               "integrations/all/callrail",
               "integrations/all/canny",
+              "api-integrations/candis",
               "integrations/all/canva",
               "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
