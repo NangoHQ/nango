@@ -301,6 +301,11 @@ program
             'You can also pass a file path prefixed with `@` to the metadata and appended by `json`, for example @fixtures/metadata.json. Note that only json files can be passed.'
     )
     .option(
+        '-c, --checkpoint [checkpoint]',
+        'Optional (for syncs only): checkpoint to stub for the sync script supplied in JSON format, for example --checkpoint \'{"lastPage": "3"}\'. ' +
+            'You can also pass a file path prefixed with `@` to the checkpoint and appended by `json`, for example @fixtures/checkpoint.json. Note that only json files can be passed.'
+    )
+    .option(
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
@@ -320,6 +325,7 @@ program
             lastSyncDate,
             variant,
             metadata,
+            checkpoint,
             diagnostics
         } = this.opts();
         const shouldValidate = validation || saveResponses;
@@ -396,6 +402,7 @@ program
             lastSyncDate,
             variant,
             metadata,
+            checkpoint,
             diagnostics
         });
     });

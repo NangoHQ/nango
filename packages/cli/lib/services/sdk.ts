@@ -6,8 +6,8 @@ import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } f
 
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
-import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import type { GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
@@ -41,15 +41,19 @@ function showLoggerLevelWarning() {
     };
 }
 
-export class NangoActionCLI extends NangoActionBase {
+export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
     nango: Nango;
     dryRunService: DryRunService;
     dryRun = true;
+    stubbedCheckpoint?: Checkpoint | undefined = undefined;
 
-    constructor(props: NangoProps, cliProps: { dryRunService: DryRunService }) {
+    constructor(props: NangoProps, cliProps: { dryRunService: DryRunService; stubbedCheckpoint?: Checkpoint | undefined }) {
         super(props);
 
         this.dryRunService = cliProps.dryRunService;
+        if (cliProps.stubbedCheckpoint) {
+            this.stubbedCheckpoint = cliProps.stubbedCheckpoint;
+        }
 
         this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
     }
@@ -137,25 +141,24 @@ export class NangoActionCLI extends NangoActionBase {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override async getCheckpoint<T = never>(): Promise<T> {
-        // Not applicable to CLI
-        return null as T;
+    public override async getCheckpoint(): Promise<Checkpoint | null> {
+        return this.stubbedCheckpoint || null;
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override async saveCheckpoint(): Promise<void> {
-        // Not applicable to CLI
+    public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+        this.stubbedCheckpoint = checkpoint;
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public override async clearCheckpoint(): Promise<void> {
-        // Not applicable to CLI
+        this.stubbedCheckpoint = undefined;
     }
 
     protected showLoggerLevelWarning = showLoggerLevelWarning();
 }
 
-export class NangoSyncCLI extends NangoSyncBase {
+export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
     nango: Nango;
     dryRunService: DryRunService;
     dryRun = true;
@@ -168,12 +171,19 @@ export class NangoSyncCLI extends NangoSyncBase {
     rawSaveOutput = new Map<string, unknown[]>();
     rawDeleteOutput = new Map<string, unknown[]>();
     stubbedMetadata?: Metadata | undefined = undefined;
+    stubbedCheckpoint?: Checkpoint | undefined = undefined;
 
-    constructor(props: NangoProps, cliProps: { stubbedMetadata?: Metadata | undefined; dryRunService: DryRunService }) {
+    constructor(
+        props: NangoProps,
+        cliProps: { stubbedMetadata?: Metadata | undefined; stubbedCheckpoint?: Checkpoint | undefined; dryRunService: DryRunService }
+    ) {
         super(props);
 
         if (cliProps.stubbedMetadata) {
             this.stubbedMetadata = cliProps.stubbedMetadata;
+        }
+        if (cliProps.stubbedCheckpoint) {
+            this.stubbedCheckpoint = cliProps.stubbedCheckpoint;
         }
 
         this.dryRunService = cliProps.dryRunService;
@@ -189,11 +199,23 @@ export class NangoSyncCLI extends NangoSyncBase {
     tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
     releaseLock = NangoActionCLI['prototype']['releaseLock'];
     releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
-    getCheckpoint = NangoActionCLI['prototype']['getCheckpoint'];
-    saveCheckpoint = NangoActionCLI['prototype']['saveCheckpoint'];
-    clearCheckpoint = NangoActionCLI['prototype']['clearCheckpoint'];
 
     protected showLoggerLevelWarning = showLoggerLevelWarning();
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async getCheckpoint(): Promise<Checkpoint | null> {
+        return this.stubbedCheckpoint || null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+        this.stubbedCheckpoint = checkpoint;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async clearCheckpoint(): Promise<void> {
+        this.stubbedCheckpoint = undefined;
+    }
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {

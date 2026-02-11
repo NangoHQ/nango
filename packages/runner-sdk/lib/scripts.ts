@@ -5,7 +5,10 @@ import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
 import type * as z from 'zod';
 
-export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
+export type CreateAnyResponse =
+    | CreateSyncResponse<any, ZodMetadata, ZodCheckpoint>
+    | CreateActionResponse<any, any, ZodMetadata, ZodCheckpoint>
+    | CreateOnEventResponse<ZodMetadata, ZodCheckpoint>;
 
 export type { ActionError } from './errors.js';
 export type { NangoActionBase as NangoAction, ProxyConfiguration } from './action.js';

@@ -168,7 +168,7 @@ export async function exec({
                     if (!payload.exec) {
                         throw new Error(`Missing exec function`);
                     }
-                    output = await payload.exec(nango as any, codeParams);
+                    output = await payload.exec(nango, codeParams);
                 } else {
                     output = await def(nango, inputParams);
                 }
