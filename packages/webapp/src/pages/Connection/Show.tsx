@@ -22,7 +22,7 @@ export const ConnectionShow = () => {
     const {
         data: connectionData,
         error: connectionError,
-        loading: connectionLoading
+        isLoading: connectionLoading
     } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
     const { data: integrationData, error: integrationError, loading: providerLoading } = useGetIntegration(env, providerConfigKey!);
     const [activeTab, setActiveTab] = useHashNavigation('auth');
@@ -37,7 +37,7 @@ export const ConnectionShow = () => {
                 <Helmet>
                     <title>Connection - Nango</title>
                 </Helmet>
-                <Skeleton className="size-15" />
+                <Skeleton className="w-full h-15" />
             </DashboardLayout>
         );
     }

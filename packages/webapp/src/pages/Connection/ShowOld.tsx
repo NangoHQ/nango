@@ -52,8 +52,8 @@ export const OldConnectionShow: React.FC = () => {
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const [slackIsConnected, setSlackIsConnected] = useState(true);
-    const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
-    const { data: syncs, error: errorSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+    const { data: connection, error, isLoading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
+    const { data: syncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
 
     // Modal delete
     const [open, setOpen] = useState(false);
@@ -130,7 +130,7 @@ export const OldConnectionShow: React.FC = () => {
         await connectSlack({ accountUUID, env, hostUrl: globalEnv.apiUrl, onFinish, onFailure });
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <DashboardLayout>
                 <Helmet>
@@ -158,7 +158,7 @@ export const OldConnectionShow: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Connection" error={error || errorSyncs} />;
+        return <ErrorPageComponent title="Connection" />;
     }
 
     if (!connection) {
