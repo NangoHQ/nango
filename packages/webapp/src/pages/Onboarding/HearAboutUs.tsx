@@ -29,14 +29,13 @@ export const HearAboutUs: React.FC = () => {
         const check = async () => {
             const res = await apiFetch('/api/v1/account/onboarding/hear-about-us');
             if (res.status !== 200) {
-                // navigate('/', { replace: true });
-                // return;
+                navigate('/', { replace: true });
+                return;
             }
             const data = (await res.json()) as GetOnboardingHearAboutUs['Success'];
             if (!data.data.showHearAboutUs) {
-                console.log(data);
-                // navigate('/', { replace: true });
-                // return;
+                navigate('/', { replace: true });
+                return;
             }
             setLoading(false);
         };
