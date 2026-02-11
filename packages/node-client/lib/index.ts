@@ -662,14 +662,32 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param syncMode - An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
+     * @param opts - Options for sync trigger. Use `reset: true` for a full resync, `emptyCache: true` to clear records
      * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean // boolean kept for backwards compatibility
+        opts?: { reset?: boolean; emptyCache?: boolean }
+    ): Promise<void>;
+
+    /**
+     * @deprecated Use opts parameter instead of syncMode
+     */
+    public async triggerSync(
+        providerConfigKey: string,
+        syncs?: (string | { name: string; variant: string })[],
+        connectionId?: string,
+        // eslint-disable-next-line @typescript-eslint/unified-signatures
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+    ): Promise<void>;
+
+    public async triggerSync(
+        providerConfigKey: string,
+        syncs?: (string | { name: string; variant: string })[],
+        connectionId?: string,
+        optsOrSyncMode?: { reset?: boolean; emptyCache?: boolean } | PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
@@ -677,18 +695,31 @@ export class Nango {
             throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
-        if (typeof syncMode === 'boolean') {
-            syncMode = syncMode ? 'full_refresh' : 'incremental';
+        const isOpts = optsOrSyncMode !== undefined && typeof optsOrSyncMode === 'object';
+        const isLegacy = typeof optsOrSyncMode === 'string' || typeof optsOrSyncMode === 'boolean';
+
+        let body: PostPublicTrigger['Body'];
+
+        if (isLegacy) {
+            let syncMode: PostPublicTrigger['Body']['sync_mode'] = optsOrSyncMode as PostPublicTrigger['Body']['sync_mode'];
+            if (typeof optsOrSyncMode === 'boolean') {
+                syncMode = optsOrSyncMode ? 'full_refresh' : 'incremental';
+            }
+            body = {
+                syncs: syncs || [],
+                provider_config_key: providerConfigKey,
+                connection_id: connectionId,
+                sync_mode: syncMode
+            };
+        } else {
+            const opts = isOpts ? optsOrSyncMode : undefined;
+            body = {
+                syncs: syncs || [],
+                provider_config_key: providerConfigKey,
+                connection_id: connectionId,
+                opts
+            };
         }
-
-        syncMode ??= 'incremental';
-
-        const body = {
-            syncs: syncs || [],
-            provider_config_key: providerConfigKey,
-            connection_id: connectionId,
-            sync_mode: syncMode
-        };
 
         return this.http.post(url, body, { headers: this.enrichHeaders() });
     }
