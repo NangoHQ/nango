@@ -17,7 +17,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import IntegrationLogo from '../../components/ui/IntegrationLogo.js';
 import { Skeleton } from '../../components/ui/Skeleton.js';
 import { Button } from '../../components/ui/button/Button.js';
-import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections.js';
+import { clearConnectionsCache, useConnection, useDeleteConnection } from '../../hooks/useConnections.js';
 import { useEnvironment } from '../../hooks/useEnvironment.js';
 import { clearIntegrationsCache } from '../../hooks/useIntegration.js';
 import { GetUsageQueryKey } from '../../hooks/usePlan.js';
@@ -57,7 +57,7 @@ export const OldConnectionShow: React.FC = () => {
 
     // Modal delete
     const [open, setOpen] = useState(false);
-    const [loadingDelete, setLoadingDelete] = useState(false);
+    const deleteConnection = useDeleteConnection();
 
     useEffect(() => {
         if (environmentAndAccount) {
@@ -79,27 +79,37 @@ export const OldConnectionShow: React.FC = () => {
             return;
         }
 
-        setLoadingDelete(true);
-        const res = await apiDeleteConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
-        setLoadingDelete(false);
+        try {
+            const res = await deleteConnection.mutateAsync({
+                params: { connectionId },
+                query: { provider_config_key: providerConfigKey, env }
+            });
 
-        if (res.res.status === 200) {
-            toast({ title: `Connection deleted!`, variant: 'success' });
+            if (res.res.status === 200) {
+                toast({ title: `Connection deleted!`, variant: 'success' });
 
-            // Both are mandatory because SWR is bad
-            // Since 2021 https://github.com/vercel/swr/issues?q=is%3Aissue+infinite+cache
-            await mutate(
-                unstable_serialize(() => '/api/v1/connections?env=dev&page=0'),
-                undefined,
-                { revalidate: false }
-            );
-            clearConnectionsCache(cache, mutate);
-            clearIntegrationsCache(cache, mutate);
-            queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
+                // Both are mandatory because SWR is bad
+                // Since 2021 https://github.com/vercel/swr/issues?q=is%3Aissue+infinite+cache
+                await mutate(
+                    unstable_serialize(() => '/api/v1/connections?env=dev&page=0'),
+                    undefined,
+                    { revalidate: false }
+                );
+                clearConnectionsCache(cache, mutate);
+                clearIntegrationsCache(cache, mutate);
+                queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
 
-            navigate(`/${env}/connections`, { replace: true });
-        } else {
-            toast({ title: `Failed to delete connection`, variant: 'error' });
+                navigate(`/${env}/connections`, { replace: true });
+            } else {
+                toast({ title: `Failed to delete connection`, variant: 'error' });
+            }
+        } catch (err) {
+            if (err instanceof Error && 'json' in err) {
+                const apiError = err as { json: { error?: { message?: string } } };
+                toast({ title: apiError.json.error?.message || 'Failed to delete connection', variant: 'error' });
+            } else {
+                toast({ title: 'Failed to delete connection', variant: 'error' });
+            }
         }
     };
 
@@ -208,7 +218,7 @@ export const OldConnectionShow: React.FC = () => {
                                 <DialogClose asChild>
                                     <Button variant={'zinc'}>Cancel</Button>
                                 </DialogClose>
-                                <Button variant={'danger'} onClick={onDelete} isLoading={loadingDelete}>
+                                <Button variant={'danger'} onClick={onDelete} isLoading={deleteConnection.isPending}>
                                     Delete
                                 </Button>
                             </DialogFooter>
