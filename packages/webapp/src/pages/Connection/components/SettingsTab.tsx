@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
@@ -41,25 +42,29 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
     return (
         <>
             {DialogComponent}
-            <div className="flex items-center justify-between">
-                <span className="text-body-medium-semi text-text-primary">Connection suppression</span>
-                <Button
-                    variant="destructive"
-                    size="lg"
-                    loading={isDeletingConnection}
-                    onClick={() =>
-                        confirm({
-                            title: 'Delete connection?',
-                            description: 'All credentials & synced data associated with this connection will be deleted.',
-                            confirmButtonText: 'Delete connection',
-                            confirmVariant: 'destructive',
-                            onConfirm: onDelete
-                        })
-                    }
-                >
-                    <Trash2 />
-                    Delete connection
-                </Button>
+            <div className="flex justify-between items-start gap-11">
+                <div className="w-full flex items-center justify-between">
+                    <span className="text-body-medium-semi text-text-primary">Connection suppression</span>
+                    <Button
+                        variant="destructive"
+                        size="lg"
+                        loading={isDeletingConnection}
+                        onClick={() =>
+                            confirm({
+                                title: 'Delete connection?',
+                                description: 'All credentials & synced data associated with this connection will be deleted.',
+                                confirmButtonText: 'Delete connection',
+                                confirmVariant: 'destructive',
+                                onConfirm: onDelete
+                            })
+                        }
+                    >
+                        <Trash2 />
+                        Delete connection
+                    </Button>
+                </div>
+
+                <ConnectionSideInfo connectionData={connectionData} />
             </div>
         </>
     );
