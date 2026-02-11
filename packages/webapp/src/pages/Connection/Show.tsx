@@ -3,10 +3,12 @@ import { useParams } from 'react-router-dom';
 
 import { AuthTab } from './components/AuthTab';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
+import { SyncsTab } from './components/SyncsTab';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useConnection } from '@/hooks/useConnections';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
@@ -22,6 +24,7 @@ export const ConnectionShow = () => {
         loading: connectionLoading
     } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
     const { data: integrationData, error: integrationError, loading: providerLoading } = useGetIntegration(env, providerConfigKey!);
+    const [activeTab, setActiveTab] = useHashNavigation('auth');
 
     if (connectionError || integrationError) {
         return <ErrorPageComponent title="Connection" />;
@@ -63,7 +66,7 @@ export const ConnectionShow = () => {
                     </div>
                 </div>
 
-                <Tabs defaultValue="auth">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>
                         <TabsTrigger value="auth">Auth</TabsTrigger>
                         <TabsTrigger value="syncs">Syncs</TabsTrigger>
@@ -71,6 +74,9 @@ export const ConnectionShow = () => {
                     </TabsList>
                     <TabsContent value="auth">
                         <AuthTab connectionData={connectionData} />
+                    </TabsContent>
+                    <TabsContent value="syncs">
+                        <SyncsTab connectionData={connectionData} />
                     </TabsContent>
                 </Tabs>
             </div>
