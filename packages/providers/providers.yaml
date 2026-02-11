@@ -2863,6 +2863,32 @@ canny:
             example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
             pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+candis:
+    display_name: Candis
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://id.my.candis.io/auth/realms/candis/protocol/openid-connect/auth
+    token_url: https://id.my.candis.io/auth/realms/candis/protocol/openid-connect/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.candis.io
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/candis
+    setup_guide_url: https://nango.dev/docs/api-integrations/candis/how-to-register-your-own-candis-oauth-app
+    post_connection_script: candisPostConnection
+
 canva:
     display_name: Canva
     categories:
@@ -3302,6 +3328,41 @@ cloudbeds:
     docs: https://nango.dev/docs/api-integrations/cloudbeds
     setup_guide_url: https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app
 
+cloudtalk:
+    display_name: CloudTalk
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my.cloudtalk.io/api
+        retry:
+            at:
+                - 'x-cloudtalkapi-resettime'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /contacts/index.json?limit=1
+    docs: https://nango.dev/docs/api-integrations/cloudtalk
+    docs_connect: https://nango.dev/docs/api-integrations/cloudtalk/connect
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: Your CloudTalk API Access ID.
+            pattern: '^[A-Za-z0-9.%@?_-]+$'
+            example: 'E1ZH****************RRM'
+            doc_section: '#step-1-getting-your-api-credentials'
+        password:
+            type: string
+            title: Key
+            description: Your CloudTalk API Access Key.
+            secret: true
+            pattern: '^[A-Za-z0-9.%@?_-]+$'
+            example: 'bQI*******************************eZ'
+            doc_section: '#step-1-getting-your-api-credentials'
+
 clerk:
     display_name: Clerk
     categories:
@@ -3359,6 +3420,26 @@ cloudentity:
             title: Workspace ID
             description: The workspace ID of your Cloudentity account
             doc_section: '#step-4-retrieving-the-workspace-id'
+
+cloudflare:
+    display_name: Cloudflare
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cloudflare.com/client
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/cloudflare
+    docs_connect: https://nango.dev/docs/api-integrations/cloudflare/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Cloudflare user or account
+            example: lGlHlGZN3iPR9z7CupZlMB3nzMpTCdfxeUPNj_pf
+            pattern: '^[a-zA-Z0-9_-]+$'
 
 close:
     display_name: Close
@@ -5393,6 +5474,28 @@ fanvue:
             title: ''
             description: ''
             automated: true
+
+fiber-ai:
+    display_name: Fiber AI
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fiber.ai
+        query:
+            apiKey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/get-org-credits
+    docs: https://nango.dev/docs/api-integrations/fiber-ai
+    docs_connect: https://nango.dev/docs/api-integrations/fiber-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fiber AI API key.
+            doc_section: '#step-1-getting-your-api-key'
 
 fathom:
     display_name: Fathom
@@ -9692,6 +9795,63 @@ microsoft-power-bi:
         base_url: https://api.powerbi.com
     docs: https://nango.dev/docs/integrations/all/microsoft-power-bi
 
+maximizer:
+    display_name: Maximizer (Cloud)
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/authorize
+    token_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.region}.maximizercrmlive.com
+    docs: https://nango.dev/docs/api-integrations/maximizer
+    setup_guide_url: https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/maximizer/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Region-specific subdomain.
+            pattern: '^(caw|ukw)$'
+            example: caw
+        company_alias:
+            type: string
+            title: Company Alias
+            description: The company alias of your Maximizer cloud account.
+            example: acme
+
+maximizer-on-premise:
+    display_name: Maximizer (On-Premise)
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Authorize
+    token_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/maximizer-on-premise
+    setup_guide_url: https://nango.dev/docs/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/maximizer-on-premise/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Maximizer on premise instance.
+            example: maximizer.mycompany.com
+            format: hostname
+
 mindbody:
     display_name: Mindbody
     categories:
@@ -10441,6 +10601,45 @@ notion-scim:
             title: API Key
             description: The API key for your Notion scim account
             doc_section: '#step-1-finding-your-scim-api-key-token'
+
+nyne-ai:
+    display_name: Nyne AI
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.nyne.ai
+        headers:
+            x-api-key: ${connectionConfig.apiKey}
+            x-api-secret: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /person/events
+            data:
+                event: 'test'
+    docs: https://nango.dev/docs/api-integrations/nyne-ai
+    docs_connect: https://nango.dev/docs/api-integrations/nyne-ai/connect
+    connection_config:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Nyne AI API key.
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: '48f0****************************892'
+            order: 1
+            doc_section: '#step-1-getting-your-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            description: Your Nyne AI API secret.
+            pattern: '^[a-fA-F0-9]{16}$'
+            example: '97e7********0463'
+            doc_section: '#step-1-getting-your-api-credentials'
 
 odoo:
     display_name: Odoo (OAuth)
@@ -16899,24 +17098,19 @@ zapier:
     auth_mode: OAUTH2
     authorization_url: https://api.zapier.com/v2/authorize
     token_url: https://zapier.com/oauth/token
+    disable_pkce: true
     scope_separator: ' '
-    default_scopes:
-        - authentication
-        - authentication:write
-        - profile
-        - zap
-        - zap:write
     proxy:
         base_url: https://api.zapier.com
     authorization_params:
         response_type: code
         response_mode: query
-        state: N@nG0s%rinG
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/zapier
+    docs: https://nango.dev/docs/api-integrations/zapier
+    setup_guide_url: https://nango.dev/docs/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app
 
 zapier-nla:
     display_name: Zapier NLA

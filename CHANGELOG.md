@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.31] - 2026-02-10
+
+### Added
+
+- *(tags)* Add backfill script/migration for end user tags -> connection tags (#5342) by @marcindobry
+- Add has_records_autopruning to plans table (#5388) by @TBonnin
+- Do not autoprune records if plan.has_records_autopruning is false (#5390) by @TBonnin
+- *(integrations)* Add support for cal.com OAuth (#5394) by @hassan254-prog
+- *(integrations)* Add support for researchdesk (#5395) by @hassan254-prog
+- *(pre-provisioned)* Pick the latest credential for shared providers with multiple entries (#5389) by @hassan254-prog
+- Migration to remove the unique name constraint from `providers_shared` (#5387) by @hassan254-prog
+- *(integrations)* Add support for granola (#5401) by @hassan254-prog
+- *(integrations)* Add support for salesforce(jwt) (#5383) by @hassan254-prog
+- *(integrations)* Add support for ConnectWise RMM (#5406) by @mayankj
+- *(node-sdk)* Fix connections tag filtering in node sdk to work with new tags (#5396) by @marcindobry
+- *(connection tags)* Make end_user optional when tags are present (#5393) by @marcindobry
+
+### Changed
+
+- Migrate squareup docs (#5368) by @hassan254-prog
+- Fix rate limit number in docs (#5405) by @marcindobry
+- Fix env settings responsiveness (#5403) by @marcindobry
+- Fix env settings responsiveness (#5403) by @marcindobry
+
+### Fixed
+
+- Fix master (#5386) by @agusayerza
+- *(providers)* Fix ironclad authorization url (#5392) by @hassan254-prog
+- Fix create shared credentials (#5404) by @hassan254-prog
+- *(persist)* Set qs array limit to 100 (#5412) by @TBonnin
+- *(providers)* Fix posthog `subdomain` pattern (#5409) by @hassan254-prog
+
 ## [v0.69.30] - 2026-02-04
 
 ### Changed
@@ -5812,6 +5844,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.31]: https://github.com/NangoHQ/nango/compare/v0.69.30..v0.69.31
 [v0.69.30]: https://github.com/NangoHQ/nango/compare/v0.69.29..v0.69.30
 [v0.69.29]: https://github.com/NangoHQ/nango/compare/v0.69.28..v0.69.29
 [v0.69.28]: https://github.com/NangoHQ/nango/compare/v0.69.27..v0.69.28

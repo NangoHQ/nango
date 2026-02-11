@@ -147,6 +147,7 @@
                 "pages": [
                   "implementation-guides/platform/auth/configure-integration",
                   "implementation-guides/platform/auth/implement-api-auth",
+                  "implementation-guides/platform/auth/connection-tags",
                   "implementation-guides/platform/auth/customize-connect-ui",
                   "implementation-guides/platform/auth/contribute-new-api"
                 ]
@@ -174,6 +175,7 @@
               {
                 "group": "Migrations",
                 "pages": [
+                  "implementation-guides/platform/migrations/migrate-from-end-user",
                   "implementation-guides/platform/migrations/migrate-from-public-key",
                   "implementation-guides/platform/migrations/migrate-to-zero-yaml"
                 ]
@@ -299,6 +301,7 @@
               "api-integrations/calendly",
               "integrations/all/callrail",
               "integrations/all/canny",
+              "api-integrations/candis",
               "integrations/all/canva",
               "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
@@ -319,7 +322,9 @@
               "integrations/all/clerk",
               "integrations/all/close",
               "api-integrations/cloudbeds",
+              "api-integrations/cloudtalk",
               "integrations/all/cloudentity",
+              "api-integrations/cloudflare",
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
@@ -403,6 +408,7 @@
               "integrations/all/falai",
               "integrations/all/fairing",
               "api-integrations/fanvue",
+              "api-integrations/fiber-ai",
               "integrations/all/fathom",
               "api-integrations/fathom-oauth",
               "integrations/all/figjam",
@@ -566,6 +572,8 @@
               "api-integrations/microsoft-planner",
               "integrations/all/microsoft-power-bi",
               "api-integrations/microsoft-teams",
+              "api-integrations/maximizer",
+              "api-integrations/maximizer-on-premise",
               "integrations/all/microsoft-tenant-specific",
               "integrations/all/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
@@ -593,6 +601,7 @@
               "integrations/all/next-cloud-ocs",
               "api-integrations/nocrm",
               "api-integrations/notion",
+              "api-integrations/nyne-ai",
               "integrations/all/notion-scim",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
@@ -842,7 +851,7 @@
               "integrations/all/yandex",
               "integrations/all/yotpo",
               "api-integrations/youtube",
-              "integrations/all/zapier",
+              "api-integrations/zapier",
               "integrations/all/zapier-nla",
               "integrations/all/zapier-scim",
               "api-integrations/zendesk",
