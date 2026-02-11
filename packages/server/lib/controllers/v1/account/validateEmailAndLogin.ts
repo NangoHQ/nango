@@ -71,9 +71,7 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
     let showHearAboutUs = false;
     const account = await accountService.getAccountById(db.knex, user.account_id);
     if (account) {
-        const count = await userService.countUsers(account.id);
-        const hasNotSetFoundUs = account.found_us === null || account.found_us === '';
-        showHearAboutUs = hasNotSetFoundUs && count === 1;
+        showHearAboutUs = await accountService.shouldShowHearAboutUs(account);
     }
 
     req.login(user, function (err) {

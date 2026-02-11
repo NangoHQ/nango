@@ -46,7 +46,7 @@ export const postOnboardingHearAboutUs = asyncWrapper<PostOnboardingHearAboutUs>
         return;
     }
 
-    await accountService.updateFoundUs(account.id, val.data.source);
+    await accountService.updateAccount({ id: account.id, foundUs: val.data.source });
     res.status(200).send({
         data: {
             success: true

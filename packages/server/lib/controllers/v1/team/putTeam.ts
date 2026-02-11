@@ -33,7 +33,7 @@ export const putTeam = asyncWrapper<PutTeam>(async (req, res) => {
     const { account } = res.locals;
     const body: PutTeam['Body'] = val.data;
 
-    await accountService.editAccount({ id: account.id, ...body });
+    await accountService.updateAccount({ id: account.id, ...body });
 
     void pubsub.publisher.publish({ subject: 'team', type: 'team.updated', payload: { id: account.id } });
 
