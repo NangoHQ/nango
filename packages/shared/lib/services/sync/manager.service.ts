@@ -564,7 +564,7 @@ export class SyncManagerService {
             latestResult: latestJob?.result,
             latestExecutionStatus: latestJob?.status,
             recordCount,
-            checkpoint: checkpoint.value?.checkpoint || null,
+            checkpoint: checkpoint.value && !checkpoint.value.deleted_at ? checkpoint.value.checkpoint : null,
             ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
         };
     }
