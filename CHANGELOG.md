@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.32] - 2026-02-11
+
+### Added
+
+- *(provider)* Add support for cloudflare (#5253) by @flyck
+- *(integrations)* Add support for maximizer (#5402) by @hassan254-prog
+- *(integrations)* Add support for nyne ai (#5417) by @hassan254-prog
+- *(integrations)* Add support for fiber ai (#5418) by @hassan254-prog
+- *(integrations)* Add support for candis (#5420) by @hassan254-prog
+- *(integrations)* Add support for cloudtalk (#5419) by @hassan254-prog
+- Add checkpoint support to functions-sdk (#5398) by @TBonnin
+- *(webapp)* Trigger sync UI tweaks (#5425) by @TBonnin
+- Update trigger sync to support new opts {reset, emptyCache} param (#5427) by @TBonnin
+- *(integrations)* Add support for resend (#5422) by @hassan254-prog
+
+### Changed
+
+- Fix package-lock.json (#5421) by @agusayerza
+- Update docs with connection tags feature (#5397) by @marcindobry
+- Remove records autopruning dryrun (#5413) by @TBonnin
+- Add MCP server URL to docs (#5424) by @bastienbeurier
+- Migrate zapier docs (#5423) by @hassan254-prog
+- Fix release github action breaking package-lock.json (#5435) by @agusayerza
+
+### Fixed
+
+- *(reconnection)* Clear auth error on connection creation (#5430) by @hassan254-prog
+
 ## [v0.69.31] - 2026-02-10
 
 ### Added
@@ -5844,6 +5872,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.32]: https://github.com/NangoHQ/nango/compare/v0.69.31..v0.69.32
 [v0.69.31]: https://github.com/NangoHQ/nango/compare/v0.69.30..v0.69.31
 [v0.69.30]: https://github.com/NangoHQ/nango/compare/v0.69.29..v0.69.30
 [v0.69.29]: https://github.com/NangoHQ/nango/compare/v0.69.28..v0.69.29
