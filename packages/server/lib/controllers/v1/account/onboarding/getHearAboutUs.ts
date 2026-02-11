@@ -1,4 +1,4 @@
-import { userService } from '@nangohq/shared';
+import { accountService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -12,10 +12,7 @@ export const getOnboardingHearAboutUs = asyncWrapper<GetOnboardingHearAboutUs>(a
         return;
     }
 
-    const account = res.locals.account;
-    const count = await userService.countUsers(account.id);
-    const hasNotSetFoundUs = account.found_us === null || account.found_us === '';
-    const showHearAboutUs = hasNotSetFoundUs && count === 1;
+    const showHearAboutUs = await accountService.shouldShowHearAboutUs(res.locals.account);
 
     res.status(200).send({
         data: {

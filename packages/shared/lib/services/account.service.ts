@@ -3,6 +3,7 @@ import { FixedSizeMap, flagHasPlan, isCloud, metrics, report } from '@nangohq/ut
 
 import environmentService from './environment.service.js';
 import secretService from './secret.service.js';
+import userService from './user.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -75,12 +76,21 @@ class AccountService {
         }
     }
 
-    async editAccount({ name, id }: { name: string; id: number }): Promise<void> {
-        await db.knex.update({ name, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id });
+    async updateAccount({ id, name, foundUs }: { id: number; name?: string; foundUs?: string }): Promise<void> {
+        const updates: Partial<DBTeam> & { updated_at: Date } = { updated_at: new Date() };
+        if (name !== undefined) {
+            updates.name = name;
+        }
+        if (foundUs !== undefined) {
+            updates.found_us = foundUs;
+        }
+        await db.knex.update(updates).from<DBTeam>(`_nango_accounts`).where({ id });
     }
 
-    async updateFoundUs(accountId: number, foundUs: string): Promise<void> {
-        await db.knex.update({ found_us: foundUs, updated_at: new Date() }).from<DBTeam>(`_nango_accounts`).where({ id: accountId });
+    async shouldShowHearAboutUs(account: Pick<DBTeam, 'id' | 'found_us'>): Promise<boolean> {
+        const count = await userService.countUsers(account.id);
+        const hasNotSetFoundUs = account.found_us === null || account.found_us === '';
+        return hasNotSetFoundUs && count === 1;
     }
 
     async getAccountByUUID(uuid: string): Promise<DBTeam | null> {
