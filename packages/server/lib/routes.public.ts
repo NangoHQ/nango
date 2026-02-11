@@ -101,7 +101,6 @@ publicAPI.use(
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
-publicAPI.use(cookieParser());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -126,7 +125,7 @@ publicAPI.options('/', publicAPICorsHandler); // Pre-flight
 publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
-publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/oauth/callback').get(cookieParser(), oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);

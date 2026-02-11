@@ -1321,12 +1321,8 @@ class OAuthController {
 
         const stateCookie = `oauth2-${session.id}`;
         if (req.cookies[stateCookie] !== '1') {
-            void logCtx.error('Invalid state parameter in OAuth2 callback', {
-                session,
-                query: req.query
-            });
-            await logCtx.failed();
-            res.redirect('https://http.cat/403');
+            errorManager.report(new Error('invalid_oauth_state'), { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            authHtml({ res, error: 'invalid_oauth_state' });
             return;
         }
         res.clearCookie(stateCookie, {
