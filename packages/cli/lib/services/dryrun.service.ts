@@ -11,7 +11,15 @@ import { serializeError } from 'serialize-error';
 import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
-import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
+import {
+    ActionError,
+    BASE_VARIANT,
+    InvalidActionInputSDKError,
+    InvalidActionOutputSDKError,
+    SDKError,
+    validateCheckpoint,
+    validateData
+} from '@nangohq/runner-sdk';
 
 import { parse } from './config.service.js';
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
@@ -25,8 +33,17 @@ import { buildDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
-import type { NangoActionBase } from '@nangohq/runner-sdk';
-import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType, SdkLogger } from '@nangohq/types';
+import type {
+    Checkpoint,
+    DBSyncConfig,
+    Metadata,
+    NangoProps,
+    NangoYamlParsed,
+    ParsedNangoAction,
+    ParsedNangoSync,
+    ScriptFileType,
+    SdkLogger
+} from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
@@ -36,6 +53,7 @@ interface RunArgs extends GlobalOptions {
     useServerLastSyncDate?: boolean;
     input?: string;
     metadata?: string;
+    checkpoint?: string;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
@@ -95,7 +113,7 @@ export class DryRunService {
 
     public async run(options: RunArgs, debug = false): Promise<string | undefined> {
         let syncName = '';
-        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, syncVariant;
+        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
 
         const environment = options.optionalEnvironment || this.environment;
 
@@ -124,7 +142,8 @@ export class DryRunService {
                 connectionId,
                 lastSyncDate: suppliedLastSyncDate,
                 input: actionInput,
-                metadata: rawStubbedMetadata
+                metadata: rawStubbedMetadata,
+                checkpoint: rawStubbedCheckpoint
             } = options);
         }
 
@@ -313,6 +332,32 @@ export class DryRunService {
             }
         }
 
+        let stubbedCheckpoint: Checkpoint | undefined = undefined;
+
+        if (rawStubbedCheckpoint) {
+            let parsed: Checkpoint;
+            if (rawStubbedCheckpoint.startsWith('@') && rawStubbedCheckpoint.endsWith('.json')) {
+                const fileContents = readFile(rawStubbedCheckpoint);
+                if (!fileContents) {
+                    console.log(chalk.red('The checkpoint file could not be read. Please make sure it exists.'));
+                    return;
+                }
+                try {
+                    parsed = JSON.parse(fileContents);
+                } catch {
+                    console.log(chalk.red('There was an issue parsing the checkpoint file. Please make sure it is valid JSON.'));
+                    return;
+                }
+            } else {
+                try {
+                    parsed = JSON.parse(rawStubbedCheckpoint);
+                } catch {
+                    throw new Error('Failed to parse --checkpoint');
+                }
+            }
+            stubbedCheckpoint = validateCheckpoint(parsed);
+        }
+
         const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
         if (!jsonSchema) {
             console.log(chalk.red('Failed to load schema.json'));
@@ -396,7 +441,8 @@ export class DryRunService {
                 nangoProps,
                 loadLocation: './',
                 input: normalizedInput,
-                stubbedMetadata: stubbedMetadata,
+                stubbedMetadata,
+                stubbedCheckpoint,
                 ...(options.diagnostics && { diagnostics: options.diagnostics })
             });
 
@@ -474,6 +520,7 @@ export class DryRunService {
         loadLocation,
         input,
         stubbedMetadata,
+        stubbedCheckpoint,
         diagnostics
     }: {
         syncName: string;
@@ -481,6 +528,7 @@ export class DryRunService {
         loadLocation: string;
         input: object;
         stubbedMetadata: Metadata | undefined;
+        stubbedCheckpoint: Checkpoint | undefined;
         diagnostics?: boolean;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
@@ -494,8 +542,8 @@ export class DryRunService {
         });
         const nango =
             nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
-                ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata })
-                : new NangoActionCLI(nangoProps, { dryRunService: drs });
+                ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata, stubbedCheckpoint })
+                : new NangoActionCLI(nangoProps, { dryRunService: drs, stubbedCheckpoint });
 
         const monitor = diagnostics ? new DiagnosticsMonitor() : null;
 
@@ -567,8 +615,9 @@ export class DryRunService {
                 };
 
                 const context = vm.createContext(sandbox);
-                const scriptExports: { default?: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | nangoScript.CreateAnyResponse } =
-                    scriptObj.runInContext(context);
+                const scriptExports: {
+                    default?: ((nango: NangoActionCLI | NangoSyncCLI, payload?: object) => Promise<unknown>) | nangoScript.CreateAnyResponse;
+                } = scriptObj.runInContext(context);
 
                 if (!scriptExports.default) {
                     const content = `There is no default export that is a function for ${syncName}`;
