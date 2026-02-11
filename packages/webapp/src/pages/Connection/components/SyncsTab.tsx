@@ -82,6 +82,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
     const navigate = useNavigate();
 
     const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
+    const [isTriggering, setIsTriggering] = useState(false);
 
     const { mutateAsync, isPending } = useRunSyncCommand(env);
     const recordCount = sync.record_count ? formatQuantity(Object.entries(sync.record_count).reduce((acc, [, count]) => acc + count, 0)) : '0';
@@ -99,7 +100,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 sync_name: sync.name,
                 sync_variant: sync.variant,
                 provider,
-                ...(command === 'RUN_FULL'
+                ...(command === 'RUN_FULL' || command === 'RUN'
                     ? {
                           delete_records: emptyCache
                       }
@@ -114,13 +115,23 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 toast({ title: data.error?.message || 'Failed to update sync', variant: 'error' });
             }
         } catch (err) {
+            const verb = command === 'RUN_FULL' || command === 'RUN' ? 'run' : 'update';
             if (err instanceof Error && 'json' in err) {
                 const apiError = err as { json: { error?: { message?: string } } };
-                toast({ title: apiError.json.error?.message || 'Failed to update sync', variant: 'error' });
+                toast({ title: apiError.json.error?.message || `Failed to ${verb} sync`, variant: 'error' });
             } else {
-                toast({ title: 'Failed to update sync', variant: 'error' });
+                toast({ title: `Failed to ${verb} sync`, variant: 'error' });
             }
         }
+    };
+
+    const onTrigger = async () => {
+        setIsTriggering(true);
+        await onSyncCommand(fullResync ? 'RUN_FULL' : 'RUN');
+        setIsTriggering(false);
+        setFullResync(false);
+        setEmptyCache(false);
+        setTriggerDialogOpen(false);
     };
 
     const logUrl = useMemo(() => {
@@ -271,7 +282,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                         <DialogClose asChild>
                             <Button variant="secondary">Cancel</Button>
                         </DialogClose>
-                        <Button variant="primary" onClick={() => onSyncCommand(fullResync ? 'RUN_FULL' : 'RUN')}>
+                        <Button variant="primary" onClick={onTrigger} loading={isTriggering}>
                             Trigger
                         </Button>
                     </DialogFooter>
