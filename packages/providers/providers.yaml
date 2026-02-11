@@ -10421,14 +10421,11 @@ ninjaone-rmm-oauth2:
         grant_type: refresh_token
     scope_separator: ' '
     default_scopes:
-        - monitoring
-        - management
-        - control
         - offline_access
     proxy:
         base_url: https://app.ninjarmm.com
     docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
-    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app
 
 nocrm:
     display_name: nocrm.io

@@ -1,99 +1,80 @@
 ---
 title: 'NinjaOne RMM (OAuth2)'
 sidebarTitle: 'NinjaOne RMM (OAuth2)'
-description: 'Connect to the NinjaOne RMM API using OAuth2 Authorization Code flow'
+description: 'Integrate your application with the NinjaOne RMM API using OAuth2 Authorization Code flow'
 ---
 
-import PreBuiltTooling from '/snippets/generated/ninjaone-rmm-oauth2/PreBuiltTooling.mdx'
-import PreBuiltUseCases from '/snippets/generated/ninjaone-rmm-oauth2/PreBuiltUseCases.mdx'
+## 🚀 Quickstart
 
-<Tabs>
-  <Tab title="Overview">
-    NinjaOne RMM (OAuth2) uses the **Authorization Code** flow, which provides full API access including endpoints that require user-context authorization (e.g., running scripts on devices).
+Connect to NinjaOne RMM with Nango and see data flow in 2 minutes.
 
-    If you only need read-only/monitoring access with machine-to-machine credentials, see the [NinjaOne RMM (Client Credentials)](/integrations/all/ninjaone-rmm) integration instead.
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _NinjaOne RMM (OAuth2)_.
+    </Step>
+    <Step title="Authorize NinjaOne RMM">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to NinjaOne RMM. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the NinjaOne RMM API">
+    Let's make your first request to the NinjaOne RMM API (fetch a list of devices). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
 
-    <PreBuiltTooling />
-    <PreBuiltUseCases />
-  </Tab>
-
-  <Tab title="Quickstart">
-    <Steps>
-      <Step title="Create an integration">
-        Sign up for a free Nango account ([here](https://app.nango.dev)) if you haven't already. Then navigate to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> select _NinjaOne RMM (OAuth2)_.
-      </Step>
-
-      <Step title="Authorize NinjaOne RMM">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_. You'll be redirected to NinjaOne to sign in and authorize the application. Later, you'll let your users do the same directly from your app.
-      </Step>
-
-      <Step title="Call the NinjaOne RMM API">
-        Let's make your first request to NinjaOne RMM (fetch a list of devices). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
-
-        <Tabs>
-          <Tab title="cURL">
             ```bash
-            curl -X GET "https://api.nango.dev/proxy/v2/devices" \
+            curl "https://api.nango.dev/proxy/v2/devices" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
-              -H "Connection-Id: <CONNECTION-ID>" \
-              -H "Accept: application/json"
+              -H "Connection-Id: <CONNECTION-ID>"
             ```
-          </Tab>
 
-          <Tab title="Node">
-            Install Nango's backend SDK: `npm i @nangohq/node`. Then run:
+        </Tab>
 
-            ```typescript
-            import { Nango } from '@nangohq/node';
+        <Tab title="Node">
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
 
-            // Fetch a list of devices from NinjaOne RMM
-            const res = await nango.get({
-              endpoint: '/v2/devices',
-              providerConfigKey: '<INTEGRATION-ID>',
-              connectionId: '<CONNECTION-ID>'
-            });
+        ```typescript
+        import { Nango } from '@nangohq/node';
 
-            console.log(res.data);
-            ```
-          </Tab>
-        </Tabs>
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-        You can also fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
-      </Step>
-    </Steps>
+        const res = await nango.get({
+            endpoint: '/v2/devices',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
 
-    <Tip>
-      Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-oauth) in your app to let your users connect their NinjaOne RMM accounts.
-    </Tip>
-  </Tab>
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-  <Tab title="Useful links">
-    | Topic | Links |
-    | - | - |
-    | Authorization | [Guide to connect to NinjaOne RMM using Connect UI](/api-integrations/ninjaone-rmm-oauth2/connect) |
-    | General | [NinjaOne Website](https://www.ninjaone.com/) |
-    | Developer | [NinjaOne API Documentation](https://app.ninjarmm.com/apidocs-beta/) |
-    | | [Authorization Code Flow](https://app.ninjarmm.com/apidocs-beta/authorization/flows/authorization-code-flow) |
-    | | [API Reference](https://app.ninjarmm.com/apidocs-beta/core-resources) |
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
 
-    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/ninjaone-rmm-oauth2.mdx)</Note>
-  </Tab>
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
 
-  <Tab title="API gotchas">
-    - The Client Secret is only displayed once after creation in the NinjaOne admin portal, so store it securely.
-    - When creating the OAuth application in NinjaOne, select **Web** as the application platform (not "API Services / Machine-to-Machine").
-    - The Redirect URI must be set to `https://api.nango.dev/oauth/callback`.
-    - Ensure both **Authorization Code** and **Refresh Token** are checked under Allowed Grant Types.
-    - The `offline_access` scope is required for Nango to automatically refresh expired access tokens.
-    - NinjaOne access tokens typically expire within 1 hour, so refresh token support is critical for long-lived connections.
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
 
-    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/ninjaone-rmm-oauth2.mdx)</Note>
-  </Tab>
-</Tabs>
+## 📚 NinjaOne RMM Integration Guides
 
-<Info>
-  Questions? Join us in the [Slack community](https://nango.dev/slack).
-</Info>
+Nango maintained guides for common use cases.
+
+- [How to register your own NinjaOne RMM OAuth app](/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app)  
+Register an OAuth app with NinjaOne RMM and obtain credentials to connect it to Nango
+
+Official docs: [NinjaOne API docs](https://app.ninjarmm.com/apidocs-beta/)
+
+## 🧩 Pre-built syncs & actions for NinjaOne RMM
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ninjaone-rmm-oauth2/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
