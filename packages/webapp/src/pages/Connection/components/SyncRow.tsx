@@ -300,7 +300,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                                         <br />
                                                                         Your backend should reprocess all records.{' '}
                                                                         <Link
-                                                                            to="https://nango.dev/docs/implementation-guides/use-cases/syncs/large-datasets#incremental-syncing"
+                                                                            to="https://nango.dev/docs/implementation-guides/use-cases/syncs/records-cache"
                                                                             className="underline"
                                                                         >
                                                                             Learn more
