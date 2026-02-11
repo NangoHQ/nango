@@ -12349,7 +12349,7 @@ quickbooks:
             title: Quickbooks Realm ID
             optional: true
             description: The realmId of your quickbooks company
-            pattern: '^\d{16}$'
+            pattern: '^\d{10,19}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
 
@@ -12369,7 +12369,7 @@ quickbooks-sandbox:
             title: Quickbooks Realm ID
             optional: true
             description: The realmId of your quickbooks sandbox company
-            pattern: '^\d{16}$'
+            pattern: '^\d{10,19}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
 
