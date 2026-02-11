@@ -1,13 +1,15 @@
-import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, X } from 'lucide-react';
+import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { EmptyCard } from '@/components-v2/EmptyCard';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Checkbox } from '@/components-v2/ui/checkbox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components-v2/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/dropdown-menu';
+import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
@@ -19,12 +21,37 @@ import { getLogsUrl } from '@/utils/logs';
 import { formatDateToUSFormat, formatFrequency, formatQuantity, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand, SyncResponse } from '@/types';
-import type { ApiConnectionFull, GetConnection } from '@nangohq/types';
+import type { ApiConnectionFull, GetConnection, GetIntegration } from '@nangohq/types';
 
-export const SyncsTab = ({ connectionData }: { connectionData: GetConnection['Success']['data'] }) => {
+export const SyncsTab = ({
+    connectionData,
+    integrationData
+}: {
+    connectionData: GetConnection['Success']['data'];
+    integrationData: GetIntegration['Success']['data'];
+}) => {
     const env = useStore((state) => state.env);
-    const { connection, provider } = connectionData;
-    const { data: syncs } = useSyncs({ env, provider_config_key: provider, connection_id: connection.connection_id });
+    const { connection } = connectionData;
+    const providerConfigKey = integrationData.integration.unique_key;
+    const { data: syncs, isLoading } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
+
+    if (isLoading) {
+        return <Skeleton className="w-full h-42" />;
+    }
+
+    if (!syncs || syncs.length === 0) {
+        const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
+        return (
+            <EmptyCard>
+                <span className="text-text-primary text-title-body">No models are syncing for {integrationName}.</span>
+                <span className="text-text-secondary text-body-medium-regular">Start syncing models for {integrationName} on the Function settings tab.</span>
+                <ButtonLink variant="primary" to={`/${env}/integrations/${providerConfigKey}/functions#syncs`}>
+                    <Wrench />
+                    Function configuration
+                </ButtonLink>
+            </EmptyCard>
+        );
+    }
 
     return (
         <Table>
@@ -37,12 +64,12 @@ export const SyncsTab = ({ connectionData }: { connectionData: GetConnection['Su
                     <TableHead>Records</TableHead>
                     <TableHead>Last Sync Start</TableHead>
                     <TableHead>Next Sync Start</TableHead>
-                    <TableHead></TableHead>
+                    <TableHead>{/* Actions */}</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {syncs?.map((sync) => (
-                    <SyncRow key={sync.id} sync={sync} connection={connection} provider={provider} />
+                    <SyncRow key={sync.id} sync={sync} connection={connection} provider={providerConfigKey} />
                 ))}
             </TableBody>
         </Table>

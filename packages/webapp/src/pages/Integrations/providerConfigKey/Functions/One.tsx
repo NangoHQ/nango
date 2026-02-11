@@ -4,11 +4,11 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { EmptyCard } from '../../components/EmptyCard';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
+import { EmptyCard } from '@/components-v2/EmptyCard';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { LineSnippet } from '@/components-v2/LineSnippet';
@@ -208,7 +208,9 @@ export const FunctionsOne: React.FC = () => {
                                     <JsonSchemaTopLevelObject schema={inputSchema} />
                                 </>
                             ) : (
-                                <EmptyCard content={`No inputs.`} />
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">No inputs.</span>
+                                </EmptyCard>
                             )}
                         </TabsContent>
                         <TabsContent value="output" className="flex flex-col gap-4">
@@ -233,7 +235,9 @@ export const FunctionsOne: React.FC = () => {
                                     </Navigation>
                                 </>
                             ) : (
-                                <EmptyCard content="No outputs." />
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">No outputs.</span>
+                                </EmptyCard>
                             )}
                         </TabsContent>
                     </Tabs>

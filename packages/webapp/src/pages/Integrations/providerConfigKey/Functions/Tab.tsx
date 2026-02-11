@@ -2,7 +2,7 @@ import { Box, Code, ExternalLink, Info } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { EmptyCard } from '../../components/EmptyCard.js';
+import { EmptyCard } from '../../../../components-v2/EmptyCard.js';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert.js';
@@ -90,14 +90,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 {actions.length > 0 ? (
                     <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} integration={integration} />
                 ) : (
-                    <EmptyCard content="You don't have any actions setup yet." />
+                    <EmptyCard>
+                        <span className="text-text-secondary text-body-medium-regular">You don&apos;t have any actions setup yet.</span>
+                    </EmptyCard>
                 )}
             </NavigationContent>
             <NavigationContent value="syncs">
                 {syncs.length > 0 ? (
                     <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} integration={integration} />
                 ) : (
-                    <EmptyCard content="You don't have any syncs setup yet." />
+                    <EmptyCard>
+                        <span className="text-text-secondary text-body-medium-regular">You don&apos;t have any syncs setup yet.</span>
+                    </EmptyCard>
                 )}
             </NavigationContent>
         </Navigation>
