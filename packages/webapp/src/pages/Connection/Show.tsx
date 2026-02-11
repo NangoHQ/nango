@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { AuthTab } from './components/AuthTab';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
+import { SettingsTab } from './components/SettingsTab';
 import { SyncsTab } from './components/SyncsTab';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
@@ -77,6 +78,9 @@ export const ConnectionShow = () => {
                     </TabsContent>
                     <TabsContent value="syncs">
                         <SyncsTab connectionData={connectionData} />
+                    </TabsContent>
+                    <TabsContent value="settings">
+                        <SettingsTab connectionData={connectionData} />
                     </TabsContent>
                 </Tabs>
             </div>

@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import useSWR from 'swr';
 
 import { APIError, apiFetch, swrFetcher } from '../utils/api';
@@ -93,13 +93,34 @@ export async function apiRefreshConnection(params: PostConnectionRefresh['Params
     };
 }
 
-export async function apiDeleteConnection(params: DeleteConnection['Params'], query: DeleteConnection['Querystring']) {
-    const res = await apiFetch(`/api/v1/connections/${params.connectionId}?${new URLSearchParams(query).toString()}`, {
-        method: 'DELETE'
-    });
+export function useDeleteConnection() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: DeleteConnection['Reply'] },
+        APIError,
+        { params: DeleteConnection['Params']; query: DeleteConnection['Querystring'] }
+    >({
+        mutationFn: async ({ params, query }) => {
+            const queryString = new URLSearchParams({
+                env: query.env,
+                provider_config_key: query.provider_config_key
+            }).toString();
+            const res = await apiFetch(`/api/v1/connections/${params.connectionId}?${queryString}`, {
+                method: 'DELETE'
+            });
 
-    return {
-        res,
-        json: (await res.json()) as DeleteConnection['Reply']
-    };
+            const json = (await res.json()) as DeleteConnection['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return {
+                res,
+                json
+            };
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['connections'] });
+        }
+    });
 }
