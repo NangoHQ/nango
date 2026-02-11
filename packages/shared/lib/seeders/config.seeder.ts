@@ -12,9 +12,10 @@ export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
         throw new Error('createConfigSeeds: google provider not found');
     }
 
+    // random change just to trigger a build
     const notionProvider = getProvider('notion');
     if (!notionProvider) {
-        throw new Error('createConfigSeeds: notion provider not found');
+        throw new Error('createConfigSeeds: notion provider not found !');
     }
 
     await configService.createProviderConfig(
