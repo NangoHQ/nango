@@ -1,7 +1,7 @@
 import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { AuthCredentials } from './AuthCredentials';
+import { AuthCredentials } from './AuthCredentials/AuthCredentials';
 import { ConnectionExtras } from './ConnectionExtras';
 import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
