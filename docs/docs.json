@@ -322,6 +322,7 @@
               "integrations/all/clerk",
               "integrations/all/close",
               "api-integrations/cloudbeds",
+              "api-integrations/cloudtalk",
               "integrations/all/cloudentity",
               "api-integrations/cloudflare",
               "integrations/all/coda",
