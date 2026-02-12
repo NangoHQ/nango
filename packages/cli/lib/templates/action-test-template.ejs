@@ -1,10 +1,15 @@
 import { vi, expect, it, describe } from 'vitest';
 
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import createAction from '../actions/<%= actionName %>.js';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('<%= integration %> <%= actionName %> tests', () => {
   const nangoMock = new global.vitest.NangoActionMock({ 
-      dirname: '<%= integration %>',
+      dirname,
       name: "<%= actionName %>",
       Model: "<%= output %>"
   });

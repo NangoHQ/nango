@@ -163,6 +163,16 @@ async function pathExists(path: string): Promise<boolean> {
     }
 }
 
+async function firstExistingPath(paths: string[]): Promise<string | null> {
+    for (const p of paths) {
+        if (await pathExists(p)) {
+            return p;
+        }
+    }
+
+    return null;
+}
+
 async function findUpFilename(filename: string, fromDir: string): Promise<string | null> {
     let currentDir = fromDir;
 
@@ -536,9 +546,17 @@ export async function generateTests({
                     continue;
                 }
                 const sync = syncs[currentSyncName];
-                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${currentSyncName}`);
+                const mockCandidates = [
+                    // New unified mocks format (saved by `nango dryrun --save`)
+                    path.resolve(absolutePath, `${integration}/tests/${currentSyncName}.test.json`),
+                    // Support mocks saved alongside previously generated tests
+                    path.resolve(absolutePath, `${integration}/tests/${integration}-${currentSyncName}.test.json`),
+                    // Legacy mocks format
+                    path.resolve(absolutePath, `${integration}/mocks/${currentSyncName}`)
+                ];
+                const mockPath = await firstExistingPath(mockCandidates);
 
-                if (await pathExists(mockPath)) {
+                if (mockPath) {
                     const filePath = await generateSyncTest({
                         integration,
                         syncName: currentSyncName,
@@ -548,7 +566,8 @@ export async function generateTests({
                     });
                     generatedFiles.push(filePath);
                 } else if (debug) {
-                    printDebug(`No mocks found for sync ${currentSyncName}, skipping test generation`);
+                    const tried = mockCandidates.map((p) => path.relative(absolutePath, p)).join(', ');
+                    printDebug(`No mocks found for sync ${currentSyncName}, skipping test generation (tried: ${tried})`);
                 }
             }
 
@@ -557,9 +576,17 @@ export async function generateTests({
                     continue;
                 }
                 const action = actions[currentActionName];
-                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${currentActionName}`);
+                const mockCandidates = [
+                    // New unified mocks format (saved by `nango dryrun --save`)
+                    path.resolve(absolutePath, `${integration}/tests/${currentActionName}.test.json`),
+                    // Support mocks saved alongside previously generated tests
+                    path.resolve(absolutePath, `${integration}/tests/${integration}-${currentActionName}.test.json`),
+                    // Legacy mocks format
+                    path.resolve(absolutePath, `${integration}/mocks/${currentActionName}`)
+                ];
+                const mockPath = await firstExistingPath(mockCandidates);
 
-                if (await pathExists(mockPath)) {
+                if (mockPath) {
                     const filePath = await generateActionTest({
                         integration,
                         actionName: currentActionName,
@@ -569,7 +596,8 @@ export async function generateTests({
                     });
                     generatedFiles.push(filePath);
                 } else if (debug) {
-                    printDebug(`No mocks found for action ${currentActionName}, skipping test generation`);
+                    const tried = mockCandidates.map((p) => path.relative(absolutePath, p)).join(', ');
+                    printDebug(`No mocks found for action ${currentActionName}, skipping test generation (tried: ${tried})`);
                 }
             }
         }

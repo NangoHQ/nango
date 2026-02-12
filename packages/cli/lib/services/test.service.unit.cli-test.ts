@@ -469,7 +469,10 @@ describe('generateSyncTest', () => {
         expect(content).toContain("describe('github fetch-issues tests'");
 
         // Check NangoSyncMock configuration
-        expect(content).toContain("dirname: 'github'");
+        expect(content).toContain("import path from 'node:path'");
+        expect(content).toContain("import { fileURLToPath } from 'node:url'");
+        expect(content).toContain('const dirname = path.dirname(fileURLToPath(import.meta.url));');
+        expect(content).toContain('dirname,');
         expect(content).toContain('name: "fetch-issues"');
         expect(content).toContain('Model: "GithubIssue"');
 
@@ -528,7 +531,10 @@ describe('generateActionTest', () => {
         expect(content).toContain("describe('slack send-message tests'");
 
         // Check NangoActionMock configuration
-        expect(content).toContain("dirname: 'slack'");
+        expect(content).toContain("import path from 'node:path'");
+        expect(content).toContain("import { fileURLToPath } from 'node:url'");
+        expect(content).toContain('const dirname = path.dirname(fileURLToPath(import.meta.url));');
+        expect(content).toContain('dirname,');
         expect(content).toContain('name: "send-message"');
         expect(content).toContain('Model: "SlackMessage"');
 
