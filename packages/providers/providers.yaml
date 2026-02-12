@@ -2863,6 +2863,32 @@ canny:
             example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
             pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+candis:
+    display_name: Candis
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://id.my.candis.io/auth/realms/candis/protocol/openid-connect/auth
+    token_url: https://id.my.candis.io/auth/realms/candis/protocol/openid-connect/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.candis.io
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/candis
+    setup_guide_url: https://nango.dev/docs/api-integrations/candis/how-to-register-your-own-candis-oauth-app
+    post_connection_script: candisPostConnection
+
 canva:
     display_name: Canva
     categories:
@@ -3301,6 +3327,41 @@ cloudbeds:
         base_url: https://api.cloudbeds.com
     docs: https://nango.dev/docs/api-integrations/cloudbeds
     setup_guide_url: https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app
+
+cloudtalk:
+    display_name: CloudTalk
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://my.cloudtalk.io/api
+        retry:
+            at:
+                - 'x-cloudtalkapi-resettime'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /contacts/index.json?limit=1
+    docs: https://nango.dev/docs/api-integrations/cloudtalk
+    docs_connect: https://nango.dev/docs/api-integrations/cloudtalk/connect
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: Your CloudTalk API Access ID.
+            pattern: '^[A-Za-z0-9.%@?_-]+$'
+            example: 'E1ZH****************RRM'
+            doc_section: '#step-1-getting-your-api-credentials'
+        password:
+            type: string
+            title: Key
+            description: Your CloudTalk API Access Key.
+            secret: true
+            pattern: '^[A-Za-z0-9.%@?_-]+$'
+            example: 'bQI*******************************eZ'
+            doc_section: '#step-1-getting-your-api-credentials'
 
 clerk:
     display_name: Clerk
@@ -5413,6 +5474,28 @@ fanvue:
             title: ''
             description: ''
             automated: true
+
+fiber-ai:
+    display_name: Fiber AI
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fiber.ai
+        query:
+            apiKey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/get-org-credits
+    docs: https://nango.dev/docs/api-integrations/fiber-ai
+    docs_connect: https://nango.dev/docs/api-integrations/fiber-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fiber AI API key.
+            doc_section: '#step-1-getting-your-api-key'
 
 fathom:
     display_name: Fathom
@@ -10540,6 +10623,45 @@ notion-scim:
             description: The API key for your Notion scim account
             doc_section: '#step-1-finding-your-scim-api-key-token'
 
+nyne-ai:
+    display_name: Nyne AI
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.nyne.ai
+        headers:
+            x-api-key: ${connectionConfig.apiKey}
+            x-api-secret: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /person/events
+            data:
+                event: 'test'
+    docs: https://nango.dev/docs/api-integrations/nyne-ai
+    docs_connect: https://nango.dev/docs/api-integrations/nyne-ai/connect
+    connection_config:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Nyne AI API key.
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: '48f0****************************892'
+            order: 1
+            doc_section: '#step-1-getting-your-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            description: Your Nyne AI API secret.
+            pattern: '^[a-fA-F0-9]{16}$'
+            example: '97e7********0463'
+            doc_section: '#step-1-getting-your-api-credentials'
+
 odoo:
     display_name: Odoo (OAuth)
     categories:
@@ -12248,7 +12370,7 @@ quickbooks:
             title: Quickbooks Realm ID
             optional: true
             description: The realmId of your quickbooks company
-            pattern: '^\d{16}$'
+            pattern: '^\d{10,19}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
 
@@ -12268,7 +12390,7 @@ quickbooks-sandbox:
             title: Quickbooks Realm ID
             optional: true
             description: The realmId of your quickbooks sandbox company
-            pattern: '^\d{16}$'
+            pattern: '^\d{10,19}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
 
@@ -12727,6 +12849,33 @@ researchdesk:
             description: Your ResearchDesk account password
             secret: true
             doc_section: '#step-2-finding-your-credentials'
+
+resend:
+    display_name: Resend
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.resend.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /domains?limit=1
+    docs: https://nango.dev/docs/api-integrations/resend
+    docs_connect: https://nango.dev/docs/api-integrations/resend/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Resend API key.
+            pattern: '^re_[A-Za-z0-9_]+$'
+            example: 're_HW***************************65L'
+            doc_section: '#step-1-getting-your-api-key'
 
 retell-ai:
     display_name: Retell AI

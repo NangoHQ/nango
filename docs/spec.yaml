@@ -1562,10 +1562,22 @@ paths:
                                                       type: string
                                                       description: The variant name
                                               example: { 'name': 'github-issues', 'variant': 'custom-variant' }
+                                opts:
+                                    type: object
+                                    description: Options for the sync trigger.
+                                    properties:
+                                        reset:
+                                            type: boolean
+                                            description: If true, resets the "lastSyncDate" before triggering (equivalent to a full resync).
+                                        emptyCache:
+                                            type: boolean
+                                            description: If true, deletes all records associated with the sync before triggering.
                                 sync_mode:
+                                    deprecated: true
                                     type: string
                                     enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
                                     description: |
+                                        Deprecated. Use `opts` instead.
                                         The mode in which to trigger the syncs.
                                         - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
                                         - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
@@ -1573,7 +1585,7 @@ paths:
                                 full_resync:
                                     deprecated: true
                                     type: boolean
-                                    description: Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                    description: Deprecated. Use `opts.reset` instead. Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
 
             responses:
                 '200':

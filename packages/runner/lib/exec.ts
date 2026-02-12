@@ -18,12 +18,12 @@ import { MapLocks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
 
 import type { Locks } from './sdk/locks.js';
-import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import type { CreateAnyResponse } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
-    onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
-    default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
+    onWebhookPayloadReceived?: (nango: NangoSyncRunner, payload?: object) => Promise<unknown>;
+    default: ((nango: NangoActionRunner | NangoSyncRunner, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 
 function formatStackTrace(stack: string | undefined, filename: string): string[] {

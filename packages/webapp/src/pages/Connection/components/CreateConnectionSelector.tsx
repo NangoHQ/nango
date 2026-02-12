@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useRef } from 'react';
+import { Link2 } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
@@ -18,6 +19,8 @@ import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
+import { formatDateToPreciseUSFormat } from '../../../utils/utils';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
@@ -67,6 +70,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
     const { mutate, cache } = useSWRConfig();
+    const [isShareLinkLoading, setIsShareLinkLoading] = useState(false);
 
     const testUser = useMemo(() => {
         return {
@@ -104,6 +108,41 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         return missingFields.length > 0;
     }, [integration, overrideClientId, overrideClientSecret]);
 
+    const createConnectSession = useCallback(async () => {
+        const isOauth2 = integration && ['OAUTH2', 'OAUTH2_CC', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
+
+        const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
+        const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
+        const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
+
+        return await apiConnectSessions(env, {
+            allowed_integrations: integration ? [integration.unique_key] : undefined,
+            end_user: testUser,
+            integrations_config_defaults: integration
+                ? {
+                      [integration.unique_key]: {
+                          authorization_params: isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
+                          connection_config:
+                              isOauth2 && hasConnectionConfigOverrides
+                                  ? {
+                                        oauth_client_id_override: overrideClientId,
+                                        oauth_client_secret_override: overrideClientSecret,
+                                        oauth_scopes_override: oauthScopesOverride
+                                    }
+                                  : undefined
+                      }
+                  }
+                : undefined,
+            overrides: integration
+                ? {
+                      [integration.unique_key]: {
+                          docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
+                      }
+                  }
+                : undefined
+        });
+    }, [integration, overrideOauthScopes, overrideClientId, overrideClientSecret, overrideDocUrl, defaultDocUrl, env, testUser, overrideAuthParams]);
+
     const onClickConnectUI = () => {
         if (!environmentAndAccount) {
             return;
@@ -127,43 +166,48 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         // We defer the token creation so the iframe can open and display a loading screen
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
-            const isOauth2 = integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
-
-            const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || overrideOauthScopes !== undefined;
-            const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
-
-            const res = await apiConnectSessions(env, {
-                allowed_integrations: integration ? [integration.unique_key] : undefined,
-                end_user: testUser,
-                integrations_config_defaults: integration
-                    ? {
-                          [integration.unique_key]: {
-                              authorization_params:
-                                  isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
-                              connection_config:
-                                  isOauth2 && hasConnectionConfigOverrides
-                                      ? {
-                                            oauth_client_id_override: overrideClientId,
-                                            oauth_client_secret_override: overrideClientSecret,
-                                            oauth_scopes_override: overrideOauthScopes
-                                        }
-                                      : undefined
-                          }
-                      }
-                    : undefined,
-                overrides: integration
-                    ? {
-                          [integration.unique_key]: {
-                              docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
-                          }
-                      }
-                    : undefined
-            });
+            const res = await createConnectSession();
             if ('error' in res.json) {
                 return;
             }
             connectUI.current!.setSessionToken(res.json.data.token);
-        }, 10);
+        }, 0);
+    };
+
+    const onClickShareConnectionLink = async () => {
+        if (!environmentAndAccount) {
+            return;
+        }
+
+        analyticsTrack('web:share_connection_link_button:clicked', {
+            provider: integration?.provider || 'unknown'
+        });
+
+        setIsShareLinkLoading(true);
+        try {
+            const res = await createConnectSession();
+            if (!res.res.ok || 'error' in res.json) {
+                toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
+                return;
+            }
+
+            const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
+            const shareUrl = new URL(connectLink);
+            shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
+
+            try {
+                await navigator.clipboard.writeText(shareUrl.toString());
+                toast.toast({
+                    title: 'Shareable link copied',
+                    description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
+                    variant: 'success'
+                });
+            } catch (_) {
+                toast.toast({ title: 'Failed to copy link', variant: 'error' });
+            }
+        } finally {
+            setIsShareLinkLoading(false);
+        }
     };
 
     const onEvent: OnConnectEvent = useCallback(
@@ -243,17 +287,41 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                         disabled={Boolean(paramIntegrationId)}
                     />
                 </div>
-                <div className="flex flex-col w-full items-start">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="inline-block" tabIndex={0}>
-                                <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields || !isFormValid}>
-                                    Authorize
-                                </Button>
-                            </span>
-                        </TooltipTrigger>
-                        {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
-                    </Tooltip>
+                <div className="flex flex-row items-start gap-3">
+                    <div className="flex flex-col items-start">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-block" tabIndex={0}>
+                                    <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields || !isFormValid}>
+                                        Authorize
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
+                        </Tooltip>
+                    </div>
+                    <div className="flex flex-row items-center gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-block" tabIndex={0}>
+                                    <Button
+                                        onClick={onClickShareConnectionLink}
+                                        size="lg"
+                                        variant="secondary"
+                                        loading={isShareLinkLoading}
+                                        disabled={usageCapReached || integrationHasMissingFields || !isFormValid}
+                                    >
+                                        <Link2 />
+                                        Share connect link
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
+                        </Tooltip>
+                        <InfoTooltip side="top">
+                            Anyone with this link can open Connect UI and finish authenticating. The link expires in 30 minutes.
+                        </InfoTooltip>
+                    </div>
                 </div>
             </CardContent>
         </Card>
