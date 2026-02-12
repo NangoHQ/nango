@@ -620,6 +620,7 @@
               "integrations/all/open-hands",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
+              "api-integrations/ordinal",
               "integrations/all/ory",
               "integrations/all/osu",
               "integrations/all/oura",
