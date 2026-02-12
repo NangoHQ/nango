@@ -92,7 +92,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
     const onSyncCommand = async (command: RunSyncCommand) => {
         try {
-            const res = await mutateAsync({
+            await mutateAsync({
                 command,
                 schedule_id: sync.schedule_id,
                 nango_connection_id: sync.nango_connection_id,
@@ -107,13 +107,8 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                     : {})
             });
 
-            if (res.res.status === 200) {
-                const niceCommand = UserFacingSyncCommand[command];
-                toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
-            } else {
-                const data = res.json as { error?: { message?: string } };
-                toast({ title: data.error?.message || 'Failed to update sync', variant: 'error' });
-            }
+            const niceCommand = UserFacingSyncCommand[command];
+            toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
         } catch (err) {
             const verb = command === 'RUN_FULL' || command === 'RUN' ? 'run' : 'update';
             if (err instanceof Error && 'json' in err) {
