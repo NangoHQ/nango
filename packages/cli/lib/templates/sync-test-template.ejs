@@ -4,7 +4,7 @@ import createSync from '../syncs/<%= syncName %>.js';
 
 describe('<%= integration %> <%= syncName %> tests', () => {
   const nangoMock = new global.vitest.NangoSyncMock({ 
-      dirname: '<%= integration %>',
+      dirname: __dirname,
       name: "<%= syncName %>",
       Model: "<%= modelName %>"
   });
