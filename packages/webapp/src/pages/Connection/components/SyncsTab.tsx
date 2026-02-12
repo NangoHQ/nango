@@ -137,7 +137,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
             syncs: sync.name,
             day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null
         });
-    }, [connection, sync]);
+    }, [connection?.connection_id, env, provider, sync.latest_sync?.updated_at, sync.name]);
 
     return (
         <>
