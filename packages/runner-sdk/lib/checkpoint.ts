@@ -2,21 +2,24 @@ import * as z from 'zod';
 
 import type { Checkpoint } from '@nangohq/types';
 
-/*
- * The checkpoint can contain date strings.
- * This function recursively checks the checkpoint object and converts any string that is a valid datetime to a Date object.
- */
-export function validateCheckpoint(checkpoint: Checkpoint): Checkpoint {
-    const validated: Checkpoint = {};
-    for (const [key, value] of Object.entries(checkpoint)) {
-        if (typeof value === 'string') {
-            const parsed = z.string().datetime().safeParse(value);
-            if (parsed.success) {
-                validated[key] = new Date(value);
-                continue;
-            }
+export const checkpointSchema = z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean(), z.date()]).transform((d) => {
+        if (typeof d === 'string' && z.string().datetime().safeParse(d).success) {
+            return new Date(d);
         }
-        validated[key] = value;
+        return d;
+    })
+);
+
+/*
+ * Runtime validtion for checkpoints.
+ * Checkpoints must be an object with string keys and values that are either strings, numbers, booleans, or ISO date strings.
+ */
+export function validateCheckpoint(sample: Checkpoint): Checkpoint {
+    const result = checkpointSchema.safeParse(sample);
+    if (!result.success) {
+        throw new Error(`Invalid checkpoint: ${result.error.message}`);
     }
-    return validated;
+    return result.data;
 }
