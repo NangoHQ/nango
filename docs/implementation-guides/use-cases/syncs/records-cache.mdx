@@ -139,22 +139,23 @@ curl -G https://api.nango.dev/records \
 
 # Re-syncing: preserve vs. clear the cache
 
-When you [trigger a sync run](/reference/api/sync/trigger) manually (from the UI or API), you have three options:
+When you [trigger a sync run](/reference/api/sync/trigger) manually (from the UI or API), you can control two options:
 
-| Mode | What it does |
-| --- | --- |
-| `incremental` | Runs the sync normally, preserving the cache. Only new or changed records are detected. |
-| `full_refresh` | Resets `lastSyncDate` and re-fetches all data, but preserves the cache. Nango can still detect which records are new vs. updated. |
-| `full_refresh_and_clear_cache` | Resets `lastSyncDate` **and** deletes all cached records. The sync starts completely fresh. |
+| Option | Default | What it does |
+| --- | --- | --- |
+| `reset` | `false` | When `true`, resets the current checkpoint and `lastSyncDate`, resulting in re-fetching all the full dataset from the external API. The cache is preserved, so Nango can still detect which records are new vs. updated. |
+| `emptyCache` | `false` | When `true`, deletes all cached records before the sync runs. The sync starts completely fresh, all synced records are reported as new. |
 
-**Use `incremental` or `full_refresh`** in most cases — the cache is preserved so Nango can accurately compute the delta between what it had before and what is coming in.
+**Leave both options off** for a standard incremental sync — only new or changed records are detected.
 
-**Use `full_refresh_and_clear_cache`** when you need to start from scratch, for example after a breaking change to your data model. Be aware of the implications:
+**Use `reset: true`** when you want to re-fetch everything from the external API but still preserve the cache for accurate change detection.
+
+**Use `reset: true, emptyCache: true`** when you need to start from scratch, for example after a breaking change to your data model. Be aware of the implications:
 
 <Warning>
 Clearing the cache means:
 - Every record will be reported as `ADDED` (nothing exists in the cache to compare against, so nothing can be `UPDATED`).
-- Any cursors you previously persisted become invalid. You must reset your stored cursors when you clear the cache.
+- Any cursors you previously persisted (to keep track of how far you've synced) become invalid. You must reset your stored cursors when you clear the cache.
 - You will need to reprocess the entire dataset on your side.
 </Warning>
 
