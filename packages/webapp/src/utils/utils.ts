@@ -2,8 +2,6 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { extendTailwindMerge } from 'tailwind-merge';
 
-import { globalEnv } from './env.js';
-
 import type { SyncResult } from '../types.js';
 import type { ClassValue } from 'clsx';
 
@@ -15,17 +13,6 @@ const customTwMerge = extendTailwindMerge({
         }
     }
 });
-
-export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
-export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
-
-export function isCloudProd() {
-    return window.location.origin === 'https://app.nango.dev';
-}
-
-export function defaultCallback() {
-    return globalEnv.apiUrl + '/oauth/callback';
-}
 
 export function formatDateToPreciseUSFormat(dateString: string): string {
     const date = new Date(dateString);
