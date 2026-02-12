@@ -1805,6 +1805,11 @@ paths:
                                                 recordCount:
                                                     type: object
                                                     description: Total count of records for each model synced by the sync
+                                                checkpoint:
+                                                    anyOf:
+                                                        - type: object
+                                                        - type: 'null'
+                                                    description: Last checkpoint saved during sync execution. Null if no checkpoint exists.
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
