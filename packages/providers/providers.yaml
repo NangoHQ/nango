@@ -10825,6 +10825,33 @@ oracle-cloud-identity:
             order: 1
             doc_section: '#step-1-finding-your-service-instance'
 
+ordinal:
+    display_name: Ordinal
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.tryordinal.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/workspace
+    docs: https://nango.dev/docs/api-integrations/ordinal
+    docs_connect: https://nango.dev/docs/api-integrations/ordinal/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ordinal API key.
+            example: ord_*************
+            pattern: '^ord_[A-Za-z0-9-_]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 ory:
     display_name: Ory
     categories:
