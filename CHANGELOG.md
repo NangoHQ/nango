@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.33] - 2026-02-12
+
+### Added
+
+- *(share-link)* Create shareable Connect UI links (#5344) by @agusayerza
+- Add checkpoint to sync status response (#5439) by @TBonnin
+
+### Changed
+
+- Update version in manifest by @actions-user
+- Add deprecation warning to nango.yaml ref (#5441) by @bastienbeurier
+- Replace incremental/full sync concepts with checkpoints (#5431) by @TBonnin
+
+### Fixed
+
+- *(providers)* Allow 10-19 digit QuickBooks realmId (#5428) by @kaigritun
+
 ## [v0.69.32] - 2026-02-11
 
 ### Added
@@ -5872,6 +5889,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.33]: https://github.com/NangoHQ/nango/compare/v0.69.32..v0.69.33
 [v0.69.32]: https://github.com/NangoHQ/nango/compare/v0.69.31..v0.69.32
 [v0.69.31]: https://github.com/NangoHQ/nango/compare/v0.69.30..v0.69.31
 [v0.69.30]: https://github.com/NangoHQ/nango/compare/v0.69.29..v0.69.30
