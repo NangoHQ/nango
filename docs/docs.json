@@ -120,6 +120,7 @@
                 "group": "Syncs, RAG & triggers",
                 "pages": [
                   "implementation-guides/use-cases/syncs/implement-a-sync",
+                  "implementation-guides/use-cases/syncs/records-cache",
                   "implementation-guides/use-cases/syncs/deletion-detection",
                   "implementation-guides/use-cases/syncs/realtime-syncs",
                   "implementation-guides/use-cases/syncs/large-datasets",
