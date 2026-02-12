@@ -9,8 +9,8 @@ export const OAuth2ClientCredentialsComponent: React.FC<{
     return (
         <>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_id">Token</Label>
-                <SecretInput id="client_id" value={credentials.token} disabled copy />
+                <Label htmlFor="token">Token</Label>
+                <SecretInput id="token" value={credentials.token} disabled copy />
             </div>
 
             <div className="flex flex-col gap-2">

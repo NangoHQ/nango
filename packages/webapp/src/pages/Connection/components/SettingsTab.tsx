@@ -24,15 +24,10 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
 
     const onDelete = async () => {
         try {
-            const { res } = await deleteConnection({
+            await deleteConnection({
                 params: { connectionId: connection.connection_id },
                 query: { provider_config_key: providerConfigKey, env }
             });
-
-            if (!res.ok) {
-                toast({ title: 'Failed to delete connection', variant: 'error' });
-            }
-
             navigate(`/${env}/connections`, { replace: true });
         } catch {
             toast({ title: 'Failed to delete connection', variant: 'error' });
@@ -44,7 +39,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
             {DialogComponent}
             <div className="flex justify-between items-start gap-11">
                 <div className="w-full flex items-center justify-between">
-                    <span className="text-body-medium-semi text-text-primary">Connection suppression</span>
+                    <span className="text-body-medium-semi text-text-primary">Connection deletion</span>
                     <Button
                         variant="destructive"
                         size="lg"
