@@ -26,7 +26,7 @@ You can implement two-way syncs by combining syncs with [Actions](/implementatio
 - You control the code: which data to fetch, transformations, data models, etc.
 - All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination
 - Syncs run in the context of each [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
-- Syncs can be **incremental** (only fetch changed data) or **full refresh** (always fetch all data)
+- Syncs can use **checkpoints** to save progress and avoid re-fetching all data on every run
 - Synced data is cached in Nango (encrypted at rest and in transit)
 - Nango detects changes (additions, updates, deletes) and sends webhooks to your app
 - You set the polling frequency (15 seconds minimum interval)
@@ -42,20 +42,20 @@ If you are using a pre-built reference implementation sync, you can [skip to usi
 
 ## Syncs in detail
 
-### Incremental vs. full-refresh syncs
+### Checkpoints
 
-Nango supports both modes and automatically detects changes to records in either.
+Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run.
 
-| Mode | Description | Best for |
-|------|-------------|----------|
-| **Incremental** | Only fetches data changed since last execution | Large datasets; requires API support for querying modified records |
-| **Full refresh** | Retrieves entire dataset each execution | APIs without last-modified filtering; fallback option |
+| Approach | Description | Best for |
+|----------|-------------|----------|
+| **With checkpoints** | Saves progress (e.g., last page, cursor, timestamp) and resumes from there | Large datasets; APIs that support filtering by date or cursor |
+| **Without checkpoints** | Fetches the entire dataset on each run | Small datasets; APIs without filtering support |
 
-Set `syncType: 'incremental'` or `syncType: 'full'` in your sync definition.
+Define a `checkpoint` schema in your sync to enable checkpoint support.
 
 ### Deletion detection
 
-Nango can detect deleted records on external APIs. For incremental syncs, this requires specific API support. For full-refresh syncs, deletes are always detectable.
+Nango can detect deleted records on external APIs. For syncs using checkpoints, this requires specific API support. For syncs that fetch all data, deletes are always detectable.
 
 Follow the [deletion detection guide](/implementation-guides/use-cases/syncs/deletion-detection) for implementation details.
 
@@ -125,8 +125,11 @@ export default createSync({
     endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
     frequency: 'every hour', // Default sync interval
     autoStart: true, // Should the sync start immediately when a new connection is created?
-    syncType: 'full', // incremental or full (full refresh or incremental sync)
     trackDeletes: true, // detect deletes? See separate implementation guide
+    // Optional: define a checkpoint schema to save progress and avoid re-fetching all data
+    checkpoint: z.object({
+        lastModifiedISO: z.string(),
+    }),
     models: {
         MyObject: MyObject,
     },
@@ -162,6 +165,8 @@ const SalesforceContact = z.object({
   first_name: z.string(),
   last_name: z.string(),
   email: z.string(),
+  account_id: z.string().nullable(),
+  last_modified_date: z.string(),
 });
 
 export default createSync({
@@ -170,24 +175,32 @@ export default createSync({
   endpoints: [{ method: 'GET', path: '/salesforce/contacts', group: 'Contacts' }],
   frequency: 'every hour',
   autoStart: true,
-  syncType: 'full',
+  // Define checkpoint schema to track sync progress
+  checkpoint: z.object({
+    lastModifiedISO: z.string(),
+  }),
   models: {
     SalesforceContact: SalesforceContact,
   },
   exec: async (nango) => {
-    const query = buildQuery(nango.lastSyncDate);
+    // Get checkpoint to resume from where we left off
+    const checkpoint = await nango.getCheckpoint();
+    const query = buildQuery(checkpoint?.lastModifiedISO);
+
     await fetchAndSaveRecords(nango, query);
+
     await nango.log('Sync run completed!');
   },
 });
 export type NangoSyncLocal = Parameters<(typeof sync)['exec']>[0];
 
-function buildQuery(lastSyncDate?: Date): string {
+function buildQuery(lastModifiedISO?: string): string {
     let baseQuery = `SELECT Id, FirstName, LastName, Email, AccountId, LastModifiedDate FROM Contact`;
 
-    if (lastSyncDate) { // Only fetch the new data.
-        baseQuery += ` WHERE LastModifiedDate > ${lastSyncDate.toISOString()}`;
+    if (lastModifiedISO) { // Only fetch data modified since last sync
+        baseQuery += ` WHERE LastModifiedDate > ${lastModifiedISO}`;
     }
+    baseQuery += ` ORDER BY LastModifiedDate ASC`;
 
     return baseQuery;
 }
@@ -205,13 +218,15 @@ async function fetchAndSaveRecords(nango: NangoSyncLocal, query: string) {
 
         await nango.batchSave(mappedRecords, 'SalesforceContact'); // Saves records to Nango cache.
 
+        // Save checkpoint for next run
+        await nango.saveCheckpoint({ lastModifiedISO: mappedRecords[mappedRecords.length - 1].last_modified_date });
+
         if (response.data.done) {
             break;
         }
 
         endpoint = response.data.nextRecordsUrl;
     }
-    await nango.deleteRecordsFromPreviousExecutions('SalesforceContact')
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {
@@ -229,7 +244,8 @@ function mapContacts(records: any[]): SalesforceContact[] {
 ```
 
 In this integration function, the following Nango utilities are used:
-- `nango.lastSyncDate` is the last date at which the sync has run
+- `await nango.getCheckpoint()` retrieves the saved checkpoint (returns `null` on first run)
+- `await nango.saveCheckpoint()` saves progress to resume from on next run
 - `await nango.batchSave()` to persist external data in Nango's cache
 - `await nango.get()` to perform an API request (automatically authenticated by Nango)
 - `await nango.log()` to write custom log messages
