@@ -49,9 +49,6 @@ nango dryrun fetch-tickets abc-123 -e prod
 # For actions: pass input data
 nango dryrun create-ticket abc-123 --input '{"title": "Test ticket"}'
 
-# For syncs: specify a last sync date for incremental syncs
-nango dryrun fetch-tickets abc-123 --lastSyncDate "2024-01-01"
-
 # Use a specific integration when sync names overlap
 nango dryrun fetch-tickets abc-123 --integration-id github
 
@@ -526,24 +523,33 @@ it('should fetch all pages of results', async () => {
 });
 ```
 
-### Testing incremental syncs
+### Testing syncs with checkpoints
 
-Test that incremental sync logic works:
+Test that checkpoint logic works:
 
 ```typescript
-it('should only fetch tickets after last sync date', async () => {
+it('should only fetch tickets after checkpoint date', async () => {
   const getSpy = vi.spyOn(nangoMock, 'get');
+  const saveCheckpointSpy = vi.spyOn(nangoMock, 'saveCheckpoint');
+
+  // Mock getCheckpoint to return a previous checkpoint
+  vi.spyOn(nangoMock, 'getCheckpoint').mockResolvedValue({
+    lastModifiedISO: '2024-01-01T00:00:00Z'
+  });
 
   await createSync.exec(nangoMock);
 
-  // Verify the API request included the lastSyncDate parameter
+  // Verify the API request used the checkpoint value
   expect(getSpy).toHaveBeenCalledWith(
     expect.objectContaining({
       params: expect.objectContaining({
-        since: expect.any(String)
+        since: '2024-01-01T00:00:00Z'
       })
     })
   );
+
+  // Verify checkpoint was saved
+  expect(saveCheckpointSpy).toHaveBeenCalled();
 });
 ```
 

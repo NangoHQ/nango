@@ -7,11 +7,11 @@ description: "Guide on how to detect deleted records with syncs"
 Sometimes you need to know when an object you are syncing has been deleted in the external system.
 
 Detecting deletes is not a universal switch.
-It differs significantly between full refresh and incremental syncs. Pick the strategy that matches your sync type.
+It differs significantly between syncs that use checkpoints (fetching only changed data) and syncs that fetch all data on every run. Pick the strategy that matches your sync approach.
 
-## Detecting deletes in incremental syncs
+## Detecting deletes in syncs with checkpoints
 
-Incremental syncs only fetch the delta (new/updated records) since the previous run, so Nango has no built-in way to know which records disappeared on the provider side.
+When using checkpoints to only fetch changed data since the previous run, Nango has no built-in way to know which records disappeared on the provider side.
 
 You must actively tell Nango which IDs have been removed by calling `nango.batchDelete()` ([full reference](/reference/functions#delete-records)) inside the sync functions.
 
@@ -19,17 +19,17 @@ You must actively tell Nango which IDs have been removed by calling `nango.batch
 
 You can use `nango.batchDelete()` if the external API supports one of the following:
 
-- A dedicated “recently deleted” endpoint (e.g. `GET /entities/deleted?since=...`)
+- A dedicated "recently deleted" endpoint (e.g. `GET /entities/deleted?since=...`)
 - The ability to filter or sort by a deletion timestamp
 - The ability to filter or sort by last-modified timestamp _and_ records include a flag like `is_deleted`, `archived`, etc.
 
-If none of these are available, you cannot detect deletes with an incremental sync.
+If none of these are available, you cannot detect deletes with a checkpoint-based sync.
 
-You'll either need to switch to a full refresh sync or skip deletion detection.
+You'll either need to switch to a sync that fetches all data or skip deletion detection.
 
-Switching to a full refresh sync should not be done lightly. Make sure you [understand the tradeoffs](/implementation-guides/use-cases/syncs/large-datasets).
+Switching to fetching all data should not be done lightly. Make sure you [understand the tradeoffs](/implementation-guides/use-cases/syncs/large-datasets).
 
-### Example incremental sync with deletion detection
+### Example sync with checkpoint and deletion detection
 
 ```ts
 import { createSync } from 'nango';
@@ -41,45 +41,56 @@ const AccountSchema = z.object({
 });
 
 export default createSync({
-  description: 'Incrementally sync Accounts & handle deletions',
+  description: 'Sync Accounts with checkpoint & handle deletions',
   frequency: 'every 2 hours',
-  syncType: 'incremental',
   endpoints: [{ method: 'GET', path: '/accounts', group: 'Accounts' }],
   models: { Account: AccountSchema },
+  checkpoint: z.object({
+    lastSyncedISO: z.string(),
+  }),
 
   exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
+    const now = new Date().toISOString();
+
     // (1) Fetch newly created / updated accounts
-    // Save them with await nango.batchSave(...);
+    const res = await nango.get({
+        endpoint: '/accounts',
+        params: { ...(checkpoint && { since: checkpoint.lastSyncedISO }) }
+    });
+    await nango.batchSave(res.data, 'Account');
 
     // (2) Fetch deletions since the last run (if this is not the first run)
-    const last = nango.lastSyncDate;
-    if (last) {
-        const res = await nango.get({
+    if (checkpoint) {
+        const deletedRes = await nango.get({
             endpoint: '/accounts/deleted',
-            params: { since: last.toISOString() }
+            params: { since: checkpoint.lastSyncedISO }
         });
 
         // (3) Tell Nango which IDs have been deleted in the external system
-        const toDelete = res.data.map((row: any) => ({ id: row.id }));
+        const toDelete = deletedRes.data.map((row: any) => ({ id: row.id }));
         if (toDelete.length) {
             await nango.batchDelete(toDelete, 'Account');
         }
     }
+
+    // (4) Save checkpoint for next run
+    await nango.saveCheckpoint({ lastSyncedISO: now });
   }
 });
 ```
 
-## Detecting deletes in full refresh syncs
+## Detecting deletes in syncs without checkpoints
 
-Full refresh syncs download all records when they run.
+Syncs that fetch all records on every run can automatically detect deletions.
 
 Nango can therefore detect removals by computing the diff between two consecutive result sets. Enable this behaviour by calling the `deleteRecordsFromPreviousExecutions` function. ([full reference](/reference/functions#detect-deletions-automatically)).
 
 <Note>
-  `deleteRecordsFromPreviousExecutions` does not work with incremental syncs because fetching the data incrementally prevents performing a diff and automatically detecting deletions.
+  `deleteRecordsFromPreviousExecutions` does not work with checkpoint-based syncs because fetching the data incrementally prevents performing a diff and automatically detecting deletions.
 </Note>
 
-### Example full refresh sync with deletion detection
+### Example sync with deletion detection
 
 ```ts
 import { createSync } from 'nango';
@@ -94,13 +105,10 @@ const TicketSchema = z.object({
 export default createSync({
   description: 'Fetch all help-desk tickets',
   frequency: 'every day',
-  syncType: 'full',
   endpoints: [{ method: 'GET', path: '/tickets', group: 'Tickets' }],
   models: { Ticket: TicketSchema },
 
   exec: async (nango) => {
-    // Unlike incremental syncs, the execution logic
-    // doesn't need any changes for deletion detection in full refresh syncs
     const tickets = await nango.paginate<{ id: string; subject: string; status: string }>({
       endpoint: '/tickets',
       paginate: { type: 'cursor', cursorPathInResponse: 'next', cursorNameInRequest: 'cursor', responsePath: 'tickets' }

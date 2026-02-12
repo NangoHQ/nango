@@ -54,7 +54,7 @@ Access the Connect UI settings in your [Environment settings](https://app.nango.
 
 ## Improved deletion detection when syncing data
 
-For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs/deletion-detection#detecting-deletes-in-full-refresh-syncs)).
+For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs/deletion-detection#detecting-deletes-in-syncs-without-checkpoints)).
 
 Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
 

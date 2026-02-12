@@ -11,6 +11,7 @@ import type {
     AuthOperationType,
     BasicApiCredentials,
     BillCredentials,
+    Checkpoint,
     CredentialsCommon,
     CustomCredentials,
     GetPublicConnection,
@@ -174,6 +175,7 @@ export interface SyncStatus {
     frequency: string;
     latestResult: Record<string, StatusAction>;
     recordCount: Record<string, number>;
+    checkpoint: Checkpoint | null;
 }
 
 export interface StatusAction {
