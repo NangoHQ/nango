@@ -7,8 +7,7 @@ import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { APIError } from '@/utils/api';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
