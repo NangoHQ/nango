@@ -1,10 +1,11 @@
-import { SettingsApp } from './components/App';
-import { SettingsCustom } from './components/Custom';
-import { SettingsDefault } from './components/Default';
+import { AppAuthSettings } from './components/AppAuthSettings';
+import { AuthSpecificSettings } from './components/AuthSpecificSettings';
+import { CustomAuthSettings } from './components/CustomAuthSettings';
 import { SettingsGeneral } from './components/General';
-import { SettingsMcpGeneric } from './components/McpGeneric';
-import { SettingsMcpOAuth } from './components/McpOAuth';
-import { SettingsOAuth } from './components/OAuth';
+import { InstallPluginSettings } from './components/InstallPluginSettings';
+import { McpGenericSettings } from './components/McpGenericSettings';
+import { McpOAuthSettings } from './components/McpOAuthSettings';
+import { OAuthSettings } from './components/OAuthSettings';
 import { useEnvironment } from '../../../../hooks/useEnvironment';
 import { useStore } from '../../../../store';
 
@@ -15,13 +16,13 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'OAUTH1':
         case 'OAUTH2':
         case 'TBA':
-            return <SettingsOAuth data={data} environment={environment} />;
+            return <OAuthSettings data={data} environment={environment} />;
 
         case 'APP':
-            return <SettingsApp data={data} environment={environment} />;
+            return <AppAuthSettings data={data} environment={environment} />;
 
         case 'CUSTOM':
-            return <SettingsCustom data={data} environment={environment} />;
+            return <CustomAuthSettings data={data} environment={environment} />;
 
         case 'BASIC':
         case 'API_KEY':
@@ -33,11 +34,13 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'SIGNATURE':
         case 'TWO_STEP':
         case 'AWS_SIGV4':
-            return <SettingsDefault data={data} environment={environment} />;
+            return <AuthSpecificSettings data={data} environment={environment} />;
         case 'MCP_OAUTH2':
-            return <SettingsMcpOAuth data={data} environment={environment} />;
+            return <McpOAuthSettings data={data} environment={environment} />;
         case 'MCP_OAUTH2_GENERIC':
-            return <SettingsMcpGeneric data={data} environment={environment} />;
+            return <McpGenericSettings data={data} environment={environment} />;
+        case 'INSTALL_PLUGIN':
+            return <InstallPluginSettings data={data} environment={environment} />;
 
         default:
             return <div>Unsupported</div>;

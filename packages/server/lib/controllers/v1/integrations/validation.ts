@@ -91,8 +91,11 @@ export const integrationBaseBodySchema = z
     })
     .strict();
 
+// Schema for custom fields (e.g. aws_sigv4_config)
+export const integrationCustomBodySchema = z.object({ custom: z.record(z.string(), z.union([z.string(), z.null()])) }).strict();
+
 // Schema for PATCH integration body
-export const patchIntegrationBodySchema = integrationBaseBodySchema.or(integrationAuthTypeSchema);
+export const patchIntegrationBodySchema = integrationBaseBodySchema.or(integrationCustomBodySchema).or(integrationAuthTypeSchema);
 
 // Schema for POST integration body (extends base with provider and useSharedCredentials)
 export const postIntegrationBodySchema = integrationBaseBodySchema.extend({
