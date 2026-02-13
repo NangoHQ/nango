@@ -46,7 +46,7 @@ export const AutoIdlingBanner: React.FC = () => {
                         {trialLoading && <Loader2 className="size-4 animate-spin" />}
                         Restart
                     </AlertButton>
-                    <AlertButtonLink variant={'warning'} to={`/${env}/team/billing`}>
+                    <AlertButtonLink variant={'warning'} to={`/team/billing`}>
                         Upgrade
                     </AlertButtonLink>
                 </AlertActions>
@@ -64,7 +64,7 @@ export const AutoIdlingBanner: React.FC = () => {
                     {trialLoading && <Loader2 className="size-4 animate-spin" />}
                     Extend
                 </AlertButton>
-                <AlertButtonLink variant={'info'} to={`/${env}/team/billing`}>
+                <AlertButtonLink variant={'info'} to={`/team/billing`}>
                     Upgrade
                 </AlertButtonLink>
             </AlertActions>
