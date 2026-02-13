@@ -1,15 +1,35 @@
-import type { ApiTimestamps, Endpoint } from '../api.js';
+import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
 import type { IntegrationConfig } from './db.js';
 import type { AuthModeType, AuthModes } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
 import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
+export interface AwsSigV4TemplateSummary {
+    id: string;
+    label?: string;
+    description?: string;
+    stack_name?: string;
+    template_url?: string;
+    template_body?: string;
+    parameters?: Record<string, string>;
+}
+
 export type ApiPublicIntegration = Merge<
     Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
     ApiTimestamps
 > & {
     logo: string;
+    aws_sigv4?:
+        | {
+              instructions?: {
+                  label?: string;
+                  url?: string;
+                  description?: string;
+              };
+              templates?: AwsSigV4TemplateSummary[];
+          }
+        | undefined;
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
@@ -192,7 +212,13 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
+        | { custom: Record<string, string | null> }
         | IntegrationAuthBody;
+    Error:
+        | ApiError<'missing_aws_sigv4_config'>
+        | ApiError<'invalid_aws_sigv4_config'>
+        | ApiError<'missing_aws_sigv4_service'>
+        | ApiError<'missing_aws_sigv4_sts_endpoint'>;
     Success: {
         data: {
             success: boolean;
