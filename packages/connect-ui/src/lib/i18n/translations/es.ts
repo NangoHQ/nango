@@ -26,6 +26,9 @@ const es: Translation = {
         success: '¡Éxito!',
         successMessage: 'Has configurado exitosamente tu integración con {provider}.',
         connectionFailed: 'Conexión fallida',
+        connectionErrorGeneric: 'Ocurrió un error durante la autorización. Por favor, contacta a nuestro equipo de soporte.',
+        showErrorDetails: 'Mostrar detalles del error',
+        hideErrorDetails: 'Ocultar detalles del error',
         tryAgain: 'Por favor, inténtalo de nuevo',
         backToList: 'Volver a la lista de integraciones',
         willConnect: 'Te conectaremos a {provider}',
@@ -33,6 +36,7 @@ const es: Translation = {
         popupBlocked: 'Ventana emergente de autenticación bloqueada por tu navegador, por favor permite las ventanas emergentes',
         popupClosed: 'La ventana emergente de autenticación se cerró antes del final del proceso, por favor inténtalo de nuevo',
         closeTab: 'Ahora puedes cerrar esta pestaña.',
+        authorizationFailed: 'Error de autorización.',
         invalidCredentials: '{provider} no validó tus credenciales. Por favor verifica los valores e inténtalo de nuevo.',
         resourceCapped: 'Has alcanzado el número máximo de conexiones permitidas. Por favor contacta al administrador.',
         invalidPreconfigured: 'Un campo preconfigurado establecido por el administrador es inválido, por favor contacta al soporte'

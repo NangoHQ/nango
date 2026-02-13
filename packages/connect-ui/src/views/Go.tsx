@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -101,6 +101,7 @@ export const Go: React.FC = () => {
     const [result, setResult] = useState<AuthResult>();
     const [error, setError] = useState<string | null>(null);
     const [connectionFailed, setConnectionFailed] = useState(false);
+    const [showErrorDetails, setShowErrorDetails] = useState(false);
 
     const preconfigured = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
 
@@ -262,6 +263,39 @@ export const Go: React.FC = () => {
         }
     }, [connectionFailed]);
 
+    useEffect(() => {
+        const sendAck = (evt: MessageEvent) => {
+            try {
+                if (evt.source && evt.source !== window && typeof (evt.source as Window).postMessage === 'function') {
+                    (evt.source as Window).postMessage({ type: 'nango_oauth_callback_ack' }, evt.origin);
+                }
+            } catch {
+                // ignore
+            }
+        };
+        const handleOAuthCallbackError = (evt: MessageEvent) => {
+            if (evt.data?.type !== 'nango_oauth_callback_error' || !evt.data?.payload) return;
+            const { message } = evt.data.payload as { message: string; errorType?: string };
+            const fallback = t('go.authorizationFailed');
+            const displayMessage = message || fallback;
+            setLoading(false);
+            setConnectionFailed(true);
+            setError(displayMessage);
+            triggerError('connection_validation_failed', displayMessage);
+            sendAck(evt);
+        };
+        const handleOAuthCallbackSuccess = (evt: MessageEvent) => {
+            if (evt.data?.type !== 'nango_oauth_callback_success') return;
+            sendAck(evt);
+        };
+        window.addEventListener('message', handleOAuthCallbackError);
+        window.addEventListener('message', handleOAuthCallbackSuccess);
+        return () => {
+            window.removeEventListener('message', handleOAuthCallbackError);
+            window.removeEventListener('message', handleOAuthCallbackSuccess);
+        };
+    }, [t]);
+
     const onSubmit = useCallback(
         async (v: Record<string, unknown>) => {
             if (isPreview || !integration || loading || !provider || !nango) {
@@ -347,7 +381,7 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [provider, integration, loading, nango, t, detectClosedAuthWindow]
+        [provider, integration, loading, nango, t, detectClosedAuthWindow, displayName]
     );
 
     if (!provider || !integration) {
@@ -388,7 +422,7 @@ export const Go: React.FC = () => {
             <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
                 <HeaderButtons isAuthLink={isAuthLink} />
                 <main className="flex-1 flex flex-col justify-center items-center gap-10 px-4">
-                    <div className="flex flex-col gap-7 items-center">
+                    <div className="flex flex-col gap-7 items-center w-full max-w-md">
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
@@ -396,19 +430,43 @@ export const Go: React.FC = () => {
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-text-primary">{t('go.connectionFailed')}</h2>
-                        <p className="text-text-secondary text-center">{error || t('go.tryAgain')}</p>
+                        <p className="text-text-secondary text-center">{t('go.connectionErrorGeneric')}</p>
+
+                        {error && (
+                            <div className="w-full rounded-md border border-subtle bg-elevated overflow-hidden">
+                                <button
+                                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary hover:bg-muted/50 transition-colors cursor-pointer"
+                                    type="button"
+                                    onClick={() => setShowErrorDetails((v) => !v)}
+                                >
+                                    <span>{showErrorDetails ? t('go.hideErrorDetails') : t('go.showErrorDetails')}</span>
+                                    {showErrorDetails ? (
+                                        <ChevronUp className="w-4 h-4 shrink-0 text-text-tertiary" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 shrink-0 text-text-tertiary" />
+                                    )}
+                                </button>
+                                {showErrorDetails && (
+                                    <div className="border-t border-subtle px-4 py-3 bg-muted/30">
+                                        <pre className="text-xs font-mono text-red-600 whitespace-pre-wrap break-all overflow-x-hidden">{error}</pre>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <Button
+                            className="w-full"
+                            loading={loading}
+                            size={'lg'}
+                            onClick={() => {
+                                setConnectionFailed(false);
+                                setError(null);
+                                setShowErrorDetails(false);
+                            }}
+                        >
+                            {t('common.back')}
+                        </Button>
                     </div>
-                    <Button
-                        className="w-full"
-                        loading={loading}
-                        size={'lg'}
-                        onClick={() => {
-                            setConnectionFailed(false);
-                            setError(null);
-                        }}
-                    >
-                        {t('common.back')}
-                    </Button>
                 </main>
                 {docsConnectUrl && (
                     <footer>
