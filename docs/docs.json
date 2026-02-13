@@ -595,6 +595,7 @@
               "integrations/all/mural",
               "integrations/all/nationbuilder",
               "integrations/all/ninjaone-rmm",
+              "api-integrations/ninjaone-rmm-oauth2",
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "api-integrations/nerdio",
