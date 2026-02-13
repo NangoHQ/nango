@@ -6810,6 +6810,31 @@ gong-oauth:
             automated: true
             pattern: '^https?://.*$'
 
+glyphic:
+    display_name: Glyphic
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.glyphic.ai
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/test/ping
+    docs: https://nango.dev/docs/api-integrations/glyphic
+    docs_connect: https://nango.dev/docs/api-integrations/glyphic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Glyphic API key
+            doc_section: '#step-1-getting-your-api-key'
+
 google:
     display_name: Google
     categories:
@@ -13819,6 +13844,7 @@ schwab:
     authorization_url: https://api.schwabapi.com/v1/oauth/authorize
     token_url: https://api.schwabapi.com/v1/oauth/token
     token_request_auth_method: basic
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
