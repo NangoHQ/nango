@@ -39,6 +39,9 @@ export function authHtml({ res, error, errorType = 'connection_validation_failed
             ? JSON.stringify({ message: messageToOpener, errorType })
                   .replace(/\u2028/g, '\\u2028')
                   .replace(/\u2029/g, '\\u2029')
+                  .replace(/</g, '\\u003c')
+                  .replace(/>/g, '\\u003e')
+                  .replace(/&/g, '\\u0026')
             : 'null';
 
     const errorDetailsBlock = hasError
@@ -168,10 +171,10 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
           closeWindow();
         }
       });
-      var hasCodeInUrl = window.location.search.indexOf('code=') !== -1;
+      // Server renders this page without error only on success (OAuth2 code, OAuth1 token/verifier, GitHub App install_id, etc.)
       if (window.__nangoOAuthError) {
         notifyOpener('nango_oauth_callback_error', window.__nangoOAuthError);
-      } else if (hasCodeInUrl) {
+      } else {
         notifyOpener('nango_oauth_callback_success');
       }
     </script>

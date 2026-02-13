@@ -18,7 +18,7 @@ import { useI18n } from '@/lib/i18n';
 import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { cn, jsonSchemaToZod } from '@/lib/utils';
+import { cn, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
@@ -263,6 +263,9 @@ export const Go: React.FC = () => {
         }
     }, [connectionFailed]);
 
+    const apiURL = useGlobal((state) => state.apiURL);
+    const allowedCallbackOrigin = useMemo(() => getAllowedCallbackOrigin(apiURL), [apiURL]);
+
     useEffect(() => {
         const sendAck = (evt: MessageEvent) => {
             try {
@@ -273,8 +276,15 @@ export const Go: React.FC = () => {
                 // ignore
             }
         };
+        const isAllowedSource = (evt: MessageEvent) => {
+            // only messages from the nango callback window  are accepted;
+            if (!evt.origin || evt.source === window) return false;
+            if (!allowedCallbackOrigin || evt.origin !== allowedCallbackOrigin) return false;
+            return true;
+        };
         const handleOAuthCallbackError = (evt: MessageEvent) => {
             if (evt.data?.type !== 'nango_oauth_callback_error' || !evt.data?.payload) return;
+            if (!isAllowedSource(evt)) return;
             const { message } = evt.data.payload as { message: string; errorType?: string };
             const fallback = t('go.authorizationFailed');
             const displayMessage = message || fallback;
@@ -286,6 +296,7 @@ export const Go: React.FC = () => {
         };
         const handleOAuthCallbackSuccess = (evt: MessageEvent) => {
             if (evt.data?.type !== 'nango_oauth_callback_success') return;
+            if (!isAllowedSource(evt)) return;
             sendAck(evt);
         };
         window.addEventListener('message', handleOAuthCallbackError);
@@ -294,7 +305,7 @@ export const Go: React.FC = () => {
             window.removeEventListener('message', handleOAuthCallbackError);
             window.removeEventListener('message', handleOAuthCallbackSuccess);
         };
-    }, [t]);
+    }, [t, allowedCallbackOrigin]);
 
     const onSubmit = useCallback(
         async (v: Record<string, unknown>) => {
