@@ -21,6 +21,7 @@ export interface NangoSyncWebhookBodyBase extends NangoWebhookBase {
     syncName: string;
     syncVariant: string;
     model: string;
+    /** @deprecated **/
     syncType: 'INCREMENTAL' | 'INITIAL' | 'WEBHOOK';
 }
 

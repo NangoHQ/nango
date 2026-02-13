@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { Cursor, records } from '@nangohq/records';
-import { connectionService, getPlan } from '@nangohq/shared';
+import { getPlan } from '@nangohq/shared';
 import { cancellableDaemon, flagHasPlan } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -32,16 +32,11 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
                         span?.addTags({ pruned: 0, candidate: 'none_found' });
                         return;
                     }
-                    const connection = await connectionService.getConnectionById(candidate.value.connectionId);
-                    if (!connection) {
-                        span?.addTags({ error: `Connection ${candidate.value.connectionId} not found` });
-                        logger.error(`[Auto-pruning] connection ${candidate.value.connectionId} not found`);
-                        return;
-                    }
-                    span?.addTags({ environmentId: connection.environment_id, candidate: candidate.value });
+
+                    span?.addTags({ candidate: candidate.value });
 
                     if (flagHasPlan) {
-                        const plan = await getPlan(db.knex, { environmentId: connection.environment_id });
+                        const plan = await getPlan(db.knex, { environmentId: candidate.value.environmentId });
                         if (plan.isErr()) {
                             span?.addTags({ error: `Failed to get plan: ${plan.error.message}` });
                             logger.error(`[Auto-pruning] failed to get plan: ${plan.error.message}`);
@@ -55,7 +50,7 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
                     }
 
                     const res = await records.deleteRecords({
-                        environmentId: connection.environment_id,
+                        environmentId: candidate.value.environmentId,
                         connectionId: candidate.value.connectionId,
                         model: candidate.value.model,
                         mode: 'prune',

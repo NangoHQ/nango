@@ -861,7 +861,7 @@ const scriptsConfig = await nango.getScriptsConfig();
                         ]
                     }
                 ],
-                "sync_type": "FULL",
+                "sync_type": "FULL", // DEPRECATED
                 "runs": "every half hour",
                 "track_deletes": false,
                 "auto_start": false,
@@ -874,7 +874,7 @@ const scriptsConfig = await nango.getScriptsConfig();
                 "returns": [
                     "GithubIssue"
                 ],
-                "description": "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n",
+                "description": "Fetches the Github issues from all a user's repositories.\nDetails: doesn't track deletes, metadata is not required.\n",
                 "scopes": [
                     "public_repo"
                 ],
@@ -1441,13 +1441,13 @@ console.log(`Pruned ${result.count} records. More records available: ${result.ha
 Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
 ```ts
-// Incremental sync (default, preserves lastSyncDate)
+// Simple usage - trigger sync preserving checkpoint
 await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
 
-// Full resync (resets lastSyncDate)
+// Reset checkpoint and start fresh
 await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1'], '<CONNECTION_ID>', { reset: true });
 
-// Full resync with cache clear (resets lastSyncDate and deletes all records)
+// Reset checkpoint and clear all cached records
 await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1'], '<CONNECTION_ID>', { reset: true, emptyCache: true });
 
 // Using variants
@@ -1473,15 +1473,15 @@ await nango.triggerSync('<INTEGRATION-ID>', [
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
     <ResponseField name="opts" type="object">
-        Options for the sync trigger.
-        - `reset`: If `true`, resets the "lastSyncDate" before triggering (full resync). Defaults to `false` (incremental).
-        - `emptyCache`: If `true`, deletes all records associated with the sync before triggering. Defaults to `false`.
-    </ResponseField>
-    <ResponseField name="sync_mode (deprecated)" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'">
-        Deprecated. Use `opts` instead.
-        - `incremental`: equivalent to `{ reset: false }`
-        - `full_refresh`: equivalent to `{ reset: true }`
-        - `full_refresh_and_clear_cache`: equivalent to `{ reset: true, emptyCache: true }`
+        Options for triggering the sync.
+        <Expandable>
+            <ResponseField name="reset" type="boolean">
+                If `true`, clears the checkpoint before triggering the sync, causing it to start fresh.
+            </ResponseField>
+            <ResponseField name="emptyCache" type="boolean">
+                If `true`, deletes all cached records associated with the sync before triggering. Must be used with `reset: true`.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -1608,7 +1608,7 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
             "name": "<string>",
             "variant": "<string>",
             "status": "RUNNING",
-            "type": "INCREMENTAL",
+            "type": "INCREMENTAL", // DEPRECATED
             "finishedAt": "<string>",
             "nextScheduledSyncAt": "<string>",
             "frequency": "<string>",
@@ -1621,6 +1621,10 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
             },
             "recordCount": {
                 "<string>": <number>
+                ...
+            },
+            "checkpoint": {
+                "<string>": "<string | number | boolean>"
                 ...
             }
         }

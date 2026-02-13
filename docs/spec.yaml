@@ -1250,9 +1250,6 @@ paths:
                                                     example: 'sync'
                                                 json_schema:
                                                     type: object
-                                                sync_type:
-                                                    type: string
-                                                    example: 'full'
                                                 runs:
                                                     type: string
                                                     example: 'every 30 minutes'
@@ -1281,7 +1278,7 @@ paths:
                                                         example: 'GithubIssue'
                                                 description:
                                                     type: string
-                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
+                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: doesn't track deletes, metadata is not required.\n"
                                                 scopes:
                                                     type: array
                                                     items:
@@ -1339,7 +1336,7 @@ paths:
                                                     type: object
                                                 description:
                                                     type: string
-                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
+                                                    example: "Fetches the Github issues from all a user's repositories.\nDetails: doesn't track deletes, metadata is not required.\n"
                                                 scopes:
                                                     type: array
                                                     items:
@@ -1623,28 +1620,14 @@ paths:
                                               example: { 'name': 'github-issues', 'variant': 'custom-variant' }
                                 opts:
                                     type: object
-                                    description: Options for the sync trigger.
+                                    description: Options for triggering the sync.
                                     properties:
                                         reset:
                                             type: boolean
-                                            description: If true, resets the "lastSyncDate" before triggering (equivalent to a full resync).
+                                            description: If true, clears the checkpoint and lastSyncDate before triggering the sync, causing it to start fresh.
                                         emptyCache:
                                             type: boolean
-                                            description: If true, deletes all records associated with the sync before triggering.
-                                sync_mode:
-                                    deprecated: true
-                                    type: string
-                                    enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
-                                    description: |
-                                        Deprecated. Use `opts` instead.
-                                        The mode in which to trigger the syncs.
-                                        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
-                                        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
-                                        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
-                                full_resync:
-                                    deprecated: true
-                                    type: boolean
-                                    description: Deprecated. Use `opts.reset` instead. Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                            description: If true, deletes all cached records associated with the sync before triggering. Must be used with reset=true.
 
             responses:
                 '200':
@@ -1846,6 +1829,7 @@ paths:
                                                     enum: ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS', 'ERROR']
                                                     description: The current status of the sync.
                                                 type:
+                                                    deprecated: true
                                                     type: string
                                                     description: The most recent sync type completed
                                                     enum: ['INCREMENTAL', 'INITIAL']
@@ -1864,6 +1848,11 @@ paths:
                                                 recordCount:
                                                     type: object
                                                     description: Total count of records for each model synced by the sync
+                                                checkpoint:
+                                                    anyOf:
+                                                        - type: object
+                                                        - type: 'null'
+                                                    description: Last checkpoint saved during sync execution. Null if no checkpoint exists.
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':

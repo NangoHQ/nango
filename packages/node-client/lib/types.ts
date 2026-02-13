@@ -11,6 +11,7 @@ import type {
     AuthOperationType,
     BasicApiCredentials,
     BillCredentials,
+    Checkpoint,
     CredentialsCommon,
     CustomCredentials,
     GetPublicConnection,
@@ -162,10 +163,12 @@ export interface Action extends Timestamps {
     name: string;
 }
 
+/** @deprecated */
 export type SyncType = 'INCREMENTAL' | 'INITIAL';
 
 export interface SyncStatus {
     id: string;
+    /** @deprecated **/
     type: SyncType;
     finishedAt: string | undefined;
     nextScheduledSyncAt: string;
@@ -174,6 +177,7 @@ export interface SyncStatus {
     frequency: string;
     latestResult: Record<string, StatusAction>;
     recordCount: Record<string, number>;
+    checkpoint: Checkpoint | null;
 }
 
 export interface StatusAction {

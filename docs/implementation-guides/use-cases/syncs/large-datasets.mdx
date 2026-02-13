@@ -16,13 +16,13 @@ Your app syncs with Nango in the same way regardless of the volume of the datase
 
 Below, we explore various approaches on how to sync data from the external system to Nango, even for large datasets.
 
-## Full refresh syncing (small datasets only)
+## Syncing without checkpoints (small datasets only)
 
-For small datasets (e.g., a list of Slack users for organizations with less than 100 employees), you can instruct Nango to periodically poll for the entire dataset. This method is known as a ["full refresh" sync](/implementation-guides/use-cases/syncs/implement-a-sync#incremental-vs-full-refresh-syncs).
+For small datasets (e.g., a list of Slack users for organizations with less than 100 employees), you can instruct Nango to periodically poll for the entire dataset.
 
-Once the sync run finishes, Nango computes which records have been changed during the latest sync run, and sends a webhook to your backend. This lets you fetch only the incremental changes from Nango to your application.
+Once the sync run finishes, Nango computes which records have been changed during the latest sync run, and sends a webhook to your backend. This lets you fetch only the changes from Nango to your application.
 
-As datasets increase in size, full refresh syncs become unscalable, taking longer to run, triggering rate limiting from external APIs, and consuming more compute and memory resources.
+As datasets increase in size, syncs that fetch all data become unscalable, taking longer to run, triggering rate limiting from external APIs, and consuming more compute and memory resources.
 
 Here is an example of a sync script which refreshes the entire list of Slack user on each execution:
 
@@ -41,29 +41,37 @@ export default createSync({
 });
 ```
 
-## Incremental syncing
+## Syncing with checkpoints
 
-The preferred method for syncing larger datasets is to fetch only the incremental changes from the external API. This method is known as an ["incremental" sync](/implementation-guides/use-cases/syncs/implement-a-sync#incremental-vs-full-refresh-syncs).
+The preferred method for syncing larger datasets is to use checkpoints to fetch only changes from the external API since the last sync.
 
-Sync functions expose the timestamp of the last sync execution start under `nango.lastSyncDate`. You can use this timestamp to instruct the external API to send only the changes since that date. This way, you only receive and persist the modified records in the Nango cache.
+Checkpoints allow you to save progress (e.g., a timestamp or cursor) and resume from there on the next run. This way, you only receive and persist the modified records in the Nango cache.
 
-For example, if you are syncing tens of thousands of contacts from a Salesforce account on an hourly basis, only a small portion of the contacts will be updated or created in any given hour. If you were doing a full refresh sync, you would need to fetch the entire contact list every hour, which is inefficient. With an incremental sync, you can fetch only the modified contacts from the past hour.
+For example, if you are syncing tens of thousands of contacts from a Salesforce account on an hourly basis, only a small portion of the contacts will be updated or created in any given hour. Without checkpoints, you would need to fetch the entire contact list every hour, which is inefficient. With checkpoints, you can fetch only the modified contacts from the past hour.
 
-Not all APIs, and not all endpoints on most APIs, support this. If the endpoint you need does not let you filter or sort by last modified date, you will need to use a full refresh sync.
+Not all APIs, and not all endpoints on most APIs, support this. If the endpoint you need does not let you filter or sort by last modified date, you will need to sync without checkpoints.
 
-Here is an example of a sync script that updates the list of Salesforce contact incrementally on each execution, leveraging `nango.lastSyncDate`:
+Here is an example of a sync script that updates the list of Salesforce contacts using checkpoints:
 
 ```ts
 export default createSync({
+  checkpoint: z.object({
+    lastModifiedISO: z.string(),
+  }),
   exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
     // ...
     // Paginate API requests.
     while (nextPage) {
         // Pass in a timestamp to Salesforce to fetch only the recently modified data.
-        const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
+        const res = getContactsFromSalesforceAPI(checkpoint?.lastModifiedISO, nextPage);
         // ...
+        const contacts = mapContacts(res.data.records);
         // Save Salesforce contacts.
-        await nango.batchSave(mapContacts(res.data.records), 'Contact');
+        await nango.batchSave(contacts, 'Contact');
+        // Save checkpoint with the last record's LastModifiedDate
+        const lastContact = contacts[contacts.length - 1];
+        await nango.saveCheckpoint({ lastModifiedISO: lastContact.LastModifiedDate });
     }
   },
 });
@@ -71,7 +79,7 @@ export default createSync({
 
 ### Initial sync execution
 
-Even with incremental syncing, the very first sync execution has to be a full refresh sync since there is no previous data. This initial sync fetches all historical data and is more resource-intensive than subsequent executions.
+Even with checkpoints, the very first sync execution has to fetch all data since there is no previous checkpoint. This initial sync fetches all historical data and is more resource-intensive than subsequent executions.
 
 One strategy to manage this is to limit the period you are backfilling. For example, if you are syncing a Notion workspace, you can inform users that you will only sync Notion pages modified in the last three months, assuming these are most relevant.
 
@@ -83,12 +91,14 @@ The most common cause of excessive memory use is fetching a large number of reco
 
 ```ts
 export default createSync({
+  checkpoint: z.object({ lastModifiedISO: z.string() }),
   exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
     // ...
     const responses: any[] = [];
     // Paginate API requests.
     while (nextPage) {
-        const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
+        const res = getContactsFromSalesforceAPI(checkpoint?.lastModifiedISO, nextPage);
         // ...
         // Save all dataset in memory (memory intensive).
         responses.push(...res.data.records);
@@ -103,21 +113,26 @@ A simple fix is to store records as you fetch them, allowing them to be released
 
 ```ts
 export default createSync({
+  checkpoint: z.object({ lastModifiedISO: z.string() }),
   exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
     // ...
     // Paginate API requests.
     while (nextPage) {
         // Releases the previous page results from memory.
-        const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
+        const res = getContactsFromSalesforceAPI(checkpoint?.lastModifiedISO, nextPage);
         // ...
+        const contacts = mapContacts(res.data.records);
         // Save Salesforce contacts after each page.
-        await nango.batchSave(mapContacts(res.data.records), 'Contact');
+        await nango.batchSave(contacts, 'Contact');
+        // Save checkpoint
+        await nango.saveCheckpoint({ lastModifiedISO: contacts[contacts.length - 1].LastModifiedDate });
     }
   },
 });
 ```
 
-Combining a large dataset with a full refresh sync while storing the entire dataset in memory will likely cause periodic VM crashes.
+Combining a large dataset while storing the entire dataset in memory will likely cause periodic VM crashes.
 
 You can monitor the memory consumption of your functions executions in the Logs tab within the Nango UI.
 
@@ -125,7 +140,7 @@ You can monitor the memory consumption of your functions executions in the Logs 
 
 Another strategy for handling large datasets successfully is to filter the data you need as early as possible, either using filters available from the external API or by discarding data in the functions, i.e., not saving it to the Nango cache.
 
-This approach uses the external system as a source of truth, allowing you to sync additional data in the future by editing your Nango function and triggering a full refresh to backfill any missing historical data.
+This approach uses the external system as a source of truth, allowing you to sync additional data in the future by editing your Nango function and triggering a sync with `reset: true` to backfill any missing historical data.
 
 Because of the flexibility of integration functions, Nango allows you to perform transformations early in the data sync process, optimizing resource use and enabling faster syncing.
 

@@ -246,7 +246,7 @@ Payload received following a successful sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK",
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
     "success": true,
     "modifiedAfter": "<timestamp>",
     "responseResults": {
@@ -272,12 +272,6 @@ By default, Nango sends a webhook even if no modified data was detected in the l
 }
 ```
 
-The `syncType` possible values are:
-
-- `INITIAL`: for the very first execution of a sync.
-- `INCREMENTAL`: for subsequent executions  of a sync.
-- `WEBHOOK`: when an external API webhooks triggers the execution of the sync's `onWebhookPayloadReceived` function.
-
 Payload received following a failed sync execution:
 
 ```json
@@ -287,7 +281,7 @@ Payload received following a failed sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK",
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
     "success": true,
     "error": {
         "type": "<string>",

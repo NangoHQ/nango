@@ -69,8 +69,9 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
 
     /**
      * The type of the sync.
+     * @deprecated This option will be removed in future versions.
      */
-    syncType: 'full' | 'incremental';
+    syncType?: 'full' | 'incremental';
 
     /**
      * If `true`, automatically detects deleted records and removes them when you fetch the latest data.

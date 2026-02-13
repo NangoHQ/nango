@@ -1885,15 +1885,6 @@ class ConnectionService {
             .limit(limit);
     }
 
-    async hardDeleteByIntegration({ integrationId, limit }: { integrationId: number; limit: number }): Promise<number> {
-        return await db.knex
-            .from<DBConnection>('_nango_connections')
-            .whereIn('id', function (sub) {
-                sub.select('id').from<DBConnection>('_nango_connections').where('config_id', integrationId).limit(limit);
-            })
-            .delete();
-    }
-
     async hardDelete(id: number): Promise<number> {
         return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
     }

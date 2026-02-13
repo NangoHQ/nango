@@ -134,11 +134,6 @@ export const FunctionsOne: React.FC = () => {
                         <IntegrationsBadge label="Type">
                             <span>{func.type}</span>
                         </IntegrationsBadge>
-                        {func.sync_type && (
-                            <IntegrationsBadge label="Sync type">
-                                <span>{func.sync_type}</span>
-                            </IntegrationsBadge>
-                        )}
                         {func.runs && (
                             <IntegrationsBadge label="Frequency">
                                 <span>{func.runs}</span>

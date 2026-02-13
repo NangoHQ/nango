@@ -1422,6 +1422,33 @@ atlassian-service-account-oauth2:
             secret: true
             doc_section: '#step-1-creating-oauth-client-credentials'
 
+attention:
+    display_name: Attention
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.attention.tech
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2/conversations?size=1
+    docs: https://nango.dev/docs/api-integrations/attention
+    docs_connect: https://nango.dev/docs/api-integrations/attention/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Attention API key.
+            example: eyJhbGciOi***.eyJzdWIiOi***.xxxxxxxxxxxx
+            pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$'
+            doc_section: '#step-1-obtaining-your-api-key'
+
 attio:
     display_name: Attio
     categories:
@@ -10511,6 +10538,27 @@ ninjaone-rmm:
     docs: https://nango.dev/docs/integrations/all/ninjaone-rmm
     docs_connect: https://nango.dev/docs/integrations/all/ninjaone-rmm/connect
 
+ninjaone-rmm-oauth2:
+    display_name: NinjaOne RMM (OAuth2)
+    categories:
+        - support
+    auth_mode: OAUTH2
+    authorization_url: https://app.ninjarmm.com/ws/oauth/authorize
+    token_url: https://app.ninjarmm.com/ws/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://app.ninjarmm.com
+    docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
+    setup_guide_url: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app
+
 nocrm:
     display_name: nocrm.io
     categories:
@@ -11045,6 +11093,33 @@ oracle-cloud-identity:
             suffix: .identity.oraclecloud.com
             order: 1
             doc_section: '#step-1-finding-your-service-instance'
+
+ordinal:
+    display_name: Ordinal
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.tryordinal.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/workspace
+    docs: https://nango.dev/docs/api-integrations/ordinal
+    docs_connect: https://nango.dev/docs/api-integrations/ordinal/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ordinal API key.
+            example: ord_*************
+            pattern: '^ord_[A-Za-z0-9-_]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 ory:
     display_name: Ory
