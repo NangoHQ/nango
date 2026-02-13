@@ -10,7 +10,7 @@ import chalk from 'chalk';
 import ejs from 'ejs';
 
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
+import { detectPackageManager, printDebug } from '../utils.js';
 import { compileAll } from '../zeroYaml/compile.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 
@@ -217,7 +217,11 @@ async function fetchLatestVersions(packages: string[], debug: boolean): Promise<
     return versions;
 }
 
-async function injectTestDependencies({ debug }: { debug: boolean }): Promise<void> {
+async function injectTestDependencies({ debug, dependencyUpdate = true }: { debug: boolean; dependencyUpdate?: boolean }): Promise<void> {
+    if (!dependencyUpdate) {
+        console.warn(chalk.yellow('Skipping test dependency injection (--no-dependency-update).'));
+        return;
+    }
     const rootPath = await getProjectRoot();
     const packageJsonPath = path.resolve(rootPath, 'package.json');
     if (!(await pathExists(packageJsonPath))) {
@@ -292,10 +296,11 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
                 printDebug(`package.json updated at ${packageJsonPath}`);
             }
 
+            const packageManager = detectPackageManager({ fullPath: rootPath });
             if (debug) {
-                printDebug(`Running npm install in project root`);
+                printDebug(`Running ${packageManager} install in project root`);
             }
-            await execAsync('npm install', { cwd: rootPath });
+            await execAsync(`${packageManager} install`, { cwd: rootPath });
         } else if (debug) {
             printDebug(`All required dependencies already present in package.json`);
         }
@@ -430,7 +435,8 @@ export async function generateTests({
     actionName,
     debug = false,
     autoConfirm = false,
-    interactive = true
+    interactive = true,
+    dependencyUpdate = true
 }: {
     absolutePath: string;
     integrationId?: string;
@@ -439,6 +445,7 @@ export async function generateTests({
     debug?: boolean;
     autoConfirm?: boolean;
     interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<{ success: boolean; generatedFiles: string[] }> {
     try {
         if (debug) {
@@ -448,7 +455,7 @@ export async function generateTests({
         const spinnerFactory = new Spinner({ interactive });
         const spinner = spinnerFactory.start('Setting up test dependencies');
         try {
-            await injectTestDependencies({ debug });
+            await injectTestDependencies({ debug, dependencyUpdate });
             spinner.succeed();
         } catch (err: any) {
             spinner.fail();

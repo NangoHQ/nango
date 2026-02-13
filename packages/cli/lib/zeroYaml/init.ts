@@ -22,12 +22,14 @@ export async function initZero({
     absolutePath,
     debug = false,
     onlyCopy = false,
-    interactive = true
+    interactive = true,
+    dependencyUpdate = true
 }: {
     absolutePath: string;
     debug?: boolean;
     onlyCopy?: boolean;
     interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<boolean> {
     printDebug(`Creating the nango integrations directory in ${absolutePath}`, debug);
     const spinnerFactory = new Spinner({ interactive });
@@ -83,7 +85,7 @@ export async function initZero({
     }
 
     // Install dependencies
-    {
+    if (dependencyUpdate) {
         const spinner = spinnerFactory.start('Install dependencies');
         try {
             printDebug(`Running package manager install`, debug);
@@ -96,6 +98,9 @@ export async function initZero({
             console.log(chalk.red(`Failed to install dependencies: ${err instanceof Error ? err.message : 'unknown error'}`));
             return false;
         }
+    } else {
+        const spinner = spinnerFactory.start('Install dependencies');
+        spinner.warn('Skipping dependency install (--no-dependency-update)');
     }
 
     {

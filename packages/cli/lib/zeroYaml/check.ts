@@ -16,11 +16,13 @@ import type { PackageJson } from 'type-fest';
 export async function checkAndSyncPackageJson({
     fullPath,
     debug,
-    interactive = true
+    interactive = true,
+    dependencyUpdate = true
 }: {
     fullPath: string;
     debug: boolean;
     interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<Result<{ updated: boolean }>> {
     printDebug('Checking and syncing package.json', debug);
 
@@ -56,6 +58,10 @@ export async function checkAndSyncPackageJson({
     }
 
     if (updated && newPkg) {
+        if (!dependencyUpdate) {
+            console.warn(chalk.yellow('Dependencies are out of date but --no-dependency-update is set. Skipping update.'));
+            return Ok({ updated: false });
+        }
         console.log(chalk.yellow('Your dependencies are out of date. Updating...'));
         const spinnerFactory = new Spinner({ interactive });
         const spinner = spinnerFactory.start('Updating package.json');
