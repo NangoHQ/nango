@@ -9,7 +9,7 @@ import type { DeclineInvite } from '@nangohq/types';
 
 const validation = z
     .object({
-        id: z.string().uuid()
+        id: z.uuid()
     })
     .strict();
 

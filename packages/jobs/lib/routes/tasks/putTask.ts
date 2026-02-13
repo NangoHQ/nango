@@ -54,7 +54,7 @@ const nangoPropsSchema = z.looseObject({
         // deleted: z.boolean().optional(),
         // deleted_at: z.coerce.date().optional().nullable(),
     }),
-    syncId: z.string().uuid().optional(),
+    syncId: z.uuid().optional(),
     syncJobId: z.number().optional(),
     activityLogId: operationIdRegex,
     secretKey: z.string().min(1),
@@ -91,7 +91,7 @@ const bodySchema = z.object({
         .object({ customLogs: z.number(), proxyCalls: z.number(), durationMs: z.number().default(0), memoryGb: z.number().default(1) })
         .default({ customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 })
 });
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<PutTask>({
     parseBody: (data) => bodySchema.parse(data),

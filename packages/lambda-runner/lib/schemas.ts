@@ -21,7 +21,7 @@ export const nangoPropsSchema = zod.object({
     providerConfigKey: zod.string().min(1),
     provider: zod.string().min(1),
     lastSyncDate: zod.coerce.date().optional(),
-    syncId: zod.string().uuid().optional(),
+    syncId: zod.uuid().optional(),
     syncVariant: zod.string().optional(),
     nangoConnectionId: zod.number(),
     syncJobId: zod.number().optional(),

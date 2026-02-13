@@ -10,7 +10,7 @@ import type { PostSignin } from '@nangohq/types';
 
 const validation = z
     .object({
-        email: z.string().email(),
+        email: z.email(),
         password: z.string().min(8).max(64)
     })
     .strict();
