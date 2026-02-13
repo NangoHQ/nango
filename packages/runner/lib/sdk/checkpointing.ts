@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { validateCheckpoint } from '@nangohq/runner-sdk';
 
 import type { PersistClient } from '../clients/persist.js';
 import type { Checkpoint } from '@nangohq/types';
@@ -96,23 +96,4 @@ export class Checkpointing {
 
         return { version: this.last.version };
     }
-}
-
-/*
- * The checkpoint can contain date strings.
- * This function recursively checks the checkpoint object and converts any string that is a valid datetime to a Date object.
- */
-function validateCheckpoint(checkpoint: Checkpoint): Checkpoint {
-    const validated: Checkpoint = {};
-    for (const [key, value] of Object.entries(checkpoint)) {
-        if (typeof value === 'string') {
-            const parsed = z.string().datetime().safeParse(value);
-            if (parsed.success) {
-                validated[key] = new Date(value);
-                continue;
-            }
-        }
-        validated[key] = value;
-    }
-    return validated;
 }

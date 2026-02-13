@@ -283,6 +283,11 @@ program
             'You can also pass a file path prefixed with `@` to the metadata and appended by `json`, for example @fixtures/metadata.json. Note that only json files can be passed.'
     )
     .option(
+        '-c, --checkpoint [checkpoint]',
+        'Optional (for syncs only): checkpoint to stub for the sync script supplied in JSON format, for example --checkpoint \'{"lastPage": "3"}\'. ' +
+            'You can also pass a file path prefixed with `@` to the checkpoint and appended by `json`, for example @fixtures/checkpoint.json. Note that only json files can be passed.'
+    )
+    .option(
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
@@ -291,7 +296,8 @@ program
     .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command) {
-        const { autoConfirm, debug, interactive, integrationId, validation, saveResponses, input, lastSyncDate, variant, metadata, diagnostics } = this.opts();
+        const { autoConfirm, debug, interactive, integrationId, validation, saveResponses, input, lastSyncDate, variant, metadata, checkpoint, diagnostics } =
+            this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
         let [name, connectionId] = this.args;
@@ -365,6 +371,7 @@ program
             lastSyncDate,
             variant,
             metadata,
+            checkpoint,
             diagnostics
         });
     });
