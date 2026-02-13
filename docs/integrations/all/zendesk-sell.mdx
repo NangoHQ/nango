@@ -1,0 +1,109 @@
+---
+title: 'Zendesk Sell'
+sidebarTitle: 'Zendesk Sell'
+description: 'Access the Zendesk Sell API in 2 minutes 💨'
+---
+
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zendesk Sell_. Nango doesn't provide a test OAuth app for Zendesk Sell yet. You'll need to set up your own OAuth app by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Zendesk Sell">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Zendesk Sell. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Zendesk Sell API">
+        Let's make your first request to the Zendesk Sell API (fetch a list of deals). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/deals?per_page=10" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+                endpoint: '/v2/deals',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
+                params: {
+                  per_page: 10
+                }
+            });
+
+            console.log(res.data.items);
+            ```
+            </Tab>
+
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their Zendesk Sell accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🧑‍💻 OAuth app setup">
+   <Steps>
+  <Step title="Create a Zendesk Sell account">
+    Sign in to your [Zendesk Sell account](https://getbase.com/). If you don't have an account, create one first.
+  </Step>
+  <Step title="Create & configure a Zendesk Sell OAuth app">
+    1. Log in to your Zendesk Sell account
+    2. Go to **Settings** > **Customization** > **Integrations**
+    3. Click on **Add Integration** and select **Custom Integration**
+    4. Fill in the application details:
+       - **Name**: Your application name
+       - **Website URL**: Your application URL
+       - **Redirect URI**: `https://api.nango.dev/oauth/callback`
+    5. Save the integration and note the **Client ID** and **Client Secret**. You will need these to configure the integration in Nango.
+    
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | General | [Website](https://www.zendesk.com/sell/) |
+    | | [Zendesk Sell Login](https://getbase.com/) |
+    | Developer | [API documentation](https://developer.zendesk.com/api-reference/sales-crm/introduction/) |
+    | | [Authentication guide](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/) |
+    | | [Core API Reference](https://developer.zendesk.com/api-reference/sales-crm/resources/introduction/) |
+    | | [Rate limits](https://developer.zendesk.com/api-reference/sales-crm/rate-limits/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zendesk-sell.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - **Rate limits**: Zendesk Sell has a rate limit of 600 requests per minute for most endpoints. Some endpoints have lower limits.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/zendesk-sell.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>

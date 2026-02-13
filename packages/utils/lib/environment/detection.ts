@@ -13,10 +13,13 @@ export const isLocal = !isCloud && !isEnterprise && !isDocker && (process.env['N
 export const isTest = Boolean(process.env['CI'] !== undefined || process.env['VITEST']);
 export const isBasicAuthEnabled = !isCloud && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 export const isHosted = !isCloud && !isLocal && !isEnterprise;
+export const useLambda = isCloud && process.env['LAMBDA_ENABLED']?.toLowerCase() === 'true';
 
 export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv.Dev;
 
-export const useS3 = Boolean(process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME']);
+export const useS3 = Boolean(
+    (process.env['AWS_INTEGRATIONS_REGION'] && process.env['AWS_INTEGRATIONS_BUCKET_NAME']) || (process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME'])
+);
 export const integrationFilesAreRemote = isEnterprise && useS3;
 
 export const flagHasScripts = isLocal || isEnterprise || isCloud || isTest;
@@ -33,5 +36,3 @@ export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] ===
 export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID'])
 };
-
-export const actionAllowListCustomers = [0, 662, 1760, 1920, 4530, 5166, 7157, 7359, 7696, 2981, 6254];

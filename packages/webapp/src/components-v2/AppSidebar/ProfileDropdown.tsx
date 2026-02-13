@@ -7,6 +7,7 @@ import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
+import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 
@@ -51,23 +52,7 @@ export const ProfileDropdown: React.FC = () => {
         return list;
     }, [env, meta, showGettingStarted]);
 
-    const initials = useMemo(() => {
-        if (!user?.name) {
-            return '';
-        }
-
-        const nameParts = user.name.trim().split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts[nameParts.length - 1];
-
-        // If there's only one name part, just use the first character
-        if (nameParts.length === 1) {
-            return firstName[0]?.toUpperCase() || '';
-        }
-
-        // If there are multiple parts, use first character of first and last name
-        return (firstName[0]?.toUpperCase() || '') + (lastName[0]?.toUpperCase() || '');
-    }, [user]);
+    const initials = user?.name ? toAcronym(user.name) : '';
 
     if (!meta || !user) {
         return;
@@ -77,7 +62,7 @@ export const ProfileDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-dropdown-bg-default hover:bg-dropdown-bg-hover active:bg-dropdown-bg-press border-t-[0.5px] border-border-muted">
+                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-dropdown-bg-default hover:bg-dropdown-bg-hover data-[state=open]:bg-dropdown-bg-press border-t-[0.5px] border-border-muted">
                         <div className="inline-flex gap-2 items-center">
                             <div className="size-10 flex items-center justify-center rounded bg-bg-surface border border-border-muted text-text-primary leading-5">
                                 {initials}
@@ -89,12 +74,12 @@ export const ProfileDropdown: React.FC = () => {
                         </div>
                         <ChevronsUpDown className="size-4.5 text-text-tertiary group-hover/profile:text-text-secondary group-active/profile:text-text-primary" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" alignOffset={0} side="right" className="w-50 p-2">
+                    <DropdownMenuContent align="end" alignOffset={0} side="right" sideOffset={0} className="w-50 p-2">
                         {items.map((item, index) => (
                             <DropdownMenuItem
                                 key={index}
                                 onSelect={() => navigate(item.href)}
-                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
                             >
                                 <item.icon className="size-4 text-text-secondary group-hover:text-text-primary" />
                                 <span>{item.label}</span>
@@ -102,7 +87,7 @@ export const ProfileDropdown: React.FC = () => {
                         ))}
                         <DropdownMenuItem
                             onSelect={() => signout()}
-                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
+                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
                         >
                             <LogOut className="size-4 text-text-secondary group-hover:text-text-primary" />
                             <span>Log Out</span>

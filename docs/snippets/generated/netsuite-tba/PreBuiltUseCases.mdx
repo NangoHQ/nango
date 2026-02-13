@@ -1,75 +1,58 @@
+### Bills
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `bill-create` | Creates a vendor bill in Netsuite. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/bill-create.ts) |
+| `bill-update` | Updates an existing vendor bill in Netsuite. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/bill-update.ts) |
 
-<AccordionGroup>
+### Credit Notes
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `credit-note-create` | Creates a credit note in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/credit-note-create.ts) |
+| `credit-note-update` | Updates a credit note in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/credit-note-update.ts) |
+| `credit-notes` | Fetches all credit notes in Netsuite | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/credit-notes.ts) |
 
-<Accordion title="Bills">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /bills` | Creates a vendor bill in Netsuite. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/bill-create.md) |
-| `PUT /bills` | Updates an existing vendor bill in Netsuite. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/bill-update.md) |
-</Accordion>
+### Customers
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `customer-create` | Creates a customer in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/customer-create.ts) |
+| `customer-update` | Updates a customer in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/customer-update.ts) |
+| `customers` | Fetches all customers in Netsuite | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/customers.ts) |
 
-<Accordion title="Credit Notes">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /credit-notes` | Creates a credit note in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/credit-note-create.md) |
-| `PUT /credit-notes` | Updates a credit note in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/credit-note-update.md) |
-| `GET /credit-notes` | Fetches all credit notes in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/credit-notes.md) |
-</Accordion>
+### Fields
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `fetch-fields` | Fetches all fields in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/fetch-fields.ts) |
 
-<Accordion title="Customers">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /customers` | Creates a customer in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/customer-create.md) |
-| `PUT /customers` | Updates a customer in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/customer-update.md) |
-| `GET /customers` | Fetches all customers in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/customers.md) |
-</Accordion>
+### Invoices
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `invoice-create` | Creates an invoice in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/invoice-create.ts) |
+| `invoice-update` | Updates an invoice in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/invoice-update.ts) |
+| `invoices` | Fetches all invoices in Netsuite | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/invoices.ts) |
 
-<Accordion title="Fields">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /fetch-fields` | Fetches all fields in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/fetch-fields.md) |
-</Accordion>
+### Payments
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `payment-create` | Creates a payment in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/payment-create.ts) |
+| `payment-update` | Updates a payment in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/payment-update.ts) |
+| `payments` | Fetches all payments received from customers in Netsuite | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/payments.ts) |
 
-<Accordion title="Invoices">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /invoices` | Creates an invoice in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/invoice-create.md) |
-| `PUT /invoices` | Updates an invoice in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/invoice-update.md) |
-| `GET /invoices` | Fetches all invoices in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/invoices.md) |
-</Accordion>
+### Purchase Orders
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `purchase-order-create` | Creates a purchase order in Netsuite | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/purchase-order-create.ts) |
+| `purchase-order-update` | Updates an existing purchase order in Netsuite. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/purchase-order-update.ts) |
 
-<Accordion title="Payments">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /payments` | Creates a payment in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/payment-create.md) |
-| `PUT /payments` | Updates a payment in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/payment-update.md) |
-| `GET /payments` | Fetches all payments received from customers in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/payments.md) |
-</Accordion>
+### Others
 
-
-<Accordion title="Purchase Orders">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /purchase-orders` | Creates a purchase order in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/purchase-order-create.md) |
-| `PUT /purchase-orders` | Updates an existing purchase order in Netsuite. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/actions/purchase-order-update.md) |
-</Accordion>
-
-
-<Accordion title="Others">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /locations` | Fetches all locations in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/locations.md) |
-| `GET /general-ledger` | Fetches all JournalEntries in Netsuite | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/general-ledger.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `general-ledger` | Fetches all JournalEntries in Netsuite | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/general-ledger.ts) |
+| `locations` | Fetches all locations in Netsuite | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/locations.ts) |

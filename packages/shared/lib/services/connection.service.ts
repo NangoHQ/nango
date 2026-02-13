@@ -12,6 +12,7 @@ import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
+import * as samlClient from '../auth/samlAssertion.js';
 import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
@@ -81,6 +82,7 @@ import type {
     ProviderSignature,
     ProviderTwoStep,
     SignatureCredentials,
+    Tags,
     TbaCredentials,
     TwoStepCredentials
 } from '@nangohq/types';
@@ -102,7 +104,8 @@ class ConnectionService {
         parsedRawCredentials,
         connectionConfig,
         environmentId,
-        metadata
+        metadata,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -110,6 +113,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         environmentId: number;
         metadata?: Metadata | null;
+        tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId });
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
@@ -128,7 +132,8 @@ class ConnectionService {
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                tags: tags ?? storedConnection.tags
             });
 
             const connection = await db.knex
@@ -158,7 +163,8 @@ class ConnectionService {
             refresh_attempts: null,
             refresh_exhausted: false,
             deleted: false,
-            deleted_at: null
+            deleted_at: null,
+            tags: tags ?? {}
         });
         const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
@@ -172,7 +178,8 @@ class ConnectionService {
         connectionConfig,
         metadata,
         config,
-        environment
+        environment,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -189,6 +196,7 @@ class ConnectionService {
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
+        tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
@@ -211,7 +219,8 @@ class ConnectionService {
                 refresh_attempts: null,
                 refresh_exhausted: false,
                 deleted: false,
-                deleted_at: null
+                deleted_at: null,
+                tags: tags ?? exists?.tags ?? {}
             });
 
             const [connection] = await db.knex
@@ -233,7 +242,8 @@ class ConnectionService {
                     last_refresh_failure: encryptedConnection.last_refresh_failure,
                     refresh_attempts: encryptedConnection.refresh_attempts,
                     refresh_exhausted: encryptedConnection.refresh_exhausted,
-                    updated_at: new Date()
+                    updated_at: new Date(),
+                    tags: encryptedConnection.tags
                 })
                 .returning('*');
 
@@ -246,13 +256,15 @@ class ConnectionService {
         providerConfigKey,
         metadata,
         connectionConfig,
-        environment
+        environment,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
         environment: DBEnvironment;
+        tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId: environment.id });
         const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
@@ -273,7 +285,8 @@ class ConnectionService {
                     last_refresh_success: new Date(),
                     last_refresh_failure: null,
                     refresh_attempts: null,
-                    refresh_exhausted: false
+                    refresh_exhausted: false,
+                    tags: tags ?? storedConnection.tags
                 })
                 .returning('*');
 
@@ -293,7 +306,8 @@ class ConnectionService {
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
-                refresh_exhausted: false
+                refresh_exhausted: false,
+                tags: tags ?? {}
             })
             .returning('*');
 
@@ -307,7 +321,8 @@ class ConnectionService {
         metadata = null,
         connectionConfig = {},
         parsedRawCredentials,
-        connectionCreatedHook
+        connectionCreatedHook,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -316,6 +331,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
+        tags?: Tags;
     }) {
         const [importedConnection] = await this.upsertConnection({
             connectionId,
@@ -323,7 +339,8 @@ class ConnectionService {
             parsedRawCredentials,
             connectionConfig,
             environmentId: environment.id,
-            metadata
+            metadata,
+            tags
         });
 
         if (importedConnection) {
@@ -340,7 +357,8 @@ class ConnectionService {
         environment,
         connectionConfig = {},
         credentials,
-        connectionCreatedHook
+        connectionCreatedHook,
+        tags
     }: {
         connectionId: string;
         providerConfigKey: string;
@@ -349,6 +367,7 @@ class ConnectionService {
         connectionConfig?: ConnectionConfig;
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
+        tags?: Tags;
     }) {
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -364,7 +383,8 @@ class ConnectionService {
             connectionConfig,
             metadata,
             config,
-            environment
+            environment,
+            tags
         });
 
         if (importedConnection) {
@@ -742,6 +762,7 @@ class ConnectionService {
         search,
         endUserId,
         endUserOrganizationId,
+        tags,
         limit = 1000,
         page = 0
     }: {
@@ -752,67 +773,101 @@ class ConnectionService {
         search?: string | undefined;
         endUserId?: string | undefined;
         endUserOrganizationId?: string | undefined;
+        tags?: Record<string, string> | undefined;
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.readOnly
-            .from<DBConnection>(`_nango_connections`)
-            .select<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
+            // Filter and paginate connections
+            .with('filtered_connections', (qb) => {
+                const subQuery = qb
+                    .select('_nango_connections.id')
+                    .from('_nango_connections')
+                    .where('_nango_connections.environment_id', environmentId)
+                    .where('_nango_connections.deleted', false);
+
+                // Filter by specific connection ID
+                if (connectionId) {
+                    subQuery.where('_nango_connections.connection_id', connectionId);
+                }
+
+                // Filter by integration IDs
+                if (integrationIds) {
+                    subQuery.join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id').whereIn('_nango_configs.unique_key', integrationIds);
+                }
+
+                // Filter by tags (JSONB containment using GIN index)
+                if (tags && Object.keys(tags).length > 0) {
+                    subQuery.whereRaw('_nango_connections.tags @> ?::jsonb', [JSON.stringify(tags)]);
+                }
+
+                // Filter by end user criteria or search
+                if (endUserId || endUserOrganizationId || search) {
+                    subQuery.leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id');
+
+                    if (endUserId) {
+                        subQuery.where('end_users.end_user_id', endUserId);
+                    }
+
+                    if (endUserOrganizationId) {
+                        subQuery.where('end_users.organization_id', endUserOrganizationId);
+                    }
+
+                    if (search) {
+                        subQuery.where(function () {
+                            this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
+                                .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
+                                .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
+                        });
+                    }
+                }
+
+                if (withError === false) {
+                    // Only connections without active logs
+                    subQuery.whereNotExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                } else if (withError === true) {
+                    // Only connections with active logs
+                    subQuery.whereExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                }
+
+                return subQuery
+                    .orderBy('_nango_connections.created_at', 'desc')
+                    .limit(limit)
+                    .offset(page * limit);
+            })
+            // Aggregate active logs for filtered connections
+            .with('active_logs_agg', (qb) => {
+                return qb
+                    .select('connection_id')
+                    .select(db.knex.raw(`json_agg(json_build_object('type', type, 'log_id', log_id)) as active_logs`))
+                    .from(ACTIVE_LOG_TABLE)
+                    .where('active', true)
+                    .whereRaw('connection_id = ANY(ARRAY(SELECT id FROM filtered_connections))')
+                    .groupBy('connection_id');
+            })
+            // Join all data together
+            .select(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
-                db.knex.raw(`
-                    COALESCE(
-                        json_agg(
-                            json_build_object(
-                                'type', _nango_active_logs.type,
-                                'log_id', _nango_active_logs.log_id
-                            )
-                        ) FILTER (WHERE _nango_active_logs.id IS NOT NULL)
-                        , '[]'::json
-                    ) as active_logs
-               `),
-                db.knex.raw('count(_nango_active_logs.id) as active_logs_count'),
+                db.knex.raw(`COALESCE(active_logs_agg.active_logs, '[]'::json) as active_logs`),
                 '_nango_configs.provider'
             )
-            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .from('_nango_connections')
+            .innerJoin('filtered_connections', 'filtered_connections.id', '_nango_connections.id')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
-            .leftJoin(ACTIVE_LOG_TABLE, function () {
-                this.on(`${ACTIVE_LOG_TABLE}.connection_id`, '_nango_connections.id').andOn(`${ACTIVE_LOG_TABLE}.active`, db.knex.raw(true));
-            })
-            .where({
-                '_nango_connections.environment_id': environmentId,
-                '_nango_connections.deleted': false
-            })
-            .orderBy('_nango_connections.created_at', 'desc')
-            .groupBy('_nango_connections.id', 'end_users.id', '_nango_configs.provider')
-            .limit(limit)
-            .offset(page * limit);
-
-        if (search) {
-            query.where(function () {
-                this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
-                    .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
-                    .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
-            });
-        }
-        if (integrationIds) {
-            query.whereIn('_nango_configs.unique_key', integrationIds);
-        }
-        if (connectionId) {
-            query.where('_nango_connections.connection_id', connectionId);
-        }
-        if (endUserId) {
-            query.where('end_users.end_user_id', endUserId);
-        }
-        if (endUserOrganizationId) {
-            query.where('end_users.organization_id', endUserOrganizationId);
-        }
-
-        if (withError === false) {
-            query.havingRaw('count(_nango_active_logs.id) = 0');
-        } else if (withError === true) {
-            query.havingRaw('count(_nango_active_logs.id) > 0');
-        }
+            .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
+            .orderBy('_nango_connections.created_at', 'desc');
 
         return await query;
     }
@@ -961,7 +1016,8 @@ class ConnectionService {
 
                 const token = tokenPath ? extractValueByPath(rawCreds, tokenPath) : rawCreds;
                 const refreshToken = refreshTokenPath ? extractValueByPath(rawCreds, refreshTokenPath) : undefined;
-                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS;
+                const expiration = expirationPath ? extractValueByPath(rawCreds, expirationPath) : undefined;
+
                 if (!token) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
@@ -979,8 +1035,11 @@ class ConnectionService {
                         }
                         expiresAt = new Date(Date.now() + durationMs);
                     }
-                } else if (template.token_expires_in_ms) {
-                    expiresAt = new Date(Date.now() + template.token_expires_in_ms);
+                    // token_expires_in_ms of 0 in the providers config is treated as undefined
+                } else if (template.token_expires_in_ms != null) {
+                    expiresAt = template.token_expires_in_ms > 0 ? new Date(Date.now() + template.token_expires_in_ms) : undefined;
+                } else {
+                    expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
                 const twoStepCredentials: TwoStepCredentials = {
@@ -1005,7 +1064,8 @@ class ConnectionService {
         provider: ProviderGithubApp,
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
-        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>
+        connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
+        tags?: Tags
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
@@ -1024,7 +1084,8 @@ class ConnectionService {
             providerConfigKey: integration.unique_key,
             parsedRawCredentials: create.value,
             connectionConfig,
-            environmentId: integration.environment_id
+            environmentId: integration.environment_id,
+            tags
         });
 
         if (updatedConnection) {
@@ -1208,7 +1269,8 @@ class ConnectionService {
         providerConfig: string,
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
-        connectionConfig: Record<string, string>
+        connectionConfig: Record<string, string>,
+        refreshToken?: boolean
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         if (provider.signature) {
             const create = jwtClient.createCredentials({
@@ -1223,6 +1285,27 @@ class ConnectionService {
 
             const { token } = create.value;
             dynamicCredentials['token'] = token;
+        }
+
+        if (provider.assertion && (refreshToken === false || refreshToken === undefined)) {
+            const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
+            const assertionOption = assertionOptionValue as Record<string, any> | undefined;
+
+            const create = samlClient.generateAssertion({
+                provider,
+                dynamicCredentials: credentials,
+                connectionConfig,
+                ...(assertionOption && { assertionOption })
+            });
+
+            if (create.isErr()) {
+                console.log(create.error);
+                return { success: false, error: create.error, response: null };
+            }
+
+            credentials['assertion'] = create.value;
+
+            Object.assign(dynamicCredentials, credentials);
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1379,6 +1462,10 @@ class ConnectionService {
                 delete dynamicCredentials['refresh_token'];
             }
 
+            if ('assertionOption' in dynamicCredentials) {
+                delete dynamicCredentials['assertionOption'];
+            }
+
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
@@ -1389,11 +1476,8 @@ class ConnectionService {
 
             return { success: true, error: null, response: parsedCreds };
         } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching TwoStep credentials tokens ${stringifyError(err)}`);
+            const errorPayload = stringifyError(err);
+            logger.error(`Error fetching TwoStep credentials tokens ${errorPayload}`);
             const error = new NangoError('two_step_credentials_fetch_error', errorPayload);
 
             return { success: false, error, response: null };
@@ -1428,8 +1512,23 @@ class ConnectionService {
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
+            const credentials = connection.credentials as OAuth2Credentials;
+            if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
+                providerConfig = {
+                    ...providerConfig,
+                    oauth_client_id: credentials.config_override.client_id,
+                    oauth_client_secret: credentials.config_override.client_secret
+                };
+            }
             const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
+
+            if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
+                parsedCreds.config_override = {
+                    client_id: credentials.config_override.client_id,
+                    client_secret: credentials.config_override.client_secret
+                };
+            }
 
             return { success: true, error: null, response: parsedCreds };
         } else if (provider.auth_mode === 'OAUTH2_CC') {
@@ -1508,7 +1607,13 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getTwoStepCredentials(providerConfig.unique_key, provider as ProviderTwoStep, dynamicCredentials, connection.connection_config);
+            } = await this.getTwoStepCredentials(
+                providerConfig.unique_key,
+                provider as ProviderTwoStep,
+                dynamicCredentials,
+                connection.connection_config,
+                true
+            );
 
             if (!success || !credentials) {
                 return { success, error, response: null };

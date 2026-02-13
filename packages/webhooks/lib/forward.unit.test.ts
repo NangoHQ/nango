@@ -1,13 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 import { axiosInstance } from '@nangohq/utils';
 
 import { forwardWebhook } from './forward.js';
+import { TestWebhookServer } from './helpers/test.js';
 
-import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
+
+const testServer = new TestWebhookServer(4102);
 
 const account: DBTeam = {
     id: 1,
@@ -21,8 +24,8 @@ const account: DBTeam = {
 const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
-    primary_url: 'http://example.com/webhook',
-    secondary_url: 'http://example.com/webhook-secondary',
+    primary_url: testServer.primaryUrl,
+    secondary_url: testServer.secondaryUrl,
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
@@ -39,7 +42,17 @@ const integration = {
     forward_webhooks: true
 } as IntegrationConfig;
 
+const secret = 'secret' as DBAPISecret['secret'];
+
 describe('Webhooks: forward notification tests', () => {
+    beforeAll(async () => {
+        await testServer.start();
+    });
+
+    afterAll(async () => {
+        await testServer.stop();
+    });
+
     beforeEach(() => {
         vi.resetAllMocks();
     });
@@ -50,9 +63,9 @@ describe('Webhooks: forward notification tests', () => {
             account,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: '',
@@ -74,9 +87,9 @@ describe('Webhooks: forward notification tests', () => {
             account,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings,
             logContextGetter,
             integration: {
@@ -97,9 +110,9 @@ describe('Webhooks: forward notification tests', () => {
             account,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: ''
@@ -121,9 +134,9 @@ describe('Webhooks: forward notification tests', () => {
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
                 always_send_webhook: true
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: ''
@@ -144,9 +157,9 @@ describe('Webhooks: forward notification tests', () => {
             account,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: webhookSettings,
             logContextGetter,
             integration,
@@ -164,9 +177,9 @@ describe('Webhooks: forward notification tests', () => {
             account,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: webhookSettings,
             logContextGetter,
             integration,

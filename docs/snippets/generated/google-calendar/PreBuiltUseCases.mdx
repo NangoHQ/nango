@@ -1,30 +1,75 @@
+### Access Control
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-acl-rule` | Creates an access control rule granting calendar access | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/create-acl-rule.ts) |
+| `delete-acl-rule` | Deletes an access control rule | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/delete-acl-rule.ts) |
+| `get-acl-rule` | Returns an access control rule by rule ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-acl-rule.ts) |
+| `list-acl-rules` | Returns the rules in the access control list for a calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/list-acl-rules.ts) |
+| `update-acl-rule` | Updates an access control rule | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/update-acl-rule.ts) |
 
-<AccordionGroup>
+### Attendees
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-attendee` | Adds an attendee to an existing calendar event | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/add-attendee.ts) |
+| `remove-attendee` | Removes an attendee from an existing calendar event | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/remove-attendee.ts) |
+| `update-attendee-response` | Updates an attendee's response status for an event | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/update-attendee-response.ts) |
 
-<Accordion title="Calendars">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /calendars` | Sync the calendars list of the user | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/syncs/calendars.md) |
-</Accordion>
+### Calendars
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `clear-calendar` | Clears a primary calendar by deleting all events | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/clear-calendar.ts) |
+| `create-calendar` | Creates a new secondary calendar with the specified title | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/create-calendar.ts) |
+| `delete-calendar` | Deletes a secondary calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/delete-calendar.ts) |
+| `get-calendar-list-entry` | Returns a calendar from the user's calendar list | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-calendar-list-entry.ts) |
+| `get-calendar` | Returns metadata for a calendar by calendar ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-calendar.ts) |
+| `insert-calendar-to-list` | Inserts an existing calendar into the user's calendar list | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/insert-calendar-to-list.ts) |
+| `list-calendars` | Returns all calendars on the user's calendar list | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/list-calendars.ts) |
+| `remove-calendar-from-list` | Removes a calendar from the user's calendar list | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/remove-calendar-from-list.ts) |
+| `update-calendar-list-entry` | Updates an existing calendar on the user's calendar list | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/update-calendar-list-entry.ts) |
+| `update-calendar` | Updates metadata for a calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/update-calendar.ts) |
+| `calendars` | Sync the calendars list of the user | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/syncs/calendars.ts) |
 
-<Accordion title="Events">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /events` | Sync calendar events on the primary calendar going back one month and<br />save the entire object as specified by the Google API | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/syncs/events.md) |
-</Accordion>
+### Events
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-all-day-event` | Creates an all-day event on a calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/create-all-day-event.ts) |
+| `create-event` | Creates a new event on a calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/create-event.ts) |
+| `create-recurring-event` | Creates a recurring event with RRULE specification | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/create-recurring-event.ts) |
+| `delete-event` | Deletes an event from a calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/delete-event.ts) |
+| `get-event-instances` | Returns instances of a recurring event | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-event-instances.ts) |
+| `get-event` | Returns an event based on its calendar and event ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-event.ts) |
+| `import-event` | Imports an event as a private copy using iCalendar UID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/import-event.ts) |
+| `list-events` | Returns events on a specified calendar with optional filtering | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/list-events.ts) |
+| `list-upcoming-events` | Returns upcoming events starting from now | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/list-upcoming-events.ts) |
+| `move-event` | Moves an event to another calendar changing its organizer | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/move-event.ts) |
+| `patch-event` | Partially updates an event with only provided fields | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/patch-event.ts) |
+| `quick-add-event` | Creates an event based on a simple text string like a natural language input | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/quick-add-event.ts) |
+| `search-events` | Searches for events matching a text query across calendars | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/search-events.ts) |
+| `update-event` | Updates an existing event on a calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/update-event.ts) |
+| `events` | Sync calendar events on the primary calendar going back one month and save the entire object as specified by the Google API | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/syncs/events.ts) |
 
-<Accordion title="Users">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /whoami` | description: Fetch current user information | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/whoami.md) |
-| `GET /settings` | Fetch all user settings from Google Calendar | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/settings.md) |
-</Accordion>
+### Scheduling
 
-</AccordionGroup>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `find-free-slots` | Finds available time slots across calendars within a time range | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/find-free-slots.ts) |
+| `query-free-busy` | Returns free/busy information for a set of calendars | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/query-free-busy.ts) |
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+### Settings
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-colors` | Returns the color definitions for calendars and events | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-colors.ts) |
+| `get-setting` | Returns a single user setting by setting ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/get-setting.ts) |
+| `list-settings` | Returns all user settings for the authenticated user | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/list-settings.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `settings` | Fetch all user settings from Google Calendar | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/settings.ts) |
+| `whoami` | description: Fetch current user information | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-calendar/actions/whoami.ts) |

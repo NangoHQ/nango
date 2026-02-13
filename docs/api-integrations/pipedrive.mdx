@@ -1,0 +1,84 @@
+---
+title: 'Pipedrive'
+sidebarTitle: 'Pipedrive'
+description: 'Integrate your application with the Pipedrive API'
+---
+
+## 🚀 Quickstart
+
+Connect to Pipedrive with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Pipedrive_.
+    </Step>
+    <Step title="Authorize Pipedrive">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Pipedrive. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Pipedrive API">
+    Let's make your first request to the Pipedrive API (get a list of deals). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/deals?limit=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/deals',
+            params: {
+                limit: 10
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Pipedrive Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Pipedrive OAuth app](/api-integrations/pipedrive/how-to-register-your-own-pipedrive-oauth-app)
+Register an OAuth app with Pipedrive and obtain credentials to connect it to Nango
+
+Official docs: [Pipedrive OAuth 2.0 Documentation](https://developers.pipedrive.com/docs/api/v1/Oauth), [Pipedrive API Documentation](https://pipedrive.readme.io/docs/core-api-concepts-about-pipedrive-api)
+
+## 🧩 Pre-built syncs & actions for Pipedrive
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pipedrive/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

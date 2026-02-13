@@ -1,25 +1,14 @@
+### Files
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `write-file` | Write content to a particular github file within a repo. If the file doesn't exist it creates and then writes to it | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/write-file.ts) |
+| `list-files` | Lists all the files of a Github repo given a specific branch | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/list-files.ts) |
 
-<AccordionGroup>
+### Others
 
-
-<Accordion title="Files">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `PUT /files` | Write content to a particular github file within a repo. If<br />the file doesn't exist it creates and then writes to it | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/write-file.md) |
-| `GET /files` | Lists all the files of a Github repo given a specific branch | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/list-files.md) |
-</Accordion>
-
-
-<Accordion title="Others">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /github/list-repos` | List github repos from an organization. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-repos.md) |
-| `GET /github/issues` | Fetches Github issues from all a user's repositories | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/issues.md) |
-| `GET /github/issues-lite` | Fetches Github issues but up to a maximum of 15 | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/issues-lite.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-repos` | List github repos from an organization. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-repos.ts) |
+| `issues` | Fetches Github issues from all a user's repositories | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/issues.ts) |
+| `issues-lite` | Fetches Github issues but up to a maximum of 15 | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/issues-lite.ts) |

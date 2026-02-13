@@ -109,7 +109,8 @@ export class NangoActionCLI extends NangoActionBase {
             ...syncArgs,
             connectionId,
             autoConfirm: true,
-            debug: false
+            debug: false,
+            interactive: false
         });
     }
 
@@ -131,6 +132,22 @@ export class NangoActionCLI extends NangoActionBase {
     }
 
     public override async releaseAllLocks(): Promise<void> {
+        // Not applicable to CLI
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async getCheckpoint<T = never>(): Promise<T> {
+        // Not applicable to CLI
+        return null as T;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async saveCheckpoint(): Promise<void> {
+        // Not applicable to CLI
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async clearCheckpoint(): Promise<void> {
         // Not applicable to CLI
     }
 
@@ -171,6 +188,9 @@ export class NangoSyncCLI extends NangoSyncBase {
     tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
     releaseLock = NangoActionCLI['prototype']['releaseLock'];
     releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
+    getCheckpoint = NangoActionCLI['prototype']['getCheckpoint'];
+    saveCheckpoint = NangoActionCLI['prototype']['saveCheckpoint'];
+    clearCheckpoint = NangoActionCLI['prototype']['clearCheckpoint'];
 
     protected showLoggerLevelWarning = showLoggerLevelWarning();
 
@@ -278,8 +298,12 @@ export class NangoSyncCLI extends NangoSyncBase {
         return super.getMetadata<TMetadata>();
     }
 
-    public override async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<GetPublicConnection['Success']> {
-        const fetchedConnection = await super.getConnection(providerConfigKeyOverride, connectionIdOverride);
+    public override async getConnection(
+        providerConfigKeyOverride?: string,
+        connectionIdOverride?: string,
+        options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
+    ): Promise<GetPublicConnection['Success']> {
+        const fetchedConnection = await super.getConnection(providerConfigKeyOverride, connectionIdOverride, options);
         if (this.stubbedMetadata) {
             return { ...fetchedConnection, metadata: this.stubbedMetadata };
         }

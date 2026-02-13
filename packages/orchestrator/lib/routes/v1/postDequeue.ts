@@ -24,16 +24,16 @@ type PostDequeue = Endpoint<{
     Success: Task[];
 }>;
 
+const bodySchema = z
+    .object({
+        limit: z.coerce.number().positive(),
+        longPolling: z.coerce.boolean(),
+        groupKeyPattern: z.string().min(1)
+    })
+    .strict();
+
 const validate = validateRequest<PostDequeue>({
-    parseBody: (data) =>
-        z
-            .object({
-                limit: z.coerce.number().positive(),
-                longPolling: z.coerce.boolean(),
-                groupKeyPattern: z.string().min(1)
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data) => bodySchema.parse(data)
 });
 
 export const route: Route<PostDequeue> = { path, method };

@@ -1,24 +1,13 @@
+### Drives
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-drives` | Lists the available drives for the authenticated user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/actions/list-drives.ts) |
 
-<AccordionGroup>
+### Files
 
-
-<Accordion title="Drives">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /list-drives` | Lists the available drives for the authenticated user. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/actions/list-drives.md) |
-</Accordion>
-
-
-<Accordion title="Files">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /fetch-file` | This action will be used to fetch the latest file download_url which can be used to download the actual file. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/actions/fetch-file.md) |
-| `GET /user-files` | Fetch all files from the user's OneDrive and sync the metadata for each file. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/syncs/user-files.md) |
-| `GET /user-files/selected` | Fetch selected files from a user's OneDrive based on provided metadata. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/syncs/user-files-selection.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `fetch-file` | This action will be used to fetch the latest file download_url which can be used to download the actual file. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/actions/fetch-file.ts) |
+| `user-files` | Fetch all files from the user's OneDrive and sync the metadata for each file. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/syncs/user-files.ts) |
+| `user-files-selection` | Fetch selected files from a user's OneDrive based on provided metadata. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive/syncs/user-files-selection.ts) |

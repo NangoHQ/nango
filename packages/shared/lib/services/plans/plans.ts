@@ -1,41 +1,39 @@
 import ms from 'ms';
 
-import { Err, Ok, flagHasPlan } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
 
-import type { DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
 
-export async function safeGetPlan(db: Knex, { accountId }: { accountId: number }): Promise<DBPlan | null> {
-    if (!flagHasPlan) {
-        return null;
-    }
-    const planRes = await getPlan(db, { accountId });
-    return planRes.isOk() ? planRes.value : null;
-}
-
-export async function getPlan(db: Knex, { accountId }: { accountId: number }): Promise<Result<DBPlan>> {
-    try {
-        const res = await db.from<DBPlan>('plans').select<DBPlan>('*').where('account_id', accountId).first();
-        return res ? Ok(res) : Err(new Error('unknown_plan_for_account'));
-    } catch (err) {
-        return Err(new Error('failed_to_get_plan', { cause: err }));
-    }
-}
-
-export async function getPlanBy(db: Knex, opts: Partial<Pick<DBPlan, 'stripe_customer_id'>>): Promise<Result<DBPlan>> {
+export async function getPlan(
+    db: Knex,
+    opts: Partial<{
+        accountId: DBPlan['account_id'];
+        environmentId: DBEnvironment['id'];
+        stripeCustomerId: DBPlan['stripe_customer_id'];
+    }>
+): Promise<Result<DBPlan>> {
     if (Object.keys(opts).length <= 0) {
-        return Err(new Error('getPlanBy_missing_opts'));
+        return Err(new Error('getPlan_missing_opts'));
     }
     try {
         const query = db.from<DBPlan>('plans').select<DBPlan>('*');
-        if (opts.stripe_customer_id) {
-            query.where('stripe_customer_id', opts.stripe_customer_id);
+        if (opts.accountId) {
+            query.where('account_id', opts.accountId);
+        }
+        if (opts.stripeCustomerId) {
+            query.where('stripe_customer_id', opts.stripeCustomerId);
+        }
+        if (opts.environmentId) {
+            query
+                .join<DBEnvironment>('_nango_environments', '_nango_environments.account_id', 'plans.account_id')
+                .where('_nango_environments.id', opts.environmentId);
         }
         const res = await query.first();
         return res ? Ok(res) : Err(new Error('unknown_plan_for_condition'));
@@ -216,6 +214,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'updated_at':
                 break;
             // BOOLEAN FLAGS - keep override if false
+            case 'has_records_autopruning':
             case 'auto_idle': {
                 overrides[key] = !currentPlan[key] ? false : newPlanDefinition.flags[key];
                 break;
@@ -264,6 +263,14 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 if (currentValue < newValue) {
                     overrides[key] = currentValue;
                 }
+                break;
+            }
+            // FUNCTION RUNTIME FLAGS - keep override if different
+            case 'sync_function_runtime':
+            case 'action_function_runtime':
+            case 'webhook_function_runtime':
+            case 'on_event_function_runtime': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
             // SPECIAL CASES

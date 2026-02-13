@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, environmentService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
+import { accountService, configService, connectionService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
@@ -41,14 +41,14 @@ class AppAuthController {
             await oAuthSessionService.delete(session.id);
         }
 
-        const environmentAndAccountLookup = await environmentService.getAccountAndEnvironment({ environmentId: session.environmentId });
+        const accountContext = await accountService.getAccountContext({ environmentId: session.environmentId });
 
-        if (!environmentAndAccountLookup) {
+        if (!accountContext) {
             res.sendStatus(404);
             return;
         }
 
-        const { environment, account } = environmentAndAccountLookup;
+        const { environment, account } = accountContext;
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
@@ -138,20 +138,6 @@ class AppAuthController {
             const { jwtToken } = parsedRawCredentials;
             connectionConfig['jwtToken'] = jwtToken;
 
-            const [updatedConnection] = await connectionService.upsertConnection({
-                connectionId,
-                providerConfigKey,
-                parsedRawCredentials,
-                connectionConfig,
-                environmentId: environment.id
-            });
-            if (!updatedConnection) {
-                void logCtx.error('Failed to create connection');
-                await logCtx.failed();
-                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
-                return;
-            }
-
             let connectSession: ConnectSessionAndEndUser | undefined;
             if (session.connectSessionId) {
                 const connectSessionRes = await getConnectSession(db.knex, {
@@ -165,8 +151,27 @@ class AppAuthController {
                     await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                     return;
                 }
-
                 connectSession = connectSessionRes.value;
+            }
+
+            const tags = connectSession?.connectSession.tags;
+
+            const [updatedConnection] = await connectionService.upsertConnection({
+                connectionId,
+                providerConfigKey,
+                parsedRawCredentials,
+                connectionConfig,
+                environmentId: environment.id,
+                tags
+            });
+            if (!updatedConnection) {
+                void logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
+            }
+
+            if (connectSession) {
                 await syncEndUserToConnection(db.knex, {
                     connectSession: connectSession.connectSession,
                     connection: updatedConnection.connection,

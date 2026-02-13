@@ -41,7 +41,17 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     /* TODO: structured logging here if needed */
                 },
                 proxyConfig: proxyConfigUnwrapped,
-                getConnection: () => connection
+                getConnection: () => connection,
+                getIntegrationConfig: async () => {
+                    const integration = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
+                    if (integration) {
+                        return {
+                            oauth_client_id: integration.oauth_client_id,
+                            oauth_client_secret: integration.oauth_client_secret
+                        };
+                    }
+                    return { oauth_client_id: null, oauth_client_secret: null };
+                }
             });
             const response = (await proxyInstance.request()).unwrap();
             return response;

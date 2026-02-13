@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
 import * as uuid from 'uuid';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
 import { formatRecords } from '../helpers/format.js';
@@ -12,11 +13,11 @@ import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../t
 import type { MergingStrategy, Result } from '@nangohq/types';
 
 describe('Records service', () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
         await migrate();
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await db(RECORDS_TABLE).truncate();
         await db(RECORD_COUNTS_TABLE).truncate();
     });
@@ -81,7 +82,7 @@ describe('Records service', () => {
             nonUniqueKeys: ['1'],
             nextMerging: { strategy: 'override' }
         });
-        let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(536);
 
@@ -99,7 +100,7 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
-        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(556);
 
@@ -109,7 +110,7 @@ describe('Records service', () => {
         expect(after.find((r) => r.external_id === '3')?.sync_job_id).toBe(1);
         expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
 
-        const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, syncJobId: 3 });
+        const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, environmentId, model, syncId, syncJobId: 3 });
         expect(updated).toStrictEqual({
             addedKeys: [],
             updatedKeys: ['1'],
@@ -119,7 +120,7 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
-        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(560);
     });
@@ -369,7 +370,7 @@ describe('Records service', () => {
                 unchangedKeys: ['1', '1', '1', '1'],
                 nextMerging: { strategy: 'override' }
             });
-            const stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(1);
             expect(stats[model]?.size_bytes).toBe(139);
         });
@@ -410,6 +411,7 @@ describe('Records service', () => {
                     }
                 ],
                 connectionId,
+                environmentId,
                 model,
                 syncId,
                 syncJobId: 2
@@ -464,7 +466,7 @@ describe('Records service', () => {
                     nextMerging: { strategy: 'override' }
                 });
 
-                const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, syncJobId: 2 });
+                const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
                 expect(updated).toStrictEqual({
                     addedKeys: [],
                     updatedKeys: ['1'],
@@ -514,6 +516,7 @@ describe('Records service', () => {
                 const updated = await updateRecords({
                     records: [{ id: '4', name: 'Maurice Doe' }],
                     connectionId,
+                    environmentId,
                     model,
                     syncId,
                     syncJobId: 2
@@ -535,6 +538,7 @@ describe('Records service', () => {
                         { id: '4', name: 'Bloom Doe' }
                     ],
                     connectionId,
+                    environmentId,
                     model,
                     syncId,
                     syncJobId: 3,
@@ -592,7 +596,7 @@ describe('Records service', () => {
             { id: '3', name: 'Max Doe' }
         ];
         await upsertRecords({ records, connectionId, environmentId, model, syncId });
-        let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(3);
         expect(stats[model]?.size_bytes).toBe(401);
 
@@ -611,7 +615,7 @@ describe('Records service', () => {
             nextMerging: { strategy: 'override' }
         });
 
-        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(1);
         expect(stats[model]?.size_bytes).toBe(401); // size remains the same since we are soft deleting
 
@@ -627,7 +631,7 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
-        stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(1);
         expect(stats[model]?.size_bytes).toBe(401);
     });
@@ -790,9 +794,9 @@ describe('Records service', () => {
             // Mark previous generations (1 and 2) as deleted
             const deletedIds = (
                 await Records.deleteOutdatedRecords({
+                    environmentId,
                     connectionId,
                     model,
-                    syncId,
                     generation: 3
                 })
             ).unwrap();
@@ -827,43 +831,15 @@ describe('Records service', () => {
             // Mark previous generation as deleted
             const deletedIds = (
                 await Records.deleteOutdatedRecords({
+                    environmentId,
                     connectionId,
                     model,
-                    syncId,
                     generation: 3
                 })
             ).unwrap();
 
             // Only the non-deleted record should be marked as deleted
             expect(deletedIds).toEqual(['2']);
-        });
-
-        it('should only affect records with matching connectionId, model, and syncId', async () => {
-            const connectionId = rnd.number();
-            const environmentId = rnd.number();
-            const model = rnd.string();
-            const syncId = uuid.v4();
-
-            const targetRecords = [{ id: '1', name: 'Target Record' }];
-            await upsertRecords({ records: targetRecords, connectionId, environmentId, model, syncId, syncJobId: 1 });
-
-            const otherSyncId = uuid.v4();
-            const otherRecords = [{ id: '2', name: 'Other Record' }];
-            await upsertRecords({ records: otherRecords, connectionId, environmentId, model, syncId: otherSyncId, syncJobId: 1 });
-
-            const otherModel = rnd.string();
-            const otherModelRecords = [{ id: '3', name: 'Other Model Record' }];
-            await upsertRecords({ records: otherModelRecords, connectionId, environmentId, model: otherModel, syncId, syncJobId: 1 });
-
-            const deletedIds = (
-                await Records.deleteOutdatedRecords({
-                    connectionId,
-                    model,
-                    syncId,
-                    generation: 2
-                })
-            ).unwrap();
-            expect(deletedIds).toEqual(['1']);
         });
 
         it('should process records in batches', async () => {
@@ -875,17 +851,25 @@ describe('Records service', () => {
 
             const records = Array.from({ length: count }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            // Insert an additional record to ensure total count is correct
+            await upsertRecords({ records: [{ id: '99', name: '99' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
+
+            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(initialStats[model]?.count).toBe(11);
 
             const deletedIds = (
                 await Records.deleteOutdatedRecords({
+                    environmentId,
                     connectionId,
                     model,
-                    syncId,
                     generation: 2,
                     batchSize: 3 // small batch size
                 })
             ).unwrap();
             expect(deletedIds).toHaveLength(count);
+
+            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(1); // only the last record should remain
         });
 
         it('should update record counts correctly', async () => {
@@ -902,32 +886,36 @@ describe('Records service', () => {
 
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
 
-            const initialStats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(initialStats[model]?.count).toBe(3);
 
             const deletedIds = (
                 await Records.deleteOutdatedRecords({
+                    environmentId,
                     connectionId,
                     model,
-                    syncId,
                     generation: 2
                 })
             ).unwrap();
             expect(deletedIds).toHaveLength(3);
 
-            const finalStats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]?.count).toBe(0);
         });
     });
 
-    describe('paginateRecordCounts', () => {
+    describe('paginateCounts', () => {
         it('should paginate through record counts', async () => {
+            // Clear existing records and counts
+            await db(RECORDS_TABLE).truncate();
+            await db(RECORD_COUNTS_TABLE).truncate();
+
             const res1 = await upsertNRecords(15);
             const res2 = await upsertNRecords(25);
             const res3 = await upsertNRecords(35);
 
             const received = [];
-            for await (const res of Records.paginateRecordCounts({ batchSize: 2 })) {
+            for await (const res of Records.paginateCounts({ batchSize: 2 })) {
                 if (res.isErr()) {
                     throw res.error;
                 }
@@ -972,7 +960,7 @@ describe('Records service', () => {
             const targetEnvironments = [res1.environmentId, res2.environmentId];
 
             const received = [];
-            for await (const res of Records.paginateRecordCounts({ environmentIds: targetEnvironments, batchSize: 2 })) {
+            for await (const res of Records.paginateCounts({ environmentIds: targetEnvironments, batchSize: 2 })) {
                 if (res.isErr()) {
                     throw res.error;
                 }
@@ -1003,8 +991,8 @@ describe('Records service', () => {
         });
     });
 
-    describe('deleteRecordsBySyncId', () => {
-        it('should delete records by sync ID', async () => {
+    describe('deleteRecords', () => {
+        it('should delete all records for given connection/model', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
@@ -1019,17 +1007,646 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            let stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(records.length);
 
-            const deletedCount = (await Records.deleteRecordsBySyncId({ connectionId, environmentId, model, syncId, batchSize: 2 })).unwrap();
-            expect(deletedCount.totalDeletedRecords).toBe(records.length);
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', batchSize: 2 })).unwrap();
+            expect(deletedCount.count).toBe(records.length);
 
-            stats = (await Records.getRecordStatsByModel({ connectionId, environmentId })).unwrap();
+            stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBe(undefined);
 
             const res = (await Records.getRecords({ connectionId, model })).unwrap();
             expect(res.records.length).toBe(0);
+        });
+
+        it('should delete only specified limit and update count/size correctly', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' },
+                { id: '4', name: 'Mike Doe' },
+                { id: '5', name: 'Alice Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(initialStats[model]?.count).toBe(5);
+            const initialSize = initialStats[model]?.size_bytes || 0;
+
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 3 })).unwrap();
+            expect(deletedCount.count).toBe(3);
+
+            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(2);
+            expect(finalStats[model]?.size_bytes).toBeLessThan(initialSize);
+
+            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(res.records.length).toBe(2);
+        });
+
+        it('should delete count entry when all records are deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 2 })).unwrap();
+            expect(deletedCount.count).toBe(2);
+
+            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]).toBeUndefined();
+        });
+
+        it('should return error for invalid limit values', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+
+            const zeroResult = await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 0 });
+            expect(zeroResult.isErr()).toBe(true);
+            if (zeroResult.isErr()) {
+                expect(zeroResult.error.message).toBe('limit must be greater than 0');
+            }
+
+            const negativeResult = await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: -5 });
+            expect(negativeResult.isErr()).toBe(true);
+            if (negativeResult.isErr()) {
+                expect(negativeResult.error.message).toBe('limit must be greater than 0');
+            }
+        });
+
+        it('should delete records up to specified cursor', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' },
+                { id: '4', name: 'Mike Doe' },
+                { id: '5', name: 'Alice Doe' },
+                { id: '6', name: 'Bob Doe' },
+                { id: '7', name: 'Charlie Doe' },
+                { id: '8', name: 'David Doe' },
+                { id: '9', name: 'Eve Doe' },
+                { id: '10', name: 'Frank Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const inserted = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(inserted.records.length).toBe(records.length);
+
+            const toDelete = 4;
+            const someRecordCursor = inserted.records[toDelete - 1]?._nango_metadata.cursor;
+            expect(someRecordCursor).toBeDefined();
+
+            const deletion = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'hard',
+                    toCursorIncluded: someRecordCursor!,
+                    limit: 100
+                })
+            ).unwrap();
+
+            expect(deletion.count).toBe(toDelete);
+            expect(deletion.lastCursor).toBe(someRecordCursor);
+
+            const remaining = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(remaining.records.length).toBe(records.length - toDelete);
+
+            const remainingIds = remaining.records.map((r) => r.id);
+            expect(remainingIds).toEqual(expect.arrayContaining(inserted.records.slice(toDelete).map((r) => r.id)));
+
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(records.length - toDelete);
+        });
+
+        it('should return null lastCursor when no records deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+
+            const deleteResult = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
+
+            expect(deleteResult.count).toBe(0);
+            expect(deleteResult.lastCursor).toBeNull();
+        });
+
+        it('should respect cursor boundary when deleting in batches', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = Array.from({ length: 20 }, (_, i) => ({
+                id: `${i + 1}`,
+                name: `Record ${i + 1}`
+            }));
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const allRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            const twelfthRecordCursor = allRecords.records[11]?._nango_metadata.cursor;
+            expect(twelfthRecordCursor).toBeDefined();
+
+            const deleteResult = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'hard',
+                    toCursorIncluded: twelfthRecordCursor!,
+                    batchSize: 7
+                })
+            ).unwrap();
+
+            expect(deleteResult.count).toBe(12);
+            expect(deleteResult.lastCursor).toBe(twelfthRecordCursor);
+
+            const remainingRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(remainingRecords.records.length).toBe(8);
+        });
+
+        it('should return error for invalid cursor', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+
+            const invalidCursorResult = await Records.deleteRecords({
+                connectionId,
+                environmentId,
+                model,
+                mode: 'hard',
+                toCursorIncluded: 'invalid-cursor-value'
+            });
+
+            expect(invalidCursorResult.isErr()).toBe(true);
+            if (invalidCursorResult.isErr()) {
+                expect(invalidCursorResult.error.message).toBe('invalid_cursor_value');
+            }
+        });
+
+        it('should prune records when mode = prune', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
+            const recs = (await Records.getRecords({ connectionId, model })).unwrap();
+            const last = recs.records[recs.records.length - 1]!;
+            const cursor = last._nango_metadata.cursor;
+
+            // update last record to ensure it is not pruned and correct cursor is returned
+            await upsertRecords({ records: [{ id: last.id, name: 'Maxwell Doe' }], connectionId, environmentId, model, syncId });
+
+            // prune all records but the last one that was just updated
+            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
+            expect(prune.count).toBe(2);
+            expect(prune.lastCursor).toBe(recs.records[recs.records.length - 2]!._nango_metadata.cursor); // second last record's cursor since last record was updated and not deleted
+
+            // try to prune again, should not do anything
+            const prune2 = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
+            expect(prune2.count).toBe(0);
+            expect(prune2.lastCursor).toBeNull();
+
+            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(res.records.length).toBe(3);
+            res.records.forEach((r) => {
+                if (r.id === last.id) {
+                    expect(r._nango_metadata.last_action).toBe('UPDATED');
+                    expect(r._nango_metadata.pruned_at).toBeNull();
+                } else {
+                    expect(r.id).toBeDefined();
+                    expect(r._nango_metadata.last_action).toBe('ADDED');
+                    expect(r._nango_metadata.pruned_at).not.toBeNull();
+                }
+            });
+
+            // count should remain the same but size should be reduced
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(3);
+            expect(stats[model]?.size_bytes).toBeLessThan(statsBefore[model]?.size_bytes || 0);
+        });
+
+        it('should simulate hard deletion when dryRun = true', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' },
+                { id: '4', name: 'Mike Doe' },
+                { id: '5', name: 'Alice Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsBefore[model]?.count).toBe(5);
+            const initialSize = statsBefore[model]?.size_bytes || 0;
+
+            const res = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'hard',
+                    limit: 3,
+                    dryRun: true
+                })
+            ).unwrap();
+
+            // Should report what would be deleted
+            expect(res.count).toBe(3);
+            expect(res.lastCursor).toBeDefined();
+
+            // Verify records were not actually deleted
+            const statsAfterDryRun = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfterDryRun[model]?.count).toBe(5);
+            expect(statsAfterDryRun[model]?.size_bytes).toBe(initialSize);
+
+            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(recordsAfterDryRun.records.length).toBe(5);
+        });
+
+        it('should simulate soft deletion when dryRun = true', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const res = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'soft',
+                    dryRun: true
+                })
+            ).unwrap();
+
+            // Should report what would be deleted
+            expect(res.count).toBe(3);
+            expect(res.lastCursor).toBeDefined();
+
+            // Verify records were not actually deleted
+            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
+            expect(recordsAfterDryRun.records.length).toBe(0);
+
+            const allRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(allRecords.records.length).toBe(3);
+            allRecords.records.forEach((r) => {
+                expect(r._nango_metadata.deleted_at).toBeNull();
+            });
+        });
+
+        it('should simulate pruning when dryRun = true', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialSize = statsBefore[model]?.size_bytes || 0;
+
+            const res = (
+                await Records.deleteRecords({
+                    connectionId,
+                    environmentId,
+                    model,
+                    mode: 'prune',
+                    dryRun: true
+                })
+            ).unwrap();
+
+            expect(res.count).toBe(2);
+            expect(res.lastCursor).toBeDefined();
+
+            // Verify records were not actually pruned
+            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(recordsAfterDryRun.records.length).toBe(2);
+            recordsAfterDryRun.records.forEach((r) => {
+                expect(r._nango_metadata.pruned_at).toBeNull();
+                expect(r['name']).toBeDefined(); // payload still exists
+            });
+
+            // Size should remain unchanged
+            const statsAfterDryRun = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfterDryRun[model]?.size_bytes).toBe(initialSize);
+        });
+    });
+
+    describe('incrCount', () => {
+        it('should insert record count when it does not exist', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+
+            const newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 5,
+                deltaSizeInBytes: 1000
+            });
+
+            expect(newCount.count).toBe(5);
+            expect(newCount.size_bytes).toBe(1000);
+        });
+
+        it('should increment existing record count', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+
+            let newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 10,
+                deltaSizeInBytes: 1000
+            });
+            expect(newCount.count).toBe(10);
+            expect(newCount.size_bytes).toBe(1000);
+
+            newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 5,
+                deltaSizeInBytes: 500
+            });
+            expect(newCount.count).toBe(15);
+            expect(newCount.size_bytes).toBe(1500);
+
+            newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: -3,
+                deltaSizeInBytes: -200
+            });
+            expect(newCount.count).toBe(12);
+            expect(newCount.size_bytes).toBe(1300);
+        });
+
+        it('should handle decrement', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' },
+                { id: '3', name: 'Max Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialCount = initialStats[model]?.count || 0;
+            const initialSize = initialStats[model]?.size_bytes || 0;
+
+            const newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: -2,
+                deltaSizeInBytes: -200
+            });
+
+            expect(newCount.count).toBe(initialCount - 2);
+            expect(newCount.size_bytes).toBe(initialSize - 200);
+        });
+
+        it('should keep count and size unchanged when both delta and deltaSizeInBytes are zero', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [{ id: '1', name: 'John Doe' }];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
+            const newCount = await Records.incrCount(db, {
+                connectionId,
+                environmentId,
+                model,
+                delta: 0,
+                deltaSizeInBytes: 0
+            });
+            expect(newCount.count).toBe(initialStats[model]?.count);
+            expect(newCount.size_bytes).toBe(initialStats[model]?.size_bytes);
+        });
+    });
+
+    describe('autoPruningCandidate', () => {
+        beforeEach(async () => {
+            await db(RECORDS_TABLE).truncate();
+        });
+        it('should find a stale record candidate for pruning', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Old Record 1' },
+                { id: '2', name: 'Old Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Make first record stale
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            await db(RECORDS_TABLE).where({ external_id: '1', connection_id: connectionId, model }).update({ updated_at: oneDayAgo });
+
+            // Try to find a stale record
+            // Since we're picking a random partition, we might need to try multiple times
+            const staleAfterMs = 60 * 60 * 1000; // 1 hour
+            for (let i = 0; i < 1000; i++) {
+                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                if (candidate) {
+                    expect(candidate.connectionId).toBe(connectionId);
+                    expect(candidate.model).toBe(model);
+                    const decodedCursor = Cursor.from(candidate.cursor);
+                    if (!decodedCursor) {
+                        throw new Error('Failed to decode cursor');
+                    }
+                    const staleRecord = (
+                        await Records.getRecords({ connectionId: candidate.connectionId, model: candidate.model, externalIds: ['1'] })
+                    ).unwrap().records[0];
+                    expect(staleRecord?._nango_metadata.cursor).toBe(candidate.cursor);
+                    return;
+                }
+            }
+            throw new Error('No candidate found. Expecting one');
+        });
+
+        it('should return null when no stale records exist', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Old Record 1' },
+                { id: '2', name: 'Old Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Since we're picking a random partition we need to try multiple times
+            const staleAfterMs = 60 * 60 * 1000; // 1 hour
+            for (let i = 0; i < 1000; i++) {
+                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                if (candidate) {
+                    throw new Error(`Expected no candidate, but found ${JSON.stringify(candidate)}`);
+                }
+            }
+        });
+
+        it('should not return already pruned records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            // Insert records
+            const records = [
+                { id: '1', name: 'Record to be pruned' },
+                { id: '2', name: 'Another record' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Mark the records as already pruned
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).update({ updated_at: oneDayAgo, pruned_at: new Date() });
+
+            // Try to find a stale record
+            // Since we're picking a random partition we need to try multiple times
+            const staleAfterMs = 60 * 60 * 1000; // 1 hour
+            for (let i = 0; i < 50; i++) {
+                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                if (candidate) {
+                    throw new Error(`Expected no candidate, but found ${JSON.stringify(candidate)}`);
+                }
+            }
+        });
+    });
+
+    describe('autoDeletingCandidate', () => {
+        beforeEach(async () => {
+            await db(RECORDS_TABLE).truncate();
+            await db(RECORD_COUNTS_TABLE).truncate();
+        });
+
+        it('should find a stale connection/model candidate for deletion', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Record 1' },
+                { id: '2', name: 'Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            // Make the count entry stale by updating its updated_at timestamp
+            const oneDay = 24 * 60 * 60 * 1000;
+            const twoDaysAgo = new Date(Date.now() - 2 * oneDay);
+            await db(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).update({ updated_at: twoDaysAgo });
+
+            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+
+            expect(candidate?.connectionId).toBe(connectionId);
+            expect(candidate?.model).toBe(model);
+            expect(candidate?.environmentId).toBe(environmentId);
+        });
+
+        it('should return null when no stale candidates exist', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'Fresh Record 1' },
+                { id: '2', name: 'Fresh Record 2' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: 60 * 1000 })).unwrap();
+
+            expect(candidate).toBeNull();
+        });
+
+        it('should randomly select candidates', async () => {
+            const oneDay = 24 * 60 * 60 * 1000;
+            const syncId = uuid.v4();
+
+            // Insert multiple stale record counts
+            for (let i = 0; i < 5; i++) {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+
+                const records = [{ id: '1', name: 'Record' }];
+                await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+                await db(RECORD_COUNTS_TABLE)
+                    .where({ connection_id: connectionId, environment_id: environmentId, model })
+                    .update({ updated_at: new Date(Date.now() - 2 * oneDay) });
+            }
+
+            const candidates = new Set<string>();
+            for (let i = 0; i < 50; i++) {
+                const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+                if (candidate) {
+                    candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
+                }
+            }
+            expect(candidates.size).toBeGreaterThan(1);
         });
     });
 });
@@ -1083,6 +1700,7 @@ async function upsertRecords({
 async function updateRecords({
     records,
     connectionId,
+    environmentId,
     model,
     syncId,
     syncJobId = rnd.number(),
@@ -1090,6 +1708,7 @@ async function updateRecords({
 }: {
     records: UnencryptedRecordData[];
     connectionId: number;
+    environmentId: number;
     model: string;
     syncId: string;
     syncJobId?: number;
@@ -1099,7 +1718,7 @@ async function updateRecords({
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const updateRes = await Records.update({ records: formatRes.value, connectionId, model, merging });
+    const updateRes = await Records.update({ records: formatRes.value, connectionId, environmentId, model, merging });
     if (updateRes.isErr()) {
         throw new Error(`Failed to update records: ${updateRes.error.message}`);
     }

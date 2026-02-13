@@ -69,6 +69,7 @@ console.log('✅ JSON schema valid');
 // Check if files exist
 console.log('Checking values...');
 const docsPath = path.join(__dirname, '../../../docs/integrations/all');
+const updatedDocsPath = path.join(__dirname, '../../../docs/api-integrations');
 const svgPath = path.join(__dirname, '../../../packages/webapp/public/images/template-logos');
 
 // store a global flag so we don't stop at first error
@@ -92,8 +93,10 @@ console.log('✅ All providers are valid');
 function validateProvider(providerKey: string, provider: ExtendedProvider) {
     const filename = provider.docs?.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
     const mdx = path.join(docsPath, `${filename}.mdx`);
+    const updatedMdx = path.join(updatedDocsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
     const connectMdx = path.join(docsPath, `${providerKey}/connect.mdx`);
+    const updatedConnectMdx = path.join(updatedDocsPath, `${filename}/connect.mdx`);
     let hasValidConnect = false;
     const headers = new Set<string>();
 
@@ -113,7 +116,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         }
     }
 
-    if (!fs.existsSync(mdx)) {
+    if (!fs.existsSync(mdx) && !fs.existsSync(updatedMdx)) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `Documentation file not found`);
         console.error(`Expected file: ${mdx}`);
         error = true;
@@ -123,14 +126,18 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         console.error(`Expected file: ${svg}`);
         error = true;
     }
+    let connectMdxPath: string | null = null;
     if (provider.docs_connect) {
-        if (!fs.existsSync(connectMdx)) {
+        const connectMdxExists = fs.existsSync(connectMdx);
+        const updatedConnectMdxExists = fs.existsSync(updatedConnectMdx);
+        if (!connectMdxExists && !updatedConnectMdxExists) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `Connect.mdx file not found`);
-            console.error(`Expected file: ${connectMdx}`);
+            console.error(`Expected file: ${connectMdx} or ${updatedConnectMdx}`);
             error = true;
         } else {
             hasValidConnect = true;
-            const content = fs.readFileSync(connectMdx).toString();
+            connectMdxPath = connectMdxExists ? connectMdx : updatedConnectMdx;
+            const content = fs.readFileSync(connectMdxPath).toString();
             const matched = content.matchAll(/^[#]+\sStep[a-zA-Z0-9:()._ -]+$/gim);
             for (const match of matched) {
                 headers.add(

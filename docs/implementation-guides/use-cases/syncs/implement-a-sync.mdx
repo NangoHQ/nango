@@ -1,0 +1,421 @@
+---
+title: 'Implement a sync'
+sidebarTitle: 'Implement a sync'
+description: 'How to create & use syncs in Nango'
+---
+
+Syncs let you continuously sync data from external APIs. They work with any data the external API exposes and keep a cached copy in Nango that stays up to date.
+
+## When to use syncs
+
+Syncs are ideal when you want to:
+- **Store a copy** of external API data in your app and keep it up to date
+- **Detect changes** in external APIs that don't offer webhooks
+- **Combine polling and webhooks** for a reliable, real-time stream of changes
+
+Common examples:
+- Syncing contacts, companies, or deals from CRMs (HubSpot, Salesforce, Attio, etc.)
+- Syncing files from drives (Google Drive, SharePoint, Box, etc.)
+- Syncing call transcripts from video recorders (Gong, Fathom, Zoom, etc.)
+
+You can implement two-way syncs by combining syncs with [Actions](/implementation-guides/use-cases/actions/implement-an-action).
+
+## Key facts
+
+- Syncs run in Nango's infrastructure, powered by [Functions](/guides/primitives/functions)
+- You control the code: which data to fetch, transformations, data models, etc.
+- All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination
+- Syncs run in the context of each [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
+- Syncs can be **incremental** (only fetch changed data) or **full refresh** (always fetch all data)
+- Synced data is cached in Nango (encrypted at rest and in transit)
+- Nango detects changes (additions, updates, deletes) and sends webhooks to your app
+- You set the polling frequency (15 seconds minimum interval)
+- All sync runs and API requests are logged in [Nango's logs](/guides/platform/observability)
+
+Syncs are defined on the integration (e.g., GitHub, Google Drive) by implementing a [Function](/guides/primitives/functions) with the sync's logic. Nango then executes the sync for each Connection of this integration, letting you customize logic and frequency per customer if needed.
+
+This guide covers:
+- [How to build a sync](#how-to-build-a-sync)
+- [How to use a sync](#how-to-use-a-sync)
+
+If you are using a pre-built reference implementation sync, you can [skip to using a sync](#how-to-use-a-sync).
+
+## Syncs in detail
+
+### Incremental vs. full-refresh syncs
+
+Nango supports both modes and automatically detects changes to records in either.
+
+| Mode | Description | Best for |
+|------|-------------|----------|
+| **Incremental** | Only fetches data changed since last execution | Large datasets; requires API support for querying modified records |
+| **Full refresh** | Retrieves entire dataset each execution | APIs without last-modified filtering; fallback option |
+
+Set `syncType: 'incremental'` or `syncType: 'full'` in your sync definition.
+
+### Deletion detection
+
+Nango can detect deleted records on external APIs. For incremental syncs, this requires specific API support. For full-refresh syncs, deletes are always detectable.
+
+Follow the [deletion detection guide](/implementation-guides/use-cases/syncs/deletion-detection) for implementation details.
+
+### Real-time syncs with webhooks
+
+Nango supports real-time syncs using [webhooks](/implementation-guides/use-cases/webhooks-from-external-apis). You can rely entirely on webhooks or combine them with polling to ensure you never miss data.
+
+Follow the [real-time syncs guide](/implementation-guides/use-cases/syncs/realtime-syncs) to add real-time support.
+
+## How to build a sync
+
+<Info>
+    If you are using a function template, you can [skip to using a sync](#how-to-use-a-sync).
+</Info>
+
+### Step 1 - Initial Functions setup
+
+If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/platform/functions/functions-setup) first.
+
+Otherwise, you can skip to the next step.
+
+### Step 2 - Start dev mode
+
+Before you plan to modify your integration functions, run:
+
+```bash
+nango dev # Keep the tab open
+```
+
+This command starts a process that continuously compiles your integration functions and prints code syntax errors.
+
+### Step 3 - Create the sync file
+
+In your `nango-integrations` folder, create the file for your new sync function.
+
+Sync files should be within a `syncs` folder, which is nested under the integration's folder.
+
+For example, if you want to create a new sync to sync `contacts` from `salesforce`, your structure should look like this:
+
+```
+nango-integrations/
+├── .nango
+├── .env
+├── index.ts
+├── package.json
+└── salesforce # this is the integration id and must match an integration id in your Nango dashboard
+    └── syncs/
+        └── salesforce-contacts.ts # this is the name of your sync
+```
+
+In your sync file, paste the following scaffold:
+
+```ts salesforce-contacts.ts lines
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const MyObject = z.object({
+  id: z.string(),
+  first_name: z.string(),
+  last_name: z.string(),
+  email: z.string(),
+});
+
+export default createSync({
+    description: `<Description of your sync>`,
+    version: '1.0.0', // Version, increment it when you release a new version
+    endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
+    frequency: 'every hour', // Default sync interval
+    autoStart: true, // Should the sync start immediately when a new connection is created?
+    syncType: 'full', // incremental or full (full refresh or incremental sync)
+    trackDeletes: true, // detect deletes? See separate implementation guide
+    models: {
+        MyObject: MyObject,
+    },
+    exec: async (nango) => {
+        // Integration code goes here.
+    },
+});
+```
+
+Also import your new sync file in your `index.ts` file:
+
+```typescript index.ts
+import './salesforce/syncs/salesforce-contacts';
+```
+
+### Step 4 - Implement your sync
+
+In the `exec` method, implement the logic of your sync. Edit `MyObject` to contain the properties you need.
+
+The following can help you with your implementation:
+- [`nango` object reference](/reference/functions) to understand the SDK methods available in syncs
+- [Our integration templates repo](https://www.nango.dev/templates) has 800+ examples of syncs & actions implemented by Nango
+- [Leveraging AI agents guide](/implementation-guides/platform/functions/leverage-ai-agents) to build syncs with claude code, cursor & other AI agents
+
+Example implementation of the Salesforce contacts sync:
+
+```ts salesforce-contacts.ts lines
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const SalesforceContact = z.object({
+  id: z.string(),
+  first_name: z.string(),
+  last_name: z.string(),
+  email: z.string(),
+});
+
+export default createSync({
+  description: `Fetches contacts from Salesforce`,
+  version: '1.0.0',
+  endpoints: [{ method: 'GET', path: '/salesforce/contacts', group: 'Contacts' }],
+  frequency: 'every hour',
+  autoStart: true,
+  syncType: 'full',
+  models: {
+    SalesforceContact: SalesforceContact,
+  },
+  exec: async (nango) => {
+    const query = buildQuery(nango.lastSyncDate);
+    await fetchAndSaveRecords(nango, query);
+    await nango.log('Sync run completed!');
+  },
+});
+export type NangoSyncLocal = Parameters<(typeof sync)['exec']>[0];
+
+function buildQuery(lastSyncDate?: Date): string {
+    let baseQuery = `SELECT Id, FirstName, LastName, Email, AccountId, LastModifiedDate FROM Contact`;
+
+    if (lastSyncDate) { // Only fetch the new data.
+        baseQuery += ` WHERE LastModifiedDate > ${lastSyncDate.toISOString()}`;
+    }
+
+    return baseQuery;
+}
+
+async function fetchAndSaveRecords(nango: NangoSyncLocal, query: string) {
+    let endpoint = '/services/data/v53.0/query';
+
+    while (true) {
+        const response = await nango.get({
+            endpoint: endpoint,
+            params: endpoint === '/services/data/v53.0/query' ? { q: query } : {}
+        });
+
+        const mappedRecords = mapContacts(response.data.records);
+
+        await nango.batchSave(mappedRecords, 'SalesforceContact'); // Saves records to Nango cache.
+
+        if (response.data.done) {
+            break;
+        }
+
+        endpoint = response.data.nextRecordsUrl;
+    }
+    await nango.deleteRecordsFromPreviousExecutions('SalesforceContact')
+}
+
+function mapContacts(records: any[]): SalesforceContact[] {
+    return records.map((record: any) => {
+        return {
+            id: record.Id as string,
+            first_name: record.FirstName,
+            last_name: record.LastName,
+            email: record.Email,
+            account_id: record.AccountId,
+            last_modified_date: record.LastModifiedDate
+        };
+    });
+}
+```
+
+In this integration function, the following Nango utilities are used:
+- `nango.lastSyncDate` is the last date at which the sync has run
+- `await nango.batchSave()` to persist external data in Nango's cache
+- `await nango.get()` to perform an API request (automatically authenticated by Nango)
+- `await nango.log()` to write custom log messages
+
+### Step 5 - Test your sync locally
+
+Easily test your integration functions locally as you develop them with the `dryrun` function of the CLI:
+
+```bash
+nango dryrun salesforce-contacts '<CONNECTION-ID>'
+```
+
+You can also enable performance diagnostics to monitor memory usage and CPU metrics:
+
+```bash
+nango dryrun salesforce-contacts '<CONNECTION-ID>' --diagnostics
+```
+
+The `--diagnostics` flag displays detailed performance metrics including average and peak memory usage (RSS, heap, external) and CPU utilization, which is useful for performance tuning and identifying memory leaks.
+
+<Warning>
+Local diagnostics are indicative only and do not fully represent CPU/memory consumption when run by Nango Cloud. Performance characteristics may differ between local and cloud environments.
+</Warning>
+
+To learn more about all the options for the dryrun, run: `nango dryrun --help`.
+
+Because this is a dry run, syncs won't persist data in Nango. Instead, the retrieved data is printed to the console.
+
+<Tip>
+    By default, `dryrun` retrieves connections from your `dev` environment. You can change this with the `-e` flag.
+</Tip>
+
+### Step 6 - Deploy your sync
+
+To run your sync in Nango, you need to deploy it to an environment in your Nango account.
+
+To deploy all integrations in your `nango-integrations` folder, run:
+```bash
+nango deploy dev # dev is the name of the environment to which you are deploying
+```
+
+To only deploy a single sync, use the `--sync` parameter:
+```bash
+nango deploy --sync salesforce-contacts dev
+```
+
+Run `nango deploy -h` for more options to deploy only parts of your integrations.
+
+To fetch the synced data in your product, follow the steps in the next setion.
+
+<Tip>
+    Most teams automate deployments to production in their CI.
+</Tip>
+
+<Warning>
+**Data retention policies**
+
+Nango automatically manages data retention for synced records:
+- **Records not updated for 30 days**: Payload is pruned (metadata like record ID and sync state remain for change detection)
+- **Syncs not executed for 60 days**: All records from that sync are permanently deleted
+
+**Best practice**: Fetch records from Nango promptly after receiving webhook notifications and store them in your own system. Don't use Nango's cache as your primary long-term data store.
+
+[Learn more about data retention policies](/guides/platform/security#synced-records-retention)
+</Warning>
+
+## How to use a sync
+
+### Pre-built integration templates
+
+For common use cases, [pre-built integration templates](https://www.nango.dev/templates) are available to help you get started fast.
+
+Select your integration in the _Integrations_ tab, and navigate to the _Endpoints_ tab. Available pre-built sync integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
+
+Nango will automatically sync the corresponding data in the background for each relevant connection.
+
+Integration templates are a starting point. You will likely need to [customize them](/implementation-guides/platform/functions/customize-template) or [create your own custom sync](#how-to-build-a-sync).
+
+### Step 1 - Setup webhooks from Nango
+
+Nango sends webhook notifications to your backend whenever new data is available for a connection & sync combination.
+
+Set these up by following the [implement webhooks from Nango](/implementation-guides/platform/webhooks-from-nango) guide.
+
+When the sync finishes, Nango will send you a webhooks with [this payload](/implementation-guides/platform/webhooks-from-nango#sync-webhooks).
+
+### Step 2 - Fetch the latest data from Nango
+
+After receiving a Nango webhook, fetch the latest records using the backend SDK ([reference](/reference/sdks/node#get-records)) or API ([reference](/reference/api/sync/records-list)).
+
+Use the `modifiedAfter` timestamp from the webhook payload as a parameter in your request to fetch only the modified records.
+
+<Tabs>
+    <Tab title="cURL (standard endpoint)">
+        ```bash
+        curl -G https://api.nango.dev/records \
+        --header 'Authorization: Bearer <ENVIRONMENT-SECRET-KEY>' \
+        --header 'Provider-Config-Key: <providerConfigKey-in-webhook-payload>' \
+        --header 'Connection-Id: <connectionId-in-webhook-payload>' \
+        --data-urlencode 'model=<model-in-webhook-payload>' \
+        --data-urlencode 'modified_after=<modifiedAfter-in-webhook-payload>' \
+        ```
+    </Tab>
+    <Tab title="Node SDK">
+        ```ts
+        import { Nango }  from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<ENVIRONMENT-SECRET-KEY>' });
+
+        const result = await nango.listRecords({
+            providerConfigKey: '<providerConfigKey-in-webhook-payload>',
+            connectionId: '<connectionId-in-webhook-payload>',
+            model: '<model-in-webhook-payload>',
+            modifiedAfter: '<modifiedAfter-in-webhook-payload>'
+        });
+        ```
+    </Tab>
+</Tabs>
+
+This returns an array of records conforming to the specified data model.
+
+Each record contains useful metadata automatically generated by Nango:
+
+```json
+{
+    records:
+        [
+            {
+                id: 123,
+                ..., // Fields as specified in the model you queried
+                _nango_metadata: {
+                    deleted_at: null,
+                    last_action: 'ADDED',
+                    first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+                    last_modified_at: '2023-09-18T15:20:35.941305+00:00',
+                    cursor: 'MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=='
+                }
+            },
+            ...
+        ],
+    next_cursor: "Y3JlYXRlZF9hdF4yMDIzLTExLTE3VDExOjQ3OjE0LjQ0NyswMjowMHxpZF4xYTE2MTYwMS0yMzk5LTQ4MzYtYWFiMi1mNjk1ZWI2YTZhYzI"
+}
+```
+
+#### Cursor-based synchronization
+
+In practice, webhook notifications can be missed, and relying solely on the webhook payload to fetch modified records can cause you to miss some updates.
+
+A more reliable way of keeping track of how far you've synced records (for each connection & sync combination) is to rely on record **cursors**.
+
+Each record comes with a synchronization cursor in `_nango_metadata.cursor`. Nango uses cursors internally to keep a chronological list of record modifications.
+
+Each time you fetch records, you should store the `cursor` of the last record you fetched to remember how far you've synced (for each connection & sync combination).
+
+The next time you fetch records, pass in the cursor of the last-fetched record to only receive records modified after that record:
+
+<Tabs>
+    <Tab title="cURL (standard endpoint)">
+        ```bash
+        curl -G https://api.nango.dev/records \
+        --header 'Authorization: Bearer <ENVIRONMENT-SECRET-KEY>' \
+        --header 'Provider-Config-Key: <providerConfigKey-in-webhook-payload>' \
+        --header 'Connection-Id: <connectionId-in-webhook-payload>' \
+        --data-urlencode 'model=<model-in-webhook-payload>' \
+        --data-urlencode 'cursor=<cursor-of-last-fetched-record>' \
+        ```
+    </Tab>
+    <Tab title="Node SDK">
+        ```ts
+        import { Nango }  from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<ENVIRONMENT-SECRET-KEY>' });
+
+        const result = await nango.listRecords({
+            providerConfigKey: '<providerConfigKey-in-webhook-payload>',
+            connectionId: '<connectionId-in-webhook-payload>',
+            model: '<model-in-webhook-payload>',
+            cursor: '<cursor-of-last-fetched-record>'
+        });
+        ```
+    </Tab>
+</Tabs>
+
+So, the overall logic for cursor-based synchronization should be:
+1. Receive a webhook notification from Nango
+2. Query your database for the cursor of the last-fetched record
+3. Fetch the modified records (passing the cursor)
+4. Store the modified records
+5. Store the last-fetched record cursor

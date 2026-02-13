@@ -1,32 +1,20 @@
+### Users
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `whoami` | Fetch current user information | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/whoami.ts) |
 
-<AccordionGroup>
+### Webhooks
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-webhook` | Create a webhook for a particular base | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/create-webhook.ts) |
+| `delete-webhook` | Delete a webhook | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/delete-webhook.ts) |
+| `list-webhooks` | List all the webhooks available for a base | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/list-webhooks.ts) |
 
-<Accordion title="Users">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /whoami` | Fetch current user information | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/whoami.md) |
-</Accordion>
+### Others
 
-
-<Accordion title="Webhooks">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /webhooks` | Create a webhook for a particular base | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/create-webhook.md) |
-| `GET /webhooks` | List all the webhooks available for a base | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/list-webhooks.md) |
-| `DELETE /webhooks` | Delete a webhook | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/delete-webhook.md) |
-</Accordion>
-
-
-<Accordion title="Others">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /tables` | Lists all tables with their schema for all bases with a reference to the base id that<br />the table belongs to | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/syncs/tables.md) |
-| `GET /bases` | List all bases | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/syncs/bases.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `bases` | List all bases | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/syncs/bases.ts) |
+| `tables` | Lists all tables with their schema for all bases with a reference to the base id that the table belongs to | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/syncs/tables.ts) |

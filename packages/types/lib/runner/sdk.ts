@@ -1,5 +1,6 @@
 import type { RunnerFlags } from './index.js';
 import type { LogLevel } from '../logs/messages.js';
+import type { IntegrationConfigForProxy } from '../proxy/api.js';
 import type { DBSyncConfig } from '../syncConfigs/db.js';
 import type { DBTeam } from '../team/db.js';
 import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -8,8 +9,10 @@ export interface SdkLogger {
     level: LogLevel | 'off';
 }
 
+export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event';
+
 export interface NangoProps {
-    scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
+    scriptType: ScriptType;
     host?: string;
     secretKey: string;
     team: Pick<DBTeam, 'id' | 'name'>;
@@ -38,6 +41,7 @@ export interface NangoProps {
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
     heartbeatTimeoutSecs?: number | undefined;
     isCLI?: boolean | undefined;
+    integrationConfig?: IntegrationConfigForProxy;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;

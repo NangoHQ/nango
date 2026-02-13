@@ -87,6 +87,7 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    assertion_option?: Record<string, SimplifiedJSONSchema>; // introduce another property since these params are not stored and can only be used once for assertion generation
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
@@ -213,6 +214,16 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_url: string;
         token_request_method?: 'GET';
     }[];
+    assertion?: {
+        key?: string;
+        issuer?: string;
+        lifetimeInSeconds?: number;
+        audiences?: string | string[];
+        attributes?: Record<string, string | number | boolean | (string | number | boolean)[]>;
+        sessionIndex?: string;
+        recipient?: string;
+    };
+    assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
     body_format?: 'xml' | 'json' | 'form';
@@ -236,6 +247,11 @@ export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
 
+export interface ProviderInstallPlugin extends BaseProvider {
+    auth_mode: 'INSTALL_PLUGIN';
+    auth_type: 'BASIC';
+}
+
 export type Provider =
     | BaseProvider
     | ProviderOAuth1
@@ -250,7 +266,8 @@ export type Provider =
     | ProviderAppleAppStore
     | ProviderCustom
     | ProviderMcpOAUTH2
-    | ProviderMcpOAuth2Generic;
+    | ProviderMcpOAuth2Generic
+    | ProviderInstallPlugin;
 
 export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic | ProviderAwsSigV4; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

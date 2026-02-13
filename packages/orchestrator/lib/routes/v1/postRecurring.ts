@@ -39,40 +39,39 @@ export type PostRecurring = Endpoint<{
     Success: { scheduleId: string };
 }>;
 
-const validate = validateRequest<PostRecurring>({
-    parseBody: (data: any) => {
-        const schema = z
-            .object({
-                name: z.string().min(1),
-                state: z.enum(['STARTED', 'PAUSED']),
-                startsAt: z.coerce.date(),
-                frequencyMs: z.number().int().positive(),
-                group: z.object({
-                    key: z.string().min(1),
-                    maxConcurrency: z.coerce.number()
-                }),
-                retry: z.object({
-                    max: z.number().int()
-                }),
-                timeoutSettingsInSecs: z.object({
-                    createdToStarted: z.number().int().positive(),
-                    startedToCompleted: z.number().int().positive(),
-                    heartbeat: z.number().int().positive()
-                }),
-                args: syncArgsSchema
-            })
-            .strict();
-        return z
-            .preprocess((d) => {
-                // for backwards compatibility
-                if (d && typeof d === 'object' && 'groupKey' in d) {
-                    const { groupKey, ...rest } = d;
-                    return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
-                }
-                return d;
-            }, schema)
-            .parse(data);
+const bodySchemaBase = z
+    .object({
+        name: z.string().min(1),
+        state: z.enum(['STARTED', 'PAUSED']),
+        startsAt: z.coerce.date(),
+        frequencyMs: z.number().int().positive(),
+        group: z.object({
+            key: z.string().min(1),
+            maxConcurrency: z.coerce.number()
+        }),
+        retry: z.object({
+            max: z.number().int()
+        }),
+        timeoutSettingsInSecs: z.object({
+            createdToStarted: z.number().int().positive(),
+            startedToCompleted: z.number().int().positive(),
+            heartbeat: z.number().int().positive()
+        }),
+        args: syncArgsSchema
+    })
+    .strict();
+
+const bodySchema = z.preprocess((d) => {
+    // for backwards compatibility
+    if (d && typeof d === 'object' && 'groupKey' in d) {
+        const { groupKey, ...rest } = d;
+        return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
     }
+    return d;
+}, bodySchemaBase);
+
+const validate = validateRequest<PostRecurring>({
+    parseBody: (data: any) => bodySchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

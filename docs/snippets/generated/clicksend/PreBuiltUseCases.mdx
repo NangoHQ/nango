@@ -1,23 +1,12 @@
+### Account
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `fetch-account` | Fetches basic information about the ClickSend account. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/clicksend/actions/fetch-account.ts) |
 
-<AccordionGroup>
+### SMS
 
-
-<Accordion title="Account">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /account` | Fetches basic information about the ClickSend account. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/clicksend/actions/fetch-account.md) |
-</Accordion>
-
-
-<Accordion title="SMS">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /sms/send` | Sends an SMS message via ClickSend's API. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/clicksend/actions/send-sms.md) |
-| `GET /sms/history` | Fetches the history of SMS messages sent through ClickSend. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/clicksend/syncs/sms-history.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `send-sms` | Sends an SMS message via ClickSend's API. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/clicksend/actions/send-sms.ts) |
+| `sms-history` | Fetches the history of SMS messages sent through ClickSend. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/clicksend/syncs/sms-history.ts) |

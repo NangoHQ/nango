@@ -2,14 +2,18 @@ import crypto from 'crypto';
 
 import { isAxiosError } from 'axios';
 
+import { getRedis } from '@nangohq/kvstore';
 import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
 
+import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
+import { envs } from './envs.js';
+
 import type { LogContext } from '@nangohq/logs';
-import type { DBEnvironment, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
+import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
-export const RETRY_ATTEMPTS = 7;
+export const RETRY_ATTEMPTS = envs.NANGO_WEBHOOK_RETRY_ATTEMPTS;
 
 export const NON_FORWARDABLE_HEADERS = [
     'host',
@@ -28,6 +32,23 @@ export const NON_FORWARDABLE_HEADERS = [
     'www-authenticate',
     'server'
 ];
+
+const circuitBreaker = await (async () => {
+    if (envs.NANGO_REDIS_URL) {
+        const redis = await getRedis(envs.NANGO_REDIS_URL);
+        return new CircuitBreakerRedis({
+            id: 'webhooks',
+            redis,
+            options: {
+                failureThreshold: envs.NANGO_WEBHOOK_CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+                windowSecs: envs.NANGO_WEBHOOK_CIRCUIT_BREAKER_WINDOW_SECS,
+                cooldownDurationSecs: envs.NANGO_WEBHOOK_CIRCUIT_BREAKER_COOLDOWN_DURATION_SECS,
+                autoResetSecs: envs.NANGO_WEBHOOK_CIRCUIT_BREAKER_AUTO_RESET_SECS
+            }
+        });
+    }
+    return new CircuitBreakerPassThrough();
+})();
 
 function formatLogResponse(response: AxiosResponse): MessageHTTPResponse {
     return {
@@ -50,9 +71,21 @@ export const retry = (logCtx?: LogContext | null, error?: AxiosError, attemptNum
     return false;
 };
 
-export const getSignatureHeader = (secret: string, payload: string): string => {
+/**
+ * This version of generating a signature is vulnerable to length-extension attacks
+ */
+export const getSignatureHeaderUnsafe = (secret: string, payload: string): string => {
     const combinedSignature = `${secret}${payload}`;
     const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
+
+    return createdHash;
+};
+
+/**
+ * This version of generating a signature uses an HMAC to make it safe from length-extension attacks.
+ */
+export const getHmacSignatureHeader = (secret: string, payload: string): string => {
+    const createdHash = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
     return createdHash;
 };
@@ -114,14 +147,14 @@ export const deliver = async ({
     body,
     webhookType,
     logCtx,
-    environment,
+    secret,
     endingMessage = '',
     incomingHeaders
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    environment: Pick<DBEnvironment, 'secret_key'>;
+    secret: DBAPISecret['secret'];
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
@@ -142,7 +175,8 @@ export const deliver = async ({
 
         const headers = {
             ...filteredHeaders,
-            'X-Nango-Signature': getSignatureHeader(environment.secret_key, bodyString.value),
+            'X-Nango-Signature': getSignatureHeaderUnsafe(secret, bodyString.value),
+            'X-Nango-Hmac-Sha256': getHmacSignatureHeader(secret, bodyString.value),
             'content-type': 'application/json',
             'user-agent': userAgent
         };
@@ -157,42 +191,50 @@ export const deliver = async ({
         try {
             await retryFlexible(
                 async () => {
-                    const createdAt = new Date();
-                    try {
-                        const res = await axios.post(url, bodyString.value, { headers });
+                    const result = await circuitBreaker.execute(url, async () => {
+                        const createdAt = new Date();
+                        try {
+                            const res = await axios.post(url, bodyString.value, { headers, timeout: envs.NANGO_WEBHOOK_TIMEOUT_MS });
 
-                        void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res), context: 'webhook', createdAt });
-                        if (res.status >= 200 && res.status < 300) {
-                            void logCtx?.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
-                        } else {
-                            void logCtx?.warn(
-                                `Webhook "${webhookType}" sent successfully (${type} URL) but received a "${res.status}" response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`
-                            );
-                            success = false;
+                            void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res), context: 'webhook', createdAt });
+                            if (res.status >= 200 && res.status < 300) {
+                                void logCtx?.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
+                                return Ok(res);
+                            } else {
+                                void logCtx?.warn(
+                                    `Webhook "${webhookType}" sent successfully (${type} URL) but received a "${res.status}" response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`
+                                );
+                                return Err(`non_2xx_status_${res.status}`);
+                            }
+                        } catch (err) {
+                            if (isAxiosError(err)) {
+                                void logCtx?.http(`POST ${logRequest.url}`, {
+                                    response: err.response ? formatLogResponse(err.response) : undefined,
+                                    request: logRequest,
+                                    context: 'webhook',
+                                    error: !err.response ? err : null,
+                                    level: 'error',
+                                    createdAt
+                                });
+                                return Err(err);
+                            } else {
+                                void logCtx?.http(`POST ${logRequest?.url}`, {
+                                    request: logRequest,
+                                    response: undefined,
+                                    context: 'webhook',
+                                    error: err,
+                                    level: 'error',
+                                    createdAt
+                                });
+                                return Err(new Error('unknown_error', { cause: err }));
+                            }
                         }
-                        return res;
-                    } catch (err) {
-                        if (isAxiosError(err)) {
-                            void logCtx?.http(`POST ${logRequest.url}`, {
-                                response: err.response ? formatLogResponse(err.response) : undefined,
-                                request: logRequest,
-                                context: 'webhook',
-                                error: !err.response ? err : null,
-                                level: 'error',
-                                createdAt
-                            });
-                        } else {
-                            void logCtx?.http(`POST ${logRequest?.url}`, {
-                                request: logRequest,
-                                response: undefined,
-                                context: 'webhook',
-                                error: err,
-                                level: 'error',
-                                createdAt
-                            });
-                        }
-                        throw err;
+                    });
+
+                    if (result.isErr()) {
+                        throw result.error;
                     }
+                    return result.value;
                 },
                 {
                     max: RETRY_ATTEMPTS,
@@ -219,7 +261,11 @@ export const deliver = async ({
 
 export function shouldRetry(err: unknown): { retry: boolean; reason: string } {
     if (!isAxiosError(err)) {
-        return { retry: false, reason: 'unknown_error' };
+        let reason = 'unknown_error';
+        if (err instanceof Error && err.message.startsWith('circuit_breaker')) {
+            reason = 'circuit_breaker_open';
+        }
+        return { retry: false, reason };
     }
 
     if (err.code && networkError.includes(err.code)) {

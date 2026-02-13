@@ -1,9 +1,16 @@
 import express from 'express';
+import qs from 'qs';
 
 import { createRoute } from '@nangohq/utils';
 
 import { authMiddleware } from './middleware/auth.middleware.js';
 import { recordsPath } from './records.js';
+import { routeHandler as deleteCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/deleteCheckpoint.js';
+import {
+    route as getCheckpointRoute,
+    routeHandler as getCheckpointHandler
+} from './routes/environment/environmentId/connection/connectionId/checkpoint/getCheckpoint.js';
+import { routeHandler as putCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/putCheckpoint.js';
 import { route as getCursorRoute, routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
 import { route as getRecordsRoute, routeHandler as getRecordsHandler } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
 import {
@@ -24,7 +31,9 @@ const maxSizeJsonRecords = '100mb';
 
 export const server = express();
 
-server.set('query parser', 'extended');
+server.set('query parser', (str: string) => {
+    return qs.parse(str, { arrayLimit: 100 });
+});
 
 server.use('/environment/:environmentId/*splat', authMiddleware);
 server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));
@@ -32,6 +41,7 @@ server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 server.use(getCursorRoute.path, express.json());
 server.use(getRecordsRoute.path, express.json());
 server.use(deleteOutdatedRecordsRoute.path, express.json());
+server.use(getCheckpointRoute.path, express.json());
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
@@ -41,6 +51,9 @@ createRoute(server, deleteOutdatedRecordsHandler);
 createRoute(server, putRecordsHandler);
 createRoute(server, getCursorHandler);
 createRoute(server, getRecordsHandler);
+createRoute(server, getCheckpointHandler);
+createRoute(server, putCheckpointHandler);
+createRoute(server, deleteCheckpointHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

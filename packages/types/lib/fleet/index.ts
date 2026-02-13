@@ -7,6 +7,8 @@ export interface Deployment {
 
 export type RoutingId = string;
 
+export type ImageType = 'docker' | 'ecr';
+
 export interface NodeConfig {
     readonly image: string;
     readonly cpuMilli: number;
@@ -15,4 +17,6 @@ export interface NodeConfig {
     readonly isTracingEnabled: boolean;
     readonly isProfilingEnabled: boolean;
     readonly idleMaxDurationMs: number;
+    readonly executionTimeoutSecs: number;
+    readonly provisionedConcurrency: number;
 }

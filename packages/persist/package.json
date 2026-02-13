@@ -26,6 +26,7 @@
         "@nangohq/pubsub": "file:../pubsub",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
+        "qs": "6.14.1",
         "zod": "4.0.5"
     },
     "devDependencies": {

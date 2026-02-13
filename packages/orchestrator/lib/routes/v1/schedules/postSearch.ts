@@ -20,15 +20,15 @@ type PostSearch = Endpoint<{
     Success: Schedule[];
 }>;
 
+const bodySchema = z
+    .object({
+        names: z.array(z.string().min(1)).optional(),
+        limit: z.number().int()
+    })
+    .strict();
+
 const validate = validateRequest<PostSearch>({
-    parseBody: (data) =>
-        z
-            .object({
-                names: z.array(z.string().min(1)).optional(),
-                limit: z.number().int()
-            })
-            .strict()
-            .parse(data)
+    parseBody: (data) => bodySchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {

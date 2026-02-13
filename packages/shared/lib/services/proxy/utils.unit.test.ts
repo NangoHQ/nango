@@ -568,6 +568,47 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
+    it('should handle Proxy base URL interpolation with hostname when connection configuration param is present', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: {
+                    base_url: 'https://${connectionConfig.hostname} || https://amplitude.com'
+                }
+            }
+        });
+
+        const url = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { hostname: 'analytics.eu.amplitude.com' }
+            })
+        });
+
+        expect(url).toBe('https://analytics.eu.amplitude.com/api/test');
+    });
+
+    it('should handle Proxy base URL interpolation with hostname fallback when connection configuration param is absent', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: {
+                    base_url: 'https://${connectionConfig.hostname} || https://amplitude.com'
+                }
+            }
+        });
+
+        const url = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
+            })
+        });
+
+        expect(url).toBe('https://amplitude.com/api/test');
+    });
+
     it('should construct url with a string query params with ?', () => {
         const url = buildProxyURL({
             config: getDefaultProxy({
@@ -856,7 +897,7 @@ describe('getProxyConfiguration', () => {
                 proxy: {
                     base_url: 'https://api.github.com'
                 },
-                docs: 'https://nango.dev/docs/integrations/all/github'
+                docs: 'https://nango.dev/docs/api-integrations/github'
             },
             providerName: 'github',
             providerConfigKey: 'provider-config-key-1',

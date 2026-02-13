@@ -1,6 +1,9 @@
 import type { NangoModelField } from '@nangohq/types';
 import type * as z from 'zod';
 
+// When adding support for new Zod types,
+// check if rendering it is well supported in webapp functions input/output rendering and add support accordingly
+
 export function zodToNangoModelField(name: string, schema: z.core.$ZodType): NangoModelField {
     const optional = (schema as z.ZodType).safeParse(undefined).success;
 
@@ -9,66 +12,66 @@ export function zodToNangoModelField(name: string, schema: z.core.$ZodType): Nan
         for (const [key, value] of Object.entries(schema.shape)) {
             values.push(zodToNangoModelField(key, value as z.core.$ZodType));
         }
-        return { name, value: values, optional };
+        return { name, value: values, optional, description: schema.description };
     } else if (isZodString(schema)) {
-        return { name, value: 'string', tsType: true, optional };
+        return { name, value: 'string', tsType: true, optional, description: schema.description };
     } else if (isZodLiteral(schema)) {
         if (schema.def.values.length > 1) {
             const values: NangoModelField['value'] = [];
             for (const [key, value] of Object.entries(schema.def.values)) {
-                values.push({ name: key.toString(), value: value as string });
+                values.push({ name: key.toString(), value: value as string, description: schema.description });
             }
-            return { name, value: values, optional, union: true };
+            return { name, value: values, optional, union: true, description: schema.description };
         }
-        return { name, value: schema.def.values[0] as string, optional };
+        return { name, value: schema.def.values[0] as string, optional, description: schema.description };
     } else if (isZodNumber(schema)) {
-        return { name, value: 'number', tsType: true, optional };
+        return { name, value: 'number', tsType: true, optional, description: schema.description };
     } else if (isZodBoolean(schema)) {
-        return { name, value: 'boolean', tsType: true, optional };
+        return { name, value: 'boolean', tsType: true, optional, description: schema.description };
     } else if (isZodNull(schema)) {
-        return { name, value: null, tsType: true, optional };
+        return { name, value: null, tsType: true, optional, description: schema.description };
     } else if (isZodNullable(schema)) {
-        return { ...zodToNangoModelField(name, schema.def.innerType), optional };
+        return { ...zodToNangoModelField(name, schema.def.innerType), optional, description: schema.description };
     } else if (isZodEnum(schema)) {
         const values: NangoModelField['value'] = [];
         let i = 0;
         for (const value of Object.values(schema.def.entries)) {
-            values.push({ name: i.toString(), value: value as string });
+            values.push({ name: i.toString(), value: value as string, description: schema.description });
             i++;
         }
-        return { name, value: values, optional, union: true };
+        return { name, value: values, optional, union: true, description: schema.description };
     } else if (isZodAny(schema)) {
-        return { name, value: 'any', tsType: true, optional };
+        return { name, value: 'any', tsType: true, optional, description: schema.description };
     } else if (isZodDate(schema)) {
-        return { name, value: 'Date', tsType: true, optional };
+        return { name, value: 'Date', tsType: true, optional, description: schema.description };
     } else if (isZodRecord(schema)) {
-        return { name, value: [{ ...zodToNangoModelField('__string', schema.def.valueType), dynamic: true }], optional };
+        return { name, value: [{ ...zodToNangoModelField('__string', schema.def.valueType), dynamic: true }], optional, description: schema.description };
     } else if (isZodArray(schema)) {
         // console.log('array', schema.def);
         const value = zodToNangoModelField('0', schema.def.element);
         if (isZodObject(schema.def.element)) {
-            return { name, value: [value], array: true, optional };
+            return { name, value: [value], array: true, optional, description: schema.description };
         }
-        return { name, value: value.value, tsType: true, array: true, optional };
+        return { name, value: value.value, tsType: true, array: true, optional, description: schema.description };
     } else if (isZodUnion(schema) || isZodDiscriminatedUnion(schema)) {
         const values: NangoModelField['value'] = [];
 
         for (const [key, value] of Object.entries(schema._zod.def.options)) {
             values.push(zodToNangoModelField(key, value));
         }
-        return { name, value: values, tsType: true, union: true, optional };
+        return { name, value: values, tsType: true, union: true, optional, description: schema.description };
     } else if (isZodNever(schema)) {
-        return { name, value: 'never', tsType: true, optional };
+        return { name, value: 'never', tsType: true, optional, description: schema.description };
     } else if (isZodVoid(schema)) {
-        return { name, value: 'void', tsType: true }; // No optional on purpose because void | undefined is not valid
+        return { name, value: 'void', tsType: true, description: schema.description }; // No optional on purpose because void | undefined is not valid
     } else if (isZodOptional(schema)) {
-        return { ...zodToNangoModelField(name, schema.def.innerType), optional };
+        return { ...zodToNangoModelField(name, schema.def.innerType), optional, description: schema.description };
     } else if (isZodUndefined(schema)) {
         throw new Error('z.undefined() is not supported, please use z.null() or z.optional() instead');
     } else if (isZodUnknown(schema)) {
-        return { name, value: 'unknown', tsType: true, optional };
+        return { name, value: 'unknown', tsType: true, optional, description: schema.description };
     } else if (isZodBigInt(schema)) {
-        return { name, value: 'bigint', tsType: true, optional };
+        return { name, value: 'bigint', tsType: true, optional, description: schema.description };
     } else if (isZodEmail(schema)) {
         // Not supported yet by "ts-json-schema-generator" (2.4.0)
         // return { name, value: 'email', tsType: true, optional };

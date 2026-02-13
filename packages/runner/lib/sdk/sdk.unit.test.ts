@@ -2,13 +2,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from '@nangohq/node';
-import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
+import { AbortedSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { Locks } from './locks.js';
-import { PersistClient } from './persist.js';
+import { MapLocks } from './locks.js';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
+import { PersistClient } from '../clients/persist.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
@@ -39,7 +39,7 @@ const nangoProps: NangoProps = {
     logger: { level: 'info' }
 };
 
-const locks = new Locks();
+const locks = new MapLocks();
 
 describe('cache', () => {
     let nangoAction: NangoActionRunner;
@@ -47,7 +47,7 @@ describe('cache', () => {
 
     beforeEach(async () => {
         const persistClient = new PersistClient({ secretKey: '***' });
-        persistClient.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         nangoAction = new NangoActionRunner(
             {
                 ...nangoProps
@@ -91,7 +91,7 @@ describe('cache', () => {
 
         it('setMetadata should invalidate connection', async () => {
             await nangoAction.getConnection();
-            await nangoAction.setMetadata({});
+            await nangoAction.setMetadata({} as never);
             await nangoAction.getConnection();
             await nangoAction.getMetadata();
             expect(nango.getConnection).toHaveBeenCalledTimes(2);
@@ -137,7 +137,7 @@ describe('Pagination', () => {
 
     beforeEach(async () => {
         const persistClient = new PersistClient({ secretKey: '***' });
-        persistClient.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         const config: NangoProps = {
             ...nangoProps,
             secretKey: 'encrypted',
@@ -403,56 +403,10 @@ describe('Pagination', () => {
     };
 });
 
-describe('batchSave', () => {
-    it('should validate records with json schema', async () => {
-        const nango = new NangoSyncRunner(
-            {
-                ...nangoProps,
-                runnerFlags: { validateSyncRecords: true } as any,
-                syncConfig: {
-                    models_json_schema: {
-                        definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } }
-                    }
-                } as any
-            },
-            { locks }
-        );
-
-        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(
-            new InvalidRecordSDKError({
-                data: {
-                    foo: 'bar'
-                },
-                model: 'Test',
-                validation: [
-                    {
-                        instancePath: '',
-                        keyword: 'required',
-                        message: "must have required property 'id'",
-                        params: {
-                            missingProperty: 'id'
-                        },
-                        schemaPath: '#/required'
-                    },
-                    {
-                        instancePath: '',
-                        keyword: 'additionalProperties',
-                        message: 'must NOT have additional properties',
-                        params: {
-                            additionalProperty: 'foo'
-                        },
-                        schemaPath: '#/additionalProperties'
-                    }
-                ]
-            })
-        );
-    });
-});
-
 describe('Log', () => {
     const persistClient = (() => {
         const client = new PersistClient({ secretKey: '***' });
-        client.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        client.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         return client;
     })();
 
@@ -471,7 +425,7 @@ describe('Log', () => {
     it('should not fail on null', async () => {
         await nangoAction.log(null);
 
-        expect(persistClient.saveLog).toHaveBeenCalledWith({
+        expect(persistClient.postLog).toHaveBeenCalledWith({
             environmentId: 1,
             data: expect.stringMatching('{"activityLogId":"1","log":{"createdAt":".*","level":"info","message":"null","source":"user","type":"log"}}')
         });
@@ -482,7 +436,7 @@ describe('Log', () => {
 
         await nangoAction.log('hello', { level: 'error' });
 
-        expect(persistClient.saveLog).toHaveBeenCalledWith({
+        expect(persistClient.postLog).toHaveBeenCalledWith({
             environmentId: 1,
             data: expect.stringMatching('{"activityLogId":"1","log":{"createdAt":".*","level":"error","message":"hello","source":"user","type":"log"}}')
         });
@@ -503,7 +457,7 @@ describe('Log', () => {
     it('should respect logger level', async () => {
         const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'warn' } }, { persistClient, locks });
         await nangoAction.log('hello', { level: 'info' });
-        expect(persistClient.saveLog).not.toHaveBeenCalled();
+        expect(persistClient.postLog).not.toHaveBeenCalled();
     });
     it('should allow setting logger level', () => {
         const nangoAction = new NangoActionRunner({ ...nangoProps, logger: { level: 'debug' } }, { persistClient, locks });

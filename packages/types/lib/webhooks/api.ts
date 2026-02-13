@@ -53,10 +53,11 @@ export interface NangoAuthWebhookBodyBase extends NangoWebhookBase {
     provider: string;
     environment: string;
     operation: AuthOperationType;
+    tags?: Record<string, string> | undefined;
     /**
      * Only presents if the connection happened with a session token
      */
-    endUser?: { endUserId: string; organizationId?: string | undefined; tags: Record<string, string> } | undefined;
+    endUser?: { endUserId: string; organizationId?: string | undefined; endUserEmail?: string | undefined | null; tags: Record<string, string> } | undefined;
 }
 
 export interface NangoAuthWebhookBodySuccess extends NangoAuthWebhookBodyBase {

@@ -1,8 +1,72 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NangoActionBase } from '@nangohq/runner-sdk';
+
 import { NangoSyncCLI } from './sdk.js';
 
 import type { DryRunService } from './dryrun.service.js';
+
+describe('NangoSyncCLI - getConnection', () => {
+    let instance: NangoSyncCLI;
+
+    beforeEach(() => {
+        const mockDryRunService: DryRunService = {
+            run: vi.fn(),
+            fullPath: '',
+            isZeroYaml: false,
+            validation: true,
+            runScript: vi.fn()
+        };
+
+        instance = new NangoSyncCLI(
+            {
+                secretKey: 'test-secret-key',
+                syncConfig: {
+                    models_json_schema: { definitions: {} }
+                }
+            } as any,
+            { dryRunService: mockDryRunService }
+        );
+    });
+
+    it('should pass options parameter to parent getConnection', async () => {
+        const mockConnection = {
+            id: 1,
+            connection_id: 'test-connection',
+            provider_config_key: 'test-provider',
+            provider: 'test',
+            credentials: { type: 'OAUTH2', access_token: 'token', refresh_token: 'refresh' }
+        };
+
+        const parentGetConnectionSpy = vi.spyOn(NangoActionBase.prototype, 'getConnection').mockResolvedValue(mockConnection as any);
+
+        const options = { refreshToken: true, forceRefresh: false };
+        await instance.getConnection('provider-key', 'connection-id', options);
+
+        expect(parentGetConnectionSpy).toHaveBeenCalledWith('provider-key', 'connection-id', options);
+
+        parentGetConnectionSpy.mockRestore();
+    });
+
+    it('should pass options with refreshGithubAppJwtToken to parent getConnection', async () => {
+        const mockConnection = {
+            id: 1,
+            connection_id: 'test-connection',
+            provider_config_key: 'test-provider',
+            provider: 'test',
+            credentials: { type: 'OAUTH2', access_token: 'token' }
+        };
+
+        const parentGetConnectionSpy = vi.spyOn(NangoActionBase.prototype, 'getConnection').mockResolvedValue(mockConnection as any);
+
+        const options = { refreshGithubAppJwtToken: true };
+        await instance.getConnection(undefined, undefined, options);
+
+        expect(parentGetConnectionSpy).toHaveBeenCalledWith(undefined, undefined, options);
+
+        parentGetConnectionSpy.mockRestore();
+    });
+});
 
 describe('NangoSyncCLI - batchSave', () => {
     let instance: NangoSyncCLI;

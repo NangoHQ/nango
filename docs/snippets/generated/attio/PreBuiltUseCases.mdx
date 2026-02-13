@@ -1,29 +1,69 @@
+### Companies
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-company` | Creates a new company record in Attio | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-company.ts) |
+| `companies` | Fetches all company records from Attio | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/syncs/companies.ts) |
 
-<AccordionGroup>
+### Deals
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `deals` | Fetches all deal records from Attio | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/syncs/deals.ts) |
 
-<Accordion title="Companies">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /companies` | Fetches all company records from Attio | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/syncs/companies.md) |
-</Accordion>
+### Lists
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-list-entry` | Adds a record as an entry to a list. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-list-entry.ts) |
+| `delete-list-entry` | Removes an entry from a list. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/delete-list-entry.ts) |
+| `list-lists` | Lists all lists in the workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/list-lists.ts) |
 
-<Accordion title="Deals">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /deals` | Fetches all deal records from Attio | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/syncs/deals.md) |
-</Accordion>
+### Notes
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-note` | Creates a note on a record. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-note.ts) |
+| `delete-note` | Deletes a note. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/delete-note.ts) |
+| `list-notes` | Lists notes for a record. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/list-notes.ts) |
 
-<Accordion title="People">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /people` | Fetches all person records from Attio | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/syncs/people.md) |
-</Accordion>
+### Objects
 
-</AccordionGroup>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-object` | Gets a specific object by ID or slug. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/get-object.ts) |
+| `list-objects` | Lists all available objects (system and custom-defined) in the Attio workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/list-objects.ts) |
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+### People
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-person` | Creates a new person record in Attio | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-person.ts) |
+| `people` | Fetches all person records from Attio | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/syncs/people.ts) |
+
+### Records
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-record` | Creates a new record for a specified object type. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-record.ts) |
+| `delete-record` | Deletes a record permanently. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/delete-record.ts) |
+| `get-record` | Gets a specific record by ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/get-record.ts) |
+| `list-records` | Lists records from a specific object type. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/list-records.ts) |
+| `update-record` | Updates an existing record. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/update-record.ts) |
+
+### Tasks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-task` | Creates a task. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-task.ts) |
+| `list-tasks` | Lists tasks. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/list-tasks.ts) |
+
+### Webhooks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-webhook` | Creates a new webhook in the Attio workspace | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/create-webhook.ts) |
+| `delete-webhook` | Deletes a webhook from the Attio workspace | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/delete-webhook.ts) |
+| `get-webhook` | Gets a single webhook by its ID from the Attio workspace | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/get-webhook.ts) |
+| `list-webhooks` | Lists all webhooks configured in the Attio workspace | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/list-webhooks.ts) |
+| `update-webhook` | Updates an existing webhook configuration in Attio | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/attio/actions/update-webhook.ts) |

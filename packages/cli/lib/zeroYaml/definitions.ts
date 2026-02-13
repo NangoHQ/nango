@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
@@ -38,7 +39,8 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         num += 1;
 
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
-        const moduleContent = await import(modulePath);
+        const moduleUrl = pathToFileURL(modulePath).href;
+        const moduleContent = await import(moduleUrl);
         if (!moduleContent.default || !moduleContent.default.default) {
             return Err(new Error(`Script should have a default export ${modulePath}`));
         }
@@ -140,9 +142,9 @@ export function buildSync({
     if (metadata) {
         usedModels.add(metadata.name);
         if (!Array.isArray(metadata.value)) {
-            models.set(metadata.name, { name: metadata.name, fields: [{ ...metadata, name: 'metadata' }], isAnon: true });
+            models.set(metadata.name, { name: metadata.name, fields: [{ ...metadata, name: 'metadata' }], isAnon: true, description: metadata.description });
         } else {
-            models.set(metadata.name, { name: metadata.name, fields: metadata.value });
+            models.set(metadata.name, { name: metadata.name, fields: metadata.value, description: metadata.description });
         }
     }
 
@@ -183,7 +185,7 @@ export function buildSync({
         name: basename,
         output: Object.entries(params.models).map(([name, model]) => {
             const to = zodToNangoModelField(name, model);
-            models.set(name, { name, fields: to['value'] as NangoModelField[] });
+            models.set(name, { name, fields: to['value'] as NangoModelField[], description: to.description });
             usedModels.add(name);
             return name;
         }),
@@ -212,16 +214,16 @@ export function buildAction({
     const models = new Map<string, NangoModel>();
     const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
     if (!Array.isArray(input.value)) {
-        models.set(input.name, { name: input.name, fields: [{ ...input, name: 'input' }], isAnon: true });
+        models.set(input.name, { name: input.name, fields: [{ ...input, name: 'input' }], isAnon: true, description: input.description });
     } else {
-        models.set(input.name, { name: input.name, fields: input.value });
+        models.set(input.name, { name: input.name, fields: input.value, description: input.description });
     }
 
     const output = zodToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
     if (!Array.isArray(output.value)) {
-        models.set(output.name, { name: output.name, fields: [{ ...output, name: 'output' }], isAnon: true });
+        models.set(output.name, { name: output.name, fields: [{ ...output, name: 'output' }], isAnon: true, description: output.description });
     } else {
-        models.set(output.name, { name: output.name, fields: output.value });
+        models.set(output.name, { name: output.name, fields: output.value, description: output.description });
     }
 
     const action: ParsedNangoAction = {

@@ -43,17 +43,35 @@ describe('route', () => {
 
     describe('GET /api/v1/environment/callback', () => {
         it('should handle invalid json', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
+            const { secret } = await seeders.seedAccountEnvAndUser();
             const res = await fetch(`${api.url}/api/v1/environment/callback`, {
                 method: 'POST',
                 body: 'undefined',
-                headers: { Authorization: `Bearer ${env.secret_key}`, 'content-type': 'application/json' }
+                headers: { Authorization: `Bearer ${secret.secret}`, 'content-type': 'application/json' }
             });
 
             expect(await res.json()).toStrictEqual({
                 error: {
                     code: 'invalid_json',
                     message: expect.any(String) // unfortunately the message is different depending on the platform
+                }
+            });
+        });
+    });
+
+    describe('Authenticated endpoints', () => {
+        it('should return 401 if unknown bearer token', async () => {
+            const res = await fetch(`${api.url}/providers`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer 00000000-0000-4000-8000-000000000000` }
+            });
+
+            expect(res.status).toBe(401);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    message: expect.any(String),
+                    code: 'unknown_account',
+                    payload: {}
                 }
             });
         });

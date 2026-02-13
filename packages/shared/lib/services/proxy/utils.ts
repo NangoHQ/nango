@@ -15,8 +15,10 @@ import type {
     AwsSigV4Credentials,
     ConnectionForProxy,
     HTTP_METHOD,
+    IntegrationConfigForProxy,
     InternalProxyConfiguration,
     OAuth2ClientCredentials,
+    ProviderOAuth1,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -52,13 +54,15 @@ const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
 export function getAxiosConfiguration({
     proxyConfig,
-    connection
+    connection,
+    integrationConfig
 }: {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
 }): AxiosRequestConfig {
     const url = buildProxyURL({ config: proxyConfig, connection });
-    const headers = buildProxyHeaders({ config: proxyConfig, url, connection });
+    const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
@@ -281,11 +285,13 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 export function buildProxyHeaders({
     config,
     url,
-    connection
+    connection,
+    integrationConfig
 }: {
     config: ApplicationConstructedProxyConfiguration;
     url: string;
     connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
 }): Record<string, string> {
     let headers: Record<Lowercase<string>, string> = {};
 
@@ -375,7 +381,36 @@ export function buildProxyHeaders({
             break;
         }
         case 'OAUTH1': {
-            throw new ProxyError('unsupported_auth', 'OAuth1 is not supported');
+            const credentials = connection.credentials;
+            const consumerKey = integrationConfig?.oauth_client_id;
+            const consumerSecret = integrationConfig?.oauth_client_secret;
+
+            if (!consumerKey || !consumerSecret) {
+                throw new ProxyError('unsupported_auth', 'OAuth1 requires oauth_client_id and oauth_client_secret in integration config');
+            }
+
+            const accessToken = credentials.oauth_token;
+            const accessTokenSecret = credentials.oauth_token_secret;
+
+            const oauth = new OAuth({
+                consumer: { key: consumerKey, secret: consumerSecret },
+                signature_method: config.provider ? (config.provider as ProviderOAuth1).signature_method : SIGNATURE_METHOD,
+                hash_function(baseString: string, key: string) {
+                    return crypto.createHmac('sha1', key).update(baseString).digest('base64');
+                }
+            });
+
+            const requestData = {
+                url,
+                method: config.method
+            };
+
+            const token = { key: accessToken, secret: accessTokenSecret };
+
+            const authHeaders = oauth.toHeader(oauth.authorize(requestData, token));
+
+            headers['authorization'] = authHeaders.Authorization;
+            break;
         }
         default: {
             throw new ProxyError('unsupported_auth', `Auth "${(connection.credentials as any).type}" is not supported`);

@@ -1,5 +1,9 @@
 import * as z from 'zod';
 
+import { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
+
+export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
+
 export const providerSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
@@ -159,17 +163,21 @@ export const connectionCredentialsAwsSigV4Schema = z.strictObject({
     external_id: z.string().max(255).optional()
 });
 
-export const connectionTagsSchema = z
+export const connectionEndUserTagsSchema = z
     // Please be careful when changing this:
     // It's a labelling system, if we allow more than string people will store complex data (e.g: nested object) and ask for features around that
     // + It's an object not a an array of string because customers wants to store layers of origin (e.g: projectId, orgId, etc.)
     // But they complained a lot about concatenation of string, so an object solves that cleanly
-    .record(z.string(), z.string())
-    .refine((v) => Object.keys(v).length < 64, { message: 'Tags can not contain more than 64 keys' });
+    .record(connectionTagsKeySchema, z.string().max(255))
+    .check((payload) => {
+        for (const message of validateCaseInsensitiveTagKeys(payload.value)) {
+            payload.issues.push({ code: 'custom', message, input: payload.value });
+        }
+    });
 
 export const endUserSchema = z.strictObject({
     id: z.string().max(255).min(1),
     email: z.string().email().min(5).optional(),
     display_name: z.string().max(255).optional(),
-    tags: connectionTagsSchema.optional()
+    tags: connectionEndUserTagsSchema.optional()
 });

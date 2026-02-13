@@ -1,0 +1,269 @@
+---
+title: 'Security'
+sidebarTitle: 'Security'
+description: 'How Nango secures your API credentials and customer data.'
+---
+
+Nango is designed with security as a core principle. This page provides technical details about how Nango stores, encrypts, and manages API credentials.
+
+## Compliance
+
+Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** compliant.
+
+| Certification | Details |
+| - | - |
+| SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
+| GDPR | Data Processing Agreement (DPA) automatically applies to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
+| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/demo) |
+
+Our security practices include:
+
+- Regular security assessments and penetration testing
+- Secure development lifecycle
+- Incident response procedures
+- Continuous monitoring and alerting
+
+Visit our [Trust Center](https://trust.nango.dev) for the latest compliance documentation, security policies, and audit reports.
+
+## Credential storage
+
+### What credentials are stored
+
+Nango stores the following credential types depending on your API integrations:
+
+- **OAuth tokens**: Access tokens, refresh tokens, and associated metadata
+- **API keys**: For APIs using key-based authentication
+- **Client credentials**: OAuth client IDs and secrets for your integrations
+- **Connection configuration**: OAuth scopes, authorization parameters, and provider-specific settings
+
+### Storage infrastructure
+
+Nango Cloud stores all data in **AWS Aurora PostgreSQL** databases hosted in AWS. The database infrastructure includes:
+
+- Encryption at rest using AWS-managed keys
+- Automated backups with point-in-time recovery
+- Multi-AZ deployment for high availability
+- Network isolation within a private VPC
+
+For self-hosted deployments, you control the database infrastructure and can apply your own security policies.
+
+## Encryption
+
+### Encryption at rest
+
+All sensitive credentials are encrypted before being stored in the database using **AES-256-GCM** (Advanced Encryption Standard with Galois/Counter Mode).
+
+| Property | Value |
+| - | - |
+| Algorithm | AES-256-GCM |
+| Key size | 256 bits (32 bytes) |
+| IV size | 12 bytes (generated per encryption) |
+| Auth tag size | 16 bytes |
+
+### What is encrypted
+
+The following data types are encrypted at rest:
+
+- Connection credentials (OAuth tokens, API keys, etc.)
+- OAuth client secrets (your integration credentials)
+- Environment secret keys
+- Environment variables
+
+### Key management
+
+- **Nango Cloud**: Encryption keys are securely managed by Nango. All credentials are encrypted at rest.
+- **Self-hosted**: You must provide your own encryption key to enable encryption at rest.
+
+### Encryption in transit
+
+All data transmitted to and from Nango is encrypted using TLS 1.2+. This includes:
+
+- API requests between your application and Nango
+- Requests from Nango to external APIs (using each provider's TLS configuration)
+- Dashboard access
+
+## Data retention
+
+### Active connections
+
+Credentials are stored for as long as the connection exists. You have full control over connection lifecycle:
+
+- Create connections when users authorize integrations
+- Delete connections at any time via the API or dashboard
+- Connections can be programmatically managed through your application
+
+#### Retention after deletion
+
+When a connection is deleted:
+
+1. **Immediate soft delete**: Connection is marked as deleted and becomes inaccessible
+2. **Associated data cleanup**: Syncs are stopped, and scheduled tasks are cancelled
+3. **Hard delete after retention period**: Credentials and associated data are permanently removed from the database
+
+The default retention period is **31 days**. For self-hosted deployments, this is configurable.
+
+This retention period allows for:
+- Recovery from accidental deletions
+- Compliance with audit requirements
+- Graceful handling of in-flight operations
+
+#### What is deleted
+
+When a connection is permanently deleted, the following data is removed:
+
+- All stored credentials (tokens, keys, secrets)
+- Connection metadata and configuration
+- Sync records associated with the connection
+- Related job history and logs
+
+### Synced records retention
+
+<Note>
+This section only applies if you are using Functions of type Sync, e.g. for replicating data or receiving trigger notifications from an external API.
+</Note>
+
+Nango automatically manages data retention for records stored in the Nango records cache to ensure that sensitive user data is not stored indefinitely when it's no longer needed.
+
+#### Automated payload pruning (30 days)
+
+If a record has not been updated for **30 days**, Nango will automatically empty its payload.
+
+**Impact:**
+After pruning, the record's data fields are no longer retrievable from the Nango cache via the API or SDK. However, Nango retains the metadata needed for change detection (record ID and payload hash). Your syncs will continue to work normally. This pruning does not impact sync execution or delta-detection capabilities.
+
+#### Automated hard deletion (60 days)
+
+If a sync has not executed for **60 days**, all records belonging to that sync will be permanently deleted.
+
+**Impact:**
+Complete removal of all records from the inactive sync, including metadata and payload hashes used for delta-detection. The sync itself remains configured but starts fresh on the next execution. Nango will no longer be able to detect changes against previously synced records.
+
+#### When do retention policies apply?
+
+- **30-day pruning countdown**: Starts from the last time a specific record was updated.
+- **60-day deletion countdown**: Starts from the last time a sync successfully executed.
+
+#### Best practices
+
+To work optimally with Nango's retention policies:
+
+**1. Fetch records promptly**
+
+Set up [webhooks from Nango](/implementation-guides/platform/webhooks-from-nango) to be notified when new data is available. Fetch the updated records immediately after receiving a sync webhook.
+
+**2. Use cursor-based synchronization**
+
+Track your sync progress using cursors to ensure you never miss records, even if webhooks are occasionally missed. Store the cursor of the last-fetched record and use it on subsequent fetches.
+
+**3. Store data in your own system**
+
+Don't use Nango's cache as your primary data store. Instead:
+- Store synced records in your own database
+- Use Nango as a synchronization pipeline
+- Keep your own copy of all critical data
+
+#### Longer retention requirements
+
+If your use case requires accessing record payloads from Nango's cache beyond the 30-day window, please reach out to the Nango team. We can work with you to ensure you don't experience breaking changes.
+
+## Deletion procedures
+
+### User-initiated deletion
+
+You can delete connections through:
+
+- **Dashboard**: Navigate to the connection and click "Delete"
+- **API**: Call the [delete connection endpoint](/reference/api/connection/delete)
+- **SDK**: Use the `deleteConnection` method in any of our backend SDKs
+
+### Automatic cleanup
+
+Nango automatically cleans up:
+
+- Expired OAuth sessions
+- Expired connect session tokens
+- Orphaned data from deleted integrations
+
+### Data purge requests
+
+For compliance requirements (e.g., GDPR), contact Nango support to request immediate data purges. We can expedite the deletion process when required by regulation.
+
+## Access controls
+
+### API authentication
+
+Nango supports multiple authentication methods:
+
+| Method | Use case | Token lifetime |
+| - | - | - |
+| Secret key | Server-to-server API access | Long-lived (until rotated) |
+| Connect session token | Frontend auth flows | 30 minutes |
+| Session cookie | Dashboard access | Session-based |
+
+### Secret key security
+
+- Secret keys are environment-specific (dev, prod, etc.)
+- Keys can be rotated via the dashboard
+- All API requests require a valid secret key in the `Authorization` header
+
+### Environment isolation
+
+Each [environment](/guides/platform/environments) in your Nango account is completely isolated:
+
+- Separate credentials and connections
+- Separate integration configurations
+- Separate secret keys
+
+This ensures your production data is never accessible from development environments.
+
+### Audit logging
+
+All credential access and modifications are logged:
+
+- Connection creation and deletion
+- Credential refresh operations
+- API requests using credentials
+
+Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/implementation-guides/platform/open-telemetry-export).
+
+## IP Allowlist
+
+Some integrations require network-level access controls that only allow inbound traffic from known IP addresses.  
+This page lists the **public IP addresses used by Nango services** when making outbound requests.
+
+
+### When is IP allowlisting required?
+
+IP allowlisting is only required if **your customers' systems** restrict inbound network traffic.
+
+Common examples include:
+- Private or self-hosted APIs behind a firewall
+- Enterprise systems that only accept traffic from approved IPs
+- Third-party services with IP-based access controls
+
+If a system is publicly accessible without IP restrictions, **no allowlist configuration is needed**.
+
+
+### Nango public IP addresses
+
+Allowlist the following IP addresses to permit inbound traffic from Nango:
+
+- `52.34.139.153`
+- `54.69.127.183`
+- `44.247.133.183`
+- `52.26.211.56`
+
+
+### IP address changes
+
+While we aim to keep IP addresses stable, they **may change over time** as we scale or improve reliability.
+
+To minimize disruption:
+- Ensure all listed IPs are allowlisted
+- Periodically review this page for updates
+
+We will make reasonable efforts to communicate breaking changes in advance.
+
+<Tip>
+**Questions about security?** Please reach out in the [Slack community](https://nango.dev/slack) or contact security@nango.dev.
+</Tip>

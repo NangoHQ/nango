@@ -9,6 +9,7 @@ import {
     NangoError,
     SyncJobsType,
     SyncStatus,
+    accountService,
     configService,
     createSyncJob,
     environmentService,
@@ -21,7 +22,7 @@ import {
     getLastSyncDate,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    safeGetPlan,
+    secretService,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
@@ -41,7 +42,18 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
+import type {
+    ConnectionJobs,
+    DBEnvironment,
+    DBSyncConfig,
+    DBTeam,
+    NangoProps,
+    RuntimeContext,
+    SdkLogger,
+    SyncResult,
+    SyncTypeLiteral,
+    TelemetryBag
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -76,14 +88,14 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Sync is disabled: ${task.id}`);
         }
 
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        team = accountAndEnv.account;
-        environment = accountAndEnv.environment;
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-        tagTraceUser({ ...accountAndEnv, plan });
+        team = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
+        tagTraceUser({ ...accountContext });
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
@@ -153,6 +165,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
@@ -166,7 +183,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             syncId: task.syncId,
             syncVariant: task.syncVariant,
@@ -180,7 +197,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
-            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
+            integrationConfig: {
+                oauth_client_id: providerConfig.oauth_client_id,
+                oauth_client_secret: providerConfig.oauth_client_secret
+            }
+        };
+
+        const runtimeContext: RuntimeContext = {
+            plan: plan
         };
 
         if (task.debug) {
@@ -190,6 +215,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const res = await startScriptFn({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx
         });
 
@@ -263,12 +289,12 @@ export async function handleSyncSuccess({
     let providerConfig: Config | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        team = accountAndEnv.account;
-        environment = accountAndEnv.environment;
+        team = accountContext.account;
+        environment = accountContext.environment;
 
         if (!nangoProps.syncJobId) {
             throw new Error('syncJobId is required to update sync status');
@@ -304,9 +330,9 @@ export async function handleSyncSuccess({
                     `'track_deletes' is deprecated and will be removed in future versions. To detect deletions please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script.`
                 );
                 const res = await records.deleteOutdatedRecords({
+                    environmentId: nangoProps.environmentId,
                     connectionId: nangoProps.nangoConnectionId,
                     model,
-                    syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
                 if (res.isErr()) {
@@ -399,7 +425,6 @@ export async function handleSyncSuccess({
                         model
                     }
                 });
-
                 void tracer.scope().activate(span, async () => {
                     try {
                         if (team && environment && providerConfig) {
@@ -407,6 +432,7 @@ export async function handleSyncSuccess({
                                 account: team,
                                 connection: connection,
                                 environment: environment,
+                                secret: nangoProps.secretKey,
                                 syncConfig: nangoProps.syncConfig,
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
@@ -469,7 +495,7 @@ export async function handleSyncSuccess({
         }
         await setTaskSuccess({ taskId, output: null });
 
-        await slackService.removeFailingConnection({
+        void slackService.removeFailingConnection({
             connection,
             name: nangoProps.syncVariant === 'base' ? nangoProps.syncConfig.sync_name : `${nangoProps.syncConfig.sync_name}::${nangoProps.syncVariant}`,
             type: 'sync',
@@ -582,7 +608,7 @@ export async function handleSyncError({
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | null = null;
 
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (accountAndEnv) {
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
@@ -631,7 +657,7 @@ export async function handleSyncError({
 
 export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
+        const accountAndEnv = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
             throw new Error(`Account and environment not found`);
         }
@@ -853,6 +879,11 @@ async function onFailure({
         if (team && environment && syncConfig && providerConfig) {
             void tracer.scope().activate(span, async () => {
                 try {
+                    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+                    if (defaultSecret.isErr()) {
+                        throw defaultSecret.error;
+                    }
+
                     const res = await sendSyncWebhook({
                         account: team,
                         providerConfig,
@@ -860,6 +891,7 @@ async function onFailure({
                         syncVariant,
                         connection: connection,
                         environment: environment,
+                        secret: defaultSecret.value.secret,
                         webhookSettings,
                         model: models.join(','),
                         success: false,

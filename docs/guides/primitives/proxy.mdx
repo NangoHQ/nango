@@ -1,0 +1,73 @@
+---
+title: 'Proxy requests to external APIs'
+sidebarTitle: 'Proxy'
+description: 'Run authenticated API requests on behalf of your users.'
+---
+
+## Overview
+
+The Nango *Proxy* is Nango’s authenticated request gateway for external APIs.
+
+You send requests to Nango using the same HTTP method, path, parameters, and body as the target API. Nango resolves the provider, injects credentials, executes the request, and returns the response.
+
+## How it works
+
+**Send an HTTP request via Nango’s Proxy**
+
+<Tabs>
+    <Tab title="Typescript">
+
+    ```typescript
+    const res = await nango.post({
+        endpoint: '/external-endpoint',
+        integrationId: integrationId,
+        connectionId: connectionId,
+        data: { ... }
+    });
+    ```
+    </Tab>
+
+    <Tab title="Other languages (cURL)">
+
+    ```bash
+    curl -X POST \
+    -H 'Authorization: Bearer {nangoSecretKey}' \
+    -H 'Integration-Id: {integrationId}' \
+    -H 'Connection-Id: {conectionId}' \
+    -d '{ ... }' \
+    'https://api.nango.dev/proxy/external-endpoint'
+    ```
+
+    </Tab>
+</Tabs>
+
+<Frame caption="Overview of the Proxy">
+  ![](/images/diagrams/nango-proxy-diagram.png)
+</Frame>
+
+## Capabilities
+
+### Request passthrough
+- Same request shape as the target API
+- Works with any HTTP-based API
+
+### Credential injection
+- Credentials injected automatically
+- Works regardless of provider auth conventions
+
+### Observability & error handling
+- Centralized request logging
+- Monitoring all outbound API traffic
+- Configurable retries and rate-limit handling
+
+### Security
+- No credentials in application code or logs
+- Single secure egress point
+
+## Next step
+
+<CardGroup cols={2}>
+    <Card title="Implement a proxy request" icon="network-wired" href="/implementation-guides/platform/proxy/implement-requests-proxy">
+        Learn how to implement a proxy request using Nango.
+    </Card>
+</CardGroup>

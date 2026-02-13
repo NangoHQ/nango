@@ -15,6 +15,8 @@ const workdayOauthExpiresIn = 3600;
 const bullhornExpiresInMinutes = 10080;
 const bullhornLoginUrl = 'https://rest-west.bullhornstaffing.com/rest-services/login';
 const jobberExpiresIn = 3600;
+const instagramExpiresIn = 3600;
+const instagramLongLivedTokenUrl = 'https://graph.instagram.com/access_token';
 
 const logger = getLogger('Provider.Client');
 
@@ -29,6 +31,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'instagram':
             case 'jobber':
             case 'microsoft-admin':
             case 'one-drive':
@@ -40,6 +43,7 @@ class ProviderClient {
             case 'stripe-app':
             case 'stripe-app-sandbox':
             case 'workday-oauth':
+            case 'fanvue':
                 return true;
             default:
                 return false;
@@ -51,6 +55,7 @@ class ProviderClient {
             case 'salesforce':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
+            case 'salesforce-jwt':
                 return true;
             default:
                 return false;
@@ -74,6 +79,8 @@ class ProviderClient {
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'instagram':
+                return this.createInstagramToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'tiktok-ads':
                 return this.createTiktokAdsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'one-drive':
@@ -92,6 +99,8 @@ class ProviderClient {
                 return this.createTiktokPersonalToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'workday-oauth':
                 return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'fanvue':
+                return this.createFanvueToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -105,9 +114,9 @@ class ProviderClient {
         const credentials = connection.credentials;
         const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
 
-        if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin') {
+        if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin' && config.provider !== 'instagram') {
             throw new NangoError('missing_refresh_token');
-        } else if (config.provider === 'facebook' && !credentials.access_token) {
+        } else if ((config.provider === 'facebook' || config.provider === 'instagram') && !credentials.access_token) {
             throw new NangoError('missing_facebook_access_token');
         }
 
@@ -138,6 +147,8 @@ class ProviderClient {
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
+            case 'instagram':
+                return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
             case 'one-drive':
             case 'sharepoint-online':
                 return this.refreshSharepointToken(
@@ -178,31 +189,44 @@ class ProviderClient {
                     interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
-                    config.oauth_client_secret
+                    config.oauth_client_secret,
+                    connection.connection_config
                 );
+            case 'fanvue':
+                return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
     }
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
-        if (connection.credentials.type !== 'OAUTH2') {
+        const { credentials } = connection;
+        const isOAuth2 = credentials.type === 'OAUTH2';
+        const isTwoStep = credentials.type === 'TWO_STEP';
+
+        if (!isOAuth2 && !isTwoStep) {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials;
-        const oauthConnection = connection;
+        const accessToken = isOAuth2 ? credentials.access_token : credentials.token;
+        if (!accessToken) {
+            throw new NangoError('access_token_missing');
+        }
+
+        const connectionConfig = connection.connection_config as Record<string, string>;
+        const clientId = isTwoStep ? credentials['clientId'] : config.oauth_client_id;
+        const clientSecret = isTwoStep ? credentials['clientSecret'] : config.oauth_client_secret;
+
+        if (!clientId || !clientSecret) {
+            throw new NangoError('client_credentials_missing');
+        }
 
         switch (config.provider) {
             case 'salesforce':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
-                return this.introspectedSalesforceTokenExpired(
-                    credentials.access_token,
-                    config.oauth_client_id,
-                    config.oauth_client_secret,
-                    oauthConnection.connection_config as Record<string, string>
-                );
+            case 'salesforce-jwt':
+                return this.introspectedSalesforceTokenExpired(accessToken, clientId, clientSecret, connectionConfig);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -510,7 +534,7 @@ class ProviderClient {
 
             throw new NangoError('stripe_app_token_request_error');
         } catch (err: any) {
-            throw new NangoError('stripe_app_token_request_error', err.message);
+            throw new NangoError('stripe_app_token_request_error', stringifyError(err));
         }
     }
 
@@ -542,7 +566,7 @@ class ProviderClient {
             }
             throw new NangoError('stripe_app_token_refresh_request_error');
         } catch (err: any) {
-            throw new NangoError('stripe_app_token_refresh_request_error', err.message);
+            throw new NangoError('stripe_app_token_refresh_request_error', stringifyError(err));
         }
     }
 
@@ -696,6 +720,79 @@ class ProviderClient {
         throw new NangoError('facebook_refresh_token_request_error');
     }
 
+    private async createInstagramToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri,
+                code
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                // Exchange short-lived (24hr) token for long-lived (60 days) token
+                const exchangeQueryParams = {
+                    grant_type: 'ig_exchange_token',
+                    access_token: response.data['access_token'],
+                    client_secret: clientSecret
+                };
+                const exchangeUrl = `${instagramLongLivedTokenUrl}?${qs.stringify(exchangeQueryParams)}`;
+
+                const exchangeResponse = await axios.get(exchangeUrl);
+
+                if (exchangeResponse.status === 200 && exchangeResponse.data) {
+                    return {
+                        ...exchangeResponse.data
+                    };
+                }
+
+                return {
+                    ...response.data,
+                    expires_in: instagramExpiresIn
+                };
+            }
+
+            throw new NangoError('instagram_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('instagram_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshInstagramToken(refreshTokenUrl: string, accessToken: string): Promise<RefreshTokenResponse> {
+        try {
+            const queryParams = {
+                grant_type: 'ig_refresh_token',
+                access_token: accessToken
+            };
+
+            const urlWithParams = `${refreshTokenUrl}?${qs.stringify(queryParams)}`;
+            const response = await axios.get(urlWithParams);
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('instagram_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('instagram_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
     private async createBraintreeToken(code: string, clientId: string, clientSecret: string): Promise<object> {
         const gateway = new braintree.BraintreeGateway({ clientId: clientId, clientSecret: clientSecret });
         const res = await gateway.oauth.createTokenFromCode({ code: code });
@@ -841,7 +938,8 @@ class ProviderClient {
         refreshTokenUrl: string,
         refreshToken: string,
         client_id: string,
-        client_secret: string
+        client_secret: string,
+        connectionConfig: ConnectionConfig
     ): Promise<RefreshTokenResponse> {
         try {
             const body = {
@@ -855,8 +953,9 @@ class ProviderClient {
 
             const response = await axios.post(refreshTokenUrl, body, { headers: headers });
             if (response.status === 200 && response.data) {
+                const refreshTokenToUse = connectionConfig['overrideTokenRefresh'] ? refreshToken : response.data['refresh_token'];
                 return {
-                    refresh_token: response.data['refresh_token'],
+                    refresh_token: refreshTokenToUse,
                     access_token: response.data['access_token'],
                     expires_in: workdayOauthExpiresIn
                 };
@@ -864,6 +963,64 @@ class ProviderClient {
             throw new NangoError('refresh_token_external_error', response.data);
         } catch (err: any) {
             throw new NangoError('refresh_token_external_error', err.message);
+        }
+    }
+
+    private async createFanvueToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        client_secret: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = {
+                grant_type: 'authorization_code',
+                code,
+                redirect_uri,
+                code_verifier
+            };
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers: headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('fanvue_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('fanvue_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshFanvueToken(refreshTokenUrl: string, refreshToken: string, client_id: string, client_secret: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = {
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            };
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+            };
+
+            const response = await axios.post(refreshTokenUrl, body, { headers: headers });
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('fanvue_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('fanvue_refresh_token_request_error', stringifyError(err));
         }
     }
 

@@ -1,6 +1,6 @@
 ---
-title: "Integration functions reference"
-sidebarTitle: "Functions"
+title: "Functions runtime SDK"
+sidebarTitle: "Functions SDK"
 icon: "code"
 description: "Full reference of the SDK available in Nango functions"
 ---
@@ -80,7 +80,7 @@ description: "Full reference of the SDK available in Nango functions"
   </Tab>
 </Tabs>
 
-Read more about [integration functions](/guides/platform/functions) to understand what role they play in Nango.
+Read more about [integration functions](/guides/primitives/functions) to understand what role they play in Nango.
 
 ## Configuration
 
@@ -712,12 +712,25 @@ await nango.getConnection();
 **Parameters**
 
 <Expandable>
-  <ResponseField name="forceRefresh" type="boolean">
-    Defaults to `false`. If `false`, the token will only be refreshed if it expires within 15 minutes. If `true`, a token refresh attempt will happen on each request. This is only useful for testing and should not be done at high traffic.
-  </ResponseField>
-  <ResponseField name="refreshToken" type="boolean">
-    Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
-  </ResponseField>
+    <ResponseField name="providerConfigKeyOverride" type="string">
+        An optional integration ID to override the one from the function context.
+    </ResponseField>
+    <ResponseField name="connectionIdOverride" type="string">
+        An optional connection ID to override the one from the function context.
+    </ResponseField>
+    <ResponseField name="options" type="object">
+        <Expandable>
+            <ResponseField name="forceRefresh" type="boolean">
+                Defaults to `false`. If `false`, the token will only be refreshed if it expires within 15 minutes. If `true`, a token refresh attempt will happen on each request. This is only useful for testing and should not be done at high traffic.
+            </ResponseField>
+            <ResponseField name="refreshToken" type="boolean">
+                Defaults to `false`. If `false`, the refresh token is not included in the response, otherwise it is. In production, it is not advised to return the refresh token, for security reasons, since only the access token is needed to sign requests.
+            </ResponseField>
+            <ResponseField name="refreshGithubAppJwtToken" type="boolean">
+                Defaults to `false`. If true, this will refresh the JWT token for GitHub App / Github App OAuth connections
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
 </Expandable>
 
 **Example Response**
@@ -758,7 +771,7 @@ await nango.getConnection();
 
 ## Sync-specific helper methods
 
-Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/syncs/implement-a-sync)).
+Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/use-cases/syncs/implement-a-sync)).
 
 ### Save records
 
@@ -785,7 +798,15 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
 Marks records as deleted in the Nango cache. Deleted records are still returned when you fetch them, but they are marked as deleted in the record's metadata (i.e. soft delete).
 
-To implement deletion detection in your syncs, [follow this guide](/implementation-guides/syncs/deletion-detection).
+<Tip>
+This does not remove cached payloads.
+
+`nango.batchDelete()` is used to mark records as deleted in Nango because they were deleted on the external API. Nango may still keep the last-known payload so your customer can react to the deletion event.
+
+If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
+</Tip>
+
+To implement deletion detection in your syncs, [follow this guide](/implementation-guides/use-cases/syncs/deletion-detection).
 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
@@ -810,6 +831,14 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 
 Automatically detects and marks records as deleted by comparing the current sync execution with the previous one.
 
+<Tip>
+This does not remove cached payloads.
+
+`nango.deleteRecordsFromPreviousExecutions()` is used to mark records as deleted in Nango because they were not returned by the external API. Nango may still keep the last-known payload so your customer can react to the deletion event.
+
+If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
+</Tip>
+
 ```js
 await nango.deleteRecordsFromPreviousExecutions('ModelName');
 ```
@@ -831,7 +860,7 @@ This function should be called at the end of your sync execution, after all reco
 - If your sync fails or doesn't fetch the complete dataset, avoid calling this function as it may cause false deletions
 - Records are soft deleted (marked with `_metadata.deleted = true`) and remain in the cache
 
-For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/syncs/deletion-detection.mdx).
+For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/use-cases/syncs/deletion-detection.mdx).
 
 ### Update records
 

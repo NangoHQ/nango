@@ -1,18 +1,8 @@
+### Transactions
 
-## Pre-built integrations
-
-<AccordionGroup>
-
-
-<Accordion title="Transactions">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /transactions` | Creates a new transaction | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/create-transaction.md) |
-| `PUT /transactions` | Marks a transaction by changing its status to Committed | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/commit-transaction.md) |
-| `DELETE /transactions` | Voids the current transaction uniquely identified by the transactionCode | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/void-transaction.md) |
-| `GET /transactions` | List all transactions with a default backfill date of one year. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/syncs/transactions.md) |
-</Accordion>
-
-</AccordionGroup>
-
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `commit-transaction` | Marks a transaction by changing its status to Committed | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/commit-transaction.ts) |
+| `create-transaction` | Creates a new transaction | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/create-transaction.ts) |
+| `void-transaction` | Voids the current transaction uniquely identified by the transactionCode | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/void-transaction.ts) |
+| `transactions` | List all transactions with a default backfill date of one year. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/syncs/transactions.ts) |

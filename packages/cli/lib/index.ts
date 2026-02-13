@@ -17,15 +17,18 @@ import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { initAI } from './ai/init.js';
 import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
+import { cloneTemplate } from './services/clone.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
+import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
+import { MissingArgumentError } from './utils/errors.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAll } from './zeroYaml/compile.js';
@@ -43,15 +46,33 @@ class NangoCommand extends Command {
         const cmd = new Command(name);
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.', false);
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.', false);
+        // Defining the option with --no- prefix makes it true by default.
+        // The option name in the code will be 'interactive'.
+        // Passing --no-interactive will set it to false.
+        cmd.option('--no-interactive', 'Disable interactive prompts for missing arguments.');
+
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
-            const { debug } = actionCommand.opts<GlobalOptions>();
-            printDebug('Debug mode enabled', debug);
-            if (debug && fs.existsSync('.env')) {
-                printDebug('.env file detected and loaded', debug);
+            const opts = actionCommand.opts<GlobalOptions>();
+
+            // opts.interactive is true by default (from the option default), or false if --no-interactive is passed.
+            // We also disable it if we are in a CI environment.
+            if (isCI && opts.interactive) {
+                console.warn(
+                    chalk.yellow(
+                        "CI environment detected. Interactive mode has been automatically disabled to prevent hanging. Pass '--no-interactive' to silence this warning."
+                    )
+                );
+            }
+            opts.interactive = opts.interactive && !isCI;
+
+            printDebug(`Running in ${opts.interactive ? 'interactive' : 'non-interactive'} mode.`, opts.debug);
+
+            if (opts.debug && fs.existsSync('.env')) {
+                printDebug('.env file detected and loaded', opts.debug);
             }
 
             if (!isCI) {
-                await upgradeAction(debug);
+                await upgradeAction(opts.debug);
             }
         });
 
@@ -112,9 +133,19 @@ program
     .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
     .option('--copy', 'Optional: Only copy files, will not npm install or pre-compile', false)
     .action(async function (this: Command) {
-        const { debug, ai, copy } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
+        const { debug, ai, copy, interactive } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
+        let [projectPath] = this.args;
         const currentPath = process.cwd();
-        const absolutePath = path.resolve(currentPath, this.args[0] || 'nango-integrations');
+
+        try {
+            const ensure = new Ensure(interactive);
+            projectPath = await ensure.projectPath(projectPath);
+        } catch (err: any) {
+            console.error(chalk.red(err.message));
+            process.exit(1);
+        }
+
+        const absolutePath = path.resolve(currentPath, projectPath);
 
         const setupAI = async (): Promise<void> => {
             const ok = await initAI({ absolutePath, debug, aiOpts: ai });
@@ -150,16 +181,41 @@ program
     .argument('[integration]', 'Integration name, e.g. "google-calendar"')
     .argument('[name]', 'Name of the sync/action, e.g. "calendar-events"')
     .action(async function (this: Command) {
-        const { debug, sync, action, onEvent } = this.opts();
-        const [integration, name] = this.args;
+        const { debug, sync, action, onEvent, interactive } = this.opts();
+        let [integration, name] = this.args;
         const absolutePath = process.cwd();
 
-        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
+        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug: debug });
         if (!precheck.isZeroYaml) {
             console.log(chalk.yellow(`Function creation skipped - detected nango yaml project`));
             return;
         }
-        await create({ absolutePath, sync, action, onEvent, integration, name });
+
+        try {
+            const ensure = new Ensure(interactive);
+            const functionType = await ensure.functionType(sync, action, onEvent);
+
+            let integrations: string[] = [];
+            if (precheck.isNango) {
+                const definitions = await buildDefinitions({ fullPath: absolutePath, debug: debug });
+                if (definitions.isOk()) {
+                    integrations = definitions.value.integrations.flatMap((i) => i.providerConfigKey);
+                } else {
+                    console.error(chalk.red(definitions.error));
+                }
+            }
+
+            integration = await ensure.integration(integration, { integrations });
+            name = await ensure.functionName(name, functionType);
+
+            await create({ absolutePath, functionType, integration, name });
+        } catch (err: any) {
+            console.error(chalk.red(err.message));
+            if (err instanceof MissingArgumentError) {
+                this.help();
+            }
+            process.exit(1);
+        }
     });
 
 program
@@ -168,7 +224,7 @@ program
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
     .action(async function (this: Command) {
-        const { debug } = this.opts<GlobalOptions>();
+        const { debug, interactive } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -185,7 +241,7 @@ program
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug });
+            const res = await compileAll({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
             }
@@ -208,8 +264,9 @@ program
 program
     .command('dryrun')
     .description('Dry run the sync|action process to help with debugging against an existing connection in cloud.')
-    .arguments('name connection_id')
-    .option('-e [environment]', 'The Nango environment, defaults to dev.', 'dev')
+    .argument('[name]', 'The name of the sync or action to run.')
+    .argument('[connection_id]', 'The ID of the connection to use.')
+    .option('-e, --environment [environment]', 'The Nango environment. If not provided, you will be prompted to select one.')
     .option(
         '-l, --lastSyncDate [lastSyncDate]',
         'Optional (for syncs only): last sync date to retrieve records greater than this date. The format is any string that can be successfully parsed by `new Date()` in JavaScript'
@@ -229,18 +286,46 @@ program
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
-    .option('--validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
+    .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
+    .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
-    .action(async function (this: Command, sync: string, connectionId: string) {
-        const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
+    .action(async function (this: Command) {
+        const { autoConfirm, debug, interactive, integrationId, validation, saveResponses, input, lastSyncDate, variant, metadata, diagnostics } = this.opts();
+        const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
+        let [name, connectionId] = this.args;
+        let { environment } = this.opts();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
             console.error(chalk.red(`Not inside a Nango folder`));
             process.exitCode = 1;
             return;
+        }
+
+        try {
+            const ensure = new Ensure(interactive);
+            environment = await ensure.environment(environment, debug);
+
+            const definitions = await buildDefinitions({ fullPath, debug });
+            if (definitions.isOk()) {
+                const functions = definitions.value.integrations
+                    .flatMap((i) => [...i.syncs, ...i.actions])
+                    .map((f) => ({ name: f.name, type: f.type as string }));
+                name = await ensure.function(name, functions);
+            } else {
+                console.error(chalk.red('Could not build function definitions to select from.'));
+                process.exit(1);
+            }
+
+            connectionId = await ensure.connection(connectionId, environment);
+        } catch (err: any) {
+            console.error(chalk.red(err.message));
+            if (err instanceof MissingArgumentError) {
+                this.help();
+            }
+            process.exit(1);
         }
 
         if (!precheck.isNango || precheck.hasNangoYaml) {
@@ -259,25 +344,29 @@ program
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug });
+            const res = await compileAll({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
                 return;
             }
         }
 
-        const dryRun = new DryRunService({ fullPath, validation, isZeroYaml: precheck.isZeroYaml });
-        await dryRun.run(
-            {
-                ...this.opts(),
-                sync,
-                connectionId,
-                optionalEnvironment: environment,
-                optionalProviderConfigKey: integrationId,
-                saveResponses
-            },
-            debug
-        );
+        const dryRun = new DryRunService({ fullPath, validation: shouldValidate, isZeroYaml: precheck.isZeroYaml });
+        await dryRun.run({
+            autoConfirm,
+            debug,
+            interactive,
+            sync: name,
+            connectionId,
+            optionalEnvironment: environment,
+            optionalProviderConfigKey: integrationId,
+            saveResponses,
+            input,
+            lastSyncDate,
+            variant,
+            metadata,
+            diagnostics
+        });
     });
 
 program
@@ -313,17 +402,28 @@ program
 program
     .command('deploy')
     .description('Deploy a Nango integration')
-    .arguments('environment')
+    .argument('[environment]', 'The target environment (e.g., "dev" or "prod")')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
-    .action(async function (this: Command, environment: string) {
+    .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
-        const { debug } = options;
+        const { debug, interactive } = options;
         const fullPath = process.cwd();
+
+        try {
+            const ensure = new Ensure(interactive);
+            environment = await ensure.environment(environment, debug);
+        } catch (err: any) {
+            console.error(chalk.red(err.message));
+            if (err instanceof MissingArgumentError) {
+                this.help();
+            }
+            process.exit(1);
+        }
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -340,7 +440,7 @@ program
                 return;
             }
 
-            const resCompile = await compileAll({ fullPath, debug });
+            const resCompile = await compileAll({ fullPath, debug, interactive });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
                 return;
@@ -466,9 +566,11 @@ program
 program
     .command('generate:tests')
     .option('-i, --integration <integrationId>', 'Generate tests only for a specific integration')
+    .option('-s, --sync <syncName>', 'Generate tests only for a specific sync')
+    .option('-a, --action <actionName>', 'Generate tests only for a specific action')
     .description('Generate tests for integration scripts and config files')
     .action(async function (this: Command) {
-        const { debug, integration: integrationId, autoConfirm } = this.opts();
+        const { debug, integration: integrationId, sync: syncName, action: actionName, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
@@ -477,17 +579,47 @@ program
             return;
         }
 
-        const ok = await generateTests({
+        const { success, generatedFiles } = await generateTests({
             absolutePath,
             integrationId,
+            syncName,
+            actionName,
             debug: Boolean(debug),
             autoConfirm: Boolean(autoConfirm)
         });
 
-        if (ok) {
-            console.log(chalk.green(`Tests have been generated successfully!`));
+        if (success) {
+            if (generatedFiles.length > 0) {
+                console.log(chalk.green(`Generated ${generatedFiles.length} test file(s):`));
+                for (const file of generatedFiles) {
+                    console.log(chalk.cyan(`  ${path.relative(process.cwd(), file)}`));
+                }
+            } else {
+                console.log(chalk.yellow(`No test files were generated. Make sure you have mocks in place.`));
+            }
         } else {
             console.log(chalk.red(`Failed to generate tests`));
+        }
+    });
+
+program
+    .command('clone')
+    .description('Clone integration templates from the integration-templates repository')
+    .argument('<template>', 'Template to clone (e.g., "github", "github/actions", "github/actions/list-repos")')
+    .option('-f, --force', 'Overwrite existing files without prompting', false)
+    .action(async function (this: Command, template: string) {
+        const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
+        const fullPath = process.cwd();
+
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Clone skipped - only available for zero yaml projects`));
+            return;
+        }
+
+        const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
+        if (!success) {
+            process.exitCode = 1;
         }
     });
 

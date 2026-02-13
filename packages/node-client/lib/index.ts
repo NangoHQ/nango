@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import https from 'node:https';
+import util from 'node:util';
 
 import axios from 'axios';
 
@@ -34,6 +35,7 @@ import type {
     GetPublicListIntegrations,
     GetPublicProvider,
     GetPublicProviders,
+    InstallPluginCredentials,
     JwtCredentials,
     NangoRecord,
     OAuth1Token,
@@ -250,14 +252,15 @@ export class Nango {
 
     /**
      * Returns a list of connections using object parameter syntax
-     * @param params - Object containing optional filter parameters
+     * @param params - Object containing optional filter parameters. `tags.displayName` and `tags.email` are legacy aliases mapped to `end_user_display_name` and `end_user_email`; other tag keys are sent as `tags[<lowercased-key>]`.
      * @returns A promise that resolves with an array of connection objects
      */
     public async listConnections(params: {
         connectionId?: string;
         userId?: string;
         integrationId?: string | string[];
-        tags?: Record<'displayName' | 'email', string>;
+        tags?: Record<string, string>;
+        limit?: number;
     }): Promise<GetPublicConnections['Success']>;
 
     public async listConnections(
@@ -267,7 +270,9 @@ export class Nango {
                   connectionId?: string;
                   userId?: string;
                   integrationId?: string | string[];
-                  tags?: Record<'displayName' | 'email', string>;
+                  tags?: Record<string, string>;
+                  limit?: number;
+                  page?: number;
               },
         search?: string,
         queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
@@ -277,7 +282,7 @@ export class Nango {
         // Handle both call signatures
         if (typeof connectionIdOrParams === 'object') {
             // New object parameter syntax
-            const { connectionId, userId, integrationId, tags } = connectionIdOrParams;
+            const { connectionId, userId, integrationId, tags, limit, page } = connectionIdOrParams;
 
             if (connectionId) {
                 url.searchParams.append('connectionId', connectionId);
@@ -289,12 +294,21 @@ export class Nango {
                 url.searchParams.append('integrationId', Array.isArray(integrationId) ? integrationId.join(',') : integrationId);
             }
             if (tags && Object.keys(tags).length > 0) {
-                if (tags['displayName']) {
-                    url.searchParams.append('search', tags['displayName']);
+                for (const [key, value] of Object.entries(tags)) {
+                    if (key === 'displayName') {
+                        url.searchParams.append('tags[end_user_display_name]', value);
+                    } else if (key === 'email') {
+                        url.searchParams.append('tags[end_user_email]', value);
+                    } else {
+                        url.searchParams.append(`tags[${key.toLowerCase()}]`, value);
+                    }
                 }
-                if (tags['email']) {
-                    url.searchParams.append('email', tags['email']);
-                }
+            }
+            if (limit) {
+                url.searchParams.append('limit', limit.toString());
+            }
+            if (page) {
+                url.searchParams.append('page', page.toString());
             }
         } else {
             // Legacy parameter syntax
@@ -309,6 +323,12 @@ export class Nango {
             }
             if (queries?.endUserOrganizationId) {
                 url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
+            }
+            if (queries?.limit) {
+                url.searchParams.append('limit', queries.limit.toString());
+            }
+            if (queries?.page) {
+                url.searchParams.append('page', queries.page.toString());
             }
         }
 
@@ -383,6 +403,7 @@ export class Nango {
         | TwoStepCredentials
         | SignatureCredentials
         | AwsSigV4Credentials
+        | InstallPluginCredentials
     > {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 
@@ -539,6 +560,7 @@ export class Nango {
      * =======
      * SYNCS
      *      GET RECORDS
+     *      DELETE RECORDS
      *      TRIGGER
      *      START
      *      PAUSE
@@ -597,18 +619,77 @@ export class Nango {
     }
 
     /**
+     * Prunes records payload from Nango’s cache only, for a given model and connection, up to a specified cursor
+     * Payload is emptied but record metadata is retained. Payload can be restored by re-syncing the data.
+     * @param providerConfigKey - The key identifying the provider configuration on Nango
+     * @param connectionId - The ID of the connection for which to prune records
+     * @param model - The model from which to prune records
+     * @param variant - An optional variant of the model from which to prune records
+     * @param untilCursor - The cursor up to which records should be prune
+     * @param limit - An optional limit on the number of records to prune in this operation
+     * @returns A promise that resolves with an object containing the count of pruned records and a flag indicating if more records are available for pruning
+     */
+    public async pruneRecords({
+        providerConfigKey,
+        connectionId,
+        model,
+        variant,
+        untilCursor,
+        limit
+    }: {
+        providerConfigKey: string;
+        connectionId: string;
+        model: string;
+        variant?: string;
+        untilCursor: string;
+        limit?: number;
+    }): Promise<{ count: number; has_more: boolean }> {
+        const url = `${this.serverUrl}/records/prune`;
+        const headers = this.enrichHeaders({
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        });
+        const body = {
+            model,
+            until_cursor: untilCursor,
+            ...(limit ? { limit } : {}),
+            ...(variant ? { variant } : {})
+        };
+        const response = await this.http.patch(url, body, { headers });
+        return response.data;
+    }
+
+    /**
      * Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param syncMode - An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
+     * @param opts - Options for sync trigger. Use `reset: true` for a full resync, `emptyCache: true` to clear records
      * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean // boolean kept for backwards compatibility
+        opts?: { reset?: boolean; emptyCache?: boolean }
+    ): Promise<void>;
+
+    /**
+     * @deprecated Use opts parameter instead of syncMode
+     */
+    public async triggerSync(
+        providerConfigKey: string,
+        syncs?: (string | { name: string; variant: string })[],
+        connectionId?: string,
+        // eslint-disable-next-line @typescript-eslint/unified-signatures
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+    ): Promise<void>;
+
+    public async triggerSync(
+        providerConfigKey: string,
+        syncs?: (string | { name: string; variant: string })[],
+        connectionId?: string,
+        optsOrSyncMode?: { reset?: boolean; emptyCache?: boolean } | PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
@@ -616,18 +697,31 @@ export class Nango {
             throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
-        if (typeof syncMode === 'boolean') {
-            syncMode = syncMode ? 'full_refresh' : 'incremental';
+        const isOpts = optsOrSyncMode !== undefined && typeof optsOrSyncMode === 'object';
+        const isLegacy = typeof optsOrSyncMode === 'string' || typeof optsOrSyncMode === 'boolean';
+
+        let body: PostPublicTrigger['Body'];
+
+        if (isLegacy) {
+            let syncMode: PostPublicTrigger['Body']['sync_mode'] = optsOrSyncMode as PostPublicTrigger['Body']['sync_mode'];
+            if (typeof optsOrSyncMode === 'boolean') {
+                syncMode = optsOrSyncMode ? 'full_refresh' : 'incremental';
+            }
+            body = {
+                syncs: syncs || [],
+                provider_config_key: providerConfigKey,
+                connection_id: connectionId,
+                sync_mode: syncMode
+            };
+        } else {
+            const opts = isOpts ? optsOrSyncMode : undefined;
+            body = {
+                syncs: syncs || [],
+                provider_config_key: providerConfigKey,
+                connection_id: connectionId,
+                opts
+            };
         }
-
-        syncMode ??= 'incremental';
-
-        const body = {
-            syncs: syncs || [],
-            provider_config_key: providerConfigKey,
-            connection_id: connectionId,
-            sync_mode: syncMode
-        };
 
         return this.http.post(url, body, { headers: this.enrichHeaders() });
     }
@@ -1138,17 +1232,57 @@ export class Nango {
      *
      * Verify incoming webhooks signature
      *
+     * @deprecated **SECURITY WARNING**: This method is vulnerable to length-extension attacks and should NOT be used.
+     * Use `verifyIncomingWebhookRequest` instead for secure webhook signature verification.
+     *
      * @param signatureInHeader - The value in the header X-Nango-Signature
      * @param jsonPayload - The HTTP body as JSON
      * @returns Whether the signature is valid
      */
     public verifyWebhookSignature(signatureInHeader: string, jsonPayload: unknown): boolean {
+        return this._verifyWebhookSignatureImpl(signatureInHeader, jsonPayload);
+    }
+
+    private _verifyWebhookSignatureImpl(signatureInHeader: string, jsonPayload: unknown): boolean {
         return (
             crypto
                 .createHash('sha256')
                 .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
                 .digest('hex') === signatureInHeader
         );
+    }
+
+    /**
+     *
+     * Verify incoming webhooks request
+     *
+     * @param body - The raw HTTP body as a string
+     * @param headers - The HTTP headers including X-Nango-Hmac-Sha256
+     * @returns Whether the signature is valid
+     */
+    public verifyIncomingWebhookRequest(body: string, headers: Record<string, unknown>): boolean {
+        const signatureInHeader = Object.keys(headers).find((key) => key.toLowerCase() === 'x-nango-hmac-sha256');
+        if (!signatureInHeader) {
+            return false;
+        }
+
+        const expectedSignature = crypto.createHmac('sha256', this.secretKey).update(body).digest('hex');
+        const actualSignature = headers[signatureInHeader];
+
+        if (typeof actualSignature !== 'string') {
+            return false;
+        }
+
+        // Check if signatures have the same length before comparing (required for timingSafeEqual)
+        if (expectedSignature.length !== actualSignature.length) {
+            return false;
+        }
+
+        try {
+            return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(actualSignature, 'hex'));
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -1237,3 +1371,10 @@ export class Nango {
         return headers;
     }
 }
+
+Nango.prototype.verifyWebhookSignature = util.deprecate(
+    // util.deprecate correctly binds this, the eslint warning below is a false positive
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    Nango.prototype.verifyWebhookSignature,
+    'verifyWebhookSignature() is deprecated and vulnerable to length-extension attacks. Use verifyIncomingWebhookRequest() instead.'
+);

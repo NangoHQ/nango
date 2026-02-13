@@ -21,9 +21,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get one', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: env.secret_key,
+            token: secret.secret,
             params: { provider: 'hubspot' }
         });
 
@@ -31,7 +31,8 @@ describe(`GET ${route}`, () => {
         expect(res.json).toMatchObject<typeof res.json>({
             data: {
                 display_name: 'HubSpot',
-                docs: 'https://nango.dev/docs/integrations/all/hubspot',
+                docs: 'https://nango.dev/docs/api-integrations/hubspot',
+                logo_url: 'http://localhost:3003/images/template-logos/hubspot.svg',
                 name: 'hubspot',
                 auth_mode: 'OAUTH2'
             }
@@ -39,9 +40,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return 404', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: env.secret_key,
+            token: secret.secret,
             params: { provider: 'foobar' }
         });
 

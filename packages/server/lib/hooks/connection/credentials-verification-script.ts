@@ -10,6 +10,7 @@ import type {
     BasicApiCredentials,
     ConnectionConfig,
     DBConnectionDecrypted,
+    InstallPluginCredentials,
     InternalProxyConfiguration,
     JwtCredentials,
     SignatureCredentials,
@@ -32,7 +33,7 @@ export interface InternalNango {
 
 async function execute(
     config: Config,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials,
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
     connectionId: string,
     connectionConfig: ConnectionConfig
 ) {
@@ -59,7 +60,8 @@ async function execute(
         last_refresh_failure: null,
         last_refresh_success: null,
         refresh_attempts: null,
-        refresh_exhausted: false
+        refresh_exhausted: false,
+        tags: {}
     };
 
     const activeSpan = tracer.scope().active();
@@ -107,7 +109,11 @@ async function execute(
                     proxyConfig,
                     getConnection: () => {
                         return connection;
-                    }
+                    },
+                    getIntegrationConfig: () => ({
+                        oauth_client_id: null,
+                        oauth_client_secret: null
+                    })
                 });
                 return (await proxy.request()).unwrap();
             }

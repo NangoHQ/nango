@@ -1,26 +1,100 @@
+### Actions
 
-## Pre-built integrations
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-dnd-info` | Gets Do Not Disturb settings for a user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-dnd-info.ts) |
+| `get-file-info` | Retrieves details about a specific file. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-file-info.ts) |
+| `get-reactions` | Gets all reactions for a single message or file. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-reactions.ts) |
+| `get-team-info` | Retrieves information about the workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-team-info.ts) |
+| `get-upload-url` | Gets a URL for uploading files to Slack. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-upload-url.ts) |
+| `list-custom-emoji` | Lists all custom emoji for the workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-custom-emoji.ts) |
+| `list-pins` | Lists all items pinned to a channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-pins.ts) |
+| `list-user-groups` | Lists all user groups in the workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-user-groups.ts) |
+| `list-user-reactions` | Lists all items with reactions made by the user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-user-reactions.ts) |
+| `pin-message` | Pins a message to a channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/pin-message.ts) |
+| `unpin-message` | Removes a pinned item from a channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/unpin-message.ts) |
 
-<AccordionGroup>
+### Channels
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `archive-channel` | Archives a conversation making it read-only. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/archive-channel.ts) |
+| `create-channel` | Creates a new public or private channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/create-channel.ts) |
+| `get-channel-info` | Retrieves detailed information about a conversation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-channel-info.ts) |
+| `get-channel-members` | Lists members of a conversation with pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-channel-members.ts) |
+| `get-conversation-history` | Fetches message history from a channel or conversation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-conversation-history.ts) |
+| `get-thread-replies` | Retrieves a thread of messages posted as replies to a message. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-thread-replies.ts) |
+| `invite-to-channel` | Invites 1-1000 users to a public or private channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/invite-to-channel.ts) |
+| `join-channel` | Joins a public or private channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/join-channel.ts) |
+| `leave-channel` | Leaves a public or private channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/leave-channel.ts) |
+| `list-channels` | Lists all channel-like conversations in a workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-channels.ts) |
+| `mark-as-read` | Moves the read cursor in a conversation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/mark-as-read.ts) |
+| `remove-from-channel` | Removes a user from a channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/remove-from-channel.ts) |
+| `rename-channel` | Renames a conversation with proper permissions. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/rename-channel.ts) |
+| `set-channel-purpose` | Updates a channel's description or purpose. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/set-channel-purpose.ts) |
+| `set-channel-topic` | Updates a channel's topic. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/set-channel-topic.ts) |
+| `unarchive-channel` | Restores an archived conversation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/unarchive-channel.ts) |
 
-<Accordion title="Messages">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `POST /messages` | An action that sends a message to a slack channel. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/send-message.md) |
-| `GET /messages` | Syncs Slack messages, thread replies and reactions from messages &<br />thread replies for all channels, group dms and dms the bot is a part<br />of. For every channel it will do an initial full sync on first<br />detection of the channel. For subsequent runs it will sync messages,<br />threads & reactions from the last 10 days. Scopes required:<br />channels:read, and at least one of<br />channels:history, groups:history, mpim:history, im:history | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.md) |
-</Accordion>
+### Conversations
 
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `open-dm` | Opens a direct message or multi-person direct message. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/open-dm.ts) |
 
-<Accordion title="Others">
-| Endpoint | Description | Readme |
-| - | - | - |
-| `GET /users` | Syncs information about all Users on the Slack workspace | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/users.md) |
-| `GET /channels` | Syncs information about all Slack channels. Which channels get synced<br />(public, private, IMs, group DMs) depends on the scopes. If<br />joinPublicChannels is set to true, the bot will automatically join all<br />public channels as well. Scopes: At least one of channels:read,<br />groups:read, mpim:read, im:read. To also join public channels:<br />channels:join | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/channels.md) |
-| `GET /messages-reply` | Syncs Slack messages, thread replies and reactions from messages &<br />thread replies for all channels, group dms and dms the bot is a part<br />of. For every channel it will do an initial full sync on first<br />detection of the channel. For subsequent runs it will sync messages,<br />threads & reactions from the last 10 days. Scopes required:<br />channels:read, and at least one of<br />channels:history, groups:history, mpim:history, im:history | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.md) |
-| `GET /messages-reaction` | Syncs Slack messages, thread replies and reactions from messages &<br />thread replies for all channels, group dms and dms the bot is a part<br />of. For every channel it will do an initial full sync on first<br />detection of the channel. For subsequent runs it will sync messages,<br />threads & reactions from the last 10 days. Scopes required:<br />channels:read, and at least one of<br />channels:history, groups:history, mpim:history, im:history | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.md) |
-</Accordion>
+### Files
 
-</AccordionGroup>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-files` | Lists files in a workspace with optional filtering. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-files.ts) |
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/platform/functions) independently.</Tip>
+### Messages
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-message` | Removes a message from a conversation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/delete-message.ts) |
+| `list-scheduled-messages` | Retrieves pending scheduled messages from workspace. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-scheduled-messages.ts) |
+| `post-message` | Posts a message to a public channel, private channel, or direct message. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/post-message.ts) |
+| `schedule-message` | Schedules a message for future delivery up to 120 days ahead. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/schedule-message.ts) |
+| `send-message` | An action that sends a message to a slack channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/send-message.ts) |
+| `update-message` | Modifies an existing message in a channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/update-message.ts) |
+| `messages` | Syncs Slack messages, thread replies and reactions from messages & thread replies for all channels, group dms and dms the bot is a part of. For every channel it will do an initial full sync on first detection of the channel. For subsequent runs it will sync messages, threads & reactions from the last 10 days. Scopes required: channels:read, and at least one of channels:history, groups:history, mpim:history, im:history | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.ts) |
+
+### Reactions
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-reaction` | Adds an emoji reaction to a message. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/add-reaction.ts) |
+| `remove-reaction` | Removes an emoji reaction from a message. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/remove-reaction.ts) |
+
+### Search
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `search-files` | Searches for files matching a query in Slack workspace (requires user token). | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/search-files.ts) |
+| `search-messages` | Searches for messages matching a query in Slack workspace (requires user token). | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/search-messages.ts) |
+
+### User Groups
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-user-group-members` | Lists users within a specific user group. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-user-group-members.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-user-info` | Retrieves information about a specific user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-user-info.ts) |
+| `get-user-presence` | Gets a user's current presence status and activity. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-user-presence.ts) |
+| `get-user-profile` | Retrieves detailed user profile including custom fields. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/get-user-profile.ts) |
+| `list-users` | Lists all users in a workspace including active and deactivated. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/list-users.ts) |
+| `lookup-user-by-email` | Finds a user by their registered email address. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/lookup-user-by-email.ts) |
+| `set-user-presence` | Sets the calling user's manual presence status. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/set-user-presence.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `channels` | Syncs information about all Slack channels. Which channels get synced (public, private, IMs, group DMs) depends on the scopes. If joinPublicChannels is set to true, the bot will automatically join all public channels as well. Scopes: At least one of channels:read, groups:read, mpim:read, im:read. To also join public channels: channels:join | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/channels.ts) |
+| `messages` | Syncs Slack messages, thread replies and reactions from messages & thread replies for all channels, group dms and dms the bot is a part of. For every channel it will do an initial full sync on first detection of the channel. For subsequent runs it will sync messages, threads & reactions from the last 10 days. Scopes required: channels:read, and at least one of channels:history, groups:history, mpim:history, im:history | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.ts) |
+| `messages` | Syncs Slack messages, thread replies and reactions from messages & thread replies for all channels, group dms and dms the bot is a part of. For every channel it will do an initial full sync on first detection of the channel. For subsequent runs it will sync messages, threads & reactions from the last 10 days. Scopes required: channels:read, and at least one of channels:history, groups:history, mpim:history, im:history | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.ts) |
+| `users` | Syncs information about all Users on the Slack workspace | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/users.ts) |

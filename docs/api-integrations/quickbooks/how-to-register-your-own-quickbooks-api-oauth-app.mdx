@@ -1,0 +1,78 @@
+---
+title: 'Set up Quickbooks with Nango'
+sidebarTitle: 'Quickbooks Setup'
+description: 'Register an OAuth app with Quickbooks and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Quickbooks to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Quickbooks account.
+
+## Creating a Quickbooks App
+
+<Steps>
+  <Step title="Create an Intuit Developer account">
+    Go to [Intuit Developer signup page](https://developer.intuit.com/app/developer/qbo/docs/get-started) and create a free account.
+  </Step>
+  <Step title="Create a new app in your Developer account">
+    1. From your Developer Dashboard, navigate to **My Hub** > **App Dashboard**, then click on the **Add** button.
+    2. Select **QuickBooks Online and Payments**, click **Next** and provide a name for your app.
+    3. Click **Next** to proceed with adding permissions to your app.
+    4. Once you have added permissions, click **Done** and confirm the permissions you selected. Your application will be created.
+  </Step>
+  <Step title="Configure OAuth settings">
+    In the app you just created:
+    1. Navigate to the **Settings** page, then go to the **Redirect URIs** tab and add the following URL: `https://api.nango.dev/oauth/callback`.
+    2. Save your changes.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. Still in your created app, navigate to **Keys and credentials** page and toggle the **Show credentials** button to locate your app's credentials.
+    2. Copy the **Client ID** and **Client Secret**.
+    3. You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Create a development/sandbox account for testing">
+    If you don't have a QuickBooks account already:
+    1. From your Developer Dashboard, go to **My Hub** > **Sandbox**, then click **Add** to create a new Sandbox company.
+    2. Follow the prompts to create a test company.
+    3. Note the **Company ID/Realm ID** as you'll need it for API requests.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## Understanding Quickbooks Requirements
+
+Quickbooks has flexible requirements for developers:
+
+- **Developer account**: Free self-signup available
+- **Test accounts**: Development/sandbox companies can be created for free from your Developer account
+- **App review**: Only required for apps published to the Intuit App Store
+- **Partnership**: Not required
+
+## Important Notes
+
+<Note>
+QuickBooks requires a company ID/realmId for each API request. Nango can automatically retrieve this for you, or you can manually override it by specifying the realmId when creating a new connection. You can use [getConnection](/reference/functions#get-the-connection-credentials) in your [integration function](/guides/primitives/functions) to retrieve it, or when you fetch the Connection credentials with the REST API or SDK.
+</Note>
+
+<Note>
+For sandbox testing, use the `quickbooks-sandbox` integration in Nango instead of the regular `quickbooks` integration.
+</Note>
+
+<Note>
+QuickBooks access tokens expire after 1 hour, but Nango automatically handles token refresh for you.
+</Note>
+
+## Relevant Scopes
+
+When setting up your app, you'll need to configure OAuth scopes. Quickbooks uses the following main scopes:
+
+- `com.intuit.quickbooks.accounting` - Access to QuickBooks accounting data (most commonly used)
+- `com.intuit.quickbooks.payment` - Access to QuickBooks payments data
+
+For a complete list of available scopes, see [Quickbooks OAuth scopes documentation](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes#current-scopes).
+
+For more details on Quickbooks OAuth implementation, see [Quickbooks OAuth 2.0 guide](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0).
+
+---

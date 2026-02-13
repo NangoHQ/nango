@@ -4,6 +4,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
+    accountService,
     configService,
     environmentService,
     errorManager,
@@ -11,7 +12,7 @@ import {
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw,
-    safeGetPlan
+    secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
@@ -26,7 +27,7 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBAPISecret, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -38,14 +39,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
-        if (!accountAndEnv) {
+        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
-        account = accountAndEnv.account;
-        environment = accountAndEnv.environment;
-        const plan = await safeGetPlan(db.knex, { accountId: accountAndEnv.account.id });
-        tagTraceUser({ ...accountAndEnv, plan });
+        account = accountContext.account;
+        environment = accountContext.environment;
+        const plan = accountContext.plan;
+        tagTraceUser({ ...accountContext });
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -113,6 +114,11 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            return Err(defaultSecret.error);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -126,7 +132,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: task.activityLogId,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
@@ -135,12 +141,21 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             runnerFlags: await getRunnerFlags(),
             startedAt: now,
             endUser,
-            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
+            heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
+            integrationConfig: {
+                oauth_client_id: providerConfig.oauth_client_id,
+                oauth_client_secret: providerConfig.oauth_client_secret
+            }
+        };
+
+        const runtimeContext: RuntimeContext = {
+            plan: plan
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx,
             input: task.input
         });
@@ -185,7 +200,7 @@ export async function handleActionSuccess({
     telemetryBag: TelemetryBag;
 }): Promise<void> {
     const logCtx = getLogCtx(nangoProps);
-    const { environment, account } = (await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId })) || {
+    const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
         account: undefined
     };
@@ -226,7 +241,7 @@ export async function handleActionSuccess({
         environment_id: nangoProps.environmentId,
         provider_config_key: nangoProps.providerConfigKey
     };
-    await slackService.removeFailingConnection({
+    void slackService.removeFailingConnection({
         connection,
         name: nangoProps.syncConfig.sync_name,
         type: 'action',
@@ -236,6 +251,7 @@ export async function handleActionSuccess({
 
     await sendWebhookIfNeeded({
         environment,
+        secret: nangoProps.secretKey,
         connectionId: nangoProps.connectionId,
         providerConfigKey: nangoProps.providerConfigKey,
         task: task.value,
@@ -294,7 +310,7 @@ export async function handleActionError({
     error: NangoError;
     telemetryBag: TelemetryBag;
 }): Promise<void> {
-    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
         throw new Error(`Account and environment not found`);
     }
@@ -337,6 +353,7 @@ export async function handleActionError({
         void logCtx.failed();
         await sendWebhookIfNeeded({
             environment,
+            secret: nangoProps.secretKey,
             connectionId: nangoProps.connectionId,
             providerConfigKey: nangoProps.providerConfigKey,
             task: task.value,
@@ -468,12 +485,14 @@ function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): stri
 
 async function sendWebhookIfNeeded({
     environment,
+    secret,
     connectionId,
     providerConfigKey,
     task,
     logCtx
 }: {
     environment: DBEnvironment | undefined;
+    secret: DBAPISecret['secret'];
     connectionId: string;
     providerConfigKey: string;
     task: OrchestratorTask;
@@ -488,7 +507,7 @@ async function sendWebhookIfNeeded({
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
         await sendAsyncActionWebhook({
-            environment: environment,
+            secret,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
             payload: {

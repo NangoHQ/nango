@@ -12,6 +12,7 @@ import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
+import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
@@ -33,6 +34,8 @@ export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
+export * from './services/tags.service.js';
+export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
@@ -40,6 +43,7 @@ export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
+export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
@@ -76,6 +80,7 @@ export {
     pbkdf2,
     providerClientManager,
     remoteFileService,
+    secretService,
     seeders,
     sharedCredentialsService,
     syncCommandToOperation,

@@ -13,6 +13,7 @@ on:
                     - development
                     - staging
                     - production
+                    - replit
             service:
                 type: choice
                 description: 'Service to deploy, defaults to server'
@@ -27,9 +28,10 @@ on:
                     - metering
                     - connect_ui
                     - app_ui
+                    - lambda
 
 jobs:
-    deploy_app_ui_aws:
+    deploy_app_ui:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
         environment: ${{ inputs.stage }}
@@ -48,18 +50,42 @@ jobs:
                   FILE="packages/webapp/dist/index.html"
                   sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ vars.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
             - name: configure aws credentials
+              if: inputs.stage != 'replit'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_APP_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Webapp to S3
+              if: inputs.stage != 'replit'
               run: |
                   aws s3 sync packages/webapp/dist/ s3://${{ vars.APP_UI_BUCKET }} --delete
             - name: Create invalidation
+              if: inputs.stage != 'replit'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.APP_UI_DISTRIBUTION_ID }} --paths "/*"
-    deploy_connect_ui_aws:
+            - name: Auth to GCP (OIDC)
+              if: inputs.stage == 'replit'
+              uses: google-github-actions/auth@v2
+              with:
+                  workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+                  service_account: ${{ vars.GCP_DEPLOYER_SA }}
+            - name: Setup gcloud SDK
+              if: inputs.stage == 'replit'
+              uses: google-github-actions/setup-gcloud@v2
+              with:
+                  project_id: ${{ vars.GCP_PROJECT_ID }}
+            - name: Upload Webapp to GCS
+              if: inputs.stage == 'replit'
+              run: |
+                  gsutil -m rsync -r -d packages/webapp/dist/ gs://${{ vars.APP_UI_BUCKET }}
+            - name: Invalidate Cloud CDN cache
+              if: inputs.stage == 'replit'
+              run: |
+                  gcloud compute url-maps invalidate-cdn-cache ${{ vars.APP_UI_URL_MAP }} \
+                    --path "/*" \
+                    --project "${{ vars.GCP_PROJECT_ID }}"
+    deploy_connect_ui:
         if: inputs.service == 'connect_ui'
         runs-on: ubuntu-latest
         permissions:
@@ -74,20 +100,43 @@ jobs:
             - name: Build Connect UI
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
             - name: configure aws credentials
+              if: inputs.stage != 'replit'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Connect UI to S3
+              if: inputs.stage != 'replit'
               run: |
                   aws s3 sync packages/connect-ui/dist/ s3://${{ vars.CONNECT_UI_BUCKET }} --delete
             - name: Create invalidation
+              if: inputs.stage != 'replit'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
-
-    deploy_aws:
-        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui'
+            - name: Auth to GCP (OIDC)
+              if: inputs.stage == 'replit'
+              uses: google-github-actions/auth@v2
+              with:
+                  workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+                  service_account: ${{ vars.GCP_DEPLOYER_SA }}
+            - name: Setup gcloud SDK
+              if: inputs.stage == 'replit'
+              uses: google-github-actions/setup-gcloud@v2
+              with:
+                  project_id: ${{ vars.GCP_PROJECT_ID }}
+            - name: Upload Webapp to GCS
+              if: inputs.stage == 'replit'
+              run: |
+                  gsutil -m rsync -r -d packages/connect-ui/dist/ gs://${{ vars.CONNECT_UI_BUCKET }}
+            - name: Invalidate Cloud CDN cache
+              if: inputs.stage == 'replit'
+              run: |
+                  gcloud compute url-maps invalidate-cdn-cache ${{ vars.CONNECT_UI_URL_MAP }} \
+                    --path "/*" \
+                    --project "${{ vars.GCP_PROJECT_ID }}"
+    deploy:
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda'
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -101,6 +150,7 @@ jobs:
                   path: nango-environments
 
             - name: Deploy ${{ inputs.service }} (AWS)
+              if: inputs.stage != 'replit'
               run: |
                   cd nango-environments
 
@@ -115,8 +165,23 @@ jobs:
                   git add apps/${{ inputs.stage }}/nango-values.yaml
                   git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
                   git push origin main
-    deploy_runners_aws:
-        if: inputs.service == 'runner'
+            - name: Deploy ${{ inputs.service }} (Replit)
+              if: inputs.stage == 'replit'
+              run: |
+                  cd nango-environments
+
+                  # Configure git for the commit
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  # Update the nango-values.yaml file for the current stage and service
+                  yq eval '.spec.values.${{ inputs.service }}.image.tag = "${{ github.sha }}"' -i apps/customers/replit/production/nango.yaml
+                  # Commit and push the changes
+                  git add apps/customers/replit/production/nango.yaml
+                  git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
+                  git push origin main
+    deploy_runners:
+        if: inputs.service == 'runner' && inputs.stage != 'replit'
         runs-on: ubuntu-latest
         environment: ${{ inputs.stage }}
         steps:
@@ -131,4 +196,48 @@ jobs:
                   curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_k8s/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
-                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
+                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
+    deploy_lambda:
+        if: inputs.service == 'lambda' && inputs.stage != 'replit'
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+        environment: ${{ inputs.stage }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.DEPLOY_LAMBDA_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+            - name: Build and Push Lambda Image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: packages/lambda-runner/Dockerfile.lambda
+                  platforms: linux/arm64
+                  push: true
+                  provenance: false
+                  tags: |
+                      ${{ steps.login-ecr.outputs.registry }}/${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}
+                  cache-from: type=gha,scope=lambda
+                  cache-to: type=gha,scope=lambda,mode=max
+            - name: Rollout image
+              env:
+                  ENVIRONMENT: ${{ inputs.stage }}
+                  INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+              run: |
+                  curl -sS --fail-with-body --request POST "${{ vars.API_DOMAIN }}/internal/fleet/nango_runners_lambda/rollout" \
+                    --header "authorization: Bearer $INTERNAL_API_KEY"\
+                    --header "content-type: application/json"\
+                    --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"

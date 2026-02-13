@@ -3,7 +3,7 @@ import os from 'os';
 
 import { metrics } from '@nangohq/utils';
 
-import { persistClient } from './clients/persist.js';
+import { PersistClient } from './clients/persist.js';
 import { envs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
@@ -13,7 +13,8 @@ import type { NangoProps } from '@nangohq/types';
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
 export class RunnerMonitor {
     private runnerId: number;
-    private tracked = new Map<number, { nangoProps: NangoProps; taskId: string }>();
+    private tracked = new Map<string, { nangoProps: NangoProps }>();
+    private persistClient: PersistClient | null = null;
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -40,24 +41,14 @@ export class RunnerMonitor {
 
     track(nangoProps: NangoProps, taskId: string): void {
         this.lastIdleTrackingDate = Date.now();
-        if (nangoProps.syncJobId) {
-            this.tracked.set(nangoProps.syncJobId, { nangoProps, taskId });
+        this.tracked.set(taskId, { nangoProps });
+        if (!this.persistClient) {
+            this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
         }
     }
 
-    untrack(nangoProps: NangoProps): void {
-        if (nangoProps.syncJobId) {
-            this.tracked.delete(nangoProps.syncJobId);
-        }
-    }
-
-    untrackByTaskId(taskId: string): void {
-        for (const [syncJobId, value] of this.tracked.entries()) {
-            if (value.taskId === taskId) {
-                this.tracked.delete(syncJobId);
-                break;
-            }
-        }
+    untrack(taskId: string): void {
+        this.tracked.delete(taskId);
     }
 
     resetIdleMaxDurationMs(): void {
@@ -89,17 +80,20 @@ export class RunnerMonitor {
             }
         }
 
+        if (!this.persistClient) {
+            return;
+        }
+
         this.lastMemoryReportDate = new Date();
         for (const {
-            nangoProps: { environmentId, activityLogId, secretKey }
+            nangoProps: { environmentId, activityLogId }
         } of this.tracked.values()) {
             if (!environmentId || !activityLogId) {
                 continue;
             }
-            await persistClient.postLog({
-                secretKey,
+            await this.persistClient.postLog({
                 environmentId,
-                data: {
+                data: JSON.stringify({
                     activityLogId: activityLogId,
                     log: {
                         type: 'log',
@@ -107,7 +101,7 @@ export class RunnerMonitor {
                         message: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`,
                         createdAt: new Date().toISOString()
                     }
-                }
+                })
             });
         }
     }
@@ -151,6 +145,7 @@ export class RunnerMonitor {
     }
 }
 
+// TODO: revisit memory monitoring since runners are not running in Render anymore
 function getRenderTotalMemoryInBytes(): number {
     const memoryMaxFile = '/sys/fs/cgroup/memory.max';
     try {

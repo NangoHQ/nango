@@ -1,0 +1,88 @@
+---
+title: 'Shopify (OAuth)'
+sidebarTitle: 'Shopify (OAuth)'
+description: 'Integrate your application with the Shopify API'
+---
+
+## 🚀 Quickstart
+
+Connect to Shopify with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Shopify_.
+    </Step>
+    <Step title="Authorize Shopify">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Shopify. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Shopify API">
+    Let's make your first request to the Shopify API (fetch a list of customers). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/admin/api/2025-01/customers.json?limit=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/admin/api/2025-01/customers.json',
+            params: {
+              limit: 10
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(JSON.stringify(res.data, null, 2));
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Shopify Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Shopify OAuth app](/api-integrations/shopify/how-to-register-your-own-shopify-api-oauth-app)  
+Register an OAuth app with Shopify and obtain credentials to connect it to Nango
+
+- [How do I link my Shopify account?](/api-integrations/shopify/connect)  
+Learn how to authenticate with Shopify and link your account
+
+Official docs: [Shopify API documentation](https://shopify.dev/docs/api/admin)
+
+## 🧩 Pre-built syncs & actions for Shopify
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/shopify/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,0 +1,88 @@
+---
+title: 'Google Search Console'
+sidebarTitle: 'Google Search Console'
+description: 'Integrate your application with the Google Search Console API'
+---
+
+## 🚀 Quickstart
+
+Connect to Google Search Console with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Search Console_.
+
+    <Note>
+      Nango has credentials you can use for testing. Activate them in the dashboard.
+    </Note>
+
+    </Step>
+    <Step title="Authorize Google Search Console">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Search Console. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Google Search Console API">
+    Let's make your first request to the Google Search Console API (fetch a list of sites). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v3/sites" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v3/sites',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(JSON.stringify(res.data, 2, null));
+        ```
+        </Tab>
+
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Google Search Console Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Google Search Console OAuth app](/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app)  
+Register an OAuth app with Google and obtain credentials to connect it to Nango
+
+Official docs: [Google Search Console API](https://developers.google.com/webmaster-tools/search-console-api-original)
+
+## 🧩 Pre-built syncs & actions for Google Search Console
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/google-search-console/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

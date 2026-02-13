@@ -32,12 +32,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should block if admin capabilities are not enabled', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'test' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { accountUUID: 'test', loginReason: 'test' }
         });
 
@@ -54,12 +54,12 @@ describe(`POST ${endpoint}`, () => {
         flags.hasAdminCapabilities = true;
         envs.NANGO_ADMIN_UUID = 'e1e8fee9-a459-46fe-9e82-15c93dae2406';
 
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'test' },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { accountUUID: 'test' }
         });
@@ -80,12 +80,12 @@ describe(`POST ${endpoint}`, () => {
         flags.hasAdminCapabilities = true;
         envs.NANGO_ADMIN_UUID = 'e1e8fee9-a459-46fe-9e82-15c93dae2406'; // will not match current account
 
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'test' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test' }
         });
 

@@ -1,0 +1,52 @@
+---
+title: 'Set up Zoom with Nango'
+sidebarTitle: 'Zoom Setup'
+description: 'Register an OAuth app with Zoom and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Zoom to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Zoom account.
+
+## Register your OAuth application
+
+Follow these steps to create and configure your Zoom OAuth app:
+
+<Steps>
+    <Step title="Create a Zoom account">
+    If you don't already have one, sign up for a [Zoom account](https://zoom.us/signup).
+    </Step>
+
+    <Step title="Create an OAuth app">
+    Go to the [Zoom App Marketplace](https://marketplace.zoom.us/) and click on "Develop" in the top navigation, then select "Build App".
+
+    Choose "OAuth" as the app type and provide a name for your application.
+    </Step>
+
+    <Step title="Configure OAuth settings">
+    In your app's configuration:
+
+    - Add your redirect URL (e.g., `https://api.nango.dev/oauth/callback` for Nango Cloud)
+    - Select the OAuth scopes your application needs. Refer to [Zoom's OAuth scopes documentation](https://developers.zoom.us/docs/integrations/oauth-scopes/) for the full list.
+    - Note your Client ID and Client Secret - you'll need these to configure Zoom in Nango
+    </Step>
+
+    <Step title="Configure custom callback URL for production (optional)">
+    When testing your Zoom application in the marketplace, Zoom requires you to verify your domain. For OAuth redirects, ensure you use a custom callback URL. This way, Zoom sees your own callback URL instead of Nango's.
+
+    For more details, refer to the [implement API auth guide](/implementation-guides/platform/auth/implement-api-auth#5-setup-a-custom-oauth-callback-url-optional).
+    </Step>
+</Steps>
+
+## Add credentials to Nango
+
+Once you have your Client ID and Client Secret:
+
+1. Go to the [Integrations](https://app.nango.dev/dev/integrations) page in Nango
+2. Find and select Zoom
+3. Enter your Client ID and Client Secret
+4. Save your configuration
+
+Your users can now authorize their Zoom accounts through your application.
+
+For more information about Zoom's OAuth implementation, see the [Zoom OAuth documentation](https://developers.zoom.us/docs/integrations/oauth).
+
+---

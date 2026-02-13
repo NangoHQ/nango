@@ -6,7 +6,7 @@ import { linkConnection, seeders } from '@nangohq/shared';
 import { getConnectSessionByToken } from '../../services/connectSession.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { DBConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { DBAPISecret, DBConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -31,10 +31,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if no connection_id or integration_id', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: {}
         });
@@ -53,18 +53,18 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should get a session token', async () => {
-        const { account, env } = await seeders.seedAccountEnvAndUser();
+        const { account, env, secret } = await seeders.seedAccountEnvAndUser();
 
         const endUser = await seeders.createEndUser({ environment: env, account });
 
-        // Create an initial connection
+        // Create an initial connection linked to an end user
         await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
         await linkConnection(db.knex, { endUserId: endUser.id, connection });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: connection.connection_id,
                 integration_id: 'github'
@@ -84,32 +84,32 @@ describe(`POST ${endpoint}`, () => {
         expect(session.connectSession.connectionId).toBe(connection.id);
     });
 
-    it('should fail if the connection was not created with a session token', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+    it('should get a session token when reconnecting with tags (no end user on connection)', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
 
-        // Create an initial connection
+        // Create an initial connection without end user (tags-only session flow)
         await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 connection_id: connection.connection_id,
-                integration_id: 'github'
+                integration_id: 'github',
+                tags: { projectId: '123' }
             }
         });
-        isError(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            error: {
-                code: 'invalid_body',
-                message: "Can't update a connection that was not created with a session token"
-            }
-        });
+        isSuccess(res.json);
+
+        const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
+        expect(session.connectSession.connectionId).toBe(connection.id);
+        expect(session.connectSession.endUserId).toBeNull();
+        expect(session.connectSession.tags).toStrictEqual({ projectid: '123' });
     });
 
     it('should fail if integration_id does not exist in allowed_integrations', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
 
         // Create an initial connection
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -117,7 +117,7 @@ describe(`POST ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: { connection_id: connection.connection_id, integration_id: 'random' }
         });
         isError(res.json);
@@ -161,7 +161,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     describe('docs connect url override validation', () => {
-        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan };
+        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan; secret: DBAPISecret };
         let connection: DBConnection;
         beforeEach(async () => {
             seed = await seeders.seedAccountEnvAndUser();
@@ -179,7 +179,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -207,7 +207,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -235,7 +235,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -263,7 +263,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     connection_id: connection.connection_id,
                     integration_id: 'github',
@@ -283,6 +283,69 @@ describe(`POST ${endpoint}`, () => {
                     token: expect.any(String)
                 }
             });
+        });
+    });
+
+    describe('tags', () => {
+        let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan; secret: DBAPISecret };
+        let connection: DBConnection;
+
+        beforeEach(async () => {
+            seed = await seeders.seedAccountEnvAndUser();
+            const endUser = await seeders.createEndUser({ environment: seed.env, account: seed.account });
+
+            await seeders.createConfigSeed(seed.env, 'github', 'github');
+            connection = await seeders.createConnectionSeed({ env: seed.env, provider: 'github' });
+            await linkConnection(db.knex, { endUserId: endUser.id, connection });
+        });
+
+        it('should create reconnect session with tags', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    tags: { projectId: '123', orgId: '456' }
+                }
+            });
+
+            isSuccess(res.json);
+
+            const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
+            // Keys are normalized to lowercase
+            expect(session.connectSession.tags).toStrictEqual({ projectid: '123', orgid: '456' });
+        });
+
+        it('should succeed without tags', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github'
+                }
+            });
+
+            isSuccess(res.json);
+        });
+
+        it('should fail with invalid tags', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    connection_id: connection.connection_id,
+                    integration_id: 'github',
+                    tags: { '123invalid': 'value' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
         });
     });
 });

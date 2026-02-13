@@ -318,14 +318,33 @@ paths:
                   description: Will partially match connection IDs or end user profiles.
                 - name: endUserId
                   in: query
+                  deprecated: true
                   schema:
                       type: string
-                  description: Filter the list of connections based on the given end user id.
+                  description: Deprecated. Prefer filtering connections by tag (e.g. `tags[end_user_id]=...`).
                 - name: endUserOrganizationId
                   in: query
+                  deprecated: true
                   schema:
                       type: string
-                  description: Filter the list of connections based on the given end user's organization id.
+                  description: Deprecated. Prefer filtering connections by tag (e.g. `tags[organization_id]=...`).
+                - name: tags
+                  in: query
+                  description: Filter the list of connections based on connection tags. All provided tags must match.
+                  style: deepObject
+                  explode: true
+                  schema:
+                      $ref: '#/components/schemas/Tags'
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                  description: Limit the number of connections returned
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                  description: Page number for paginated results
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -334,7 +353,7 @@ paths:
                             schema:
                                 type: object
                                 required:
-                                    - configs
+                                    - connections
                                 properties:
                                     connections:
                                         type: array
@@ -347,8 +366,8 @@ paths:
                                                 - provider_config_key
                                                 - created
                                                 - metadata
+                                                - tags
                                                 - errors
-                                                - end_user
                                             properties:
                                                 id:
                                                     type: integer
@@ -370,6 +389,8 @@ paths:
                                                         - type: object
                                                         - type: 'null'
                                                     description: Custom metadata attached to the connection
+                                                tags:
+                                                    $ref: '#/components/schemas/Tags'
                                                 errors:
                                                     type: array
                                                     items:
@@ -379,6 +400,7 @@ paths:
                                                         - Connection credentials are invalid (type=auth)
                                                         - Last sync for the connection has failed (type=sync)
                                                 end_user:
+                                                    deprecated: true
                                                     anyOf:
                                                         - $ref: '#/components/schemas/ConnectionEndUser'
                                                         - type: 'null'
@@ -769,14 +791,33 @@ paths:
                   description: Will partially match connection IDs or end user profiles.
                 - name: endUserId
                   in: query
+                  deprecated: true
                   schema:
                       type: string
-                  description: Filter the list of connections based on the given end user id.
+                  description: Deprecated. Prefer filtering connections by tag (e.g. `tags[end_user_id]=...`).
                 - name: endUserOrganizationId
                   in: query
+                  deprecated: true
                   schema:
                       type: string
-                  description: Filter the list of connections based on the given end user's organization id.
+                  description: Deprecated. Prefer filtering connections by tag (e.g. `tags[organization_id]=...`).
+                - name: tags
+                  in: query
+                  description: Filter the list of connections based on connection tags. All provided tags must match.
+                  style: deepObject
+                  explode: true
+                  schema:
+                      $ref: '#/components/schemas/Tags'
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                  description: Limit the number of connections returned
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                  description: Page number for paginated results
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -785,7 +826,7 @@ paths:
                             schema:
                                 type: object
                                 required:
-                                    - configs
+                                    - connections
                                 properties:
                                     connections:
                                         type: array
@@ -798,8 +839,8 @@ paths:
                                                 - provider_config_key
                                                 - created
                                                 - metadata
+                                                - tags
                                                 - errors
-                                                - end_user
                                             properties:
                                                 id:
                                                     type: integer
@@ -821,6 +862,8 @@ paths:
                                                         - type: object
                                                         - type: 'null'
                                                     description: Custom metadata attached to the connection
+                                                tags:
+                                                    $ref: '#/components/schemas/Tags'
                                                 errors:
                                                     type: array
                                                     items:
@@ -830,6 +873,7 @@ paths:
                                                         - Connection credentials are invalid (type=auth)
                                                         - Last sync for the connection has failed (type=sync)
                                                 end_user:
+                                                    deprecated: true
                                                     anyOf:
                                                         - $ref: '#/components/schemas/ConnectionEndUser'
                                                         - type: 'null'
@@ -887,8 +931,13 @@ paths:
                                                   type: string
                                               installation_id:
                                                   type: string
+                                tags:
+                                    $ref: '#/components/schemas/Tags'
                                 end_user:
-                                    $ref: '#/components/schemas/EndUser'
+                                    allOf:
+                                        - $ref: '#/components/schemas/EndUser'
+                                    deprecated: true
+                                    description: Deprecated, use tags instead
             responses:
                 '200':
                     description: Successfully created an integrations
@@ -983,8 +1032,13 @@ paths:
                         schema:
                             type: object
                             properties:
+                                tags:
+                                    $ref: '#/components/schemas/Tags'
                                 end_user:
-                                    $ref: '#/components/schemas/EndUser'
+                                    allOf:
+                                        - $ref: '#/components/schemas/EndUser'
+                                    deprecated: true
+                                    description: Deprecated, use tags instead
             responses:
                 '200':
                     description: Successfully updated the connection
@@ -1435,10 +1489,92 @@ paths:
                                                             type: string
                                                             description: The current cursor of the record. Use this to fetch records updated after this record
                                                             example: 'MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=='
+                                                        pruned_at:
+                                                            anyOf:
+                                                                - type: string
+                                                                  format: date-time
+                                                                - type: 'null'
+                                                            description: The timestamp at which the record payload was pruned (emptied)
                                     next_cursor:
                                         type: string
                                         description: The base64-encoded cursor for pagination
                                         example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+
+    /records/prune:
+        patch:
+            summary: Prune records
+            description: |-
+                Prunes synced records for a given connection and model using cursor-based pagination.
+
+                **What is pruning:**
+                Pruning empties the record payload while preserving the record metadata.
+
+                **Cursor behavior:**
+                Records are pruned up to and including the specified cursor.
+            parameters:
+                - name: Connection-Id
+                  in: header
+                  required: true
+                  description: The connection ID used to create the connection.
+                  schema:
+                      type: string
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - model
+                                - until_cursor
+                            properties:
+                                model:
+                                    type: string
+                                    description: The data model to prune records from
+                                variant:
+                                    type: string
+                                    description: The variant of the model
+                                until_cursor:
+                                    type: string
+                                    description: Prune all records up to and including this cursor. Use the cursor value from _nango_metadata.cursor of the record you want to prune up to.
+                                limit:
+                                    type: integer
+                                    minimum: 1
+                                    maximum: 10000
+                                    description: The maximum number of records to prune in this request. Defaults to 1000.
+
+            responses:
+                '200':
+                    description: Successfully pruned records
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - count
+                                    - has_more
+                                properties:
+                                    count:
+                                        type: integer
+                                        description: The number of records pruned in this request
+                                        example: 150
+                                    has_more:
+                                        type: boolean
+                                        description: |-
+                                            Indicates if there are potentially more records to prune.
+                                            - `true`: There may be more records that need pruning
+                                            - `false`: All records up to the cursor have been pruned
+                                        example: true
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -1485,10 +1621,22 @@ paths:
                                                       type: string
                                                       description: The variant name
                                               example: { 'name': 'github-issues', 'variant': 'custom-variant' }
+                                opts:
+                                    type: object
+                                    description: Options for the sync trigger.
+                                    properties:
+                                        reset:
+                                            type: boolean
+                                            description: If true, resets the "lastSyncDate" before triggering (equivalent to a full resync).
+                                        emptyCache:
+                                            type: boolean
+                                            description: If true, deletes all records associated with the sync before triggering.
                                 sync_mode:
+                                    deprecated: true
                                     type: string
                                     enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
                                     description: |
+                                        Deprecated. Use `opts` instead.
                                         The mode in which to trigger the syncs.
                                         - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
                                         - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
@@ -1496,7 +1644,7 @@ paths:
                                 full_resync:
                                     deprecated: true
                                     type: boolean
-                                    description: Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                    description: Deprecated. Use `opts.reset` instead. Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
 
             responses:
                 '200':
@@ -2652,7 +2800,8 @@ components:
                             'JWT',
                             'BILL',
                             'TWO_STEP',
-                            'SIGNATURE'
+                            'SIGNATURE',
+                            'INSTALL_PLUGIN'
                         ]
                 proxy:
                     properties:
@@ -2912,11 +3061,14 @@ components:
 
         ConnectSessionInput:
             type: object
-            required:
-                - end_user
             properties:
+                tags:
+                    $ref: '#/components/schemas/Tags'
                 end_user:
-                    $ref: '#/components/schemas/EndUser'
+                    allOf:
+                        - $ref: '#/components/schemas/EndUser'
+                    deprecated: true
+                    description: Deprecated, use tags instead
                 organization:
                     type: object
                     deprecated: true
@@ -2955,6 +3107,12 @@ components:
                                     oauth_scopes_override:
                                         type: string
                                         description: Override oauth scopes
+                                    oauth_client_id_override:
+                                        type: string
+                                        description: Set to empty string to allow end-users to provide their own OAuth client ID in Connect UI
+                                    oauth_client_secret_override:
+                                        type: string
+                                        description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
                             credentials:
                                 type: object
                                 description: Pre-populated credential values (hidden fields in Connect UI)
@@ -2981,6 +3139,8 @@ components:
                     type: string
                 integration_id:
                     type: string
+                tags:
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/tags'
                 end_user:
                     $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
                 organization:
@@ -3366,27 +3526,40 @@ components:
                     enum: [NONE]
 
         ## ---------------------- Connection
+        Tags:
+            type: object
+            description: Connection tags (key/value strings). Keys are normalized to lowercase.
+            maxProperties: 10
+            additionalProperties:
+                type: string
+                maxLength: 255
         ConnectionEndUser:
             type: object
+            deprecated: true
             required:
                 - id
             properties:
                 id:
                     type: string
                     description: Uniquely identifies the end user.
+                    deprecated: true
                 email:
                     anyOf:
                         - type: string
                         - type: 'null'
+                    deprecated: true
                 display_name:
                     anyOf:
                         - type: string
                         - type: 'null'
+                    deprecated: true
                 tags:
                     type: object
                     additionalProperties: true
                     description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
+                    deprecated: true
                 organization:
+                    deprecated: true
                     anyOf:
                         - type: object
                           required:
@@ -3402,22 +3575,27 @@ components:
                         - type: 'null'
         EndUser:
             type: object
+            deprecated: true
             required:
                 - id
             properties:
                 id:
                     type: string
                     description: Uniquely identifies the end user.
+                    deprecated: true
                 email:
                     type: string
+                    deprecated: true
                 display_name:
                     type: string
+                    deprecated: true
                 tags:
                     type: object
                     additionalProperties:
                         type: string
                         maxLength: 64
                     description: Tags associated with the end user. Only accepts strings values, up to 64 keys.
+                    deprecated: true
         ConnectionError:
             type: object
             required:
@@ -3439,9 +3617,9 @@ components:
                 - provider_config_key
                 - provider
                 - errors
-                - end_user
                 - metadata
                 - connection_config
+                - tags
                 - created_at
                 - updated_at
                 - last_fetched_at
@@ -3460,6 +3638,7 @@ components:
                     items:
                         $ref: '#/components/schemas/ConnectionError'
                 end_user:
+                    deprecated: true
                     anyOf:
                         - $ref: '#/components/schemas/ConnectionEndUser'
                         - type: 'null'
@@ -3469,6 +3648,8 @@ components:
                 connection_config:
                     type: object
                     additionalProperties: true
+                tags:
+                    $ref: '#/components/schemas/Tags'
                 created_at:
                     type: string
                 updated_at:

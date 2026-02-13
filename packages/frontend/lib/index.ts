@@ -226,7 +226,7 @@ export default class Nango {
                     return;
                 }
 
-                if (this.win.modal.window && !this.win.modal.closed) {
+                if (!this.win.modal.closed) {
                     return;
                 }
 
@@ -425,7 +425,8 @@ export default class Nango {
 
     private async triggerAuth({
         authUrl,
-        credentials
+        credentials,
+        assertionOption
     }: {
         authUrl: string;
         credentials?:
@@ -440,13 +441,22 @@ export default class Nango {
             | SignatureCredentials
             | AwsSigV4Credentials
             | undefined;
+        assertionOption?: Record<string, string>;
     }): Promise<AuthSuccess> {
+        const body: Record<string, any> = {};
+        if (credentials) {
+            Object.assign(body, credentials);
+        }
+        if (assertionOption && Object.keys(assertionOption).length > 0) {
+            body['assertionOption'] = assertionOption;
+        }
+
         const res = await fetch(authUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            ...(credentials ? { body: JSON.stringify(credentials) } : {})
+            ...(Object.keys(body).length > 0 ? { body: JSON.stringify(body) } : {})
         });
 
         if (!res.ok) {
@@ -479,9 +489,11 @@ export default class Nango {
         }
 
         if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
+            const assertionOption = connectionConfig?.assertionOption as Record<string, any> | undefined;
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as TwoStepCredentials
+                credentials: credentials as unknown as TwoStepCredentials,
+                ...(assertionOption ? { assertionOption } : {})
             });
         }
 
@@ -603,6 +615,10 @@ export default class Nango {
                 }
                 if ('oauth_client_secret_override' in credentials) {
                     query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
+                }
+
+                if ('oauth_refresh_token_override' in credentials) {
+                    query.push(`credentials[oauth_refresh_token_override]=${encodeURIComponent(credentials.oauth_refresh_token_override)}`);
                 }
 
                 if ('token_id' in credentials) {

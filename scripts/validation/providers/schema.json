@@ -11,6 +11,10 @@
                 "alias": {
                     "type": "string"
                 },
+                "assertion": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "display_name": {
                     "type": "string"
                 },
@@ -50,8 +54,13 @@
                         "SIGNATURE",
                         "MCP_OAUTH2",
                         "MCP_OAUTH2_GENERIC",
-                        "AWS_SIGV4"
+                        "AWS_SIGV4",
+                        "INSTALL_PLUGIN"
                     ]
+                },
+                "auth_type": {
+                    "type": "string",
+                    "enum": ["BASIC"]
                 },
                 "authorization_method": {
                     "type": "string",
@@ -180,6 +189,9 @@
                     "type": "string"
                 },
                 "docs_connect": {
+                    "type": "string"
+                },
+                "setup_guide_url": {
                     "type": "string"
                 },
                 "post_connection_script": {
@@ -458,7 +470,8 @@
                                 "client_credentials",
                                 "urn:ietf:params:oauth:grant-type:saml2-bearer",
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
-                                "password"
+                                "password",
+                                "refresh_token"
                             ]
                         },
                         "request": {
@@ -479,7 +492,7 @@
                 },
                 "token_response": {
                     "type": "object",
-                    "additionalProperties": true,
+                    "additionalProperties": false,
                     "properties": {
                         "token": {
                             "type": "string"
@@ -488,6 +501,9 @@
                             "type": "string"
                         },
                         "token_expiration_strategy": {
+                            "type": "string"
+                        },
+                        "refresh_token": {
                             "type": "string"
                         }
                     }
@@ -652,6 +668,9 @@
                             "additionalProperties": false,
                             "required": ["type", "title", "description"],
                             "properties": {
+                                "automated": {
+                                    "type": "boolean"
+                                },
                                 "type": {
                                     "type": "string",
                                     "enum": ["string"]
@@ -690,6 +709,49 @@
                                 },
                                 "optional": {
                                     "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "assertion_option": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[a-zA-Z_]+$": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "title", "description"],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["string"]
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "example": {
+                                    "type": "string"
+                                },
+                                "pattern": {
+                                    "type": "string"
+                                },
+                                "format": {
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
+                                },
+                                "default_value": {
+                                    "type": "string"
+                                },
+                                "suffix": {
+                                    "type": "string"
+                                },
+                                "doc_section": {
+                                    "type": "string",
+                                    "pattern": "^#[a-z0-9-]+$"
                                 }
                             }
                         }

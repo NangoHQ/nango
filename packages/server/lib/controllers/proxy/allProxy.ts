@@ -213,7 +213,11 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
                 freshConnection = credentialResponse.value;
                 return freshConnection;
-            }
+            },
+            getIntegrationConfig: () => ({
+                oauth_client_id: integration.oauth_client_id,
+                oauth_client_secret: integration.oauth_client_secret
+            })
         });
 
         let success = false;
@@ -299,13 +303,12 @@ export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
     return forwardedHeaders;
 }
 
-async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
+export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
     const contentType = responseStream.headers['content-type'] || '';
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
     const contentEncoding = responseStream.headers['content-encoding'] || '';
 
-    const isJsonResponse = contentType.includes('application/json');
     const isChunked = transferEncoding === 'chunked';
     const isEncoded = Boolean(contentEncoding);
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
@@ -341,30 +344,22 @@ async function handleResponse({ res, responseStream, logCtx }: { res: Response; 
             return;
         }
 
-        if (!isJsonResponse) {
-            res.send(Buffer.concat(responseData));
-            await logCtx.success();
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
-            return;
+        if (typeof contentType === 'string' && contentType !== '') {
+            res.setHeader('Content-Type', contentType);
         }
 
         try {
-            const parsedResponse = JSON.parse(Buffer.concat(responseData).toString());
-
-            res.json(parsedResponse);
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
-            await logCtx.success();
+            res.send(Buffer.concat(responseData));
         } catch (err) {
-            logger.error(err);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
-
-            void logCtx.error('Failed to parse JSON response', { error: err });
+            void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
-        } finally {
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
+            return;
         }
+
+        await logCtx.success();
+        metrics.increment(metrics.Types.PROXY_SUCCESS);
+        metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
     });
 }
 

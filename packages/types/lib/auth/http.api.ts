@@ -103,6 +103,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
         token_secret: string;
         oauth_client_id_override?: string | undefined;
         oauth_client_secret_override?: string | undefined;
+        oauth_refresh_token_override?: string | undefined;
     };
     Querystring: ConnectionQueryString;
     Params: {

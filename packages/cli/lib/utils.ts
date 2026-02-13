@@ -17,7 +17,7 @@ import { cloudHost } from './constants.js';
 import { state } from './state.js';
 import { NANGO_VERSION } from './version.js';
 
-import type { GetPublicConnection, GetPublicIntegration } from '@nangohq/types';
+import type { GetEnvironments, GetPublicConnection, GetPublicIntegration } from '@nangohq/types';
 import type { PackageJson } from 'type-fest';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -210,6 +210,22 @@ export async function getConfig(providerConfigKey: string, debug = false): Promi
     try {
         const res = await http.get(url, { headers });
         return res.data as GetPublicIntegration['Success'];
+    } catch (err) {
+        console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+        return;
+    }
+}
+
+export async function getEnvironments(debug = false): Promise<GetEnvironments['Success'] | undefined> {
+    const url = process.env['NANGO_HOSTPORT'] + `/api/v1/environments`;
+    const headers = enrichHeaders();
+    if (debug) {
+        printDebug(`getEnvironments endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
+    }
+
+    try {
+        const res = await http.get(url, { headers });
+        return res.data as GetEnvironments['Success'];
     } catch (err) {
         console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
         return;

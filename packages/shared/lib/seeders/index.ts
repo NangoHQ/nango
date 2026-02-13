@@ -1,6 +1,7 @@
 export * from './account.seeder.js';
 export * from './config.seeder.js';
 export * from './connection.seeder.js';
+export * from './connectSession.seeder.js';
 export * from './endUser.seeder.js';
 export * from './environment.seeder.js';
 export * from './global.seeder.js';

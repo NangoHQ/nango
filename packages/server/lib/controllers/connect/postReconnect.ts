@@ -3,7 +3,7 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { EndUserMapper, configService, connectionService, getEndUser } from '@nangohq/shared';
+import { EndUserMapper, buildTagsFromEndUser, configService, connectionService, getEndUser } from '@nangohq/shared';
 import { connectUrl, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { bodySchema as originalBodySchema, checkIntegrationsExist } from './postSessions.js';
@@ -20,7 +20,8 @@ const bodySchema = z
         end_user: originalBodySchema.shape.end_user.optional(),
         organization: originalBodySchema.shape.organization,
         integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
-        overrides: originalBodySchema.shape.overrides.optional()
+        overrides: originalBodySchema.shape.overrides.optional(),
+        tags: originalBodySchema.shape.tags
     })
     .strict();
 
@@ -58,19 +59,16 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
             };
         }
 
-        if (!connection.end_user_id) {
-            return {
-                status: 400,
-                response: { error: { code: 'invalid_body', message: "Can't update a connection that was not created with a session token" } }
-            };
+        let endUser = null;
+        if (connection.end_user_id) {
+            const endUserRes = await getEndUser(trx, { id: connection.end_user_id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
+            if (endUserRes.isErr()) {
+                return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
+            }
+            endUser = endUserRes.value;
         }
-
-        const endUserRes = await getEndUser(trx, { id: connection.end_user_id, accountId: account.id, environmentId: environment.id }, { forUpdate: true });
-        if (endUserRes.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: endUserRes.error.message } } };
-        }
-
-        const endUser = endUserRes.value;
+        const endUserTags = buildTagsFromEndUser(body.end_user, body.organization);
+        const tags = { ...endUserTags, ...body.tags };
 
         if (body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
@@ -107,7 +105,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserId: endUser.id,
+            endUserId: endUser?.id ?? null,
             endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
             accountId: account.id,
             environmentId: environment.id,
@@ -126,7 +124,8 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                   )
                 : null,
             operationId: logCtx.id,
-            overrides: body.overrides || null
+            overrides: body.overrides || null,
+            tags
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

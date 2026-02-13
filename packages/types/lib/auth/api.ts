@@ -18,6 +18,7 @@ export interface AuthModes {
     MCP_OAUTH2: 'MCP_OAUTH2';
     MCP_OAUTH2_GENERIC: 'MCP_OAUTH2_GENERIC';
     AwsSigV4: 'AWS_SIGV4';
+    InstallPlugin: 'INSTALL_PLUGIN';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -188,6 +189,11 @@ export interface AwsSigV4Credentials extends CredentialsCommon {
     external_id?: string | undefined;
 }
 
+export interface InstallPluginCredentials {
+    type: AuthModes['Basic']; // we will have this for now, open to others like API_KEY if its implemented
+    [key: string]: any;
+}
+
 export interface CombinedOauth2AppCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
     app: AppCredentials;
@@ -230,4 +236,5 @@ export type AllAuthCredentials =
     | TwoStepCredentials
     | CombinedOauth2AppCredentials
     | SignatureCredentials
-    | AwsSigV4Credentials;
+    | AwsSigV4Credentials
+    | InstallPluginCredentials;

@@ -1,19 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { sendAsyncActionWebhook } from './asyncAction.js';
+import { TestWebhookServer } from './helpers/test.js';
 
-import type { DBEnvironment, DBExternalWebhook } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBExternalWebhook } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
+
+const testServer = new TestWebhookServer(4100);
 
 const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
-    primary_url: 'http://example.com/webhook',
-    secondary_url: 'http://example.com/webhook-secondary',
+    primary_url: testServer.primaryUrl,
+    secondary_url: testServer.secondaryUrl,
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
@@ -24,11 +27,20 @@ const webhookSettings: DBExternalWebhook = {
 };
 const environment = {
     name: 'dev',
-    id: 1,
-    secret_key: 'secret'
+    id: 1
 } as DBEnvironment;
 
+const secret = 'secret' as DBAPISecret['secret'];
+
 describe('AsyncAction webhookds', () => {
+    beforeAll(async () => {
+        await testServer.start();
+    });
+
+    afterAll(async () => {
+        await testServer.stop();
+    });
+
     beforeEach(() => {
         vi.resetAllMocks();
     });
@@ -40,7 +52,7 @@ describe('AsyncAction webhookds', () => {
         );
         await sendAsyncActionWebhook({
             connectionId: '123',
-            environment,
+            secret,
             providerConfigKey: 'some-provider',
             webhookSettings: {
                 ...webhookSettings,
@@ -59,7 +71,7 @@ describe('AsyncAction webhookds', () => {
         );
         const props = {
             connectionId: '123',
-            environment,
+            secret,
             providerConfigKey: 'some-provider',
             webhookSettings: {
                 ...webhookSettings,
@@ -81,10 +93,22 @@ describe('AsyncAction webhookds', () => {
         };
         const bodyString = stringifyStable(body).unwrap();
         expect(spy).toHaveBeenNthCalledWith(1, webhookSettings.primary_url, bodyString, {
-            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json', 'user-agent': expect.stringContaining('nango/') }
+            headers: {
+                'X-Nango-Signature': expect.toBeSha256(),
+                'X-Nango-Hmac-Sha256': expect.toBeSha256(),
+                'content-type': 'application/json',
+                'user-agent': expect.stringContaining('nango/')
+            },
+            timeout: expect.any(Number)
         });
         expect(spy).toHaveBeenNthCalledWith(2, webhookSettings.secondary_url, bodyString, {
-            headers: { 'X-Nango-Signature': expect.any(String), 'content-type': 'application/json', 'user-agent': expect.stringContaining('nango/') }
+            headers: {
+                'X-Nango-Signature': expect.toBeSha256(),
+                'X-Nango-Hmac-Sha256': expect.toBeSha256(),
+                'content-type': 'application/json',
+                'user-agent': expect.stringContaining('nango/')
+            },
+            timeout: expect.any(Number)
         });
     });
 });
