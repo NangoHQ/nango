@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { SimpleCodeBlock } from '@/components-v2/SimpleCodeBlock';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Checkbox } from '@/components-v2/ui/checkbox';
@@ -18,7 +19,7 @@ import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
 import { getLogsUrl } from '@/utils/logs';
-import { formatDateToUSFormat, formatFrequency, formatQuantity, interpretNextRun, truncateMiddle } from '@/utils/utils';
+import { formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand, SyncResponse } from '@/types';
 import type { ApiConnectionFull, GetConnection, GetIntegration } from '@nangohq/types';
@@ -167,17 +168,36 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
                 {/* Last Execution */}
                 <TableCell>
-                    <StatusBadge sync={sync} />
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <StatusBadge sync={sync} />
+                        </TooltipTrigger>
+                        {sync.latest_sync && <TooltipContent>{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</TooltipContent>}
+                    </Tooltip>
                 </TableCell>
 
                 {/* Frequency */}
                 <TableCell>{formatFrequency(sync.frequency)}</TableCell>
 
                 {/* Records */}
-                <TableCell>{recordCount}</TableCell>
+                <TableCell>
+                    <Tooltip>
+                        <TooltipTrigger>{recordCount}</TooltipTrigger>
+                        <TooltipContent className="p-2">
+                            <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.record_count, null, 2)}</SimpleCodeBlock>
+                        </TooltipContent>
+                    </Tooltip>
+                </TableCell>
 
                 {/* Last Sync Start */}
-                <TableCell>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TableCell>
+                <TableCell>
+                    <Tooltip>
+                        <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
+                        <TooltipContent className="p-2">
+                            <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.latest_sync?.result, null, 2)}</SimpleCodeBlock>
+                        </TooltipContent>
+                    </Tooltip>
+                </TableCell>
 
                 {/* Next Sync Start */}
                 <TableCell>
