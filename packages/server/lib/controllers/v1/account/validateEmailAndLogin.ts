@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
-import { userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { accountService, userService } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../formatters/user.js';
@@ -67,6 +68,12 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
 
     await userService.verifyUserEmail(user.id);
 
+    let showHearAboutUs = false;
+    const account = await accountService.getAccountById(db.knex, user.account_id);
+    if (account) {
+        showHearAboutUs = await accountService.shouldShowHearAboutUs(account);
+    }
+
     req.login(user, function (err) {
         if (err) {
             logger.error('Error logging in user');
@@ -74,6 +81,6 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
             return;
         }
 
-        res.status(200).send({ user: userToAPI(user) });
+        res.status(200).send({ user: userToAPI(user), showHearAboutUs });
     });
 });

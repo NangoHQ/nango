@@ -48,6 +48,8 @@ export const EmailVerified: React.FC = () => {
                 }
 
                 const user: ValidateEmailAndLogin['Success']['user'] = response['user'];
+                const showHearAboutUs = response['showHearAboutUs'] === true;
+
                 analyticsTrack('web:account_signup', {
                     user_id: user.id,
                     email: user.email,
@@ -57,7 +59,11 @@ export const EmailVerified: React.FC = () => {
 
                 signin(user);
                 toast({ title: 'Email verified successfully!', variant: 'success' });
-                navigate(`/${env}/getting-started`);
+                if (showHearAboutUs) {
+                    navigate('/onboarding/hear-about-us');
+                } else {
+                    navigate(`/${env}/getting-started`);
+                }
             } catch {
                 setErrorMessage('An error occurred while verifying the email. Please try again.');
             }
