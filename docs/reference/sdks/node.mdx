@@ -861,6 +861,7 @@ const scriptsConfig = await nango.getScriptsConfig();
                         ]
                     }
                 ],
+                "sync_type": "FULL", // DEPRECATED
                 "runs": "every half hour",
                 "track_deletes": false,
                 "auto_start": false,
@@ -1607,7 +1608,7 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
             "name": "<string>",
             "variant": "<string>",
             "status": "RUNNING",
-            "type": "INCREMENTAL",
+            "type": "INCREMENTAL", // DEPRECATED
             "finishedAt": "<string>",
             "nextScheduledSyncAt": "<string>",
             "frequency": "<string>",
