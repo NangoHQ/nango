@@ -1422,6 +1422,33 @@ atlassian-service-account-oauth2:
             secret: true
             doc_section: '#step-1-creating-oauth-client-credentials'
 
+attention:
+    display_name: Attention
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.attention.tech
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2/conversations?size=1
+    docs: https://nango.dev/docs/api-integrations/attention
+    docs_connect: https://nango.dev/docs/api-integrations/attention/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Attention API key.
+            example: eyJhbGciOi***.eyJzdWIiOi***.xxxxxxxxxxxx
+            pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$'
+            doc_section: '#step-1-obtaining-your-api-key'
+
 attio:
     display_name: Attio
     categories:
@@ -11044,6 +11071,33 @@ oracle-cloud-identity:
             suffix: .identity.oraclecloud.com
             order: 1
             doc_section: '#step-1-finding-your-service-instance'
+
+ordinal:
+    display_name: Ordinal
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.tryordinal.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/workspace
+    docs: https://nango.dev/docs/api-integrations/ordinal
+    docs_connect: https://nango.dev/docs/api-integrations/ordinal/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ordinal API key.
+            example: ord_*************
+            pattern: '^ord_[A-Za-z0-9-_]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 ory:
     display_name: Ory

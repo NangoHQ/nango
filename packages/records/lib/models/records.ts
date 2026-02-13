@@ -1115,36 +1115,41 @@ export async function deleteCount(
 export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: number }): Promise<
     Result<{
         partition: number;
+        environmentId: number;
         connectionId: number;
         model: string;
         cursor: string;
     } | null>
 > {
-    // Pick a random partition
     const partition = Math.floor(Math.random() * 256);
-
+    const table = `${RECORDS_TABLE}_p${partition}`;
     try {
-        // Find a record that is stale in that partition
         const [candidate] = await db
-            .from(`${RECORDS_TABLE}_p${partition}`)
-            .select<{ id: string; connection_id: number; model: string; last_modified_at: string }[]>(
-                // PostgreSQL stores timestamp with microseconds precision
-                // however, javascript date only supports milliseconds precision
-                // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
+            .from(table)
+            .select<{ id: string; environment_id: number | null; connection_id: number; model: string; last_modified_at: string }[]>(
                 db.raw(`
-                    id,
-                    connection_id,
-                    model,
-                    to_json(updated_at) as last_modified_at
+                    ${table}.id,
+                    ${table}.connection_id,
+                    ${table}.model,
+                    record_counts.environment_id,
+                    to_json(${table}.updated_at) as last_modified_at
                 `)
             )
-            .whereNull('pruned_at')
-            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
+            .leftJoin('record_counts', function () {
+                this.on(`${table}.connection_id`, 'record_counts.connection_id').andOn(`${table}.model`, 'record_counts.model');
+            })
+            .whereNull(`${table}.pruned_at`)
+            .whereRaw(`${table}.updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
             .limit(1);
-
         if (candidate) {
+            if (candidate.environment_id === null) {
+                return Err(
+                    new Error(`Missing record_counts entry for connection_id=${candidate.connection_id} model=${candidate.model} in partition ${partition}`)
+                );
+            }
             return Ok({
                 partition,
+                environmentId: candidate.environment_id,
                 connectionId: candidate.connection_id,
                 model: candidate.model,
                 cursor: Cursor.new(candidate)
