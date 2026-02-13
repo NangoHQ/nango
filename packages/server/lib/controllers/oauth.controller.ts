@@ -281,6 +281,7 @@ class OAuthController {
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
+                    req,
                     res,
                     connectionConfig,
                     authorizationParams,
@@ -592,6 +593,7 @@ class OAuthController {
         provider,
         providerConfig,
         session,
+        req,
         res,
         connectionConfig,
         authorizationParams,
@@ -602,6 +604,7 @@ class OAuthController {
         provider: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         authorizationParams: Record<string, string | undefined>;
@@ -668,8 +671,9 @@ class OAuthController {
                 let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
                     scope: scopes,
-                    state: session.id,
-                    ...allAuthParams
+                    ...allAuthParams,
+                    // Security: `state` comes last. It cannot be overriden by allAuthParams.
+                    state: session.id
                 });
 
                 if (provider?.authorization_url_skip_encode?.includes('scopes')) {
@@ -727,6 +731,12 @@ class OAuthController {
                     scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
+                const stateCookie = `oauth2-${session.id}`;
+                res.cookie(stateCookie, '1', {
+                    maxAge: 60 * 60 * 1000, // 1h
+                    secure: req.secure, // Note: Relies on app.set('trust proxy', true).
+                    httpOnly: true
+                });
                 res.redirect(authorizationUri);
             } else {
                 const grantType = provider.token_params.grant_type;
@@ -1077,7 +1087,7 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
-        const state = req.query['state'] || req.query['payload']; // for crisp plugin install
+        const state = (req.query['state'] || req.query['payload']) as string | undefined; // for crisp plugin install
 
         const installation_id = req.query['installation_id'] as string | undefined;
         const action = req.query['setup_action'] as string;
@@ -1086,9 +1096,8 @@ class OAuthController {
             res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
             return;
         }
-        if (state == null) {
+        if (!state) {
             const err = new Error('No state found in callback');
-
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: err.message });
             return;
@@ -1096,7 +1105,7 @@ class OAuthController {
 
         let session;
         try {
-            session = await oAuthSessionService.findById(state as string);
+            session = await oAuthSessionService.findById(state);
         } catch (err) {
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: 'invalid_oauth_state' });
@@ -1110,7 +1119,7 @@ class OAuthController {
             authHtml({ res, error: err.message });
             return;
         } else {
-            await oAuthSessionService.delete(state as string);
+            await oAuthSessionService.delete(state);
         }
 
         let logCtx: LogContext | undefined;
@@ -1309,6 +1318,17 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
+
+        const stateCookie = `oauth2-${session.id}`;
+        if (req.cookies[stateCookie] !== '1') {
+            errorManager.report(new Error('invalid_oauth_state'), { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            authHtml({ res, error: 'invalid_oauth_state' });
+            return;
+        }
+        res.clearCookie(stateCookie, {
+            secure: req.secure,
+            httpOnly: true
+        });
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
