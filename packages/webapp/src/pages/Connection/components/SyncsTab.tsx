@@ -193,9 +193,11 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell>
                     <Tooltip>
                         <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
-                        <TooltipContent className="p-2">
-                            <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.latest_sync?.result, null, 2)}</SimpleCodeBlock>
-                        </TooltipContent>
+                        {sync.latest_sync && (
+                            <TooltipContent className="p-2">
+                                <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.latest_sync.result, null, 2)}</SimpleCodeBlock>
+                            </TooltipContent>
+                        )}
                     </Tooltip>
                 </TableCell>
 
