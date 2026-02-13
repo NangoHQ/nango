@@ -23,11 +23,40 @@ export function InvalidCallbackOAuth1(): WSErr {
         message: `Did not get oauth_token and/or oauth_verifier in the callback.`
     };
 }
+const PROVIDER_ERROR_QUERY_KEYS = ['error', 'error_description', 'error_reason', 'error_uri', 'status_code', 'error_message'] as const;
 
-export function InvalidCallbackOAuth2(): WSErr {
+/**
+ * build a short provider error string from callback query parameters
+ * so the websocket error message can include it and have more context.
+ */
+function queryValueToString(value: unknown): string | null {
+    if (value == null) return null;
+    if (typeof value === 'string') return value.trim() || null;
+    if (Array.isArray(value)) {
+        const first = value[0];
+        return typeof first === 'string' ? first.trim() || null : null;
+    }
+    return null;
+}
+
+export function getProviderErrorContextFromQuery(query: Record<string, unknown> | undefined): string | undefined {
+    if (!query) return undefined;
+    const parts: string[] = [];
+    for (const key of PROVIDER_ERROR_QUERY_KEYS) {
+        const str = queryValueToString(query[key]);
+        if (str !== null) {
+            parts.push(`${key}: ${str}`);
+        }
+    }
+    return parts.length > 0 ? parts.join('; ') : undefined;
+}
+
+export function InvalidCallbackOAuth2(providerContext?: string): WSErr {
+    const base = 'Did not get authorization code in the callback.';
+    const message = providerContext ? `${base} Provider error: ${providerContext}` : base;
     return {
         type: 'callback_err',
-        message: `Did not get authorization code in the callback.`
+        message
     };
 }
 

@@ -27,6 +27,9 @@ const de: Translation = {
         success: 'Erfolgreich!',
         successMessage: 'Sie haben Ihre {provider}-Integration erfolgreich eingerichtet.',
         connectionFailed: 'Verbindung fehlgeschlagen',
+        connectionErrorGeneric: 'Bei der Autorisierung ist ein Fehler aufgetreten. Bitte wenden Sie sich an unser Support-Team.',
+        showErrorDetails: 'Fehlerdetails anzeigen',
+        hideErrorDetails: 'Fehlerdetails ausblenden',
         tryAgain: 'Bitte versuchen Sie es erneut',
         backToList: 'Zurück zur Integrationsliste',
         willConnect: 'Wir werden Sie mit {provider} verbinden',
@@ -34,6 +37,7 @@ const de: Translation = {
         popupBlocked: 'Das Popup wurde von Ihrem Browser blockiert. Bitte erlauben Sie Popups',
         popupClosed: 'Das Auth-Popup wurde vor Ende des Prozesses geschlossen, bitte versuchen Sie es erneut',
         closeTab: 'Sie können diesen Tab jetzt schließen.',
+        authorizationFailed: 'Autorisierung fehlgeschlagen.',
         invalidCredentials: '{provider} hat Ihre Anmeldedaten nicht validiert. Bitte überprüfen Sie die Werte und versuchen Sie es erneut.',
         resourceCapped: 'Sie haben die maximale Anzahl erlaubter Verbindungen erreicht. Bitte wenden Sie sich an den Administrator.',
         invalidPreconfigured: 'Ein vom Administrator festgelegtes vorkonfiguriertes Feld ist ungültig, bitte wenden Sie sich an den Support'
