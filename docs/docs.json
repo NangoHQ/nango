@@ -59,6 +59,26 @@
     }
   },
   "redirects": [
+    {
+      "source": "/introduction",
+      "destination": "/"
+    },
+    {
+      "source": "/changelog/overview",
+      "destination": "/updates/product"
+    },
+    {
+      "source": "/changelog/dev-updates",
+      "destination": "/updates/dev"
+    },
+    {
+      "source": "/guides/mcp",
+      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    },
+    {
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    }
   ],
   "navigation": {
     "tabs": [
