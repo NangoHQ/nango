@@ -31,7 +31,7 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "axios": "1.12.0",
+        "axios": "1.13.4",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
         "get-port": "7.1.0",
