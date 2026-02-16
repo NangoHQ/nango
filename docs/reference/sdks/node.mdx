@@ -280,11 +280,11 @@ const { data } = await nango.createConnectSession({
 
 <Expandable>
 
-  <ResponseField name="end_user" type="object">
+  <ResponseField name="end_user" type="object" deprecated>
     Deprecated. Use `tags` instead.
   </ResponseField>
 
-  <ResponseField name="organization" type="object">
+  <ResponseField name="organization" type="object" deprecated>
     Deprecated. Use `tags` instead.
     <Expandable title="organization" defaultOpen>
       <ResponseField name="id" type="string" required>
@@ -380,11 +380,11 @@ const { data } = await nango.createReconnectSession({
     Optional. Tags to apply to the connection during reconnection.
   </ResponseField>
 
-  <ResponseField name="end_user" type="object">
+  <ResponseField name="end_user" type="object" deprecated>
     Deprecated. Use `tags` instead.
   </ResponseField>
 
-  <ResponseField name="organization" type="object">
+  <ResponseField name="organization" type="object" deprecated>
     Deprecated. Use `tags` instead.
     <Expandable title="organization">
       <ResponseField name="id" type="string" required>
@@ -438,7 +438,7 @@ await nango.listConnections({
             <ResponseField name="connectionId" type="string">
                 Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
             </ResponseField>
-            <ResponseField name="userId" type="string">
+            <ResponseField name="userId" type="string" deprecated>
                 Deprecated. Prefer filtering connections using `tags` instead (e.g. `end_user_id`).
             </ResponseField>
             <ResponseField name="integrationId" type="string">
@@ -584,7 +584,34 @@ await nango.patchConnection({
 
 <Expandable>
     <ResponseField name="body" type="PatchPublicConnection['Body']" required>
-        The body of the connection (see [API Reference](/reference/api/connections/patch))
+        The body of the connection (see [API Reference](/reference/api/connections/patch)).
+        <Expandable title="body" defaultOpen>
+            <ResponseField name="tags" type="object">
+                Connection tags (key/value strings). Keys are normalized to lowercase.
+                <Expandable title="tags">
+                    <ResponseField name="{key}" type="string">
+                          Maximum string length: 255
+                    </ResponseField>
+                </Expandable>
+            </ResponseField>
+            <ResponseField name="end_user" type="object" deprecated>
+                Deprecated. Use tags instead
+                <Expandable title="end_user">
+                    <ResponseField name="id" type="string" deprecated>
+                        Deprecated. Uniquely identifies the end user.
+                    </ResponseField>
+                    <ResponseField name="email" type="string" deprecated>
+                        Deprecated. The email address of the end user.
+                    </ResponseField>
+                    <ResponseField name="display_name" type="string" deprecated>
+                        Deprecated. The display name of the end user.
+                    </ResponseField>
+                    <ResponseField name="tags" type="object" deprecated>
+                        Deprecated. Tags associated with the end user. Only accepts string values, up to 64 keys.
+                    </ResponseField>
+                </Expandable>
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -1334,8 +1361,8 @@ const records = await nango.listRecords<ModelName>({
         An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
       </ResponseField>
 
-      <ResponseField name="delta" type="string">
-        DEPRECATED (use modifiedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+      <ResponseField name="delta" type="string" deprecated>
+        Deprecated. (use modifiedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
       </ResponseField>
     </Expandable>
   </ResponseField>
