@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.34] - 2026-02-16
+
+### Added
+
+- *(integrations)* Add support for attention (#5442) by @hassan254-prog
+- *(integrations)* Add support for ordinal (#5444) by @hassan254-prog
+- Add ninjaone-rmm-oauth2 provider for Authorization Code flow (#5429) by @kmalkan
+- *(integrations)* Add support for glyphic (#5456) by @hassan254-prog
+- Add partial index (pruned_at IS NULL) to records table (#5457) by @TBonnin
+- *(webapp)* Move env-agnostic routes (#5371) by @kaposke
+- *(cli)* Add --no-dependency-update flag to skip automatic dependency management (#5460) by @agusayerza
+
+### Changed
+
+- Records Cache implementation guide (#5433) by @bastienbeurier
+- Deprecate sync type (#5312) by @TBonnin
+- Documentation update (#5453) by @agusayerza
+
+### Fixed
+
+- Replace TRPCClientError with more user-friendly msg (#5347) by @TBonnin
+- *(autodelete)* Non-existing sync should be considered stale (#5446) by @TBonnin
+- *(autoprune)* Records for deleted connections were not pruned (#5445) by @TBonnin
+- Upgrade body-parser package (#5451) by @TBonnin
+- Upgrade undici package (#5450) by @TBonnin
+- Upgrade lodash (#5449) by @TBonnin
+- Upgrade @modelcontextprotocol/sdk package (#5448) by @TBonnin
+- *(cli)* Fix nango generate:tests to work with the unified mocks (#5443) by @marcindobry
+- Update axios to v1.13.5 (#5447) by @TBonnin
+- *(cli)* Migration not generating request and hash (#5461) by @agusayerza
+
 ## [v0.69.33] - 2026-02-12
 
 ### Added
@@ -5889,6 +5920,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.34]: https://github.com/NangoHQ/nango/compare/v0.69.33..v0.69.34
 [v0.69.33]: https://github.com/NangoHQ/nango/compare/v0.69.32..v0.69.33
 [v0.69.32]: https://github.com/NangoHQ/nango/compare/v0.69.31..v0.69.32
 [v0.69.31]: https://github.com/NangoHQ/nango/compare/v0.69.30..v0.69.31
