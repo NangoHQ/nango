@@ -7,7 +7,7 @@ description: "Guide on how to detect deleted records with syncs"
 Sometimes you need to know when an object you are syncing has been deleted in the external system.
 
 Detecting deletes is not a universal switch.
-It differs significantly between syncs that use checkpoints (fetching only changed data) and syncs that fetch all data on every run. Pick the strategy that matches your sync approach.
+It differs significantly between syncs that use [checkpoints](/implementation-guides/use-cases/syncs/checkpoints) (fetching only changed data) and syncs that fetch all data on every run. Pick the strategy that matches your sync approach.
 
 ## Detecting deletes in syncs with checkpoints
 
@@ -27,7 +27,7 @@ If none of these are available, you cannot detect deletes with a checkpoint-base
 
 You'll either need to switch to a sync that fetches all data or skip deletion detection.
 
-Switching to fetching all data should not be done lightly. Make sure you [understand the tradeoffs](/implementation-guides/use-cases/syncs/large-datasets).
+Switching to fetching all data should not be done lightly. Make sure you [understand the tradeoffs](/implementation-guides/use-cases/syncs/checkpoints#when-to-sync-without-checkpoints).
 
 ### Example sync with checkpoint and deletion detection
 

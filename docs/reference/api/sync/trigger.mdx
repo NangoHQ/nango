@@ -5,3 +5,5 @@ openapi: 'POST /sync/trigger'
 ## Triggering one-off syncs
 
 This is especially useful if you e.g. changed the metadata for the connection and now want to re-import data.
+
+Use `reset` to clear the checkpoint and re-fetch all data, or `reset` with `emptyCache` to start completely fresh. See the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details.
