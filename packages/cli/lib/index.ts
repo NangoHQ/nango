@@ -56,7 +56,7 @@ class NangoCommand extends Command {
             const opts = actionCommand.opts<GlobalOptions>();
 
             // opts.interactive is true by default (from the option default), or false if --no-interactive is passed.
-            // We also disable it if we are in a CI environment.
+            // We also disable it and dependency updates if we are in a CI environment.
             if (isCI && opts.interactive) {
                 console.warn(
                     chalk.yellow(
@@ -65,6 +65,15 @@ class NangoCommand extends Command {
                 );
             }
             opts.interactive = opts.interactive && !isCI;
+
+            if (isCI && opts.dependencyUpdate) {
+                console.warn(
+                    chalk.yellow(
+                        "CI environment detected. Dependency updates have been automatically disabled to prevent hanging. Pass '--no-dependency-update' to silence this warning."
+                    )
+                );
+            }
+            opts.dependencyUpdate = opts.dependencyUpdate && !isCI;
 
             printDebug(`Running in ${opts.interactive ? 'interactive' : 'non-interactive'} mode.`, opts.debug);
 
