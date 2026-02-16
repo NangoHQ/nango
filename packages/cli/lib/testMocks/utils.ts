@@ -6,7 +6,7 @@ import parseLinksHeader from 'parse-link-header';
 import { vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
-import paginateService from '@nangohq/runner-sdk/lib/paginate.service.js';
+import { PaginationService } from '@nangohq/runner-sdk';
 
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
@@ -368,11 +368,10 @@ class UnifiedFixtureProvider implements FixtureProvider {
         const { method, endpoint, requestIdentityHash } = identity;
 
         const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-
-        let apiMock = this.mockData.api?.[method.toUpperCase()]?.[normalizedEndpoint];
+        let apiMock = this.mockData.api?.[method]?.[normalizedEndpoint];
 
         if (!apiMock) {
-            apiMock = this.mockData.api?.[method.toUpperCase()]?.[`/${normalizedEndpoint}`];
+            apiMock = this.mockData.api?.[method]?.[`/${normalizedEndpoint}`];
         }
 
         if (apiMock) {
@@ -559,7 +558,7 @@ class RecordingFixtureProvider implements FixtureProvider {
     async getCachedResponse(identity: ConfigIdentity) {
         const data = await this.delegate.getCachedResponse(identity);
 
-        const method = identity.method.toUpperCase();
+        const method = identity.method;
         const endpoint = identity.endpoint;
 
         if (!this.recordedData.api) this.recordedData.api = {};
@@ -779,7 +778,7 @@ class NangoActionMock {
         // For legacy mocks, use the legacy (bugged) pagination implementation to avoid breaking existing tests
         if (fixtureProvider.isUnifiedMocks()) {
             const paginationConfig = args.paginate as Pagination;
-            paginateService.validateConfiguration(paginationConfig);
+            PaginationService.validateConfiguration(paginationConfig);
             const proxyAdapter = async (config: UserProvidedProxyConfiguration): Promise<AxiosResponse> => {
                 const response = await this.proxyData(config);
                 return {
@@ -793,11 +792,11 @@ class NangoActionMock {
 
             switch (paginationConfig.type) {
                 case 'cursor':
-                    return yield* paginateService.cursor(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                    return yield* PaginationService.cursor(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
                 case 'link':
-                    return yield* paginateService.link(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                    return yield* PaginationService.link(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
                 case 'offset':
-                    return yield* paginateService.offset(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                    return yield* PaginationService.offset(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
                 default:
                     throw new Error(`Invalid pagination type: ${(paginationConfig as Pagination).type}`);
             }

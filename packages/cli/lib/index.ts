@@ -286,9 +286,8 @@ program
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
-    .option('--save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
-    .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
+    .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command) {
         const { autoConfirm, debug, interactive, integrationId, validation, saveResponses, input, lastSyncDate, variant, metadata, diagnostics } = this.opts();
