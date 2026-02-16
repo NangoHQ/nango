@@ -20,7 +20,7 @@
     "devDependencies": {
         "@nangohq/types": "0.69.34",
         "@types/json-schema": "7.0.15",
-        "axios": "1.13.4",
+        "axios": "1.13.5",
         "json-schema": "0.4.0",
         "vitest": "3.2.4"
     },

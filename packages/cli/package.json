@@ -48,7 +48,7 @@
         "@types/unzipper": "0.10.11",
         "ajv": "8.17.1",
         "ajv-errors": "3.0.0",
-        "axios": "1.13.4",
+        "axios": "1.13.5",
         "chalk": "5.4.1",
         "chokidar": "3.5.3",
         "columnify": "1.6.0",
