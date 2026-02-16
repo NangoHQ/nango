@@ -2,6 +2,7 @@ import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffectOnce } from 'react-use';
+import { useSWRConfig } from 'swr';
 
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
@@ -10,7 +11,7 @@ import { useSignin } from '../../utils/user';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
 
-import type { ValidateEmailAndLogin } from '@nangohq/types';
+import type { GetUser, ValidateEmailAndLogin } from '@nangohq/types';
 
 export const EmailVerified: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState('');
@@ -19,6 +20,7 @@ export const EmailVerified: React.FC = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
     const analyticsTrack = useAnalyticsTrack();
+    const { mutate } = useSWRConfig();
 
     const env = useStore((state) => state.env);
 
@@ -58,12 +60,11 @@ export const EmailVerified: React.FC = () => {
                 });
 
                 signin(user);
-                toast({ title: 'Email verified successfully!', variant: 'success' });
-                if (showHearAboutUs) {
-                    navigate('/onboarding/hear-about-us');
-                } else {
-                    navigate(`/${env}/getting-started`);
-                }
+                await mutate<GetUser['Success']>('/api/v1/user', { data: user }, { revalidate: false });
+                sessionStorage.setItem('show-email-verified-toast', 'true');
+
+                const redirectPath = showHearAboutUs ? '/onboarding/hear-about-us' : `/${env}/getting-started`;
+                navigate(redirectPath, { replace: true });
             } catch {
                 setErrorMessage('An error occurred while verifying the email. Please try again.');
             }

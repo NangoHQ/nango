@@ -6,6 +6,8 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 import { Button } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton';
+import { useToast } from '@/hooks/useToast';
 
 import type { GetOnboardingHearAboutUs, PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -22,8 +24,18 @@ const HEAR_ABOUT_OPTIONS: { label: string; value: PostOnboardingHearAboutUs['Bod
 export const HearAboutUs: React.FC = () => {
     const navigate = useNavigate();
     const analyticsTrack = useAnalyticsTrack();
+    const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
+            return;
+        }
+
+        sessionStorage.removeItem('show-email-verified-toast');
+        toast({ title: 'Email verified successfully!', variant: 'success' });
+    }, [toast]);
 
     useEffect(() => {
         const check = async () => {
@@ -58,7 +70,18 @@ export const HearAboutUs: React.FC = () => {
     if (loading) {
         return (
             <DefaultLayout>
-                <div className="mt-4 flex flex-col justify-center items-center min-h-[200px]" />
+                <Helmet>
+                    <title>How did you hear about Nango? - Nango</title>
+                </Helmet>
+                <div className="mt-4 flex flex-col items-center justify-center">
+                    <Skeleton className="h-8 w-80 bg-bg-subtle" />
+                    <div className="mt-10 flex w-full flex-col gap-4">
+                        {Array.from({ length: HEAR_ABOUT_OPTIONS.length }).map((_, index) => (
+                            <Skeleton key={index} className="h-12 w-full bg-bg-subtle" />
+                        ))}
+                    </div>
+                    <Skeleton className="mt-6 h-5 w-16 bg-bg-subtle" />
+                </div>
             </DefaultLayout>
         );
     }
