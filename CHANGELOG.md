@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.35] - 2026-02-16
+
+### Added
+
+- *(webapp)* New referral screen (#5426) by @agusayerza
+
+### Fixed
+
+- Bump axios to 1.13.5 (#5462) by @agusayerza
+
 ## [v0.69.34] - 2026-02-16
 
 ### Added
@@ -5920,6 +5930,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35
 [v0.69.34]: https://github.com/NangoHQ/nango/compare/v0.69.33..v0.69.34
 [v0.69.33]: https://github.com/NangoHQ/nango/compare/v0.69.32..v0.69.33
 [v0.69.32]: https://github.com/NangoHQ/nango/compare/v0.69.31..v0.69.32
