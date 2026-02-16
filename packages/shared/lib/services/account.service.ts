@@ -77,13 +77,11 @@ class AccountService {
     }
 
     async updateAccount({ id, name, foundUs }: { id: number; name?: string; foundUs?: string }): Promise<void> {
-        const updates: Partial<DBTeam> & { updated_at: Date } = { updated_at: new Date() };
-        if (name !== undefined) {
-            updates.name = name;
-        }
-        if (foundUs !== undefined) {
-            updates.found_us = foundUs;
-        }
+        const updates: Partial<DBTeam> & { updated_at: Date } = {
+            ...(name !== undefined ? { name } : {}),
+            ...(foundUs !== undefined ? { found_us: foundUs } : {}),
+            updated_at: new Date()
+        };
         await db.knex.update(updates).from<DBTeam>(`_nango_accounts`).where({ id });
     }
 

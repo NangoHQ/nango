@@ -57,13 +57,16 @@ export const HearAboutUs: React.FC = () => {
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
         setSubmitting(true);
         analyticsTrack('signup_hear_about', { source });
-        const res = await apiFetch('/api/v1/account/onboarding/hear-about-us', {
-            method: 'POST',
-            body: JSON.stringify({ source })
-        });
-        setSubmitting(false);
-        if (res.status === 200) {
-            navigate('/', { replace: true });
+        try {
+            const res = await apiFetch('/api/v1/account/onboarding/hear-about-us', {
+                method: 'POST',
+                body: JSON.stringify({ source })
+            });
+            if (res.status === 200) {
+                navigate('/', { replace: true });
+            }
+        } finally {
+            setSubmitting(false);
         }
     };
 

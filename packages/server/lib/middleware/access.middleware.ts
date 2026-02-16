@@ -37,8 +37,7 @@ const ignoreEnvPaths = [
     '/api/v1/user/name',
     '/api/v1/signin',
     '/api/v1/invite/:id',
-    '/api/v1/account/onboarding/hear-about-us',
-    '/account/onboarding/hear-about-us'
+    '/api/v1/account/onboarding/hear-about-us'
 ];
 
 export class AccessMiddleware {

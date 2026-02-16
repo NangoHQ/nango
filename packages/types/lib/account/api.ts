@@ -175,7 +175,7 @@ export type PostOnboardingHearAboutUs = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/account/onboarding/hear-about-us';
     Body: {
-        source: string;
+        source: 'my_team_already_using' | 'recommended' | 'search_engine' | 'llm_search' | 'social_media' | 'dont_remember' | 'other' | 'skipped';
     };
     Error: ApiError<'unauthorized'> | ApiError<'forbidden'>;
     Success: {

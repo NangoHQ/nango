@@ -46,6 +46,12 @@ export const postOnboardingHearAboutUs = asyncWrapper<PostOnboardingHearAboutUs>
         return;
     }
 
+    const canSetHearAboutUs = await accountService.shouldShowHearAboutUs(account);
+    if (!canSetHearAboutUs) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'Only the first workspace user can answer this question.' } });
+        return;
+    }
+
     await accountService.updateAccount({ id: account.id, foundUs: val.data.source });
     res.status(200).send({
         data: {
