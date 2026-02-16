@@ -110,7 +110,8 @@ export class NangoActionCLI extends NangoActionBase {
             connectionId,
             autoConfirm: true,
             debug: false,
-            interactive: false
+            interactive: false,
+            dependencyUpdate: true
         });
     }
 
