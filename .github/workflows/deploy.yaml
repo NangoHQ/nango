@@ -79,6 +79,10 @@ jobs:
               if: inputs.stage == 'replit'
               run: |
                   gsutil -m rsync -r -d packages/webapp/dist/ gs://${{ vars.APP_UI_BUCKET }}
+            - name: Set cache-control for index.html
+              if: inputs.stage == 'replit'
+              run: |
+                  gsutil setmeta -h "Cache-Control:no-store, no-cache, must-revalidate, max-age=0" "gs://${{ vars.APP_UI_BUCKET }}/index.html"
             - name: Invalidate Cloud CDN cache
               if: inputs.stage == 'replit'
               run: |
@@ -129,6 +133,10 @@ jobs:
               if: inputs.stage == 'replit'
               run: |
                   gsutil -m rsync -r -d packages/connect-ui/dist/ gs://${{ vars.CONNECT_UI_BUCKET }}
+            - name: Set cache-control for index.html
+              if: inputs.stage == 'replit'
+              run: |
+                  gsutil setmeta -h "Cache-Control:no-store, no-cache, must-revalidate, max-age=0" "gs://${{ vars.CONNECT_UI_BUCKET }}/index.html"
             - name: Invalidate Cloud CDN cache
               if: inputs.stage == 'replit'
               run: |
