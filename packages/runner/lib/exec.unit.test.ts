@@ -328,6 +328,7 @@ describe('Exec', () => {
                         transitional: {
                             clarifyTimeoutError: false,
                             forcedJSONParsing: true,
+                            legacyInterceptorReqResOrdering: true,
                             silentJSONParsing: true
                         },
                         url: 'http://localhost:3003/connections/connection-id',
