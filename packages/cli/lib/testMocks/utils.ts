@@ -250,7 +250,7 @@ class LegacyFixtureProvider implements FixtureProvider {
         const nameBasedPath = `nango/${method.toLowerCase()}/proxy/${normalizedEndpoint}/${this.name}`;
         const response = await this.getMockFile(nameBasedPath, false);
 
-        if (response) {
+        if (response !== undefined) {
             const syntheticMock: LegacyMockFile = {
                 method: method.toLowerCase(),
                 endpoint: normalizedEndpoint,
@@ -477,6 +477,18 @@ class RecordingFixtureProvider implements FixtureProvider {
         private outputPath: string
     ) {}
 
+    private deserializeRequestData(data: unknown): unknown {
+        if (typeof data !== 'string') {
+            return data;
+        }
+
+        try {
+            return JSON.parse(data);
+        } catch (_) {
+            return data;
+        }
+    }
+
     private async save() {
         const dataToSave = JSON.parse(JSON.stringify(this.recordedData));
 
@@ -570,17 +582,27 @@ class RecordingFixtureProvider implements FixtureProvider {
         const allMocksForEndpoint = await this.delegate.getAllMocksForEndpoint(identity.method, endpoint);
 
         for (const legacyMock of allMocksForEndpoint) {
-            const mockParams = Object.fromEntries(legacyMock.requestIdentity.params);
-            const mockHeaders = Object.fromEntries(legacyMock.requestIdentity.headers);
+            const hasLegacyIdentity =
+                legacyMock.requestIdentityHash.length > 0 ||
+                legacyMock.requestIdentity.params.length > 0 ||
+                legacyMock.requestIdentity.headers.length > 0 ||
+                legacyMock.requestIdentity.data !== undefined;
+
+            const paramsSource = hasLegacyIdentity ? legacyMock.requestIdentity.params : identity.requestIdentity.params;
+            const headersSource = hasLegacyIdentity ? legacyMock.requestIdentity.headers : identity.requestIdentity.headers;
+            const dataSource = hasLegacyIdentity ? legacyMock.requestIdentity.data : identity.requestIdentity.data;
+
+            const mockParams = Object.fromEntries(paramsSource);
+            const mockHeaders = Object.fromEntries(headersSource);
 
             const record: ApiMockResponse = {
                 request: {
                     params: Object.keys(mockParams).length > 0 ? mockParams : undefined,
                     headers: Object.keys(mockHeaders).length > 0 ? mockHeaders : undefined,
-                    data: legacyMock.requestIdentity.data
+                    data: this.deserializeRequestData(dataSource)
                 },
                 response: legacyMock.response,
-                hash: legacyMock.requestIdentityHash,
+                hash: legacyMock.requestIdentityHash || identity.requestIdentityHash,
                 ...(legacyMock.headers && { headers: legacyMock.headers }),
                 ...(legacyMock.status !== undefined && { status: legacyMock.status })
             };
