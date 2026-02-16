@@ -32,6 +32,7 @@ import { FunctionsOne } from './pages/Integrations/providerConfigKey/Functions/O
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
 import { NotFound } from './pages/NotFound';
+import { HearAboutUs } from './pages/Onboarding/HearAboutUs';
 import { Root } from './pages/Root';
 import { TeamBilling } from './pages/Team/Billing/Show';
 import { TeamSettings } from './pages/Team/Settings';
@@ -84,6 +85,10 @@ const router = sentryCreateBrowserRouter([
                 path: 'dev/getting-started',
                 element: <GettingStartedRoute />,
                 handle: { breadcrumb: 'Getting started' } as BreadcrumbHandle
+            },
+            {
+                path: '/onboarding/hear-about-us',
+                element: <HearAboutUs />
             },
             {
                 path: '/:env',

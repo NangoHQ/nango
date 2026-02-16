@@ -24,6 +24,15 @@ export const GettingStarted: React.FC = () => {
     const { toast } = useToast();
 
     useEffect(() => {
+        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
+            return;
+        }
+
+        sessionStorage.removeItem('show-email-verified-toast');
+        toast({ title: 'Email verified successfully!', variant: 'success' });
+    }, [toast]);
+
+    useEffect(() => {
         if (error) {
             toast({ title: 'Failed to get getting started', variant: 'error' });
             navigate('/');
