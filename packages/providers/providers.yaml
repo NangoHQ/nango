@@ -9706,6 +9706,46 @@ microsoft-admin:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-teams-bot:
+    display_name: Microsoft Teams Bot
+    auth_mode: OAUTH2
+    categories:
+        - communication
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
+        - .default
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://smba.trafficmanager.net/teams
+        connection_config:
+            botHostTenantId: ${connectionConfig.botHostTenantId}
+    post_connection_script: microsoftTeamsBotPostConnection
+    docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
+    docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for the Azure AD tenant
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        botHostTenantId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 microsoft-excel:
     display_name: Microsoft Excel
     categories:
