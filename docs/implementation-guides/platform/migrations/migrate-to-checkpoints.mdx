@@ -1,0 +1,182 @@
+---
+title: 'Migrate to checkpoints'
+sidebarTitle: 'Migrate to checkpoints'
+description: 'Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.'
+---
+
+# Who is impacted
+
+If any of your sync functions read `nango.lastSyncDate` to determine where to resume syncing, you are impacted by this migration.
+
+To check, search your sync files for `lastSyncDate`. If you find references like `nango.lastSyncDate` or destructured equivalents, those syncs should be migrated to use checkpoints.
+
+# What is changing
+
+`nango.lastSyncDate` is deprecated and replaced by checkpoints — a more flexible and resilient way to track sync progress.
+
+With `lastSyncDate`, Nango automatically tracked the timestamp of the last completed sync run. Your function could read it but not set it, and it was always a timestamp. With checkpoints, you define the schema, you control when it's saved, and you can store any type of progress marker — not just a date.
+
+| | `lastSyncDate` (deprecated) | Checkpoints |
+| --- | --- | --- |
+| **Type** | Always a `Date` | Any schema you define with Zod |
+| **Control** | Managed by Nango, read-only | You set it explicitly with `saveCheckpoint()` |
+| **Granularity** | Updated once per completed run | Updated mid-execution, after each batch |
+| **Resilience** | If a run fails, no progress is saved | Progress is saved incrementally — the next run resumes from the last checkpoint |
+
+<Note>
+Checkpoints also replace the `syncType: 'incremental'` field in your sync declaration. If your sync has a `checkpoint` schema, Nango treats it as incremental. If it doesn't, Nango treats it as a full sync.
+</Note>
+
+# Why this deprecation
+
+`lastSyncDate` had two significant limitations:
+
+1. **No mid-run resilience.** If a sync fetched 90% of its data and then failed, all progress was lost. The next run started over from the previous `lastSyncDate`, re-fetching everything.
+
+2. **Rigid type.** The value was always a timestamp managed by Nango. Some APIs use cursors, page tokens, or composite markers to track progress — `lastSyncDate` couldn't accommodate these.
+
+Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints).
+
+# Migration steps
+
+## Step 1: Add a checkpoint schema to your sync declaration
+
+Add a `checkpoint` field to your `createSync()` call. In most cases, this is a single string field holding a timestamp:
+
+**Before:**
+```typescript
+export default createSync({
+    description: 'Sync contacts from Salesforce',
+    frequency: 'every hour',
+    models: { Contact: ContactSchema },
+    exec: async (nango) => {
+        // ...
+    },
+});
+```
+
+**After:**
+```typescript
+export default createSync({
+    description: 'Sync contacts from Salesforce',
+    frequency: 'every hour',
+    checkpoint: z.object({
+        lastModifiedISO: z.string(),
+    }),
+    models: { Contact: ContactSchema },
+    exec: async (nango) => {
+        // ...
+    },
+});
+```
+
+If your sync previously declared `syncType: 'incremental'`, remove it — the presence of the `checkpoint` field replaces it.
+
+## Step 2: Replace `lastSyncDate` reads with `getCheckpoint()`
+
+Replace every reference to `nango.lastSyncDate` with a call to `nango.getCheckpoint()`.
+
+**Before:**
+```typescript
+exec: async (nango) => {
+    const lastSyncDate = nango.lastSyncDate;
+
+    let query = 'SELECT Id, FirstName, LastName FROM Contact';
+    if (lastSyncDate) {
+        query += ` WHERE LastModifiedDate > ${lastSyncDate.toISOString()}`;
+    }
+    query += ' ORDER BY LastModifiedDate ASC';
+
+    // ... fetch and save records
+}
+```
+
+**After:**
+```typescript
+exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
+
+    let query = 'SELECT Id, FirstName, LastName FROM Contact';
+    if (checkpoint) {
+        query += ` WHERE LastModifiedDate > ${checkpoint.lastModifiedISO}`;
+    }
+    query += ' ORDER BY LastModifiedDate ASC';
+
+    // ... fetch and save records
+}
+```
+
+Note that `getCheckpoint()` is async and returns `null` on first run or after a reset, just like `lastSyncDate` was `null` on the first execution.
+
+## Step 3: Add `saveCheckpoint()` calls after each batch
+
+This is the most important change. With `lastSyncDate`, progress was saved automatically at the end of a run. With checkpoints, you save progress explicitly — and you should do it after every batch of records.
+
+**Before:**
+```typescript
+exec: async (nango) => {
+    const lastSyncDate = nango.lastSyncDate;
+
+    while (nextPage) {
+        const res = await nango.get({
+            endpoint: '/contacts',
+            params: { since: lastSyncDate?.toISOString(), cursor: nextPage },
+        });
+
+        await nango.batchSave(mapContacts(res.data.records), 'Contact');
+        nextPage = res.data.nextCursor;
+    }
+    // Progress saved automatically by Nango at run completion
+}
+```
+
+**After:**
+```typescript
+exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
+
+    while (nextPage) {
+        const res = await nango.get({
+            endpoint: '/contacts',
+            params: { since: checkpoint?.lastModifiedISO, cursor: nextPage },
+        });
+
+        const contacts = mapContacts(res.data.records);
+        await nango.batchSave(contacts, 'Contact');
+
+        // Save progress after each page
+        const lastRecord = contacts[contacts.length - 1];
+        await nango.saveCheckpoint({ lastModifiedISO: lastRecord.lastModified });
+
+        nextPage = res.data.nextCursor;
+    }
+}
+```
+
+The pattern is: fetch a page, save records, save checkpoint. If the sync fails mid-way, the next run picks up from the last checkpoint instead of starting over.
+
+## Step 4: Test locally
+
+Use the CLI `dryrun` command with the `--checkpoint` flag to simulate resuming from a previous run:
+
+```bash
+nango dryrun my-sync '<CONNECTION-ID>' --checkpoint '{"lastModifiedISO": "2024-06-01T00:00:00Z"}'
+```
+
+Verify that your sync correctly filters data based on the checkpoint value. See the [testing guide](/implementation-guides/platform/functions/testing) for how to write unit tests for checkpoint logic.
+
+## Step 5: Deploy
+
+Deploy as usual. On the first run after deployment, `getCheckpoint()` will return `null` (since no checkpoint has been saved yet), so the sync will perform a full initial fetch — just like it did on its first run with `lastSyncDate`. Subsequent runs will be incremental from the checkpoint.
+
+```bash
+nango deploy <env>
+```
+
+<Warning>
+Because the first post-migration run starts fresh, it may take longer than usual. This is expected and only happens once.
+</Warning>
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

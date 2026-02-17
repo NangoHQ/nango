@@ -1500,7 +1500,7 @@ await nango.triggerSync('<INTEGRATION-ID>', [
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
     <ResponseField name="opts" type="object">
-        Options for triggering the sync.
+        Options for triggering the sync. See the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details on `reset` and `emptyCache`.
         <Expandable>
             <ResponseField name="reset" type="boolean">
                 If `true`, clears the checkpoint before triggering the sync, causing it to start fresh.
@@ -1658,6 +1658,8 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
     ]
 }
 ```
+
+The `checkpoint` field contains the last saved checkpoint for the sync. Learn more about [checkpoints](/implementation-guides/use-cases/syncs/checkpoints).
 </Expandable>
 
 ### Override sync connection frequency

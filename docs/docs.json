@@ -141,9 +141,9 @@
                 "pages": [
                   "implementation-guides/use-cases/syncs/implement-a-sync",
                   "implementation-guides/use-cases/syncs/records-cache",
+                  "implementation-guides/use-cases/syncs/checkpoints",
                   "implementation-guides/use-cases/syncs/deletion-detection",
                   "implementation-guides/use-cases/syncs/realtime-syncs",
-                  "implementation-guides/use-cases/syncs/large-datasets",
                   "implementation-guides/use-cases/syncs/sync-partitioning"
                 ]
               },
@@ -196,6 +196,7 @@
               {
                 "group": "Migrations",
                 "pages": [
+                  "implementation-guides/platform/migrations/migrate-to-checkpoints",
                   "implementation-guides/platform/migrations/migrate-from-end-user",
                   "implementation-guides/platform/migrations/migrate-from-public-key",
                   "implementation-guides/platform/migrations/migrate-to-zero-yaml"
