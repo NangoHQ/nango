@@ -469,7 +469,8 @@
                                 "client_credentials",
                                 "urn:ietf:params:oauth:grant-type:saml2-bearer",
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
-                                "password"
+                                "password",
+                                "refresh_token"
                             ]
                         },
                         "request": {
@@ -490,7 +491,7 @@
                 },
                 "token_response": {
                     "type": "object",
-                    "additionalProperties": true,
+                    "additionalProperties": false,
                     "properties": {
                         "token": {
                             "type": "string"
@@ -499,6 +500,9 @@
                             "type": "string"
                         },
                         "token_expiration_strategy": {
+                            "type": "string"
+                        },
+                        "refresh_token": {
                             "type": "string"
                         }
                     }

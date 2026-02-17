@@ -5,7 +5,7 @@ import { axiosInstance, stringifyStable } from '@nangohq/utils';
 import { sendAuth } from './auth.js';
 import { TestWebhookServer } from './helpers/test.js';
 
-import type { DBConnection, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoAuthWebhookBodySuccess } from '@nangohq/types';
+import type { DBAPISecret, DBConnection, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoAuthWebhookBodySuccess, Tags } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -46,6 +46,8 @@ const providerConfig = {
     provider: 'hubspot'
 } as IntegrationConfig;
 
+const secret = 'secret' as DBAPISecret['secret'];
+
 describe('Webhooks: auth notification tests', () => {
     beforeAll(async () => {
         await testServer.start();
@@ -65,9 +67,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: '',
@@ -88,9 +90,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 secondary_url: '',
@@ -111,9 +113,9 @@ describe('Webhooks: auth notification tests', () => {
             environment: {
                 name: 'dev',
                 id: 1,
-                secret_key: 'secret',
                 always_send_webhook: true
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: true,
@@ -133,9 +135,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: true
@@ -158,9 +160,9 @@ describe('Webhooks: auth notification tests', () => {
             },
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 secondary_url: '',
@@ -180,9 +182,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: false
@@ -201,9 +203,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 primary_url: '',
@@ -225,9 +227,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 secondary_url: '',
@@ -248,9 +250,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: true,
@@ -271,9 +273,9 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             environment: {
                 name: 'dev',
-                id: 1,
-                secret_key: 'secret'
+                id: 1
             } as DBEnvironment,
+            secret,
             webhookSettings: {
                 ...webhookSettings,
                 on_auth_creation: false,
@@ -327,5 +329,106 @@ describe('Webhooks: auth notification tests', () => {
                 }
             })
         );
+    });
+
+    describe('tags', () => {
+        it('Should include connection tags in webhook body', async () => {
+            const tags: Tags = { department: 'engineering', priority: 'high' };
+            const connectionWithTags = {
+                ...connection,
+                tags
+            };
+
+            await sendAuth({
+                connection: connectionWithTags,
+                success: true,
+                environment: {
+                    name: 'dev',
+                    id: 1
+                } as DBEnvironment,
+                secret,
+                webhookSettings: {
+                    ...webhookSettings,
+                    secondary_url: '',
+                    on_auth_creation: true
+                },
+                providerConfig,
+                account,
+                auth_mode: 'OAUTH2',
+                operation: 'creation'
+            });
+
+            expect(spy).toHaveBeenCalledTimes(1);
+
+            const body: NangoAuthWebhookBodySuccess = {
+                from: 'nango',
+                type: 'auth',
+                connectionId: connection.connection_id,
+                providerConfigKey: connection.provider_config_key,
+                authMode: 'OAUTH2',
+                provider: 'hubspot',
+                environment: 'dev',
+                success: true,
+                operation: 'creation',
+                tags: { department: 'engineering', priority: 'high' }
+            };
+            const bodyString = stringifyStable(body).unwrap();
+
+            expect(spy).toHaveBeenCalledWith(
+                webhookSettings.primary_url,
+                bodyString,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        'content-type': 'application/json'
+                    })
+                })
+            );
+        });
+
+        it('Should not include tags when connection has no tags', async () => {
+            await sendAuth({
+                connection,
+                success: true,
+                environment: {
+                    name: 'dev',
+                    id: 1
+                } as DBEnvironment,
+                secret,
+                webhookSettings: {
+                    ...webhookSettings,
+                    secondary_url: '',
+                    on_auth_creation: true
+                },
+                providerConfig,
+                account,
+                auth_mode: 'OAUTH2',
+                operation: 'creation'
+            });
+
+            expect(spy).toHaveBeenCalledTimes(1);
+
+            const body: NangoAuthWebhookBodySuccess = {
+                from: 'nango',
+                type: 'auth',
+                connectionId: connection.connection_id,
+                providerConfigKey: connection.provider_config_key,
+                authMode: 'OAUTH2',
+                provider: 'hubspot',
+                environment: 'dev',
+                success: true,
+                operation: 'creation'
+            };
+            const bodyString = stringifyStable(body).unwrap();
+
+            expect(spy).toHaveBeenCalledWith(
+                webhookSettings.primary_url,
+                bodyString,
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        'content-type': 'application/json'
+                    })
+                })
+            );
+        });
     });
 });

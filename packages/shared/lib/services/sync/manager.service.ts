@@ -1,4 +1,5 @@
-import { getLogger, stringifyError } from '@nangohq/utils';
+import db from '@nangohq/database';
+import { getCheckpointKey, getLogger, stringifyError } from '@nangohq/utils';
 
 import connectionService from '../connection.service.js';
 import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
@@ -7,6 +8,7 @@ import { createSync, getSync, getSyncsByConnectionId, getSyncsByProviderConfigKe
 import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import accountService from '../account.service.js';
+import { getCheckpoint } from '../checkpoints/checkpoints.js';
 import configService from '../config.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 
@@ -303,6 +305,7 @@ export class SyncManagerService {
                 await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
+                    syncName: sync.name,
                     syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
@@ -330,6 +333,7 @@ export class SyncManagerService {
                 await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
+                    syncName: sync.name,
                     syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
@@ -536,6 +540,17 @@ export class SyncManagerService {
                 {} as Record<string, number>
             ) || {};
 
+        const checkpoint = await getCheckpoint(db.knex, {
+            environmentId,
+            connectionId: sync.nango_connection_id,
+            key: getCheckpointKey({ type: 'sync', name: sync.name, variant: sync.variant })
+        });
+        if (checkpoint.isErr()) {
+            throw new Error(
+                `Failed to get checkpoint for sync ${sync.name} (variant: ${sync.variant}) in environment ${environmentId}: ${stringifyError(checkpoint.error)}`
+            );
+        }
+
         return {
             id: sync.id,
             connection_id: sync.connection_id,
@@ -549,6 +564,7 @@ export class SyncManagerService {
             latestResult: latestJob?.result,
             latestExecutionStatus: latestJob?.status,
             recordCount,
+            checkpoint: checkpoint.value && !checkpoint.value.deleted_at ? checkpoint.value.checkpoint : null,
             ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
         };
     }

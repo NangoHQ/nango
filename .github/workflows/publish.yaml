@@ -10,6 +10,10 @@ on:
                 required: true
                 default: '0.0.0'
 
+permissions:
+    contents: write
+    id-token: write
+
 jobs:
     npm-publish:
         if: github.ref == 'refs/heads/master'
@@ -32,12 +36,13 @@ jobs:
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
+            - name: Update npm to latest
+              run: npm install -g npm@11.5.1
+
             - name: Install dependencies
               run: npm ci
 
             - name: Publish npm packages
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               shell: bash
               run: |
                   npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"

@@ -1,5 +1,7 @@
 import type { Timestamps } from '../db.js';
 
+type FunctionRuntime = 'runner' | 'lambda';
+
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
@@ -147,4 +149,34 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     can_disable_connect_ui_watermark: boolean;
+
+    /**
+     * Sync Function Runtime
+     * @default "runner"
+     */
+    sync_function_runtime: FunctionRuntime;
+
+    /**
+     * Action Function Runtime
+     * @default "runner"
+     */
+    action_function_runtime: FunctionRuntime;
+
+    /**
+     * Webhook Function Runtime
+     * @default "runner"
+     */
+    webhook_function_runtime: FunctionRuntime;
+
+    /**
+     * On Event Function Runtime
+     * @default "runner"
+     */
+    on_event_function_runtime: FunctionRuntime;
+
+    /**
+     * Enable or disable records autopruning
+     * @default true
+     */
+    has_records_autopruning: boolean;
 }

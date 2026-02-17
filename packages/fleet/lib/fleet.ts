@@ -4,6 +4,8 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { DatabaseClient } from './db/client.js';
 import { envs } from './env.js';
+import { DockerImageVerifier } from './image-verifier/docker/verifier.js';
+import { ECRImageVerifier } from './image-verifier/ecr/verifier.js';
 import * as deployments from './models/deployments.js';
 import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import * as nodes from './models/nodes.js';
@@ -11,11 +13,11 @@ import { noopNodeProvider } from './node-providers/noop.js';
 import { Supervisor } from './supervisor/supervisor.js';
 import { FleetError } from './utils/errors.js';
 import { withPgLock } from './utils/locking.js';
-import { waitUntilHealthy } from './utils/url.js';
 
+import type { ImageVerifier } from './image-verifier/verifier.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
-import type { Node, NodeConfigOverride } from './types.js';
-import type { Deployment, RoutingId } from '@nangohq/types';
+import type { Node, NodeConfigOverride, NodeState } from './types.js';
+import type { Deployment, ImageType, RoutingId } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 
@@ -29,14 +31,17 @@ export class Fleet {
     private dbClient: DatabaseClient;
     private supervisor: Supervisor | undefined = undefined;
     private nodeProvider: NodeProvider;
+    private imageVerifiers = new Map<ImageType, ImageVerifier>();
 
     constructor({ fleetId, dbUrl = defaultDbUrl, nodeProvider }: { fleetId: string; dbUrl?: string | undefined; nodeProvider?: NodeProvider }) {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
         if (nodeProvider) {
-            this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
+            this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider, fleetId: this.fleetId });
         }
         this.nodeProvider = nodeProvider || noopNodeProvider;
+        this.imageVerifiers.set('docker', new DockerImageVerifier());
+        this.imageVerifiers.set('ecr', new ECRImageVerifier());
     }
 
     public async migrate(): Promise<void> {
@@ -56,15 +61,15 @@ export class Fleet {
         await this.dbClient.destroy();
     }
 
-    public async rollout(image: string, options?: { verifyImage?: boolean }): Promise<Result<Deployment>> {
+    public async rollout(image: string, options?: { imageType?: ImageType; verifyImage?: boolean }): Promise<Result<Deployment>> {
         if (options?.verifyImage !== false) {
-            const [name, tag] = image.split(':');
-            if (!name || !tag) {
-                return Err(new FleetError('fleet_rollout_invalid_image', { context: { image } }));
+            const imageVerifier = this.imageVerifiers.get(options?.imageType || 'docker');
+            if (!imageVerifier) {
+                return Err(new FleetError('fleet_rollout_invalid_image_type', { context: { imageType: options?.imageType || 'docker' } }));
             }
-            const res = await fetch(`https://hub.docker.com/v2/repositories/${name}/tags/${tag}`);
-            if (!res.ok) {
-                return Err(new FleetError('fleet_rollout_image_not_found', { context: { image } }));
+            const verified = await imageVerifier.verify(image);
+            if (verified.isErr()) {
+                return Err(verified.error);
             }
         }
 
@@ -154,6 +159,30 @@ export class Fleet {
         return recurse(this.supervisor, new Date());
     }
 
+    public async getNodesByRoutingId({
+        routingId,
+        states = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED']
+    }: {
+        routingId: RoutingId;
+        states?: [NodeState, ...NodeState[]];
+    }): Promise<Result<Node[]>> {
+        const search = await nodes.search(this.dbClient.db, {
+            states,
+            routingId
+        });
+        if (search.isErr()) {
+            return Err(search.error);
+        }
+
+        const byState = search.value.get(routingId);
+        if (!byState) {
+            return Ok([]);
+        }
+
+        const nodesByState = Object.values(byState);
+        return Ok(nodesByState.flat());
+    }
+
     public async registerNode({ nodeId, url }: { nodeId: number; url: string }): Promise<Result<Node>> {
         const valid = await this.nodeProvider.verifyUrl(url);
         if (valid.isErr()) {
@@ -161,7 +190,7 @@ export class Fleet {
         }
         // in Render, network configuration can take a long time to be applied and accessible to other services
         // we therefore wait until the health url is reachable
-        const healthy = await waitUntilHealthy({ url: `${url}/health`, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
+        const healthy = await this.nodeProvider.waitUntilHealthy({ nodeId, url, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
         if (healthy.isErr()) {
             return Err(healthy.error);
         }
@@ -189,7 +218,9 @@ export class Fleet {
                 defaultConfig.storageMb === override.storageMb &&
                 defaultConfig.isTracingEnabled === override.isTracingEnabled &&
                 defaultConfig.isProfilingEnabled === override.isProfilingEnabled &&
-                defaultConfig.idleMaxDurationMs === override.idleMaxDurationMs;
+                defaultConfig.idleMaxDurationMs === override.idleMaxDurationMs &&
+                defaultConfig.executionTimeoutSecs === override.executionTimeoutSecs &&
+                defaultConfig.provisionedConcurrency === override.provisionedConcurrency;
 
             if (isDefault) {
                 return nodeConfigOverrides.remove(trx, override.routingId);

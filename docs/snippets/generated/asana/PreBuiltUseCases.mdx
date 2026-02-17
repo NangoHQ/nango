@@ -2,32 +2,32 @@
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `projects` | Retrieves all projects for a user | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/projects.ts) |
+| `projects` | Retrieves all projects for a user | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/projects.ts) |
 
 ### Tasks
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-task` | Create a task using Asana specific fields and return a unified model task. See https://developers.asana.com/reference/createtask for Asana specific fields | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/create-task.ts) |
-| `delete-task` | Delete a task. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/delete-task.ts) |
-| `update-task` | Update a task and be able to assign the task to a specific user | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/update-task.ts) |
-| `tasks` | Retrieve all tasks that exist in the workspace | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/tasks.ts) |
+| `create-task` | Create a task using Asana specific fields and return a unified model task. See https://developers.asana.com/reference/createtask for Asana specific fields | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/create-task.ts) |
+| `delete-task` | Delete a task. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/delete-task.ts) |
+| `update-task` | Update a task and be able to assign the task to a specific user | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/update-task.ts) |
+| `tasks` | Retrieve all tasks that exist in the workspace | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/tasks.ts) |
 
 ### Users
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `users` | Retrieve all users that exist in the workspace | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/users.ts) |
+| `users` | Retrieve all users that exist in the workspace | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/users.ts) |
 
 ### Workspaces
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `workspaces` | Retrieve all workspaces for a user | [Sync](/guides/use-cases/syncs) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/workspaces.ts) |
+| `workspaces` | Retrieve all workspaces for a user | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/workspaces.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-projects` | Fetch the projects with a limit (default 10) given a workspace of a user to allow selection when choosing the tasks to sync. | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/fetch-projects.ts) |
-| `fetch-workspaces` | Fetch the workspaces with a limit (default 10) of a user to allow them to selection of projects to sync | [Action](/guides/use-cases/actions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/fetch-workspaces.ts) |
+| `fetch-projects` | Fetch the projects with a limit (default 10) given a workspace of a user to allow selection when choosing the tasks to sync. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/fetch-projects.ts) |
+| `fetch-workspaces` | Fetch the workspaces with a limit (default 10) of a user to allow them to selection of projects to sync | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/fetch-workspaces.ts) |

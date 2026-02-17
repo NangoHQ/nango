@@ -1,0 +1,82 @@
+---
+title: 'CloudTalk'
+sidebarTitle: 'CloudTalk'
+description: 'Integrate your application with the CloudTalk API'
+---
+
+## 🚀 Quickstart
+
+Connect to CloudTalk with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _CloudTalk_.
+    </Step>
+    <Step title="Authorize CloudTalk">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ID and Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the CloudTalk API">
+    Let's make your first request to the CloudTalk API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/contacts/index.json?limit=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/contacts/index.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { limit: 10 }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 CloudTalk Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your CloudTalk API credentials](/api-integrations/cloudtalk/connect)  
+Get your ID and Key to connect CloudTalk to Nango
+
+Official docs: [CloudTalk API reference](https://developers.cloudtalk.io/#section/Introduction)
+
+## 🧩 Pre-built syncs & actions for CloudTalk
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cloudtalk/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,0 +1,40 @@
+---
+title: 'How to register your own NinjaOne RMM OAuth app'
+sidebarTitle: 'NinjaOne RMM Setup'
+description: 'Register an OAuth app with NinjaOne RMM and connect it to Nango'
+---
+
+This guide shows you how to register your own app with NinjaOne RMM to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their NinjaOne RMM account.
+
+<Steps>
+  <Step title="Navigate to the API settings">
+    1. Log in to your NinjaOne instance at [app.ninjarmm.com](https://app.ninjarmm.com).
+    2. Navigate to **Administration** > **Apps** > **API**.
+    3. Click on the **Client App IDs** tab.
+  </Step>
+  <Step title="Create a Web OAuth application">
+    1. Click the **Add** button to open the Application Configuration form.
+    2. Select **Web** as the Application Platform (do **not** select "API Services / Machine-to-Machine").
+    3. Fill in the details:
+       - **Name**: A descriptive name for your application
+       - **Redirect URI**: `https://api.nango.dev/oauth/callback`
+       - **Allowed Grant Types**: Check both **Authorization Code** and **Refresh Token**
+       - **Scopes/Permissions**: Select the appropriate scopes for your use case (e.g., **Monitoring**, **Management**, **Control**)
+    4. Click **Save** to create the application. You may need to complete a multi-factor authentication step.
+  </Step>
+  <Step title="Obtain your app credentials">
+    1. After creating the application, the **Client ID** and **Client Secret** will be displayed.
+    2. Copy and securely store both values immediately. The Client Secret is only shown once and cannot be retrieved later.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [NinjaOne's Authorization Code Flow documentation](https://app.ninjarmm.com/apidocs-beta/authorization/flows/authorization-code-flow).
+
+## Important notes for NinjaOne RMM API
+
+- The **Client Secret** is only displayed once after creation. If you lose it, you'll need to create a new application.
+- NinjaOne access tokens expire within approximately 1 hour. Include the `offline_access` scope to ensure refresh tokens are issued for automatic token renewal.
+- This OAuth2 Authorization Code provider supports endpoints that require user-context authorization (e.g., running scripts on devices). If you only need machine-to-machine access, see the [NinjaOne RMM (Client Credentials)](/integrations/all/ninjaone-rmm) integration instead.

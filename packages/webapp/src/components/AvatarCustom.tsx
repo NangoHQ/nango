@@ -140,6 +140,7 @@ const knownEmailProviders = new Set<string>([
 ]);
 export const AvatarOrganization: React.FC<OrgProps> = ({ email, displayName, ...props }) => {
     const acronym = useMemo(() => {
+        console.log(`KEY: ${JSON.stringify(globalEnv)}`);
         if (email && globalEnv.publicLogoDevKey) {
             const domain = email.split('@')[1];
             if (!knownEmailProviders.has(domain)) {

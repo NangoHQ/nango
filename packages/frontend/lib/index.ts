@@ -427,7 +427,7 @@ export default class Nango {
         if (credentials) {
             Object.assign(body, credentials);
         }
-        if (assertionOption) {
+        if (assertionOption && Object.keys(assertionOption).length > 0) {
             body['assertionOption'] = assertionOption;
         }
 
@@ -585,6 +585,10 @@ export default class Nango {
                 }
                 if ('oauth_client_secret_override' in credentials) {
                     query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
+                }
+
+                if ('oauth_refresh_token_override' in credentials) {
+                    query.push(`credentials[oauth_refresh_token_override]=${encodeURIComponent(credentials.oauth_refresh_token_override)}`);
                 }
 
                 if ('token_id' in credentials) {

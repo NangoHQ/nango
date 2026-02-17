@@ -3,11 +3,11 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 import columnify from 'columnify';
-import ora from 'ora';
 import promptly from 'promptly';
 
 import { buildDefinitions } from './definitions.js';
 import { Err, Ok } from '../utils/result.js';
+import { Spinner } from '../utils/spinner.js';
 import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { ReadableError } from './utils.js';
@@ -32,16 +32,19 @@ type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScri
 export async function deploy({
     fullPath,
     options,
-    environmentName
+    environmentName,
+    interactive = true
 }: {
     fullPath: string;
     options: DeployOptions;
     environmentName: string;
+    interactive?: boolean;
 }): Promise<Result<boolean>> {
     const { version, debug } = options;
+    const spinnerFactory = new Spinner({ interactive });
 
     let pkg: Package;
-    const spinnerPackage = ora({ text: 'Packaging' }).start();
+    const spinnerPackage = spinnerFactory.start('Packaging');
     try {
         // Prepare retro-compat json
         const def = await buildDefinitions({ fullPath, debug });
@@ -83,7 +86,7 @@ export async function deploy({
     const sdkVersion = `${NANGO_VERSION}-zero`;
 
     // Check remote state
-    const spinnerState = ora({ text: `Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}` }).start();
+    const spinnerState = spinnerFactory.start(`Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}`);
     let confirmation: ScriptDifferences;
     try {
         const confirmationRes = await postConfirmation({
@@ -111,7 +114,7 @@ export async function deploy({
     console.log('');
     // Actual deploy
     const total = pkg.flowConfigs.length + (pkg.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0);
-    const spinnerDeploy = ora({ text: `Deploying`, suffixText: `${total} functions` }).start();
+    const spinnerDeploy = spinnerFactory.start(`Deploying ${total} functions`);
     try {
         const deployRes = await postDeploy({
             body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }

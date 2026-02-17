@@ -1,8 +1,9 @@
 import tracer from 'dd-trace';
 
+import db from '@nangohq/database';
 import { Cursor, records } from '@nangohq/records';
-import { connectionService } from '@nangohq/shared';
-import { cancellableDaemon } from '@nangohq/utils';
+import { getPlan } from '@nangohq/shared';
+import { cancellableDaemon, flagHasPlan } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
@@ -19,8 +20,7 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
     return cancellableDaemon({
         tickIntervalMs: envs.PERSIST_AUTO_PRUNING_INTERVAL_MS,
         tick: async (): Promise<void> => {
-            const dryRun = true; // TODO: removed after grace period given to customer (Feb 8th 2026)
-            return tracer.trace('nango.persist.daemon.autopruning', { tags: { dryRun } }, async (span) => {
+            return tracer.trace('nango.persist.daemon.autopruning', async (span) => {
                 try {
                     const candidate = await records.autoPruningCandidate({ staleAfterMs: envs.PERSIST_AUTO_PRUNING_STALE_AFTER_MS });
                     if (candidate.isErr()) {
@@ -32,22 +32,30 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
                         span?.addTags({ pruned: 0, candidate: 'none_found' });
                         return;
                     }
-                    const connection = await connectionService.getConnectionById(candidate.value.connectionId);
-                    if (!connection) {
-                        span?.addTags({ error: `Connection ${candidate.value.connectionId} not found` });
-                        logger.error(`[Auto-pruning] connection ${candidate.value.connectionId} not found`);
-                        return;
+
+                    span?.addTags({ candidate: candidate.value });
+
+                    if (flagHasPlan) {
+                        const plan = await getPlan(db.knex, { environmentId: candidate.value.environmentId });
+                        if (plan.isErr()) {
+                            span?.addTags({ error: `Failed to get plan: ${plan.error.message}` });
+                            logger.error(`[Auto-pruning] failed to get plan: ${plan.error.message}`);
+                            return;
+                        }
+                        if (!plan.value.has_records_autopruning) {
+                            span?.addTags({ pruned: 0, has_records_autopruning: false });
+                            logger.info(`[Auto-pruning] skipping pruning as feature not in plan for account: ${plan.value.account_id}`);
+                            return;
+                        }
                     }
-                    span?.addTags({ environmentId: connection.environment_id, candidate: candidate.value });
 
                     const res = await records.deleteRecords({
-                        environmentId: connection.environment_id,
+                        environmentId: candidate.value.environmentId,
                         connectionId: candidate.value.connectionId,
                         model: candidate.value.model,
                         mode: 'prune',
                         toCursorIncluded: candidate.value.cursor,
-                        limit: envs.PERSIST_AUTO_PRUNING_LIMIT,
-                        dryRun
+                        limit: envs.PERSIST_AUTO_PRUNING_LIMIT
                     });
                     if (res.isErr()) {
                         span?.addTags({ error: res.error.message });

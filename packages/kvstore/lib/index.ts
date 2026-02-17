@@ -4,6 +4,7 @@ import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
+import { envs } from './env.js';
 
 import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';
@@ -14,13 +15,14 @@ export { RedisKVStore } from './RedisStore.js';
 export type { KVStore } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
 
+type KvBoundary = 'system' | 'customer';
+
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
-
-let redis: RedisClientType | undefined;
+const mapRedis = new Map<string, RedisClientType>();
 export async function getRedis(url: string): Promise<RedisClientType> {
-    if (redis) {
-        return redis;
+    if (mapRedis.has(url)) {
+        return mapRedis.get(url)!;
     }
     const isExternal = url.startsWith('rediss://');
     const socket = isExternal
@@ -33,60 +35,84 @@ export async function getRedis(url: string): Promise<RedisClientType> {
           }
         : {};
 
-    redis = createClient({
+    const redis = createClient({
         url: url,
         disableOfflineQueue: true,
         pingInterval: 30_000,
         socket
     });
-    redis.on('error', (err) => {
+    redis.on('error', (err: Error) => {
         // TODO: report error
         console.error(`Redis (kvstore) error: ${err}`);
     });
 
-    await redis.connect().then(() => {
-        // do nothing
-    });
-
-    return redis;
+    await redis.connect();
+    mapRedis.set(url, redis as RedisClientType);
+    return redis as RedisClientType;
 }
 
 export async function destroy() {
-    if (kvstorePromise) {
-        await (await kvstorePromise).destroy();
-        kvstorePromise = undefined;
-    }
-    if (redis) {
-        await redis.disconnect();
-    }
+    await Promise.all(
+        Array.from(mapKVStore.values()).map(async (kvstore) => {
+            await (await kvstore).destroy();
+        })
+    );
+    await Promise.all(
+        Array.from(mapRedis.values()).map(async (redis) => {
+            await redis.disconnect();
+        })
+    );
 }
 
-async function createKVStore(): Promise<KVStore> {
-    const url = process.env['NANGO_REDIS_URL'];
+const mapRedisUrl = new Map<KvBoundary, string | undefined>();
+mapRedisUrl.set('system', getRedisUrl());
+mapRedisUrl.set('customer', getCustomerRedisUrl() || getRedisUrl());
+
+function getRedisUrl(): string | undefined {
+    const url = envs.NANGO_REDIS_URL;
+    if (url) {
+        return url;
+    }
+    const endpoint = envs.NANGO_REDIS_HOST;
+    const port = envs.NANGO_REDIS_PORT || 6379;
+    const auth = envs.NANGO_REDIS_AUTH;
+    if (endpoint && port && auth) {
+        return `rediss://:${auth}@${endpoint}:${port}`;
+    }
+    return undefined;
+}
+
+function getCustomerRedisUrl(): string | undefined {
+    const url = envs.NANGO_CUSTOMER_REDIS_URL;
+    if (url) {
+        return url;
+    }
+    const endpoint = envs.NANGO_CUSTOMER_REDIS_HOST;
+    const port = envs.NANGO_CUSTOMER_REDIS_PORT || 6379;
+    const auth = envs.NANGO_CUSTOMER_REDIS_AUTH;
+    if (endpoint && port && auth) {
+        return `rediss://:${auth}@${endpoint}:${port}`;
+    }
+    return undefined;
+}
+
+async function createKVStore(usage: KvBoundary = 'system'): Promise<KVStore> {
+    const url = mapRedisUrl.get(usage);
     if (url) {
         const store = new RedisKVStore(await getRedis(url));
         return store;
-    } else {
-        const endpoint = process.env['NANGO_REDIS_HOST'];
-        const port = process.env['NANGO_REDIS_PORT'] || 6379;
-        const auth = process.env['NANGO_REDIS_AUTH'];
-        if (endpoint && port && auth) {
-            const store = new RedisKVStore(await getRedis(`rediss://:${auth}@${endpoint}:${port}`));
-            return store;
-        }
     }
-
     return new InMemoryKVStore();
 }
 
-let kvstorePromise: Promise<KVStore> | undefined;
-export async function getKVStore(): Promise<KVStore> {
-    if (kvstorePromise) {
-        return await kvstorePromise;
+const mapKVStore = new Map<KvBoundary, Promise<KVStore>>();
+export async function getKVStore(usage: KvBoundary = 'system'): Promise<KVStore> {
+    if (mapKVStore.has(usage)) {
+        return await mapKVStore.get(usage)!;
     }
-
-    kvstorePromise = createKVStore();
-    return await kvstorePromise;
+    const createKVStorePromise = createKVStore(usage);
+    mapKVStore.set(usage, createKVStorePromise);
+    return await createKVStorePromise;
 }
 
 let featureFlags: Promise<FeatureFlags> | undefined;
@@ -102,15 +128,16 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
     return await featureFlags;
 }
 
-let locking: Promise<Locking> | undefined;
-export async function getLocking(): Promise<Locking> {
-    if (locking) {
-        return await locking;
+const mapLocking = new Map<KvBoundary, Promise<Locking>>();
+export async function getLocking(usage: KvBoundary = 'system'): Promise<Locking> {
+    if (mapLocking.has(usage)) {
+        return await mapLocking.get(usage)!;
     }
 
-    locking = (async () => {
-        const store = await getKVStore();
+    const locking = (async () => {
+        const store = await getKVStore(usage);
         return new Locking(store);
     })();
+    mapLocking.set(usage, locking);
     return await locking;
 }

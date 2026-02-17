@@ -17,6 +17,7 @@ import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { initAI } from './ai/init.js';
 import { generate, getVersionOutput, tscWatch } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
+import { cloneTemplate } from './services/clone.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
@@ -49,12 +50,13 @@ class NangoCommand extends Command {
         // The option name in the code will be 'interactive'.
         // Passing --no-interactive will set it to false.
         cmd.option('--no-interactive', 'Disable interactive prompts for missing arguments.');
+        cmd.option('--no-dependency-update', 'Skip automatic dependency updates and package installation.');
 
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const opts = actionCommand.opts<GlobalOptions>();
 
             // opts.interactive is true by default (from the option default), or false if --no-interactive is passed.
-            // We also disable it if we are in a CI environment.
+            // We also disable it and dependency updates if we are in a CI environment.
             if (isCI && opts.interactive) {
                 console.warn(
                     chalk.yellow(
@@ -64,7 +66,21 @@ class NangoCommand extends Command {
             }
             opts.interactive = opts.interactive && !isCI;
 
+            if (isCI && opts.dependencyUpdate) {
+                console.warn(
+                    chalk.yellow(
+                        "CI environment detected. Dependency updates have been automatically disabled to prevent hanging. Pass '--no-dependency-update' to silence this warning."
+                    )
+                );
+            }
+            opts.dependencyUpdate = opts.dependencyUpdate && !isCI;
+
             printDebug(`Running in ${opts.interactive ? 'interactive' : 'non-interactive'} mode.`, opts.debug);
+
+            if (process.env['NANGO_CLI_DEPENDENCY_UPDATE'] === 'false') {
+                opts.dependencyUpdate = false;
+            }
+            printDebug(`Dependency update: ${opts.dependencyUpdate ? 'enabled' : 'disabled'}`, opts.debug);
 
             if (opts.debug && fs.existsSync('.env')) {
                 printDebug('.env file detected and loaded', opts.debug);
@@ -108,6 +124,9 @@ NANGO_CLI_UPGRADE_MODE=prompt # Default value
 
 # Whether to prompt before deployments.
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
+
+# Skip automatic dependency updates and package installation (useful for CI/monorepos).
+NANGO_CLI_DEPENDENCY_UPDATE=true # Default value
 `
     )
     .version(getVersionOutput(), '-v, --version', 'Print the version of the Nango CLI and Nango Server.');
@@ -132,7 +151,7 @@ program
     .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
     .option('--copy', 'Optional: Only copy files, will not npm install or pre-compile', false)
     .action(async function (this: Command) {
-        const { debug, ai, copy, interactive } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
+        const { debug, ai, copy, interactive, dependencyUpdate } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
         let [projectPath] = this.args;
         const currentPath = process.cwd();
 
@@ -160,7 +179,7 @@ program
             return;
         }
 
-        const res = await initZero({ absolutePath, debug, onlyCopy: copy });
+        const res = await initZero({ absolutePath, debug, onlyCopy: copy, dependencyUpdate });
         if (!res) {
             process.exitCode = 1;
             return;
@@ -223,7 +242,7 @@ program
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
     .action(async function (this: Command) {
-        const { debug } = this.opts<GlobalOptions>();
+        const { debug, interactive, dependencyUpdate } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -233,14 +252,14 @@ program
         }
 
         if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
             if (resCheck.isErr()) {
                 console.log(chalk.red('Failed to check and sync package.json. Exiting'));
                 process.exitCode = 1;
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug });
+            const res = await compileAll({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
             }
@@ -265,7 +284,7 @@ program
     .description('Dry run the sync|action process to help with debugging against an existing connection in cloud.')
     .argument('[name]', 'The name of the sync or action to run.')
     .argument('[connection_id]', 'The ID of the connection to use.')
-    .option('-e, --environment [environment]', 'The Nango environment, defaults to dev.', 'dev')
+    .option('-e, --environment [environment]', 'The Nango environment. If not provided, you will be prompted to select one.')
     .option(
         '-l, --lastSyncDate [lastSyncDate]',
         'Optional (for syncs only): last sync date to retrieve records greater than this date. The format is any string that can be successfully parsed by `new Date()` in JavaScript'
@@ -285,16 +304,28 @@ program
         '--integration-id [integrationId]',
         'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
     )
-    .option('--save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
-    .option('--save, --save-responses', 'Optional: Save all dry run responses to a tests/mocks directory to be used alongside unit tests', false)
+    .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
     .action(async function (this: Command) {
-        const { autoConfirm, debug, interactive, integrationId, validation, saveResponses } = this.opts();
+        const {
+            autoConfirm,
+            debug,
+            interactive,
+            dependencyUpdate,
+            integrationId,
+            validation,
+            saveResponses,
+            input,
+            lastSyncDate,
+            variant,
+            metadata,
+            diagnostics
+        } = this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
         let [name, connectionId] = this.args;
-        let { e: environment } = this.opts();
+        let { environment } = this.opts();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -336,14 +367,14 @@ program
                 return;
             }
         } else {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
             if (resCheck.isErr()) {
                 console.log(chalk.red('Failed to check and sync package.json. Exiting'));
                 process.exitCode = 1;
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug });
+            const res = await compileAll({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
                 return;
@@ -355,11 +386,17 @@ program
             autoConfirm,
             debug,
             interactive,
+            dependencyUpdate,
             sync: name,
             connectionId,
             optionalEnvironment: environment,
             optionalProviderConfigKey: integrationId,
-            saveResponses
+            saveResponses,
+            input,
+            lastSyncDate,
+            variant,
+            metadata,
+            diagnostics
         });
     });
 
@@ -368,7 +405,7 @@ program
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const { compileInterfaces, debug } = this.opts();
+        const { compileInterfaces, debug, dependencyUpdate } = this.opts();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
@@ -379,7 +416,7 @@ program
         }
 
         if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
             if (resCheck.isErr()) {
                 console.log(chalk.red('Failed to check and sync package.json. Exiting'));
                 process.exitCode = 1;
@@ -405,7 +442,7 @@ program
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
-        const { debug, interactive } = options;
+        const { debug, interactive, dependencyUpdate } = options;
         const fullPath = process.cwd();
 
         try {
@@ -427,14 +464,14 @@ program
         }
 
         if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
             if (resCheck.isErr()) {
                 console.log(chalk.red('Failed to check and sync package.json. Exiting'));
                 process.exitCode = 1;
                 return;
             }
 
-            const resCompile = await compileAll({ fullPath, debug });
+            const resCompile = await compileAll({ fullPath, debug, interactive });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
                 return;
@@ -497,14 +534,14 @@ program
     .command('migrate-to-zero-yaml')
     .description('Migrate from nango.yaml to pure typescript')
     .action(async function (this: Command) {
-        const { debug } = this.opts<DeployOptions>();
+        const { debug, dependencyUpdate } = this.opts<DeployOptions>();
         const fullPath = process.cwd();
         const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
         if (!precheck) {
             return;
         }
 
-        await migrateToZeroYaml({ fullPath, debug });
+        await migrateToZeroYaml({ fullPath, debug, dependencyUpdate });
     });
 
 program
@@ -513,7 +550,7 @@ program
     .option('--integration-templates', 'Optional: for the nango integration templates repo', false)
     .description('Generate documentation for the integration functions')
     .action(async function (this: Command) {
-        const { debug, path: optionalPath, integrationTemplates } = this.opts();
+        const { debug, dependencyUpdate, path: optionalPath, integrationTemplates } = this.opts();
         const fullPath = path.resolve(process.cwd(), this.args[0] || '');
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -524,7 +561,7 @@ program
 
         let parsed: NangoYamlParsed;
         if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug });
+            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
             if (resCheck.isErr()) {
                 console.log(chalk.red('Failed to check and sync package.json. Exiting'));
                 process.exitCode = 1;
@@ -564,7 +601,7 @@ program
     .option('-a, --action <actionName>', 'Generate tests only for a specific action')
     .description('Generate tests for integration scripts and config files')
     .action(async function (this: Command) {
-        const { debug, integration: integrationId, sync: syncName, action: actionName, autoConfirm } = this.opts();
+        const { debug, dependencyUpdate, integration: integrationId, sync: syncName, action: actionName, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
@@ -579,7 +616,8 @@ program
             syncName,
             actionName,
             debug: Boolean(debug),
-            autoConfirm: Boolean(autoConfirm)
+            autoConfirm: Boolean(autoConfirm),
+            dependencyUpdate
         });
 
         if (success) {
@@ -593,6 +631,27 @@ program
             }
         } else {
             console.log(chalk.red(`Failed to generate tests`));
+        }
+    });
+
+program
+    .command('clone')
+    .description('Clone integration templates from the integration-templates repository')
+    .argument('<template>', 'Template to clone (e.g., "github", "github/actions", "github/actions/list-repos")')
+    .option('-f, --force', 'Overwrite existing files without prompting', false)
+    .action(async function (this: Command, template: string) {
+        const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
+        const fullPath = process.cwd();
+
+        const precheck = await verificationService.preCheck({ fullPath, debug });
+        if (!precheck.isZeroYaml) {
+            console.log(chalk.yellow(`Clone skipped - only available for zero yaml projects`));
+            return;
+        }
+
+        const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
+        if (!success) {
+            process.exitCode = 1;
         }
     });
 

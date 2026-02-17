@@ -4,8 +4,8 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import chalk from 'chalk';
-import ora from 'ora';
 
+import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { compileAll } from './compile.js';
@@ -21,13 +21,18 @@ const execAsync = promisify(exec);
 export async function initZero({
     absolutePath,
     debug = false,
-    onlyCopy = false
+    onlyCopy = false,
+    interactive = true,
+    dependencyUpdate = true
 }: {
     absolutePath: string;
     debug?: boolean;
     onlyCopy?: boolean;
+    interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<boolean> {
     printDebug(`Creating the nango integrations directory in ${absolutePath}`, debug);
+    const spinnerFactory = new Spinner({ interactive });
 
     const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
 
@@ -43,7 +48,7 @@ export async function initZero({
 
     // Copy example folder
     {
-        const spinner = ora({ text: 'Copy example' }).start();
+        const spinner = spinnerFactory.start('Copy example');
         try {
             printDebug(`Copy example folder`, debug);
 
@@ -80,8 +85,8 @@ export async function initZero({
     }
 
     // Install dependencies
-    {
-        const spinner = ora({ text: 'Install dependencies' }).start();
+    if (dependencyUpdate) {
+        const spinner = spinnerFactory.start('Install dependencies');
         try {
             printDebug(`Running package manager install`, debug);
 
@@ -93,10 +98,13 @@ export async function initZero({
             console.log(chalk.red(`Failed to install dependencies: ${err instanceof Error ? err.message : 'unknown error'}`));
             return false;
         }
+    } else {
+        const spinner = spinnerFactory.start('Install dependencies');
+        spinner.warn('Skipping dependency install (--no-dependency-update)');
     }
 
     {
-        const res = await compileAll({ fullPath: absolutePath, debug });
+        const res = await compileAll({ fullPath: absolutePath, debug, interactive });
         if (res.isErr()) {
             return false;
         }

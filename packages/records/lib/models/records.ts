@@ -1018,28 +1018,29 @@ export async function* paginateCounts({
     environmentIds?: number[];
     batchSize?: number;
 } = {}): AsyncGenerator<Result<RecordCount[]>> {
+    if (batchSize < 1) {
+        throw new RangeError(`batchSize must be > 0`);
+    }
     let offset = 0;
-
     try {
         while (true) {
             // TODO: optimize with cursor pagination
-            const query = db.select('*').from(RECORD_COUNTS_TABLE).orderBy('connection_id', 'model').limit(batchSize).offset(offset);
-            if (environmentIds && environmentIds.length > 0) {
-                query.whereIn('environment_id', environmentIds);
-            }
-            const results = await query;
+            let query = db<RecordCount>(RECORD_COUNTS_TABLE).select('*').orderBy(['connection_id', 'model']).limit(batchSize).offset(offset);
 
-            if (results.length === 0) break;
+            if (environmentIds && environmentIds.length > 0) {
+                query = query.whereIn('environment_id', environmentIds);
+            }
+
+            const results = await query;
+            if (results.length < batchSize) {
+                return yield Ok(results);
+            }
 
             yield Ok(results);
             offset += results.length;
-
-            if (results.length < batchSize) break;
         }
-        return Ok([]);
     } catch (err) {
-        yield Err(new Error(`Failed to fetch record counts: ${String(err)}`));
-        return;
+        return yield Err(`Failed to fetch record counts: ${String(err)}`);
     }
 }
 
@@ -1114,36 +1115,41 @@ export async function deleteCount(
 export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: number }): Promise<
     Result<{
         partition: number;
+        environmentId: number;
         connectionId: number;
         model: string;
         cursor: string;
     } | null>
 > {
-    // Pick a random partition
     const partition = Math.floor(Math.random() * 256);
-
+    const table = `${RECORDS_TABLE}_p${partition}`;
     try {
-        // Find a record that is stale in that partition
         const [candidate] = await db
-            .from(`${RECORDS_TABLE}_p${partition}`)
-            .select<{ id: string; connection_id: number; model: string; last_modified_at: string }[]>(
-                // PostgreSQL stores timestamp with microseconds precision
-                // however, javascript date only supports milliseconds precision
-                // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
+            .from(table)
+            .select<{ id: string; environment_id: number | null; connection_id: number; model: string; last_modified_at: string }[]>(
                 db.raw(`
-                    id,
-                    connection_id,
-                    model,
-                    to_json(updated_at) as last_modified_at
+                    ${table}.id,
+                    ${table}.connection_id,
+                    ${table}.model,
+                    record_counts.environment_id,
+                    to_json(${table}.updated_at) as last_modified_at
                 `)
             )
-            .whereNull('pruned_at')
-            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
+            .leftJoin('record_counts', function () {
+                this.on(`${table}.connection_id`, 'record_counts.connection_id').andOn(`${table}.model`, 'record_counts.model');
+            })
+            .whereNull(`${table}.pruned_at`)
+            .whereRaw(`${table}.updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
             .limit(1);
-
         if (candidate) {
+            if (candidate.environment_id === null) {
+                return Err(
+                    new Error(`Missing record_counts entry for connection_id=${candidate.connection_id} model=${candidate.model} in partition ${partition}`)
+                );
+            }
             return Ok({
                 partition,
+                environmentId: candidate.environment_id,
                 connectionId: candidate.connection_id,
                 model: candidate.model,
                 cursor: Cursor.new(candidate)

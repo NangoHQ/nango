@@ -191,7 +191,7 @@ export function buildSync({
         }),
         runs: params.frequency,
         scopes: params.scopes || [],
-        sync_type: params.syncType,
+        sync_type: params.syncType || 'full',
         track_deletes: params.trackDeletes === true,
         usedModels: Array.from(usedModels.values()),
         version: params.version || '',

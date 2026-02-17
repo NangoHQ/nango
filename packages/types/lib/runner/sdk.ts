@@ -9,8 +9,10 @@ export interface SdkLogger {
     level: LogLevel | 'off';
 }
 
+export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event';
+
 export interface NangoProps {
-    scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
+    scriptType: ScriptType;
     host?: string;
     secretKey: string;
     team: Pick<DBTeam, 'id' | 'name'>;

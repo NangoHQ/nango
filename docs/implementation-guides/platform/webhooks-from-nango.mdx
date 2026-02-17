@@ -1,8 +1,21 @@
 ---
-title: 'Implement webhooks from Nango'
-sidebarTitle: 'Implement webhooks from Nango'
+title: 'Receive webhooks from Nango'
+sidebarTitle: 'Webhooks from Nango'
 description: 'Step by step guide to receive webhooks from Nango'
 ---
+
+Nango uses webhooks to notify your application of important events.
+
+<Info>
+This page covers webhooks that Nango sends to your application. To process webhooks from external APIs, please read the [Webhooks from external APIs](/implementation-guides/use-cases/webhooks-from-external-apis) guide.
+</Info>
+
+## Overview of Nango webhooks
+
+The most common webhooks are:
+- **New connection created**: Sent whenever a new [connection](/guides/primitives/auth#overview) has been created
+- **Sync execution finished**: Sent whenever a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution completes
+- **Forwarded webhook**: Sent when Nango forwards [webhooks from an external API](/implementation-guides/use-cases/webhooks-from-external-apis) to your app
 
 ## Set up webhooks from Nango
 
@@ -170,10 +183,10 @@ Payload received following a connection creation:
     "provider": "<your-provider-key>",
     "environment": "DEV | PROD | ...",
     "success": true,
-    "endUser": {
-        "endUserId": "<your-end-user-id>",
-        "endUserEmail": "<your-end-user-email>",
-        "tags": { "organizationId": "<your-organization-id>" }
+    "tags": {
+        "end_user_id": "<your-end-user-id>",
+        "end_user_email": "<your-end-user-email>",
+        "organization_id": "<your-organization-id>"
     }
 }
 ```
@@ -181,7 +194,7 @@ Payload received following a connection creation:
 <Warning>
   Processing webhooks with `"type": "auth"` and `"operation": "creation"` is **necessary**. After a connection is created, these webhooks give you the generated connection ID which lets you access the connection later on.
 
-  Use the values of `endUser.endUserId` (and optionally `endUser.tags`) to reconcile and save the connection ID with the user/org who initiated the connection.
+  Use `tags` to reconcile and save the connection ID with the user/org/workspace that initiated the connection.
 </Warning>
 
 All `authMode` values can be found [here](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/auth/api.ts). The `authMode` value depends on the `provider` value.
@@ -204,10 +217,10 @@ Payload received following a refresh token error:
     "provider": "<your-provider-key>",
     "environment": "DEV | PROD | ...",
     "success": false,
-    "endUser": {
-        "endUserId": "<your-end-user-id>",
-        "endUserEmail": "<your-end-user-email>",
-        "tags": { "organizationId": "<your-organization-id>" }
+    "tags": {
+        "end_user_id": "<your-end-user-id>",
+        "end_user_email": "<your-end-user-email>",
+        "organization_id": "<your-organization-id>"
     },
     "error": {
         "type": "<string>",
@@ -222,7 +235,7 @@ Payload received following a refresh token error:
 
 ### Sync webhooks
 
-Sync webhooks are sent when a [sync](/guides/use-cases/syncs) execution finishes, whether successful or not.
+Sync webhooks are sent when a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution finishes, whether successful or not.
 
 Payload received following a successful sync execution:
 
@@ -233,7 +246,7 @@ Payload received following a successful sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK",
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
     "success": true,
     "modifiedAfter": "<timestamp>",
     "responseResults": {
@@ -246,6 +259,10 @@ Payload received following a successful sync execution:
 
 The `modifiedAfter` is an ISO-8601 format string (e.g. `2025-05-21T18:52:49.838Z`) that represents the start time of the last sync.  When the webhook target application receives this payload, it should store this value against the `connectionId` as a "bookmark".  On the next sync webhook event, use the stored bookmark to retrieve the changed records and store the new `modifiedAfter` as the next bookmark.  This mechanism ensures that no deltas are missed.
 
+<Warning>
+**Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and syncs not executed for 60 days will have all records deleted.
+</Warning>
+
 By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
 ```json
 {
@@ -254,12 +271,6 @@ By default, Nango sends a webhook even if no modified data was detected in the l
     "deleted": 0
 }
 ```
-
-The `syncType` possible values are:
-
-- `INITIAL`: for the very first execution of a sync.
-- `INCREMENTAL`: for subsequent executions  of a sync.
-- `WEBHOOK`: when an external API webhooks triggers the execution of the sync's `onWebhookPayloadReceived` function.
 
 Payload received following a failed sync execution:
 
@@ -270,7 +281,7 @@ Payload received following a failed sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK",
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
     "success": true,
     "error": {
         "type": "<string>",
@@ -301,9 +312,9 @@ Nango retries each webhook with non-2xx responses 2 times with exponential backo
 
 Webhooks time out after 20 seconds.
 
-Each webhook attempt is logged in Nango's [logs](/guides/platform/logs).
+Each webhook attempt is logged in Nango's [logs](/guides/platform/observability).
 
-You can also use the [OpenTelemetry exporter](/guides/platform/logs#opentelemetry-logs-export) to monitor Nango webhooks in your own observability stack.
+You can also use the [OpenTelemetry exporter](/guides/platform/observability#opentelemetry-logs-export) to monitor Nango webhooks in your own observability stack.
 
 <Tip>
   **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

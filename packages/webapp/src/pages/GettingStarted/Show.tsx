@@ -24,6 +24,15 @@ export const GettingStarted: React.FC = () => {
     const { toast } = useToast();
 
     useEffect(() => {
+        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
+            return;
+        }
+
+        sessionStorage.removeItem('show-email-verified-toast');
+        toast({ title: 'Email verified successfully!', variant: 'success' });
+    }, [toast]);
+
+    useEffect(() => {
         if (error) {
             toast({ title: 'Failed to get getting started', variant: 'error' });
             navigate('/');
@@ -132,19 +141,19 @@ export const GettingStarted: React.FC = () => {
                             description="Let your users authorize 3rd-party APIs seamlessly."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/guides/use-cases/proxy"
+                            to="https://nango.dev/docs/guides/primitives/proxy"
                             icon={Waypoints}
                             title="Proxy"
                             description="Run authenticated API requests to external APIs."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/guides/use-cases/syncs"
+                            to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
                             icon={RefreshCcw}
                             title="Syncs"
                             description="Continously sync data from external APIs."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/guides/use-cases/webhooks"
+                            to="https://nango.dev/docs/implementation-guides/use-cases/webhooks-from-external-apis"
                             icon={Webhook}
                             title="Webhooks"
                             description="Listen to webhooks from external APIs."

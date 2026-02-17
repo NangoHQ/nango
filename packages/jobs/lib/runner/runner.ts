@@ -1,10 +1,11 @@
-import { Err, Ok, env, isProd } from '@nangohq/utils';
+import { Err, Ok, env, isProd, retryWithBackoff } from '@nangohq/utils';
 
 import { RemoteRunner } from './remote.runner.js';
 import { envs } from '../env.js';
-import { runnersFleet } from './fleet.js';
 import { FleetRunner } from './fleet.runner.js';
+import { getDefaultFleet } from '../runtime/runtimes.js';
 
+import type { Node } from '@nangohq/fleet';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
 import type { Result } from '@nangohq/utils';
 
@@ -33,10 +34,13 @@ function getRunnerId(suffix: string): string {
     return `${env}-runner-account-${suffix}`;
 }
 
+function getRunnerIdForTeam(teamId: number): string {
+    return isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
+}
+
 export async function getRunner(teamId: number): Promise<Result<Runner>> {
     try {
-        // a runner per account in prod only
-        const runnerId = isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
+        const runnerId = getRunnerIdForTeam(teamId);
         const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
         return Ok(runner);
     } catch (err) {
@@ -44,10 +48,55 @@ export async function getRunner(teamId: number): Promise<Result<Runner>> {
     }
 }
 
+export async function getRunners(teamId: number): Promise<Result<Runner[]>> {
+    try {
+        const runnerId = getRunnerIdForTeam(teamId);
+        if (envs.RUNNER_TYPE === 'REMOTE') {
+            const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+            return Ok([runner]);
+        }
+
+        const runnersFleet = getDefaultFleet();
+        const nodes = await runnersFleet.getNodesByRoutingId({
+            routingId: runnerId,
+            states: ['RUNNING', 'OUTDATED']
+        });
+        if (nodes.isErr()) {
+            return Err(nodes.error);
+        }
+
+        const runners = nodes.value.filter((node) => node.url).map((node) => new FleetRunner(runnerId, node.url as string));
+        if (runners.length > 0) {
+            return Ok(runners);
+        }
+
+        const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+        return Ok([runner]);
+    } catch (err) {
+        return Err(new Error(`Failed to get runners for team ${teamId}`, { cause: err }));
+    }
+}
+
 export async function idle(nodeId: number): Promise<Result<void>> {
+    const runnersFleet = getDefaultFleet();
     const idle = await runnersFleet.idleNode({ nodeId });
     if (idle.isErr()) {
         return Err(idle.error);
+    }
+    return Ok(undefined);
+}
+
+export async function notifyOnIdle(node: Node): Promise<Result<void>> {
+    const res = await retryWithBackoff(
+        async () => {
+            return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+        },
+        {
+            numOfAttempts: 5
+        }
+    );
+    if (!res.ok) {
+        throw new Error(`status: ${res.status}. response: ${res.statusText}`);
     }
     return Ok(undefined);
 }
@@ -56,6 +105,7 @@ async function getOrStartRunner(runnerId: string): Promise<Runner> {
     if (envs.RUNNER_TYPE === 'REMOTE') {
         return RemoteRunner.getOrStart(runnerId);
     }
+    const runnersFleet = getDefaultFleet();
     const getNode = await runnersFleet.getRunningNode(runnerId);
     if (getNode.isErr()) {
         throw new Error(`Failed to get running node for runner '${runnerId}'`);

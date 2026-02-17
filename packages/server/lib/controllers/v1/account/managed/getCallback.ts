@@ -154,7 +154,9 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
 
             // @ts-expect-error you got to love passport
             req.session.passport.user.account_id = invitation.account_id;
+            res.redirect(`${basePublicUrl}/`);
+        } else {
+            res.redirect(`${basePublicUrl}/onboarding/hear-about-us`);
         }
-        res.redirect(`${basePublicUrl}/`);
     });
 });

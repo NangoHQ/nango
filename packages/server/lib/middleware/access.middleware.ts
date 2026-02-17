@@ -23,20 +23,29 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const ignoreEnvPaths = ['/api/v1/environments', '/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
+const ignoreEnvPaths = [
+    '/api/v1/environments',
+    '/api/v1/meta',
+    '/api/v1/user',
+    '/api/v1/user/name',
+    '/api/v1/signin',
+    '/api/v1/invite/:id',
+    '/api/v1/account/onboarding/hear-about-us'
+];
 
 export class AccessMiddleware {
     private async validateSecretKey(secret: string): Promise<
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             plan: DBPlan | null;
         }>
     > {
@@ -45,7 +54,7 @@ export class AccessMiddleware {
         }
         const accountContext = await accountService.getAccountContextBySecretKey(secret);
         if (!accountContext) {
-            return Err('unknown_user_account');
+            return Err('unknown_account');
         }
 
         if (flagHasPlan && !accountContext.plan) {
@@ -104,6 +113,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             plan: DBPlan | null;
         }>
     > {
@@ -113,7 +123,7 @@ export class AccessMiddleware {
 
         const accountContext = await accountService.getAccountContextByPublicKey(publicKey);
         if (!accountContext) {
-            return Err('unknown_user_account');
+            return Err('unknown_account');
         }
 
         if (flagHasPlan && !accountContext.plan) {
@@ -188,6 +198,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            secret: DBAPISecret;
             connectSession: ConnectSession;
             endUser: InternalEndUser | null;
             plan: DBPlan | null;
@@ -217,6 +228,7 @@ export class AccessMiddleware {
         return Ok({
             account: accountContext.account,
             environment: accountContext.environment,
+            secret: accountContext.secret,
             connectSession: getConnectSession.value.connectSession,
             endUser: getConnectSession.value.connectSession.endUser,
             plan: accountContext.plan
@@ -603,6 +615,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         }
 
         res.locals['environment'] = environment;
+
         tagTraceUser({ account, environment, plan });
         next();
     } catch (err) {

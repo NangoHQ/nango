@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
-import { runnersFleet } from '../../runner/fleet.js';
+import { getDefaultFleet } from '../../runtime/runtimes.js';
 
 import type { PostRegister } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
@@ -17,6 +17,7 @@ const validate = validateRequest<PostRegister>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRegister>) => {
     try {
+        const runnersFleet = getDefaultFleet();
         const register = await runnersFleet.registerNode({ nodeId: res.locals.parsedParams.nodeId, url: res.locals.parsedBody.url });
         if (register.isErr()) {
             throw register.error;

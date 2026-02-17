@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';
-import { Routes, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
 
 import { globalEnv } from './env';
 
@@ -23,6 +23,6 @@ Sentry.init({
     maxBreadcrumbs: 50
 });
 
-export const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
+export const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV6(createBrowserRouter);
 
 export const SentryErrorBoundary = Sentry.ErrorBoundary;

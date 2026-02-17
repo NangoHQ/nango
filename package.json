@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.69.22",
+    "version": "0.69.35",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -42,7 +42,7 @@
         "dwh": "npm run dev:watch:headless",
         "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\" \"npm run test:cli\"",
         "test:unit": "vitest",
-        "test:integration": "vitest --config ./vite.integration.config.ts",
+        "test:integration": "vitest --config ./vite.integration.config.ts ${npm_config_dir:-.}",
         "test:cli": "vitest --config ./vite.cli.config.ts",
         "test:cli:update-snapshots": "vitest --config ./vite.cli.config.ts --update",
         "test:openapi": "npx @apidevtools/swagger-cli validate docs/spec.yaml && npx @redocly/cli lint docs/spec.yaml",

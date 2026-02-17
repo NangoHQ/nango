@@ -37,30 +37,27 @@ const buttonVariants = cva(
     }
 );
 
-function Button({
-    className,
-    variant,
-    size,
-    loading = false,
-    asChild = false,
-    ...props
-}: React.ComponentProps<'button'> &
-    VariantProps<typeof buttonVariants> & {
-        loading?: boolean;
-        asChild?: boolean;
-    }) {
+const Button = React.forwardRef<
+    HTMLButtonElement,
+    React.ComponentProps<'button'> &
+        VariantProps<typeof buttonVariants> & {
+            loading?: boolean;
+            asChild?: boolean;
+        }
+>(({ className, variant, size, loading = false, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
 
     if (loading) {
         return (
-            <Comp data-slot="button" data-loading className={cn(buttonVariants({ variant, size, className }))} {...{ ...props, disabled: true }}>
+            <Comp ref={ref} data-slot="button" data-loading className={cn(buttonVariants({ variant, size, className }))} {...{ ...props, disabled: true }}>
                 <Spinner />
                 {props.children}
             </Comp>
         );
     }
-    return <Comp data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
-}
+    return <Comp ref={ref} data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+});
+Button.displayName = 'Button';
 
 function ButtonLink({ className, variant, size, ...props }: LinkProps & VariantProps<typeof buttonVariants>) {
     return <Link data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;

@@ -7,11 +7,11 @@ import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
+import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 
 export const ProfileDropdown: React.FC = () => {
-    const env = useStore((state) => state.env);
     const { meta } = useMeta();
     const navigate = useNavigate();
     const signout = useSignout();
@@ -23,12 +23,12 @@ export const ProfileDropdown: React.FC = () => {
             {
                 label: 'Team',
                 icon: Users,
-                href: `/${env}/team-settings`
+                href: `/team-settings`
             },
             {
                 label: 'Profile',
                 icon: UserRoundCog,
-                href: `/${env}/user-settings`
+                href: `/user-settings`
             }
         ];
 
@@ -36,7 +36,7 @@ export const ProfileDropdown: React.FC = () => {
             list.push({
                 label: 'Getting Started',
                 icon: Sparkle,
-                href: `/${env}/getting-started`
+                href: `/dev/getting-started`
             });
         }
 
@@ -44,30 +44,14 @@ export const ProfileDropdown: React.FC = () => {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,
-                href: `/${env}/team/billing`
+                href: `/team/billing`
             });
         }
 
         return list;
-    }, [env, meta, showGettingStarted]);
+    }, [meta, showGettingStarted]);
 
-    const initials = useMemo(() => {
-        if (!user?.name) {
-            return '';
-        }
-
-        const nameParts = user.name.trim().split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts[nameParts.length - 1];
-
-        // If there's only one name part, just use the first character
-        if (nameParts.length === 1) {
-            return firstName[0]?.toUpperCase() || '';
-        }
-
-        // If there are multiple parts, use first character of first and last name
-        return (firstName[0]?.toUpperCase() || '') + (lastName[0]?.toUpperCase() || '');
-    }, [user]);
+    const initials = user?.name ? toAcronym(user.name) : '';
 
     if (!meta || !user) {
         return;

@@ -3,21 +3,23 @@ import tracer from 'dd-trace';
 import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
 import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 
-import { getRunner } from '../../runner/runner.js';
+import { getRuntimeAdapter } from '../../runtime/runtimes.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { NangoProps } from '@nangohq/types';
+import type { NangoProps, RuntimeContext } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 export async function startScript({
     taskId,
     nangoProps,
+    runtimeContext,
     input,
     logCtx
 }: {
     taskId: string;
     nangoProps: NangoProps;
+    runtimeContext: RuntimeContext;
     input?: JsonValue | undefined;
     logCtx: LogContext;
 }): Promise<Result<void>> {
@@ -42,36 +44,32 @@ export async function startScript({
                   });
 
         if (!script) {
-            const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;
-            void logCtx.error(content);
-            return Err('Unable to find integration file');
+            throw new Error(`Unable to find integration file`);
         }
         if (!nangoProps.team) {
-            return Err(`No team provided (instead ${nangoProps.team})`);
+            throw new Error(`No team provided (instead ${nangoProps.team})`);
         }
 
-        const runner = await getRunner(nangoProps.team.id);
-        if (runner.isErr()) {
-            return Err(runner.error);
+        const runtimeAdapter = await getRuntimeAdapter({ nangoProps, runtimeContext });
+        if (runtimeAdapter.isErr()) {
+            throw runtimeAdapter.error;
         }
-
-        const res = await runner.value.client.start.mutate({
-            taskId: taskId,
+        const res = await runtimeAdapter.value.invoke({
+            taskId,
             nangoProps,
             code: script,
             codeParams: (input as object) || {}
         });
 
-        if (!res) {
-            span.setTag('error', true);
-            return Err(`Error starting script for sync ${nangoProps.syncId}`);
+        if (res.isErr()) {
+            throw res.error;
         }
 
         await connectionService.trackExecution(nangoProps.nangoConnectionId);
         return Ok(undefined);
     } catch (err) {
         span.setTag('error', err);
-        const errMessage = `Error starting integration '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
+        const errMessage = `Error starting function '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
         void logCtx.error(errMessage, { error: err });
         return Err(errMessage);
     } finally {

@@ -21,19 +21,19 @@ describe('POST /logs/filters', () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing query on purpose
-        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', token: env.secret_key, body: { category: 'config' } });
+        const res = await api.fetch('/api/v1/logs/filters', { method: 'POST', token: secret.secret, body: { category: 'config' } });
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/filters', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             body: { category: 'a', foo: 'bar' }
         });
@@ -59,11 +59,11 @@ describe('POST /logs/filters', () => {
     });
 
     it('should search filters and get empty results', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/filters', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { category: 'integration', search: '' }
         });
 
@@ -75,7 +75,7 @@ describe('POST /logs/filters', () => {
     });
 
     it('should search filters and get one result', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'proxy', action: 'call' } },
@@ -87,7 +87,7 @@ describe('POST /logs/filters', () => {
         const res = await api.fetch('/api/v1/logs/filters', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { category: 'integration', search: '' }
         });
 
@@ -99,7 +99,7 @@ describe('POST /logs/filters', () => {
     });
 
     it('should search filters with a query and get one result', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, account, secret } = await seeders.seedAccountEnvAndUser();
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'proxy', action: 'call' } },
@@ -111,7 +111,7 @@ describe('POST /logs/filters', () => {
         const res = await api.fetch('/api/v1/logs/filters', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: { category: 'integration', search: 'hel' }
         });
 
@@ -136,7 +136,7 @@ describe('POST /logs/filters', () => {
         const res = await api.fetch('/api/v1/logs/filters', {
             method: 'POST',
             query: { env: 'dev' },
-            token: env2.env.secret_key,
+            token: env2.secret.secret,
             body: { category: 'integration', search: '' }
         });
 
