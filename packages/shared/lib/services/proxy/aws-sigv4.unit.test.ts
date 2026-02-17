@@ -33,7 +33,7 @@ describe('signAwsSigV4Request', () => {
         expect(signed['x-amz-content-sha256']).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
     });
 
-    it('uses unsigned payload hashing when body is explicitly null', () => {
+    it('hashes null body as empty string per SigV4 spec', () => {
         const signed = signAwsSigV4Request({
             url: 'https://s3.us-west-2.amazonaws.com/example-bucket/object',
             method: 'PUT',
@@ -47,7 +47,8 @@ describe('signAwsSigV4Request', () => {
             now: new Date('2025-01-02T03:04:05.000Z')
         });
 
-        expect(signed['x-amz-content-sha256']).toBe('UNSIGNED-PAYLOAD');
+        // Both null and undefined bodies hash the empty string
+        expect(signed['x-amz-content-sha256']).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
         expect(signed['authorization']).toContain('/us-west-2/s3/aws4_request');
     });
 });
