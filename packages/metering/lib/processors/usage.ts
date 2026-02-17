@@ -117,8 +117,18 @@ export class UsageProcessor {
                     return Ok(undefined);
                 }
                 case 'usage.function_executions': {
-                    const { accountId, environmentId, environmentName, integrationId, functionName, type, telemetryBag, frequencyMs, success } =
-                        event.payload.properties;
+                    const {
+                        accountId,
+                        environmentId,
+                        environmentName,
+                        integrationId,
+                        functionName,
+                        type,
+                        telemetryBag,
+                        frequencyMs,
+                        success,
+                        functionRuntime = 'runner'
+                    } = event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
                     const customLogs = telemetryBag?.customLogs ?? 0;
 
@@ -194,7 +204,13 @@ export class UsageProcessor {
                             frequencyBucket = 'slow';
                         }
                     }
-                    metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, { type, success: String(success), accountId, frequencyBucket });
+                    metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, {
+                        type,
+                        success: String(success),
+                        accountId,
+                        frequencyBucket,
+                        functionRuntime
+                    });
                     return Ok(undefined);
                 }
                 case 'usage.proxy': {
