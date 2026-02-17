@@ -168,6 +168,36 @@ export class NangoError extends NangoInternalError {
                 this.message = `Invalid HMAC signature.`;
                 break;
 
+            case 'missing_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is missing.`;
+                break;
+
+            case 'invalid_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is invalid.`;
+                break;
+
+            case 'missing_aws_sigv4_service':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the target AWS service.`;
+                break;
+
+            case 'missing_aws_sigv4_sts_endpoint':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the STS endpoint configuration.`;
+                break;
+
+            case 'missing_aws_sigv4_region':
+                this.status = 400;
+                this.message = `AWS SigV4 requests require a region.`;
+                break;
+
+            case 'aws_sigv4_sts_request_failed':
+                this.status = 502;
+                this.message = `Failed to retrieve AWS credentials from the configured STS endpoint.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
