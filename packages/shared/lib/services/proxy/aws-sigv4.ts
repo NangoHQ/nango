@@ -98,9 +98,7 @@ function hashPayload(body?: string | Buffer | null): string {
     if (Buffer.isBuffer(body)) {
         return crypto.createHash('sha256').update(body).digest('hex');
     }
-    if (body === null) {
-        return 'UNSIGNED-PAYLOAD';
-    }
+    // Both null and undefined mean "no body" — hash the empty string per SigV4 spec
     return crypto.createHash('sha256').update('').digest('hex');
 }
 
