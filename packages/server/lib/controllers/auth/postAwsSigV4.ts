@@ -166,13 +166,23 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             return;
         }
 
-        // Always generate ExternalId server-side; reuse stored value on reconnection
+        // Always generate ExternalId server-side; reuse stored value on reconnection.
+        // The external ID must be stable so users can configure AWS trust policies with sts:ExternalId.
         let externalId: string;
         if (isConnectSession && connectSession.connectionId) {
             const existingConn = await connectionService.getConnectionById(connectSession.connectionId);
             externalId = (existingConn?.connection_config?.['external_id'] as string) || uuidv4();
         } else {
-            externalId = uuidv4();
+            // For non-connect-session flows, check if a connection already exists (reconnection via API)
+            const existingResult = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            externalId = (existingResult.response?.connection_config?.['external_id'] as string) || uuidv4();
+        }
+
+        if (!isValidAwsExternalId(externalId)) {
+            void logCtx.error('Invalid external ID format', { externalId });
+            await logCtx.failed();
+            res.status(400).send({ error: { code: 'invalid_body', message: 'External ID must be 2-1224 characters, alphanumeric or +=,.@:/-' } });
+            return;
         }
         connectionConfig['external_id'] = externalId;
         connectionConfig['role_arn'] = body.role_arn;
@@ -373,4 +383,31 @@ async function verifyAwsCredentials({
     if (result.isErr()) {
         throw result.error;
     }
+
+    // Verify the assumed role matches the expected role ARN (D3: warning-only)
+    const expectedRoleArn = credentials.role_arn;
+    if (expectedRoleArn && result.value.data) {
+        const responseData = typeof result.value.data === 'string' ? result.value.data : '';
+        const arnMatch = responseData.match(/<Arn>([^<]+)<\/Arn>/);
+        if (arnMatch?.[1]) {
+            const actualArn = arnMatch[1];
+            // Compare role ARN cores: assumed-role ARN differs from role ARN
+            // e.g. arn:aws:sts::123:assumed-role/MyRole/session vs arn:aws:iam::123:role/MyRole
+            const expectedRoleName = expectedRoleArn.split('/').pop();
+            const actualContainsExpectedRole = expectedRoleName && actualArn.includes(expectedRoleName);
+            if (!actualContainsExpectedRole) {
+                void logCtx.warn('GetCallerIdentity ARN does not match expected role', {
+                    expectedRoleArn,
+                    actualArn
+                });
+            }
+        }
+    }
+}
+
+/**
+ * Validate external ID per AWS STS format: 2-1224 characters, alphanumeric plus +=,.@:/-
+ */
+function isValidAwsExternalId(externalId: string): boolean {
+    return externalId.length >= 2 && externalId.length <= 1224 && /^[a-zA-Z0-9+=,.@:/-]+$/.test(externalId);
 }

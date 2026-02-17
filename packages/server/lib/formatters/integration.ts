@@ -1,3 +1,4 @@
+import { awsSigV4Client } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, AwsSigV4TemplateSummary, IntegrationConfig, Provider } from '@nangohq/types';
@@ -83,7 +84,7 @@ export function integrationToPublicApi({
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
     let awsSigV4: ApiPublicIntegration['aws_sigv4'];
-    const rawSigConfig = integration.custom?.['aws_sigv4_config'];
+    const rawSigConfig = integration.custom?.[awsSigV4Client.AWS_SIGV4_CUSTOM_KEY];
     if (rawSigConfig) {
         try {
             const parsed = JSON.parse(rawSigConfig);

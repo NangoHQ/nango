@@ -12,7 +12,6 @@ import { getProvider } from '../providers.js';
 
 import type {
     ApplicationConstructedProxyConfiguration,
-    AwsSigV4Credentials,
     ConnectionForProxy,
     HTTP_METHOD,
     IntegrationConfigForProxy,
@@ -217,12 +216,18 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     let apiBase = config.baseUrlOverride || templateApiBase;
 
     if (!apiBase && connection.credentials.type === 'AWS_SIGV4') {
-        const awsCreds = connection.credentials as AwsSigV4Credentials;
-        const awsRegion = awsCreds.region || (connection.connection_config?.['region'] as string | undefined);
-        const awsService = awsCreds.service || (connection.connection_config?.['service'] as string | undefined);
+        // Allow connection-level base_url override for non-standard endpoints (S3, API Gateway, GovCloud, FIPS)
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            apiBase = connectionBaseUrl;
+        } else {
+            const awsCreds = connection.credentials;
+            const awsRegion = awsCreds.region || (connection.connection_config?.['region'] as string | undefined);
+            const awsService = awsCreds.service || (connection.connection_config?.['service'] as string | undefined);
 
-        if (awsRegion && awsService) {
-            apiBase = `https://${awsService}.${awsRegion}.amazonaws.com`;
+            if (awsRegion && awsService) {
+                apiBase = `https://${awsService}.${awsRegion}.amazonaws.com`;
+            }
         }
     }
 
