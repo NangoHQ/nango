@@ -46,7 +46,7 @@ interface UnifiedMock {
     api: Record<string, Record<string, ApiMockResponse | ApiMockResponse[]>>;
 }
 
-const FILTER_HEADERS = [
+export const FILTER_HEADERS: string[] = [
     'authorization',
     'user-agent',
     'nango-proxy-user-agent',
