@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { PROD_ENVIRONMENT_NAME } from '../constants';
 import { useMeta } from '../hooks/useMeta';
 import { useStore } from '../store';
 
@@ -29,7 +30,11 @@ export const Root: React.FC = () => {
         }
 
         if (location.pathname === '/' && env) {
-            navigate(`/${env}`, { replace: true });
+            // Redirect to an env that exists; prefer prod (cannot be deleted/renamed)
+            const targetEnv = meta.environments?.some((e) => e.name === env)
+                ? env
+                : (meta.environments?.find((e) => e.name === PROD_ENVIRONMENT_NAME)?.name ?? meta.environments?.[0]?.name ?? env);
+            navigate(`/${targetEnv}`, { replace: true });
             return;
         }
 
