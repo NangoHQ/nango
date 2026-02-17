@@ -6198,6 +6198,30 @@ front:
             link_path_in_response_body: _pagination.next
     docs: https://nango.dev/docs/integrations/all/front
 
+fullenrich:
+    display_name: FullEnrich
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.fullenrich.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/account/credits
+    docs: https://nango.dev/docs/api-integrations/fullenrich
+    docs_connect: https://nango.dev/docs/api-integrations/fullenrich/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FullEnrich API key.
+            example: 123e4567-e89b-12d3-a456-426614174000
+            format: uuid
+            doc_section: '#step-1-getting-your-api-key'
+
 gainsight-cc:
     display_name: Gainsight CC
     categories:
