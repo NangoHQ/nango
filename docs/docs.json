@@ -663,6 +663,7 @@
               "integrations/all/podium",
               "api-integrations/posthog",
               "api-integrations/practicefusion",
+              "api-integrations/printful",
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
