@@ -1366,7 +1366,8 @@ class OAuthController {
         }
 
         if (!authorizationCode) {
-            const error = WSErrBuilder.InvalidCallbackOAuth2();
+            const providerContext = WSErrBuilder.getProviderErrorContextFromQuery(req.query as Record<string, unknown>);
+            const error = WSErrBuilder.InvalidCallbackOAuth2(providerContext);
             void logCtx.error(error.message, {
                 config: {
                     scopes: config.oauth_scopes,
@@ -2255,7 +2256,8 @@ class OAuthController {
         const channel = session.webSocketClientId;
 
         if (!authorizationCode) {
-            const error = WSErrBuilder.InvalidCallbackOAuth2();
+            const providerContext = WSErrBuilder.getProviderErrorContextFromQuery(req.query as Record<string, unknown>);
+            const error = WSErrBuilder.InvalidCallbackOAuth2(providerContext);
             void logCtx.error(error.message);
             await logCtx.failed();
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
