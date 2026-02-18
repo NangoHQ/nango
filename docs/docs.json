@@ -340,6 +340,7 @@
               "integrations/all/chorus",
               "integrations/all/circle-so",
               "integrations/all/clari-copilot",
+              "api-integrations/cleverreach",
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
