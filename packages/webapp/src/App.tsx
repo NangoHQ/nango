@@ -196,27 +196,27 @@ const router = sentryCreateBrowserRouter([
                         element: <Navigate to="/environment-settings" />
                     }
                 ]
-            },
-            {
-                path: 'account-settings',
-                element: <Navigate to="/team-settings" />
-            },
-            {
-                path: 'team-settings',
-                element: <TeamSettings />,
-                handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
-            },
-            {
-                path: 'team/billing',
-                element: <TeamBilling />,
-                handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
-            },
-            {
-                path: 'user-settings',
-                element: <UserSettings />,
-                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
             }
         ]
+    },
+    {
+        path: 'account-settings',
+        element: <Navigate to="/team-settings" />
+    },
+    {
+        path: 'team-settings',
+        element: <TeamSettings />,
+        handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+    },
+    {
+        path: 'team/billing',
+        element: <TeamBilling />,
+        handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
+    },
+    {
+        path: 'user-settings',
+        element: <UserSettings />,
+        handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
     },
     {
         path: '/hn-demo',
