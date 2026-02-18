@@ -34,7 +34,7 @@
         "braintree": "3.15.0",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
-        "fast-xml-parser": "5.3.4",
+        "fast-xml-parser": "5.3.6",
         "form-data": "4.0.4",
         "he": "^1.2.0",
         "js-yaml": "4.1.1",
