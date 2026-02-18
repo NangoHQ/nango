@@ -1,6 +1,6 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, getPlanBy, handlePlanChanged, updatePlan } from '@nangohq/shared';
+import { accountService, getPlan, handlePlanChanged, updatePlan } from '@nangohq/shared';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -70,7 +70,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err('missing customer in data');
             }
 
-            const resPlan = await getPlanBy(db.knex, { stripe_customer_id: data.customer });
+            const resPlan = await getPlan(db.knex, { stripeCustomerId: data.customer });
             if (resPlan.isErr()) {
                 return Err(resPlan.error);
             }
@@ -122,7 +122,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err('missing customer in data');
             }
 
-            const resPlan = await getPlanBy(db.knex, { stripe_customer_id: customer });
+            const resPlan = await getPlan(db.knex, { stripeCustomerId: customer });
             if (resPlan.isErr()) {
                 return Err(resPlan.error);
             }
@@ -149,7 +149,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err('missing customer in data');
             }
 
-            const resPlan = await getPlanBy(db.knex, { stripe_customer_id: customer });
+            const resPlan = await getPlan(db.knex, { stripeCustomerId: customer });
             if (resPlan.isErr()) {
                 return Err(resPlan.error);
             }
@@ -210,7 +210,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err('missing customer in data');
             }
 
-            const resPlan = await getPlanBy(db.knex, { stripe_customer_id: customer });
+            const resPlan = await getPlan(db.knex, { stripeCustomerId: customer });
             if (resPlan.isErr()) {
                 return Err(resPlan.error);
             }

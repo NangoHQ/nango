@@ -1,0 +1,79 @@
+---
+title: 'Domo'
+sidebarTitle: 'Domo'
+description: 'Integrate your application with the Domo API'
+---
+
+## 🚀 Quickstart
+
+Connect to Domo with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Domo_.
+    </Step>
+    <Step title="Authorize Domo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Client ID and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Domo API">
+    Let's make your first request to the Domo API (get a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/users" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Domo Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Domo Client ID and Secret](/api-integrations/domo/connect)  
+Create a Domo developer app and get credentials to connect to Nango
+
+Official docs: [Domo API documentation](https://developer.domo.com/portal/d01f63a6ba662-domo-developer-portal)
+
+## 🧩 Pre-built syncs & actions for Domo
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/domo/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

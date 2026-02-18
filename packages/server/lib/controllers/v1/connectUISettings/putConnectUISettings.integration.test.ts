@@ -45,11 +45,11 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error missing env query param
         const res = await api.fetch(route, {
             method: 'PUT',
-            token: env.secret_key,
+            token: secret.secret,
             body: getCustomSettings()
         });
 
@@ -57,7 +57,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should create new settings when they do not exist initially and both plan features are enabled', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Enable both plan features so custom settings can be preserved
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
@@ -72,7 +72,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: newSettings
         });
 
@@ -89,7 +89,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should update existing settings when they already exist and both plan features are enabled', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Enable both plan features so custom settings can be preserved
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
@@ -116,7 +116,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: updatedSettings
         });
 
@@ -133,7 +133,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should reject invalid body with missing required fields', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const invalidBody = {
             showWatermark: true,
@@ -144,7 +144,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: invalidBody
         });
 
@@ -170,7 +170,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should reject invalid body with missing properties', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const invalidBody = {
             // Missing showWatermark
@@ -187,7 +187,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: invalidBody
         });
 
@@ -223,7 +223,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should override theme to defaults when plan does not have can_customize_connect_ui_theme flag', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Disable the theme customization feature for this plan, but enable watermark customization
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: true });
@@ -236,7 +236,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: testSettings
         });
 
@@ -255,7 +255,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should override showWatermark to defaults when plan does not have can_disable_connect_ui_watermark flag', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Disable the watermark customization feature for this plan, but enable theme customization
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: false });
@@ -268,7 +268,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: testSettings
         });
 
@@ -287,7 +287,7 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should override both features to defaults when plan has neither flag', async () => {
-        const { env, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
 
         // Disable both features for this plan
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: false, can_disable_connect_ui_watermark: false });
@@ -297,7 +297,7 @@ describe(`PUT ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: env.secret_key,
+            token: secret.secret,
             body: testSettings
         });
 

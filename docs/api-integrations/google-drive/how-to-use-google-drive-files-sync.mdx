@@ -52,24 +52,22 @@ Or for folders:
 }
 ```
 
-### Step 3: Start the sync with metadata
+### Step 3: Set metadata and trigger the sync
 
-Use the Nango SDK to start or update the sync with the selected file/folder IDs:
+Use the Nango SDK to set the metadata with the selected file/folder IDs, then trigger the sync:
 
 ```typescript
 import { Nango } from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-// Start sync with specific files
-await nango.triggerSync({
-  providerConfigKey: '<INTEGRATION-ID>',
-  connectionId: '<CONNECTION-ID>',
-  syncs: ['documents'],
-  metadata: {
-    files: ['file-id-from-picker']
-  }
+// Set metadata with specific files to sync
+await nango.setMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+  files: ['file-id-from-picker']
 });
+
+// Trigger the sync
+await nango.triggerSync('<INTEGRATION-ID>', ['documents'], '<CONNECTION-ID>');
 ```
 
 ### Step 4: Access synced data
@@ -78,7 +76,7 @@ Once the sync runs, access the synced file metadata:
 
 ```typescript
 // Get synced documents
-const records = await nango.getRecords({
+const { records } = await nango.listRecords({
   providerConfigKey: '<INTEGRATION-ID>',
   connectionId: '<CONNECTION-ID>',
   model: 'GoogleDriveFile'
@@ -89,7 +87,7 @@ console.log(records);
 
 ## Complete example: Nango Sample App
 
-For a complete, production-ready implementation of Google Drive file syncing with the Google Picker API, check out the [Nango Sample App](/getting-started/sample-app).
+For a complete, production-ready implementation of Google Drive file syncing with the Google Picker API, check out the [Nango Sample App](/implementation-guides/use-cases/sample-app).
 
 The sample app demonstrates:
 - Full OAuth flow with Google Drive
@@ -108,15 +106,11 @@ You can also:
 The `folders` sync is simpler and syncs all root-level folders automatically without requiring metadata:
 
 ```typescript
-// Enable and trigger the folders sync
-await nango.triggerSync({
-  providerConfigKey: '<INTEGRATION-ID>',
-  connectionId: '<CONNECTION-ID>',
-  syncs: ['folders']
-});
+// Trigger the folders sync
+await nango.triggerSync('<INTEGRATION-ID>', ['folders'], '<CONNECTION-ID>');
 
 // Access synced folders
-const folders = await nango.getRecords({
+const { records: folders } = await nango.listRecords({
   providerConfigKey: '<INTEGRATION-ID>',
   connectionId: '<CONNECTION-ID>',
   model: 'GoogleDriveFolder'
@@ -157,13 +151,13 @@ All pre-built syncs can be extended and customized to fit your needs:
 3. Modify the sync logic (add fields, change filters, etc.)
 4. Deploy your custom version
 
-See [Extend and customize](/implementation-guides/building-integrations/extend-reference-implementation) for detailed instructions.
+See [Extend and customize](/implementation-guides/platform/functions/customize-template) for detailed instructions.
 
 ## Additional resources
 
 - [Google Drive API Documentation](https://developers.google.com/workspace/drive/api/reference/rest/v3)
 - [Google Picker API Guide](https://developers.google.com/drive/picker/guides/overview)
-- [Nango Syncs Documentation](/guides/use-cases/syncs)
-- [Nango Actions Documentation](/guides/use-cases/actions)
+- [Nango Syncs Documentation](/implementation-guides/use-cases/syncs/implement-a-sync)
+- [Nango Actions Documentation](/implementation-guides/use-cases/actions/implement-an-action)
 
 ---

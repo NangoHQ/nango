@@ -67,7 +67,11 @@ _No setup guide yet._
 
 ```typescript
 const { data } = await nango.createConnectSession({
-  end_user: {...},
+  tags: {
+    end_user_id: '<END-USER-ID>',
+    end_user_email: '<END-USER-EMAIL>',
+    organization_id: '<ORGANIZATION-ID>'
+  },
   integrations_config_defaults: {
     "microsoft-business-central": {
       connection_config: {

@@ -22,6 +22,7 @@ import {
     getLastSyncDate,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    secretService,
     setLastSyncDate,
     updateSyncJobResult,
     updateSyncJobStatus
@@ -41,7 +42,18 @@ import { pubsub } from '../utils/pubsub.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, SyncResult, SyncTypeLiteral, TelemetryBag } from '@nangohq/types';
+import type {
+    ConnectionJobs,
+    DBEnvironment,
+    DBSyncConfig,
+    DBTeam,
+    NangoProps,
+    RuntimeContext,
+    SdkLogger,
+    SyncResult,
+    SyncTypeLiteral,
+    TelemetryBag
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -153,6 +165,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
@@ -166,7 +183,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             syncId: task.syncId,
             syncVariant: task.syncVariant,
@@ -187,6 +204,10 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             }
         };
 
+        const runtimeContext: RuntimeContext = {
+            plan: plan
+        };
+
         if (task.debug) {
             void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
@@ -194,6 +215,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const res = await startScriptFn({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx
         });
 
@@ -403,7 +425,6 @@ export async function handleSyncSuccess({
                         model
                     }
                 });
-
                 void tracer.scope().activate(span, async () => {
                     try {
                         if (team && environment && providerConfig) {
@@ -411,6 +432,7 @@ export async function handleSyncSuccess({
                                 account: team,
                                 connection: connection,
                                 environment: environment,
+                                secret: nangoProps.secretKey,
                                 syncConfig: nangoProps.syncConfig,
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
@@ -857,6 +879,11 @@ async function onFailure({
         if (team && environment && syncConfig && providerConfig) {
             void tracer.scope().activate(span, async () => {
                 try {
+                    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+                    if (defaultSecret.isErr()) {
+                        throw defaultSecret.error;
+                    }
+
                     const res = await sendSyncWebhook({
                         account: team,
                         providerConfig,
@@ -864,6 +891,7 @@ async function onFailure({
                         syncVariant,
                         connection: connection,
                         environment: environment,
+                        secret: defaultSecret.value.secret,
                         webhookSettings,
                         model: models.join(','),
                         success: false,

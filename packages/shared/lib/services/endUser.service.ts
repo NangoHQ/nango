@@ -1,5 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
+
+const logger = getLogger('endUser.service');
+
+import { TAG_KEY_MAX_LENGTH, TAG_MAX_COUNT, TAG_VALUE_MAX_LENGTH, connectionTagsKeySchema, connectionTagsSchema } from './tags/schema.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -11,7 +15,8 @@ import type {
     DBInsertEndUser,
     DBTeam,
     EndUser,
-    InternalEndUser
+    InternalEndUser,
+    Tags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -297,4 +302,162 @@ export async function syncEndUserToConnection(
 
     await linkConnection(db, { endUserId: upsertRes.value.id, connection });
     return Ok(true);
+}
+
+/**
+ * Build tags from endUser and organization fields for backward compatibility.
+ * Existing users using endUser/organization fields will have their metadata
+ * automatically populated as tags.
+ *
+ * Merge priority (lowest to highest):
+ * 1. Auto-generated from end_user (end_user_id, end_user_email, end_user_display_name)
+ * 2. Auto-generated from organization (organization_id, organization_display_name)
+ * 3. end_user.tags (can override auto-generated tags)
+ *
+ */
+export function buildTagsFromEndUser(
+    endUser: ConnectSessionInput['end_user'] | null | undefined,
+    organization: ConnectSessionInput['organization'] | null | undefined
+): Tags {
+    const MAX_LOG_KEYS = 200;
+
+    const pushCapped = <T>(list: T[], item: T) => {
+        if (list.length >= MAX_LOG_KEYS) {
+            return;
+        }
+        list.push(item);
+    };
+
+    const issues: {
+        truncated_key: { key: string; truncated_key: string; original_length: number }[];
+        truncated_value: { key: string; original_length: number }[];
+        invalid_key_format: { key: string; normalized_key: string; message: string }[];
+        dropped_end_user_tags_due_to_max_count: string[];
+        truncated_base_value: { key: string; original_length: number }[];
+    } = {
+        truncated_key: [],
+        truncated_value: [],
+        invalid_key_format: [],
+        dropped_end_user_tags_due_to_max_count: [],
+        truncated_base_value: []
+    };
+
+    const truncate = (value: string, maxLength: number): string => {
+        return value.length > maxLength ? value.slice(0, maxLength) : value;
+    };
+
+    const setIfValidValue = (tags: Tags, key: string, value: unknown) => {
+        if (typeof value !== 'string') {
+            return;
+        }
+
+        if (value.length > TAG_VALUE_MAX_LENGTH) {
+            pushCapped(issues.truncated_base_value, { key, original_length: value.length });
+        }
+
+        const truncated = truncate(value, TAG_VALUE_MAX_LENGTH);
+        if (truncated.length === 0) {
+            return;
+        }
+
+        tags[key] = truncated;
+    };
+
+    const baseTags: Tags = {};
+
+    if (endUser) {
+        setIfValidValue(baseTags, 'end_user_id', endUser.id);
+        setIfValidValue(baseTags, 'end_user_email', endUser.email);
+        setIfValidValue(baseTags, 'end_user_display_name', endUser.display_name);
+    }
+
+    if (organization) {
+        setIfValidValue(baseTags, 'organization_id', organization.id);
+        setIfValidValue(baseTags, 'organization_display_name', organization.display_name);
+    }
+
+    const endUserTags: Tags = {};
+    const rawEndUserTagKeys: string[] = [];
+    if (endUser?.tags) {
+        for (const [rawKey, rawValue] of Object.entries(endUser.tags)) {
+            pushCapped(rawEndUserTagKeys, rawKey);
+
+            if (typeof rawValue !== 'string') {
+                continue;
+            }
+
+            const lowerKey = rawKey.toLowerCase();
+            const truncatedKey = truncate(lowerKey, TAG_KEY_MAX_LENGTH);
+            if (lowerKey.length > TAG_KEY_MAX_LENGTH) {
+                pushCapped(issues.truncated_key, { key: rawKey, truncated_key: truncatedKey, original_length: lowerKey.length });
+            }
+
+            const parseKeyResult = connectionTagsKeySchema.safeParse(truncatedKey);
+            if (!parseKeyResult.success) {
+                const message = parseKeyResult.error.issues[0]?.message ?? 'Invalid tag key';
+                pushCapped(issues.invalid_key_format, { key: rawKey, normalized_key: truncatedKey, message });
+                continue;
+            }
+
+            if (rawValue.length > TAG_VALUE_MAX_LENGTH) {
+                pushCapped(issues.truncated_value, { key: rawKey, original_length: rawValue.length });
+            }
+
+            const truncatedValue = truncate(rawValue, TAG_VALUE_MAX_LENGTH);
+
+            endUserTags[truncatedKey] = truncatedValue;
+        }
+    }
+
+    let generatedTags: Tags = baseTags;
+    const hasEndUserTags = Object.keys(endUserTags).length > 0;
+    if (hasEndUserTags) {
+        generatedTags = { ...baseTags, ...endUserTags };
+        // If base + end_user.tags exceeds the max key count, drop end_user.tags entirely.
+        if (Object.keys(generatedTags).length > TAG_MAX_COUNT) {
+            for (const key of rawEndUserTagKeys) {
+                pushCapped(issues.dropped_end_user_tags_due_to_max_count, key);
+            }
+            generatedTags = baseTags;
+        }
+    }
+
+    if (Object.keys(generatedTags).length === 0) {
+        return {};
+    }
+
+    const hasIssues =
+        issues.truncated_key.length > 0 ||
+        issues.truncated_value.length > 0 ||
+        issues.invalid_key_format.length > 0 ||
+        issues.dropped_end_user_tags_due_to_max_count.length > 0 ||
+        issues.truncated_base_value.length > 0;
+
+    if (hasIssues) {
+        logger.warning('Adjusted tags to meet constraints, found issues', {
+            end_user_id: endUser?.id,
+            organization_id: organization?.id,
+            issues_cap: MAX_LOG_KEYS,
+            issues
+        });
+    };
+
+    const result = connectionTagsSchema.safeParse(generatedTags);
+    if (result.success) {
+        return result.data;
+    }
+
+    const validationError = result.error.issues[0]?.message;
+
+    // Best effort fallback: keep base tags if end_user.tags is somehow invalid.
+    if (hasEndUserTags) {
+        const baseResult = connectionTagsSchema.safeParse(baseTags);
+        if (baseResult.success) {
+            logger.warning(`Failed to normalize tags from end_user.tags, using base tags only: ${validationError}`);
+            return baseResult.data;
+        }
+    }
+
+    logger.warning(`Failed to normalize tags from endUser/organization: ${validationError}`);
+    return {};
 }

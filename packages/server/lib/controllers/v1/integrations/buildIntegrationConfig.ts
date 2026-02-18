@@ -59,12 +59,15 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
             config.oauth_client_id = auth.clientId ?? null;
             config.oauth_client_secret = auth.clientSecret ?? null;
             config.app_link = auth.appLink ?? null;
+
             // This is a legacy thing
-            config.custom = {
-                ...config.custom,
-                ...(auth.appId && { app_id: auth.appId }),
-                ...(auth.privateKey && { private_key: Buffer.from(auth.privateKey).toString('base64') })
-            };
+            if (auth.appId || auth.privateKey) {
+                config.custom = {
+                    ...config.custom,
+                    ...(auth.appId && { app_id: auth.appId }),
+                    ...(auth.privateKey && { private_key: Buffer.from(auth.privateKey).toString('base64') })
+                };
+            }
         } else if (auth.authType === 'MCP_OAUTH2') {
             config.oauth_client_id = null;
             config.oauth_client_secret = null;
@@ -76,6 +79,13 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
                 ...(clientName && { oauth_client_name: clientName }),
                 ...(clientUri && { oauth_client_uri: clientUri }),
                 ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
+            };
+        } else if (auth.authType === 'INSTALL_PLUGIN') {
+            config.app_link = auth.appLink ?? null;
+            config.custom = {
+                ...config.custom,
+                ...(auth.username && { username: auth.username }),
+                ...(auth.password && { password: Buffer.from(auth.password).toString('base64') })
             };
         }
     }

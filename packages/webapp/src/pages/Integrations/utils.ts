@@ -26,3 +26,26 @@ const displayNames: Record<AuthModeType, string> = {
 export function getDisplayName(authMode: AuthModeType): string {
     return displayNames[authMode] || authMode.replaceAll('_', ' ').toUpperCase();
 }
+
+export function validateUrl(value: string): string | null {
+    const message = 'Must be a valid URL (e.g., https://example.com)';
+    try {
+        // The URL constructor will throw if the URL is invalid.
+        // Only accept http or https URLs.
+        const url = new URL(value);
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+            return null;
+        } else {
+            return message;
+        }
+    } catch {
+        return message;
+    }
+}
+
+export function validateNotEmpty(value: string): string | null {
+    if (value.trim() === '') {
+        return 'Must not be empty';
+    }
+    return null;
+}

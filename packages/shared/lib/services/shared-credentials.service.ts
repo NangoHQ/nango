@@ -36,6 +36,7 @@ class SharedCredentialsService {
                     .select('*')
                     .from<DBSharedCredentials>('providers_shared_credentials')
                     .where('name', shared_credentials_name ?? providerName)
+                    .orderBy('created_at', 'desc')
                     .first();
 
                 if (!sharedCredentials) {
@@ -147,8 +148,6 @@ class SharedCredentialsService {
                     credentials: configToInsert
                 })
                 .into<DBSharedCredentials>('providers_shared_credentials')
-                .onConflict('name')
-                .ignore()
                 .returning('*');
         } catch (err) {
             return Err(new Error('failed_to_create_shared_credentials', { cause: err }));

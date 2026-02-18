@@ -61,63 +61,6 @@ try {
 }
 ```
 
-## Providers
-
-### List all providers
-
-Returns a list of providers.
-
-```js
-await nango.listProviders()
-```
-
-**Example Response**
-
-<Expandable>
-```json
-{
-    "data": [
-        {
-            "name": "posthog",
-            "categories": ["dev-tools"],
-            "auth_mode": "API_KEY",
-            "proxy": {
-                "base_url": "https://api.posthog.com",
-            },
-            "docs": "https://nango.dev/docs/integrations/all/posthog"
-        }
-    ]
-}
-```
-</Expandable>
-
-
-### Get a provider
-
-Returns a specific provider.
-
-```js
-await nango.getProvider({ provider: <NAME> })
-```
-
-**Example Response**
-
-<Expandable>
-```json
-{
-    "data": {
-        "name": "posthog",
-        "categories": ["dev-tools"],
-        "auth_mode": "API_KEY",
-        "proxy": {
-            "base_url": "https://api.posthog.com",
-        },
-        "docs": "https://nango.dev/docs/integrations/all/posthog"
-    }
-}
-```
-</Expandable>
-
 ## Integrations
 
 ### List all integrations
@@ -307,6 +250,171 @@ await nango.deleteIntegration(<UNIQUE_KEY>);
 ```
 </Expandable>
 
+## Connect
+
+### Create a connect session
+
+Create a connect session. The token is short-lived and lasts for 30 minutes.
+
+```js
+const { data } = await nango.createConnectSession({
+  // Recommended: copied onto the connection and included in auth webhooks.
+  tags: {
+    end_user_id: '<END-USER-ID>',
+    end_user_email: '<END-USER-EMAIL>',
+    organization_id: '<ORGANIZATION-ID>'
+  },
+
+  allowed_integrations: ['<INTEGRATION-ID-1>', '<INTEGRATION-ID-2>'],
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
+```
+
+**Parameters**
+
+<Expandable>
+
+  <ResponseField name="end_user" type="object" deprecated>
+    Deprecated. Use `tags` instead.
+  </ResponseField>
+
+  <ResponseField name="organization" type="object" deprecated>
+    Deprecated. Use `tags` instead.
+    <Expandable title="organization" defaultOpen>
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="allowed_integrations" type="string[]">
+    An array of integration IDs that are allowed for this session.
+  </ResponseField>
+
+  <ResponseField name="tags" type="Record<string, string>">
+    Optional. Tags that will be copied onto the created connection and included in auth webhooks.
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations. For OAuth2 integrations, you can allow end-users to provide their own OAuth client credentials by setting empty `oauth_client_id_override` and `oauth_client_secret_override` values:
+    ```js
+    integrations_config_defaults: {
+      google: {
+        connection_config: {
+          oauth_client_id_override: '',
+          oauth_client_secret_override: ''
+        }
+      }
+    }
+    ```
+    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+  </ResponseField>
+</Expandable>
+
+**Returns**
+
+<Expandable>
+```json
+{
+    "data": {
+        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "connect_link": "https://connect.nango.dev/?session_token=nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "expires_at": "2024-09-27T19:49:51.449Z"
+    }
+}
+```
+</Expandable>
+
+
+### Create a reconnect session
+
+Create a reconnect session for a given `connection_id`.
+You can pass `tags` to update connection attribution during reconnection.
+Use this method when a user needs to input new credentials or to manually refresh token.
+
+<Info>This method is only compatible with `connection_id` created with a session token.</Info>
+
+```js
+const { data } = await nango.createReconnectSession({
+  // Required
+  connection_id: '<CONNECTION-ID>',
+  integration_id: '<INTEGRATION-ID>',
+
+  // Optional
+  tags: {
+    end_user_id: '<END-USER-ID>',
+    end_user_email: '<END-USER-EMAIL>',
+    organization_id: '<ORGANIZATION-ID>'
+  },
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="connection_id" type="string" required>
+    The unique identifier for the connection.
+  </ResponseField>
+
+  <ResponseField name="integration_id" type="string" required>
+    The unique identifier for the integration.
+  </ResponseField>
+
+  <ResponseField name="tags" type="Record<string, string>">
+    Optional. Tags to apply to the connection during reconnection.
+  </ResponseField>
+
+  <ResponseField name="end_user" type="object" deprecated>
+    Deprecated. Use `tags` instead.
+  </ResponseField>
+
+  <ResponseField name="organization" type="object" deprecated>
+    Deprecated. Use `tags` instead.
+    <Expandable title="organization">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations.
+  </ResponseField>
+</Expandable>
+
+**Returns**
+
+<Expandable>
+```json
+{
+    "data": {
+        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "connect_link": "https://connect.nango.dev/?session_token=nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "expires_at": "2024-09-27T19:49:51.449Z"
+    }
+}
+```
+</Expandable>
+
 ## Connections
 
 ### List connections
@@ -316,10 +424,9 @@ Returns a list of connections without credentials.
 ```js
 await nango.listConnections({
     connectionId: 'connection-id',
-    userId: 'user-123',
     integrationId: 'integration-456',
-    // only supports email | displayName
-    tags: { displayName: 'My User' }
+    limit: 100,
+    tags: { "end_user_id": 'user-123' }
 });
 ```
 
@@ -331,8 +438,8 @@ await nango.listConnections({
             <ResponseField name="connectionId" type="string">
                 Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
             </ResponseField>
-            <ResponseField name="userId" type="string">
-                Optional. Will exactly match a given end user ID.
+            <ResponseField name="userId" type="string" deprecated>
+                Deprecated. Prefer filtering connections using `tags` instead (e.g. `end_user_id`).
             </ResponseField>
             <ResponseField name="integrationId" type="string">
                 Optional. Filter by integration ID.
@@ -357,6 +464,11 @@ await nango.listConnections({
             "provider_config_key": "slack-nango-community",
             "created": "2023-06-03T14:53:22.051Z",
             "metadata": null,
+            "tags": {
+                "end_user_id": "your-internal-id",
+                "end_user_email": "user@example.com",
+                "organization_id": "user-organization-id"
+            },
             "errors": []
         },
         {
@@ -368,14 +480,12 @@ await nango.listConnections({
             "metadata": {
                 "bot_id": "some-uuid"
             },
-            "errors": [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}],
-            "end_user": {
-                "id": "your-internal-id",
-                "email": "user@example.com",
-                "organization": {
-                    "id": "user-organization-id"
-                }
-            }
+            "tags": {
+                "end_user_id": "your-internal-id",
+                "end_user_email": "user@example.com",
+                "organization_id": "user-organization-id"
+            },
+            "errors": [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}]
         }
     ]
 }
@@ -393,7 +503,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/implementation-guides/requests-proxy/implement-requests-proxy)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/implementation-guides/platform/proxy/implement-requests-proxy)).
 </Info>
 
 <Tip>
@@ -474,7 +584,34 @@ await nango.patchConnection({
 
 <Expandable>
     <ResponseField name="body" type="PatchPublicConnection['Body']" required>
-        The body of the connection (see [API Reference](/reference/api/connections/patch))
+        The body of the connection (see [API Reference](/reference/api/connections/patch)).
+        <Expandable title="body" defaultOpen>
+            <ResponseField name="tags" type="object">
+                Connection tags (key/value strings). Keys are normalized to lowercase.
+                <Expandable title="tags">
+                    <ResponseField name="{key}" type="string">
+                          Maximum string length: 255
+                    </ResponseField>
+                </Expandable>
+            </ResponseField>
+            <ResponseField name="end_user" type="object" deprecated>
+                Deprecated. Use tags instead
+                <Expandable title="end_user">
+                    <ResponseField name="id" type="string" deprecated>
+                        Deprecated. Uniquely identifies the end user.
+                    </ResponseField>
+                    <ResponseField name="email" type="string" deprecated>
+                        Deprecated. The email address of the end user.
+                    </ResponseField>
+                    <ResponseField name="display_name" type="string" deprecated>
+                        Deprecated. The display name of the end user.
+                    </ResponseField>
+                    <ResponseField name="tags" type="object" deprecated>
+                        Deprecated. Tags associated with the end user. Only accepts string values, up to 64 keys.
+                    </ResponseField>
+                </Expandable>
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -663,18 +800,16 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 ```json
 {
     "id": 1,
-    "connection_id": "user-123",
+    "connection_id": "<CONNECTION-ID>",
     "provider": "slack",
     "provider_config_key": "slack-integration",
     "created": "2023-06-03T14:53:22.051Z",
     "metadata": null,
     "errors": [],
-    "end_user": {
-        "id": "user-123",
-        "email": "user@example.com",
-        "organization": {
-            "id": "org-456"
-        }
+    "tags": {
+        "end_user_id": "user-123",
+        "end_user_email": "user@example.com",
+        "organization_id": "org-456"
     }
 }
 ```
@@ -753,7 +888,7 @@ const scriptsConfig = await nango.getScriptsConfig();
                         ]
                     }
                 ],
-                "sync_type": "FULL",
+                "sync_type": "FULL", // DEPRECATED
                 "runs": "every half hour",
                 "track_deletes": false,
                 "auto_start": false,
@@ -766,7 +901,7 @@ const scriptsConfig = await nango.getScriptsConfig();
                 "returns": [
                     "GithubIssue"
                 ],
-                "description": "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n",
+                "description": "Fetches the Github issues from all a user's repositories.\nDetails: doesn't track deletes, metadata is not required.\n",
                 "scopes": [
                     "public_repo"
                 ],
@@ -1226,8 +1361,8 @@ const records = await nango.listRecords<ModelName>({
         An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
       </ResponseField>
 
-      <ResponseField name="delta" type="string">
-        DEPRECATED (use modifiedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+      <ResponseField name="delta" type="string" deprecated>
+        Deprecated. (use modifiedAfter) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
       </ResponseField>
     </Expandable>
   </ResponseField>
@@ -1333,14 +1468,20 @@ console.log(`Pruned ${result.count} records. More records available: ${result.ha
 Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
 ```ts
-// Simple usage with sync names
-const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>', 'incremental');
+// Simple usage - trigger sync preserving checkpoint
+await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Reset checkpoint and start fresh
+await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1'], '<CONNECTION_ID>', { reset: true });
+
+// Reset checkpoint and clear all cached records
+await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1'], '<CONNECTION_ID>', { reset: true, emptyCache: true });
 
 // Using variants
-const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
+await nango.triggerSync('<INTEGRATION-ID>', [
   { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
   'SYNC_NAME2' // Uses default base variant
-], '<CONNECTION_ID>', 'incremental');
+], '<CONNECTION_ID>', { reset: true });
 ```
 
 **Parameters**
@@ -1358,11 +1499,16 @@ const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
-    <ResponseField name="sync_mode" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'">
-        The mode in which to trigger the syncs.
-        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
-        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
-        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
+    <ResponseField name="opts" type="object">
+        Options for triggering the sync. See the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details on `reset` and `emptyCache`.
+        <Expandable>
+            <ResponseField name="reset" type="boolean">
+                If `true`, clears the checkpoint before triggering the sync, causing it to start fresh.
+            </ResponseField>
+            <ResponseField name="emptyCache" type="boolean">
+                If `true`, deletes all cached records associated with the sync before triggering. Must be used with `reset: true`.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -1489,7 +1635,7 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
             "name": "<string>",
             "variant": "<string>",
             "status": "RUNNING",
-            "type": "INCREMENTAL",
+            "type": "INCREMENTAL", // DEPRECATED
             "finishedAt": "<string>",
             "nextScheduledSyncAt": "<string>",
             "frequency": "<string>",
@@ -1503,11 +1649,17 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
             "recordCount": {
                 "<string>": <number>
                 ...
+            },
+            "checkpoint": {
+                "<string>": "<string | number | boolean>"
+                ...
             }
         }
     ]
 }
 ```
+
+The `checkpoint` field contains the last saved checkpoint for the sync. Learn more about [checkpoints](/implementation-guides/use-cases/syncs/checkpoints).
 </Expandable>
 
 ### Override sync connection frequency
@@ -1782,7 +1934,7 @@ const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123
 
 ## Proxy
 
-Makes an HTTP request using the [proxy](/guides/use-cases/proxy):
+Makes an HTTP request using the [proxy](/guides/primitives/proxy):
 
 ```js
 const config = {
@@ -1849,174 +2001,58 @@ The response from the external API is passed back to you exactly as Nango gets i
 - response body
 </Expandable>
 
-## Connect
+## Providers
 
-### Create a connect session
+### List all providers
 
-Create a connect session for a given end user. The token is short-lived and lasts for 30 minutes.
+Returns a list of providers.
 
 ```js
-const { data } = await nango.createConnectSession({
-  end_user: {
-    id: '<END-USER-ID>',
-    email: '<END-USER-EMAIL>',
-    display_name: '<END-USER-NAME>',
-    tags: { organizationId: '<ORGANIZATION-ID>' }
-  },
-  allowed_integrations: ['<INTEGRATION-ID-1>', '<INTEGRATION-ID-2>'],
-  integrations_config_defaults: {
-    <INTEGRATION-ID-1>: {
-      connection_config: {
-        <CONFIG-KEY>: '<VALUE>'
-      }
-    }
-  }
-});
+await nango.listProviders()
 ```
 
-**Parameters**
-
-<Expandable>
-  <ResponseField name="end_user" type="object" required>
-    <Expandable title="end_user" defaultOpen>
-      <ResponseField name="id" type="string" required>
-        The unique identifier for the end user.
-      </ResponseField>
-      <ResponseField name="email" type="string">
-        The email address of the end user.
-      </ResponseField>
-      <ResponseField name="display_name" type="string">
-        The display name of the end user.
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
-
-  <ResponseField name="organization" type="object">
-    <Expandable title="organization" defaultOpen>
-      <ResponseField name="id" type="string" required>
-        The unique identifier for the organization.
-      </ResponseField>
-      <ResponseField name="display_name" type="string">
-        The display name of the organization.
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
-
-  <ResponseField name="allowed_integrations" type="string[]">
-    An array of integration IDs that are allowed for this session.
-  </ResponseField>
-
-  <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations. For OAuth2 integrations, you can allow end-users to provide their own OAuth client credentials by setting empty `oauth_client_id_override` and `oauth_client_secret_override` values:
-    ```js
-    integrations_config_defaults: {
-      google: {
-        connection_config: {
-          oauth_client_id_override: '',
-          oauth_client_secret_override: ''
-        }
-      }
-    }
-    ```
-    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
-  </ResponseField>
-</Expandable>
-
-**Returns**
+**Example Response**
 
 <Expandable>
 ```json
 {
-    "data": {
-        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
-        "connect_link": "https://connect.nango.dev/?session_token=nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
-        "expires_at": "2024-09-27T19:49:51.449Z"
-    }
+    "data": [
+        {
+            "name": "posthog",
+            "categories": ["dev-tools"],
+            "auth_mode": "API_KEY",
+            "proxy": {
+                "base_url": "https://api.posthog.com",
+            },
+            "docs": "https://nango.dev/docs/integrations/all/posthog"
+        }
+    ]
 }
 ```
 </Expandable>
 
 
-### Create a reconnect session
+### Get a provider
 
-Create a reconnect session for a given `connection_id`. Optionally, you can set `end_user` and `organization` to update those attributes of the connection.
-Use this method when a user needs to input new credentials or to manually refresh token.
-
-<Info>This method is only compatible with `connection_id` created with a session token.</Info>
+Returns a specific provider.
 
 ```js
-const { data } = await nango.createReconnectSession({
-  // Required
-  connection_id: '<CONNECTION-ID>'
-  integration_id: '<INTEGRATION-ID>',
-
-  // Optional
-  end_user: {
-    id: '<END-USER-ID>',
-    email: '<END-USER-EMAIL>',
-    display_name: '<END-USER-NAME>',
-    tags: { organizationId: '<ORGANIZATION-ID>' }
-  },
-  integrations_config_defaults: {
-    <INTEGRATION-ID-1>: {
-      connection_config: {
-        <CONFIG-KEY>: '<VALUE>'
-      }
-    }
-  }
-});
+await nango.getProvider({ provider: <NAME> })
 ```
 
-**Parameters**
-
-<Expandable>
-  <ResponseField name="connection_id" type="string" required>
-    The unique identifier for the connection.
-  </ResponseField>
-
-  <ResponseField name="integration_id" type="string" required>
-    The unique identifier for the integration.
-  </ResponseField>
-
-  <ResponseField name="end_user" type="object">
-    <Expandable title="end_user">
-      <ResponseField name="id" type="string" required>
-        The unique identifier for the end user.
-      </ResponseField>
-      <ResponseField name="email" type="string">
-        The email address of the end user.
-      </ResponseField>
-      <ResponseField name="display_name" type="string">
-        The display name of the end user.
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
-
-  <ResponseField name="organization" type="object">
-    <Expandable title="organization">
-      <ResponseField name="id" type="string" required>
-        The unique identifier for the organization.
-      </ResponseField>
-      <ResponseField name="display_name" type="string">
-        The display name of the organization.
-      </ResponseField>
-    </Expandable>
-  </ResponseField>
-
-  <ResponseField name="integrations_config_defaults" type="object">
-    Default configuration for specific integrations.
-  </ResponseField>
-</Expandable>
-
-**Returns**
+**Example Response**
 
 <Expandable>
 ```json
 {
     "data": {
-        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
-        "connect_link": "https://connect.nango.dev/?session_token=nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
-        "expires_at": "2024-09-27T19:49:51.449Z"
+        "name": "posthog",
+        "categories": ["dev-tools"],
+        "auth_mode": "API_KEY",
+        "proxy": {
+            "base_url": "https://api.posthog.com",
+        },
+        "docs": "https://nango.dev/docs/integrations/all/posthog"
     }
 }
 ```

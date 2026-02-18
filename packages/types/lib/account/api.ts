@@ -40,6 +40,7 @@ export type ValidateEmailAndLogin = Endpoint<{
         | ApiError<'error_refreshing_token'>;
     Success: {
         user: ApiUser;
+        showHearAboutUs?: boolean;
     };
 }>;
 
@@ -155,6 +156,31 @@ export type GetManagedCallback = Endpoint<{
     Success: {
         data: {
             url: string;
+        };
+    };
+}>;
+
+export type GetOnboardingHearAboutUs = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/account/onboarding/hear-about-us';
+    Error: ApiError<'unauthorized'>;
+    Success: {
+        data: {
+            showHearAboutUs: boolean;
+        };
+    };
+}>;
+
+export type PostOnboardingHearAboutUs = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/onboarding/hear-about-us';
+    Body: {
+        source: 'my_team_already_using' | 'recommended' | 'search_engine' | 'llm_search' | 'social_media' | 'dont_remember' | 'other' | 'skipped';
+    };
+    Error: ApiError<'unauthorized'> | ApiError<'forbidden'>;
+    Success: {
+        data: {
+            success: boolean;
         };
     };
 }>;

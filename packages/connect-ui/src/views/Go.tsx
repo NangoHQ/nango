@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -18,7 +18,7 @@ import { useI18n } from '@/lib/i18n';
 import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { cn, jsonSchemaToZod } from '@/lib/utils';
+import { cn, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
@@ -85,6 +85,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.client_private_key': { secret: true, title: 'Private Key', example: 'Your Private Key' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
+    'credentials.oauth_refresh_token_override': { secret: true, title: 'Refresh Token', example: 'Your Refresh Token' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
@@ -100,6 +101,7 @@ export const Go: React.FC = () => {
     const [result, setResult] = useState<AuthResult>();
     const [error, setError] = useState<string | null>(null);
     const [connectionFailed, setConnectionFailed] = useState(false);
+    const [showErrorDetails, setShowErrorDetails] = useState(false);
 
     const preconfigured = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
 
@@ -208,7 +210,7 @@ export const Go: React.FC = () => {
 
         if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfigured).length > 0) {
             // For OAUTH2, allow users to override client credentials if preconfigured with empty values
-            const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override'];
+            const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override', 'oauth_refresh_token_override'];
             for (const key of allowedOverrides) {
                 if (key in preconfigured && !additionalFields[key] && !(key in baseForm.shape)) {
                     baseForm.shape[key] = z.string().optional();
@@ -260,6 +262,50 @@ export const Go: React.FC = () => {
             telemetry('view:credentials_error');
         }
     }, [connectionFailed]);
+
+    const apiURL = useGlobal((state) => state.apiURL);
+    const allowedCallbackOrigin = useMemo(() => getAllowedCallbackOrigin(apiURL), [apiURL]);
+
+    useEffect(() => {
+        const sendAck = (evt: MessageEvent) => {
+            try {
+                if (evt.source && evt.source !== window && typeof (evt.source as Window).postMessage === 'function') {
+                    (evt.source as Window).postMessage({ type: 'nango_oauth_callback_ack' }, evt.origin);
+                }
+            } catch {
+                // ignore
+            }
+        };
+        const isAllowedSource = (evt: MessageEvent) => {
+            // only messages from the nango callback window  are accepted;
+            if (!evt.origin || evt.source === window) return false;
+            if (!allowedCallbackOrigin || evt.origin !== allowedCallbackOrigin) return false;
+            return true;
+        };
+        const handleOAuthCallbackError = (evt: MessageEvent) => {
+            if (evt.data?.type !== 'nango_oauth_callback_error' || !evt.data?.payload) return;
+            if (!isAllowedSource(evt)) return;
+            const { message } = evt.data.payload as { message: string; errorType?: string };
+            const fallback = t('go.authorizationFailed');
+            const displayMessage = message || fallback;
+            setLoading(false);
+            setConnectionFailed(true);
+            setError(displayMessage);
+            triggerError('connection_validation_failed', displayMessage);
+            sendAck(evt);
+        };
+        const handleOAuthCallbackSuccess = (evt: MessageEvent) => {
+            if (evt.data?.type !== 'nango_oauth_callback_success') return;
+            if (!isAllowedSource(evt)) return;
+            sendAck(evt);
+        };
+        window.addEventListener('message', handleOAuthCallbackError);
+        window.addEventListener('message', handleOAuthCallbackSuccess);
+        return () => {
+            window.removeEventListener('message', handleOAuthCallbackError);
+            window.removeEventListener('message', handleOAuthCallbackSuccess);
+        };
+    }, [t, allowedCallbackOrigin]);
 
     const onSubmit = useCallback(
         async (v: Record<string, unknown>) => {
@@ -346,7 +392,7 @@ export const Go: React.FC = () => {
                 setLoading(false);
             }
         },
-        [provider, integration, loading, nango, t, detectClosedAuthWindow]
+        [provider, integration, loading, nango, t, detectClosedAuthWindow, displayName]
     );
 
     if (!provider || !integration) {
@@ -387,7 +433,7 @@ export const Go: React.FC = () => {
             <div className="flex-1 flex flex-col justify-center gap-5 data-hasDocs:justify-between" data-hasDocs={!!docsConnectUrl}>
                 <HeaderButtons isAuthLink={isAuthLink} />
                 <main className="flex-1 flex flex-col justify-center items-center gap-10 px-4">
-                    <div className="flex flex-col gap-7 items-center">
+                    <div className="flex flex-col gap-7 items-center w-full max-w-md">
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
@@ -395,19 +441,43 @@ export const Go: React.FC = () => {
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-text-primary">{t('go.connectionFailed')}</h2>
-                        <p className="text-text-secondary text-center">{error || t('go.tryAgain')}</p>
+                        <p className="text-text-secondary text-center">{t('go.connectionErrorGeneric')}</p>
+
+                        {error && (
+                            <div className="w-full rounded-md border border-subtle bg-elevated overflow-hidden">
+                                <button
+                                    className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary hover:bg-muted/50 transition-colors cursor-pointer"
+                                    type="button"
+                                    onClick={() => setShowErrorDetails((v) => !v)}
+                                >
+                                    <span>{showErrorDetails ? t('go.hideErrorDetails') : t('go.showErrorDetails')}</span>
+                                    {showErrorDetails ? (
+                                        <ChevronUp className="w-4 h-4 shrink-0 text-text-tertiary" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4 shrink-0 text-text-tertiary" />
+                                    )}
+                                </button>
+                                {showErrorDetails && (
+                                    <div className="border-t border-subtle px-4 py-3 bg-muted/30">
+                                        <pre className="text-xs font-mono text-red-600 whitespace-pre-wrap break-all overflow-x-hidden">{error}</pre>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <Button
+                            className="w-full"
+                            loading={loading}
+                            size={'lg'}
+                            onClick={() => {
+                                setConnectionFailed(false);
+                                setError(null);
+                                setShowErrorDetails(false);
+                            }}
+                        >
+                            {t('common.back')}
+                        </Button>
                     </div>
-                    <Button
-                        className="w-full"
-                        loading={loading}
-                        size={'lg'}
-                        onClick={() => {
-                            setConnectionFailed(false);
-                            setError(null);
-                        }}
-                    >
-                        {t('common.back')}
-                    </Button>
                 </main>
                 {docsConnectUrl && (
                     <footer>
@@ -484,7 +554,11 @@ export const Go: React.FC = () => {
                                                             (isPreconfigured &&
                                                                 (provider.auth_mode !== 'OAUTH2' ||
                                                                     preconfigured[key] !== '' ||
-                                                                    !['oauth_client_id_override', 'oauth_client_secret_override'].includes(key))) ||
+                                                                    ![
+                                                                        'oauth_client_id_override',
+                                                                        'oauth_client_secret_override',
+                                                                        'oauth_refresh_token_override'
+                                                                    ].includes(key))) ||
                                                                 definition?.hidden ||
                                                                 definition?.automated
                                                                 ? 'hidden'

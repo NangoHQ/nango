@@ -469,7 +469,7 @@ describe('generateSyncTest', () => {
         expect(content).toContain("describe('github fetch-issues tests'");
 
         // Check NangoSyncMock configuration
-        expect(content).toContain("dirname: 'github'");
+        expect(content).toContain('dirname: __dirname,');
         expect(content).toContain('name: "fetch-issues"');
         expect(content).toContain('Model: "GithubIssue"');
 
@@ -528,7 +528,7 @@ describe('generateActionTest', () => {
         expect(content).toContain("describe('slack send-message tests'");
 
         // Check NangoActionMock configuration
-        expect(content).toContain("dirname: 'slack'");
+        expect(content).toContain('dirname: __dirname,');
         expect(content).toContain('name: "send-message"');
         expect(content).toContain('Model: "SlackMessage"');
 

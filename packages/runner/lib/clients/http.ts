@@ -1,45 +1,96 @@
-import { retryWithBackoff } from '@nangohq/utils';
+import { Agent } from 'node:https';
+
+import { networkError, retryWithBackoff, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
 
-export async function httpFetch(
-    url: string | URL,
-    init?: RequestInit,
-    backoffOptions?: {
-        startingDelay?: number;
-        timeMultiple?: number;
-        numOfAttempts?: number;
+function hasErrorCode(error: unknown): error is { code: string } {
+    return typeof error === 'object' && error !== null && 'code' in error && typeof (error as any).code === 'string';
+}
+
+function shouldRetry(error: unknown, response?: Response): boolean {
+    if (hasErrorCode(error) && networkError.includes(error.code)) {
+        return true;
     }
-): Promise<Response> {
+
+    if (response) {
+        if (response.status >= 500 || response.status === 429) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+export interface HttpFetchOptions extends Omit<RequestInit, 'keepalive'> {
+    userAgent?: string;
+    keepAlive?: boolean;
+}
+
+export interface BackoffOptions {
+    startingDelay?: number;
+    timeMultiple?: number;
+    numOfAttempts?: number;
+}
+
+let keepAliveAgent: Agent | null = null;
+function getKeepAliveAgent(): Agent {
+    if (!keepAliveAgent) {
+        keepAliveAgent = new Agent({ keepAlive: true });
+    }
+    return keepAliveAgent;
+}
+
+export async function httpFetch(url: string | URL, options?: HttpFetchOptions, backoffOptions?: BackoffOptions): Promise<Response> {
+    const { userAgent, keepAlive = true, ...requestInit } = options ?? {};
+
+    const method = requestInit.method || 'GET';
+
+    const headers = new Headers(requestInit.headers);
+    if (userAgent) {
+        headers.set('User-Agent', userAgent);
+    }
+
+    const fetchOptions: RequestInit & { dispatcher?: Agent } = {
+        ...requestInit,
+        headers,
+        keepalive: keepAlive
+    };
+
+    if (keepAlive && url.toString().startsWith('https')) {
+        fetchOptions.dispatcher = getKeepAliveAgent();
+    }
+
     try {
-        const response = await retryWithBackoff(async () => {
-            let res: Response;
-
+        return await retryWithBackoff(async () => {
             try {
-                res = await fetch(url, init);
+                const res = await fetch(url, fetchOptions);
+
+                if (!res.ok) {
+                    logger.error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+                }
+
+                if (shouldRetry(null, res)) {
+                    throw new Error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+                }
+
+                return res;
             } catch (err) {
-                logger.error(`Network error: ${init?.method || 'GET'} ${url.toString()} -> ${(err as Error).message}`);
-                // Retry on network errors
-                throw err;
-            }
+                if (shouldRetry(err)) {
+                    throw err;
+                }
 
-            if (!res.ok) {
-                logger.error(`${init?.method || 'GET'} ${url.toString()} -> ${res.status} ${res.statusText}`);
+                // Non-retryable error
+                return new Response(JSON.stringify({ error: stringifyError(err) }), {
+                    status: 502,
+                    headers: { 'Content-Type': 'application/json' }
+                });
             }
-
-            // Retry only on 5xx or 429 responses
-            if (res.status >= 500 || res.status === 429) {
-                throw new Error(`${init?.method || 'GET'} ${url.toString()} -> ${res.status} ${res.statusText}`);
-            }
-
-            return res;
         }, backoffOptions);
-
-        return response;
     } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return new Response(JSON.stringify({ error: message }), {
-            status: 599,
+        // All retries exhausted
+        return new Response(JSON.stringify({ error: stringifyError(err) }), {
+            status: 502,
             headers: { 'Content-Type': 'application/json' }
         });
     }

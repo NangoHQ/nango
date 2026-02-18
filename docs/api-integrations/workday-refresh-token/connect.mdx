@@ -1,0 +1,83 @@
+---
+title: 'Workday (Refresh Token) - How do I link my account?'
+sidebarTitle: 'Workday (Refresh Token)'
+---
+
+# Overview
+
+To authenticate with Workday (Refresh Token), you will need:
+1. **Token Domain** - The domain used to obtain tokens for your Workday account
+2. **Tenant** - The tenant of your Workday account
+3. **Client ID** - Your Workday API Client ID
+4. **Client Secret** - Your Workday API Client Secret
+5. **Refresh Token** - Your Workday refresh token for the Integration System User (ISU)
+
+This guide will walk you through finding your connection configuration values and obtaining your API client credentials.
+
+### Prerequisites:
+
+- You must have an active Workday account with administrator access
+- You must have access to register API clients for integrations
+
+### Instructions:
+
+#### Step 1: Finding your Token Domain
+1. Log in to your Workday instance.
+2. In your Workday homepage, go to the search bar and type **View API Clients** then select it.
+3. You can locate your **Token Domain** within the **Token Endpoint** field.
+4. The **Token Domain** is everything after `https://` and before `ccx`.
+- Example: If the endpoint is ` https://wd2-impl-services1.workday.com/ccx/oauth2/acme/token`, your **Token Domain** is `wd2-impl-services1.workday.com`.
+
+<img src="/api-integrations/workday-oauth/hostname.png" />
+
+#### Step 2: Finding your Tenant
+1. In the same **Token Endpoint** field from the **View API Clients** report, the **Tenant** is the final part of the URL after `/oauth2/` and before `/token`.
+- Example: If the endpoint is `https://wd2-impl-services1.workday.com/ccx/oauth2/acme/token`, your **Tenant** is `acme`.
+
+
+#### Step 3: Registering an API Client
+
+1. Navigate to **Register API Client for integration** in your Workday instance
+2. Click **Register API Client for Integrations**
+
+<img src="/api-integrations/workday-refresh-token/register_client.png"/>
+
+3. Enter a meaningful name to indicate that this API client is used for your integration (e.g., "Nango Integration")
+4. Select **Non-Expiring Refresh Tokens** to ensure long lived access
+5. Select all the OAuth2 scopes and Functional Area scopes that you need for the recipes you intend to create
+6. Save the **Client ID** and **Client Secret** before clicking **Done**. These will be required to create a Workday connection
+
+#### Step 4: Generating a Refresh Token
+
+After registering your API client, you need to generate a refresh token for your Integration System User (ISU).
+
+1. Navigate to **Action** > **API Client** > **Manage Refresh Tokens for Integrations**
+
+<img src="/api-integrations/workday-refresh-token/client.png"/>
+
+2. Select the **Integration System User** (ISU) to perform all integration actions
+
+<img src="/api-integrations/workday-refresh-token/manage_refresh_tokens.png"/>
+
+3. If there are no existing refresh tokens, select **Generate new refresh token**
+
+<img src="/api-integrations/workday-refresh-token/generate_refresh_tokens.png"/>
+
+4. Copy the new **Refresh Token** - this will be required to create a Workday connection
+
+
+#### Step 5: Enter credentials in the Connect UI
+
+Once you have your **Token Domain**, **Tenant**, **Client ID**, **Client Secret**, and **Refresh Token**:
+
+1. Open the form where you need to authenticate with Workday (Refresh Token)
+2. Enter your **Token Domain**, **Tenant**, **Client ID**, **Client Secret**, and **Refresh Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated
+
+
+<img src="/api-integrations/workday-refresh-token/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Workday (Refresh Token).
+
+---

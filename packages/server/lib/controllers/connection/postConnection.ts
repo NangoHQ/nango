@@ -4,6 +4,7 @@ import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import {
     EndUserMapper,
+    buildTagsFromEndUser,
     configService,
     connectionService,
     encryptionManager,
@@ -23,6 +24,7 @@ import {
     connectionCredentialsOauth2CCSchema,
     connectionCredentialsOauth2Schema,
     connectionCredentialsTBASchema,
+    connectionTagsSchema,
     endUserSchema
 } from '../../helpers/validation.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess } from '../../hooks/hooks.js';
@@ -86,7 +88,8 @@ const schemaBody = z.strictObject({
             })
             .extend(connectionCredentialsGithubAppSchema.shape)
     ]),
-    end_user: endUserSchema.optional()
+    end_user: endUserSchema.optional(),
+    tags: connectionTagsSchema.optional()
 });
 
 export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (req, res) => {
@@ -158,6 +161,9 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
 
     const connectionId = body.connection_id ?? connectionService.generateConnectionId();
 
+    const endUserTags = body.end_user ? buildTagsFromEndUser(body.end_user, null) : {};
+    const mergedTags = { ...endUserTags, ...body.tags };
+
     switch (body.credentials.type) {
         case 'OAUTH2':
         case 'OAUTH2_CC':
@@ -169,7 +175,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 connectionConfig: body.connection_config || {},
                 parsedRawCredentials: { ...body.credentials, raw: body.credentials },
-                connectionCreatedHook: connCreatedHook
+                connectionCreatedHook: connCreatedHook,
+                tags: mergedTags
             });
 
             if (imported) {
@@ -187,7 +194,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 credentials: body.credentials,
                 connectionConfig: body.connection_config || {},
-                connectionCreatedHook: connCreatedHook
+                connectionCreatedHook: connCreatedHook,
+                tags: mergedTags
             });
 
             if (imported) {
@@ -217,7 +225,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
                 environmentId: environment.id,
-                metadata: body.metadata || {}
+                metadata: body.metadata || {},
+                tags: mergedTags
             });
 
             if (imported) {
@@ -249,7 +258,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
                 environmentId: environment.id,
-                metadata: body.metadata || {}
+                metadata: body.metadata || {},
+                tags: mergedTags
             });
 
             if (imported) {
@@ -278,7 +288,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 },
                 metadata: body.metadata || {},
                 config: integration,
-                environment
+                environment,
+                tags: mergedTags
             });
 
             if (imported) {
@@ -293,7 +304,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 environment,
                 metadata: body.metadata || {},
-                connectionConfig: body.connection_config || {}
+                connectionConfig: body.connection_config || {},
+                tags: mergedTags
             });
 
             if (imported) {

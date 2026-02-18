@@ -1,0 +1,269 @@
+---
+title: 'Implement an action'
+sidebarTitle: 'Implement an action'
+description: 'How to create & use actions in Nango'
+---
+
+Nango Actions are functions that run on Nango's platform to help you read from or write to external APIs in a clean, consistent, and composable way. You can think of actions as "virtual endpoints" on external APIs that you get to define.
+
+## When to use actions
+
+Actions are ideal when you want to:
+- **Create unified interfaces** across different APIs (e.g., a single `create-contact` that works with Salesforce, HubSpot, Attio, etc.)
+- **Write data asynchronously** to external APIs as fast as rate limits allow (e.g., creating hundreds of invoices after a monthly billing run)
+- **Abstract multi-step operations** into a single interface (e.g., create an opportunity and link it to a contact and company in one call)
+- **Enforce type safety** for all interactions with external APIs
+
+## Key facts
+
+- Actions run in Nango's infrastructure, powered by [Functions](/guides/primitives/functions)
+- Actions take an input and return an output—you control the code, API requests, transformations, and data models
+- All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination helpers
+- Actions run **synchronously by default** but can also run [asynchronously](/implementation-guides/use-cases/actions/async-actions) for batch writes
+- Actions run in the context of a [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
+- Actions can call other actions to build workflows
+- Actions can be exposed to LLMs via the [MCP Server](/implementation-guides/use-cases/tool-calling/implement-mcp-server)
+- Actions can be used to build [unified APIs](/implementation-guides/use-cases/unified-apis)
+- All action invocations and API requests are logged in [Nango's logs](/guides/platform/observability)
+
+This guide covers:
+- [How to build an action](#how-to-build-an-action)
+- [How to use an action](#how-to-use-an-action)
+
+## How to build an action
+
+<Info>
+    If you are using a function template, you can [skip to using an action](#how-to-use-an-action).
+</Info>
+
+### Step 1 - Initial Functions setup
+
+If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/platform/functions/functions-setup) first.
+
+Otherwise, you can skip to the next step.
+
+### Step 2 - Start dev mode
+
+Before you plan to modify your integration functions, run:
+
+```bash
+nango dev # Keep the tab open
+```
+
+This command starts a process that continuously compiles your integration functions and prints code syntax errors.
+
+### Step 3 - Create the action file
+
+<Tip>
+    If you prefer to automate this, follow the [Build with AI guide](/implementation-guides/platform/functions/leverage-ai-agents).
+</Tip>
+
+In your `nango-integrations` folder, create the file for your new action function.
+
+Action files should be within an `actions` folder, which is nested under the integration's folder.
+
+For example, if you want to create a new action to fetch the available fields on the contact object from `salesforce`, your structure should look like this:
+
+```
+nango-integrations/
+├── .nango
+├── .env
+├── index.ts
+├── package.json
+└── salesforce # this is the integration id and must match an integration id in your Nango dashboard
+    └── actions/
+        └── salesforce-contact-fields.ts # this is the name of your action
+```
+
+In your action file, paste the following scaffold:
+
+```ts salesforce-contact-fields.ts lines
+import { createAction } from 'nango';
+import * as z from 'zod';
+
+const MyObject = z.object({
+  id: z.string(),
+  first_name: z.string(),
+  last_name: z.string(),
+  email: z.string(),
+});
+
+export default createAction({
+    description: `<Description of your action>`,
+    version: '1.0.0', // Version, increment it when you release a new version
+    endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
+    input: z.void(),
+    output: MyObject,
+    exec: async (nango) => {
+        // Integration code goes here.
+    },
+});
+```
+
+Also import your new action file in your `index.ts` file:
+
+```typescript index.ts
+import './salesforce/actions/salesforce-contact-fields';
+```
+
+### Step 4 - Implement your action
+
+In the `exec` method, implement the logic of your action. Edit `MyObject` to contain the properties you need.
+
+The following can help you with your implementation:
+- [`nango` object reference](/reference/functions) to understand the SDK methods available in actions
+- [Our integration templates repo](https://www.nango.dev/templates) has 600+ examples of syncs and actions implemented by Nango
+- [Leveraging AI agents guide](/implementation-guides/platform/functions/leverage-ai-agents) to build actions with Claude Code, Cursor, and other AI agents
+
+Example implementation of the Salesforce contact fields action:
+
+```ts salesforce-contact-fields.ts lines
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+export default createAction({
+  description: `Fetches available contact fields from Salesforce`,
+  version: '1.0.0',
+  input: z.void(),
+  output: z.object({
+    fields: z.array(z.object({
+      name: z.string(),
+      label: z.string(),
+      type: z.string(),
+      relationshipName: z.string()
+    })),
+  }),
+  exec: async (nango) => {
+    const response = await nango.get({
+        endpoint: '/services/data/v51.0/sobjects/Contact/describe'
+    });
+
+    await nango.log('Salesforce fields fetched!');
+
+    const { data } = response;
+    const { fields, childRelationships } = data;
+
+    return {
+        fields: mapFields(fields)
+    };
+}
+
+function mapFields(fields: any) {
+    return fields.map((field) => {
+        const { name, label, type, relationshipName } = field;
+        return {
+            name,
+            label,
+            type,
+            relationshipName: relationshipName as string
+        };
+    });
+}
+```
+
+In this integration function, the following Nango utilities are used:
+- `await nango.get()` to perform an API request (automatically authenticated by Nango)
+- `await nango.log()` to write custom log messages
+- `return` will synchronously return results from the action trigger request
+
+<Warning>
+    The output of an action cannot exceed 2MB.
+</Warning>
+
+### Step 5 - Test your action locally
+
+Easily test your action function locally as you develop them with the `dryrun` function of the CLI:
+
+```bash
+nango dryrun salesforce-contact-fields '<CONNECTION-ID>'
+```
+
+You can also pass input data to the action. Run `nango dryrun --help` to see all options.
+
+<Tip>
+    By default, `dryrun` retrieves connections from your `dev` environment. You can change this with a CLI flag.
+</Tip>
+
+### Step 6 - Deploy your action
+
+To run your action in Nango, you need to deploy it to an environment in your Nango account.
+
+To deploy all integrations in your `nango-integrations` folder, run:
+```bash
+nango deploy dev # dev is the name of the environment to which you are deploying
+```
+
+To only deploy a single action, use the `--action` parameter:
+```bash
+nango deploy --action salesforce-contact-fields dev
+```
+
+Run `nango deploy -h` for more options to deploy only parts of your integrations.
+
+To fetch the synced data in your product, follow the steps in the next section.
+
+<Tip>
+    Most teams automate deployments to production in their CI.
+</Tip>
+
+## How to use an action
+
+### Pre-built integration templates
+
+For common use cases, [pre-built integration templates](https://www.nango.dev/templates) are available to help you get started fast.
+
+Select your integration in the **Integrations** tab and navigate to the **Endpoints** tab. Available pre-built action integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
+
+Integration templates are a starting point. You will likely need to [customize them](/implementation-guides/platform/functions/customize-template) or [create your own custom action](#how-to-build-an-action).
+
+### Triggering an action synchronously
+
+You can trigger actions from your backend with the [REST API](/reference/api/action/trigger) or [Node SDK](/reference/sdks/node#actions).
+
+<Tabs>
+    <Tab title="cURL (standard endpoint)">
+        ```bash
+        curl --request POST \
+        --url https://api.nango.dev/action/trigger \
+        --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+        --header 'Connection-Id: <CONNECTION-ID>' \
+        --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+        --data '{
+            "action_name": "<ACTION-NAME>",
+            "input": { ... }
+        }'
+        ```
+    </Tab>
+    <Tab title="Node SDK">
+        ```ts
+        import { Nango }  from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<ENV-SECRET-KEY>' });
+
+        const result = await nango.triggerAction({
+        connectionId: '<CONNECTION-ID>',
+        providerConfigKey: '<INTEGRATION-ID>',
+        action: '<ACTION-NAME>',
+        input: { ... }
+        });
+        ```
+    </Tab>
+</Tabs>
+
+Synchronous executions return immediately: The response from the API/SDK is the output of your action.
+
+### Triggering an action asynchronously
+
+Asynchronous execution is ideal for bursty or bulk workloads where you want Nango to transparently handle rate limits and retries. In async mode, Nango can send a webhook when execution finishes, or you can poll the status via the API.
+
+Refer to the [Async actions guide](/implementation-guides/use-cases/actions/async-actions) to learn how to execute actions asynchronously.
+
+### Actions calling actions (workflows)
+
+Nango supports calling an action from within another action, letting you chain actions together and build entire workflows. Each action invocation will show up separately in the [logs](/guides/platform/observability).
+
+### Using actions with the MCP Server
+
+Actions are also exposed as tools on the [built-in MCP Server](/implementation-guides/use-cases/tool-calling/overview).
+
+Follow the [implement the MCP server](/implementation-guides/use-cases/tool-calling/implement-mcp-server) guide to set this up.

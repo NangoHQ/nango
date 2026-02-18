@@ -260,6 +260,8 @@ export default class Nango {
 
     /**
      * Clear state of the frontend SDK
+     * Delays closing the popup so the callback page can postMessage to conect ui
+     * and the opener can process the message before the popup is destroyed.
      */
     public clear() {
         if (this.tm) {
@@ -267,13 +269,15 @@ export default class Nango {
         }
 
         if (this.win) {
-            try {
-                this.win.close();
-            } catch (err) {
-                console.log('err', err);
-                // do nothing
-            }
+            const windowRef = this.win;
             this.win = null;
+            setTimeout(() => {
+                try {
+                    windowRef.close();
+                } catch {
+                    // ignore
+                }
+            }, 500);
         }
     }
 
@@ -427,7 +431,7 @@ export default class Nango {
         if (credentials) {
             Object.assign(body, credentials);
         }
-        if (assertionOption) {
+        if (assertionOption && Object.keys(assertionOption).length > 0) {
             body['assertionOption'] = assertionOption;
         }
 
@@ -585,6 +589,10 @@ export default class Nango {
                 }
                 if ('oauth_client_secret_override' in credentials) {
                     query.push(`credentials[oauth_client_secret_override]=${encodeURIComponent(credentials.oauth_client_secret_override)}`);
+                }
+
+                if ('oauth_refresh_token_override' in credentials) {
+                    query.push(`credentials[oauth_refresh_token_override]=${encodeURIComponent(credentials.oauth_refresh_token_override)}`);
                 }
 
                 if ('token_id' in credentials) {

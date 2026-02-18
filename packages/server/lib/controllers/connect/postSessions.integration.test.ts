@@ -7,14 +7,15 @@ import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { DBEndUser, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { DBConnectSession } from '../../services/connectSession.service.js';
+import type { DBAPISecret, DBEndUser, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/connect/sessions';
 
 describe(`POST ${endpoint}`, () => {
-    let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan };
+    let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan; secret: DBAPISecret };
 
     beforeAll(async () => {
         api = await runServer();
@@ -39,7 +40,7 @@ describe(`POST ${endpoint}`, () => {
     it('should fail if no endUser', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             // @ts-expect-error on purpose
             body: {}
         });
@@ -57,7 +58,7 @@ describe(`POST ${endpoint}`, () => {
     it('should fail if no endUserId', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: {
                 // @ts-expect-error on purpose
                 end_user: {}
@@ -82,7 +83,7 @@ describe(`POST ${endpoint}`, () => {
         const orgDisplayName = 'OrgName';
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: {
                 end_user: { id: endUserId, email, display_name: displayName },
                 organization: { id: orgId, display_name: orgDisplayName }
@@ -99,7 +100,7 @@ describe(`POST ${endpoint}`, () => {
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['random'] }
         });
         isError(res.json);
@@ -115,7 +116,7 @@ describe(`POST ${endpoint}`, () => {
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, integrations_config_defaults: { random: { connection_config: {} } } }
         });
         isError(res.json);
@@ -131,7 +132,7 @@ describe(`POST ${endpoint}`, () => {
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, overrides: { random: { docs_connect: 'https://nango.dev/docs' } } }
         });
         isError(res.json);
@@ -147,7 +148,7 @@ describe(`POST ${endpoint}`, () => {
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(res.json);
@@ -164,7 +165,7 @@ describe(`POST ${endpoint}`, () => {
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: seed.env.secret_key,
+            token: seed.secret.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, integrations_config_defaults: { github: { connection_config: {} } } }
         });
         isSuccess(res.json);
@@ -184,7 +185,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     end_user: { id: 'test-user', email: 'test@example.com' },
                     overrides: {
@@ -211,7 +212,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     end_user: { id: 'test-user', email: 'test@example.com' },
                     overrides: {
@@ -238,7 +239,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     end_user: { id: 'test-user', email: 'test@example.com' },
                     overrides: {
@@ -265,7 +266,7 @@ describe(`POST ${endpoint}`, () => {
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: seed.env.secret_key,
+                token: seed.secret.secret,
                 body: {
                     end_user: { id: 'test-user', email: 'test@example.com' },
                     overrides: {
@@ -284,6 +285,202 @@ describe(`POST ${endpoint}`, () => {
                     token: expect.any(String)
                 }
             });
+        });
+    });
+
+    describe('tags', () => {
+        it('should create session with tags but without end_user', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    tags: { projectId: '123' }
+                }
+            });
+
+            isSuccess(res.json);
+
+            const session = await db.knex
+                .select('*')
+                .from<DBConnectSession>('connect_sessions')
+                .where({ environment_id: seed.env.id })
+                .orderBy('id', 'desc')
+                .first();
+
+            expect(session?.end_user).toBeNull();
+            expect(session?.tags).toStrictEqual({ projectid: '123' });
+        });
+
+        it('should create session with empty tags object but without end_user', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    tags: {}
+                }
+            });
+
+            isSuccess(res.json);
+
+            const session = await db.knex
+                .select('*')
+                .from<DBConnectSession>('connect_sessions')
+                .where({ environment_id: seed.env.id })
+                .orderBy('id', 'desc')
+                .first();
+
+            expect(session?.end_user).toBeNull();
+            expect(session?.tags).toStrictEqual({});
+        });
+
+        it('should create session with valid tags', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user', email: 'test@example.com' },
+                    tags: { projectId: '123', orgId: '456' }
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                data: {
+                    expires_at: expect.toBeIsoDate(),
+                    connect_link: expect.any(String),
+                    token: expect.any(String)
+                }
+            });
+
+            const session = await db.knex
+                .select('*')
+                .from<DBConnectSession>('connect_sessions')
+                .where({ environment_id: seed.env.id })
+                .orderBy('id', 'desc')
+                .first();
+            // Keys are normalized to lowercase and end_user tags are auto-merged
+            expect(session?.tags).toStrictEqual({ projectid: '123', orgid: '456', end_user_id: 'test-user', end_user_email: 'test@example.com' });
+        });
+
+        it('should create session without tags (optional)', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user-no-tags', email: 'test@example.com' }
+                }
+            });
+
+            isSuccess(res.json);
+        });
+
+        it('should create session with empty tags object', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user-empty-tags', email: 'test@example.com' },
+                    tags: {}
+                }
+            });
+
+            isSuccess(res.json);
+
+            const session = await db.knex
+                .select('*')
+                .from<DBConnectSession>('connect_sessions')
+                .where({ environment_id: seed.env.id })
+                .orderBy('id', 'desc')
+                .first();
+            // Even with empty tags, end_user tags are auto-merged
+            expect(session?.tags).toStrictEqual({ end_user_id: 'test-user-empty-tags', end_user_email: 'test@example.com' });
+        });
+
+        it('should fail with invalid tag key format (starts with number)', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user', email: 'test@example.com' },
+                    tags: { '123invalid': 'value' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
+        });
+
+        it('should allow tag values with spaces', async () => {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user', email: 'test@example.com' },
+                    tags: { key: 'value with spaces' }
+                }
+            });
+
+            isSuccess(res.json);
+        });
+
+        it('should fail with tag key exceeding max length', async () => {
+            const longKey = 'a'.repeat(65);
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user', email: 'test@example.com' },
+                    tags: { [longKey]: 'value' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
+        });
+
+        it('should fail with tag value exceeding max length', async () => {
+            const longValue = 'a'.repeat(256);
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user', email: 'test@example.com' },
+                    tags: { key: longValue }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
+        });
+
+        it('should fail with more than 10 tags', async () => {
+            const tags: Record<string, string> = {};
+            for (let i = 0; i < 11; i++) {
+                tags[`key${i}`] = `value${i}`;
+            }
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: seed.secret.secret,
+                body: {
+                    end_user: { id: 'test-user', email: 'test@example.com' },
+                    tags
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toMatchObject({
+                error: { code: 'invalid_body' }
+            });
+            expect(res.res.status).toBe(400);
         });
     });
 });

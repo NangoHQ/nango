@@ -8,6 +8,7 @@ export enum SyncStatus {
     ERROR = 'ERROR'
 }
 
+/** @deprecated **/
 export enum SyncJobsType {
     INCREMENTAL = 'INCREMENTAL',
     FULL = 'FULL',

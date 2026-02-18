@@ -61,8 +61,23 @@ describe('triggerSync', () => {
         );
     });
 
-    it('should default to incremental sync_mode when not provided', async () => {
-        await nango.triggerSync('test-provider', ['test-sync']);
+    it('should handle opts with reset: true', async () => {
+        await nango.triggerSync('test-provider', ['test-sync'], 'conn-123', { reset: true });
+
+        expect(mockHttp.post).toHaveBeenCalledWith(
+            expect.any(String),
+            {
+                syncs: ['test-sync'],
+                provider_config_key: 'test-provider',
+                connection_id: 'conn-123',
+                opts: { reset: true }
+            },
+            expect.any(Object)
+        );
+    });
+
+    it('should handle opts with emptyCache: true', async () => {
+        await nango.triggerSync('test-provider', ['test-sync'], undefined, { emptyCache: true });
 
         expect(mockHttp.post).toHaveBeenCalledWith(
             expect.any(String),
@@ -70,10 +85,70 @@ describe('triggerSync', () => {
                 syncs: ['test-sync'],
                 provider_config_key: 'test-provider',
                 connection_id: undefined,
-                sync_mode: 'incremental'
+                opts: { emptyCache: true }
             },
             expect.any(Object)
         );
+    });
+
+    it('should handle opts with both reset and emptyCache', async () => {
+        await nango.triggerSync('test-provider', ['test-sync'], undefined, { reset: true, emptyCache: true });
+
+        expect(mockHttp.post).toHaveBeenCalledWith(
+            expect.any(String),
+            {
+                syncs: ['test-sync'],
+                provider_config_key: 'test-provider',
+                connection_id: undefined,
+                opts: { reset: true, emptyCache: true }
+            },
+            expect.any(Object)
+        );
+    });
+});
+
+describe('listConnections', () => {
+    const nango = new Nango({ secretKey: 'test', host: 'https://example.com' });
+    const mockHttp = {
+        get: vi.fn()
+    };
+
+    // @ts-expect-error - we're mocking the http instance
+    nango.http = mockHttp;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockHttp.get.mockResolvedValue({ data: { connections: [] } });
+    });
+
+    it('should serialize displayName/email tags as connection tag filters', async () => {
+        await nango.listConnections({
+            tags: { displayName: 'My User', email: 'user@example.com' }
+        });
+
+        expect(mockHttp.get).toHaveBeenCalledOnce();
+
+        const calledUrl = mockHttp.get.mock.calls[0]?.[0] as string;
+        const url = new URL(calledUrl);
+
+        expect(url.pathname).toBe('/connections');
+
+        expect(url.searchParams.get('tags[end_user_display_name]')).toBe('My User');
+        expect(url.searchParams.get('tags[end_user_email]')).toBe('user@example.com');
+
+        expect(url.searchParams.has('search')).toBe(false);
+        expect(url.searchParams.has('email')).toBe(false);
+    });
+
+    it('should serialize arbitrary tags using tags[...] query params', async () => {
+        await nango.listConnections({
+            tags: { Foo: 'Bar' }
+        });
+
+        const calledUrl = mockHttp.get.mock.calls[0]?.[0] as string;
+        const url = new URL(calledUrl);
+
+        expect(url.searchParams.get('tags[foo]')).toBe('Bar');
     });
 });
 

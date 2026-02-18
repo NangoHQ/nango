@@ -3,10 +3,10 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { EndUserMapper, configService } from '@nangohq/shared';
+import { EndUserMapper, buildTagsFromEndUser, configService } from '@nangohq/shared';
 import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -49,7 +49,15 @@ export const bodySchema = z
                     docs_connect: z.string().optional()
                 })
             )
-            .optional()
+            .optional(),
+        tags: connectionTagsSchema.optional()
+    })
+    .strict();
+
+const bodySchemaWithTagsNoEndUser = bodySchema
+    .extend({
+        end_user: endUserSchema.optional(),
+        tags: connectionTagsSchema
     })
     .strict();
 
@@ -65,16 +73,32 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         return;
     }
 
+    const { plan } = res.locals;
+
     const val = bodySchema.safeParse(req.body);
-    if (!val.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+    if (val.success) {
+        const body: PostConnectSessions['Body'] = val.data;
+        await generateSession(res, body, plan);
         return;
     }
 
-    const { plan } = res.locals;
+    const bodyIsObject = req.body && typeof req.body === 'object' && !Array.isArray(req.body);
+    const hasTopLevelTags = bodyIsObject && 'tags' in req.body;
+    const hasEndUser = bodyIsObject && 'end_user' in req.body;
+    if (hasTopLevelTags && !hasEndUser) {
+        const valWithTagsNoEndUser = bodySchemaWithTagsNoEndUser.safeParse(req.body);
+        if (!valWithTagsNoEndUser.success) {
+            res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valWithTagsNoEndUser.error) } });
+            return;
+        }
 
-    const body: PostConnectSessions['Body'] = val.data;
-    await generateSession(res, body, plan);
+        const body: PostConnectSessions['Body'] = valWithTagsNoEndUser.data;
+        await generateSession(res, body, plan);
+        return;
+    }
+
+    res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+    return;
 });
 
 /**
@@ -154,6 +178,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
         }
 
         const endUser = body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null;
+        const endUserTags = buildTagsFromEndUser(body.end_user, body.organization);
+        const tags = { ...endUserTags, ...body.tags };
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
@@ -181,7 +207,8 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 : null,
             operationId: logCtx.id,
             overrides: body.overrides || null,
-            endUser
+            endUser,
+            tags
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

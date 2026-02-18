@@ -11,20 +11,19 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
-import { Err, Ok, actionAllowListCustomers, errorToObject, isCloud, isEnterprise, truncateJson } from '@nangohq/utils';
+import { Err, Ok, errorToObject, isEnterprise, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
-import { Locks } from './sdk/locks.js';
+import { MapLocks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
 
-import type { CreateAnyResponse, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import type { Locks } from './sdk/locks.js';
+import type { CreateAnyResponse } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
-const actionPayloadAllowSet = isCloud ? new Set(actionAllowListCustomers) : new Set();
-
 interface ScriptExports {
-    onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
-    default: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | CreateAnyResponse;
+    onWebhookPayloadReceived?: (nango: NangoSyncRunner, payload?: object) => Promise<unknown>;
+    default: ((nango: NangoActionRunner | NangoSyncRunner, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 
 function formatStackTrace(stack: string | undefined, filename: string): string[] {
@@ -43,7 +42,7 @@ export async function exec({
     code,
     codeParams,
     abortController = new AbortController(),
-    locks = new Locks()
+    locks = new MapLocks()
 }: {
     nangoProps: NangoProps;
     code: string;
@@ -179,10 +178,10 @@ export async function exec({
                     const outputSizeInBytes = Buffer.byteLength(stringifiedOutput, 'utf8');
                     const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
 
-                    if (!isEnterprise && nangoProps.team?.id !== undefined && !actionPayloadAllowSet.has(nangoProps.team.id)) {
+                    if (!isEnterprise) {
                         if (outputSizeInBytes > maxSizeInBytes) {
                             throw new Error(
-                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/changelog/dev-updates#action-payload-output-limit`
+                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22%2C-2025`
                             );
                         }
                     }

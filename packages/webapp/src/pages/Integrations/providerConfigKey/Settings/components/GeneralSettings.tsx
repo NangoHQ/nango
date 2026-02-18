@@ -2,9 +2,9 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { InfoTooltip } from './InfoTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
@@ -12,6 +12,7 @@ import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
@@ -72,7 +73,11 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* Display name */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="display_name">Display name</Label>
-                <EditableInput initialValue={integration.display_name || template.display_name} onSave={(value) => onSave({ displayName: value })} />
+                <EditableInput
+                    initialValue={integration.display_name || template.display_name}
+                    onSave={(value) => onSave({ displayName: value })}
+                    validate={validateNotEmpty}
+                />
             </div>
 
             {/* Integration ID */}

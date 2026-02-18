@@ -1,7 +1,7 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { useEffect, useRef } from 'react';
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { SWRConfig } from 'swr';
@@ -26,11 +26,13 @@ import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStar
 import { GettingStarted } from './pages/GettingStarted/Show';
 import { Homepage } from './pages/Homepage/Show';
 import { CreateIntegration } from './pages/Integrations/Create';
+import { CreateIntegrationList } from './pages/Integrations/CreateList';
 import { IntegrationsList } from './pages/Integrations/Show';
 import { FunctionsOne } from './pages/Integrations/providerConfigKey/Functions/One';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
 import { NotFound } from './pages/NotFound';
+import { HearAboutUs } from './pages/Onboarding/HearAboutUs';
 import { Root } from './pages/Root';
 import { TeamBilling } from './pages/Team/Billing/Show';
 import { TeamSettings } from './pages/Team/Settings';
@@ -39,8 +41,10 @@ import { useStore } from './store';
 import { fetcher } from './utils/api';
 import { globalEnv } from './utils/env';
 import { LocalStorageKeys } from './utils/local-storage';
-import { SentryRoutes } from './utils/sentry';
+import { sentryCreateBrowserRouter } from './utils/sentry';
 import { useSignout } from './utils/user';
+
+import type { BreadcrumbHandle } from './hooks/useBreadcrumbs';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -48,11 +52,222 @@ const theme = createTheme({
     fontFamily: 'Inter'
 });
 
+const GettingStartedRoute = () => {
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
+
+    if (!showGettingStarted) {
+        return <Navigate to="/" replace />;
+    }
+
+    return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+};
+
+const RedirectWithEnv = ({ path }: { path: string }) => {
+    const env = useStore((state) => state.env);
+    const params = useParams<Record<string, string>>();
+
+    const pathWithParams = Object.entries(params)
+        .filter(([_, value]) => value !== undefined)
+        .reduce((acc, [key, value]) => acc.replace(`:${key}`, value!), path);
+
+    return <Navigate to={`/${env}/${pathWithParams}`} replace />;
+};
+
+const router = sentryCreateBrowserRouter([
+    {
+        path: '/',
+        element: <Root />
+    },
+    {
+        element: <PrivateRoute />,
+        children: [
+            {
+                path: 'dev/getting-started',
+                element: <GettingStartedRoute />,
+                handle: { breadcrumb: 'Getting started' } as BreadcrumbHandle
+            },
+            {
+                path: '/onboarding/hear-about-us',
+                element: <HearAboutUs />
+            },
+            {
+                path: '/:env',
+                children: [
+                    {
+                        index: true,
+                        element: <Homepage />,
+                        handle: {
+                            breadcrumb: 'Metrics'
+                        }
+                    },
+                    {
+                        path: 'integrations',
+                        handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <IntegrationsList />
+                            },
+                            {
+                                path: 'create',
+                                handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <CreateIntegrationList />
+                                    },
+                                    {
+                                        path: ':providerConfigKey',
+                                        element: <CreateIntegration />,
+                                        handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                                    }
+                                ]
+                            },
+                            {
+                                path: ':providerConfigKey',
+                                handle: {
+                                    breadcrumb: (params) => params.providerConfigKey || 'Integration'
+                                } as BreadcrumbHandle,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <ShowIntegration />
+                                    },
+                                    {
+                                        path: 'functions/:functionName',
+                                        element: <FunctionsOne />,
+                                        handle: {
+                                            breadcrumb: (params) => params.functionName || 'Function'
+                                        } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: '*',
+                                        element: <ShowIntegration />
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        path: 'integration/:providerConfigKey',
+                        element: <RedirectWithEnv path="integrations/:providerConfigKey" />
+                    },
+                    {
+                        path: 'connections',
+                        handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <ConnectionList />
+                            },
+                            {
+                                path: 'create',
+                                element: <ConnectionCreate />,
+                                handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
+                            },
+                            {
+                                path: 'create-legacy',
+                                element: <ConnectionCreateLegacy />,
+                                handle: { breadcrumb: 'Create Connection (Legacy)' } as BreadcrumbHandle
+                            },
+                            {
+                                path: ':providerConfigKey/:connectionId',
+                                element: <ConnectionShow />,
+                                handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
+                            }
+                        ]
+                    },
+                    {
+                        path: 'logs',
+                        element: <LogsShow />,
+                        handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'activity',
+                        element: <RedirectWithEnv path="logs" />
+                    },
+                    {
+                        path: 'environment-settings',
+                        element: <EnvironmentSettings />,
+                        handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'project-settings',
+                        element: <Navigate to="/environment-settings" />
+                    }
+                ]
+            },
+            {
+                path: 'account-settings',
+                element: <Navigate to="/team-settings" />
+            },
+            {
+                path: 'team-settings',
+                element: <TeamSettings />,
+                handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+            },
+            {
+                path: 'team/billing',
+                element: <TeamBilling />,
+                handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
+            },
+            {
+                path: 'user-settings',
+                element: <UserSettings />,
+                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+            }
+        ]
+    },
+    {
+        path: '/hn-demo',
+        element: <Navigate to={'/signup'} />
+    },
+    ...(globalEnv.features.auth
+        ? [
+              {
+                  path: '/signin',
+                  element: <Signin />
+              },
+              {
+                  path: '/signup/:token',
+                  element: <InviteSignup />
+              },
+              {
+                  path: '/forgot-password',
+                  element: <ForgotPassword />
+              },
+              {
+                  path: '/reset-password/:token',
+                  element: <ResetPassword />
+              },
+              {
+                  path: '/verify-email/:uuid',
+                  element: <VerifyEmail />
+              },
+              {
+                  path: '/verify-email/expired/:token',
+                  element: <VerifyEmailByExpiredToken />
+              },
+              {
+                  path: '/signup/verification/:token',
+                  element: <EmailVerified />
+              },
+              {
+                  path: '/signup',
+                  element: <Signup />
+              }
+          ]
+        : []),
+    {
+        path: '*',
+        element: <NotFound />
+    }
+]);
+
 const App = () => {
     const env = useStore((state) => state.env);
     const signout = useSignout();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
-    const showGettingStarted = useStore((state) => state.showGettingStarted);
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
     const { meta } = useMeta();
 
@@ -92,49 +307,7 @@ const App = () => {
                         }
                     }}
                 >
-                    <SentryRoutes>
-                        <Route path="/" element={<Root />} />
-                        <Route element={<PrivateRoute />} key={env}>
-                            <Route path="/:env" element={<Homepage />} />
-                            {showGettingStarted &&
-                                (globalEnv.isCloud ? (
-                                    <Route path="/dev/getting-started" element={<GettingStarted />} />
-                                ) : (
-                                    <Route path="/dev/getting-started" element={<ClassicGettingStarted />} />
-                                ))}
-                            <Route path="/:env/integrations" element={<IntegrationsList />} />
-                            <Route path="/:env/integrations/create" element={<CreateIntegration />} />
-                            <Route path="/:env/integration/:providerConfigKey" element={<Navigate to={'/integrations'} />} />
-                            <Route path="/:env/integrations/:providerConfigKey/functions/:functionName" element={<FunctionsOne />} />
-                            <Route path="/:env/integrations/:providerConfigKey/*" element={<ShowIntegration />} />
-                            <Route path="/:env/connections" element={<ConnectionList />} />
-                            <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                            <Route path="/:env/connections/create-legacy" element={<ConnectionCreateLegacy />} />
-                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
-                            <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
-                            <Route path="/:env/logs" element={<LogsShow />} />
-                            <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
-                            <Route path="/:env/project-settings" element={<Navigate to="/environment-settings" />} />
-                            <Route path="/:env/account-settings" element={<Navigate to="/team-settings" />} />
-                            <Route path="/:env/team-settings" element={<TeamSettings />} />
-                            <Route path="/:env/team/billing" element={<TeamBilling />} />
-                            <Route path="/:env/user-settings" element={<UserSettings />} />
-                        </Route>
-                        {<Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
-                        {globalEnv.features.auth && (
-                            <>
-                                <Route path="/signin" element={<Signin />} />
-                                <Route path="/signup/:token" element={<InviteSignup />} />
-                                <Route path="/forgot-password" element={<ForgotPassword />} />
-                                <Route path="/reset-password/:token" element={<ResetPassword />} />
-                                <Route path="/verify-email/:uuid" element={<VerifyEmail />} />
-                                <Route path="/verify-email/expired/:token" element={<VerifyEmailByExpiredToken />} />
-                                <Route path="/signup/verification/:token" element={<EmailVerified />} />
-                            </>
-                        )}
-                        {globalEnv.features.auth && <Route path="/signup" element={<Signup />} />}
-                        <Route path="*" element={<NotFound />} />
-                    </SentryRoutes>
+                    <RouterProvider router={router} />
                 </SWRConfig>
                 <ToastContainer />
             </TooltipProvider>

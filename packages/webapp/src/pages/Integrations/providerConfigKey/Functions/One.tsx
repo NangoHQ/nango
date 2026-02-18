@@ -1,9 +1,9 @@
 import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout } from '../../components/CardLayout';
+import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { EmptyCard } from '../../components/EmptyCard';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { IntegrationsBadge } from '../../components/IntegrationsBadge';
@@ -11,12 +11,14 @@ import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
+import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -32,9 +34,7 @@ export const FunctionsOne: React.FC = () => {
     const { data: integrationData, loading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
 
-    const func = useMemo(() => {
-        return data?.flows.find((flow) => flow.name === functionName);
-    }, [data, functionName]);
+    const func = data?.flows.find((flow) => flow.name === functionName);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -81,17 +81,15 @@ export const FunctionsOne: React.FC = () => {
                 <CardLayout>
                     <CardHeader>
                         <div className="flex items-center justify-between gap-2">
-                            <div className="inline-flex gap-2">
+                            <div className="inline-flex items-center gap-2.5">
                                 <Skeleton className="bg-bg-subtle size-10.5" />
-                                <div className="flex flex-col gap-1">
-                                    <Skeleton className="bg-bg-subtle w-36 h-5" />
-                                    <Skeleton className="bg-bg-subtle w-24 h-4" />
-                                </div>
+                                <Skeleton className="bg-bg-subtle w-36 h-5" />
+                                <Skeleton className="bg-bg-subtle w-24 h-4" />
                             </div>
                             <Skeleton className="bg-bg-subtle w-8 h-5" />
                         </div>
-                        <Skeleton className="bg-bg-subtle w-full h-6" />
                         <Skeleton className="bg-bg-subtle w-1/2 h-6" />
+                        <Skeleton className="bg-bg-subtle w-full h-6" />
                     </CardHeader>
                     <CardContent>
                         <Skeleton className="bg-bg-subtle w-full h-50" />
@@ -105,6 +103,9 @@ export const FunctionsOne: React.FC = () => {
         return <PageNotFound />;
     }
 
+    const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
+    const gitUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${gitDir}.ts`;
+
     return (
         <DashboardLayout>
             <Helmet>
@@ -114,30 +115,25 @@ export const FunctionsOne: React.FC = () => {
             <CardLayout>
                 <CardHeader>
                     <div className="flex items-center justify-between gap-2">
-                        <div className="inline-flex gap-2">
+                        <div className="inline-flex items-center gap-2.5">
                             <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-text-primary text-body-medium-semi">
-                                    {integrationData.integration.display_name ?? integrationData.template.display_name}
-                                </span>
-                                <div className="inline-flex gap-1">
-                                    <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
-                                    <CopyButton text={func.name} />
-                                </div>
+                            <span className="text-text-primary text-body-large-semi">
+                                {integrationData.integration.display_name ?? integrationData.template.display_name}
+                            </span>
+                            <div className="inline-flex gap-1">
+                                <span className="text-text-secondary text-body-medium-regular font-mono">{func.name}</span>
+                                <CopyButton text={func.name} />
                             </div>
                         </div>
                         <FunctionSwitch flow={func} integration={integrationData.integration} />
                     </div>
 
+                    <span className="text-text-secondary text-body-medium-medium">{func.description}</span>
+
                     <div className="flex flex-wrap gap-4 gap-y-2">
                         <IntegrationsBadge label="Type">
                             <span>{func.type}</span>
                         </IntegrationsBadge>
-                        {func.sync_type && (
-                            <IntegrationsBadge label="Sync type">
-                                <span>{func.sync_type}</span>
-                            </IntegrationsBadge>
-                        )}
                         {func.runs && (
                             <IntegrationsBadge label="Frequency">
                                 <span>{func.runs}</span>
@@ -148,8 +144,30 @@ export const FunctionsOne: React.FC = () => {
                         {func.version && <IntegrationsBadge label="Version">v{func.version}</IntegrationsBadge>}
                         {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
                     </div>
-                    <span className="text-text-tertiary text-body-medium-medium">{func.description}</span>
                 </CardHeader>
+
+                {func.pre_built && (
+                    <CardSubheader>
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-text-primary text-body-medium-semi">Customize this template</span>
+                                <Link
+                                    to="https://nango.dev/docs/implementation-guides/platform/functions/functions-setup"
+                                    target="_blank"
+                                    className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
+                                >
+                                    Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                                </Link>
+                            </div>
+                            <div className="inline-flex gap-3">
+                                <LineSnippet snippet={`nango clone ${gitDir}`} />
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                                    View code <ExternalLink />
+                                </ButtonLink>
+                            </div>
+                        </div>
+                    </CardSubheader>
+                )}
 
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
@@ -159,36 +177,54 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/actions" target="_blank">
+                                <ButtonLink
+                                    variant="tertiary"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
+                                    target="_blank"
+                                >
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink variant="primary" to="https://nango.dev/docs/guides/use-cases/syncs" target="_blank">
+                                <ButtonLink
+                                    variant="tertiary"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
+                                    target="_blank"
+                                >
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}
                         </div>
                         <TabsContent value="input" className="flex flex-col gap-4">
-                            <InfoCallout type={func.type as 'action' | 'sync'} variant="input" />
-                            {inputSchema ? <JsonSchemaTopLevelObject schema={inputSchema} /> : <EmptyCard content={`No inputs.`} />}
+                            {inputSchema ? (
+                                <>
+                                    <InfoCallout type={func.type as 'action' | 'sync'} variant="input" />
+                                    <JsonSchemaTopLevelObject schema={inputSchema} />
+                                </>
+                            ) : (
+                                <EmptyCard content={`No inputs.`} />
+                            )}
                         </TabsContent>
                         <TabsContent value="output" className="flex flex-col gap-4">
-                            <InfoCallout type={func.type as 'action' | 'sync'} variant="output" />
                             {outputSchemas && outputSchemas.length > 0 ? (
-                                <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
-                                    <NavigationList>
+                                <>
+                                    <InfoCallout type={func.type as 'action' | 'sync'} variant="output" />
+                                    <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
+                                        {outputSchemas.length > 1 && (
+                                            <NavigationList>
+                                                {outputSchemas.map((outputSchema) => (
+                                                    <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
+                                                        {outputSchema.name}
+                                                    </NavigationTrigger>
+                                                ))}
+                                            </NavigationList>
+                                        )}
                                         {outputSchemas.map((outputSchema) => (
-                                            <NavigationTrigger key={outputSchema.name} value={outputSchema.name}>
-                                                {outputSchema.name}
-                                            </NavigationTrigger>
+                                            <NavigationContent key={outputSchema.name} value={outputSchema.name}>
+                                                <JsonSchemaTopLevelObject schema={outputSchema.schema} />
+                                            </NavigationContent>
                                         ))}
-                                    </NavigationList>
-                                    {outputSchemas.map((outputSchema) => (
-                                        <NavigationContent key={outputSchema.name} value={outputSchema.name}>
-                                            <JsonSchemaTopLevelObject schema={outputSchema.schema} />
-                                        </NavigationContent>
-                                    ))}
-                                </Navigation>
+                                    </Navigation>
+                                </>
                             ) : (
                                 <EmptyCard content="No outputs." />
                             )}
@@ -216,7 +252,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/actions/implement-an-action#triggering-an-action-synchronously"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
                                     type="external"
                                     variant="info"
                                 >
@@ -229,14 +265,14 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Actions return a response returned synchronously from the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/actions/implement-an-action#triggering-an-action-synchronously"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
                                     type="external"
                                     variant="info"
                                 >
                                     Nango API
                                 </StyledLink>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/actions/async-actions" type="external" variant="info">
+                                <StyledLink to="https://nango.dev/docs/implementation-guides/use-cases/actions/async-actions" type="external" variant="info">
                                     async actions
                                 </StyledLink>
                                 .
@@ -250,7 +286,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/building-integrations/customer-configuration#store-customer-specific-data"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration#store-customer-specific-data"
                                     type="external"
                                     variant="info"
                                 >
@@ -263,7 +299,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
                                     type="external"
                                     variant="info"
                                 >
@@ -271,7 +307,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                                 </StyledLink>
                                 .{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
+                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
                                     type="external"
                                     variant="info"
                                 >

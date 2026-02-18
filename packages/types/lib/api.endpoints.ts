@@ -40,12 +40,13 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
+    PatchPublicConnection,
     PostConnectionRefresh,
     PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
-import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
+import type { DeleteEnvironment, GetEnvironments, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
@@ -65,7 +66,7 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PostPlanExtendTrial } from './plans/http.api.js';
+import type { PostPlanChange, PostPlanExtendTrial } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
@@ -120,6 +121,7 @@ export type PublicApiEndpoints =
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
     | PostPublicConnection
+    | PatchPublicConnection
     | PostPublicSyncStart
     | PostPublicSyncPause
     | GetPublicSyncStatus
@@ -134,6 +136,7 @@ export type PrivateApiEndpoints =
     | GetTeam
     | PutTeam
     | PostPlanExtendTrial
+    | PostPlanChange
     | GetUser
     | PatchUser
     | PostInvite
@@ -170,6 +173,7 @@ export type PrivateApiEndpoints =
     | PostEnvironment
     | PatchEnvironment
     | DeleteEnvironment
+    | GetEnvironments
     | PatchWebhook
     | PostEnvironmentVariables
     | PostImpersonate

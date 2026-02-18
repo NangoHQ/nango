@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { connectionService, seeders } from '@nangohq/shared';
 import { MAX_CONSECUTIVE_DAYS_FAILED_REFRESH } from '@nangohq/shared/lib/services/connections/utils.js';
 
@@ -28,11 +29,11 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should 404 on unknown provider', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: 'test' },
             query: { provider_config_key: 'github' }
         });
@@ -44,12 +45,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should 404 on unknown connectionId', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: 'test' },
             query: { provider_config_key: 'github' }
         });
@@ -61,7 +62,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should get a connection', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, secret, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'algolia', 'algolia');
         const endUser = await seeders.createEndUser({ environment: env, account });
         const conn = await seeders.createConnectionSeed({
@@ -74,7 +75,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: conn.connection_id },
             query: { provider_config_key: 'algolia' }
         });
@@ -104,12 +105,13 @@ describe(`GET ${endpoint}`, () => {
             metadata: null,
             provider: 'algolia',
             provider_config_key: 'algolia',
+            tags: {},
             updated_at: expect.toBeIsoDateTimezone()
         });
     });
 
     it('should get a connection despite another connection with same name on a different provider', async () => {
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, secret, account } = await seeders.seedAccountEnvAndUser();
 
         await seeders.createConfigSeed(env, 'algolia', 'algolia');
         const endUser = await seeders.createEndUser({ environment: env, account });
@@ -133,7 +135,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: conn.connection_id },
             query: { provider_config_key: 'algolia' }
         });
@@ -163,12 +165,57 @@ describe(`GET ${endpoint}`, () => {
             metadata: null,
             provider: 'algolia',
             provider_config_key: 'algolia',
+            tags: {},
             updated_at: expect.toBeIsoDateTimezone()
         });
     });
+
+    it('should return a connection with tags', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'algolia', 'algolia');
+        const conn = await seeders.createConnectionSeed({
+            env,
+            provider: 'algolia',
+            rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
+            connectionConfig: { APP_ID: 'TEST' }
+        });
+
+        await db.knex
+            .update({ tags: { department: 'engineering', priority: 'high' } })
+            .from('_nango_connections')
+            .where('id', conn.id);
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: secret.secret,
+            params: { connectionId: conn.connection_id },
+            query: { provider_config_key: 'algolia' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            connection_id: conn.connection_id,
+            created_at: expect.toBeIsoDateTimezone(),
+            credentials: {
+                apiKey: 'test_api_key',
+                type: 'API_KEY'
+            },
+            connection_config: { APP_ID: 'TEST' },
+            end_user: null,
+            errors: [],
+            id: expect.any(Number),
+            last_fetched_at: expect.toBeIsoDateTimezone(),
+            metadata: null,
+            provider: 'algolia',
+            provider_config_key: 'algolia',
+            tags: { department: 'engineering', priority: 'high' },
+            updated_at: expect.toBeIsoDateTimezone()
+        });
+    });
+
     it('should return an error if connection refreshs are exhausted', async () => {
         const provider = 'hubspot';
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, secret, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, provider, provider);
         const endUser = await seeders.createEndUser({ environment: env, account });
         const conn = await seeders.createConnectionSeed({
@@ -185,7 +232,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: conn.connection_id },
             query: { provider_config_key: provider }
         });
@@ -218,6 +265,7 @@ describe(`GET ${endpoint}`, () => {
                         metadata: null,
                         provider,
                         provider_config_key: provider,
+                        tags: {},
                         updated_at: expect.toBeIsoDateTimezone()
                     }
                 }
@@ -226,7 +274,7 @@ describe(`GET ${endpoint}`, () => {
     });
     it('should return an error if connection fails to refresh', async () => {
         const provider = 'hubspot';
-        const { env, account } = await seeders.seedAccountEnvAndUser();
+        const { env, secret, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, provider, provider);
         const endUser = await seeders.createEndUser({ environment: env, account });
         const conn = await seeders.createConnectionSeed({
@@ -238,7 +286,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: env.secret_key,
+            token: secret.secret,
             params: { connectionId: conn.connection_id },
             query: { provider_config_key: provider, force_refresh: true }
         });
@@ -276,6 +324,7 @@ describe(`GET ${endpoint}`, () => {
                         metadata: null,
                         provider: provider,
                         provider_config_key: provider,
+                        tags: {},
                         updated_at: expect.toBeIsoDateTimezone()
                     }
                 }

@@ -1,0 +1,44 @@
+---
+title: 'How to register your own HighLevel OAuth app'
+sidebarTitle: 'HighLevel Setup'
+description: 'Register an OAuth app with HighLevel and connect it to Nango'
+---
+
+This guide shows you how to register your own app with HighLevel to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their HighLevel account.
+
+<Steps>
+  <Step title="Create a HighLevel developer account">
+    If you don't already have one, sign up for a developer account at [HighLevel Marketplace](https://marketplace.gohighlevel.com/).
+  </Step>
+  <Step title="Register an OAuth app">
+    1. Go to [HighLevel Marketplace](https://marketplace.gohighlevel.com/)
+    2. Navigate to [My Apps](https://marketplace.gohighlevel.com/apps) and click **+ Create App**
+    3. Fill in all the required information. For **Listing Type** select **Standard (non-white-label)**
+    4. Click **Create App** to create your app
+    5. Complete all mandatory sections: **Basic Info**, **App Profile Details**, **Support Details**, and **Pricing Details**
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. In your app settings, navigate to **Advanced Settings** then **Auth** section
+    2. Configure the following:
+       - **Scopes**: Select the required scopes for your integration (see [HighLevel scopes documentation](https://highlevel.stoplight.io/docs/integrations/vcctp9t1w8hja-scopes))
+       - **Redirect URI**: Set this to `https://api.nango.dev/oauth/callback`
+    3. Generate Client Keys:
+       - Navigate to **Manage** > **Secrets**
+       - Click **Add** in the **Client Key** section
+       - Enter a name for your key and click **Add**
+       - A **Client ID** and **Client Secret** will be generated, save these credentials as you'll need them when configuring Nango
+    4. Click **Save** to complete your OAuth configuration
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+## Important Notes
+
+- **App Type**: The App Type determines the accessibility and visibility of your application. A public app is available for anyone to use and access, while a private app is restricted to a specific group or individuals and is not publicly listed in the marketplace.
+- **Access Levels**: When creating an app, there are 2 types of access: Location Level Access (also known as Sub-Account) and Agency Level Access (also known as Company). These access levels provide comprehensive control over location data at either the individual location or agency-wide level.
+
+For more details, see [HighLevel's OAuth documentation](https://marketplace.gohighlevel.com/docs/Authorization/OAuth2.0/index.html).
+
+---

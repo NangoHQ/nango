@@ -55,6 +55,7 @@ class ProviderClient {
             case 'salesforce':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
+            case 'salesforce-jwt':
                 return true;
             default:
                 return false;
@@ -188,7 +189,8 @@ class ProviderClient {
                     interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
-                    config.oauth_client_secret
+                    config.oauth_client_secret,
+                    connection.connection_config
                 );
             case 'fanvue':
                 return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
@@ -198,23 +200,33 @@ class ProviderClient {
     }
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
-        if (connection.credentials.type !== 'OAUTH2') {
+        const { credentials } = connection;
+        const isOAuth2 = credentials.type === 'OAUTH2';
+        const isTwoStep = credentials.type === 'TWO_STEP';
+
+        if (!isOAuth2 && !isTwoStep) {
             throw new NangoError('wrong_credentials_type');
         }
 
-        const credentials = connection.credentials;
-        const oauthConnection = connection;
+        const accessToken = isOAuth2 ? credentials.access_token : credentials.token;
+        if (!accessToken) {
+            throw new NangoError('access_token_missing');
+        }
+
+        const connectionConfig = connection.connection_config as Record<string, string>;
+        const clientId = isTwoStep ? credentials['clientId'] : config.oauth_client_id;
+        const clientSecret = isTwoStep ? credentials['clientSecret'] : config.oauth_client_secret;
+
+        if (!clientId || !clientSecret) {
+            throw new NangoError('client_credentials_missing');
+        }
 
         switch (config.provider) {
             case 'salesforce':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
-                return this.introspectedSalesforceTokenExpired(
-                    credentials.access_token,
-                    config.oauth_client_id,
-                    config.oauth_client_secret,
-                    oauthConnection.connection_config as Record<string, string>
-                );
+            case 'salesforce-jwt':
+                return this.introspectedSalesforceTokenExpired(accessToken, clientId, clientSecret, connectionConfig);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -926,7 +938,8 @@ class ProviderClient {
         refreshTokenUrl: string,
         refreshToken: string,
         client_id: string,
-        client_secret: string
+        client_secret: string,
+        connectionConfig: ConnectionConfig
     ): Promise<RefreshTokenResponse> {
         try {
             const body = {
@@ -940,8 +953,9 @@ class ProviderClient {
 
             const response = await axios.post(refreshTokenUrl, body, { headers: headers });
             if (response.status === 200 && response.data) {
+                const refreshTokenToUse = connectionConfig['overrideTokenRefresh'] ? refreshToken : response.data['refresh_token'];
                 return {
-                    refresh_token: response.data['refresh_token'],
+                    refresh_token: refreshTokenToUse,
                     access_token: response.data['access_token'],
                     expires_in: workdayOauthExpiresIn
                 };

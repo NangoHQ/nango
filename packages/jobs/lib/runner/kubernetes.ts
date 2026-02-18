@@ -1,9 +1,11 @@
 import * as k8s from '@kubernetes/client-node';
 
+import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { notifyOnIdle } from './runner.js';
 
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
@@ -434,10 +436,10 @@ class Kubernetes {
     private REQUEST_MEMORY_MULTIPLIER = envs.RUNNER_REQUEST_MEMORY_MULTIPLIER;
 
     private getResourceLimits(node: Node): { requests: { cpu: string; memory: string }; limits: { cpu: string; memory: string } } {
-        const requestCpu = Math.max(this.MIN_REQUEST_CPU, Math.min(this.MAX_REQUEST_CPU, Math.floor(node.cpuMilli * this.REQUEST_CPU_MULTIPLIER)));
-        const requestMemory = Math.max(this.MIN_REQUEST_MEMORY, Math.min(this.MAX_REQUEST_MEMORY, Math.floor(node.memoryMb * this.REQUEST_MEMORY_MULTIPLIER)));
-        const limitCpu = Math.max(requestCpu, Math.min(this.MAX_REQUEST_CPU, node.cpuMilli));
-        const limitMemory = Math.max(requestMemory, Math.min(this.MAX_REQUEST_MEMORY, node.memoryMb));
+        const requestCpu = Math.max(this.MIN_REQUEST_CPU, Math.min(this.MAX_REQUEST_CPU, node.cpuMilli));
+        const requestMemory = Math.max(this.MIN_REQUEST_MEMORY, Math.min(this.MAX_REQUEST_MEMORY, node.memoryMb));
+        const limitCpu = Math.max(requestCpu, Math.min(this.MAX_REQUEST_CPU, Math.floor(node.cpuMilli * this.REQUEST_CPU_MULTIPLIER)));
+        const limitMemory = Math.max(requestMemory, Math.min(this.MAX_REQUEST_MEMORY, Math.floor(node.memoryMb * this.REQUEST_MEMORY_MULTIPLIER)));
         return {
             requests: {
                 cpu: `${requestCpu}m`,
@@ -458,7 +460,9 @@ export const kubernetesNodeProvider: NodeProvider = {
         storageMb: 20000,
         isTracingEnabled: false,
         isProfilingEnabled: false,
-        idleMaxDurationMs: 1_800_000 // 30 minutes
+        idleMaxDurationMs: 1_800_000,
+        executionTimeoutSecs: -1,
+        provisionedConcurrency: -1
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();
@@ -471,5 +475,11 @@ export const kubernetesNodeProvider: NodeProvider = {
     verifyUrl: (url: string) => {
         const kubernetes = Kubernetes.getInstance();
         return kubernetes.verifyUrl(url);
+    },
+    finish: async (node: Node) => {
+        return notifyOnIdle(node);
+    },
+    waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
+        return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     }
 };

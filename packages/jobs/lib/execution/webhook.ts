@@ -15,6 +15,7 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
+    secretService,
     updateSyncJobStatus
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -29,7 +30,7 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -125,6 +126,11 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            return Err(defaultSecret.error);
+        }
+
         const nangoProps: NangoProps = {
             scriptType: 'webhook',
             host: getApiUrl(),
@@ -138,7 +144,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: environment.secret_key,
+            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
@@ -152,9 +158,14 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
+        const runtimeContext: RuntimeContext = {
+            plan: plan
+        };
+
         const res = await startScript({
             taskId: task.id,
             nangoProps,
+            runtimeContext,
             logCtx: logCtx,
             input: task.input
         });
@@ -251,6 +262,11 @@ export async function handleWebhookSuccess({
     const environment = accountAndEnv.environment;
 
     if (environment) {
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        if (defaultSecret.isErr()) {
+            throw defaultSecret.error;
+        }
+
         for (const model of nangoProps.syncConfig.models || []) {
             const span = tracer.startSpan('jobs.webhook.webhook', {
                 tags: {
@@ -274,6 +290,7 @@ export async function handleWebhookSuccess({
                             provider_config_key: nangoProps.providerConfigKey
                         },
                         environment: environment,
+                        secret: defaultSecret.value.secret,
                         webhookSettings,
                         syncConfig: nangoProps.syncConfig,
                         syncVariant: nangoProps.syncVariant || 'base',
@@ -428,9 +445,15 @@ async function onFailure({
             if (team && environment && syncConfig && providerConfig) {
                 void tracer.scope().activate(span, async () => {
                     try {
+                        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+                        if (defaultSecret.isErr()) {
+                            throw defaultSecret.error;
+                        }
+
                         const res = await sendSyncWebhook({
                             account: team,
                             environment,
+                            secret: defaultSecret.value.secret,
                             connection: connection,
                             webhookSettings,
                             syncConfig,

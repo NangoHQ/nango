@@ -1,0 +1,38 @@
+---
+title: 'Build with AI'
+sidebarTitle: 'Build with AI'
+description: 'Overview of how to build integrations with AI & Nango.'
+---
+
+<Tip>
+    **Quickstart:**
+    1. Use Nango's documentation MCP: https://nango.dev/docs/mcp
+    2. Install the function builder skill: `npx skills add NangoHQ/skills`
+</Tip>
+
+## Overview
+
+Nango's AI builder generates and assists in implementing [Functions](/guides/primitives/functions) using the IDE and model of your choice. It feeds the necessary context to the model — Nango's interface, best coding practices, and testing patterns — so you can describe your use case and get production-ready code with minimal manual effort.
+
+Unlike black-box integrations, Nango generates human-readable code that you can review, edit, and maintain.
+
+## How it works
+
+1. **Describe your use case** — what data to sync or action to perform
+2. **Review generated code** — with proper error handling, pagination, and rate limiting
+3. **Test against live API** — using connections you've set up on Nango
+4. **Deploy** — tested Functions ready for production
+
+The AI builder also generates mock-based tests for your CI/CD pipeline, and follows battle-tested patterns from hundreds of production integrations.
+
+## Supported agents
+
+Nango's function builder is distributed as a [Vercel skill](https://vercel.com/blog/agent-skills-explained-an-faq) and works with [18+ AI frameworks](https://vercel.com/changelog/introducing-skills-the-open-agent-skills-ecosystem) including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
+
+## Next step
+
+<CardGroup cols={2}>
+    <Card title="Step-by-step guide" icon="wand-magic-sparkles" href="/implementation-guides/platform/functions/leverage-ai-agents">
+        Learn the details of using AI agents to build integrations 10x faster.
+    </Card>
+</CardGroup>

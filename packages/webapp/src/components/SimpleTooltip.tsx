@@ -14,7 +14,11 @@ export const SimpleTooltip: React.FC<
         <TooltipProvider delayDuration={delay ?? 0}>
             <Tooltip>
                 <TooltipContent {...rest}>{tooltipContent}</TooltipContent>
-                <TooltipTrigger>{children}</TooltipTrigger>
+                <TooltipTrigger asChild>
+                    <span className="inline-block" tabIndex={0}>
+                        {children}
+                    </span>
+                </TooltipTrigger>
             </Tooltip>
         </TooltipProvider>
     );

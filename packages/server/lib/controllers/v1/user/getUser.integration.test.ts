@@ -21,9 +21,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce no query params', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: env.secret_key,
+            token: secret.secret,
             // @ts-expect-error on purpose
             query: { env: 'dev' }
         });

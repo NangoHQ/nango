@@ -2,9 +2,11 @@ import tracer from 'dd-trace';
 import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
+import db from '@nangohq/database';
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, errorToObject, getFrequencyMs, stringifyError } from '@nangohq/utils';
+import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
 
+import { deleteCheckpoint } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import accountService from '../services/account.service.js';
@@ -539,6 +541,7 @@ export class Orchestrator {
     async runSyncCommand({
         connectionId,
         syncId,
+        syncName,
         syncVariant,
         command,
         environmentId,
@@ -549,6 +552,7 @@ export class Orchestrator {
     }: {
         connectionId: number;
         syncId: string;
+        syncName: string;
         syncVariant: string;
         command: SyncCommand;
         environmentId: number;
@@ -588,6 +592,13 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
+                    deleteCheckpoint(db.knex, {
+                        environmentId,
+                        connectionId,
+                        key: getCheckpointKey({ type: 'sync', name: syncName, variant: syncVariant }),
+                        force: true
+                    });
+
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
                         for (let model of syncConfig?.models || []) {

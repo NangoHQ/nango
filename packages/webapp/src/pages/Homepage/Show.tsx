@@ -31,7 +31,7 @@ export const Homepage: React.FC = () => {
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-gray-400">
                         Follow{' '}
-                        <Link to="https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview#logs" className="text-blue-400">
+                        <Link to="https://nango.dev/docs/guides/platform/free-self-hosting/configuration#logs" className="text-blue-400">
                             these instructions
                         </Link>{' '}
                         to configure logs and enable execution metrics in your dashboard.
@@ -65,7 +65,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No sync executions in the last 14 days.{' '}
-                                <Link to="https://nango.dev/docs/guides/use-cases/syncs" className="underline text-white">
+                                <Link to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -80,7 +80,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No action executions in the last 14 days.{' '}
-                                <Link to="https://nango.dev/docs/guides/use-cases/actions" className="underline text-white">
+                                <Link to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -94,7 +94,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No proxy requests sent in the last 14 days.{' '}
-                            <Link to="https://nango.dev/docs/guides/use-cases/proxy" className="underline text-white">
+                            <Link to="https://nango.dev/docs/guides/primitives/proxy" className="underline text-white">
                                 Learn more
                             </Link>
                         </div>
@@ -108,7 +108,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No webhook executions in the last 14 days.{' '}
-                                <Link to="https://nango.dev/docs/guides/use-cases/webhooks" className="underline text-white">
+                                <Link to="https://nango.dev/docs/implementation-guides/use-cases/webhooks-from-external-apis" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -122,7 +122,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No authorization attempted in the last 14 days.{' '}
-                            <Link to="https://nango.dev/docs/guides/use-cases/api-auth" className="underline text-white">
+                            <Link to="https://nango.dev/docs/guides/primitives/auth" className="underline text-white">
                                 Learn more
                             </Link>
                         </div>

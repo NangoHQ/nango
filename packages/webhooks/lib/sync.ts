@@ -8,6 +8,7 @@ import { deliver, shouldSend } from './utils.js';
 
 import type {
     ConnectionJobs,
+    DBAPISecret,
     DBEnvironment,
     DBExternalWebhook,
     DBSyncConfig,
@@ -26,6 +27,7 @@ dayjs.extend(utc);
 export const sendSync = async ({
     connection,
     environment,
+    secret,
     account,
     providerConfig,
     webhookSettings,
@@ -39,7 +41,8 @@ export const sendSync = async ({
     error
 }: {
     connection: ConnectionJobs;
-    environment: Pick<DBEnvironment, 'id' | 'name' | 'secret_key'>;
+    environment: Pick<DBEnvironment, 'id' | 'name'>;
+    secret: DBAPISecret['secret'];
     account: Pick<DBTeam, 'id' | 'name'>;
     providerConfig: IntegrationConfig;
     webhookSettings: DBExternalWebhook | null;
@@ -81,7 +84,9 @@ export const sendSync = async ({
         syncName: syncConfig.sync_name,
         syncVariant,
         model,
-        // For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
+        /** @deprecated.
+        For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
+        **/
         syncType: operation === 'FULL' ? 'INITIAL' : operation
     };
     let finalBody: NangoSyncWebhookBody;
@@ -135,7 +140,7 @@ export const sendSync = async ({
         body: finalBody,
         webhookType: 'sync',
         endingMessage: success ? endingMessage : '',
-        environment,
+        secret,
         logCtx
     });
 

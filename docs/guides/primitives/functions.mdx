@@ -1,0 +1,145 @@
+---
+title: 'Functions'
+sidebarTitle: 'Functions'
+description: 'Build custom integrations with serverless functions.'
+---
+
+## Overview
+
+**Functions** are Nango's TypeScript runtime for building custom integrations.
+
+You write integration logic in TypeScript and deploy it to Nango. Functions execute with built-in access to authenticated APIs, retries, storage, and observability.
+
+Functions are a flexible primitive that you can use to build any [integration use-case](#use-cases), from simple API actions to complex data syncs, RAG pipelines & real-time webhook ingestion.
+
+Pair Functions with the [AI integration builder](/guides/platform/ai-integration-builder) to generate and maintain integration code faster—combining the speed of AI with human-reviewable code you fully control.
+
+## How it works
+
+**1. Define a function**
+
+```typescript
+export default async function run(nango: Nango) {
+    const { owner, repo, title, body } = nango.input;
+    
+    const response = await nango.post({
+        endpoint: `/repos/${owner}/${repo}/issues`,
+        data: { title, body }
+    });
+    
+    return response.data;
+}
+```
+
+<Tip>
+  You can find many examples of Functions in our [integration templates](https://www.nango.dev/templates) GitHub repo.
+</Tip>
+
+**2. Deploy the function**
+
+Deploy your function to Nango using the CLI:
+
+```bash
+nango deploy
+```
+
+**3. Trigger the function**
+
+Call the function via Nango's API using the connection ID and function name:
+
+<Tabs>
+    <Tab title="Typescript">
+
+    ```typescript
+const result = await nango.trigger({
+        integrationId: 'github',
+        connectionId: connectionId,
+        functionName: 'create-issue',
+        input: {
+            owner: 'acme',
+            repo: 'my-repo',
+            title: 'Bug report',
+            body: 'Something is broken'
+        }
+    });
+    ```
+    </Tab>
+
+    <Tab title="Other languages (cURL)">
+
+    ```bash
+    curl -X POST 'https://api.nango.dev/function/trigger' \
+      -H 'Authorization: Bearer {nangoSecretKey}' \
+      -H 'Connection-Id: {connectionId}' \
+      -H 'Integration-Id: github' \
+      -d '{
+        "function_name": "create-issue",
+        "input": {
+          "owner": "acme",
+          "repo": "my-repo",
+          "title": "Bug report",
+          "body": "Something is broken"
+        }
+      }'
+    ```
+
+    </Tab>
+</Tabs>
+
+<Frame caption="Overview of Functions">
+  ![](/images/diagrams/nango-functions-diagram.png)
+</Frame>
+
+## Capabilities
+
+### Runtime and execution
+- Runs inside Nango
+- Isolated execution per customer and per run
+- Elastic scaling & fast startup time (less than 100ms)
+- Flexible use-cases: long-running syncs, rapid-fire actions, etc.
+- Triggered by API calls, schedules, webhooks, or life-cycle events
+
+### Developer experience
+- TypeScript-first, but compatible with any code base (HTTP-controlled)
+- Generate & maintain integration code with your favorite AI models
+- Local development, local dry runs & testing framework
+- CLI-based workflow & CI/CD integration
+- Code lives in your own Git repository
+
+### Runtime SDK
+- Authenticated API requests
+- Retries & rate-limit handling
+- Sync engine with caching & checkpointing for ETL & RAG
+- Data transformation utilities
+- Runtime and compile-time data validation & auto-completion
+
+### State and configuration
+- Per-customer configuration & logical branching
+- Per-customer key-value storage
+- Compose functions into workflows
+
+### Observability
+- Execution & custom logs
+- Metrics and monitoring
+- Debuggable failures
+- OpenTelemetry export
+
+## Use cases
+
+Functions are a powerful & flexible primitive to support any complex integration use-case:
+
+- **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling/overview)**
+- **[Data syncing with checkpoints](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[RAG pipelines and large dataset ingestion](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[Triggers and change detection](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[Webhook ingestion and processing](/implementation-guides/use-cases/webhooks-from-external-apis)**
+- **[Per-customer integration logic](/implementation-guides/use-cases/customer-configuration)**
+- **[API unification](/implementation-guides/use-cases/unified-apis)** 
+
+## Next step
+
+<CardGroup cols={2}>
+    <Card title="Set up functions" icon="function" href="/implementation-guides/platform/functions/functions-setup">
+        Learn how to set up and deploy Nango Functions.
+    </Card>
+</CardGroup>

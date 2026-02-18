@@ -129,12 +129,14 @@ export const ENVS = z.object({
     ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
+    RUNNER_SECRET_KEY: z.string().optional(),
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER', 'KUBERNETES']).default('LOCAL'),
     RUNNER_FLEET_ID: z
         .string()
         .regex(/^[a-zA-Z0-9_-]+$/)
         .optional()
         .default('nango_runners'),
+    RUNNER_LAMBDA_FLEET_ID: z.string().optional().default('nango_runners_lambda'),
     RUNNER_DO_NOT_DISRUPT: z.stringbool().optional().default(true),
     RUNNER_PROFILED_ACCOUNTS: z
         .string()
@@ -152,10 +154,9 @@ export const ENVS = z.object({
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
-    RUNNER_NODE_ID: z.coerce.number().optional(),
+    RUNNER_NODE_ID: z.coerce.number().default(1),
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
-    RUNNER_PERSIST_MAX_SOCKET_MAX_LIFETIME_MS: z.coerce.number().optional().default(30_000),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
@@ -166,8 +167,10 @@ export const ENVS = z.object({
     RUNNER_MAX_REQUEST_MEMORY: z.coerce.number().optional().default(16384),
     RUNNER_MIN_REQUEST_CPU: z.coerce.number().optional().default(500),
     RUNNER_MIN_REQUEST_MEMORY: z.coerce.number().optional().default(512),
-    RUNNER_REQUEST_CPU_MULTIPLIER: z.coerce.number().optional().default(0.6),
-    RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(0.6),
+    RUNNER_REQUEST_CPU_MULTIPLIER: z.coerce.number().optional().default(1.4),
+    RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(1.4),
+    RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
+    RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
@@ -249,6 +252,11 @@ export const ENVS = z.object({
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
 
+    AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
+    AWS_INTEGRATIONS_REGION: z.string().optional(),
+    AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
@@ -257,6 +265,7 @@ export const ENVS = z.object({
     DD_ENV: z.string().optional(),
     DD_SITE: z.string().optional(),
     DD_TRACE_AGENT_URL: z.string().optional(),
+    DD_API_KEY_SECRET_ARN: z.string().optional(),
 
     // Elasticsearch
     NANGO_LOGS_ES_URL: z.url().optional(),
@@ -303,7 +312,7 @@ export const ENVS = z.object({
     NANGO_DB_CLIENT: z.string().optional(),
     NANGO_ENCRYPTION_KEY: z
         .string({
-            error: 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://nango.dev/docs/guides/self-hosting/free-self-hosting/overview#encrypt-sensitive-data'
+            error: 'To learn more about NANGO_ENCRYPTION_KEY, reach out to support.'
         })
         .optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
@@ -324,11 +333,17 @@ export const ENVS = z.object({
     RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
     RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
-    // Redis
+    // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),
     NANGO_REDIS_HOST: z.string().optional(),
     NANGO_REDIS_PORT: z.coerce.number().optional().default(6379),
     NANGO_REDIS_AUTH: z.string().optional(),
+
+    // Redis (customer boundary)
+    NANGO_CUSTOMER_REDIS_URL: z.url().optional(),
+    NANGO_CUSTOMER_REDIS_HOST: z.string().optional(),
+    NANGO_CUSTOMER_REDIS_PORT: z.coerce.number().optional().default(6379),
+    NANGO_CUSTOMER_REDIS_AUTH: z.string().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),
@@ -362,6 +377,46 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+
+    // Lambda
+    LAMBDA_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_DEFAULT_SIZE: z.coerce.number().default(512),
+    LAMBDA_ECR_REGISTRY: z.string().optional(),
+    LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
+    LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),
+    LAMBDA_PERSIST_SERVICE_URL: z.url().optional(),
+    LAMBDA_JOBS_SERVICE_URL: z.url().optional(),
+    LAMBDA_PROVIDERS_URL: z.url().optional(),
+    LAMBDA_SUBNET_IDS: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`LAMBDA_SUBNET_IDS must be a valid JSON array of strings`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.array(z.string()))
+        .default([]),
+    LAMBDA_SECURITY_GROUP_IDS: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`LAMBDA_SECURITY_GROUP_IDS must be a valid JSON array of strings`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.array(z.string()))
+        .default([]),
+    LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
+    LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
+    LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
+    LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
+    LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
+    LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET: z.coerce.number().optional().default(0.7),
 
     // WEBHOOK DELIVERY CIRCUIT BREAKER
     NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),

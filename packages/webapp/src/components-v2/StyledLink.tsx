@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import type { VariantProps } from 'class-variance-authority';
 
 const styledLinkVariants = cva(
-    'w-fit text-body-medium-medium underline inline-flex items-center cursor-pointer focus-default disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
+    'w-fit underline inline-flex items-center cursor-pointer focus-default disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
     {
         variants: {
             variant: {
@@ -14,6 +14,10 @@ const styledLinkVariants = cva(
                     'text-link-default [&_svg]:text-link-disabled hover:text-link-hover hover:[&_svg]:text-link-hover active:text-link-press active:[&_svg]:text-link-press disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
                 info: 'text-feedback-info-fg [&_svg]:text-feedback-info-fg',
                 error: 'text-feedback-error-fg [&_svg]:text-feedback-error-fg'
+            },
+            size: {
+                default: 'text-body-medium-medium',
+                sm: 'text-body-small-medium'
             },
             type: {
                 internal: '',
@@ -26,6 +30,7 @@ const styledLinkVariants = cva(
         },
         defaultVariants: {
             variant: 'default',
+            size: 'default',
             type: 'internal',
             icon: false
         }
@@ -40,8 +45,8 @@ interface StyledLinkProps extends VariantProps<typeof styledLinkVariants> {
     title?: string;
 }
 
-export const StyledLink: React.FC<StyledLinkProps> = ({ to, children, type = 'internal', icon = false, variant, className = '', onClick, title }) => {
-    const linkClasses = styledLinkVariants({ type, icon, className, variant });
+export const StyledLink: React.FC<StyledLinkProps> = ({ to, children, type = 'internal', icon = false, variant, size, className = '', onClick, title }) => {
+    const linkClasses = styledLinkVariants({ type, icon, className, variant, size });
 
     if (type === 'external') {
         return (

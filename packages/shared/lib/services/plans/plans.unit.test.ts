@@ -115,6 +115,11 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         function_compute_gbms_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
+        sync_function_runtime: 'runner',
+        action_function_runtime: 'runner',
+        webhook_function_runtime: 'runner',
+        on_event_function_runtime: 'runner',
+        has_records_autopruning: true,
         ...defaultPlanDefinition,
         ...flagOverrides
     };

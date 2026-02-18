@@ -29,6 +29,7 @@ export { default as snipeItCredentialsVerification } from './providers/snipe-it/
 export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';
 export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
+export { default as candisPostConnection } from './providers/candis/post-connection.js';
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';
 export { default as onedrivePostConnection } from './providers/one-drive/post-connection.js';
 export { default as atlassianGovernmentCloudPostConnection } from './providers/jira/post-connection.js';
@@ -37,3 +38,4 @@ export { default as oneloginPreConnectionDeletion } from './providers/onelogin/p
 export { default as sellsyPostConnection } from './providers/sellsy/post-connection.js';
 export { default as zohoPostConnection } from './providers/zoho/post-connection.js';
 export { default as sophosCentralPostConnection } from './providers/sophos-central/post-connection.js';
+export { default as procorePostConnection } from './providers/procore/post-connection.js';

@@ -1,0 +1,43 @@
+---
+title: 'How to authenticate with a User Access Token (Zapier OAuth)'
+sidebarTitle: 'Zapier Setup'
+description: 'Register an OAuth app with Zapier and connect it to Nango'
+---
+
+This guide shows you how to obtain your OAuth credentials (Client ID and Client Secret) from Zapier so your users can grant your app access via the Workflow API.
+
+## Prerequisites
+
+You must have created an app and published it as a **public integration** in [Zapier's App Directory](https://docs.zapier.com/platform/publish/public-integration#benefits-to-building-a-public-integration). Redirect URIs and your Client ID and Client Secret become available only after your app is public.
+
+## Creating your Zapier OAuth app
+
+<Steps>
+   <Step title="Configure a redirect URI">
+     In the [Zapier Developer Platform](https://developer.zapier.com/), go to **Embed → Settings → Redirect URIs** and add your Nango callback URL:
+
+     **`https://api.nango.dev/oauth/callback`**
+
+   </Step>
+
+   <Step title="Get your Client ID and Client Secret">
+     In the Zapier Developer Platform, go to **Embed → Settings → Credentials**. Copy your **Client ID** and **Client Secret**.
+
+   </Step>
+
+   <Step title="Determine required OAuth scopes">
+     The Zapier Workflow API endpoints require different OAuth scopes. Check the [API reference](https://docs.zapier.com/powered-by-zapier/api-reference) for each endpoint you use to see which scopes are required, and configure those scopes when setting up the integration in Nango.
+   </Step>
+
+   <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+## Additional resources
+
+- [Zapier Workflow API – Authentication](https://docs.zapier.com/powered-by-zapier/authentication/getting-started)
+- [Zapier User Access Token documentation](https://docs.zapier.com/powered-by-zapier/authentication/methods/user-access-token)
+- [Building a public integration on Zapier](https://docs.zapier.com/platform/publish/public-integration)
+
+---

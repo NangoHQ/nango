@@ -75,7 +75,7 @@ export default function Signin() {
             </Helmet>
             <div className="flex flex-col justify-center">
                 <div className="flex flex-col justify-center w-80 mx-4">
-                    <h2 className="mt-4 text-center text-[20px] text-white">Log in to Nango</h2>
+                    <h2 className="text-center text-title-group text-text-primary">Log in to Nango</h2>
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                         <div>
                             <div className="mt-1">

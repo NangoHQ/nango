@@ -1,5 +1,8 @@
+import type { Checkpoint } from '../checkpoint/types.js';
+
 export type SyncStatus = 'RUNNING' | 'PAUSED' | 'STOPPED' | 'SUCCESS' | 'ERROR';
 
+/** @deprecated **/
 export type SyncJobsType = 'INCREMENTAL' | 'FULL' | 'WEBHOOK' | 'ON_EVENT_SCRIPT' | 'ACTION';
 
 export interface SyncResult {
@@ -12,6 +15,7 @@ export type SyncResultByModel = Record<string, SyncResult>;
 
 export interface ReportedSyncJobStatus {
     id?: string;
+    /** @deprecated **/
     type: SyncJobsType | 'INITIAL';
     name?: string;
     variant?: string;
@@ -24,4 +28,5 @@ export interface ReportedSyncJobStatus {
     nextScheduledSyncAt: Date | null;
     latestExecutionStatus: SyncStatus | undefined;
     recordCount: Record<string, number>;
+    checkpoint: Checkpoint | null;
 }
