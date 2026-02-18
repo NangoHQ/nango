@@ -8862,6 +8862,23 @@ klaviyo-oauth:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/klaviyo-oauth
 
+klicktipp:
+    display_name: KlickTipp
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.klick-tipp.com/api
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your KlickTipp Listbuilding API key
+            doc_section: '#step-1-getting-your-api-key'
+    credentials_verification_script: klicktippCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/klicktipp
+    docs_connect: https://nango.dev/docs/api-integrations/klicktipp/connect
+
 kustomer:
     display_name: Kustomer
     categories:

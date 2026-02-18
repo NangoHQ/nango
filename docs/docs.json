@@ -556,6 +556,7 @@
               "integrations/all/knowbe4",
               "integrations/all/klaviyo",
               "integrations/all/klaviyo-oauth",
+              "api-integrations/klicktipp",
               "integrations/all/klipfolio",
               "integrations/all/kustomer",
               "integrations/all/lagrowthmachine",
