@@ -127,6 +127,42 @@ describe('UnifiedFixtureProvider matching behavior', () => {
         expect(response.data).toEqual({ ok: true });
     });
 
+    it('matches query params embedded in the endpoint string', async () => {
+        const testsDir = await createTestDir('nango-unified-query-in-endpoint-');
+        await fs.writeFile(
+            path.join(testsDir, 'query-in-endpoint.test.json'),
+            JSON.stringify(
+                {
+                    api: {
+                        get: {
+                            '/foo': {
+                                request: {
+                                    params: {
+                                        a: '1',
+                                        b: '2'
+                                    }
+                                },
+                                response: { ok: true },
+                                hash: ''
+                            }
+                        }
+                    }
+                },
+                null,
+                2
+            )
+        );
+
+        const nangoMock = new NangoActionMock({
+            dirname: testsDir,
+            name: 'query-in-endpoint',
+            Model: 'QueryInEndpointModel'
+        });
+
+        const response = await nangoMock.get({ endpoint: '/foo?a=1&b=2' });
+        expect(response.data).toEqual({ ok: true });
+    });
+
     it('matches both single-object and array API entries', async () => {
         const testsDir = await createTestDir('nango-unified-shapes-');
         await fs.writeFile(
