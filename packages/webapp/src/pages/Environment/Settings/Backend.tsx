@@ -75,7 +75,7 @@ export const BackendSettings: React.FC = () => {
         return null;
     }
 
-    const hasNewSecretKey = environmentAndAccount.environment.pending_secret_key;
+    const hasNewSecretKey = environmentAndAccount.pending_secret;
     return (
         <SettingsContent title="Backend">
             <SettingsGroup label="Secret key">
@@ -87,14 +87,7 @@ export const BackendSettings: React.FC = () => {
                             </label>
                         )}
                         <div className="flex gap-2">
-                            <SecretInput
-                                view={false}
-                                inputSize={'lg'}
-                                copy={true}
-                                variant={'black'}
-                                name="secretKey"
-                                value={environmentAndAccount.environment.secret_key}
-                            />
+                            <SecretInput view={false} inputSize={'lg'} copy={true} variant={'black'} name="secretKey" value={environmentAndAccount.secret} />
                         </div>
                     </div>
                     {!hasNewSecretKey && (
@@ -118,7 +111,7 @@ export const BackendSettings: React.FC = () => {
                                 copy={true}
                                 variant={'black'}
                                 name="pendingSecretKey"
-                                value={environmentAndAccount.environment.pending_secret_key!}
+                                value={environmentAndAccount.pending_secret!}
                             />
                         </div>
                     )}
