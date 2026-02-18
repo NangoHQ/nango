@@ -360,7 +360,7 @@ export default class Nango {
             return appStoreCredentials as unknown as ConnectionConfig;
         }
 
-        if ('client_id' in credentials && 'client_secret' in credentials) {
+        if ('client_id' in credentials && ('client_secret' in credentials || 'client_private_key' in credentials)) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
                 client_id: credentials.client_id,
                 client_secret: credentials.client_secret,
@@ -530,7 +530,7 @@ export default class Nango {
             });
         }
 
-        if ('client_id' in credentials && 'client_secret' in credentials) {
+        if ('client_id' in credentials && ('client_secret' in credentials || 'client_private_key' in credentials)) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as OAuth2ClientCredentials
