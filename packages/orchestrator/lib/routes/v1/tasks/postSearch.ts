@@ -25,7 +25,7 @@ const bodySchema = z
     .object({
         groupKey: z.string().min(1).optional(),
         limit: z.coerce.number().positive().optional(),
-        ids: z.array(z.string().uuid()).optional()
+        ids: z.array(z.uuid()).optional()
     })
     .strict();
 

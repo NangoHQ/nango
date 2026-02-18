@@ -15,7 +15,7 @@ import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
 
 const paramValidation = z
     .object({
-        environmentUuid: z.string().uuid(),
+        environmentUuid: z.uuid(),
         providerConfigKey: providerConfigKeySchema
     })
     .strict();
