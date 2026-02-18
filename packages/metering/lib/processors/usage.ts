@@ -204,14 +204,6 @@ export class UsageProcessor {
                             frequencyBucket = 'slow';
                         }
                     }
-                    const metricPayload = {
-                        type,
-                        success: String(success),
-                        accountId,
-                        frequencyBucket,
-                        functionRuntime
-                    };
-                    logger.info(`Duration metrics payload: ${JSON.stringify(metricPayload)}`);
                     metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, {
                         type,
                         success: String(success),
