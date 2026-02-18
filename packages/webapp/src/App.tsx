@@ -221,7 +221,7 @@ const router = sentryCreateBrowserRouter([
     },
     {
         path: '/account-settings',
-        element: <RedirectWithEnv path="/team-settings" />
+        element: <RedirectWithEnv path="team-settings" />
     },
     {
         path: '/team-settings',
