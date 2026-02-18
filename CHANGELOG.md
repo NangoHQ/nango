@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.36] - 2026-02-18
+
+### Added
+
+- Add checkpoints guide and migration guide (#5458) by @bastienbeurier
+- *(integrations)* Add support for fullenrich (#5464) by @hassan254-prog
+- *(integrations)* Add support for printful (#5465) by @hassan254-prog
+- *(webapp)* Add more context to error messages during OAuth (#5452) by @hassan254-prog
+- *(integrations)* Add support for timify (#5471) by @hassan254-prog
+
+### Changed
+
+- Document new agent skills (#5468) by @marcindobry
+
+### Fixed
+
+- *(deploy)* Set cache-control for index.html for replit (#5459) by @rossmcewan
+- *(kubernetes)* Request is set to node values, limit is multiplied (#5269) by @rossmcewan
+- *(webapp)* Fix 404 after login when default env is missing (#5469) by @hassan254-prog
+- *(onboarding)* Only redirect to onboarding page if user is new (#5474) by @hassan254-prog
+- *(cli)* Fix hash calculation in unified mocks when pagination took place (#5467) by @marcindobry
+
 ## [v0.69.35] - 2026-02-16
 
 ### Added
@@ -5930,6 +5952,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
 [v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35
 [v0.69.34]: https://github.com/NangoHQ/nango/compare/v0.69.33..v0.69.34
 [v0.69.33]: https://github.com/NangoHQ/nango/compare/v0.69.32..v0.69.33
