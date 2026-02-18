@@ -773,6 +773,7 @@
               "integrations/all/skio",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/timify",
               "api-integrations/torii",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
