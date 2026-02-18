@@ -1102,6 +1102,24 @@ export async function deleteCount(
     await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
+function getPgErrorCode(err: unknown): string | undefined {
+    if (err && typeof err === 'object') {
+        const code = (err as { code?: unknown }).code;
+        if (typeof code === 'string') {
+            return code;
+        }
+        if ('cause' in err) {
+            return getPgErrorCode((err as { cause?: unknown }).cause);
+        }
+    }
+    return undefined;
+}
+
+function isMissingTableError(err: unknown): boolean {
+    const code = getPgErrorCode(err);
+    return code === '42P01' || code === '3F000';
+}
+
 /*
  * autoPruningCandidate
  * @desc finds a candidate connection/model for auto-pruning
@@ -1157,6 +1175,9 @@ export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: num
         }
         return Ok(null);
     } catch (err) {
+        if (isMissingTableError(err)) {
+            return Ok(null);
+        }
         return Err(new Error(`Failed to find auto-pruning candidate in partition ${partition}`, { cause: err }));
     }
 }
@@ -1195,6 +1216,9 @@ export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: nu
         }
         return Ok(null);
     } catch (err) {
+        if (isMissingTableError(err)) {
+            return Ok(null);
+        }
         return Err(new Error(`Failed to find auto-delete candidate`, { cause: err }));
     }
 }

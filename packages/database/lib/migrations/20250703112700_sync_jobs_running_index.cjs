@@ -5,7 +5,7 @@ exports.config = { transaction: false };
  */
 exports.up = async function (knex) {
     await knex.raw(
-        `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_jobs_syncid_running_createdat ON nango._nango_sync_jobs (sync_id, created_at DESC) WHERE status = 'RUNNING';`
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_jobs_syncid_running_createdat ON "_nango_sync_jobs" (sync_id, created_at DESC) WHERE status = 'RUNNING';`
     );
 };
 

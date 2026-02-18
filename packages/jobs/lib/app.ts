@@ -9,7 +9,7 @@ import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/ut
 
 import { envs } from './env.js';
 import { Processor } from './processor/processor.js';
-import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
+import { getDefaultFleet, migrateFleets, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
 
@@ -94,6 +94,10 @@ try {
     });
 
     if (envs.RUNNER_TYPE === 'LOCAL') {
+        const migrateResult = await migrateFleets();
+        if (migrateResult.isErr()) {
+            throw migrateResult.error;
+        }
         // when running locally, the runners (running as processes) are being killed
         // when the main process is killed and the fleet entries are therefore not associated with any running process
         // we then must fake a new deployment so fleet replaces runners with new ones

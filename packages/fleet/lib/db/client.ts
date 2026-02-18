@@ -45,22 +45,30 @@ export class DatabaseClient {
     }
 
     async migrate(): Promise<void> {
-        logger.info(`[fleet - ${this.schema}] migration`);
+        try {
+            logger.info(`[fleet - ${this.schema}] migration`);
 
-        const filename = fileURLToPath(import.meta.url);
-        const dirname = path.dirname(path.join(filename, '../../'));
-        const dir = path.join(dirname, 'dist/db/migrations');
-        await this.db.raw(`CREATE SCHEMA IF NOT EXISTS ${this.schema}`);
+            const filename = fileURLToPath(import.meta.url);
+            const dirname = path.dirname(path.join(filename, '../../'));
+            const dir = path.join(dirname, 'dist/db/migrations');
+            await this.db.raw(`CREATE SCHEMA IF NOT EXISTS ${this.schema}`);
 
-        const [, pendingMigrations] = (await this.db.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
+            const [, pendingMigrations] = (await this.db.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
 
-        if (pendingMigrations.length === 0) {
-            logger.info(`[fleet - ${this.schema}] nothing to do`);
-            return;
+            if (pendingMigrations.length === 0) {
+                logger.info(`[fleet - ${this.schema}] nothing to do`);
+                return;
+            }
+
+            await this.db.migrate.latest({ ...this.config.migrations, directory: dir });
+            logger.info(`[fleet - ${this.schema}] migrations completed.`);
+        } catch (err) {
+            if (err instanceof Error && err.name === 'MigrationLocked') {
+                logger.info(`[fleet - ${this.schema}] migrations already locked, skipping`);
+                return;
+            }
+            throw err;
         }
-
-        await this.db.migrate.latest({ ...this.config.migrations, directory: dir });
-        logger.info(`[fleet - ${this.schema}] migrations completed.`);
     }
 
     /*********************************/

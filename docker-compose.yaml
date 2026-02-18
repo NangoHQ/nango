@@ -7,6 +7,11 @@ services:
             POSTGRES_PASSWORD: nango
             POSTGRES_USER: nango
             POSTGRES_DB: nango
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U nango -d nango']
+            interval: 5s
+            timeout: 5s
+            retries: 12
         ports:
             - '${NANGO_DB_PORT:-5432}:5432'
         volumes:
@@ -22,15 +27,18 @@ services:
         platform: linux/amd64
         environment:
             - NANGO_ENCRYPTION_KEY
-            - NANGO_DB_USER
-            - NANGO_DB_PASSWORD
-            - NANGO_DB_HOST=${NANGO_DB_HOST:-nango-db}
-            - NANGO_DB_NAME
-            - NANGO_DB_SSL
+            - NANGO_DB_USER=nango
+            - NANGO_DB_PASSWORD=nango
+            - NANGO_DB_HOST=nango-db
+            - NANGO_DB_NAME=nango
+            - NANGO_DB_PORT=5432
+            - NANGO_DB_SSL=false
             - NANGO_DB_ADDITIONAL_SCHEMAS
-            - NANGO_DB_POOL_MIN
-            - NANGO_DB_POOL_MAX
+            - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN:-0}
+            - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX:-30}
             - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
+            - SMTP_URL=smtp://nango-mail:1025
+            - SMTP_FROM=Nango <noreply@local.nango.dev>
             - SERVER_PORT
             - CSP_REPORT_ONLY=true
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
@@ -45,6 +53,7 @@ services:
             - NANGO_LOGS_ES_USER
             - NANGO_LOGS_ES_PWD
             - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
+            - NANGO_MIGRATE_AT_START=false
         volumes:
             - './packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml'
         restart: always
@@ -52,8 +61,12 @@ services:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
             - '${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}'
         depends_on:
-            - nango-db
-            # - nango-elasticsearch
+            nango-db:
+                condition: service_healthy
+            nango-migrate:
+                condition: service_completed_successfully
+            # nango-elasticsearch:
+            #     condition: service_healthy
         networks:
             - nango
 
@@ -62,6 +75,45 @@ services:
         container_name: nango-redis
         ports:
             - '6379:6379'
+        networks:
+            - nango
+
+    nango-mail:
+        image: axllent/mailpit:v1.24.1
+        container_name: nango-mail
+        ports:
+            - '1025:1025'
+            - '8025:8025'
+        networks:
+            - nango
+
+    nango-migrate:
+        image: nangohq/nango-server:hosted
+        container_name: nango-migrate
+        platform: linux/amd64
+        command: ['node', '/app/nango/packages/server/dist/migrate.js']
+        environment:
+            - NANGO_ENCRYPTION_KEY
+            - NANGO_DB_USER=nango
+            - NANGO_DB_PASSWORD=nango
+            - NANGO_DB_HOST=nango-db
+            - NANGO_DB_NAME=nango
+            - NANGO_DB_PORT=5432
+            - NANGO_DB_SSL=false
+            - NANGO_DB_ADDITIONAL_SCHEMAS
+            - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN:-0}
+            - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX:-30}
+            - RECORDS_DATABASE_URL=${RECORDS_DATABASE_URL:-postgresql://nango:nango@nango-db:5432/nango}
+            - LOG_LEVEL=${LOG_LEVEL:-info}
+            - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
+            - NANGO_LOGS_ES_USER
+            - NANGO_LOGS_ES_PWD
+            - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
+        depends_on:
+            nango-db:
+                condition: service_healthy
+        restart: 'no'
         networks:
             - nango
     #
