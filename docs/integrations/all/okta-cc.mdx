@@ -1,0 +1,57 @@
+---
+title: Okta (Client Credentials)
+sidebarTitle: Okta (Client Credentials)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/okta-cc/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/okta-cc/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free developer account available at [developer.okta.com](https://developer.okta.com/signup/). |
+| Paid test account | ✅ Not required | Developer accounts can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/okta-cc.mdx)</Note>
+
+
+## Useful links
+
+-   [Okta API Services app setup guide](https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/)
+-   [Okta private_key_jwt client authentication](https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/#create-a-public-private-key-pair)
+-   [Okta Management API OAuth 2.0 scopes reference](https://developer.okta.com/docs/api/oauth2/#okta-admin-management)
+-   [Okta API reference](https://developer.okta.com/docs/reference/)
+-   [API rate limiting](https://developer.okta.com/docs/reference/rate-limits/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/okta-cc.mdx)</Note>
+
+## API gotchas
+
+-   This provider uses Okta's **Org Authorization Server** (`/oauth2/v1/token`) with `private_key_jwt` client authentication to call Okta's Management API.
+-   The Okta application **must be created as API Services** (Applications > Create App Integration > API Services). Standard OIDC apps only support `authorization_code` and will return `unauthorized_client` errors.
+-   Authentication uses `private_key_jwt`: you generate an RSA key pair, upload the public key to the Okta app, and provide the private key to Nango. No client secret is used.
+-   Scopes must be granted to your application under **Applications > `your app` > Okta API Scopes**. See the full list in the [Okta Management API scopes reference](https://developer.okta.com/docs/api/oauth2/#okta-admin-management).
+-   Client credentials do not use refresh tokens — Nango re-authenticates automatically when the access token expires (default: 1 hour).
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/okta-cc.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Okta (Client Credentials)" icon="link" href="/integrations/all/okta-cc/connect" horizontal>
+  Guide to connect to Okta (Client Credentials) using Connect UI
+</Card>

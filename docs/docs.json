@@ -633,6 +633,7 @@
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
               "integrations/all/okta",
+              "integrations/all/okta-cc",
               "integrations/all/okta-preview",
               "api-integrations/onlogist",
               "api-integrations/one-drive",
