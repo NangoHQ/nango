@@ -24,6 +24,10 @@ To initialize your integrations folder (e.g., at the root of your repository), r
 nango init nango-integrations
 ```
 
+<Tip>
+    To code with AI, install our skill: `npx skills add NangoHQ/skills` ([Buid with AI guide](/implementation-guides/platform/functions/leverage-ai-agents)).
+</Tip>
+
 This creates the `./nango-integrations` folder with some initial configuration and an example sync script. The `nango-integrations` directory looks like this:
 ```
 nango-integrations/
@@ -37,18 +41,8 @@ nango-integrations/
 ```
 
 <Tip>
-**The `.nango` directory should be committed to source control. It is used by the Nango CLI internally.**
+The `.nango` directory should be committed to source control. It is used by the Nango CLI internally.
 </Tip>
-
-<Note>
-    If you're using an AI coding agent to build functions, install the Nango function builder skill after initializing your folder:
-
-    ```bash
-    npx skills add NangoHQ/skills
-    ```
-
-    This adds `nango-function-builder`, which includes guidance for building both actions and syncs. For more details, read our [guide to building integrations with AI](/implementation-guides/platform/functions/leverage-ai-agents).
-</Note>
 
 ## Authenticate the CLI
 

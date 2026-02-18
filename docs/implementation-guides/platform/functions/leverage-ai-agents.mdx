@@ -1,7 +1,7 @@
 ---
-title: 'Build integrations with AI'
-sidebarTitle: 'Build integrations with AI'
-description: 'How to use AI agents to generate function code and build custom integrations in Nango'
+title: 'Build with AI'
+sidebarTitle: 'Build with AI'
+description: 'Guide on how to use AI to build custom integrations on Nango.'
 ---
 
 Building custom integrations for Nango is much faster when using AI tools. This guide shows you how to leverage AI tooling to build high-quality integrations quickly.
@@ -14,7 +14,7 @@ Install Nango's skill pack into your development environment:
 npx skills add NangoHQ/skills
 ```
 
-This adds `nango-function-builder`, which includes guidance for building both actions and syncs.
+This adds `nango-function-builder`, which includes guidance for building both [Actions](/implementation-guides/use-cases/actions/implement-an-action) and [Syncs](/implementation-guides/use-cases/syncs/implement-a-sync).
 
 <Note>
 If your coding agent is already running, restart it after installing the skill so it can load the new instructions.
@@ -24,13 +24,13 @@ If your coding agent is already running, restart it after installing the skill s
 
 The `nango-function-builder` skill is loaded automatically when using popular coding agents/tools (Claude Code, Cursor, Gemini CLI, Codex CLI, VS Code with Copilot, Opencode, and more).
 
-Tell your agent what you want to build. You can start with a simple prompt to build an action: 
+Tell your agent what you want to build. You can start with a simple prompt to build an [Action](/implementation-guides/use-cases/actions/implement-an-action): 
 
 ```
 I want to build a Nango action that will get specified Slack channel information.
 ```
 
-However, the more information you give the agent up-front, the better the initial version of the **Action** is going to be: 
+However, the more information you give the agent up-front, the better the initial version of the [Action](/implementation-guides/use-cases/actions/implement-an-action) is going to be: 
 
 ```
 I want to build a Nango action that will get Slack channel information.
@@ -42,16 +42,16 @@ Outputs: id, name, is_private
 API Reference: https://api.slack.com/methods/conversations.info
 ```
 
-Similarly, a prompt to build a **Sync** could look like this:
+Similarly, a prompt to build a [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) could look like this:
 
 ```
 I want to build a Nango sync that will store all Figma projects.
 
 Integration ID: figma
 Connection ID: my-figma-connection
-Model Name: Project
 Frequency: every hour
-Metadata: {"team_id": "1234567890"}
+Inputs: team_id
+Outputs: Project model with fields id, name, last_modified
 API Reference: https://www.figma.com/developers/api#projects-endpoints
 ```
 
