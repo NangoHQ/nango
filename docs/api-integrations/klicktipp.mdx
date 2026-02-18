@@ -16,17 +16,21 @@ Connect to KlickTipp with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the KlickTipp API">
-    Make your first request to the KlickTipp API (subscribe a contact). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    KlickTipp requires the API key in the request body. Retrieve the stored credentials, then include the key in your call. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl -X POST "https://api.nango.dev/proxy/subscriber/signin" \
+            # 1. Retrieve the stored API key
+            curl "https://api.nango.dev/connections/<CONNECTION-ID>" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
-              -H "Provider-Config-Key: <INTEGRATION-ID>" \
-              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>"
+            # → { "credentials": { "apiKey": "..." } }
+
+            # 2. Subscribe a contact (include apikey in the body)
+            curl -X POST "https://www.klick-tipp.com/api/subscriber/signin" \
               -H "Content-Type: application/x-www-form-urlencoded" \
-              -d "email=test@example.com"
+              -d "apikey=<API-KEY>&email=test@example.com"
             ```
 
         </Tab>
@@ -40,11 +44,19 @@ Connect to KlickTipp with Nango and see data flow in 2 minutes.
 
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
+        // Retrieve stored credentials
+        const { credentials } = await nango.getConnection({
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+        const apiKey = (credentials as Record<string, string>).apiKey;
+
+        // Subscribe a contact (apikey must be in the body)
         const res = await nango.post({
             endpoint: '/subscriber/signin',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
-            data: 'email=test@example.com',
+            data: `apikey=${encodeURIComponent(apiKey)}&email=test@example.com`,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
@@ -53,7 +65,6 @@ Connect to KlickTipp with Nango and see data flow in 2 minutes.
         </Tab>
 
     </Tabs>
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
@@ -80,7 +91,7 @@ KlickTipp's Listbuilding API authenticates via an API key sent in the request bo
 
 ## Pre-built syncs & actions for KlickTipp
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+No pre-built syncs or actions are available yet. You can [build your own](/implementation-guides/platform/functions/customize-template) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/klicktipp/PreBuiltUseCases.mdx"
 
