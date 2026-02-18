@@ -119,6 +119,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                 ...(body.privateKey !== undefined && { private_key: Buffer.from(body.privateKey).toString('base64') })
             };
         } else if (body.authType === 'MCP_OAUTH2') {
+            if (body.clientId !== undefined) {
+                integration.oauth_client_id = body.clientId;
+            }
+            if (body.clientSecret !== undefined) {
+                integration.oauth_client_secret = body.clientSecret;
+            }
             if (body.scopes !== undefined) {
                 integration.oauth_scopes = body.scopes || '';
             }

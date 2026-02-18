@@ -1,0 +1,101 @@
+---
+title: 'HubSpot (MCP)'
+sidebarTitle: 'HubSpot (MCP)'
+description: 'Integrate your application with the HubSpot MCP API'
+---
+
+## 🚀 Quickstart
+
+Connect to HubSpot (MCP) with Nango and start calling tools in minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _HubSpot (MCP)_.
+    </Step>
+    <Step title="Authorize HubSpot">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to HubSpot. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call a HubSpot MCP tool">
+    Make your first MCP request to HubSpot (e.g. fetch user details). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev//" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "method": "tools/call",
+                "params": {
+                    "name": "get_user_details",
+                    "_meta": {
+                        "progressToken": 1
+                    }
+                },
+                "jsonrpc": "2.0",
+                "id": 1
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                method: 'tools/call',
+                params: {
+                    name: 'get_user_details',
+                    _meta: { progressToken: 1 }
+                },
+                jsonrpc: '2.0',
+                id: 1
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 HubSpot (MCP) Integration Guides
+
+Nango-maintained guides for common MCP use cases.
+
+- [How to register your own HubSpot MCP OAuth app](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-api-oauth-app)  
+Register an MCP auth app with HubSpot and obtain credentials to connect it to Nango.
+
+Official docs: [HubSpot MCP server](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/integrate-with-the-remote-hubspot-mcp-server)
+
+## 🧩 Pre-built syncs & actions for HubSpot (MCP)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/hubspot-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

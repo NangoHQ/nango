@@ -1,0 +1,29 @@
+---
+title: 'How to register your own HubSpot MCP OAuth app'
+sidebarTitle: 'HubSpot MCP Setup'
+description: 'Create an MCP auth app in HubSpot and connect it to Nango'
+---
+
+This guide shows you how to create an **MCP auth app** in your HubSpot account and obtain your OAuth credentials (client ID and secret). These are required so your users can grant your app access to their HubSpot account via Nango.
+
+## Create an MCP auth app in HubSpot
+
+<Steps>
+ <Step title="Create a developer account">
+    If you dont have an account go to [HubSpot's developer signup page](https://app.hubspot.com/signup-hubspot/developers) and create an account.
+  </Step>
+  <Step title="Open MCP Auth Apps">
+    In your HubSpot account, go to **Development**. In the left sidebar, select **MCP Auth Apps**.
+  </Step>
+  <Step title="Create a new MCP auth app">
+    In the upper right, click **Create MCP auth app**.
+  </Step>
+  <Step title="Enter your app details">
+    In the dialog, fill in all your required information. For the **Redirect URL** add `https://api.nango.dev/oauth/callback`
+  </Step>
+  <Step title="Create and copy credentials">
+    Click **Create**. After the app is created, copy your **Client ID** and **Client Secret**. You will enter these when configuring the HubSpot (MCP) integration in Nango.
+  </Step>
+</Steps>
+
+You're now ready to connect HubSpot MCP to Nango. For more on the HubSpot MCP server and OAuth, see [HubSpot's guide to integrating with the MCP server](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/integrate-with-the-remote-hubspot-mcp-server).

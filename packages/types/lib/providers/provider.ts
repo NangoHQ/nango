@@ -135,9 +135,14 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
     };
 }
 
+// currently MCP supports 3 types of client registration
+// https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#client-registration-approaches
+export type McpOAuth2ClientRegistration = 'dynamic' | 'static' | 'metadata';
+
 export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
+    client_registration?: McpOAuth2ClientRegistration;
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {

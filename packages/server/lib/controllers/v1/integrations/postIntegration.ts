@@ -6,7 +6,7 @@ import { postIntegrationBodySchema } from './validation.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { IntegrationConfig, PostIntegration } from '@nangohq/types';
+import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
 export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -47,6 +47,19 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
+    if (provider.auth_mode === 'MCP_OAUTH2') {
+        const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration ?? 'dynamic';
+        if (!body.useSharedCredentials && clientRegistration === 'static') {
+            const auth = body.auth;
+            if (!auth || auth.authType !== 'MCP_OAUTH2' || !auth.clientId?.trim() || !auth.clientSecret) {
+                res.status(400).send({
+                    error: { code: 'invalid_body', message: 'Client ID and Client Secret are required for this integration' }
+                });
+                return;
+            }
+        }
+    }
+
     let integration: IntegrationConfig;
     if (body.useSharedCredentials) {
         const createParams: {
@@ -78,8 +91,13 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         const config = await buildIntegrationConfig(body, environment.id);
 
         if (provider.auth_mode === 'MCP_OAUTH2') {
-            const mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
-            config.oauth_client_id = mcpClientId;
+            const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration ?? 'dynamic';
+            if (clientRegistration === 'dynamic') {
+                const mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
+                config.oauth_client_id = mcpClientId;
+            }
+            // static: client_id/secret come from body.auth (already set in buildIntegrationConfig)
+            // metadata: not implemented
         }
 
         const createdIntegration = await configService.createProviderConfig(config, provider);
