@@ -1203,10 +1203,22 @@ class ConnectionService {
             if (!client_private_key) {
                 throw new NangoError('missing client_private_key');
             }
-            const privateJwk = JSON.parse(client_private_key) as { kid: string; [key: string]: unknown };
-            const kid = privateJwk.kid;
-            // Export the JWK to PEM so signJWT can use it.
-            const privKeyPem = createPrivateKey({ key: privateJwk, format: 'jwk' }).export({ type: 'pkcs8', format: 'pem' }) as string;
+            let privKeyPem: string;
+            let kid: string;
+
+            try {
+                const privateJwk = JSON.parse(client_private_key) as { kid: string; [key: string]: unknown };
+                kid = privateJwk.kid;
+                privKeyPem = createPrivateKey({
+                    key: privateJwk,
+                    format: 'jwk'
+                }).export({
+                    type: 'pkcs8',
+                    format: 'pem'
+                }) as string;
+            } catch (err) {
+                throw new NangoError('invalid_client_private_key_format', { cause: err });
+            }
             const now = Math.floor(Date.now() / 1000);
 
             const assertion = jwtClient.signJWT({

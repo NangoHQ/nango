@@ -10924,8 +10924,8 @@ okta-cc:
             type: 'link'
             limit_name_in_request: 'limit'
             link_rel_in_response_header: 'next'
-    docs: https://nango.dev/docs/integrations/all/okta-cc
-    docs_connect: https://nango.dev/docs/integrations/all/okta-cc/connect
+    docs: https://nango.dev/docs/api-integrations/okta-cc
+    docs_connect: https://nango.dev/docs/api-integrations/okta-cc/how-to-register-your-own-okta-cc-api-oauth-app
     credentials:
         client_id:
             type: string
