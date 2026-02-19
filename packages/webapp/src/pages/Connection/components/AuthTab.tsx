@@ -43,7 +43,7 @@ export const AuthTab = ({ connectionData }: { connectionData: GetConnection['Suc
                     <div className="flex flex-col gap-2">
                         <div className="inline-flex gap-1 items-center">
                             <span className="text-body-medium-medium text-text-primary">Tags</span>
-                            <Link to="https://nango.dev/docs/implementation-guides/use-cases/syncs/records-cache" target="_blank">
+                            <Link to="https://nango.dev/docs/implementation-guides/platform/auth/connection-tags#connection-tags" target="_blank">
                                 <ExternalLink className="size-3 text-icon-tertiary" />
                             </Link>
                         </div>
