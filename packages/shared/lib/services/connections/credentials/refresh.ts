@@ -477,6 +477,11 @@ export async function refreshCredentialsIfNeeded({
                 delete newCredentials.raw['sharepointAccessToken'];
             }
 
+            if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'botFrameworkAccessToken' in newCredentials.raw) {
+                connectionToRefresh['connection_config']['botFrameworkAccessToken'] = newCredentials.raw['botFrameworkAccessToken'];
+                delete newCredentials.raw['botFrameworkAccessToken'];
+            }
+
             connectionToRefresh = await connectionService.updateConnection({
                 ...connectionToRefresh,
                 last_fetched_at: new Date(),
@@ -542,6 +547,17 @@ export async function shouldRefreshCredentials({
                 const exp = new Date(connection.connection_config['sharepointAccessToken']['expires_at']);
                 if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
                     return { should: true, reason: 'expired_sharepoint_access_token' };
+                }
+            }
+        }
+    }
+
+    if (providerConfig.provider === 'microsoft-teams-bot') {
+        if (connection.connection_config['botFrameworkAccessToken']) {
+            if (connection.connection_config['botFrameworkAccessToken']['expires_at']) {
+                const exp = new Date(connection.connection_config['botFrameworkAccessToken']['expires_at']);
+                if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+                    return { should: true, reason: 'expired_bot_framework_access_token' };
                 }
             }
         }
