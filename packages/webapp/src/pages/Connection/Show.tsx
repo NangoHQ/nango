@@ -72,7 +72,11 @@ export const ConnectionShow = () => {
 
             <div className="flex flex-col gap-5">
                 <div className="flex gap-4 items-center">
-                    <IntegrationLogoWithProfile provider={connectionData.provider} profile={displayName} />
+                    <IntegrationLogoWithProfile
+                        providerConfigKey={integrationData.integration.unique_key}
+                        provider={connectionData.provider}
+                        profile={displayName}
+                    />
                     <div className="flex flex-col">
                         <span className="text-body-large-semi text-text-primary">
                             {integrationData.integration.display_name || integrationData.template.display_name} x {displayName}
