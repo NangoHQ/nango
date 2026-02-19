@@ -47,8 +47,7 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    missesInterpolationParamInObject,
-    stringifyEnrichedError
+    missesInterpolationParamInObject
 } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -1875,7 +1874,7 @@ class OAuthController {
             }
             return;
         } catch (err) {
-            const prettyError = stringifyEnrichedError(err, { pretty: true });
+            const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
@@ -1886,8 +1885,7 @@ class OAuthController {
                 }
             });
 
-            const error = WSErrBuilder.UnknownError();
-            void logCtx.error(error.message, { error: err });
+            void logCtx.error(prettyError, { error: err });
             await logCtx.failed();
 
             void connectionCreationFailedHook(
@@ -1898,7 +1896,7 @@ class OAuthController {
                     auth_mode: provider.auth_mode,
                     error: {
                         type: 'unknown',
-                        description: error.message + '\n' + prettyError
+                        description: prettyError
                     },
                     operation: 'unknown'
                 },
@@ -1909,7 +1907,10 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
 
             if (res) {
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, {
+                    type: 'unknown_err',
+                    message: prettyError
+                });
             }
         }
     }

@@ -47,3 +47,12 @@ export function getAllowedCallbackOrigin(apiURL: string): string | null {
         return null;
     }
 }
+
+export function compactErrorDisplay(message: string): string {
+    try {
+        const parsed = JSON.parse(message);
+        return JSON.stringify(parsed);
+    } catch {
+        return message;
+    }
+}
