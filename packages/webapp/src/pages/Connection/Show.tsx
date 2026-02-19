@@ -88,7 +88,7 @@ export const ConnectionShow = () => {
                         <TabsTrigger value="settings">Settings</TabsTrigger>
                     </TabsList>
                     <TabsContent value="auth">
-                        <AuthTab connectionData={connectionData} />
+                        <AuthTab connectionData={connectionData} providerConfigKey={integrationData.integration.unique_key} />
                     </TabsContent>
                     <TabsContent value="syncs">
                         <SyncsTab connectionData={connectionData} integrationData={integrationData} />

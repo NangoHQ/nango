@@ -1,16 +1,32 @@
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Label } from '@/components-v2/ui/label';
+import { RefreshCwIcon } from 'lucide-react';
 
-import type { OAuth2Credentials } from '@nangohq/types';
+import { SecretInput } from '@/components-v2/SecretInput';
+import { Button } from '@/components-v2/ui/button';
+import { Label } from '@/components-v2/ui/label';
+import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
+
+import type { ApiConnectionFull, OAuth2Credentials } from '@nangohq/types';
 
 export const OAuth2CredentialsComponent: React.FC<{
+    connection: ApiConnectionFull;
     credentials: OAuth2Credentials;
-}> = ({ credentials }) => {
+    providerConfigKey: string;
+}> = ({ connection, credentials, providerConfigKey }) => {
+    const { forceRefresh, isRefreshing } = useRefreshConnectionWithToast(connection, providerConfigKey);
+
     return (
         <>
             <div className="flex flex-col gap-2">
                 <Label htmlFor="access_token">Access token</Label>
-                <SecretInput id="access_token" value={credentials.access_token} disabled copy />
+                <div className="flex gap-2 items-center">
+                    <SecretInput id="access_token" value={credentials.access_token} disabled copy />
+                    {credentials.refresh_token && (
+                        <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing}>
+                            <RefreshCwIcon />
+                            Refresh
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {credentials.refresh_token && (
