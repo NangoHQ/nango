@@ -12,6 +12,8 @@ import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 
 export const ProfileDropdown: React.FC = () => {
+    const env = useStore((state) => state.env);
+
     const { meta } = useMeta();
     const navigate = useNavigate();
     const signout = useSignout();
@@ -23,12 +25,12 @@ export const ProfileDropdown: React.FC = () => {
             {
                 label: 'Team',
                 icon: Users,
-                href: `/team-settings`
+                href: `/${env}/team-settings`
             },
             {
                 label: 'Profile',
                 icon: UserRoundCog,
-                href: `/user-settings`
+                href: `/${env}/user-settings`
             }
         ];
 
@@ -44,12 +46,12 @@ export const ProfileDropdown: React.FC = () => {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,
-                href: `/team/billing`
+                href: `/${env}/team/billing`
             });
         }
 
         return list;
-    }, [meta, showGettingStarted]);
+    }, [meta, showGettingStarted, env]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 
