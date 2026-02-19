@@ -4,7 +4,7 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { SideInfo, SideInfoRow } from '@/components-v2/SideInfo';
 import { getDisplayName } from '@/pages/Integrations/utils';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
-import { formatDateToPreciseUSFormat } from '@/utils/utils';
+import { formatDateToPreciseUSFormat, truncateMiddle } from '@/utils/utils';
 
 import type { GetConnection } from '@nangohq/types';
 
@@ -26,7 +26,7 @@ export const ConnectionSideInfo: React.FC<{ connectionData: GetConnection['Succe
         <SideInfo>
             <SideInfoRow label="Connection ID">
                 <div className="flex items-center gap-2 min-w-0">
-                    <span className="truncate">{connection.connection_id}</span>
+                    <span>{truncateMiddle(connection.connection_id, 23)}</span>
                     <CopyButton text={connection.connection_id} />
                 </div>
             </SideInfoRow>
