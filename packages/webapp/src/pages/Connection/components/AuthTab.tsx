@@ -11,7 +11,7 @@ import { getLogsUrl } from '@/utils/logs';
 
 import type { GetConnection } from '@nangohq/types';
 
-export const AuthTab = ({ connectionData }: { connectionData: GetConnection['Success']['data'] }) => {
+export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData: GetConnection['Success']['data']; providerConfigKey: string }) => {
     const env = useStore((state) => state.env);
     const { connection, errorLog } = connectionData;
     const { credentials } = connection;
@@ -58,7 +58,7 @@ export const AuthTab = ({ connectionData }: { connectionData: GetConnection['Suc
                     </div>
                 )}
 
-                <AuthCredentials credentials={credentials} />
+                <AuthCredentials connection={connection} providerConfigKey={providerConfigKey} />
                 <ConnectionExtras
                     config={connection.connection_config}
                     metadata={connection.metadata}

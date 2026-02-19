@@ -93,15 +93,34 @@ export function useConnection(queries: GetConnection['Querystring'], params: Get
     });
 }
 
-export async function apiRefreshConnection(params: PostConnectionRefresh['Params'], query: PostConnectionRefresh['Querystring']) {
-    const res = await apiFetch(`/api/v1/connections/${params.connectionId}/refresh?${new URLSearchParams(query).toString()}`, {
-        method: 'POST'
-    });
+export function useRefreshConnection() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: PostConnectionRefresh['Reply'] },
+        APIError,
+        { params: PostConnectionRefresh['Params']; query: PostConnectionRefresh['Querystring'] }
+    >({
+        mutationFn: async ({ params, query }) => {
+            const res = await apiFetch(`/api/v1/connections/${params.connectionId}/refresh?${new URLSearchParams(query).toString()}`, {
+                method: 'POST'
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostConnectionRefresh['Reply']
-    };
+            const json = (await res.json()) as PostConnectionRefresh['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return {
+                res,
+                json
+            };
+        },
+        onSuccess: async (_, { params, query }) => {
+            await queryClient.invalidateQueries({
+                queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
+            });
+        }
+    });
 }
 
 export function useDeleteConnection() {
