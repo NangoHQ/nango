@@ -8,6 +8,8 @@ import { vi } from 'vitest';
 import { getProvider } from '@nangohq/providers';
 import { PaginationService } from '@nangohq/runner-sdk';
 
+import { FILTER_HEADERS as FILTER_HEADERS_UNIFIED } from '../services/response-collector.service.js';
+
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
@@ -1042,8 +1044,9 @@ class NangoActionMock {
     }
 
     private async proxyData(args: UserProvidedProxyConfiguration) {
-        const identity = computeConfigIdentity(args);
-        const cached = await (await this.fixtureProvider).getCachedResponse(identity);
+        const fixtureProvider = await this.fixtureProvider;
+        const identity = fixtureProvider.isUnifiedMocks() ? computeUnifiedConfigIdentity(args) : computeLegacyConfigIdentity(args);
+        const cached = await fixtureProvider.getCachedResponse(identity);
 
         return { data: cached.response, headers: cached.headers, status: cached.status };
     }
@@ -1061,7 +1064,16 @@ class NangoSyncMock extends NangoActionMock {
     }
 }
 
-const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host', 'connection-id', 'provider-config-key'];
+const FILTER_HEADERS_LEGACY = [
+    'authorization',
+    'user-agent',
+    'nango-proxy-user-agent',
+    'accept-encoding',
+    'retries',
+    'host',
+    'connection-id',
+    'provider-config-key'
+];
 
 interface RequestIdentity {
     method: string;
@@ -1078,14 +1090,14 @@ interface ConfigIdentity {
     requestIdentity: RequestIdentity;
 }
 
-function computeConfigIdentity(config: UserProvidedProxyConfiguration): ConfigIdentity {
+function computeLegacyConfigIdentity(config: UserProvidedProxyConfiguration): ConfigIdentity {
     const method = config.method?.toLowerCase() || 'get';
     const params = sortEntries(Object.entries(config.params || {}));
     const endpoint = config.endpoint.startsWith('/') ? config.endpoint.slice(1) : config.endpoint;
 
     const dataIdentity = computeDataIdentity(config);
 
-    const filteredHeaders = Object.entries(config.headers || {}).filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()));
+    const filteredHeaders = Object.entries(config.headers || {}).filter(([key]) => !FILTER_HEADERS_LEGACY.includes(key.toLowerCase()));
     sortEntries(filteredHeaders);
     const headers = filteredHeaders;
 
@@ -1104,6 +1116,111 @@ function computeConfigIdentity(config: UserProvidedProxyConfiguration): ConfigId
         requestIdentityHash,
         requestIdentity
     };
+}
+
+function computeUnifiedConfigIdentity(config: UserProvidedProxyConfiguration): ConfigIdentity {
+    const method = config.method?.toLowerCase() || 'get';
+
+    const url = parseUnifiedEndpointAsUrl(config.endpoint);
+
+    // Merge params into the endpoint query exactly like our proxy URL builder does.
+    applyParamsToUrl(url, config.params);
+
+    // ResponseCollector stores the endpoint without the `/proxy/` prefix.
+    const endpoint = url.pathname.replace(/^\/proxy\//, '').replace(/^\//, '');
+    const params = sortEntries(Array.from(url.searchParams.entries()).map(([key, value]) => [key, String(value)]));
+
+    const dataIdentity = computeDataIdentity(config);
+    const headers = normalizeHeadersForUnifiedIdentity(config.headers);
+
+    const requestIdentity = {
+        method,
+        endpoint,
+        params,
+        headers,
+        data: dataIdentity
+    };
+
+    const requestIdentityHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
+
+    return {
+        method,
+        endpoint,
+        requestIdentityHash,
+        requestIdentity
+    };
+}
+
+function parseUnifiedEndpointAsUrl(endpoint: string): URL {
+    if (isValidHttpUrl(endpoint)) {
+        return new URL(endpoint);
+    }
+
+    const withLeadingSlash = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return new URL(withLeadingSlash, 'https://nango.invalid');
+}
+
+function applyParamsToUrl(url: URL, params: UserProvidedProxyConfiguration['params']): void {
+    if (!params) {
+        return;
+    }
+
+    if (typeof params === 'string') {
+        const normalized = params.startsWith('?') ? params.slice(1) : params;
+        const extra = new URLSearchParams(normalized);
+        for (const [key, value] of extra.entries()) {
+            url.searchParams.append(key, value);
+        }
+        return;
+    }
+
+    for (const [key, value] of Object.entries(params)) {
+        if (value === undefined) {
+            continue;
+        }
+
+        if (Array.isArray(value)) {
+            url.searchParams.set(key, value.map((v) => String(v)).join(','));
+            continue;
+        }
+
+        url.searchParams.set(key, String(value));
+    }
+}
+
+function normalizeHeadersForUnifiedIdentity(headers: UserProvidedProxyConfiguration['headers']): [string, string][] {
+    if (!headers) {
+        return [];
+    }
+
+    const seen = new Set<string>();
+    const filtered: [string, string][] = [];
+
+    for (const [rawKey, rawValue] of Object.entries(headers)) {
+        const key = rawKey.toLowerCase().startsWith('nango-proxy-') ? rawKey.slice(12) : rawKey;
+        const lowerKey = key.toLowerCase();
+
+        if (seen.has(lowerKey)) {
+            continue;
+        }
+        seen.add(lowerKey);
+
+        if (FILTER_HEADERS_UNIFIED.includes(lowerKey)) {
+            continue;
+        }
+
+        const value = String(rawValue);
+
+        // Match ResponseCollector behavior for axios defaults.
+        if (lowerKey === 'content-type' && (value.toLowerCase() === 'application/json' || value === 'undefined')) {
+            continue;
+        }
+
+        filtered.push([key, value]);
+    }
+
+    sortEntries(filtered);
+    return filtered;
 }
 
 function sortEntries(entries: [string, unknown][]): [string, unknown][] {

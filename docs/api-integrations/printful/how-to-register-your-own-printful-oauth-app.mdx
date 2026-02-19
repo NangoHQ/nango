@@ -1,0 +1,26 @@
+---
+title: 'How to register your own Printful OAuth app'
+sidebarTitle: 'Printful Setup'
+description: 'Create a Public App with Printful and connect it to Nango'
+---
+
+This guide shows you how to create a **Public App** in the Printful Developer Portal and obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Printful store via the Public App installation flow.
+
+<Steps>
+  <Step title="Open the Developer Portal">
+    1. Go to the [Printful Developer Portal](https://developers.printful.com/) and sign in with your Printful account.
+    2. Click **Create an app**, then fill in the required information.
+    3. In **Redirection Domains**, add `api.nango.dev`.
+    4. For **App URL**, add `https://api.nango.dev`. This field is not used by Nango but is required to create the app.
+    5. Select the scopes for your app (you don't need to configure these in Nango after selecting them here).
+    6. Submit the form to create your application. Once created, your **Client ID** and **Client Secret** will be displayed—save these; you will need them when configuring the integration in Nango.
+    
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Printful Public App authorization](https://developers.printful.com/docs/#tag/Public-App-authorization).
+
+---

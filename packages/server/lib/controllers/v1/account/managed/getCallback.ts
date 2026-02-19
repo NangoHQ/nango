@@ -63,8 +63,10 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
     }
 
     let isNewTeam = true;
+    let isNewUser = false;
     let user = await userService.getUserByEmail(authorizedUser.email);
     if (!user) {
+        isNewUser = true;
         let account: DBTeam;
         // Create organization and user name
         let name =
@@ -155,8 +157,10 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             // @ts-expect-error you got to love passport
             req.session.passport.user.account_id = invitation.account_id;
             res.redirect(`${basePublicUrl}/`);
-        } else {
+        } else if (isNewUser) {
             res.redirect(`${basePublicUrl}/onboarding/hear-about-us`);
+        } else {
+            res.redirect(`${basePublicUrl}/`);
         }
     });
 });

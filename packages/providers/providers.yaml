@@ -12360,6 +12360,27 @@ productboard:
         base_url: https://api.productboard.com
     docs: https://nango.dev/docs/integrations/all/productboard
 
+printful:
+    display_name: Printful
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://www.printful.com/oauth/authorize
+    token_url: https://www.printful.com/oauth/token
+    disable_pkce: true
+    authorization_url_replacements:
+        redirect_uri: redirect_url
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.printful.com
+    docs: https://nango.dev/docs/api-integrations/printful
+    setup_guide_url: https://nango.dev/docs/api-integrations/printful/how-to-register-your-own-printful-oauth-app
+
 procore:
     display_name: Procore
     categories:
@@ -15808,6 +15829,45 @@ tsheetsteam:
     proxy:
         base_url: https://rest.tsheets.com/api/v1
     docs: https://nango.dev/docs/integrations/all/tsheetsteam
+
+timify:
+    display_name: Timify
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.timify.com/v1/auth/token
+    token_params:
+        appid: ${credentials.appId}
+        appsecret: ${credentials.appSecret}
+    refresh_token_params:
+        refreshToken: ${refresh_token}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: accessToken
+        token_expiration: expires
+        token_expiration_strategy: expireIn
+        refresh_token: refreshToken
+    proxy:
+        base_url: https://api.timify.com
+        headers:
+            authorization: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/timify
+    docs_connect: https://nango.dev/docs/api-integrations/timify/connect
+    credentials:
+        appId:
+            type: string
+            title: App ID
+            description: Your Timify app ID
+            doc_section: '#step-2-getting-your-credentials'
+        appSecret:
+            type: string
+            title: App Secret
+            description: Your Timify app secret
+            secret: true
+            doc_section: '#step-2-getting-your-credentials'
 
 todoist:
     display_name: Todoist
