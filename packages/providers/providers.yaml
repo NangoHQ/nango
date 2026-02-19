@@ -15356,6 +15356,30 @@ tailscale-api-key:
             pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
             doc_section: '#step-2-generating-an-api-access-token'
 
+tally:
+    display_name: Tally
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tally.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /forms?limit=1
+    docs: https://nango.dev/docs/api-integrations/tally
+    docs_connect: https://nango.dev/docs/api-integrations/tally/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Tally API key.
+            pattern: '^tly-[A-Za-z0-9]{32}$'
+            example: tly-84m**************************56Y
+            doc_section: '#step-1-create-an-api-key'
+
 tapclicks:
     display_name: TapClicks
     auth_mode: OAUTH2_CC
