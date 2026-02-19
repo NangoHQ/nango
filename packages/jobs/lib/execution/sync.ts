@@ -47,6 +47,7 @@ import type {
     DBEnvironment,
     DBSyncConfig,
     DBTeam,
+    FunctionRuntime,
     NangoProps,
     RuntimeContext,
     SdkLogger,
@@ -257,11 +258,13 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncSuccess({
     taskId,
     nangoProps,
-    telemetryBag
+    telemetryBag,
+    functionRuntime
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
@@ -389,7 +392,8 @@ export async function handleSyncSuccess({
                     error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model }),
                     endUser: nangoProps.endUser,
                     startedAt: nangoProps.startedAt,
-                    telemetryBag
+                    telemetryBag,
+                    functionRuntime
                 });
                 return;
             }
@@ -554,7 +558,8 @@ export async function handleSyncSuccess({
                     functionName: nangoProps.syncConfig.sync_name,
                     success: true,
                     frequencyMs,
-                    telemetryBag
+                    telemetryBag,
+                    functionRuntime
                 }
             }
         });
@@ -588,7 +593,8 @@ export async function handleSyncSuccess({
             error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err }),
             endUser: nangoProps.endUser,
             startedAt: nangoProps.startedAt,
-            telemetryBag
+            telemetryBag,
+            functionRuntime
         });
     }
 }
@@ -597,12 +603,14 @@ export async function handleSyncError({
     taskId,
     nangoProps,
     error,
-    telemetryBag
+    telemetryBag,
+    functionRuntime
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag?: TelemetryBag | undefined;
+    functionRuntime?: FunctionRuntime | undefined;
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -651,7 +659,8 @@ export async function handleSyncError({
         error,
         endUser: nangoProps.endUser,
         startedAt: nangoProps.startedAt,
-        telemetryBag
+        telemetryBag,
+        functionRuntime
     });
 }
 
@@ -765,7 +774,8 @@ async function onFailure({
     error,
     endUser,
     startedAt,
-    telemetryBag
+    telemetryBag,
+    functionRuntime
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -789,6 +799,7 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
+    functionRuntime?: FunctionRuntime | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -965,7 +976,8 @@ async function onFailure({
                     functionName: syncName,
                     type: 'sync',
                     success: false,
-                    telemetryBag
+                    telemetryBag,
+                    functionRuntime
                 }
             }
         });

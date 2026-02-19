@@ -252,7 +252,12 @@ const runJob = async (
     };
     await updateSyncJobResult(syncJob.id, updatedResults, model);
 
-    await handleSyncSuccess({ taskId: 'abc', nangoProps: nangoProps.value, telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 } });
+    await handleSyncSuccess({
+        taskId: 'abc',
+        nangoProps: nangoProps.value,
+        telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 },
+        functionRuntime: 'runner'
+    });
 
     const latestSyncJob = await getLatestSyncJob(sync.id);
     if (!latestSyncJob) {
