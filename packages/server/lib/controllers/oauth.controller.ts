@@ -291,10 +291,10 @@ class OAuthController {
                 });
                 return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
-                await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                await this.appRequest(provider, config, session, req, res, authorizationParams, logCtx);
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2') {
-                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, req, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
                 await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
@@ -768,6 +768,7 @@ class OAuthController {
         provider: Provider,
         providerConfig: ProviderConfig,
         session: OAuthSession,
+        req: Request,
         res: Response,
         authorizationParams: Record<string, string | undefined>,
         logCtx: LogContext
@@ -808,6 +809,12 @@ class OAuthController {
 
             void logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
 
+            const stateCookie = `oauth2-${session.id}`;
+            res.cookie(stateCookie, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true
+            });
             res.redirect(authorizationUri);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -850,6 +857,7 @@ class OAuthController {
         provider,
         config,
         session,
+        req,
         res,
         connectionConfig,
         callbackUrl,
@@ -858,6 +866,7 @@ class OAuthController {
         provider: ProviderMcpOAUTH2;
         config: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
@@ -919,6 +928,12 @@ class OAuthController {
                 scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
             });
 
+            const stateCookie = `oauth2-${session.id}`;
+            res.cookie(stateCookie, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true
+            });
             res.redirect(authorizationUri);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
