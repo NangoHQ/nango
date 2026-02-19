@@ -9,7 +9,7 @@ import providerClient from '../../../clients/provider.client.js';
 import { NangoError } from '../../../utils/error.js';
 import { isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
-import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
+import { REFRESH_FAILURE_COOLDOWN_MS, REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
 
 import type { Config, Config as ProviderConfig } from '../../../models/index.js';
 import type { NangoInternalError } from '../../../utils/error.js';
@@ -69,7 +69,7 @@ const inFlightRefreshes = new FixedSizeMap<
 >(5_000);
 
 /**
- * Take a connection and try to refresh or test based on it's type
+ * Take a connection and try to refresh or test based on its type
  * If instantRefresh === false, we will not refresh if not necessary
  */
 export async function refreshOrTestCredentials(props: RefreshProps): Promise<Result<DBConnectionDecrypted, NangoError>> {
@@ -90,8 +90,16 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         props.connection = { ...props.connection, last_fetched_at: new Date() };
 
         // short-circuit if we know the refresh will fail
-        if (props.connection.refresh_exhausted && !props.instantRefresh) {
-            return Err(new NangoError('connection_refresh_exhausted'));
+        if (!props.instantRefresh) {
+            if (props.connection.refresh_exhausted) {
+                return Err(new NangoError('connection_refresh_exhausted'));
+            }
+
+            // Fail early if the last refresh attempt failed within the cooldown window.
+            // Manual refreshes (instantRefresh=true) always bypass this check.
+            if (props.connection.last_refresh_failure && Date.now() - props.connection.last_refresh_failure.getTime() < REFRESH_FAILURE_COOLDOWN_MS) {
+                return Err(new NangoError('connection_refresh_backoff'));
+            }
         }
 
         let res: Result<DBConnectionDecrypted, NangoError>;
