@@ -1,0 +1,920 @@
+import { ArrowUpRight, Braces, CheckCircle2, ExternalLink, Info, Play, Plus, RotateCcw, X, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { CodeBlock } from '../CodeBlock';
+import { IntegrationLogo } from '../IntegrationLogo';
+import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { BinaryToggle } from '../ui/binary-toggle';
+import { Button } from '../ui/button';
+import { Combobox } from '../ui/combobox';
+import { Input } from '../ui/input';
+import { Separator } from '../ui/separator';
+import { Sheet, SheetContent } from '../ui/sheet';
+import { useConnection, useConnections } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
+import { useStore } from '@/store';
+import { apiFetch } from '@/utils/api';
+import { getLogsUrl } from '@/utils/logs';
+import { cn } from '@/utils/utils';
+
+import type { GetOperation, NangoSyncConfig, SearchMessages, SearchOperations } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
+
+interface RunResult {
+    success: boolean;
+    data: unknown;
+    durationMs: number;
+    operationId?: string;
+    state?: string;
+}
+
+interface InputField {
+    name: string;
+    type: string;
+    description?: string;
+    required: boolean;
+}
+
+const JSON_DISPLAY_LIMIT = 250_000;
+
+function getInputFields(jsonSchema: JSONSchema7 | null | undefined): InputField[] {
+    if (!jsonSchema || typeof jsonSchema !== 'object') return [];
+    const props = jsonSchema.properties;
+    if (!props) return [];
+    const required = Array.isArray(jsonSchema.required) ? jsonSchema.required : [];
+    return Object.entries(props).map(([name, def]) => {
+        const fieldDef = def as JSONSchema7;
+        return {
+            name,
+            type: Array.isArray(fieldDef.type) ? fieldDef.type[0] || 'string' : fieldDef.type || 'string',
+            description: fieldDef.description,
+            required: required.includes(name)
+        };
+    });
+}
+
+export const Playground: React.FC = () => {
+    const env = useStore((s) => s.env);
+    const baseUrl = useStore((s) => s.baseUrl);
+    const playgroundOpen = useStore((s) => s.playground.isOpen);
+    const playgroundIntegration = useStore((s) => s.playground.integration);
+    const playgroundConnection = useStore((s) => s.playground.connection);
+    const playgroundFunction = useStore((s) => s.playground.function);
+    const playgroundFunctionType = useStore((s) => s.playground.functionType);
+    const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
+    const setPlaygroundIntegration = useStore((s) => s.setPlaygroundIntegration);
+    const setPlaygroundConnection = useStore((s) => s.setPlaygroundConnection);
+    const setPlaygroundFunction = useStore((s) => s.setPlaygroundFunction);
+    const inputValues = useStore((s) => s.playground.inputValues);
+    const setPlaygroundInputValues = useStore((s) => s.setPlaygroundInputValues);
+    const setPlaygroundInputValue = useStore((s) => s.setPlaygroundInputValue);
+
+    const navigate = useNavigate();
+
+    const [connectionSearch, setConnectionSearch] = useState('');
+    const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
+
+    useEffect(() => {
+        if (!connectionSearch) {
+            setDebouncedConnectionSearch('');
+            return;
+        }
+
+        const t = window.setTimeout(() => {
+            setDebouncedConnectionSearch(connectionSearch);
+        }, 250);
+        return () => {
+            window.clearTimeout(t);
+        };
+    }, [connectionSearch]);
+
+    const { environmentAndAccount } = useEnvironment(env);
+    const queryEnv = playgroundOpen ? env : '';
+    const { data: integrations } = useListIntegrations(queryEnv);
+    const { data: flowsData } = useGetIntegrationFlows(queryEnv, playgroundIntegration || '');
+    const connectionsQueryEnv = playgroundOpen && playgroundIntegration ? env : '';
+    const connectionsQuery = useConnections({
+        env: connectionsQueryEnv,
+        integrationIds: playgroundIntegration ? [playgroundIntegration] : undefined,
+        search: debouncedConnectionSearch || undefined
+    });
+
+    const connectionDetailsQuery = useConnection(
+        { env: queryEnv, provider_config_key: playgroundIntegration || '' },
+        { connectionId: playgroundConnection || '' }
+    );
+    const connectionMetadata = connectionDetailsQuery.data?.connection?.metadata ?? null;
+
+    const connections = useMemo(() => {
+        return connectionsQuery.data?.pages.flatMap((p) => p.data) ?? [];
+    }, [connectionsQuery.data]);
+
+    const connectionOptions = useMemo(() => {
+        const opts = connections.map((c) => ({ value: c.connection_id, label: c.connection_id, filterValue: c.connection_id }));
+        if (playgroundConnection && !opts.some((o) => o.value === playgroundConnection)) {
+            opts.unshift({ value: playgroundConnection, label: playgroundConnection, filterValue: playgroundConnection });
+        }
+        return opts;
+    }, [connections, playgroundConnection]);
+
+    const allFlows: (NangoSyncConfig & { resolvedType: 'action' | 'sync' })[] = useMemo(() => {
+        if (!flowsData) return [];
+        return flowsData.data.flows.filter((f) => f.type === 'action' || f.type === 'sync').map((f) => ({ ...f, resolvedType: f.type as 'action' | 'sync' }));
+    }, [flowsData]);
+
+    const flowByName = useMemo(() => {
+        return new Map(allFlows.map((f) => [f.name, f] as const));
+    }, [allFlows]);
+
+    const functionOptions = useMemo(() => {
+        const opts = allFlows.map((f) => ({ value: f.name, label: f.name, filterValue: `${f.name} ${f.resolvedType}` }));
+        if (playgroundFunction && !opts.some((o) => o.value === playgroundFunction)) {
+            opts.unshift({ value: playgroundFunction, label: playgroundFunction, filterValue: playgroundFunction });
+        }
+        return opts;
+    }, [allFlows, playgroundFunction]);
+
+    const selectedFlow = useMemo(() => {
+        if (!playgroundFunction) return undefined;
+        return allFlows.find((f) => f.name === playgroundFunction);
+    }, [allFlows, playgroundFunction]);
+
+    const inputSchema = useMemo((): JSONSchema7 | null => {
+        if (!selectedFlow || !selectedFlow.json_schema || typeof selectedFlow.json_schema !== 'object') {
+            return null;
+        }
+
+        // Most integrations store the actual input object schema under `json_schema.definitions[flow.input]`.
+        const defKey = selectedFlow.input;
+        const schema = (defKey ? (selectedFlow.json_schema.definitions?.[defKey] as JSONSchema7 | undefined) : undefined) || selectedFlow.json_schema;
+
+        if (!schema || typeof schema !== 'object') {
+            return null;
+        }
+
+        const props = schema.properties;
+        if (!props || Object.keys(props).length === 0) {
+            return null;
+        }
+
+        return schema;
+    }, [selectedFlow]);
+
+    const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
+    const [running, setRunning] = useState(false);
+    const [result, setResult] = useState<RunResult | null>(null);
+    const [inputErrors, setInputErrors] = useState<Record<string, string>>({});
+    const abortRef = useRef<AbortController | null>(null);
+
+    useEffect(() => {
+        if (!playgroundOpen || playgroundFunctionType !== 'action') {
+            return;
+        }
+
+        if (inputFields.length === 0) {
+            return;
+        }
+
+        const requiredBooleanFields = inputFields.filter((f) => f.type === 'boolean' && f.required);
+        if (requiredBooleanFields.length === 0) {
+            return;
+        }
+
+        const next: Record<string, string> = { ...inputValues };
+        let changed = false;
+
+        for (const field of requiredBooleanFields) {
+            const current = next[field.name];
+            if (current === undefined || current === '') {
+                next[field.name] = 'false';
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            setPlaygroundInputValues(next);
+        }
+    }, [playgroundOpen, playgroundFunctionType, inputFields, inputValues, setPlaygroundInputValues]);
+
+    const integrationByKey = useMemo(() => {
+        const list = integrations?.data ?? [];
+        return new Map(list.map((i) => [i.unique_key, i] as const));
+    }, [integrations]);
+
+    const integrationOptions = useMemo(() => {
+        const list = integrations?.data ?? [];
+        const opts = list.map((integration) => ({
+            value: integration.unique_key,
+            label: integration.display_name || integration.unique_key,
+            filterValue: `${integration.display_name ?? ''} ${integration.unique_key ?? ''} ${integration.provider ?? ''}`
+        }));
+
+        if (playgroundIntegration && !opts.some((o) => o.value === playgroundIntegration)) {
+            opts.unshift({ value: playgroundIntegration, label: playgroundIntegration, filterValue: playgroundIntegration });
+        }
+
+        return opts;
+    }, [integrations, playgroundIntegration]);
+
+    const handleIntegrationChange = useCallback(
+        (val: string) => {
+            setPlaygroundIntegration(val);
+            setInputErrors({});
+            setResult(null);
+        },
+        [setPlaygroundIntegration]
+    );
+
+    const handleConnectionChange = useCallback(
+        (val: string) => {
+            setPlaygroundConnection(val);
+            setResult(null);
+        },
+        [setPlaygroundConnection]
+    );
+
+    const handleFunctionChange = useCallback(
+        (val: string) => {
+            const flow = allFlows.find((f) => f.name === val);
+            if (flow) {
+                setPlaygroundFunction(val, flow.resolvedType);
+            }
+            setInputErrors({});
+            setResult(null);
+        },
+        [allFlows, setPlaygroundFunction]
+    );
+
+    const clearInputError = useCallback((name: string) => {
+        setInputErrors((prev) => {
+            if (!prev[name]) {
+                return prev;
+            }
+
+            const { [name]: _ignored, ...rest } = prev;
+            return rest;
+        });
+    }, []);
+
+    const handleRun = useCallback(async () => {
+        if (!playgroundIntegration || !playgroundConnection || !playgroundFunction || !environmentAndAccount) return;
+
+        const secretKey = environmentAndAccount.environment.secret_key;
+        const controller = new AbortController();
+        abortRef.current = controller;
+        setRunning(true);
+        setResult(null);
+        setInputErrors({});
+
+        const runStartTime = Date.now();
+        try {
+            let response: Response;
+            let triggerData: unknown = null;
+
+            const triggerStartTime = Date.now();
+            if (playgroundFunctionType === 'action') {
+                const parsedInput: Record<string, unknown> = {};
+                const errors: Record<string, string> = {};
+                for (const field of inputFields) {
+                    const raw = inputValues[field.name] ?? '';
+                    const trimmed = raw.trim();
+
+                    if (!trimmed) {
+                        if (field.required) {
+                            errors[field.name] = 'Required';
+                        }
+                        continue;
+                    }
+
+                    try {
+                        switch (field.type) {
+                            case 'number': {
+                                const n = Number(trimmed);
+                                if (!Number.isFinite(n)) {
+                                    throw new Error('Expected a number');
+                                }
+                                parsedInput[field.name] = n;
+                                break;
+                            }
+                            case 'integer': {
+                                const n = Number(trimmed);
+                                if (!Number.isFinite(n) || !Number.isInteger(n)) {
+                                    throw new Error('Expected an integer');
+                                }
+                                parsedInput[field.name] = n;
+                                break;
+                            }
+                            case 'boolean': {
+                                const v = trimmed.toLowerCase();
+                                if (v !== 'true' && v !== 'false') {
+                                    throw new Error('Expected true or false');
+                                }
+                                parsedInput[field.name] = v === 'true';
+                                break;
+                            }
+                            case 'object': {
+                                const parsed = JSON.parse(trimmed);
+                                if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                                    throw new Error('Expected a JSON object');
+                                }
+                                parsedInput[field.name] = parsed;
+                                break;
+                            }
+                            case 'array': {
+                                const parsed = JSON.parse(trimmed);
+                                if (!Array.isArray(parsed)) {
+                                    throw new Error('Expected a JSON array');
+                                }
+                                parsedInput[field.name] = parsed;
+                                break;
+                            }
+                            default: {
+                                parsedInput[field.name] = raw;
+                                break;
+                            }
+                        }
+                    } catch (err) {
+                        const msg = err instanceof Error ? err.message : 'Invalid value';
+                        errors[field.name] = msg;
+                    }
+                }
+
+                if (Object.keys(errors).length > 0) {
+                    setInputErrors(errors);
+                    setResult({ success: false, state: 'invalid_input', data: { error: 'Invalid input', fields: errors }, durationMs: 0 });
+                    return;
+                }
+                response = await fetch(`${baseUrl}/action/trigger`, {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        Authorization: `Bearer ${secretKey}`,
+                        'Content-Type': 'application/json',
+                        'provider-config-key': playgroundIntegration,
+                        'connection-id': playgroundConnection
+                    },
+                    body: JSON.stringify({ action_name: playgroundFunction, input: parsedInput })
+                });
+            } else {
+                response = await fetch(`${baseUrl}/sync/trigger`, {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        Authorization: `Bearer ${secretKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        syncs: [playgroundFunction],
+                        provider_config_key: playgroundIntegration,
+                        connection_id: playgroundConnection
+                    })
+                });
+            }
+
+            try {
+                triggerData = await response.json();
+            } catch {
+                triggerData = null;
+            }
+
+            const triggerDurationMs = Date.now() - triggerStartTime;
+
+            const sleep = (ms: number) => {
+                return new Promise<void>((resolve, reject) => {
+                    const t = window.setTimeout(resolve, ms);
+                    const onAbort = () => {
+                        window.clearTimeout(t);
+                        reject(new DOMException('Aborted', 'AbortError'));
+                    };
+
+                    if (controller.signal.aborted) {
+                        onAbort();
+                        return;
+                    }
+
+                    controller.signal.addEventListener('abort', onAbort, { once: true });
+                });
+            };
+
+            const findOperation = async () => {
+                const from = new Date(triggerStartTime - 60_000).toISOString();
+                const to = new Date().toISOString();
+
+                const body: SearchOperations['Body'] = {
+                    limit: 25,
+                    types: [playgroundFunctionType === 'sync' ? 'sync:run' : 'action'],
+                    integrations: [playgroundIntegration],
+                    connections: [playgroundConnection],
+                    syncs: playgroundFunctionType === 'sync' ? [playgroundFunction] : ['all'],
+                    period: { from, to }
+                };
+
+                const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    signal: controller.signal
+                });
+
+                if (!res.ok) {
+                    return null;
+                }
+
+                const json = (await res.json()) as SearchOperations['Success'];
+                if (!json.data || json.data.length === 0) {
+                    return null;
+                }
+
+                // Best-effort correlation: pick the most recent operation created around the trigger time.
+                const windowStart = triggerStartTime - 15_000;
+                const candidates = json.data
+                    .map((op) => ({ op, ts: new Date(op.createdAt).getTime() }))
+                    .filter(({ ts, op }) => {
+                        if (Number.isNaN(ts)) return false;
+                        if (ts < windowStart) return false;
+                        if (playgroundFunctionType === 'sync' && op.syncConfigName && op.syncConfigName !== playgroundFunction) return false;
+                        return true;
+                    })
+                    .sort((a, b) => b.ts - a.ts);
+
+                return candidates[0]?.op ?? null;
+            };
+
+            const fetchOperation = async (operationId: string) => {
+                const res = await apiFetch(`/api/v1/logs/operations/${encodeURIComponent(operationId)}?env=${env}`, {
+                    method: 'GET',
+                    signal: controller.signal
+                });
+
+                if (!res.ok) {
+                    return null;
+                }
+
+                const json = (await res.json()) as GetOperation['Success'];
+                return json.data;
+            };
+
+            const fetchMessages = async (operationId: string) => {
+                const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ operationId, limit: 100 } satisfies SearchMessages['Body']),
+                    signal: controller.signal
+                });
+
+                if (!res.ok) {
+                    return null;
+                }
+
+                return (await res.json()) as SearchMessages['Success'];
+            };
+
+            // If logs are enabled, prefer showing the actual operation logs/results.
+            let operation = null as SearchOperations['Success']['data'][number] | null;
+            const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
+            const findStart = Date.now();
+            while (Date.now() - findStart < findDeadlineMs) {
+                operation = await findOperation();
+                if (operation) break;
+                await sleep(500);
+            }
+
+            if (!operation) {
+                setResult({ success: response.ok, data: triggerData, durationMs: triggerDurationMs });
+                return;
+            }
+
+            const operationId = operation.id;
+            let operationDetails = await fetchOperation(operationId);
+
+            // Poll until the operation is terminal (best-effort, don't block too long).
+            const maxPollMs = playgroundFunctionType === 'sync' ? 30_000 : 15_000;
+            const pollStart = Date.now();
+            while (operationDetails && (operationDetails.state === 'waiting' || operationDetails.state === 'running')) {
+                if (Date.now() - pollStart > maxPollMs) {
+                    break;
+                }
+                await sleep(1000);
+                operationDetails = await fetchOperation(operationId);
+            }
+
+            const messages = await fetchMessages(operationId);
+
+            const opDurationMs =
+                operationDetails?.durationMs ??
+                (operationDetails?.startedAt && operationDetails.endedAt
+                    ? new Date(operationDetails.endedAt).getTime() - new Date(operationDetails.startedAt).getTime()
+                    : undefined);
+
+            const state = (operationDetails?.state ?? operation.state) as string | undefined;
+            const isRunning = state === 'waiting' || state === 'running';
+            const success = !isRunning && state === 'success';
+            const durationMs = !isRunning
+                ? opDurationMs && !Number.isNaN(opDurationMs)
+                    ? opDurationMs
+                    : triggerDurationMs
+                : // best-effort runtime when still running / timing out
+                  Date.now() - triggerStartTime;
+
+            const logsPayload = {
+                operationId,
+                state,
+                durationMs,
+                // For actions the trigger response is the return value; keep it for convenience.
+                ...(playgroundFunctionType === 'action' ? { response: triggerData } : {}),
+                messages: (messages?.data ?? []).map((m) => {
+                    return {
+                        level: m.level,
+                        type: m.type,
+                        message: m.message,
+                        createdAt: m.createdAt,
+                        ...(m.error ? { error: m.error } : {}),
+                        ...(m.persistResults ? { persistResults: m.persistResults } : {}),
+                        ...(m.meta ? { meta: m.meta } : {}),
+                        ...(m.request ? { request: m.request } : {}),
+                        ...(m.response ? { response: m.response } : {})
+                    };
+                })
+            };
+
+            setResult({ success, state, data: logsPayload, durationMs, operationId });
+        } catch (err: unknown) {
+            if (err instanceof Error && err.name === 'AbortError') {
+                setResult(null);
+            } else {
+                const durationMs = Date.now() - runStartTime;
+                setResult({ success: false, data: { error: 'Network error' }, durationMs });
+            }
+        } finally {
+            setRunning(false);
+            abortRef.current = null;
+        }
+    }, [
+        playgroundIntegration,
+        playgroundConnection,
+        playgroundFunction,
+        playgroundFunctionType,
+        environmentAndAccount,
+        baseUrl,
+        env,
+        inputFields,
+        inputValues
+    ]);
+
+    const handleCancel = useCallback(() => {
+        abortRef.current?.abort();
+        setRunning(false);
+    }, []);
+
+    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunction);
+    const isSync = playgroundFunctionType === 'sync';
+    const showRunAgain = Boolean(result && result.state !== 'invalid_input');
+    const showLogLinks = Boolean(result && result.state !== 'invalid_input');
+
+    let resultJson = '';
+    if (result) {
+        try {
+            resultJson = JSON.stringify(result.data, null, 2);
+        } catch {
+            resultJson = String(result.data);
+        }
+
+        if (resultJson.length >= JSON_DISPLAY_LIMIT) {
+            resultJson = 'Result too large to display';
+        }
+    }
+
+    return (
+        <Sheet open={playgroundOpen} onOpenChange={setPlaygroundOpen}>
+            <SheetContent
+                side="right"
+                className={cn(
+                    'bg-bg-elevated dark:bg-bg-elevated text-text-primary border border-border-muted rounded-xl shadow-2xl p-0 gap-0',
+                    'top-20 bottom-6 right-6 h-auto',
+                    'w-[calc(100vw-2rem)] sm:w-[600px] sm:max-w-[600px]',
+                    '[&>button]:hidden'
+                )}
+            >
+                {/* Header */}
+                <div className="flex items-start justify-between px-6 pt-5 pb-4 shrink-0">
+                    <div className="min-w-0">
+                        <h2 className="text-text-primary text-body-large-semi">Playground</h2>
+                        <p className="text-text-tertiary text-body-small-regular mt-0.5">Quickly run any function.</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="size-7 mt-0.5" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                        <X className="size-4" />
+                    </Button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto px-6 pb-6 flex flex-col gap-4">
+                    {/* Select rows */}
+                    <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-4">
+                        <label className="text-text-primary text-body-small-regular">Integration</label>
+                        <Combobox
+                            value={playgroundIntegration || ''}
+                            onValueChange={handleIntegrationChange}
+                            placeholder="Pick integration"
+                            options={integrationOptions}
+                            searchPlaceholder="Search integrations"
+                            renderValue={(opt) => {
+                                const integration = integrationByKey.get(opt.value);
+                                if (!integration) {
+                                    return <span className="truncate">{opt.label}</span>;
+                                }
+
+                                return (
+                                    <>
+                                        <IntegrationLogo provider={integration.provider} className="size-5 p-0.5" />
+                                        <span className="truncate">{integration.display_name || integration.unique_key}</span>
+                                    </>
+                                );
+                            }}
+                            renderOption={(opt) => {
+                                const integration = integrationByKey.get(opt.value);
+                                if (!integration) {
+                                    return <span className="truncate">{opt.label}</span>;
+                                }
+
+                                return (
+                                    <>
+                                        <IntegrationLogo provider={integration.provider} className="size-5 p-0.5" />
+                                        <span className="truncate">{integration.display_name || integration.unique_key}</span>
+                                    </>
+                                );
+                            }}
+                            footer={
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="text-text-tertiary text-body-small-regular">Need a new integration?</span>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-6 text-xs px-2 gap-1"
+                                        onClick={() => {
+                                            setPlaygroundOpen(false);
+                                            navigate(`/${env}/integrations/create`);
+                                        }}
+                                    >
+                                        <Plus className="size-3" /> Add
+                                    </Button>
+                                </div>
+                            }
+                        />
+
+                        <label className="text-text-primary text-body-small-regular">Connection</label>
+                        <Combobox
+                            value={playgroundConnection || ''}
+                            onValueChange={handleConnectionChange}
+                            placeholder="Select connection"
+                            disabled={!playgroundIntegration}
+                            options={connectionOptions}
+                            searchPlaceholder="Search connections"
+                            searchValue={connectionSearch}
+                            onSearchValueChange={setConnectionSearch}
+                            footer={
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="text-text-tertiary text-body-small-regular">Need a new connection?</span>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-6 text-xs px-2 gap-1"
+                                        onClick={() => {
+                                            setPlaygroundOpen(false);
+                                            navigate(`/${env}/connections/create`);
+                                        }}
+                                    >
+                                        <Plus className="size-3" /> Add
+                                    </Button>
+                                </div>
+                            }
+                        />
+
+                        <label className="text-text-primary text-body-small-regular">Function</label>
+                        <Combobox
+                            value={playgroundFunction || ''}
+                            onValueChange={handleFunctionChange}
+                            placeholder="Add function"
+                            disabled={!playgroundIntegration}
+                            options={functionOptions}
+                            searchPlaceholder="Search functions"
+                            renderValue={(opt) => {
+                                const flow = flowByName.get(opt.value);
+                                return (
+                                    <>
+                                        <span className="truncate">{opt.label}</span>
+                                        {flow && (
+                                            <Badge variant="gray" size="xs" className="normal-case font-mono">
+                                                {flow.resolvedType}
+                                            </Badge>
+                                        )}
+                                    </>
+                                );
+                            }}
+                            renderOption={(opt) => {
+                                const flow = flowByName.get(opt.value);
+                                return (
+                                    <>
+                                        <span className="truncate">{opt.label}</span>
+                                        {flow && (
+                                            <Badge variant="gray" size="xs" className="normal-case font-mono">
+                                                {flow.resolvedType}
+                                            </Badge>
+                                        )}
+                                    </>
+                                );
+                            }}
+                        />
+                    </div>
+
+                    {/* Inputs / metadata */}
+                    {selectedFlow && (isSync || inputFields.length > 0) && (
+                        <div className="grid grid-cols-[110px_1fr] gap-x-4">
+                            <label className="text-text-primary text-body-small-regular pt-1">{isSync ? 'Metadata' : 'Inputs'}</label>
+                            <div className="min-w-0 flex flex-col gap-3">
+                                {isSync ? (
+                                    <>
+                                        <Alert variant="info" className="px-3 py-2">
+                                            <Info className="size-4" />
+                                            <AlertDescription className="text-body-small-regular">
+                                                Sync inputs are read from connection metadata (Playground is read-only).
+                                            </AlertDescription>
+                                            <AlertActions>
+                                                {playgroundIntegration && playgroundConnection && (
+                                                    <AlertButtonLink
+                                                        to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}#auth`}
+                                                        variant="info-secondary"
+                                                        onClick={() => setPlaygroundOpen(false)}
+                                                    >
+                                                        View metadata <ArrowUpRight />
+                                                    </AlertButtonLink>
+                                                )}
+                                                <AlertButton asChild variant="info">
+                                                    <a
+                                                        href="https://docs.nango.dev/reference/integration-configuration#connection-configuration"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        View Docs <ExternalLink />
+                                                    </a>
+                                                </AlertButton>
+                                            </AlertActions>
+                                        </Alert>
+
+                                        {playgroundIntegration && playgroundConnection ? (
+                                            <CodeBlock
+                                                title="Connection metadata"
+                                                language="json"
+                                                displayLanguage="JSON"
+                                                icon={<Braces />}
+                                                code={
+                                                    JSON.stringify(connectionMetadata || {}, null, 4).length < 250_000
+                                                        ? JSON.stringify(connectionMetadata || {}, null, 4)
+                                                        : 'Connection metadata too large to display'
+                                                }
+                                            />
+                                        ) : (
+                                            <div className="text-text-tertiary text-body-small-regular">Select a connection to view its metadata.</div>
+                                        )}
+                                    </>
+                                ) : (
+                                    inputFields.map((field) => (
+                                        <div key={field.name} className="flex flex-col gap-1">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-body-small-regular text-text-primary min-w-0 truncate">
+                                                    {field.name}
+                                                    {field.required && <span className="text-feedback-error-fg ml-0.5">*</span>}
+                                                </span>
+                                                <Badge variant="gray" size="xs" className="normal-case font-mono shrink-0">
+                                                    {String(field.type)}
+                                                </Badge>
+                                            </div>
+                                            {field.description && <p className="text-text-tertiary text-xs">{field.description}</p>}
+                                            {field.type === 'boolean' ? (
+                                                <BinaryToggle
+                                                    className="mt-1"
+                                                    value={String(inputValues[field.name] ?? '').toLowerCase() === 'true'}
+                                                    onChange={(value) => {
+                                                        setPlaygroundInputValue(field.name, value ? 'true' : 'false');
+                                                        clearInputError(field.name);
+                                                    }}
+                                                    offLabel="false"
+                                                    onLabel="true"
+                                                />
+                                            ) : (
+                                                <Input
+                                                    value={inputValues[field.name] || ''}
+                                                    aria-invalid={Boolean(inputErrors[field.name])}
+                                                    placeholder={field.type === 'object' ? '{}' : field.type === 'array' ? '[]' : undefined}
+                                                    onChange={(e) => {
+                                                        setPlaygroundInputValue(field.name, e.target.value);
+                                                        clearInputError(field.name);
+                                                    }}
+                                                />
+                                            )}
+                                            {inputErrors[field.name] && <p className="text-feedback-error-fg text-xs">{inputErrors[field.name]}</p>}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Run controls */}
+                    <div className="pt-1 flex gap-2">
+                        {running ? (
+                            <>
+                                <Button variant="primary" disabled loading={true} size="sm">
+                                    Running
+                                </Button>
+                                <Button variant="destructive" size="sm" onClick={handleCancel}>
+                                    <X className="size-4" />
+                                    Cancel run
+                                </Button>
+                            </>
+                        ) : showRunAgain ? (
+                            <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
+                                <RotateCcw className="size-4" />
+                                Run again
+                            </Button>
+                        ) : (
+                            <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
+                                <Play className="size-4" />
+                                Run
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Results */}
+                    {result && (
+                        <>
+                            <Separator className="bg-border-muted" />
+                            <div className="flex flex-col gap-3">
+                                <p className="text-text-primary text-body-small-semi">Results</p>
+
+                                <Alert
+                                    variant={result.state === 'waiting' || result.state === 'running' ? 'info' : result.success ? 'success' : 'error'}
+                                    className="px-3 py-2"
+                                >
+                                    {result.state === 'waiting' || result.state === 'running' ? (
+                                        <Info className="size-4" />
+                                    ) : result.success ? (
+                                        <CheckCircle2 className="size-4" />
+                                    ) : (
+                                        <XCircle className="size-4" />
+                                    )}
+                                    <AlertDescription className="text-body-small-regular">
+                                        {result.state === 'invalid_input'
+                                            ? 'Invalid input (see details below)'
+                                            : result.state === 'metadata_update_failed'
+                                              ? 'Failed to update connection metadata'
+                                              : result.state === 'waiting' || result.state === 'running'
+                                                ? `Running for ${(result.durationMs / 1000).toFixed(1)}s`
+                                                : result.success
+                                                  ? `Ran in ${(result.durationMs / 1000).toFixed(1)}s`
+                                                  : `Failed after ${(result.durationMs / 1000).toFixed(1)}s`}
+                                    </AlertDescription>
+                                    {showLogLinks && (
+                                        <AlertActions>
+                                            {isSync && playgroundIntegration && playgroundConnection && (
+                                                <AlertButtonLink
+                                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}`}
+                                                    variant={result.success ? 'success-secondary' : 'error-secondary'}
+                                                >
+                                                    Records
+                                                </AlertButtonLink>
+                                            )}
+                                            {playgroundIntegration && playgroundConnection && playgroundFunction && (
+                                                <AlertButtonLink
+                                                    to={
+                                                        result.operationId
+                                                            ? getLogsUrl({ env, operationId: result.operationId })
+                                                            : getLogsUrl({
+                                                                  env,
+                                                                  integrations: playgroundIntegration,
+                                                                  connections: playgroundConnection,
+                                                                  syncs: playgroundFunction
+                                                              })
+                                                    }
+                                                    variant={result.success ? 'success-secondary' : 'error-secondary'}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    Logs <ExternalLink />
+                                                </AlertButtonLink>
+                                            )}
+                                        </AlertActions>
+                                    )}
+                                </Alert>
+
+                                <CodeBlock language="json" displayLanguage="JSON" icon={<Braces />} code={resultJson} />
+                            </div>
+                        </>
+                    )}
+                </div>
+            </SheetContent>
+        </Sheet>
+    );
+};
