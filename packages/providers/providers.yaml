@@ -2582,8 +2582,8 @@ builder-io-private:
             type: string
             title: API Key
             description: The API key for your Builder.io account
-            pattern: '^[a-zA-Z0-9]+$'
-            example: bb209fb71eh2412dbe0114bdae18fd15
+            pattern: '^bpk-[a-f0-9]+$'
+            example: bpk-****************************
             doc_section: '#step-2-finding-your-api-key'
 
 builder-io-public:
@@ -11809,8 +11809,8 @@ perplexity:
             type: string
             title: API Key
             description: The API key for your Perplexity account
-            pattern: '^pplx-[a-f0-9]+$'
-            example: pplx-xxxxxx
+            pattern: '^pplx-[a-zA-Z0-9]+$'
+            example: pplx-****************************
 
 perimeter81:
     display_name: Perimeter81
