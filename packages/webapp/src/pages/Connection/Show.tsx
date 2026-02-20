@@ -5,7 +5,7 @@ import { AuthTab } from './components/AuthTab';
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 import { SettingsTab } from './components/SettingsTab';
 import { SyncsTab } from './components/SyncsTab';
-import { ErrorPageComponent } from '@/components/ErrorComponent';
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useConnection } from '@/hooks/useConnections';
@@ -28,7 +28,14 @@ export const ConnectionShow = () => {
     const [activeTab, setActiveTab] = useHashNavigation('auth');
 
     if (connectionError || integrationError) {
-        return <ErrorPageComponent title="Connection" />;
+        return (
+            <DashboardLayout>
+                <Helmet>
+                    <title>Connection - Nango</title>
+                </Helmet>
+                <CriticalErrorAlert message={connectionError ? 'Failed to load connection data' : 'Failed to load integration data for this connection'} />
+            </DashboardLayout>
+        );
     }
 
     if (connectionLoading || providerLoading || !connectionData || !integrationData) {
