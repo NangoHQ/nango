@@ -8875,7 +8875,6 @@ klicktipp:
             title: API Key
             description: Your KlickTipp Listbuilding API key
             doc_section: '#step-1-getting-your-api-key'
-    credentials_verification_script: klicktippCredentialsVerification
     docs: https://nango.dev/docs/api-integrations/klicktipp
     docs_connect: https://nango.dev/docs/api-integrations/klicktipp/connect
 

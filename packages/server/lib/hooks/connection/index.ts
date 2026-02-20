@@ -29,7 +29,6 @@ export { default as mailchimpPostConnection } from './providers/mailchimp/post-c
 export { default as snipeItCredentialsVerification } from './providers/snipe-it/credentials-verification.js';
 export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';
 export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
-export { default as klicktippCredentialsVerification } from './providers/klicktipp/credentials-verification.js';
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
 export { default as candisPostConnection } from './providers/candis/post-connection.js';
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';
