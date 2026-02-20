@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700&display=swap') layer(base);
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap')
-layer(base);
+/* prettier-ignore */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap') layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap') layer(base);
 
 @import 'tailwindcss';
 
@@ -16,7 +17,7 @@ layer(base);
 
 @theme {
     --font-*: initial;
-    --font-sans: Inter, sans-serif;
+    --font-sans: Geist, sans-serif;
     --font-mono: 'Roboto Mono', 'Source Code Pro', sans-serif;
     --font-code: 'Roboto Mono', 'Source Code Pro', system-ui, sans-serif;
 
