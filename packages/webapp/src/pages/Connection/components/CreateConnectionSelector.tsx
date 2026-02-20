@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import { clearIntegrationsCache, useListIntegrations } from '../../../hooks/useIntegration';
+import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
@@ -218,8 +218,9 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                     navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
+                // TODO: remove after migrating all connection operations to tanstack query
                 clearConnectionsCache(cache, mutate);
-                clearIntegrationsCache(cache, mutate);
+                queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
