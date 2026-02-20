@@ -38,16 +38,24 @@ export function useGetIntegration(env: string, integrationId: string) {
     });
 }
 
-export async function apiPostIntegration(env: string, body: PostIntegration['Body']) {
-    const res = await apiFetch(`/api/v1/integrations?env=${env}`, {
-        method: 'POST',
-        body: JSON.stringify(body)
+export function usePostIntegration(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PostIntegration['Success'], APIError, PostIntegration['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/integrations?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            const json = (await res.json()) as PostIntegration['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env] });
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as PostIntegration['Reply']
-    };
 }
 
 export function usePatchIntegration(env: string, integrationId: string) {
