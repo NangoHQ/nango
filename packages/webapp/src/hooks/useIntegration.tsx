@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { APIError, apiFetch } from '../utils/api';
 
 import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, GetIntegrations, PatchIntegration, PostIntegration } from '@nangohq/types';
-import type { Cache, useSWRConfig } from 'swr';
 
 export function useListIntegrations(env: string) {
     return useQuery<GetIntegrations['Success'], APIError>({
@@ -110,13 +109,4 @@ export function useGetIntegrationFlows(env: string, integrationId: string) {
         },
         enabled: Boolean(env && integrationId)
     });
-}
-
-// TODO: Remove after migrating all connection operations to tanstack query
-export function clearIntegrationsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
-    for (const key of cache.keys()) {
-        if (key.includes('/api/v1/integrations')) {
-            void mutate(key, undefined);
-        }
-    }
 }
