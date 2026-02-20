@@ -533,6 +533,9 @@
                 "refresh_token_params": {
                     "type": "object"
                 },
+                "refresh_token_headers": {
+                    "type": "object"
+                },
                 "credentials_verification_script": {
                     "type": "string"
                 },
