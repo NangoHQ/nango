@@ -2,6 +2,7 @@ import React from 'react';
 
 import { AppSidebar } from '../components-v2/AppSidebar';
 import { AppHeader } from '@/components-v2/AppHeader';
+import { Playground } from '@/components-v2/Playground';
 import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
 import { cn } from '@/utils/utils';
 
@@ -16,11 +17,19 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
             <SidebarInset className="max-h-screen overflow-hidden">
                 <AppHeader />
                 <div
-                    ref={ref}
-                    className={cn('w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl', fullWidth ? 'p-0' : 'p-11')}
-                    {...props}
+                    className={cn(
+                        'relative w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl',
+                        fullWidth ? 'p-0' : 'p-11'
+                    )}
                 >
-                    <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
+                    <div
+                        ref={ref}
+                        className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}
+                        {...props}
+                    >
+                        {children}
+                    </div>
+                    <Playground />
                 </div>
             </SidebarInset>
         </SidebarProvider>
