@@ -1170,6 +1170,7 @@ asana-mcp:
         - ticketing
         - mcp
     auth_mode: MCP_OAUTH2
+    client_registration: dynamic
     authorization_url: https://mcp.asana.com/authorize
     token_url: https://mcp.asana.com/token
     registration_url: https://mcp.asana.com/register
@@ -7909,6 +7910,28 @@ hubspot:
     docs: https://nango.dev/docs/api-integrations/hubspot
     setup_guide_url: https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-api-oauth-app
 
+hubspot-mcp:
+    display_name: HubSpot (MCP)
+    categories:
+        - marketing
+        - support
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: static
+    authorization_url: https://mcp.hubspot.com/oauth/authorize/user
+    token_url: https://mcp.hubspot.com/oauth/v3/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.hubspot.com
+    docs: https://nango.dev/docs/api-integrations/hubspot-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app
+
 incident-io:
     display_name: Incident.io
     categories:
@@ -9140,6 +9163,7 @@ linear-mcp:
         - ticketing
         - mcp
     auth_mode: MCP_OAUTH2
+    client_registration: dynamic
     authorization_url: https://mcp.linear.app/authorize
     token_url: https://mcp.linear.app/token
     registration_url: https://mcp.linear.app/register
@@ -10703,6 +10727,7 @@ notion-mcp:
         - productivity
         - mcp
     auth_mode: MCP_OAUTH2
+    client_registration: dynamic
     authorization_url: https://mcp.notion.com/authorize
     token_url: https://mcp.notion.com/token
     registration_url: https://mcp.notion.com/register
@@ -15395,6 +15420,30 @@ tailscale-api-key:
             example: tskey-api-k7Hpb9Lcv611CNTRL-WJ9YG52LqXJXY9oJ7RtmXJdzWkdRMgBG
             pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
             doc_section: '#step-2-generating-an-api-access-token'
+
+tally:
+    display_name: Tally
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tally.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /forms?limit=1
+    docs: https://nango.dev/docs/api-integrations/tally
+    docs_connect: https://nango.dev/docs/api-integrations/tally/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Tally API key.
+            pattern: '^tly-[A-Za-z0-9]{32}$'
+            example: tly-84m**************************56Y
+            doc_section: '#step-1-create-an-api-key'
 
 tapclicks:
     display_name: TapClicks

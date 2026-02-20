@@ -47,8 +47,7 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    missesInterpolationParamInObject,
-    stringifyEnrichedError
+    missesInterpolationParamInObject
 } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -735,7 +734,8 @@ class OAuthController {
                 res.cookie(stateCookie, '1', {
                     maxAge: 60 * 60 * 1000, // 1h
                     secure: req.secure, // Note: Relies on app.set('trust proxy', true).
-                    httpOnly: true
+                    httpOnly: true,
+                    sameSite: req.secure ? 'none' : 'lax'
                 });
                 res.redirect(authorizationUri);
             } else {
@@ -813,7 +813,8 @@ class OAuthController {
             res.cookie(stateCookie, '1', {
                 maxAge: 60 * 60 * 1000,
                 secure: req.secure,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
             });
             res.redirect(authorizationUri);
         } catch (err) {
@@ -932,7 +933,8 @@ class OAuthController {
             res.cookie(stateCookie, '1', {
                 maxAge: 60 * 60 * 1000,
                 secure: req.secure,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
             });
             res.redirect(authorizationUri);
         } catch (err) {
@@ -1342,7 +1344,8 @@ class OAuthController {
         }
         res.clearCookie(stateCookie, {
             secure: req.secure,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: req.secure ? 'none' : 'lax'
         });
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
@@ -1910,7 +1913,7 @@ class OAuthController {
             }
             return;
         } catch (err) {
-            const prettyError = stringifyEnrichedError(err, { pretty: true });
+            const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
@@ -1921,8 +1924,7 @@ class OAuthController {
                 }
             });
 
-            const error = WSErrBuilder.UnknownError();
-            void logCtx.error(error.message, { error: err });
+            void logCtx.error(prettyError, { error: err });
             await logCtx.failed();
 
             void connectionCreationFailedHook(
@@ -1933,7 +1935,7 @@ class OAuthController {
                     auth_mode: provider.auth_mode,
                     error: {
                         type: 'unknown',
-                        description: error.message + '\n' + prettyError
+                        description: prettyError
                     },
                     operation: 'unknown'
                 },
@@ -1944,7 +1946,10 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
 
             if (res) {
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, {
+                    type: 'unknown_err',
+                    message: prettyError
+                });
             }
         }
     }
