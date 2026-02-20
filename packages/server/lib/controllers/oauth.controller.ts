@@ -735,7 +735,8 @@ class OAuthController {
                 res.cookie(stateCookie, '1', {
                     maxAge: 60 * 60 * 1000, // 1h
                     secure: req.secure, // Note: Relies on app.set('trust proxy', true).
-                    httpOnly: true
+                    httpOnly: true,
+                    sameSite: req.secure ? 'none' : 'lax'
                 });
                 res.redirect(authorizationUri);
             } else {
@@ -813,7 +814,8 @@ class OAuthController {
             res.cookie(stateCookie, '1', {
                 maxAge: 60 * 60 * 1000,
                 secure: req.secure,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
             });
             res.redirect(authorizationUri);
         } catch (err) {
@@ -932,7 +934,8 @@ class OAuthController {
             res.cookie(stateCookie, '1', {
                 maxAge: 60 * 60 * 1000,
                 secure: req.secure,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
             });
             res.redirect(authorizationUri);
         } catch (err) {
@@ -1342,7 +1345,8 @@ class OAuthController {
         }
         res.clearCookie(stateCookie, {
             secure: req.secure,
-            httpOnly: true
+            httpOnly: true,
+            sameSite: req.secure ? 'none' : 'lax'
         });
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
