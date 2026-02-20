@@ -15925,7 +15925,7 @@ timify:
         - productivity
     auth_mode: TWO_STEP
     body_format: json
-    token_url: https://api.timify.com/v1/auth/token
+    token_url: https://${connectionConfig.subdomain}.timify.com/v1/auth/token
     token_params:
         appid: ${credentials.appId}
         appsecret: ${credentials.appSecret}
@@ -15940,23 +15940,34 @@ timify:
         token_expiration_strategy: expireIn
         refresh_token: refreshToken
     proxy:
-        base_url: https://api.timify.com
+        base_url: https://${connectionConfig.subdomain}.timify.com
         headers:
             authorization: ${accessToken}
     docs: https://nango.dev/docs/api-integrations/timify
     docs_connect: https://nango.dev/docs/api-integrations/timify/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Timify Subdomain
+            description: The subdomain of your Timify API.
+            pattern: '^[a-z0-9_-]+$'
+            example: api
+            order: 1
+            suffix: .timify.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         appId:
             type: string
             title: App ID
             description: Your Timify app ID
-            doc_section: '#step-2-getting-your-credentials'
+            doc_section: '#step-3-getting-your-credentials'
         appSecret:
             type: string
             title: App Secret
             description: Your Timify app secret
             secret: true
-            doc_section: '#step-2-getting-your-credentials'
+            doc_section: '#step-3-getting-your-credentials'
 
 todoist:
     display_name: Todoist
