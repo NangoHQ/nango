@@ -12499,6 +12499,42 @@ qualtrics:
             suffix: .qualtrics.com
             prefix: https://
 
+quentn:
+    display_name: Quentn
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.quentn.com/public/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/terms
+    docs: https://nango.dev/docs/api-integrations/quentn
+    docs_connect: https://nango.dev/docs/api-integrations/quentn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Quentn API key.
+            secret: true
+            example: a1bcDeFgHi-jkLmNoPqRsTuVwXyZ0123456789AbCdE
+            pattern: '^[A-Za-z0-9_-]{43}$'
+            doc_section: '#step-1-getting-your-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Quentn account subdomain.
+            format: hostname
+            example: xk7mdf.eu-5
+            suffix: .quentn.com/public/api
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-subdomain'
+
 quickbase:
     display_name: Quickbase
     categories:
