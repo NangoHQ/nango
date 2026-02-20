@@ -79,15 +79,24 @@ export function usePatchIntegration(env: string, integrationId: string) {
     });
 }
 
-export async function apiDeleteIntegration(env: string, integrationId: string) {
-    const res = await apiFetch(`/api/v1/integrations/${integrationId}?env=${env}`, {
-        method: 'DELETE'
+export function useDeleteIntegration(env: string, integrationId: string) {
+    const queryClient = useQueryClient();
+    return useMutation<DeleteIntegration['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/integrations/${integrationId}?env=${env}`, {
+                method: 'DELETE'
+            });
+            const json = (await res.json()) as DeleteIntegration['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env] });
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as DeleteIntegration['Reply']
-    };
 }
 
 export function useGetIntegrationFlows(env: string, integrationId: string) {
