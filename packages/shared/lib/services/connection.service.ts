@@ -1300,9 +1300,10 @@ class ConnectionService {
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
         // In those cases, we need to use the refresh_url/token_url to refresh the token.
-        const isRefresh = provider.refresh_token_params && dynamicCredentials['refresh_token'];
-        const tokenUrl = isRefresh ? provider.refresh_url : provider.token_url;
+        const isRefresh = (provider.refresh_token_params || provider.refresh_token_headers) && dynamicCredentials['refresh_token'];
+        const tokenUrl = (isRefresh && provider.refresh_url) || provider.token_url;
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
+        const tokenHeaders = isRefresh ? provider.refresh_token_headers : provider.token_headers;
 
         const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
         const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
@@ -1330,8 +1331,8 @@ class ConnectionService {
 
         const headers: Record<string, any> | string = {};
 
-        if (provider.token_headers) {
-            for (const [key, value] of Object.entries(provider.token_headers)) {
+        if (tokenHeaders) {
+            for (const [key, value] of Object.entries(tokenHeaders)) {
                 const strippedValue = stripCredential(value);
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
                     headers[key] = interpolateObject(strippedValue, dynamicCredentials);
