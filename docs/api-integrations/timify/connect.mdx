@@ -18,7 +18,11 @@ This guide will walk you through creating an app, getting these credentials, and
 
 ### Instructions:
 
-#### Step 1: Create and install the app
+#### Step 1: Finding your subdomain
+
+1. The subdomain is the first part of your API base URL, for example, in `https://api.timify.com` the subdomain is `api`.
+
+#### Step 2: Create and install the app
 
 1. Log in to the [Timify Developer Platform](https://api.timify.com) and go to **Apps** to see the **App Dashboard** → **+ NEW APP**.
 
@@ -58,7 +62,7 @@ Install the app on your **Enterprise** account if you need it across multiple co
 
 ---
 
-#### Step 2: Getting your credentials
+#### Step 3: Getting your credentials
 
 1. In the Developer Platform, open your app and go to **App Overview** (right-hand panel).
 2. Copy **App ID** and **App Secret**.
@@ -67,12 +71,12 @@ Install the app on your **Enterprise** account if you need it across multiple co
 
 Each app has a lifecycle status (Draft, Pending, Approved, etc.) that affects editability and usage. See [App Status](https://docs.timify.dev/docs/first-steps#app-status) in the Timify docs.
 
-#### Step 3: Enter credentials in the Connect UI
+#### Step 4: Enter credentials in the Connect UI
 
-Once you have your **App ID** and **App Secret**:
+Once you have your **Subdomain**, **App ID**, and **App Secret**:
 
 1. Open the form where you need to authenticate with Timify.
-2. Enter your **App ID** and **App Secret** in their respective fields.
+2. Enter your **Subdomain** (e.g. `api` for https://api.timify.com), **App ID**, and **App Secret** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/timify/form.png" style={{maxWidth: "450px" }}/>
