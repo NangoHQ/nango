@@ -2,6 +2,7 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { SimpleCodeBlock } from '@/components-v2/SimpleCodeBlock';
@@ -34,7 +35,11 @@ export const SyncsTab = ({
     const env = useStore((state) => state.env);
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
-    const { data: syncs, isLoading } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
+    const { data: syncs, isLoading, error } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
+
+    if (error) {
+        return <CriticalErrorAlert message="Failed to load syncs" />;
+    }
 
     if (isLoading) {
         return <Skeleton className="w-full h-42" />;
