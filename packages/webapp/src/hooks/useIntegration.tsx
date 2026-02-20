@@ -112,6 +112,7 @@ export function useGetIntegrationFlows(env: string, integrationId: string) {
     });
 }
 
+// TODO: Remove after migrating all connection operations to tanstack query
 export function clearIntegrationsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
     for (const key of cache.keys()) {
         if (key.includes('/api/v1/integrations')) {
