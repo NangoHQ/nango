@@ -31,7 +31,8 @@ export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
 
     const env = useStore((state) => state.env);
-    const { data: integrationData, loading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
+    const { data: integrationResponse, isPending: integrationLoading } = useGetIntegration(env, providerConfigKey!);
+    const integrationData = integrationResponse?.data;
     const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
 
     const func = data?.flows.find((flow) => flow.name === functionName);

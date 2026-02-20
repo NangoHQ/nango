@@ -6,7 +6,7 @@ import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 import { IntegrationSideInfo } from './components/IntegrationSideInfo';
-import { ErrorPageComponent } from '@/components/ErrorComponent';
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { ButtonLink } from '@/components-v2/ui/button';
@@ -20,15 +20,17 @@ import { useStore } from '@/store';
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
-    const { environmentAndAccount, loading: loadingEnvironment } = useEnvironment(env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
-    const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
 
-    if (error) {
-        return <ErrorPageComponent title="Integration" error={error} />;
+    const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const { data, isPending: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
+    const integration = data?.data;
+
+    if (integrationError || environmentError) {
+        return <CriticalErrorAlert message="Something went wrong while loading the integration" />;
     }
 
-    const isLoading = loadingIntegration || loadingEnvironment || !data || !environmentAndAccount;
+    const isLoading = loadingIntegration || loadingEnvironment || !integration || !environmentAndAccount;
 
     if (isLoading) {
         return (
@@ -62,10 +64,12 @@ export const ShowIntegration: React.FC = () => {
             <div className="flex flex-col gap-5 w-full">
                 <div className="inline-flex justify-between">
                     <div className="inline-flex items-center gap-2">
-                        <IntegrationLogo provider={data.integration.provider} className="size-15" />
-                        <span className="text-text-primary text-body-large-semi">{data.integration.display_name ?? data.template.display_name}</span>
+                        <IntegrationLogo provider={integration.integration.provider} className="size-15" />
+                        <span className="text-text-primary text-body-large-semi">
+                            {integration.integration.display_name ?? integration.template.display_name}
+                        </span>
                     </div>
-                    <ButtonLink to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`} size="lg">
+                    <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg">
                         Add test connection
                     </ButtonLink>
                 </div>
@@ -74,13 +78,13 @@ export const ShowIntegration: React.FC = () => {
                         <TabsTrigger value="functions">Functions</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
                         <TabsTrigger value="setup-guide" disabled asChild>
-                            <Link to={data.template.docs} target="_blank" className="w-fit inline-flex items-center gap-1.5">
+                            <Link to={integration.template.docs} target="_blank" className="w-fit inline-flex items-center gap-1.5">
                                 API setup guide <ExternalLink className="size-4" />
                             </Link>
                         </TabsTrigger>
                         <TabsTrigger value="logs" disabled asChild>
                             <Link
-                                to={`/${env}/logs?integrations=${data.integration.unique_key}`}
+                                to={`/${env}/logs?integrations=${integration.integration.unique_key}`}
                                 target="_blank"
                                 className="w-fit inline-flex items-center gap-1.5"
                             >
@@ -90,14 +94,14 @@ export const ShowIntegration: React.FC = () => {
                     </TabsList>
                     <TabsContent value="functions">
                         <div className="flex w-full gap-11 justify-between">
-                            <FunctionsTab integration={data.integration} />
-                            <IntegrationSideInfo integration={data.integration} provider={data.template} />
+                            <FunctionsTab integration={integration.integration} />
+                            <IntegrationSideInfo integration={integration.integration} provider={integration.template} />
                         </div>
                     </TabsContent>
                     <TabsContent value="settings">
                         <div className="flex w-full gap-11 justify-between">
-                            <SettingsTab data={data} environment={environmentAndAccount?.environment} />
-                            <IntegrationSideInfo integration={data.integration} provider={data.template} />
+                            <SettingsTab data={integration} environment={environmentAndAccount?.environment} />
+                            <IntegrationSideInfo integration={integration.integration} provider={integration.template} />
                         </div>
                     </TabsContent>
                 </Tabs>

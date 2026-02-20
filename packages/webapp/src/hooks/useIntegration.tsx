@@ -1,44 +1,41 @@
+import { useQuery } from '@tanstack/react-query';
 import useSWR from 'swr';
 
-import { apiFetch, swrFetcher } from '../utils/api';
+import { APIError, apiFetch, swrFetcher } from '../utils/api';
 
 import type { SWRError } from '../utils/api';
 import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, GetIntegrations, PatchIntegration, PostIntegration } from '@nangohq/types';
 import type { Cache, useSWRConfig } from 'swr';
 
-function integrationsPath(env: string) {
-    return `/api/v1/integrations?env=${env}`;
-}
-
-export function useListIntegration(env: string) {
-    const { data, error, mutate } = useSWR<GetIntegrations['Success'], SWRError<GetIntegrations['Errors']>>(integrationsPath(env), swrFetcher, {
-        refreshInterval: 15000
+export function useListIntegrations(env: string) {
+    return useQuery<GetIntegrations['Success'], APIError>({
+        queryKey: ['integrations', env],
+        queryFn: async (): Promise<GetIntegrations['Success']> => {
+            const res = await apiFetch(`/api/v1/integrations?env=${env}`, { method: 'GET' });
+            const json = (await res.json()) as GetIntegrations['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        refetchInterval: 15000,
+        enabled: Boolean(env)
     });
-
-    const loading = !data && !error;
-
-    return {
-        loading,
-        error,
-        list: data?.data,
-        mutate
-    };
 }
 
 export function useGetIntegration(env: string, integrationId: string) {
-    const { data, error, mutate } = useSWR<GetIntegration['Success'], SWRError<GetIntegration['Errors']>>(
-        `/api/v1/integrations/${integrationId}?env=${env}`,
-        swrFetcher
-    );
-
-    const loading = !data && !error;
-
-    return {
-        loading,
-        error: error?.json,
-        data: data?.data,
-        mutate
-    };
+    return useQuery<GetIntegration['Success'], APIError>({
+        queryKey: ['integrations', env, integrationId],
+        queryFn: async (): Promise<GetIntegration['Success']> => {
+            const res = await apiFetch(`/api/v1/integrations/${integrationId}?env=${env}`, { method: 'GET' });
+            const json = (await res.json()) as GetIntegration['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        enabled: Boolean(env && integrationId)
+    });
 }
 
 export async function apiPostIntegration(env: string, body: PostIntegration['Body']) {
