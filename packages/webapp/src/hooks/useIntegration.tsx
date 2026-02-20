@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useSWR from 'swr';
 
 import { APIError, apiFetch, swrFetcher } from '../utils/api';
@@ -50,16 +50,25 @@ export async function apiPostIntegration(env: string, body: PostIntegration['Bod
     };
 }
 
-export async function apiPatchIntegration(env: string, integrationId: string, body: PatchIntegration['Body']) {
-    const res = await apiFetch(`/api/v1/integrations/${integrationId}?env=${env}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body)
+export function usePatchIntegration(env: string, integrationId: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PatchIntegration['Success'], APIError, PatchIntegration['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/integrations/${integrationId}?env=${env}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
+            const json = (await res.json()) as PatchIntegration['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env] });
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as PatchIntegration['Reply']
-    };
 }
 
 export async function apiDeleteIntegration(env: string, integrationId: string) {
