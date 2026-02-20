@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import useSWR from 'swr';
 
-import { APIError, apiFetch, swrFetcher } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { SWRError } from '../utils/api';
 import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, GetIntegrations, PatchIntegration, PostIntegration } from '@nangohq/types';
 import type { Cache, useSWRConfig } from 'swr';
 
@@ -100,19 +98,18 @@ export function useDeleteIntegration(env: string, integrationId: string) {
 }
 
 export function useGetIntegrationFlows(env: string, integrationId: string) {
-    const { data, error, mutate } = useSWR<GetIntegrationFlows['Success'], SWRError<GetIntegrationFlows['Errors']>>(
-        `/api/v1/integrations/${integrationId}/flows?env=${env}`,
-        swrFetcher
-    );
-
-    const loading = !data && !error;
-
-    return {
-        loading,
-        error: error?.json,
-        data: data?.data,
-        mutate
-    };
+    return useQuery<GetIntegrationFlows['Success'], APIError>({
+        queryKey: ['integrations', env, integrationId, 'flows'],
+        queryFn: async (): Promise<GetIntegrationFlows['Success']> => {
+            const res = await apiFetch(`/api/v1/integrations/${integrationId}/flows?env=${env}`, { method: 'GET' });
+            const json = (await res.json()) as GetIntegrationFlows['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        enabled: Boolean(env && integrationId)
+    });
 }
 
 export function clearIntegrationsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {

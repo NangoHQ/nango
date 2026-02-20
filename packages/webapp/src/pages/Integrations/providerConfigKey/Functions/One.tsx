@@ -33,9 +33,10 @@ export const FunctionsOne: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: integrationResponse, isPending: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const integrationData = integrationResponse?.data;
-    const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
+    const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
+    const flowsData = flowsResponse?.data;
 
-    const func = data?.flows.find((flow) => flow.name === functionName);
+    const func = flowsData?.flows.find((flow) => flow.name === functionName);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {

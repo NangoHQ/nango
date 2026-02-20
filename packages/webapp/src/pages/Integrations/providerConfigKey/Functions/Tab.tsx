@@ -40,17 +40,18 @@ interface FunctionsTabProps {
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
-    const { data, loading } = useGetIntegrationFlows(env, integration.unique_key);
+    const { data, isLoading } = useGetIntegrationFlows(env, integration.unique_key);
+    const flowsData = data?.data;
 
     const [activeTab, setActiveTab] = useHashNavigation('actions');
 
     const { actions, actionsByGroup, syncs, syncsByGroup } = useMemo(() => {
-        const actions = data?.flows.filter((flow) => flow.type === 'action') ?? [];
-        const syncs = data?.flows.filter((flow) => flow.type === 'sync') ?? [];
+        const actions = flowsData?.flows.filter((flow) => flow.type === 'action') ?? [];
+        const syncs = flowsData?.flows.filter((flow) => flow.type === 'sync') ?? [];
         const actionsByGroup = groupByGroup(actions);
         const syncsByGroup = groupByGroup(syncs);
         return { actions, actionsByGroup, syncs, syncsByGroup };
-    }, [data?.flows]);
+    }, [flowsData?.flows]);
 
     const onFunctionClick = useCallback(
         (func: NangoSyncConfig) => {
@@ -59,7 +60,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         [env, integration.unique_key, navigate]
     );
 
-    if (loading) {
+    if (isLoading) {
         return <Skeleton className="w-full max-w-2xl h-50" />;
     }
 
