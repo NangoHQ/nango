@@ -1,9 +1,11 @@
 import { CopyButton } from '@/components-v2/CopyButton';
+import { EditableInput } from '@/components-v2/EditableInput';
 import { ScopesInput } from '@/components-v2/ScopesInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { apiPatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/utils';
 
@@ -17,11 +19,25 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
     const { toast } = useToast();
 
     const callbackUrl = environment.callback_url || defaultCallback();
+    const useUserCredentials = 'client_registration' in template && template.client_registration === 'static';
+
+    const onSaveCredentials = async (field: { clientId?: string; clientSecret?: string }) => {
+        const updated = await apiPatchIntegration(env, integration.unique_key, {
+            authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+            ...field
+        });
+        if ('error' in updated.json) {
+            const errorMessage = updated.json.error.message || 'Failed to update credentials';
+            toast({ title: errorMessage, variant: 'error' });
+            throw new Error(errorMessage);
+        }
+        toast({ title: 'Successfully updated', variant: 'success' });
+    };
 
     const handleScopesChange = async (scopes: string, countDifference: number) => {
         const updated = await apiPatchIntegration(env, integration.unique_key, {
             authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
-            ...(scopes && { scopes })
+            scopes
         });
 
         if ('error' in updated.json) {
@@ -53,15 +69,38 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
             {/* Client ID */}
             <div className="flex flex-col gap-2">
                 <Label htmlFor="client_id">Client ID</Label>
-                <InputGroup>
-                    <InputGroupInput
-                        disabled
-                        readOnly
-                        value={integration.oauth_client_id || ''}
-                        placeholder="Find the Client ID on the developer portal of the external API provider."
+                {useUserCredentials ? (
+                    <EditableInput
+                        initialValue={integration.oauth_client_id || ''}
+                        onSave={(value) => onSaveCredentials({ clientId: value })}
+                        validate={validateNotEmpty}
+                        placeholder="Enter your OAuth Client ID"
                     />
-                </InputGroup>
+                ) : (
+                    <InputGroup>
+                        <InputGroupInput
+                            disabled
+                            readOnly
+                            value={integration.oauth_client_id || ''}
+                            placeholder="Find the Client ID on the developer portal of the external API provider."
+                        />
+                    </InputGroup>
+                )}
             </div>
+
+            {/* Client Secret (only when user provides credentials) */}
+            {useUserCredentials && (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="client_secret">Client Secret</Label>
+                    <EditableInput
+                        secret
+                        initialValue={integration.oauth_client_secret || ''}
+                        onSave={(value) => onSaveCredentials({ clientSecret: value })}
+                        validate={validateNotEmpty}
+                        placeholder="Enter your OAuth Client Secret"
+                    />
+                </div>
+            )}
 
             {/* Scopes */}
             <div className="flex flex-col gap-2">

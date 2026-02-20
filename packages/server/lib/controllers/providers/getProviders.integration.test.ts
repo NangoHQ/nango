@@ -53,21 +53,46 @@ describe(`GET ${route}`, () => {
         const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             token: secret.secret,
-            query: { search: 'hubspot' }
+            query: { search: 'outreach' }
         });
 
         isSuccess(res.json);
         expect(res.json).toMatchObject<typeof res.json>({
             data: [
                 {
-                    display_name: 'HubSpot',
-                    docs: 'https://nango.dev/docs/api-integrations/hubspot',
-                    logo_url: 'http://localhost:3003/images/template-logos/hubspot.svg',
-                    name: 'hubspot',
+                    display_name: 'Outreach',
+                    docs: 'https://nango.dev/docs/integrations/all/outreach',
+                    logo_url: 'http://localhost:3003/images/template-logos/outreach.svg',
+                    name: 'outreach',
                     auth_mode: 'OAUTH2'
                 }
             ]
         });
+    });
+
+    it('should return multiple results when search matches several providers', async () => {
+        const { secret } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(route, {
+            token: secret.secret,
+            query: { search: 'hubspot' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.length).toBe(2);
+        expect(res.json.data).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    display_name: 'HubSpot',
+                    name: 'hubspot',
+                    auth_mode: 'OAUTH2'
+                }),
+                expect.objectContaining({
+                    display_name: 'HubSpot (MCP)',
+                    name: 'hubspot-mcp',
+                    auth_mode: 'MCP_OAUTH2'
+                })
+            ])
+        );
     });
 
     it('should return empty array when search has no results', async () => {
