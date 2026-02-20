@@ -30,13 +30,10 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });
-        } catch (err) {
-            let errorMessage = 'Failed to update credentials';
-            if (err instanceof APIError) {
-                errorMessage = err.message;
-            }
-            toast({ title: errorMessage, variant: 'error' });
-            throw new Error(errorMessage);
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 

@@ -14,7 +14,6 @@ import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { APIError } from '@/utils/api';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -36,16 +35,10 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
         try {
             await patchIntegration(field);
             toast({ title: 'Successfully updated', variant: 'success' });
-        } catch (err) {
-            let errorMessage = 'Failed to update, an error occurred';
-            if (err instanceof APIError) {
-                errorMessage = err.message;
-            }
-
-            toast({ title: errorMessage, variant: 'error' });
-
-            // Editable input expects an error to be thrown to re-enable editing
-            throw new Error(errorMessage);
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 

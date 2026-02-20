@@ -8,7 +8,6 @@ import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { APIError } from '@/utils/api';
 import { defaultCallback } from '@/utils/utils';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
@@ -30,13 +29,10 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });
-        } catch (err) {
-            let errorMessage = 'Failed to update, an error occurred';
-            if (err instanceof APIError) {
-                errorMessage = err.message;
-            }
-            toast({ title: errorMessage, variant: 'error' });
-            throw new Error(errorMessage);
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 

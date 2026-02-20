@@ -180,12 +180,3 @@ export class APIError extends Error {
         this.res = res;
     }
 }
-
-/** Get a user-facing error message from an unknown error, with a fallback. */
-export function getErrorMessage(err: unknown, fallback: string): string {
-    if (err instanceof APIError && err.json && typeof err.json === 'object' && 'error' in err.json) {
-        const msg = (err.json as ApiError<unknown>).error?.message;
-        if (typeof msg === 'string' && msg) return msg;
-    }
-    return fallback;
-}

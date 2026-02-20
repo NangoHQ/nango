@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/useToast';
 import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { APIError } from '@/utils/api';
 import { defaultCallback } from '@/utils/utils';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
@@ -41,15 +40,10 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             if (!supressToast) {
                 toast({ title: 'Successfully updated', variant: 'success' });
             }
-        } catch (err) {
-            let errorMessage = 'Failed to update, an error occurred';
-            if (err instanceof APIError) {
-                errorMessage = err.message;
-            }
-            if (!supressToast) {
-                toast({ title: errorMessage, variant: 'error' });
-            }
-            throw new Error(errorMessage);
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 
