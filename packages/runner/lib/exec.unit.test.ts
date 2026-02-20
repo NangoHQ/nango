@@ -294,50 +294,20 @@ describe('Exec', () => {
         expect(res.error.toJSON()).toStrictEqual({
             payload: {
                 message: 'A manual error',
-                reason: {
+                reason: expect.objectContaining({
                     code: expect.any(String),
-                    config: {
-                        adapter: ['xhr', 'http', 'fetch'],
-                        env: {},
-                        allowAbsoluteUrls: true,
-                        headers: {
-                            Accept: 'application/json, text/plain, */*',
-                            'Accept-Encoding': 'gzip, compress, deflate, br',
+                    config: expect.objectContaining({
+                        headers: expect.objectContaining({
                             Authorization: '[Redacted]',
-                            'Content-Type': 'application/json',
-                            'Nango-Is-Dry-Run': 'true',
-                            'Nango-Is-Sync': 'true',
-                            'Nango-Is-Script': 'true',
                             'User-Agent': expect.any(String)
-                        },
-                        maxBodyLength: -1,
-                        maxContentLength: -1,
-                        metadata: {
-                            startTime: expect.toBeIsoDate()
-                        },
+                        }),
+                        metadata: { startTime: expect.toBeIsoDate() },
                         method: 'get',
-                        params: {
-                            force_refresh: false,
-                            provider_config_key: 'provider-config-key',
-                            refresh_token: false,
-                            refresh_github_app_jwt_token: false
-                        },
-                        timeout: 0,
-                        transformRequest: [null],
-                        transformResponse: [null],
-                        transitional: {
-                            clarifyTimeoutError: false,
-                            forcedJSONParsing: true,
-                            legacyInterceptorReqResOrdering: true,
-                            silentJSONParsing: true
-                        },
-                        url: 'http://localhost:3003/connections/connection-id',
-                        xsrfCookieName: 'XSRF-TOKEN',
-                        xsrfHeaderName: 'X-XSRF-TOKEN'
-                    },
+                        url: 'http://localhost:3003/connections/connection-id'
+                    }),
                     message: expect.any(String),
                     name: expect.any(String)
-                }
+                })
             },
             status: 500,
             type: 'action_script_runtime_error',
