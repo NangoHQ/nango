@@ -8,8 +8,8 @@ const route: WebhookHandler = async (nango, _headers, body) => {
         for (const event of body) {
             const response = await nango.executeScriptForWebhooks({
                 body: event,
-                webhookType: 'payload.webhookEvent',
-                connectionIdentifier: 'payload.user.accountId',
+                webhookType: 'webhookEvent',
+                connectionIdentifier: 'user.accountId',
                 propName: 'accountId'
             });
             if (response && response.connectionIds?.length > 0) {
@@ -25,8 +25,8 @@ const route: WebhookHandler = async (nango, _headers, body) => {
     } else {
         const response = await nango.executeScriptForWebhooks({
             body,
-            webhookType: 'payload.webhookEvent',
-            connectionIdentifier: 'payload.user.accountId',
+            webhookType: 'webhookEvent',
+            connectionIdentifier: 'user.accountId',
             propName: 'accountId'
         });
         return Ok({
