@@ -12499,6 +12499,35 @@ qualtrics:
             suffix: .qualtrics.com
             prefix: https://
 
+quentn:
+    display_name: Quentn
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /terms
+    docs: https://nango.dev/docs/api-integrations/quentn
+    docs_connect: https://nango.dev/docs/api-integrations/quentn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Quentn API key from Settings > API Info
+            doc_section: '#step-1-getting-your-api-key'
+    connection_config:
+        baseUrl:
+            type: string
+            title: API Base URL
+            description: 'Your Quentn API base URL (e.g., https://my-system.s1.quentn.com/public/api/v1)'
+            order: 1
+            doc_section: '#step-2-finding-your-base-url'
+
 quickbase:
     display_name: Quickbase
     categories:
