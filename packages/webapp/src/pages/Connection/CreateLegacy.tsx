@@ -14,7 +14,7 @@ import SecretInput from '../../components/ui/input/SecretInput';
 import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import { useListIntegration } from '../../hooks/useIntegration';
+import { useListIntegrations } from '../../hooks/useIntegration';
 import useSet from '../../hooks/useSet';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
@@ -29,7 +29,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
 
-    const { list: integrations } = useListIntegration(env);
+    const { data: integrationsData } = useListIntegrations(env);
+    const integrations = integrationsData?.data;
 
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');

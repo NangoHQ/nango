@@ -19,7 +19,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { useConnections } from '@/hooks/useConnections';
-import { useListIntegration } from '@/hooks/useIntegration';
+import { useListIntegrations } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -151,7 +151,7 @@ export const ConnectionList = () => {
 
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
-    const { list: listIntegration, loading: integrationsLoading } = useListIntegration(env);
+    const { data: listIntegrationData, isLoading: integrationsLoading } = useListIntegrations(env);
 
     const withError = useMemo(() => {
         if (selectedErrors && selectedErrors.length === 1) {
@@ -197,13 +197,14 @@ export const ConnectionList = () => {
     });
 
     const integrationsOptions = useMemo(() => {
-        if (!listIntegration) {
+        const list = listIntegrationData?.data;
+        if (!list) {
             return [];
         }
-        return listIntegration.map((integration) => {
+        return list.map((integration) => {
             return { name: integration.unique_key, value: integration.unique_key };
         });
-    }, [listIntegration]);
+    }, [listIntegrationData?.data]);
 
     if (connectionsError) {
         return <ErrorPageComponent title="Connections" error={connectionsError.json as GetConnections['Errors']} />;
