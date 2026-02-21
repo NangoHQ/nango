@@ -90,6 +90,7 @@
         "react-toastify": "9.1.1",
         "react-use": "17.6.0",
         "recharts": "2.15.4",
+        "sonner": "2.0.7",
         "stringify-object": "5.0.0",
         "swr": "2.3.0",
         "tailwind-merge": "2.6.0",

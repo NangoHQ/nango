@@ -20,8 +20,8 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
+import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
-import { isCloudProd } from '../../utils/utils';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
