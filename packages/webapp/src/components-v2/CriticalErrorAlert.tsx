@@ -14,7 +14,7 @@ export const CriticalErrorAlert: React.FC<{ message: string }> = ({ message }) =
     }, [message]);
 
     return (
-        <Alert variant="destructive">
+        <Alert variant="error" className="w-full">
             <CircleX />
             <AlertDescription>
                 {finalMessage}. Please{' '}
