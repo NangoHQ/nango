@@ -9,7 +9,21 @@ import type { VariantProps } from 'class-variance-authority';
 import type { LinkProps } from 'react-router-dom';
 
 const alertVariants = cva(
-    'relative w-full h-fit rounded-md px-4 py-2 grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-1 items-center [&>svg]:size-4 [&>svg]:text-current [&>svg]:row-span-1 [&>svg]:self-center has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-title"]]:self-end has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-description"]]:self-start has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:h-18 has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>svg]:row-span-2',
+    [
+        'relative w-full h-fit rounded-md px-4 py-2 grid',
+        'grid-cols-[0_1fr] gap-y-1 items-center',
+        'has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-3',
+        'has-[>div[data-slot="alert-actions"]]:grid-cols-[0_1fr_auto]',
+        'has-[>svg]:has-[>div[data-slot="alert-actions"]]:grid-cols-[calc(var(--spacing)*4)_1fr_auto]',
+        '[&>svg]:size-4 [&>svg]:text-current [&>svg]:row-span-1 [&>svg]:self-center',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:grid-rows-2',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:h-18',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>svg]:row-span-2',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-title"]]:self-end',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-description"]]:self-start',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-start-1',
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-span-2'
+    ].join(' '),
     {
         variants: {
             variant: {
@@ -41,7 +55,7 @@ function AlertActions({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="alert-actions"
-            className={cn('col-start-3 row-start-1 row-span-2 inline-flex gap-3 text-body-medium-regular self-center', className)}
+            className={cn('col-start-3 row-start-1 row-span-1 inline-flex gap-3 text-body-medium-regular !self-center', className)}
             {...props}
         />
     );

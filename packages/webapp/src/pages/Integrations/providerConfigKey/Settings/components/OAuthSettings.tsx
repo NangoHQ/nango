@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/useToast';
 import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
