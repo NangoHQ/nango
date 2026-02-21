@@ -736,6 +736,8 @@
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "api-integrations/salesforce-sandbox",
+              "api-integrations/salesmsg",
+              "api-integrations/salesmsg-oauth2",
               "integrations/all/salesloft",
               "api-integrations/sellercloud",
               "integrations/all/sap-business-one",
