@@ -42,7 +42,7 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
             const responseData = anyErr.response.data;
 
             // If error field exists, filter it to only include message-related fields
-            if (responseData && typeof responseData === 'object') {
+            if (responseData.error && typeof responseData.error === 'object') {
                 const filteredError: Record<string, unknown> = {};
                 for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
                     if (field in responseData.error) {
