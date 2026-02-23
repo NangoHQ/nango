@@ -6,6 +6,15 @@ import type { EventListener, QueueMessage } from './listener.js';
 
 const logger = getLogger('jobs.events.sqs');
 
+/** Extract queue name from an SQS ARN (arn:aws:sqs:region:account-id:queue-name), or return as-is if not an ARN. */
+function queueNameFromArn(queueOrArn: string): string {
+    if (queueOrArn.startsWith('arn:')) {
+        const parts = queueOrArn.split(':');
+        return parts[parts.length - 1] ?? queueOrArn;
+    }
+    return queueOrArn;
+}
+
 const getRegion = (): string => {
     const env = typeof process !== 'undefined' ? process.env['LAMBDA_REGION'] : undefined;
     return env ?? 'us-west-2';
@@ -19,13 +28,14 @@ export class SqsEventListener implements EventListener {
     }
 
     async listen(queue: string, onMessage?: (message: QueueMessage) => void | Promise<void>): Promise<void> {
-        const queueUrlRes = await this.getQueueUrl(queue);
+        const queueName = queueNameFromArn(queue);
+        const queueUrlRes = await this.getQueueUrl(queueName);
         if (queueUrlRes === null) {
-            throw new Error(`SQS: could not get queue URL for ${queue}`);
+            throw new Error(`SQS: could not get queue URL for ${queueName}`);
         }
         const queueUrl = queueUrlRes;
 
-        logger.info(`SQS: subscribing to queue ${queue}`);
+        logger.info(`SQS: subscribing to queue ${queueName}`);
 
         while (true) {
             try {
@@ -48,7 +58,7 @@ export class SqsEventListener implements EventListener {
                         }
                     } catch (err) {
                         report(new Error('SQS message handler error'), {
-                            queue,
+                            queueName,
                             error: err
                         });
                         continue;
@@ -63,7 +73,7 @@ export class SqsEventListener implements EventListener {
                 }
             } catch (err) {
                 report(new Error('SQS receive message error'), {
-                    queue,
+                    queueName,
                     error: err
                 });
                 await new Promise((r) => setTimeout(r, 1000));
