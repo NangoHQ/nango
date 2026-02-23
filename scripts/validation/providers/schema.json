@@ -396,6 +396,10 @@
                 "registration_url": {
                     "type": "string"
                 },
+                "client_registration": {
+                    "type": "string",
+                    "enum": ["dynamic", "static", "metadata"]
+                },
                 "request_params": {
                     "type": "object",
                     "patternProperties": {

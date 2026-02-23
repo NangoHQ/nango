@@ -18,7 +18,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@aws-sdk/client-s3": "3.796.0",
+        "@aws-sdk/client-s3": "3.993.0",
         "@hapi/boom": "10.0.1",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/database": "file:../database",
@@ -34,7 +34,7 @@
         "braintree": "3.15.0",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
-        "fast-xml-parser": "5.3.4",
+        "fast-xml-parser": "5.3.6",
         "form-data": "4.0.4",
         "he": "^1.2.0",
         "js-yaml": "4.1.1",

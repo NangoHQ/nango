@@ -1170,6 +1170,7 @@ asana-mcp:
         - ticketing
         - mcp
     auth_mode: MCP_OAUTH2
+    client_registration: dynamic
     authorization_url: https://mcp.asana.com/authorize
     token_url: https://mcp.asana.com/token
     registration_url: https://mcp.asana.com/register
@@ -2581,8 +2582,8 @@ builder-io-private:
             type: string
             title: API Key
             description: The API key for your Builder.io account
-            pattern: '^[a-zA-Z0-9]+$'
-            example: bb209fb71eh2412dbe0114bdae18fd15
+            pattern: '^bpk-[a-f0-9]+$'
+            example: bpk-****************************
             doc_section: '#step-2-finding-your-api-key'
 
 builder-io-public:
@@ -7909,6 +7910,28 @@ hubspot:
     docs: https://nango.dev/docs/api-integrations/hubspot
     setup_guide_url: https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-api-oauth-app
 
+hubspot-mcp:
+    display_name: HubSpot (MCP)
+    categories:
+        - marketing
+        - support
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: static
+    authorization_url: https://mcp.hubspot.com/oauth/authorize/user
+    token_url: https://mcp.hubspot.com/oauth/v3/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.hubspot.com
+    docs: https://nango.dev/docs/api-integrations/hubspot-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app
+
 incident-io:
     display_name: Incident.io
     categories:
@@ -9140,6 +9163,7 @@ linear-mcp:
         - ticketing
         - mcp
     auth_mode: MCP_OAUTH2
+    client_registration: dynamic
     authorization_url: https://mcp.linear.app/authorize
     token_url: https://mcp.linear.app/token
     registration_url: https://mcp.linear.app/register
@@ -10703,6 +10727,7 @@ notion-mcp:
         - productivity
         - mcp
     auth_mode: MCP_OAUTH2
+    client_registration: dynamic
     authorization_url: https://mcp.notion.com/authorize
     token_url: https://mcp.notion.com/token
     registration_url: https://mcp.notion.com/register
@@ -11784,8 +11809,8 @@ perplexity:
             type: string
             title: API Key
             description: The API key for your Perplexity account
-            pattern: '^pplx-[a-f0-9]+$'
-            example: pplx-xxxxxx
+            pattern: '^pplx-[a-zA-Z0-9]+$'
+            example: pplx-****************************
 
 perimeter81:
     display_name: Perimeter81
@@ -15449,6 +15474,30 @@ tailscale-api-key:
             pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
             doc_section: '#step-2-generating-an-api-access-token'
 
+tally:
+    display_name: Tally
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tally.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /forms?limit=1
+    docs: https://nango.dev/docs/api-integrations/tally
+    docs_connect: https://nango.dev/docs/api-integrations/tally/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Tally API key.
+            pattern: '^tly-[A-Za-z0-9]{32}$'
+            example: tly-84m**************************56Y
+            doc_section: '#step-1-create-an-api-key'
+
 tapclicks:
     display_name: TapClicks
     auth_mode: OAUTH2_CC
@@ -15929,7 +15978,7 @@ timify:
         - productivity
     auth_mode: TWO_STEP
     body_format: json
-    token_url: https://api.timify.com/v1/auth/token
+    token_url: https://${connectionConfig.subdomain}.timify.com/v1/auth/token
     token_params:
         appid: ${credentials.appId}
         appsecret: ${credentials.appSecret}
@@ -15944,23 +15993,34 @@ timify:
         token_expiration_strategy: expireIn
         refresh_token: refreshToken
     proxy:
-        base_url: https://api.timify.com
+        base_url: https://${connectionConfig.subdomain}.timify.com
         headers:
             authorization: ${accessToken}
     docs: https://nango.dev/docs/api-integrations/timify
     docs_connect: https://nango.dev/docs/api-integrations/timify/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Timify Subdomain
+            description: The subdomain of your Timify API.
+            pattern: '^[a-z0-9_-]+$'
+            example: api
+            order: 1
+            suffix: .timify.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         appId:
             type: string
             title: App ID
             description: Your Timify app ID
-            doc_section: '#step-2-getting-your-credentials'
+            doc_section: '#step-3-getting-your-credentials'
         appSecret:
             type: string
             title: App Secret
             description: Your Timify app secret
             secret: true
-            doc_section: '#step-2-getting-your-credentials'
+            doc_section: '#step-3-getting-your-credentials'
 
 todoist:
     display_name: Todoist

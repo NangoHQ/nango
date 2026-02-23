@@ -47,8 +47,7 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    missesInterpolationParamInObject,
-    stringifyEnrichedError
+    missesInterpolationParamInObject
 } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -281,7 +280,6 @@ class OAuthController {
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
-                    req,
                     res,
                     connectionConfig,
                     authorizationParams,
@@ -291,10 +289,10 @@ class OAuthController {
                 });
                 return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
-                await this.appRequest(provider, config, session, req, res, authorizationParams, logCtx);
+                await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2') {
-                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, req, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
                 await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
@@ -593,7 +591,6 @@ class OAuthController {
         provider,
         providerConfig,
         session,
-        req,
         res,
         connectionConfig,
         authorizationParams,
@@ -604,7 +601,6 @@ class OAuthController {
         provider: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
-        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         authorizationParams: Record<string, string | undefined>;
@@ -671,9 +667,8 @@ class OAuthController {
                 let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
                     scope: scopes,
-                    ...allAuthParams,
-                    // Security: `state` comes last. It cannot be overriden by allAuthParams.
-                    state: session.id
+                    state: session.id,
+                    ...allAuthParams
                 });
 
                 if (provider?.authorization_url_skip_encode?.includes('scopes')) {
@@ -731,12 +726,6 @@ class OAuthController {
                     scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
-                const stateCookie = `oauth2-${session.id}`;
-                res.cookie(stateCookie, '1', {
-                    maxAge: 60 * 60 * 1000, // 1h
-                    secure: req.secure, // Note: Relies on app.set('trust proxy', true).
-                    httpOnly: true
-                });
                 res.redirect(authorizationUri);
             } else {
                 const grantType = provider.token_params.grant_type;
@@ -768,7 +757,6 @@ class OAuthController {
         provider: Provider,
         providerConfig: ProviderConfig,
         session: OAuthSession,
-        req: Request,
         res: Response,
         authorizationParams: Record<string, string | undefined>,
         logCtx: LogContext
@@ -809,12 +797,6 @@ class OAuthController {
 
             void logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
 
-            const stateCookie = `oauth2-${session.id}`;
-            res.cookie(stateCookie, '1', {
-                maxAge: 60 * 60 * 1000,
-                secure: req.secure,
-                httpOnly: true
-            });
             res.redirect(authorizationUri);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -857,7 +839,6 @@ class OAuthController {
         provider,
         config,
         session,
-        req,
         res,
         connectionConfig,
         callbackUrl,
@@ -866,7 +847,6 @@ class OAuthController {
         provider: ProviderMcpOAUTH2;
         config: ProviderConfig;
         session: OAuthSession;
-        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
@@ -928,12 +908,6 @@ class OAuthController {
                 scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
             });
 
-            const stateCookie = `oauth2-${session.id}`;
-            res.cookie(stateCookie, '1', {
-                maxAge: 60 * 60 * 1000,
-                secure: req.secure,
-                httpOnly: true
-            });
             res.redirect(authorizationUri);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -1102,7 +1076,7 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
-        const state = (req.query['state'] || req.query['payload']) as string | undefined; // for crisp plugin install
+        const state = req.query['state'] || req.query['payload']; // for crisp plugin install
 
         const installation_id = req.query['installation_id'] as string | undefined;
         const action = req.query['setup_action'] as string;
@@ -1111,7 +1085,7 @@ class OAuthController {
             res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
             return;
         }
-        if (!state) {
+        if (state == null) {
             const err = new Error('No state found in callback');
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: err.message });
@@ -1120,7 +1094,7 @@ class OAuthController {
 
         let session;
         try {
-            session = await oAuthSessionService.findById(state);
+            session = await oAuthSessionService.findById(state as string);
         } catch (err) {
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: 'invalid_oauth_state' });
@@ -1134,7 +1108,7 @@ class OAuthController {
             authHtml({ res, error: err.message });
             return;
         } else {
-            await oAuthSessionService.delete(state);
+            await oAuthSessionService.delete(state as string);
         }
 
         let logCtx: LogContext | undefined;
@@ -1333,17 +1307,6 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
-
-        const stateCookie = `oauth2-${session.id}`;
-        if (req.cookies[stateCookie] !== '1') {
-            errorManager.report(new Error('invalid_oauth_state'), { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
-            authHtml({ res, error: 'invalid_oauth_state' });
-            return;
-        }
-        res.clearCookie(stateCookie, {
-            secure: req.secure,
-            httpOnly: true
-        });
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
@@ -1910,7 +1873,7 @@ class OAuthController {
             }
             return;
         } catch (err) {
-            const prettyError = stringifyEnrichedError(err, { pretty: true });
+            const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
@@ -1921,8 +1884,7 @@ class OAuthController {
                 }
             });
 
-            const error = WSErrBuilder.UnknownError();
-            void logCtx.error(error.message, { error: err });
+            void logCtx.error(prettyError, { error: err });
             await logCtx.failed();
 
             void connectionCreationFailedHook(
@@ -1933,7 +1895,7 @@ class OAuthController {
                     auth_mode: provider.auth_mode,
                     error: {
                         type: 'unknown',
-                        description: error.message + '\n' + prettyError
+                        description: prettyError
                     },
                     operation: 'unknown'
                 },
@@ -1944,7 +1906,10 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
 
             if (res) {
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, {
+                    type: 'unknown_err',
+                    message: prettyError
+                });
             }
         }
     }
