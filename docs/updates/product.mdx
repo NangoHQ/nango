@@ -4,6 +4,57 @@ sidebarTitle: 'Product Updates'
 description: "Product updates and improvements."
 ---
 
+<Update label="December 2025">
+
+<AccordionGroup>
+    <Accordion title="22 new APIs in December" icon="webhook">
+        - [Availity](/api-integrations/availity)
+        - [BetterContact](/api-integrations/bettercontact)
+        - [ConductorOne](/api-integrations/conductorone)
+        - [Drata](/api-integrations/drata)
+        - [Fanvue](/api-integrations/fanvue)
+        - [Fathom (OAuth)](/api-integrations/fathom-oauth)
+        - [Firstbase](/api-integrations/firstbase)
+        - [Google Search Console](/integrations/all/google-search-console)
+        - [Grist](/integrations/all/grist)
+        - [Justworks](/api-integrations/justworks)
+        - [Lumos](/api-integrations/lumos)
+        - [Onlogist](/api-integrations/onlogist)
+        - [Oracle Cloud Identity](/integrations/all/oracle-cloud-identity)
+        - [Paylocity (NextGen)](/api-integrations/paylocity-nextgen)
+        - [Recall.ai](/api-integrations/recall-ai)
+        - [SAP S/4HANA Cloud (Client Credentials)](/api-integrations/sap-odata-oauth2-cc)
+        - [SAP S/4HANA Cloud (Basic Auth)](/api-integrations/sap-odata-basic)
+        - [Slab](/api-integrations/slab)
+        - [Sophos Central](/api-integrations/sophos-central)
+        - [Torii](/api-integrations/torii)
+        - [Vanta](/api-integrations/vanta)
+        - [Veeva Vault](/api-integrations/veeva-vault)
+    </Accordion>
+</AccordionGroup>
+
+## Connection tags
+
+Connections now support **tags**: key/value strings you attach when creating a Connect session. Nango copies them onto the connection and includes them in auth webhooks, so you can tie each connection to the right user, organization, or entity in your system.
+
+Add tags when [creating a Connect session](/implementation-guides/platform/auth/connection-tags), read them from the [auth webhook](/implementation-guides/platform/auth/connection-tags#2-read-tags-from-the-auth-webhook) and the connection object, and optionally [filter connections by tags](/implementation-guides/platform/auth/connection-tags#4-filter-connections-by-tags) or [patch them later](/implementation-guides/platform/auth/connection-tags#5-update-tags-on-an-existing-connection-optional).
+
+In the Nango Dashboard, certain tags also improve how connections are shown: `end_user_display_name` and `end_user_email` appear in the connections list, and the email or domain is used to show the company logo on the connection detail page.
+
+
+**Migration Note:** If you currently use `end_user` or `organization` on Connect sessions or in webhooks, see the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. Existing connections have been backfilled with tags derived from legacy end-user fields.
+
+## New blog posts
+
+New posts from the Nango team in December:
+
+- [Finding traction without a product: Our process](https://www.nango.dev/blog/our-process-for-finding-initial-traction-pre-product)
+- [How to find the best integrations partner](https://www.nango.dev/blog/how-to-find-the-best-integrations-partner)
+
+</Update>
+
+---
+
 <Update label="November 2025">
 
 <AccordionGroup>
@@ -44,9 +95,7 @@ We have moved from a multi-file mock format to a single `.test.json`.
 
 When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. [Mock file structure](/implementation-guides/platform/functions/testing#mock-file-structure).
 
-If you have tests using the old multi-file mock format, see [migrating from the old format.](/implementation-guides/platform/functions/testing#migrating-from-the-old-format)
-
----
+**Migration Note:** See [migrating from the old format](/implementation-guides/platform/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
 
 ## New blog posts
 
@@ -56,9 +105,9 @@ New posts from the Nango team in November:
 - [The hidden costs of building product integrations in-house](https://www.notion.so/blog/the-hidden-costs-of-building-product-integrations-in-house)
 - [Product integrations: Build or buy?](https://www.notion.so/blog/product-integrations-build-or-buy)
 
----
-
 </Update>
+
+---
 
 <Update label="October 2025">
 
@@ -90,7 +139,6 @@ New posts from the Nango team in November:
     </Accordion>
 </AccordionGroup>
 
-
 ## CLI interactive mode
 
 The Nango CLI now supports an [interactive mode](https://nango.dev/docs/reference/cli#interactive-mode) that prompts for missing arguments. For example, run `nango create` without specifying the function type, integration, or name, and the CLI will ask for them. Interactive mode is on by default in interactive terminal sessions.
@@ -101,13 +149,9 @@ You can still provide all arguments upfront to skip prompts (e.g., for scripting
 
 To disable interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments. 
 
----
-
 ## New documentation
 
 - [CI/CD for Nango integrations](/implementation-guides/platform/functions/ci-cd#ci-cd-for-nango-integrations): A complete guide on integrating Nango into your CI/CD processes.
-
----
 
 ## New blog posts
 
