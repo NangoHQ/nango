@@ -1,0 +1,35 @@
+---
+title: 'How to register your own CleverReach OAuth app'
+sidebarTitle: 'CleverReach Setup'
+description: 'Register an OAuth app with CleverReach and connect it to Nango'
+---
+
+This guide shows you how to register your own app with CleverReach to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their CleverReach account.
+
+<Steps>
+  <Step title="Create a CleverReach account">
+    If you don't already have one, [create a CleverReach account](https://www.cleverreach.com/).
+  </Step>
+
+  <Step title="Create a new OAuth app">
+    1. Log in to your CleverReach account.
+    2. Navigate to **My Account** > **Extras** > **REST API**.
+    3. Click **Create OAuth App** to register a new application.
+    4. Fill in the required fields:
+       - **App Name**: Enter a name for your application.
+       - **Redirect URL**: Enter your Nango callback URL (found in your [Nango integration settings](https://app.nango.dev/dev/integrations)).
+    5. Click **Save**.
+  </Step>
+
+  <Step title="Obtain your credentials">
+    After creating the app, you will see your **Client ID** and **Client Secret**. Copy these credentials.
+
+    <Tip>Keep your Client Secret secure. If you lose it, you will need to regenerate it.</Tip>
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/api-integrations/cleverreach).
+  </Step>
+</Steps>
+
+For more details, see [CleverReach's REST API documentation](https://rest.cleverreach.com/explorer/v3/) and the [REST API HowTo guide](https://rest.cleverreach.com/howto/).

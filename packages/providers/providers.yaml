@@ -3309,14 +3309,8 @@ cleverreach:
         grant_type: authorization_code
     proxy:
         base_url: https://rest.cleverreach.com
-        headers:
-            authorization: Bearer ${accessToken}
-        verification:
-            method: GET
-            endpoints:
-                - /v3/debug/whoami.json
     docs: https://nango.dev/docs/api-integrations/cleverreach
-    docs_connect: https://nango.dev/docs/api-integrations/cleverreach/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-oauth-app
 
 clicksend:
     display_name: ClickSend
