@@ -88,9 +88,8 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
     const navigate = useNavigate();
 
     const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
-    const [isTriggering, setIsTriggering] = useState(false);
 
-    const { mutateAsync, isPending } = useRunSyncCommand(env);
+    const { mutateAsync: runSyncCommand, isPending: isRunningSyncCommand } = useRunSyncCommand(env);
     const recordCount = sync.record_count ? formatQuantity(Object.entries(sync.record_count).reduce((acc, [, count]) => acc + count, 0)) : '0';
 
     const [fullResync, setFullResync] = useState(false);
@@ -98,7 +97,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
     const onSyncCommand = async (command: RunSyncCommand) => {
         try {
-            await mutateAsync({
+            await runSyncCommand({
                 command,
                 schedule_id: sync.schedule_id,
                 nango_connection_id: sync.nango_connection_id,
@@ -127,9 +126,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
     };
 
     const onTrigger = async () => {
-        setIsTriggering(true);
         await onSyncCommand(fullResync ? 'RUN_FULL' : 'RUN');
-        setIsTriggering(false);
         setFullResync(false);
         setEmptyCache(false);
         setTriggerDialogOpen(false);
@@ -211,9 +208,9 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                     {sync.schedule_status === 'STARTED' && (
                         <>
                             {interpretNextRun(sync.futureActionTimes) === '-' ? (
-                                <span className="">-</span>
+                                <span>-</span>
                             ) : (
-                                <span className="">{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</span>
+                                <span>{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</span>
                             )}
                         </>
                     )}
@@ -231,7 +228,10 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {/* Pause/Resume Schedule */}
-                            <DropdownMenuItem disabled={isPending} onClick={() => onSyncCommand(sync.schedule_status === 'STARTED' ? 'PAUSE' : 'UNPAUSE')}>
+                            <DropdownMenuItem
+                                disabled={isRunningSyncCommand}
+                                onClick={() => onSyncCommand(sync.schedule_status === 'STARTED' ? 'PAUSE' : 'UNPAUSE')}
+                            >
                                 {sync.schedule_status !== 'STARTED' ? (
                                     <>
                                         <Play />
@@ -247,7 +247,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
                             {/* Cancel Execution */}
                             {sync.status === 'RUNNING' && (
-                                <DropdownMenuItem disabled={isPending} onClick={() => onSyncCommand('CANCEL')}>
+                                <DropdownMenuItem disabled={isRunningSyncCommand} onClick={() => onSyncCommand('CANCEL')}>
                                     <X />
                                     <span>Cancel Execution</span>
                                 </DropdownMenuItem>
@@ -255,7 +255,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
                             {/* Trigger Execution */}
                             {sync.status !== 'RUNNING' && (
-                                <DropdownMenuItem disabled={isPending} onClick={() => setTriggerDialogOpen(true)}>
+                                <DropdownMenuItem disabled={isRunningSyncCommand} onClick={() => setTriggerDialogOpen(true)}>
                                     <RefreshCw />
                                     <span>Trigger execution</span>
                                 </DropdownMenuItem>
@@ -304,7 +304,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                         <DialogClose asChild>
                             <Button variant="secondary">Cancel</Button>
                         </DialogClose>
-                        <Button variant="primary" onClick={onTrigger} loading={isTriggering}>
+                        <Button variant="primary" onClick={onTrigger} loading={isRunningSyncCommand}>
                             Trigger
                         </Button>
                     </DialogFooter>

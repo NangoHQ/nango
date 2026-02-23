@@ -19,7 +19,8 @@ export function useSyncs(queries: { env: string; connection_id: string; provider
             }
 
             return json;
-        }
+        },
+        refetchInterval: 5000 // 5 seconds
     });
 }
 
