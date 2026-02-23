@@ -154,11 +154,12 @@ const deserializeAwsSigV4Config = (raw?: string | null) => {
             if (parsed.stsEndpoint.auth?.type === 'api_key') {
                 base.stsEndpoint.authType = 'api_key';
                 base.stsEndpoint.header = parsed.stsEndpoint.auth.header || 'x-api-key';
-                base.stsEndpoint.value = parsed.stsEndpoint.auth.value || '';
+                // "***" means the secret is configured but redacted — show as empty so the user can leave it unchanged
+                base.stsEndpoint.value = parsed.stsEndpoint.auth.value === '***' ? '' : (parsed.stsEndpoint.auth.value || '');
             } else if (parsed.stsEndpoint.auth?.type === 'basic') {
                 base.stsEndpoint.authType = 'basic';
                 base.stsEndpoint.username = parsed.stsEndpoint.auth.username || '';
-                base.stsEndpoint.password = parsed.stsEndpoint.auth.password || '';
+                base.stsEndpoint.password = parsed.stsEndpoint.auth.password === '***' ? '' : (parsed.stsEndpoint.auth.password || '');
             }
         }
         if (Array.isArray(parsed.templates)) {
@@ -316,13 +317,15 @@ export const SettingsGeneral: React.FC<{
             payload.stsEndpoint.auth = {
                 type: 'api_key',
                 header: config.stsEndpoint.header,
-                value: config.stsEndpoint.value
+                // Omit value when empty — backend preserves the existing secret
+                ...(config.stsEndpoint.value ? { value: config.stsEndpoint.value } : {})
             };
         } else if (config.stsEndpoint.authType === 'basic') {
             payload.stsEndpoint.auth = {
                 type: 'basic',
                 username: config.stsEndpoint.username,
-                password: config.stsEndpoint.password
+                // Omit password when empty — backend preserves the existing secret
+                ...(config.stsEndpoint.password ? { password: config.stsEndpoint.password } : {})
             };
         }
 

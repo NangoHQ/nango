@@ -130,6 +130,11 @@ export class EncryptionManager extends Encryption {
             encryptedConfig.custom = { encryptedValue, iv: iv, authTag: authTag };
         }
 
+        if (config.integration_secrets) {
+            const [encryptedValue, iv, authTag] = this.encryptSync(JSON.stringify(config.integration_secrets));
+            encryptedConfig.integration_secrets = { encryptedValue, iv, authTag };
+        }
+
         return encryptedConfig;
     }
 
@@ -143,6 +148,15 @@ export class EncryptionManager extends Encryption {
             decryptedConfig.custom = JSON.parse(
                 this.decryptSync(config.custom['encryptedValue'], config.custom['iv'] as string, config.custom['authTag'] as string)
             );
+            if (decryptedConfig.integration_secrets && typeof decryptedConfig.integration_secrets === 'object' && 'encryptedValue' in decryptedConfig.integration_secrets) {
+                decryptedConfig.integration_secrets = JSON.parse(
+                    this.decryptSync(
+                        decryptedConfig.integration_secrets['encryptedValue'] as string,
+                        decryptedConfig.integration_secrets['iv'] as string,
+                        decryptedConfig.integration_secrets['authTag'] as string
+                    )
+                );
+            }
             return decryptedConfig;
         }
 
@@ -158,6 +172,15 @@ export class EncryptionManager extends Encryption {
         if (decryptedConfig.custom && config.custom) {
             decryptedConfig.custom = JSON.parse(
                 this.decryptSync(config.custom['encryptedValue'] as string, config.custom['iv'] as string, config.custom['authTag'] as string)
+            );
+        }
+        if (decryptedConfig.integration_secrets && typeof decryptedConfig.integration_secrets === 'object' && 'encryptedValue' in decryptedConfig.integration_secrets) {
+            decryptedConfig.integration_secrets = JSON.parse(
+                this.decryptSync(
+                    decryptedConfig.integration_secrets['encryptedValue'] as string,
+                    decryptedConfig.integration_secrets['iv'] as string,
+                    decryptedConfig.integration_secrets['authTag'] as string
+                )
             );
         }
         return decryptedConfig;
