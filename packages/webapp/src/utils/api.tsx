@@ -88,28 +88,6 @@ export function useSignupAPI() {
     };
 }
 
-export function useSigninAPI() {
-    return async (email: string, password: string) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ email: email, password: password })
-            };
-
-            const res = await apiFetch('/api/v1/account/signin', options);
-
-            if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
-                serverErrorToast();
-                return;
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useHostedSigninAPI() {
     return async () => {
         try {
