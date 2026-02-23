@@ -4,6 +4,72 @@ sidebarTitle: 'Product Updates'
 description: "Product updates and improvements."
 ---
 
+<Update label="October 2025">
+
+<AccordionGroup>
+    <Accordion title="23 new APIs in October" icon="webhook">
+        - [Adobe Workfront](/integrations/all/adobe-workfront)
+        - [Affinity (v2)](/integrations/all/affinity-v2)
+        - [Aimfox](/integrations/all/aimfox)
+        - [Aimfox (OAuth)](/integrations/all/aimfox-oauth)
+        - [Atlassian Government Cloud](/integrations/all/atlassian-government-cloud)
+        - [Folk](/integrations/all/folk)
+        - [Ironclad](/integrations/all/ironclad)
+        - [Loop Returns](/integrations/all/loop-returns)
+        - [MCP Server OAuth2 (Generic)](/integrations/all/mcp-generic)
+        - [Microsoft (Admin)](/integrations/all/microsoft-admin)
+        - [Microsoft Excel](/integrations/all/microsoft-excel)
+        - [Momentum.io](/integrations/all/momentum-io)
+        - [OneDrive Personal](/integrations/all/one-drive-personal)
+        - [OneLogin](/integrations/all/onelogin)
+        - [Pennylane (Company API)](/integrations/all/pennylane-company-api)
+        - [PingOne](/integrations/all/pingone)
+        - [PingOne (Client Credentials)](/integrations/all/pingone-cc)
+        - [SAP Fieldglass](/integrations/all/sap-fieldglass)
+        - [SAP Business One](/integrations/all/sap-business-one)
+        - [Statista](/integrations/all/statista)
+        - [Streak](/integrations/all/streak)
+        - [Teamleader Focus](/integrations/all/teamleader)
+        - [Snipe-IT](/integrations/all/snipe-it)
+    </Accordion>
+</AccordionGroup>
+
+---
+
+## CLI interactive mode
+
+The Nango CLI now supports an [interactive mode](https://nango.dev/docs/reference/cli#interactive-mode) that prompts for missing arguments. For example, run `nango create` without specifying the function type, integration, or name, and the CLI will ask for them. Interactive mode is on by default in interactive terminal sessions.
+
+![Nango_CLI_interactive_mode](../images/changelog/Nango_CLI_interactive_mode.png)
+
+You can still provide all arguments upfront to skip prompts (e.g., for scripting): `nango create --sync --integration my-api --name get-contacts`.
+
+To disable interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments. 
+
+---
+
+## New documentation
+
+- [CI/CD for Nango integrations](/implementation-guides/platform/functions/ci-cd#ci-cd-for-nango-integrations): A complete guide on integrating Nango into your CI/CD processes.
+
+---
+
+## New blog posts
+
+New posts from the Nango team in October:
+
+- [Best practices for building a unified API](https://www.nango.dev/blog/best-practices-build-unified-api)
+- [HubSpot OAuth BAD_REFRESH_TOKEN — What it means & how to fix it](https://www.nango.dev/blog/hubspot-oauth-bad-refresh-token)
+- [Best iPaaS for API Unification](https://www.nango.dev/blog/best-ipaas-for-api-unification)
+- [Paragon's pricing: What You Should Know Before Signing Up](https://www.nango.dev/blog/paragon-pricing)
+- [Merge pricing: What you should know before you commit](https://www.nango.dev/blog/merge-pricing)
+- [The 4 most popular Paragon alternatives](https://www.nango.dev/blog/4-most-popular-paragon-alternatives)
+- [The 4 most popular Merge.dev alternatives](https://www.nango.dev/blog/4-most-popular-merge-dev-alternatives)
+
+---
+
+</Update>
+
 <Update label="September 2025">
 
 <AccordionGroup>
