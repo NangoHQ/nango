@@ -36,6 +36,9 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             const func = await this.getFunction(params.nangoProps);
             const command = new InvokeCommand({
                 FunctionName: func.arn,
+                ClientContext: JSON.stringify({
+                    taskId: params.taskId
+                }),
                 Payload: JSON.stringify({
                     taskId: params.taskId,
                     nangoProps: params.nangoProps,

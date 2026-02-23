@@ -11,6 +11,7 @@ import {
     DeleteFunctionCommand,
     LambdaClient,
     PublishVersionCommand,
+    PutFunctionEventInvokeConfigCommand,
     waitUntilFunctionActive,
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
@@ -104,6 +105,19 @@ class Lambda {
                         FunctionVersion: pvResult.Version
                     })
                 );
+                if (envs.LAMBDA_FAILURE_DESTINATION) {
+                    await lambdaClient.send(
+                        new PutFunctionEventInvokeConfigCommand({
+                            FunctionName: pvResult.FunctionName,
+                            MaximumRetryAttempts: 0,
+                            DestinationConfig: {
+                                OnFailure: {
+                                    Destination: envs.LAMBDA_FAILURE_DESTINATION
+                                }
+                            }
+                        })
+                    );
+                }
                 const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
                 await applicationAutoScalingClient.send(
                     new RegisterScalableTargetCommand({

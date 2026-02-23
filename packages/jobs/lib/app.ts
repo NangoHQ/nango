@@ -8,6 +8,7 @@ import { getOtlpRoutes } from '@nangohq/shared';
 import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { InvocationsProcessor } from './invocations/processor.js';
 import { Processor } from './processor/processor.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
@@ -103,6 +104,9 @@ try {
     await startFleets();
 
     processor.start();
+
+    const invocationsProcessor = new InvocationsProcessor();
+    await invocationsProcessor.start();
 
     void otlp.register(getOtlpRoutes);
 } catch (err) {

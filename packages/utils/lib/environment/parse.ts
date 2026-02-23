@@ -417,6 +417,7 @@ export const ENVS = z.object({
     LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
     LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
     LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET: z.coerce.number().optional().default(0.7),
+    LAMBDA_FAILURE_DESTINATION: z.url().optional(),
 
     // WEBHOOK DELIVERY CIRCUIT BREAKER
     NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),
