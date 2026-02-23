@@ -1231,7 +1231,7 @@ class ConnectionService {
                     jti: uuidv4()
                 },
                 secretOrPrivateKey: privKeyPem,
-                options: { algorithm: 'RS256', header: { kid } }
+                options: { algorithm: 'RS256', keyid: kid }
             });
             params.append('client_id', client_id);
             params.append('client_assertion_type', 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer');
