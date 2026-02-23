@@ -91,6 +91,14 @@ export async function initZero({
             printDebug(`Running package manager install`, debug);
 
             const packageManager = detectPackageManager({ fullPath: absolutePath });
+
+            // Yarn: seed a standalone project so it's not treated as part of the
+            // parent workspace, and use node-modules linker so tsc can resolve packages.
+            if (packageManager === 'yarn' && !fs.existsSync(path.join(absolutePath, 'yarn.lock'))) {
+                await fs.promises.writeFile(path.join(absolutePath, 'yarn.lock'), '');
+                await fs.promises.writeFile(path.join(absolutePath, '.yarnrc.yml'), 'nodeLinker: node-modules\n');
+            }
+
             await execAsync(`${packageManager} install`, { cwd: absolutePath });
             spinner.succeed();
         } catch (err) {
