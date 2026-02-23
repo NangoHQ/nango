@@ -1190,18 +1190,18 @@ class ConnectionService {
 
         if (provider.token_request_auth_method === 'basic') {
             if (!client_secret) {
-                throw new NangoError('missing client_secret');
+                throw new NangoError('missing_client_secret');
             }
             headers['Authorization'] = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
         } else if (provider.token_request_auth_method === 'custom') {
             if (!client_secret) {
-                throw new NangoError('missing client_secret');
+                throw new NangoError('missing_client_secret');
             }
             params.append('username', client_id);
             params.append('password', client_secret);
         } else if (provider.token_request_auth_method === 'private_key_jwt') {
             if (!client_private_key) {
-                throw new NangoError('missing client_private_key');
+                throw new NangoError('missing_client_private_key');
             }
             let privKeyPem: string;
             let kid: string;
@@ -1223,8 +1223,6 @@ class ConnectionService {
 
             const assertion = jwtClient.signJWT({
                 payload: {
-                    alg: 'RS256',
-                    kid: kid,
                     iss: client_id,
                     sub: client_id,
                     aud: url.toString(),
@@ -1240,7 +1238,9 @@ class ConnectionService {
             params.append('client_assertion', assertion);
         } else {
             params.append('client_id', client_id);
-            params.append('client_secret', client_secret ?? '');
+            if (client_secret) {
+                params.append('client_secret', client_secret);
+            }
         }
 
         if (tokenParams) {
