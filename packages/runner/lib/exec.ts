@@ -114,7 +114,9 @@ export async function exec({
                 URLSearchParams
             };
 
-            const context = vm.createContext(sandbox);
+            const context = vm.createContext(sandbox, {
+                codeGeneration: { strings: false, wasm: false }
+            });
             const scriptExports = script.runInContext(context) as ScriptExports;
 
             const def = scriptExports.default;
