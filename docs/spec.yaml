@@ -91,7 +91,6 @@ paths:
                     $ref: '#/components/responses/NotFound'
 
         post:
-            operationId: postAuthAwsSigV4
             summary: Create an integration
             description: Create an integration
             requestBody:
@@ -245,6 +244,7 @@ paths:
 
     /auth/aws-sigv4/{providerConfigKey}:
         post:
+            operationId: postAuthAwsSigV4
             summary: Authorize an AWS SigV4 integration
             description: Exchanges an IAM Role ARN for temporary AWS credentials via the configured SigV4 integration.
             parameters:

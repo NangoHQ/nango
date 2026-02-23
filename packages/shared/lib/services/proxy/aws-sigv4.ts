@@ -28,7 +28,7 @@ export function signAwsSigV4Request({ url, method, headers, body, credentials, n
         normalizedHeaders['x-amz-security-token'] = credentials.session_token;
     }
 
-    const payloadHash = hashPayload(body);
+    const payloadHash = hashPayload(body, credentials.service);
     normalizedHeaders['x-amz-content-sha256'] = payloadHash;
 
     const canonicalHeaders = Object.keys(normalizedHeaders)
@@ -91,14 +91,18 @@ function buildCanonicalQuerystring(params: URLSearchParams): string {
     return entries.map(([key, value]) => `${key}=${value}`).join('&');
 }
 
-function hashPayload(body?: string | Buffer | null): string {
+function hashPayload(body: string | Buffer | null | undefined, service: string): string {
     if (typeof body === 'string') {
         return crypto.createHash('sha256').update(body, 'utf8').digest('hex');
     }
     if (Buffer.isBuffer(body)) {
         return crypto.createHash('sha256').update(body).digest('hex');
     }
-    // Both null and undefined mean "no body" — hash the empty string per SigV4 spec
+    // S3 supports UNSIGNED-PAYLOAD for requests without a body (e.g. GET/HEAD);
+    // other services (STS, API Gateway, etc.) require a real hash.
+    if (service === 's3') {
+        return 'UNSIGNED-PAYLOAD';
+    }
     return crypto.createHash('sha256').update('').digest('hex');
 }
 
