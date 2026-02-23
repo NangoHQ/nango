@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
@@ -17,7 +18,7 @@ import DefaultLayout from '@/layout/DefaultLayout';
 import { globalEnv } from '@/utils/env';
 import { useSignin } from '@/utils/user';
 
-import type { ApiUser, PostSignin } from '@nangohq/types';
+import type { ApiUser } from '@nangohq/types';
 
 const signinSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -46,8 +47,7 @@ export const Signin: React.FC = () => {
             const res = await signinMutation({ email: data.email, password: data.password });
 
             if (res.status === 200) {
-                const responseData = (await res.json()) as { user: ApiUser };
-                const user: ApiUser = responseData.user;
+                const user: ApiUser = res.json.user;
                 signin(user);
                 navigate('/');
             } else if (res.status === 401) {
@@ -55,8 +55,7 @@ export const Signin: React.FC = () => {
                 form.resetField('password', { defaultValue: '' });
                 form.setFocus('password');
             } else if (res.status === 400) {
-                const errorResponse: PostSignin['Errors'] = (await res.json()) as PostSignin['Errors'];
-                if (errorResponse.error.code === 'email_not_verified') {
+                if (res.json.error.code === 'email_not_verified') {
                     setShowResendEmail(true);
                     setServerErrorMessage('Please verify your email before logging in.');
                 } else {
@@ -86,7 +85,11 @@ export const Signin: React.FC = () => {
     };
 
     return (
-        <DefaultLayout className="gap-10 h-full">
+        <DefaultLayout className="gap-10">
+            <Helmet>
+                <title>Sign in - Nango</title>
+            </Helmet>
+
             <div className="flex flex-col gap-3 items-center">
                 <h2 className="text-title-group text-text-primary">Log in to Nango</h2>
                 <span className="text-body-medium-regular text-text-tertiary">
@@ -103,7 +106,7 @@ export const Signin: React.FC = () => {
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup>
+                                        <InputGroup className="h-11">
                                             <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
@@ -119,7 +122,7 @@ export const Signin: React.FC = () => {
                                 render={({ field, fieldState }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <InputGroup>
+                                            <InputGroup className="h-11">
                                                 <InputGroupInput placeholder="Password" type="password" {...field} aria-invalid={!!fieldState.error} />
                                             </InputGroup>
                                         </FormControl>
@@ -175,26 +178,17 @@ export const Signin: React.FC = () => {
                     </div>
                 )}
 
-                <div className="flex flex-col gap-5 items-center w-full text-body-medium-regular text-text-tertiary">
-                    <span>
-                        Don&apos;t have an account?{' '}
-                        <StyledLink to="/signup" className="text-body-medium-regular">
-                            Sign up
-                        </StyledLink>
-                        .
-                    </span>
-                    <span className="text-center">
-                        By signing in, you agree to our <br />{' '}
-                        <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
-                            Terms of Service
-                        </StyledLink>{' '}
-                        and{' '}
-                        <StyledLink type="external" to="https://www.nango.dev/privacy-policy" className="text-text-secondary text-body-medium-regular">
-                            Privacy Policy
-                        </StyledLink>
-                        .
-                    </span>
-                </div>
+                <span className="text-center w-full text-body-medium-regular text-text-tertiary">
+                    By signing in, you agree to our <br />{' '}
+                    <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
+                        Terms of Service
+                    </StyledLink>{' '}
+                    and{' '}
+                    <StyledLink type="external" to="https://www.nango.dev/privacy-policy" className="text-text-secondary text-body-medium-regular">
+                        Privacy Policy
+                    </StyledLink>
+                    .
+                </span>
             </div>
         </DefaultLayout>
     );
