@@ -13,7 +13,7 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: data.app_link,
-        custom: data.custom,
+        custom: redactAwsSigV4Secrets(data.custom, data.integration_secrets),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
@@ -21,6 +21,48 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks,
         shared_credentials_id: data.shared_credentials_id
     };
+}
+
+/**
+ * Redact STS auth secrets from the custom blob for API responses.
+ * For legacy data (auth in custom blob): replaces secret values with "***".
+ * For migrated data (auth in integration_secrets): injects redacted auth metadata into the custom blob.
+ */
+function redactAwsSigV4Secrets(custom: IntegrationConfig['custom'], integrationSecrets: IntegrationConfig['integration_secrets']): IntegrationConfig['custom'] {
+    const raw = custom?.[awsSigV4Client.AWS_SIGV4_CUSTOM_KEY];
+    if (!raw) {
+        return custom;
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+        const secrets = integrationSecrets as Record<string, any> | undefined | null;
+        const stsAuth = secrets?.['aws_sigv4']?.['sts_auth'];
+
+        if (stsAuth) {
+            // Migrated: inject redacted auth from integration_secrets
+            if (stsAuth['type'] === 'api_key') {
+                parsed.stsEndpoint = { ...parsed.stsEndpoint, auth: { type: 'api_key', header: stsAuth['header'] || 'x-api-key', value: '***' } };
+            } else if (stsAuth['type'] === 'basic') {
+                parsed.stsEndpoint = { ...parsed.stsEndpoint, auth: { type: 'basic', username: stsAuth['username'] || '', password: '***' } };
+            }
+        } else if (parsed.stsEndpoint?.auth) {
+            // Legacy: redact secrets in custom blob
+            if (parsed.stsEndpoint.auth.type === 'api_key' && parsed.stsEndpoint.auth.value) {
+                parsed.stsEndpoint.auth.value = '***';
+            } else if (parsed.stsEndpoint.auth.type === 'basic' && parsed.stsEndpoint.auth.password) {
+                parsed.stsEndpoint.auth.password = '***';
+            } else {
+                return custom;
+            }
+        } else {
+            return custom;
+        }
+
+        return { ...custom, [awsSigV4Client.AWS_SIGV4_CUSTOM_KEY]: JSON.stringify(parsed) };
+    } catch {
+        return custom;
+    }
 }
 
 function normalizeAwsSigV4Templates(raw: any): AwsSigV4TemplateSummary[] {
