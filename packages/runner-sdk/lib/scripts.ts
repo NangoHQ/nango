@@ -118,7 +118,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
 
     /**
      * The checkpoint schema for storing sync progress and resume state.
-     * Checkpoint must be an object with string, number, boolean, or Date values.
+     * Checkpoint must be an object with string, number or boolean values.
      * Nested objects or arrays are not supported.
      *
      * @example
@@ -280,7 +280,7 @@ export interface CreateActionProps<
 
     /**
      * The checkpoint schema for storing action progress and resume state.
-     * Checkpoint must be an object with string, number, boolean, or Date values.
+     * Checkpoint must be an object with string, number or boolean values.
      * Nested objects or arrays are not supported.
      *
      * @example
@@ -391,7 +391,7 @@ export interface CreateOnEventProps<TMetadata extends ZodMetadata = undefined, T
 
     /**
      * The checkpoint schema for storing OnEvent script progress and resume state.
-     * Checkpoint must be an object with string, number, boolean, or Date values.
+     * Checkpoint must be an object with string, number or boolean values.
      * Nested objects or arrays are not supported.
      *
      * @example
