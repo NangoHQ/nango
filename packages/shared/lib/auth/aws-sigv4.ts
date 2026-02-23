@@ -44,7 +44,7 @@ export function getAwsSigV4Settings(config: ProviderConfig): Result<AwsSigV4Inte
         return Err(new NangoError('missing_aws_sigv4_config'));
     }
 
-    let parsed: Partial<AwsSigV4IntegrationSettings>;
+    let parsed: Record<string, any>;
     try {
         parsed = JSON.parse(rawSettings);
     } catch (err) {
@@ -52,27 +52,85 @@ export function getAwsSigV4Settings(config: ProviderConfig): Result<AwsSigV4Inte
         return Err(new NangoError('invalid_aws_sigv4_config'));
     }
 
-    if (!parsed.service) {
+    if (!parsed['service']) {
         return Err(new NangoError('missing_aws_sigv4_service'));
     }
 
-    if (!parsed.stsEndpoint || !parsed.stsEndpoint.url) {
+    if (!parsed['stsEndpoint'] || !parsed['stsEndpoint']['url']) {
         return Err(new NangoError('missing_aws_sigv4_sts_endpoint'));
     }
 
+    // Read STS auth from integration_secrets (new path) or fall back to custom blob (legacy)
+    const stsAuth = getStsAuthFromConfig(config, parsed);
+
     const settings: AwsSigV4IntegrationSettings = {
-        service: parsed.service,
-        stsEndpoint: parsed.stsEndpoint
+        service: parsed['service'],
+        stsEndpoint: {
+            url: parsed['stsEndpoint']['url'],
+            ...(stsAuth ? { auth: stsAuth } : {})
+        }
     };
 
-    if (parsed.defaultRegion) {
-        settings.defaultRegion = parsed.defaultRegion;
+    if (parsed['defaultRegion']) {
+        settings.defaultRegion = parsed['defaultRegion'];
     }
-    if (parsed.instructions) {
-        settings.instructions = parsed.instructions;
+    if (parsed['instructions']) {
+        settings.instructions = parsed['instructions'];
     }
 
     return Ok(settings);
+}
+
+/**
+ * Read STS auth from integration_secrets (new column) with fallback to legacy custom blob.
+ */
+function getStsAuthFromConfig(config: ProviderConfig, parsed: Record<string, any>): StsAuth | undefined {
+    // New path: read from decrypted integration_secrets
+    const secrets = config.integration_secrets as Record<string, any> | undefined | null;
+    const stsAuthSecret = secrets?.['aws_sigv4']?.['sts_auth'];
+    if (stsAuthSecret) {
+        if (stsAuthSecret['type'] === 'api_key' && stsAuthSecret['value']) {
+            return { type: 'api_key', header: stsAuthSecret['header'] || 'x-api-key', value: stsAuthSecret['value'] };
+        }
+        if (stsAuthSecret['type'] === 'basic' && stsAuthSecret['password']) {
+            return { type: 'basic', username: stsAuthSecret['username'] || '', password: stsAuthSecret['password'] };
+        }
+    }
+
+    // Legacy fallback: read auth from custom blob
+    return parsed['stsEndpoint']?.['auth'];
+}
+
+/**
+ * Extract STS auth secrets from raw aws_sigv4_config JSON.
+ * Returns the cleaned JSON (auth removed) and the extracted StsAuth object.
+ * Used by the write path to separate secrets from config.
+ */
+export function extractStsAuthFromConfig(rawJson: string): { cleanedJson: string; stsAuth: StsAuth | null } {
+    let parsed: Record<string, any>;
+    try {
+        parsed = JSON.parse(rawJson);
+    } catch {
+        return { cleanedJson: rawJson, stsAuth: null };
+    }
+
+    const auth = parsed['stsEndpoint']?.['auth'];
+    if (!auth) {
+        return { cleanedJson: rawJson, stsAuth: null };
+    }
+
+    // Remove auth from the config blob — only non-secret config remains
+    const cleaned = { ...parsed, stsEndpoint: { ...parsed['stsEndpoint'] } };
+    delete cleaned['stsEndpoint']['auth'];
+
+    let stsAuth: StsAuth | null = null;
+    if (auth['type'] === 'api_key' && auth['value']) {
+        stsAuth = { type: 'api_key', header: auth['header'] || 'x-api-key', value: auth['value'] };
+    } else if (auth['type'] === 'basic' && auth['password']) {
+        stsAuth = { type: 'basic', username: auth['username'] || '', password: auth['password'] };
+    }
+
+    return { cleanedJson: JSON.stringify(cleaned), stsAuth };
 }
 
 export async function fetchAwsTemporaryCredentials({

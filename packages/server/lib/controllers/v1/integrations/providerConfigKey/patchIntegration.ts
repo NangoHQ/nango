@@ -80,6 +80,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             if (value === null || value === '') {
                 const { [key]: _removed, ...rest } = nextCustom;
                 nextCustom = rest;
+                // Clear integration_secrets when aws_sigv4_config is removed
+                if (key === awsSigV4Client.AWS_SIGV4_CUSTOM_KEY) {
+                    const existingSecrets = (integration.integration_secrets as Record<string, unknown>) || {};
+                    const { aws_sigv4: _removedSecrets, ...restSecrets } = existingSecrets;
+                    integration.integration_secrets = Object.keys(restSecrets).length > 0 ? restSecrets : null;
+                }
                 continue;
             }
             if (key === awsSigV4Client.AWS_SIGV4_CUSTOM_KEY) {
@@ -89,16 +95,69 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                     res.status(400).send({ error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' } });
                     return;
                 }
-                const simulated = { ...integration, custom: { ...nextCustom, [key]: value } } as Parameters<typeof awsSigV4Client.getAwsSigV4Settings>[0];
+
+                // Extract auth secrets from the config blob
+                const { cleanedJson, stsAuth } = awsSigV4Client.extractStsAuthFromConfig(value);
+
+                // Validate using the cleaned config (auth isn't required for validation)
+                const simulated = { ...integration, custom: { ...nextCustom, [key]: cleanedJson } } as Parameters<typeof awsSigV4Client.getAwsSigV4Settings>[0];
                 const validation = awsSigV4Client.getAwsSigV4Settings(simulated);
                 if (validation.isErr()) {
                     res.status(400).send({ error: { code: validation.error.type, message: validation.error.message } } as PatchIntegration['Errors']);
                     return;
                 }
+
+                // Store auth in integration_secrets
+                const existingSecrets = (integration.integration_secrets as Record<string, unknown>) || {};
+                if (stsAuth) {
+                    // New secret provided — store it
+                    integration.integration_secrets = { ...existingSecrets, aws_sigv4: { sts_auth: stsAuth } };
+                } else {
+                    // No secret in payload — check if auth metadata was sent without a secret
+                    // (user re-saved without changing the redacted secret). Parse to check.
+                    let parsed: Record<string, any> = {};
+                    try {
+                        parsed = JSON.parse(value);
+                    } catch {
+                        // already validated above
+                    }
+                    const authBlock = parsed['stsEndpoint']?.['auth'];
+                    if (authBlock && authBlock['type']) {
+                        // Auth metadata present but no secret — merge with existing secret
+                        const existingStsAuth = (existingSecrets['aws_sigv4'] as Record<string, any>)?.['sts_auth'] as Record<string, string> | undefined;
+                        if (authBlock['type'] === 'api_key') {
+                            integration.integration_secrets = {
+                                ...existingSecrets,
+                                aws_sigv4: {
+                                    sts_auth: {
+                                        type: 'api_key',
+                                        header: authBlock['header'] || 'x-api-key',
+                                        value: existingStsAuth?.['value'] || ''
+                                    }
+                                }
+                            };
+                        } else if (authBlock['type'] === 'basic') {
+                            integration.integration_secrets = {
+                                ...existingSecrets,
+                                aws_sigv4: {
+                                    sts_auth: {
+                                        type: 'basic',
+                                        username: authBlock['username'] || '',
+                                        password: existingStsAuth?.['password'] || ''
+                                    }
+                                }
+                            };
+                        }
+                    }
+                    // If no auth block at all, preserve existing integration_secrets unchanged
+                }
+
+                nextCustom[key] = cleanedJson;
+                continue;
             }
             nextCustom[key] = value;
         }
-        integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : undefined;
+        integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : null;
     }
 
     // Credentials
