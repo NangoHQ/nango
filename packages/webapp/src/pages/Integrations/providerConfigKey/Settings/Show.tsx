@@ -1,5 +1,6 @@
 import { AppAuthSettings } from './components/AppAuthSettings';
 import { AuthSpecificSettings } from './components/AuthSpecificSettings';
+import { AwsSigV4Settings } from './components/AwsSigV4Settings';
 import { CustomAuthSettings } from './components/CustomAuthSettings';
 import { SettingsGeneral } from './components/General';
 import { InstallPluginSettings } from './components/InstallPluginSettings';
@@ -33,8 +34,9 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'JWT':
         case 'SIGNATURE':
         case 'TWO_STEP':
-        case 'AWS_SIGV4':
             return <AuthSpecificSettings data={data} environment={environment} />;
+        case 'AWS_SIGV4':
+            return <AwsSigV4Settings data={data} environment={environment} />;
         case 'MCP_OAUTH2':
             return <McpOAuthSettings data={data} environment={environment} />;
         case 'MCP_OAUTH2_GENERIC':
