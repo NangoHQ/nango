@@ -289,73 +289,32 @@ export class DryRunService {
         let normalizedInput;
 
         if (actionInput) {
-            if (actionInput.startsWith('@') && actionInput.endsWith('.json')) {
-                const fileContents = readFile(actionInput);
-                if (!fileContents) {
-                    console.log(chalk.red('The file could not be read. Please make sure it exists.'));
-                    return;
-                }
-                try {
-                    normalizedInput = JSON.parse(fileContents);
-                } catch {
-                    console.log(chalk.red('There was an issue parsing the action input file. Please make sure it is valid JSON.'));
-                    return;
-                }
-            } else {
-                try {
-                    normalizedInput = JSON.parse(actionInput);
-                } catch {
-                    throw new Error('Failed to parse --input');
-                }
+            const result = parseJsonArg(actionInput, 'input');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return;
             }
+            normalizedInput = result.value;
         }
 
         if (rawStubbedMetadata) {
-            if (rawStubbedMetadata.startsWith('@') && rawStubbedMetadata.endsWith('.json')) {
-                const fileContents = readFile(rawStubbedMetadata);
-                if (!fileContents) {
-                    console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
-                    return;
-                }
-                try {
-                    stubbedMetadata = JSON.parse(fileContents);
-                } catch {
-                    console.log(chalk.red('There was an issue parsing the metadata file. Please make sure it is valid JSON.'));
-                    return;
-                }
-            } else {
-                try {
-                    stubbedMetadata = JSON.parse(rawStubbedMetadata);
-                } catch {
-                    throw new Error('fail to parse --metadata');
-                }
+            const result = parseJsonArg(rawStubbedMetadata, 'metadata');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return;
             }
+            stubbedMetadata = result.value;
         }
 
         let stubbedCheckpoint: Checkpoint | undefined = undefined;
 
         if (rawStubbedCheckpoint) {
-            let parsed: Checkpoint;
-            if (rawStubbedCheckpoint.startsWith('@') && rawStubbedCheckpoint.endsWith('.json')) {
-                const fileContents = readFile(rawStubbedCheckpoint);
-                if (!fileContents) {
-                    console.log(chalk.red('The checkpoint file could not be read. Please make sure it exists.'));
-                    return;
-                }
-                try {
-                    parsed = JSON.parse(fileContents);
-                } catch {
-                    console.log(chalk.red('There was an issue parsing the checkpoint file. Please make sure it is valid JSON.'));
-                    return;
-                }
-            } else {
-                try {
-                    parsed = JSON.parse(rawStubbedCheckpoint);
-                } catch {
-                    throw new Error('Failed to parse --checkpoint');
-                }
+            const result = parseJsonArg(rawStubbedCheckpoint, 'checkpoint');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return;
             }
-            stubbedCheckpoint = validateCheckpoint(parsed);
+            stubbedCheckpoint = validateCheckpoint(result.value);
         }
 
         const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
@@ -783,6 +742,25 @@ export class DryRunService {
                 console.log(formatDiagnostics(stats));
             }
         }
+    }
+}
+
+function parseJsonArg(raw: string, argName: string): { ok: true; value: any } | { ok: false; message: string } {
+    if (raw.startsWith('@') && raw.endsWith('.json')) {
+        const fileContents = readFile(raw);
+        if (!fileContents) {
+            return { ok: false, message: `The ${argName} file could not be read. Please make sure it exists.` };
+        }
+        try {
+            return { ok: true, value: JSON.parse(fileContents) };
+        } catch {
+            return { ok: false, message: `There was an issue parsing the ${argName} file. Please make sure it is valid JSON.` };
+        }
+    }
+    try {
+        return { ok: true, value: JSON.parse(raw) };
+    } catch {
+        return { ok: false, message: `Failed to parse --${argName}` };
     }
 }
 
