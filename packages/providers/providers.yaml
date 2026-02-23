@@ -1826,6 +1826,8 @@ aws-sigv4:
     categories:
         - storage
     auth_mode: AWS_SIGV4
+    proxy:
+        base_url: https://${connectionConfig.service}.${connectionConfig.region}.amazonaws.com
     docs: https://nango.dev/docs/integrations/all/aws-sigv4
     docs_connect: https://nango.dev/docs/integrations/all/aws-sigv4/connect
     credentials:

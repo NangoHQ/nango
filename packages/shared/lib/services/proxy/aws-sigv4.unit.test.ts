@@ -33,12 +33,11 @@ describe('signAwsSigV4Request', () => {
         expect(signed['x-amz-content-sha256']).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
     });
 
-    it('hashes null body as empty string per SigV4 spec', () => {
+    it('uses UNSIGNED-PAYLOAD for S3 when body is empty', () => {
         const signed = signAwsSigV4Request({
             url: 'https://s3.us-west-2.amazonaws.com/example-bucket/object',
-            method: 'PUT',
+            method: 'GET',
             headers: {},
-            body: null,
             credentials: {
                 ...baseCredentials,
                 region: 'us-west-2',
@@ -47,8 +46,23 @@ describe('signAwsSigV4Request', () => {
             now: new Date('2025-01-02T03:04:05.000Z')
         });
 
-        // Both null and undefined bodies hash the empty string
-        expect(signed['x-amz-content-sha256']).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+        expect(signed['x-amz-content-sha256']).toBe('UNSIGNED-PAYLOAD');
         expect(signed['authorization']).toContain('/us-west-2/s3/aws4_request');
+    });
+
+    it('hashes empty string for non-S3 services when body is empty', () => {
+        const signed = signAwsSigV4Request({
+            url: 'https://sts.us-east-1.amazonaws.com/?Action=GetCallerIdentity&Version=2011-06-15',
+            method: 'GET',
+            headers: {},
+            credentials: {
+                ...baseCredentials,
+                service: 'sts'
+            },
+            now: new Date('2025-01-02T03:04:05.000Z')
+        });
+
+        expect(signed['x-amz-content-sha256']).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+        expect(signed['authorization']).toContain('/us-east-1/sts/aws4_request');
     });
 });
