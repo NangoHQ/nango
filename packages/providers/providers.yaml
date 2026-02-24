@@ -6432,6 +6432,32 @@ granola:
             pattern: '^grn_[A-Za-z0-9]+_[A-Za-z0-9]+$'
             doc_section: '#step-1-generating-your-granola-api-token'
 
+granola-mcp:
+    display_name: Granola (MCP)
+    categories:
+        - productivity
+        - knowledge-base
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp-auth.granola.ai/oauth2/authorize
+    token_url: https://mcp-auth.granola.ai/oauth2/token
+    registration_url: https://mcp-auth.granola.ai/oauth2/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://mcp.granola.ai/
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.granola.ai
+    docs: https://nango.dev/docs/api-integrations/granola-mcp
+
 guru:
     display_name: Guru
     categories:
