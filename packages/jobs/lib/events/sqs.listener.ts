@@ -57,10 +57,7 @@ export class SqsEventListener implements EventListener {
                             await onMessage({ body: msg.Body });
                         }
                     } catch (err) {
-                        report(new Error('SQS message handler error'), {
-                            queueName,
-                            error: err
-                        });
+                        logger.error('SQS message handler error', err);
                         continue;
                     }
 

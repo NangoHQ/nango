@@ -22,7 +22,7 @@ export class InvocationsProcessor {
 
     async start() {
         if (envs.LAMBDA_FAILURE_DESTINATION) {
-            await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, (message) => this.processMessage(message));
+            await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, async (message) => await this.processMessage(message));
         }
     }
 
@@ -44,8 +44,6 @@ export class InvocationsProcessor {
             .parse(JSON.parse(message.body));
 
         if (parsedMessage.responseContext.functionError === 'Unhandled') {
-            console.log('UNHANDLED ERROR:', parsedMessage.responsePayload.errorMessage);
-
             const errorMessage = parsedMessage.responsePayload.errorMessage;
             await handleError({
                 taskId: parsedMessage.requestPayload.taskId,
