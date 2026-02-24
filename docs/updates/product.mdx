@@ -89,13 +89,7 @@ New posts from the Nango team in December:
     </Accordion>
 </AccordionGroup>
 
-## Change in mock file structure for Nango integration tests
-
-We have moved from a multi-file mock format to a single `.test.json`.
-
-When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. [Mock file structure](/implementation-guides/platform/functions/testing#mock-file-structure).
-
-**Migration Note:** See [migrating from the old format](/implementation-guides/platform/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
+## Features TODO
 
 ## New blog posts
 
@@ -145,11 +139,22 @@ The Nango CLI now supports an [interactive mode](https://nango.dev/docs/referenc
 
 ![Nango_CLI_interactive_mode](../images/changelog/Nango_CLI_interactive_mode.png)
 
-You can still provide all arguments upfront to skip prompts (e.g., for scripting): `nango create --sync --integration my-api --name get-contacts`.
+You can still provide all arguments upfront to skip prompts (e.g., for scripting): test
+```nango create --sync --integration my-api --name get-contacts```
 
 To disable interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments. 
 
-## New documentation
+
+## Change in mock file structure for Nango integration tests
+
+We have moved from a multi-file mock format to a single `.test.json`.
+
+When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. [Mock file structure](/implementation-guides/platform/functions/testing#mock-file-structure).
+
+**Migration Note:** See [migrating from the old format](/implementation-guides/platform/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
+
+
+## Integrating Nango into your CI/CD processes
 
 - [CI/CD for Nango integrations](/implementation-guides/platform/functions/ci-cd#ci-cd-for-nango-integrations): A complete guide on integrating Nango into your CI/CD processes.
 
