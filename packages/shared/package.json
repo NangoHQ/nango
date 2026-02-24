@@ -27,7 +27,7 @@
         "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
         "@xmldom/xmldom": "0.8.11",
-        "ajv": "8.17.1",
+        "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
         "axios": "1.13.5",
