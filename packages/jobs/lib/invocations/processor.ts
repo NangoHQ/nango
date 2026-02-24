@@ -8,10 +8,10 @@ import { nangoPropsSchema } from '../schemas/nango-props.js';
 import type { EventListener, QueueMessage } from '../events/listener.js';
 import type { NangoProps } from '@nangohq/types';
 
-function lambdaErrorTypeFromMessage(errorMessage: string): 'lambda_out_of_memory' | 'lambda_timeout' | 'lambda_other' {
-    if (errorMessage.includes('signal: killed')) return 'lambda_out_of_memory';
-    if (errorMessage.includes('Task timed out')) return 'lambda_timeout';
-    return 'lambda_other';
+function lambdaErrorTypeFromMessage(errorMessage: string): 'function_runtime_out_of_memory' | 'function_runtime_timed_oud' | 'function_runtime_other' {
+    if (errorMessage.includes('signal: killed')) return 'function_runtime_out_of_memory';
+    if (errorMessage.includes('Task timed out')) return 'function_runtime_timed_oud';
+    return 'function_runtime_other';
 }
 
 export class InvocationsProcessor {
