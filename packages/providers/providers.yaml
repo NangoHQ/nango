@@ -15979,6 +15979,7 @@ timify:
     auth_mode: TWO_STEP
     body_format: json
     token_url: https://${connectionConfig.subdomain}.timify.com/v1/auth/token
+    refresh_url: https://${connectionConfig.subdomain}.timify.com/v1/auth/refreshtoken
     token_params:
         appid: ${credentials.appId}
         appsecret: ${credentials.appSecret}
