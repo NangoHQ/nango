@@ -1353,7 +1353,7 @@ class ConnectionService {
 
         const tokenUrl = isRefresh ? (provider.refresh_url ?? provider.token_url) : provider.token_url;
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
-        const tokenHeaders = isRefresh ? provider.refresh_token_headers : provider.token_headers;
+        const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
         const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
         const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
