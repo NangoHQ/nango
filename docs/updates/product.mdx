@@ -61,10 +61,9 @@ description: "Product updates and improvements."
   We have overhauled the Integrations tab to streamline how you manage and scale your catalog. This update focuses on faster discovery and a more intuitive setup flow.
 
   - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. The search bar is now auto-focused by default.\
-    ![Improved Search](../images/changelog/new_integrations_list_page.png)
+    <img src="../images/changelog/new_integrations_list_page.png" alt="Improved Search" />
   - **Decoupled Creation Flow:** Selecting an API in the catalog now leads to a dedicated form where you configure credentials (Client ID, Secret, Scopes) before the integration is created. This prevents empty integrations from cluttering your dashboard.
-  - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list.
-    ![Improved Navigation](../images/changelog/breadcrumbs.png)
+  - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list. <img src="../images/changelog/breadcrumbs.png" alt="Improved Navigation" />
 
   ## New blog posts
 
@@ -132,13 +131,15 @@ description: "Product updates and improvements."
 
   The command supports zero-yaml projects. It safely handles file resolution by confirming before overwriting existing files and automatically updating your local `index.ts` to reference the newly cloned scripts.
 
-  See the [customize a function template](/implementation-guides/platform/functions/customize-template) guide.
+  See the guide on [customizing a function template](/implementation-guides/platform/functions/customize-template).
 
-  ## Improved CLI dependency management
+  ## Better support for Monorepos & Package Managers
 
-  We have updated how the Nango CLI handles dependencies. The CLI now natively uses npm (with full support for pnpm) to manage dependencies in your projects.
+  We’ve overhauled how the Nango CLI detects and interacts with your environment, specifically for non-NPM setups:
 
-  This update forces strict versioning and directly impacts the main repository's dependencies to ensure consistency across environments. If you prefer to handle package management manually, you can bypass this behavior by passing the `--no-dependency-update` flag during CLI operations.
+  - **Monorepo detection**: The CLI now traverses parent directories to find your lockfile or `package.json`. If you run `nango init` in a subdirectory, it will correctly identify and use your root `pnpm`, `yarn`, or `bun` configuration.
+  - **Opt-out of auto-installs**: To prevent the CLI from modifying `package.json` in sensitive environments (like CI or projects using pnpm catalogs), use the new `--no-dependency-update` flag or set the `NANGO_CLI_DEPENDENCY_UPDATE=false` environment variable.
+  - **Yarn compatibility**: `nango init` now works out of the box for Yarn users, correctly flagging projects as standalone and using the `node-modules` linker.
 
   ## New blog posts
 
