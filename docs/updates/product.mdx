@@ -34,16 +34,45 @@ description: "Product updates and improvements."
 </AccordionGroup>
 
 ## Connection tags
+Connections now support tags. Tags are key/value strings you attach when creating a Connect session to tie a Nango connection back to a specific user, organization, or entity in your system.
 
-Connections now support **tags**: key/value strings you attach when creating a Connect session. Nango copies them onto the connection and includes them in auth webhooks, so you can tie each connection to the right user, organization, or entity in your system.
+When a user completes an auth flow, Nango copies these tags to the resulting connection and includes them in the success webhook. This replaces the need for the legacy `end_user` and `organization` objects.
 
-Add tags when [creating a Connect session](/implementation-guides/platform/auth/connection-tags), read them from the [auth webhook](/implementation-guides/platform/auth/connection-tags#2-read-tags-from-the-auth-webhook) and the connection object, and optionally [filter connections by tags](/implementation-guides/platform/auth/connection-tags#4-filter-connections-by-tags) or [patch them later](/implementation-guides/platform/auth/connection-tags#5-update-tags-on-an-existing-connection-optional).
+Tags also enhance the Nango UI:
 
-In the Nango Dashboard, certain tags also improve how connections are shown: `end_user_display_name` and `end_user_email` appear in the connections list, and the email or domain is used to show the company logo on the connection detail page.
+- `end_user_display_name` and `end_user_email` are shown directly in the connections list.
+
+- The domain from the `end_user_email` is used to automatically display the corresponding company logo on the connection detail page.
+
+You can also filter connections by tags via the API. See the [Connection tags documentation](/implementation-guides/platform/auth/connection-tags).
 
 
-**Migration Note:** If you currently use `end_user` or `organization` on Connect sessions or in webhooks, see the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. Existing connections have been backfilled with tags derived from legacy end-user fields.
+**Migration Note:** If you currently use `end_user` or `organization` on Connect sessions or in webhooks, 
+follow the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. 
+Existing connections have already been backfilled with tags derived from legacy end-user fields.
 
+## Enhanced OAuth error messaging
+We rebuilt the callback experience to provide better visibility into OAuth errors. Provider error messages are now rendered directly inside the Connect UI form and the popup window
+
+![Enhanced OAuth error messaging](../images/changelog/improved-oauth-error-messaging.png)
+
+
+The new UI for the callback renders structured success and error states. It also surfaces provider query parameters in an expandable debug panel. 
+To ensure reliable teardown and state sharing, the popup relays these states back to the SDK via `postMessage` (with a `BroadcastChannel` fallback) and remains open until acknowledged.
+
+Additionally, provider errors are now delivered via WebSocket for improved logging on your end.
+
+## Redesigned Integrations Experience
+We have overhauled the Integrations tab to streamline how you manage and scale your catalog. This update focuses on faster discovery and a more intuitive setup flow.
+
+- **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. The search bar is now auto-focused by default.
+    ![Improved Search](../images/changelog/new_integrations_list_page.png)
+
+- **Decoupled Creation Flow:** Selecting an API in the catalog now leads to a dedicated form where you configure credentials (Client ID, Secret, Scopes) before the integration is created. 
+    This prevents empty integrations from cluttering your dashboard.
+
+- **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list.
+    ![Improved Navigation](../images/changelog/breadcrumbs.png)
 ## New blog posts
 
 New posts from the Nango team in December:
@@ -89,7 +118,34 @@ New posts from the Nango team in December:
     </Accordion>
 </AccordionGroup>
 
-## Features TODO
+## Advanced connection settings
+You can now set advanced configurations directly in the Nango UI when creating a connection. This form is split into two distinct sections.
+
+First, you can specify end-user data. This includes setting a custom ID, email, and display name for the connection.
+
+![Advanced connection settings](../images/changelog/AdvancedConnectionSettings.gif)
+
+Second, you can override the integration's default configurations. You can modify authorization parameters, customize OAuth scopes, and override developer app credentials (such as the Client ID and Client Secret). This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
+
+## Template cloning via CLI
+The Nango CLI now includes a `nango clone` command. This automates the process of pulling function templates and their dependencies from the Nango integration templates repository.
+
+This replaces the manual process of copying and pasting configuration and TypeScript code. You can clone an entire integration directory, a specific category of functions, or an individual template.
+
+```bash
+nango clone github     
+nango clone github/actions               
+nango clone github/actions/list-repos
+```
+
+The command supports zero-yaml projects. It safely handles file resolution by confirming before overwriting existing files and automatically updating your local `index.ts` to reference the newly cloned scripts.
+
+See the [customize a function template](/implementation-guides/platform/functions/customize-template) guide.
+
+## Improved CLI dependency management
+We have updated how the Nango CLI handles dependencies. The CLI now natively uses npm (with full support for pnpm) to manage dependencies in your projects.
+
+This update forces strict versioning and directly impacts the main repository's dependencies to ensure consistency across environments. If you prefer to handle package management manually, you can bypass this behavior by passing the `--no-dependency-update` flag during CLI operations.
 
 ## New blog posts
 
@@ -149,7 +205,8 @@ To disable interactive mode, use the `--no-interactive` flag, or set the `CI` en
 
 We have moved from a multi-file mock format to a single `.test.json`.
 
-When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. [Mock file structure](/implementation-guides/platform/functions/testing#mock-file-structure).
+When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. 
+This keeps test data in one place, making tests easier to run and maintain. See [mock file structure](/implementation-guides/platform/functions/testing#mock-file-structure).
 
 **Migration Note:** See [migrating from the old format](/implementation-guides/platform/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
 
