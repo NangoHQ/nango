@@ -16033,7 +16033,7 @@ timify:
         appid: ${credentials.appId}
         appsecret: ${credentials.appSecret}
     refresh_token_params:
-        refreshToken: ${refresh_token}
+        refreshtoken: ${refresh_token}
     token_headers:
         content-type: application/json
         accept: application/json
