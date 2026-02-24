@@ -2,31 +2,19 @@ import { z } from 'zod';
 
 import { operationIdRegex } from '@nangohq/logs';
 
-/**
- * Zod schema for NangoProps, matching the shape from @nangohq/types (packages/types/lib/runner/sdk.ts).
- * Used when parsing serialized nangoProps (e.g. from Lambda request payloads or task callbacks).
- */
 export const nangoPropsSchema = z.looseObject({
-    scriptType: z.enum(['sync', 'action', 'webhook', 'on-event']),
-    host: z.string().optional(),
-    secretKey: z.string().min(1),
+    scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
+    connectionId: z.string().min(1),
+    nangoConnectionId: z.number(),
+    environmentId: z.number(),
+    environmentName: z.string().min(1),
+    providerConfigKey: z.string().min(1),
+    provider: z.string().min(1),
     team: z.object({
         id: z.number(),
         name: z.string().min(1)
     }),
-    connectionId: z.string().min(1),
-    environmentId: z.number(),
-    environmentName: z.string().min(1),
-    activityLogId: operationIdRegex,
-    providerConfigKey: z.string().min(1),
-    provider: z.string().min(1),
-    lastSyncDate: z.coerce.date().optional(),
-    syncId: z.string().uuid().optional(),
-    syncVariant: z.string().optional(),
-    nangoConnectionId: z.number(),
-    syncJobId: z.number().optional(),
-    track_deletes: z.boolean().optional(),
-    attributes: z.record(z.string(), z.unknown()).optional(),
+    heartbeatTimeoutSecs: z.number().optional(),
     syncConfig: z.looseObject({
         id: z.number(),
         sync_name: z.string().min(1),
@@ -40,23 +28,35 @@ export const nangoPropsSchema = z.looseObject({
         track_deletes: z.boolean(),
         auto_start: z.boolean(),
         enabled: z.boolean(),
-        webhook_subscriptions: z.array(z.string()).nullable(),
-        model_schema: z.array(z.unknown()).optional().nullable(),
-        models_json_schema: z.record(z.string(), z.unknown()).nullable(),
+        webhook_subscriptions: z.array(z.string()).or(z.null()),
+        model_schema: z.array(z.any()).optional().nullable(),
+        models_json_schema: z.object({}).nullable(),
         created_at: z.coerce.date(),
         updated_at: z.coerce.date(),
         version: z.string(),
-        attributes: z.record(z.string(), z.unknown()),
+        attributes: z.record(z.string(), z.any()),
         pre_built: z.boolean(),
         is_public: z.boolean(),
         input: z.string().nullable(),
         sync_type: z.enum(['full', 'incremental']).nullable(),
-        metadata: z.record(z.string(), z.unknown()),
+        metadata: z.record(z.string(), z.any()),
         sdk_version: z.string().nullable()
+        // TODO: fix this missing fields
+        // deleted: z.boolean().optional(),
+        // deleted_at: z.coerce.date().optional().nullable(),
     }),
+    syncId: z.string().uuid().optional(),
+    syncJobId: z.number().optional(),
+    activityLogId: operationIdRegex,
+    secretKey: z.string().min(1),
+    debug: z.boolean(),
+    startedAt: z.coerce.date(),
+    endUser: z.object({ id: z.number(), endUserId: z.string().nullable(), orgId: z.string().nullable() }).nullable(),
     runnerFlags: z.looseObject({
         validateActionInput: z.boolean().default(false),
         validateActionOutput: z.boolean().default(false),
+        validateWebhookInput: z.boolean().default(false),
+        validateWebhookOutput: z.boolean().default(false),
         validateSyncRecords: z.boolean().default(false),
         validateSyncMetadata: z.boolean().default(false)
     }),
@@ -64,17 +64,5 @@ export const nangoPropsSchema = z.looseObject({
         .looseObject({
             level: z.enum(['debug', 'info', 'warn', 'error', 'off'])
         })
-        .default({ level: 'info' }),
-    debug: z.boolean(),
-    startedAt: z.coerce.date(),
-    endUser: z
-        .object({
-            id: z.number(),
-            endUserId: z.string().nullable(),
-            orgId: z.string().nullable()
-        })
-        .nullable(),
-    heartbeatTimeoutSecs: z.number().optional(),
-    isCLI: z.boolean().optional(),
-    integrationConfig: z.record(z.string(), z.unknown()).optional()
+        .default({ level: 'info' })
 });
