@@ -13468,6 +13468,7 @@ salesforce:
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce/connect
     connection_config:
         instance_url:
             type: string
@@ -13484,6 +13485,7 @@ salesforce:
             example: acme.my.salesforce.com
             prefix: https://
             optional: true
+            doc_section: '#step-1-finding-your-hostname'
 
 salesforce-jwt:
     display_name: Salesforce (JWT)
@@ -13522,21 +13524,21 @@ salesforce-jwt:
             title: Consumer Key
             example: 3MVG9dAEux2v1sLsg0e52***************CJpGsXgqg8E
             description: The Consumer Key from your Salesforce Connected App.
-            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+            doc_section: '#step-3-get-consumer-key-and-consumer-secret'
         clientSecret:
             type: string
             title: Consumer Secret
             example: 954F73F4C234***************9D069B8FCF83B5
             pattern: '^[A-F0-9]{64}$'
             description: The Consumer Secret from your Salesforce Connected App.
-            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+            doc_section: '#step-3-get-consumer-key-and-consumer-secret'
         username:
             type: string
             title: Username
             description: The Salesforce username of the user the JWT will act on behalf of.
             format: email
             example: john@acme.com
-            doc_section: '#step-7-finding-the-username'
+            doc_section: '#step-6-finding-the-username'
         privateKey:
             type: string
             title: Private Key
@@ -13549,7 +13551,7 @@ salesforce-jwt:
             description: Your Salesforce authorization server URL.
             format: hostname
             example: 'login.salesforce.com'
-            doc_section: '#step-6-finding-the-authorization-server-url'
+            doc_section: '#step-5-finding-the-authorization-server-url'
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
