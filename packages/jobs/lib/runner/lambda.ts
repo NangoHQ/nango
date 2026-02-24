@@ -109,6 +109,7 @@ class Lambda {
                     await lambdaClient.send(
                         new PutFunctionEventInvokeConfigCommand({
                             FunctionName: pvResult.FunctionName,
+                            Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
                             MaximumRetryAttempts: 0,
                             DestinationConfig: {
                                 OnFailure: {
