@@ -26,9 +26,9 @@ export function errorToObject(err: unknown): ErrorObject {
 /**
  * Transform any Error or primitive to a string
  */
-export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: boolean }) {
+export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: boolean; cause?: boolean }): string {
     const serialized = serializeError(err);
-    const allowedErrorProperties = ['name', 'message', 'provider_error_payload', ...(opts?.stack ? ['stack', 'cause'] : [])];
+    const allowedErrorProperties = ['name', 'message', 'provider_error_payload', ...(opts?.stack ? ['stack'] : []), ...(opts?.cause ? ['cause'] : [])];
 
     const enriched: Record<string, unknown> = {
         ...(serialized && typeof serialized === 'object' ? serialized : {})
@@ -88,7 +88,7 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
 const logger = getLogger('err');
 export function report(err: unknown, extra?: Record<string, unknown>) {
     if (!sentry) {
-        logger.error(stringifyError(err, { stack: true, pretty: true }), extra);
+        logger.error(stringifyError(err, { stack: true, cause: true, pretty: true }), extra);
         return;
     }
 
