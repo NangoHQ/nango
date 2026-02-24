@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.37] - 2026-02-24
+
+### Added
+
+- *(metrics)* Add function runtime to function executions metric (#5466)
+- *(integrations)* Add support for ms teams bot (#5463)
+- *(integrations)* Add support for tally (#5486)
+- *(OAuth)* Add more context to errors during exchange code for token (#5485)
+- *(integrations)* Add support for hubspot mcp (#5477)
+- *(integrations)* Add subdomain interpolation for timify (#5492)
+- *(webapp)* Change font to geist (#5497)
+- *(integrations)* Add support for salesmsg (#5490)
+- *(integrations)* Okta-cc support (#5482)
+
+### Changed
+
+- *(deps)* Upgrade deps (#5484)
+- Oauth callback session validation (#5493)
+
+### Fixed
+
+- Pro-rated charging of base fee (#5479)
+- *(oauth)* Validate state session ID in Oauth2 callback (#5366)
+- *(webapp)* Env-agnostic routes (#5481)
+- Set cookies to custom and mcp_oauth2 redirect (#5488)
+- *(server)* Set state cookie sameSite for cross-site redirects callbacks to nango (#5491)
+- *(validations)* Fix api key validations (#5495)
+- *(errors)* Error parsing was broken (#5499)
+- *(lambda)* Enable lambda for webhooks for new accounts (#5502)
+- *(cli)* NAN-4702: improve package manager support (#5504)
+- *(providers)* Fix timify refresh token (#5508)
+- *(timify)* Use the correct param for refreshing tokens (#5509)
+
 ## [v0.69.36] - 2026-02-18
 
 ### Added
