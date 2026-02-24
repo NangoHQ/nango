@@ -13665,6 +13665,59 @@ salesforce-cdp:
             secret: true
             doc_section: '#step-1-generating-your-encoded-jwt'
 
+salesmsg:
+    display_name: Salesmsg (PAT)
+    categories:
+        - communication
+        - marketing
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.salesmessage.com/pub/v2.2/oauth/personal-token/refresh
+    token_headers:
+        authorization: Bearer ${credentials.apiKey}
+        content-type: application/json
+    refresh_token_headers:
+        authorization: Bearer ${refresh_token}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+        refresh_token: access_token
+    proxy:
+        base_url: https://api.salesmessage.com/pub/
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/salesmsg
+    docs_connect: https://nango.dev/docs/api-integrations/salesmsg/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Salesmsg Personal Access Token (PAT).
+            example: eyJhbGciOi***.eyJzdWIiOi***.xxxxxxxxxxxx
+            pattern: '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$'
+            doc_section: '#step-1-generating-your-personal-access-token'
+
+salesmsg-oauth2:
+    display_name: Salesmsg (OAuth2)
+    categories:
+        - communication
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://app.salesmessage.com/auth/oauth
+    token_url: https://api.salesmessage.com/pub/v2.2/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.salesmessage.com/pub/
+    docs: https://nango.dev/docs/api-integrations/salesmsg-oauth2
+    setup_guide_url: https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app
+
 sap-fieldglass:
     display_name: SAP Fieldglass
     categories:
