@@ -2572,8 +2572,8 @@ builder-io-private:
         domain:
             type: string
             title: Domain
-            description: The domain used to access your Builder.io API.
-            example: cdn.builder.io
+            description: The domain used to access your Builder.io write API.
+            example: builder.io
             format: hostname
             prefix: https://
             order: 1
@@ -2610,8 +2610,8 @@ builder-io-public:
         domain:
             type: string
             title: Domain
-            description: The domain used to access your Builder.io API.
-            example: builder.io
+            description: The domain used to access your Builder.io content API.
+            example: cdn.builder.io
             format: hostname
             prefix: https://
             order: 1
