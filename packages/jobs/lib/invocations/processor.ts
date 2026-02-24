@@ -7,6 +7,12 @@ import { handleError } from '../execution/operations/handler.js';
 import type { EventListener, QueueMessage } from '../events/listener.js';
 import type { NangoProps } from '@nangohq/types';
 
+function lambdaErrorTypeFromMessage(errorMessage: string): 'lambda_out_of_memory' | 'lambda_timeout' | 'lambda_other' {
+    if (errorMessage.includes('signal: killed')) return 'lambda_out_of_memory';
+    if (errorMessage.includes('Task timed out')) return 'lambda_timeout';
+    return 'lambda_other';
+}
+
 export class InvocationsProcessor {
     private eventListener: EventListener;
 
@@ -44,12 +50,13 @@ export class InvocationsProcessor {
                 })
                 .parse(JSON.parse(parsedMessage.body));
 
+            const errorMessage = parsedMessage.responsePayload.errorMessage;
             await handleError({
                 taskId: requestPayload.taskId,
                 nangoProps: { ...(requestPayload.nangoProps as unknown as NangoProps) },
                 error: {
-                    type: 'lambda_error',
-                    payload: { errorMessage: parsedMessage.responsePayload.errorMessage },
+                    type: lambdaErrorTypeFromMessage(errorMessage),
+                    payload: { errorMessage },
                     status: parsedMessage.responseContext.statusCode
                 },
                 telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0 },
