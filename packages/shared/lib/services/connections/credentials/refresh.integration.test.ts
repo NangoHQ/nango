@@ -9,6 +9,7 @@ import { createConfigSeed, createConnectionSeed, seedAccountEnvAndUser } from '.
 import encryptionManager from '../../../utils/encryption.manager.js';
 import { NangoError } from '../../../utils/error.js';
 import connectionService from '../../connection.service.js';
+import { REFRESH_FAILURE_COOLDOWN_MS } from '../utils.js';
 
 describe('refreshOrTestCredentials', () => {
     beforeAll(async () => {
@@ -364,7 +365,7 @@ describe('refreshOrTestCredentials', () => {
             expect(res.error.type).toBe('connection_refresh_backoff');
         }
 
-        // Hooks should NOT be called — we returned early before attempting the refresh
+        // Hooks should NOT be called, we returned early before attempting the refresh
         expect(onFailed).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onTest).not.toHaveBeenCalled();
@@ -404,5 +405,86 @@ describe('refreshOrTestCredentials', () => {
         expect(res.isErr()).toBe(true);
         expect(onFailed).toHaveBeenCalled();
         expect(onTest).toHaveBeenCalled();
+    });
+
+    it('should backoff within cooldown window and retry after cooldown expires', async () => {
+        const { env, account } = await seedAccountEnvAndUser();
+        const integration = await createConfigSeed(env, 'algolia', 'algolia');
+        const connection = await createConnectionSeed({ env, provider: 'algolia', rawCredentials: { type: 'API_KEY', apiKey: 'foobar' } });
+        const decryptedConnection = encryptionManager.decryptConnection(connection);
+        if (!decryptedConnection) {
+            throw new Error('Failed to decrypt connection');
+        }
+
+        // First call: refresh fails, sets last_refresh_failure
+        const res1 = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: decryptedConnection,
+            onRefreshFailed: vi.fn(),
+            onRefreshSuccess: vi.fn(),
+            connectionTestHook: vi.fn(() => Promise.resolve(Err(new NangoError('test')))) as any,
+            logContextGetter
+        });
+        expect(res1.isErr()).toBe(true);
+
+        // Second call: within cooldown window, should not attempt refresh
+        const connectionAfterFailure = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
+        if (!connectionAfterFailure) {
+            throw new Error('Failed to decrypt connection');
+        }
+        const onTest2 = vi.fn();
+        const onFailed2 = vi.fn();
+        const res2 = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: connectionAfterFailure,
+            onRefreshFailed: onFailed2,
+            onRefreshSuccess: vi.fn(),
+            connectionTestHook: onTest2,
+            logContextGetter
+        });
+        expect(res2.isErr()).toBe(true);
+        if (res2.isErr()) {
+            expect(res2.error.type).toBe('connection_refresh_backoff');
+        }
+        expect(onTest2).not.toHaveBeenCalled();
+        expect(onFailed2).not.toHaveBeenCalled();
+
+        // Simulate cooldown expiry by backdating last_refresh_failure
+        const connectionForBackdate = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
+        if (!connectionForBackdate) {
+            throw new Error('Failed to decrypt connection');
+        }
+        await connectionService.updateConnection({
+            ...connectionForBackdate,
+            last_refresh_failure: new Date(Date.now() - REFRESH_FAILURE_COOLDOWN_MS - 1000)
+        });
+
+        // Third call: after cooldown, refresh is attempted and succeeds
+        const connectionAfterCooldown = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
+        if (!connectionAfterCooldown) {
+            throw new Error('Failed to decrypt connection');
+        }
+        const onTest3 = vi.fn(() => Promise.resolve(Ok({ tested: true }))) as any;
+        const onSuccess3 = vi.fn();
+        const res3 = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: connectionAfterCooldown,
+            onRefreshFailed: vi.fn(),
+            onRefreshSuccess: onSuccess3,
+            connectionTestHook: onTest3,
+            logContextGetter
+        });
+        expect(res3.isOk()).toBe(true);
+        expect(onTest3).toHaveBeenCalled();
+        expect(onSuccess3).toHaveBeenCalled();
     });
 });

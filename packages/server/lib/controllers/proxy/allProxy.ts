@@ -147,13 +147,13 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         });
         if (credentialResponse.isErr()) {
             const err = credentialResponse.error;
+            void logCtx.error('Failed to get connection credentials', { error: err });
+            await logCtx.failed();
             if (err.type === 'connection_refresh_backoff') {
                 res.status(err.status).send({ error: { code: err.type, message: err.message } });
             } else {
-                void logCtx.error('Failed to get connection credentials', { error: err });
-                await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
-                res.status(400).send({ error: { code: 'server_error', message: `Failed to get connection credentials: '${err.message}'` } });
+                res.status(err.status).send({ error: { code: 'server_error', message: `Failed to get connection credentials: '${err.message}'` } });
             }
             return;
         }
