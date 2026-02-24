@@ -23,7 +23,7 @@ export const ShowIntegration: React.FC = () => {
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
     const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
-    const { data, isPending: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
+    const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 
     if (integrationError || environmentError) {
