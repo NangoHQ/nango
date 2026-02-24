@@ -72,7 +72,9 @@ class ParserService {
             'getEnvironmentVariables',
             'triggerAction',
             'setMergingStrategy',
-            'deleteRecordsFromPreviousExecutions'
+            'deleteRecordsFromPreviousExecutions',
+            'trackDeletesStart',
+            'trackDeletesEnd'
         ];
 
         const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
@@ -80,16 +82,25 @@ class ParserService {
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
             getFieldMapping: 'getMetadata',
-            setFieldMapping: 'setMetadata'
+            setFieldMapping: 'setMetadata',
+            deleteRecordsFromPreviousExecutions: 'trackDeletesStart and trackDeletesEnd'
         };
 
         const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
         const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
-        const callsReferencingModelsToCheck = callsBatchingRecords.concat('setMergingStrategy', 'deleteRecordsFromPreviousExecutions', 'getRecordsByIds');
+        const callsReferencingModelsToCheck = callsBatchingRecords.concat(
+            'setMergingStrategy',
+            'deleteRecordsFromPreviousExecutions',
+            'trackDeletesStart',
+            'trackDeletesEnd',
+            'getRecordsByIds'
+        );
         const proxyLines: number[] = [];
         const batchingRecordsLines: number[] = [];
         const setMergingStrategyLines: number[] = [];
         const deleteRecordsFromPreviousExecutionsLines: number[] = [];
+        const trackDeletesStartLines: number[] = [];
+        const trackDeletesEndLines: number[] = [];
 
         traverseFn(ast, {
             CallExpression(path: NodePath<t.CallExpression>) {
@@ -184,6 +195,12 @@ class ParserService {
                     if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
                         deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
                     }
+                    if (callee.property.name === 'trackDeletesStart') {
+                        trackDeletesStartLines.push(lineNumber);
+                    }
+                    if (callee.property.name === 'trackDeletesEnd') {
+                        trackDeletesEndLines.push(lineNumber);
+                    }
                 }
             },
             ExportDefaultDeclaration(path: NodePath<t.ExportDefaultDeclaration>) {
@@ -261,6 +278,33 @@ class ParserService {
                     `deleteRecordsFromPreviousExecutions should be called after all batching records functions in "${filePath}:${Math.max(...deleteRecordsFromPreviousExecutionsLines)}".`
                 )
             );
+            usedCorrectly = false;
+        }
+
+        if (trackDeletesEndLines.length > 1) {
+            console.log(chalk.red(`trackDeletesEnd should be called only once in "${filePath}:${Math.max(...trackDeletesEndLines)}".`));
+            usedCorrectly = false;
+        }
+
+        if (trackDeletesEndLines.length > 0) {
+            if (trackDeletesStartLines.length === 0) {
+                console.log(chalk.red(`trackDeletesEnd is called but trackDeletesStart is never called in "${filePath}".`));
+                usedCorrectly = false;
+            }
+            if (batchingRecordsLines.length > 0 && batchingRecordsLines.some((line) => line > Math.min(...trackDeletesEndLines))) {
+                console.log(
+                    chalk.red(`trackDeletesEnd should be called after all batching records functions in "${filePath}:${Math.max(...trackDeletesEndLines)}".`)
+                );
+                usedCorrectly = false;
+            }
+            if (trackDeletesStartLines.length > 0 && trackDeletesStartLines.some((line) => line > Math.min(...trackDeletesEndLines))) {
+                console.log(chalk.red(`trackDeletesStart should be called before trackDeletesEnd in "${filePath}:${Math.min(...trackDeletesStartLines)}".`));
+                usedCorrectly = false;
+            }
+        }
+
+        if (trackDeletesStartLines.length > 0 && trackDeletesEndLines.length === 0) {
+            console.log(chalk.red(`trackDeletesStart is called but trackDeletesEnd is never called in "${filePath}".`));
             usedCorrectly = false;
         }
 

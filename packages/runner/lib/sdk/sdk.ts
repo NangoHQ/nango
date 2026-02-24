@@ -522,6 +522,28 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async trackDeletesStart(_model: string): Promise<void> {
+        this.throwIfAborted();
+        // TODO
+    }
+
+    public async trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }> {
+        this.throwIfAborted();
+        const res = await this.persistClient.deleteOutdatedRecords({
+            model: this.modelFullName(model),
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            syncId: this.syncId!,
+            syncJobId: this.syncJobId!,
+            activityLogId: this.activityLogId
+        });
+        if (res.isErr()) {
+            throw res.error;
+        }
+        return res.value;
+    }
+
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         this.throwIfAborted();
 

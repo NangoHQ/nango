@@ -103,7 +103,7 @@ export async function compileAll({
                 if (sync.track_deletes) {
                     console.warn(
                         chalk.yellow(
-                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script to automatically detect deletions.`
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.trackDeletesStart()' and 'nango.trackDeletesEnd()' in your sync function to automatically detect deletions.`
                         )
                     );
                 }
@@ -281,6 +281,56 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
             );
         }
 
+        if (bag.trackDeletesEndLines.length > 1) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `trackDeletesEnd should be called only once per sync`,
+                    line: Math.max(...bag.trackDeletesEndLines)
+                })
+            );
+        }
+
+        if (bag.trackDeletesEndLines.length > 0) {
+            if (bag.trackDeletesStartLines.length === 0) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesEnd is called but trackDeletesStart is never called`,
+                        line: Math.min(...bag.trackDeletesEndLines)
+                    })
+                );
+            }
+            if (bag.batchingRecordsLines.length > 0 && bag.batchingRecordsLines.some((line) => line > Math.min(...bag.trackDeletesEndLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesEnd should be called after any batching records function`,
+                        line: Math.min(...bag.trackDeletesEndLines)
+                    })
+                );
+            }
+            if (bag.trackDeletesStartLines.length > 0 && bag.trackDeletesStartLines.some((line) => line > Math.min(...bag.trackDeletesEndLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart should be called before trackDeletesEnd`,
+                        line: Math.min(...bag.trackDeletesStartLines)
+                    })
+                );
+            }
+        }
+
+        if (bag.trackDeletesStartLines.length > 0 && bag.trackDeletesEndLines.length === 0) {
+            return Err(
+                fileErrorToText({
+                    filePath: friendlyPath,
+                    msg: `trackDeletesStart is called but trackDeletesEnd is never called`,
+                    line: Math.min(...bag.trackDeletesStartLines)
+                })
+            );
+        }
+
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
     } catch (err) {
@@ -355,11 +405,15 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
+    const trackDeletesStartLines: number[] = [];
+    const trackDeletesEndLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
-        deleteRecordsFromPreviousExecutionsLines
+        deleteRecordsFromPreviousExecutionsLines,
+        trackDeletesStartLines,
+        trackDeletesEndLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -386,7 +440,9 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'getEnvironmentVariables',
         'triggerAction',
         'setMergingStrategy',
-        'deleteRecordsFromPreviousExecutions'
+        'deleteRecordsFromPreviousExecutions',
+        'trackDeletesStart',
+        'trackDeletesEnd'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -495,6 +551,12 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
                                     if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
                                         deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
+                                    }
+                                    if (callee.property.name === 'trackDeletesStart') {
+                                        trackDeletesStartLines.push(lineNumber);
+                                    }
+                                    if (callee.property.name === 'trackDeletesEnd') {
+                                        trackDeletesEndLines.push(lineNumber);
                                     }
                                 }
                             }

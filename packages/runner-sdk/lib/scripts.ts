@@ -79,7 +79,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
     /**
      * If `true`, automatically detects deleted records and removes them when you fetch the latest data.
      *
-     * @deprecated This option will be removed in future versions. Please automatically detect deletions by calling `nango.deleteRecordsFromPreviousExecutions()` in your sync script.
+     * @deprecated This option will be removed in future versions. Please automatically detect deletions by calling `nango.trackDeletesStart()` and `nango.trackDeletesEnd()` in your sync function.
      * @default false
      */
     trackDeletes?: boolean;

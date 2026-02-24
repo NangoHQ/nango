@@ -431,7 +431,12 @@ export declare class NangoSync<TCheckpoint = Checkpoint> extends NangoAction {
     batchUpdate<T extends object>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
+    /**
+     * @deprecated please use trackDeletesStart and trackDeletesEnd
+     */
     deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }>;
+    trackDeletesStart(model: string): Promise<void>;
+    trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }>;
     getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
     getCheckpoint(): Promise<TCheckpoint | null>;
     saveCheckpoint(checkpoint: TCheckpoint): Promise<void>;

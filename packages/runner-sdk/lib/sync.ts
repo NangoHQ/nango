@@ -66,7 +66,13 @@ export abstract class NangoSyncBase<
         model: TModelName
     ): MaybePromise<Map<TKey, TModel>>;
 
+    /**
+     * @deprecated please use trackDeletesStart and trackDeletesEnd
+     */
     public abstract deleteRecordsFromPreviousExecutions(model: TModelName): MaybePromise<{ deletedKeys: string[] }>;
+
+    public abstract trackDeletesStart(model: TModelName): MaybePromise<void>;
+    public abstract trackDeletesEnd(model: TModelName): MaybePromise<{ deletedKeys: string[] }>;
 
     public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: TModelName): Promise<void>;
 
