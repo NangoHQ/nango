@@ -593,11 +593,14 @@ export class Orchestrator {
 
                     await clearLastSyncDate(syncId);
                     // Delete all checkpoint (including the trackDeletes ones)
-                    hardDeleteCheckpoints(db.knex, {
+                    const deletedCheckpoints = await hardDeleteCheckpoints(db.knex, {
                         environmentId,
                         connectionId,
                         keyPrefix: getCheckpointKey({ type: 'sync', name: syncName, variant: syncVariant })
                     });
+                    if (deletedCheckpoints.isErr()) {
+                        return Err(deletedCheckpoints.error);
+                    }
 
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
