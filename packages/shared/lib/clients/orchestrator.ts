@@ -6,7 +6,7 @@ import db from '@nangohq/database';
 import { OtlpSpan } from '@nangohq/logs';
 import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
 
-import { deleteCheckpoint } from '../index.js';
+import { hardDeleteCheckpoints } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import accountService from '../services/account.service.js';
@@ -592,11 +592,11 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
-                    deleteCheckpoint(db.knex, {
+                    // Delete all checkpoint (including the trackDeletes ones)
+                    hardDeleteCheckpoints(db.knex, {
                         environmentId,
                         connectionId,
-                        key: getCheckpointKey({ type: 'sync', name: syncName, variant: syncVariant }),
-                        force: true
+                        keyPrefix: getCheckpointKey({ type: 'sync', name: syncName, variant: syncVariant })
                     });
 
                     if (delete_records) {
