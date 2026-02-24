@@ -1,6 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700&display=swap') layer(base);
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap')
-layer(base);
+/* prettier-ignore */
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap') layer(base);
 
 @import 'tailwindcss';
 
@@ -16,9 +15,9 @@ layer(base);
 
 @theme {
     --font-*: initial;
-    --font-sans: Inter, sans-serif;
-    --font-mono: 'Roboto Mono', 'Source Code Pro', sans-serif;
-    --font-code: 'Roboto Mono', 'Source Code Pro', system-ui, sans-serif;
+    --font-sans: Geist, sans-serif;
+    --font-mono: 'Geist Mono', 'Source Code Pro', sans-serif;
+    --font-code: 'Geist Mono', 'Source Code Pro', system-ui, sans-serif;
 
     --breakpoint-xl: 1280px;
     --breakpoint-2xl: 1440px;
@@ -641,7 +640,7 @@ layer(base);
 @utility text-code-body-small-regular {
     font-size: 12px;
     line-height: 14px;
-    font-family: 'Roboto Mono';
+    font-family: 'Geist Mono';
     font-weight: 400;
     letter-spacing: -0.04em;
 }
@@ -692,6 +691,6 @@ layer(base);
 }
 
 .mantine-Prism-code {
-    font-family: 'Roboto Mono';
+    font-family: 'Geist Mono';
     background-color: var(--color-bg-surface) !important;
 }
