@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { envs } from '../env.js';
 import { SqsEventListener } from '../events/sqs.listener.js';
 import { handleError } from '../execution/operations/handler.js';
+import { nangoPropsSchema } from '../schemas/nango-props.js';
 
 import type { EventListener, QueueMessage } from '../events/listener.js';
 import type { NangoProps } from '@nangohq/types';
@@ -38,7 +39,7 @@ export class InvocationsProcessor {
                 }),
                 requestPayload: z.object({
                     taskId: z.string(),
-                    nangoProps: z.record(z.string(), z.unknown())
+                    nangoProps: nangoPropsSchema
                 })
             })
             .parse(JSON.parse(message.body));
@@ -47,7 +48,7 @@ export class InvocationsProcessor {
             const errorMessage = parsedMessage.responsePayload.errorMessage;
             await handleError({
                 taskId: parsedMessage.requestPayload.taskId,
-                nangoProps: { ...(parsedMessage.requestPayload.nangoProps as unknown as NangoProps) },
+                nangoProps: parsedMessage.requestPayload.nangoProps as unknown as NangoProps,
                 error: {
                     type: lambdaErrorTypeFromMessage(errorMessage),
                     payload: { errorMessage },
