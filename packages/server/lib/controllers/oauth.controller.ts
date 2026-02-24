@@ -345,13 +345,13 @@ class OAuthController {
             return;
         }
 
-        if (!body.client_secret) {
+        if (!body.client_secret && !body.client_private_key) {
             errorManager.errRes(res, 'missing_client_secret');
 
             return;
         }
 
-        const { client_id, client_secret, client_certificate, client_private_key }: Record<string, string> = body;
+        const { client_id, client_secret, client_certificate, client_private_key }: Record<string, string | undefined> = body;
 
         if (isConnectSession && receivedConnectionId) {
             errorRestrictConnectionId(res);
@@ -443,6 +443,10 @@ class OAuthController {
                 if (defaults?.connectionConfig) {
                     Object.assign(connectionConfig, defaults.connectionConfig);
                 }
+            }
+
+            if (config.oauth_scopes && !connectionConfig['oauth_scopes']) {
+                connectionConfig['oauth_scopes'] = config.oauth_scopes;
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {

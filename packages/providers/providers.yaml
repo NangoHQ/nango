@@ -10906,6 +10906,55 @@ okta:
             suffix: .okta.com
             prefix: https://
 
+okta-cc:
+    display_name: Okta (Client Credentials)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
+    token_request_auth_method: private_key_jwt
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.okta.com
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+        paginate:
+            type: 'link'
+            limit_name_in_request: 'limit'
+            link_rel_in_response_header: 'next'
+    docs: https://nango.dev/docs/api-integrations/okta-cc
+    docs_connect: https://nango.dev/docs/api-integrations/okta-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Okta API Services application
+            doc_section: '#step-1-creating-your-okta-api-services-application'
+        client_private_key:
+            type: string
+            title: Private Key (JWK)
+            description: The private JWK JSON (including kid, kty, n, e, d, p, q, dp, dq, qi) whose public key is registered in your Okta API Services application
+            secret: true
+            doc_section: '#step-2-generating-and-registering-your-rsa-key-pair'
+    connection_config:
+        subdomain:
+            type: string
+            title: Okta Domain
+            description: The subdomain of your Okta account
+            pattern: '^[a-z0-9_-]+$'
+            example: dev-12345678
+            suffix: .okta.com
+            prefix: https://
+            doc_section: '#step-3-finding-your-okta-domain'
+        oauth_scopes:
+            type: string
+            title: Scopes
+            description: Space-separated list of Okta Management API scopes (e.g. okta.users.read okta.users.manage). Must be granted under Okta API Scopes on your application.
+            example: okta.users.read okta.users.manage okta.groups.read
+            doc_section: '#step-4-grant-api-scopes-to-your-application'
+
 okta-preview:
     alias: okta
     display_name: Okta (Preview)

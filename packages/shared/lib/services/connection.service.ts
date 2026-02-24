@@ -1,3 +1,5 @@
+import { createPrivateKey } from 'crypto';
+
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
 import { Agent } from 'undici';
@@ -1160,7 +1162,7 @@ class ConnectionService {
     }: {
         provider: ProviderOAuth2;
         client_id: string;
-        client_secret: string;
+        client_secret?: string | undefined;
         connectionConfig: ConnectionConfig;
         logCtx: LogContextStateless;
         client_certificate?: string | undefined;
@@ -1187,13 +1189,58 @@ class ConnectionService {
         headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
 
         if (provider.token_request_auth_method === 'basic') {
+            if (!client_secret) {
+                throw new NangoError('missing_client_secret');
+            }
             headers['Authorization'] = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
         } else if (provider.token_request_auth_method === 'custom') {
+            if (!client_secret) {
+                throw new NangoError('missing_client_secret');
+            }
             params.append('username', client_id);
             params.append('password', client_secret);
+        } else if (provider.token_request_auth_method === 'private_key_jwt') {
+            if (!client_private_key) {
+                throw new NangoError('missing_client_private_key');
+            }
+            let privKeyPem: string;
+            let kid: string;
+
+            try {
+                const privateJwk = JSON.parse(client_private_key) as { kid: string; [key: string]: unknown };
+                kid = privateJwk.kid;
+                privKeyPem = createPrivateKey({
+                    key: privateJwk,
+                    format: 'jwk'
+                }).export({
+                    type: 'pkcs8',
+                    format: 'pem'
+                }) as string;
+            } catch (err) {
+                throw new NangoError('invalid_client_private_key_format', { cause: err });
+            }
+            const now = Math.floor(Date.now() / 1000);
+
+            const assertion = jwtClient.signJWT({
+                payload: {
+                    iss: client_id,
+                    sub: client_id,
+                    aud: url.toString(),
+                    iat: now,
+                    exp: now + 300,
+                    jti: uuidv4()
+                },
+                secretOrPrivateKey: privKeyPem,
+                options: { algorithm: 'RS256', keyid: kid }
+            });
+            params.append('client_id', client_id);
+            params.append('client_assertion_type', 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer');
+            params.append('client_assertion', assertion);
         } else {
             params.append('client_id', client_id);
-            params.append('client_secret', client_secret);
+            if (client_secret) {
+                params.append('client_secret', client_secret);
+            }
         }
 
         if (tokenParams) {
@@ -1238,7 +1285,7 @@ class ConnectionService {
                 body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
                 agent
             },
-            { logCtx, context: 'auth', valuesToFilter: [client_secret] }
+            { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
         if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
             const error = new NangoError('client_credentials_fetch_error');
@@ -1248,7 +1295,7 @@ class ConnectionService {
         const parsedCreds = this.parseRawCredentials(fetchRes.value.body, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
 
         parsedCreds.client_id = client_id;
-        parsedCreds.client_secret = client_secret;
+        parsedCreds.client_secret = client_secret ?? '';
         parsedCreds.client_certificate = client_certificate;
         parsedCreds.client_private_key = client_private_key;
 

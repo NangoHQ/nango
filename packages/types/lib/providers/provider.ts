@@ -91,6 +91,7 @@ export interface BaseProvider {
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
+    token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -110,8 +111,6 @@ export interface ProviderOAuth2 extends BaseProvider {
 
     refresh_url?: string;
     expires_in_unit?: 'milliseconds';
-
-    token_request_auth_method?: 'basic' | 'custom';
 }
 
 export interface ProviderOAuth1 extends BaseProvider {
