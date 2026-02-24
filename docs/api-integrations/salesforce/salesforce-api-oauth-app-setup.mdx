@@ -119,9 +119,9 @@ You cannot have both Dev Hub enabled and register a namespace in the same organi
        - **Selected OAuth Scopes**: Add required scopes (minimum: "api", "refresh_token, offline_access")
        - **Flow Enablement**: Enable Authorization Code and Credentials Flow
        - Under **Security**, leave the default options selected:
-         . ✅ Require secret for Web Server Flow
-         . ✅ Require secret for Refresh Token Flow
-         . ✅ Require Proof Key for Code Exchange (PKCE) extension for Supported Authorization Flows
+         - ✅ Require secret for Web Server Flow
+         - ✅ Require secret for Refresh Token Flow
+         - ✅ Require Proof Key for Code Exchange (PKCE) extension for Supported Authorization Flows
     5. Click **Create**.
     6. After saving, navigate to your app **Settings** tab.
     7. Scroll down to **Oauth Settings** section.
@@ -162,9 +162,9 @@ You cannot have both Dev Hub enabled and register a namespace in the same organi
        ```
        This creates a new Salesforce project directory structure that we'll use for packaging.
     
-    6. **Create a package**: 
+    6. **Create a package**:
     ```bash
-    sf package create --name "Nango External" --package-type Managed --path force-app --target-dev-hub MyOrgAlia`. 
+    sf package create --name "Nango External" --package-type Managed --path force-app --target-dev-hub MyOrgAlias
     ```
     Use your Dev Hub alias (e.g. `my-dev-hub`) in place of `MyOrgAlias` if different.
 
