@@ -1,7 +1,11 @@
+import { z } from 'zod';
+
 import { envs } from '../env.js';
 import { SqsEventListener } from '../events/sqs.listener.js';
+import { handleError } from '../execution/operations/handler.js';
 
 import type { EventListener, QueueMessage } from '../events/listener.js';
+import type { NangoProps } from '@nangohq/types';
 
 export class InvocationsProcessor {
     private eventListener: EventListener;
@@ -17,7 +21,40 @@ export class InvocationsProcessor {
     }
 
     private async processMessage(message: QueueMessage) {
-        //just log the message for now
-        return Promise.resolve(console.log(JSON.stringify(message, null, 2)));
+        const parsedMessage = z
+            .object({
+                body: z.string(),
+                codeParams: z.object({}),
+                responseContext: z.object({
+                    functionError: z.string(),
+                    statusCode: z.number()
+                }),
+                responsePayload: z.object({
+                    errorMessage: z.string()
+                })
+            })
+            .parse(JSON.parse(message.body));
+
+        if (parsedMessage.responseContext.functionError === 'Unhandled') {
+            console.log('UNHANDLED ERROR:', parsedMessage.responsePayload.errorMessage);
+            const requestPayload = z
+                .object({
+                    taskId: z.string(),
+                    nangoProps: z.record(z.string(), z.unknown())
+                })
+                .parse(JSON.parse(parsedMessage.body));
+
+            await handleError({
+                taskId: requestPayload.taskId,
+                nangoProps: { ...(requestPayload.nangoProps as unknown as NangoProps) },
+                error: {
+                    type: 'lambda_error',
+                    payload: { errorMessage: parsedMessage.responsePayload.errorMessage },
+                    status: parsedMessage.responseContext.statusCode
+                },
+                telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0 },
+                functionRuntime: 'lambda'
+            });
+        }
     }
 }
