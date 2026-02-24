@@ -16878,6 +16878,30 @@ webex:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/webex
 
+webinarjam:
+    display_name: WebinarJam
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.webinarjam.com/webinarjam
+        query:
+            api_key: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/x-www-form-urlencoded
+            endpoints:
+                - /webinars
+    docs: https://nango.dev/docs/api-integrations/webinarjam
+    docs_connect: https://nango.dev/docs/api-integrations/webinarjam/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your WebinarJam API key
+            doc_section: '#step-1-getting-your-api-key'
+
 whatsapp-business:
     display_name: WhatsApp Business
     categories:
