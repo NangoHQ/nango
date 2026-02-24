@@ -12,7 +12,7 @@
     "dependencies": {
         "@nangohq/node": "0.69.37",
         "@nangohq/providers": "0.69.37",
-        "ajv": "8.17.1",
+        "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
         "lodash-es": "4.17.21",
         "parse-link-header": "2.0.0"
