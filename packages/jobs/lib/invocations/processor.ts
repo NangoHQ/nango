@@ -29,31 +29,27 @@ export class InvocationsProcessor {
     private async processMessage(message: QueueMessage) {
         const parsedMessage = z
             .object({
-                body: z.string(),
-                codeParams: z.object({}),
                 responseContext: z.object({
                     functionError: z.string(),
                     statusCode: z.number()
                 }),
                 responsePayload: z.object({
                     errorMessage: z.string()
+                }),
+                requestPayload: z.object({
+                    taskId: z.string(),
+                    nangoProps: z.record(z.string(), z.unknown())
                 })
             })
             .parse(JSON.parse(message.body));
 
         if (parsedMessage.responseContext.functionError === 'Unhandled') {
             console.log('UNHANDLED ERROR:', parsedMessage.responsePayload.errorMessage);
-            const requestPayload = z
-                .object({
-                    taskId: z.string(),
-                    nangoProps: z.record(z.string(), z.unknown())
-                })
-                .parse(JSON.parse(parsedMessage.body));
 
             const errorMessage = parsedMessage.responsePayload.errorMessage;
             await handleError({
-                taskId: requestPayload.taskId,
-                nangoProps: { ...(requestPayload.nangoProps as unknown as NangoProps) },
+                taskId: parsedMessage.requestPayload.taskId,
+                nangoProps: { ...(parsedMessage.requestPayload.nangoProps as unknown as NangoProps) },
                 error: {
                     type: lambdaErrorTypeFromMessage(errorMessage),
                     payload: { errorMessage },
