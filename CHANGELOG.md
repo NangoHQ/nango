@@ -2,38 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
-## [v0.69.37] - 2026-02-24
+## [v0.69.38] - 2026-02-24
 
 ### Added
 
-- *(metrics)* Add function runtime to function executions metric (#5466)
-- *(integrations)* Add support for ms teams bot (#5463)
-- *(integrations)* Add support for tally (#5486)
-- *(OAuth)* Add more context to errors during exchange code for token (#5485)
-- *(integrations)* Add support for hubspot mcp (#5477)
-- *(integrations)* Add subdomain interpolation for timify (#5492)
-- *(webapp)* Change font to geist (#5497)
-- *(integrations)* Add support for salesmsg (#5490)
-- *(integrations)* Okta-cc support (#5482)
+- *(metrics)* Add function runtime to function executions metric (#5466) by @rossmcewan
+- *(integrations)* Add support for ms teams bot (#5463) by @hassan254-prog
+- *(integrations)* Add support for tally (#5486) by @hassan254-prog
+- *(OAuth)* Add more context to errors during exchange code for token (#5485) by @hassan254-prog
+- *(integrations)* Add support for hubspot mcp (#5477) by @hassan254-prog
+- *(integrations)* Add subdomain interpolation for timify (#5492) by @hassan254-prog
+- *(webapp)* Change font to geist (#5497) by @kaposke
+- *(integrations)* Add support for salesmsg (#5490) by @hassan254-prog
+- *(integrations)* Okta-cc support (#5482) by @agusayerza
+- *(cli)* Add --checkpoint option to dryrun command (#5440) by @TBonnin
 
 ### Changed
 
-- *(deps)* Upgrade deps (#5484)
-- Oauth callback session validation (#5493)
+- *(deps)* Upgrade deps (#5484) by @rossmcewan
+- Oauth callback session validation (#5493) by @hassan254-prog
 
 ### Fixed
 
-- Pro-rated charging of base fee (#5479)
-- *(oauth)* Validate state session ID in Oauth2 callback (#5366)
-- *(webapp)* Env-agnostic routes (#5481)
-- Set cookies to custom and mcp_oauth2 redirect (#5488)
-- *(server)* Set state cookie sameSite for cross-site redirects callbacks to nango (#5491)
-- *(validations)* Fix api key validations (#5495)
-- *(errors)* Error parsing was broken (#5499)
-- *(lambda)* Enable lambda for webhooks for new accounts (#5502)
-- *(cli)* NAN-4702: improve package manager support (#5504)
-- *(providers)* Fix timify refresh token (#5508)
-- *(timify)* Use the correct param for refreshing tokens (#5509)
+- Pro-rated charging of base fee (#5479) by @kaposke
+- *(oauth)* Validate state session ID in Oauth2 callback (#5366) by @thw-nango
+- *(webapp)* Env-agnostic routes (#5481) by @kaposke
+- Set cookies to custom and mcp_oauth2 redirect (#5488) by @hassan254-prog
+- *(server)* Set state cookie sameSite for cross-site redirects callbacks to nango (#5491) by @hassan254-prog
+- *(validations)* Fix api key validations (#5495) by @hassan254-prog
+- *(errors)* Error parsing was broken (#5499) by @rossmcewan
+- *(lambda)* Enable lambda for webhooks for new accounts (#5502) by @rossmcewan
+- *(cli)* NAN-4702: improve package manager support (#5504) by @agusayerza
+- *(providers)* Fix timify refresh token (#5508) by @hassan254-prog
+- *(timify)* Use the correct param for refreshing tokens (#5509) by @hassan254-prog
+- *(github)* Race condition in npm publish action (#5510) by @agusayerza
 
 ## [v0.69.36] - 2026-02-18
 
@@ -5985,6 +5987,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
 [v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
 [v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35
 [v0.69.34]: https://github.com/NangoHQ/nango/compare/v0.69.33..v0.69.34
