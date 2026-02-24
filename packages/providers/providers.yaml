@@ -12861,7 +12861,7 @@ recruitcrm:
         - hr
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.recruitcrm.com
+        base_url: https://api.recruitcrm.io
         headers:
             authorization: Bearer ${apiKey}
         verification:
