@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
@@ -15,6 +15,10 @@ describe('refreshOrTestCredentials', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await migrateLogsMapping();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     it('should not refresh if unauthenticated', async () => {
@@ -416,75 +420,71 @@ describe('refreshOrTestCredentials', () => {
             throw new Error('Failed to decrypt connection');
         }
 
-        try {
-            vi.useFakeTimers();
-            const start = new Date('2025-01-01T00:00:00Z');
-            vi.setSystemTime(start);
+        vi.useFakeTimers();
+        const start = new Date('2025-01-01T00:00:00Z');
+        vi.setSystemTime(start);
 
-            // First call: refresh fails, sets last_refresh_failure
-            const res1 = await refreshOrTestCredentials({
-                account,
-                environment: env,
-                integration,
-                instantRefresh: false,
-                connection: decryptedConnection,
-                onRefreshFailed: vi.fn(),
-                onRefreshSuccess: vi.fn(),
-                connectionTestHook: vi.fn(() => Promise.resolve(Err(new NangoError('test')))) as any,
-                logContextGetter
-            });
-            expect(res1.isErr()).toBe(true);
+        // First call: refresh fails, sets last_refresh_failure
+        const res1 = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: decryptedConnection,
+            onRefreshFailed: vi.fn(),
+            onRefreshSuccess: vi.fn(),
+            connectionTestHook: vi.fn(() => Promise.resolve(Err(new NangoError('test')))) as any,
+            logContextGetter
+        });
+        expect(res1.isErr()).toBe(true);
 
-            // Second call: 10 seconds later, still within cooldown window
-            vi.setSystemTime(new Date(start.getTime() + 10_000));
-            const connectionAfterFailure = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
-            if (!connectionAfterFailure) {
-                throw new Error('Failed to decrypt connection');
-            }
-            const onTest2 = vi.fn();
-            const onFailed2 = vi.fn();
-            const res2 = await refreshOrTestCredentials({
-                account,
-                environment: env,
-                integration,
-                instantRefresh: false,
-                connection: connectionAfterFailure,
-                onRefreshFailed: onFailed2,
-                onRefreshSuccess: vi.fn(),
-                connectionTestHook: onTest2,
-                logContextGetter
-            });
-            expect(res2.isErr()).toBe(true);
-            if (res2.isErr()) {
-                expect(res2.error.type).toBe('connection_refresh_backoff');
-            }
-            expect(onTest2).not.toHaveBeenCalled();
-            expect(onFailed2).not.toHaveBeenCalled();
-
-            // Third call: after cooldown expires, refresh is attempted and succeeds
-            vi.setSystemTime(new Date(start.getTime() + REFRESH_FAILURE_COOLDOWN_MS + 1000));
-            const connectionAfterCooldown = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
-            if (!connectionAfterCooldown) {
-                throw new Error('Failed to decrypt connection');
-            }
-            const onTest3 = vi.fn(() => Promise.resolve(Ok({ tested: true }))) as any;
-            const onSuccess3 = vi.fn();
-            const res3 = await refreshOrTestCredentials({
-                account,
-                environment: env,
-                integration,
-                instantRefresh: false,
-                connection: connectionAfterCooldown,
-                onRefreshFailed: vi.fn(),
-                onRefreshSuccess: onSuccess3,
-                connectionTestHook: onTest3,
-                logContextGetter
-            });
-            expect(res3.isOk()).toBe(true);
-            expect(onTest3).toHaveBeenCalled();
-            expect(onSuccess3).toHaveBeenCalled();
-        } finally {
-            vi.useRealTimers();
+        // Second call: 10 seconds later, still within cooldown window
+        vi.setSystemTime(new Date(start.getTime() + 10_000));
+        const connectionAfterFailure = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
+        if (!connectionAfterFailure) {
+            throw new Error('Failed to decrypt connection');
         }
+        const onTest2 = vi.fn();
+        const onFailed2 = vi.fn();
+        const res2 = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: connectionAfterFailure,
+            onRefreshFailed: onFailed2,
+            onRefreshSuccess: vi.fn(),
+            connectionTestHook: onTest2,
+            logContextGetter
+        });
+        expect(res2.isErr()).toBe(true);
+        if (res2.isErr()) {
+            expect(res2.error.type).toBe('connection_refresh_backoff');
+        }
+        expect(onTest2).not.toHaveBeenCalled();
+        expect(onFailed2).not.toHaveBeenCalled();
+
+        // Third call: after cooldown expires, refresh is attempted and succeeds
+        vi.setSystemTime(new Date(start.getTime() + REFRESH_FAILURE_COOLDOWN_MS + 1000));
+        const connectionAfterCooldown = encryptionManager.decryptConnection((await connectionService.getConnectionById(connection.id))!);
+        if (!connectionAfterCooldown) {
+            throw new Error('Failed to decrypt connection');
+        }
+        const onTest3 = vi.fn(() => Promise.resolve(Ok({ tested: true }))) as any;
+        const onSuccess3 = vi.fn();
+        const res3 = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: connectionAfterCooldown,
+            onRefreshFailed: vi.fn(),
+            onRefreshSuccess: onSuccess3,
+            connectionTestHook: onTest3,
+            logContextGetter
+        });
+        expect(res3.isOk()).toBe(true);
+        expect(onTest3).toHaveBeenCalled();
+        expect(onSuccess3).toHaveBeenCalled();
     });
 });
