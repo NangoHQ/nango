@@ -20,11 +20,11 @@ export const ConnectionShow = () => {
     const { connectionId, providerConfigKey } = useParams();
 
     const {
-        data: connectionData,
+        data: connectionResponse,
         error: connectionError,
         isLoading: connectionLoading
     } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
-    const { data: integrationData, error: integrationError, loading: providerLoading } = useGetIntegration(env, providerConfigKey!);
+    const { data: integrationResponse, error: integrationError, isLoading: providerLoading } = useGetIntegration(env, providerConfigKey!);
     const [activeTab, setActiveTab] = useHashNavigation('auth');
 
     if (connectionError || integrationError) {
@@ -38,7 +38,7 @@ export const ConnectionShow = () => {
         );
     }
 
-    if (connectionLoading || providerLoading || !connectionData || !integrationData) {
+    if (connectionLoading || providerLoading || !connectionResponse || !integrationResponse) {
         return (
             <DashboardLayout>
                 <Helmet>
@@ -63,32 +63,34 @@ export const ConnectionShow = () => {
         );
     }
 
+    const integrationData = integrationResponse?.data;
+
     const displayName = getConnectionDisplayName({
-        endUser: connectionData.endUser,
-        connectionId: connectionData.connection.connection_id,
-        connectionTags: connectionData.connection.tags
+        endUser: connectionResponse.endUser,
+        connectionId: connectionResponse.connection.connection_id,
+        connectionTags: connectionResponse.connection.tags
     });
 
-    const email = getEndUserEmail(connectionData.endUser, connectionData.connection.tags);
+    const email = getEndUserEmail(connectionResponse.endUser, connectionResponse.connection.tags);
 
     return (
         <DashboardLayout>
             <Helmet>
-                <title>{connectionData.endUser?.email || connectionData.connection.connection_id} - Connection - Nango</title>
+                <title>{connectionResponse.endUser?.email || connectionResponse.connection.connection_id} - Connection - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-5">
                 <div className="flex gap-4 items-center">
                     <IntegrationLogoWithProfile
                         providerConfigKey={integrationData.integration.unique_key}
-                        provider={connectionData.provider}
+                        provider={connectionResponse.provider}
                         profile={displayName}
                     />
                     <div className="flex flex-col">
                         <span className="text-body-large-semi text-text-primary">
                             {integrationData.integration.display_name || integrationData.template.display_name} x {displayName}
                         </span>
-                        <span className="text-body-medium-regular text-text-secondary">{email ?? connectionData.connection.connection_id}</span>
+                        <span className="text-body-medium-regular text-text-secondary">{email ?? connectionResponse.connection.connection_id}</span>
                     </div>
                 </div>
 
@@ -99,13 +101,13 @@ export const ConnectionShow = () => {
                         <TabsTrigger value="settings">Settings</TabsTrigger>
                     </TabsList>
                     <TabsContent value="auth">
-                        <AuthTab connectionData={connectionData} providerConfigKey={integrationData.integration.unique_key} />
+                        <AuthTab connectionData={connectionResponse} providerConfigKey={integrationData.integration.unique_key} />
                     </TabsContent>
                     <TabsContent value="syncs">
-                        <SyncsTab connectionData={connectionData} integrationData={integrationData} />
+                        <SyncsTab connectionData={connectionResponse} integrationData={integrationData} />
                     </TabsContent>
                     <TabsContent value="settings">
-                        <SettingsTab connectionData={connectionData} providerConfigKey={integrationData.integration.unique_key} />
+                        <SettingsTab connectionData={connectionResponse} providerConfigKey={integrationData.integration.unique_key} />
                     </TabsContent>
                 </Tabs>
             </div>
