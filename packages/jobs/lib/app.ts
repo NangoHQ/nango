@@ -36,6 +36,7 @@ try {
     const srv = server.listen(port);
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
+    const invocationsProcessor = new LambdaInvocationsProcessor();
 
     // We are using a setTimeout because we don't want overlapping setInterval if the DB is down
     let healthCheck: NodeJS.Timeout | undefined;
@@ -77,6 +78,7 @@ try {
             await db.knex.destroy();
             await db.readOnly.destroy();
             await destroyKvstore();
+            await invocationsProcessor.stop();
 
             console.info('Closed');
 
@@ -105,7 +107,6 @@ try {
 
     processor.start();
 
-    const invocationsProcessor = new LambdaInvocationsProcessor();
     await invocationsProcessor.start();
 
     void otlp.register(getOtlpRoutes);
