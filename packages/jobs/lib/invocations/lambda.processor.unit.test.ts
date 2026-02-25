@@ -3,9 +3,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockListen = vi.fn();
+const mockStop = vi.fn().mockResolvedValue(undefined);
 vi.mock('../events/sqs.listener.js', () => ({
     SqsEventListener: vi.fn().mockImplementation(() => ({
-        listen: mockListen
+        listen: mockListen,
+        stop: mockStop
     }))
 }));
 
@@ -207,5 +209,14 @@ describe('LambdaInvocationsProcessor', () => {
         await processor.start();
         expect(mockListen).not.toHaveBeenCalled();
         mockLambdaFailureDestination = url;
+    });
+
+    it('should call eventListener.stop() when stop() is called', async () => {
+        const processor = new LambdaInvocationsProcessor();
+        await processor.start();
+        expect(mockListen).toHaveBeenCalled();
+
+        await processor.stop();
+        expect(mockStop).toHaveBeenCalledTimes(1);
     });
 });

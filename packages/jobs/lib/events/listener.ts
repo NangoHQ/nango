@@ -6,4 +6,6 @@ export interface QueueMessage {
 
 export interface EventListener {
     listen(queue: string, onMessage?: (message: QueueMessage) => Promise<void>): Promise<void>;
+
+    stop(): Promise<void>;
 }

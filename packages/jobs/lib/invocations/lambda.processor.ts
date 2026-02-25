@@ -27,6 +27,10 @@ export class LambdaInvocationsProcessor {
         }
     }
 
+    async stop() {
+        await this.eventListener.stop();
+    }
+
     private async processFailureMessage(message: QueueMessage) {
         const parsedMessage = z
             .object({

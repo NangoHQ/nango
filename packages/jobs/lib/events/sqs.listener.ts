@@ -22,6 +22,7 @@ const getRegion = (): string => {
 
 export class SqsEventListener implements EventListener {
     private readonly client: SQSClient;
+    private abortController: AbortController | null = null;
 
     constructor() {
         this.client = new SQSClient({ region: getRegion() });
@@ -35,46 +36,61 @@ export class SqsEventListener implements EventListener {
         }
         const queueUrl = queueUrlRes;
 
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
+
         logger.info(`SQS: subscribing to queue ${queueName}`);
 
-        while (true) {
-            try {
-                const result = await this.client.send(
-                    new ReceiveMessageCommand({
-                        QueueUrl: queueUrl,
-                        MaxNumberOfMessages: 10,
-                        WaitTimeSeconds: 20,
-                        VisibilityTimeout: 60
-                    })
-                );
+        try {
+            while (true) {
+                if (signal.aborted) break;
 
-                const messages = result.Messages ?? [];
-                for (const msg of messages) {
-                    if (!msg.Body || !msg.ReceiptHandle) continue;
-
-                    try {
-                        if (onMessage) {
-                            await onMessage({ body: msg.Body });
-                        }
-                    } catch (err) {
-                        logger.error('SQS message handler error', err);
-                        continue;
-                    }
-
-                    await this.client.send(
-                        new DeleteMessageCommand({
+                try {
+                    const result = await this.client.send(
+                        new ReceiveMessageCommand({
                             QueueUrl: queueUrl,
-                            ReceiptHandle: msg.ReceiptHandle
-                        })
+                            MaxNumberOfMessages: 10,
+                            WaitTimeSeconds: 20,
+                            VisibilityTimeout: 60
+                        }),
+                        { abortSignal: signal }
                     );
+
+                    const messages = result.Messages ?? [];
+                    for (const msg of messages) {
+                        if (signal.aborted) break;
+                        if (!msg.Body || !msg.ReceiptHandle) continue;
+
+                        try {
+                            if (onMessage) {
+                                await onMessage({ body: msg.Body });
+                            }
+                        } catch (err) {
+                            logger.error('SQS message handler error', err);
+                            continue;
+                        }
+
+                        await this.client.send(
+                            new DeleteMessageCommand({
+                                QueueUrl: queueUrl,
+                                ReceiptHandle: msg.ReceiptHandle
+                            }),
+                            { abortSignal: signal }
+                        );
+                    }
+                } catch (err) {
+                    if (err instanceof Error && err.name === 'AbortError') {
+                        break;
+                    }
+                    report(new Error('SQS receive message error'), {
+                        queueName,
+                        error: err
+                    });
+                    await new Promise((r) => setTimeout(r, 1000));
                 }
-            } catch (err) {
-                report(new Error('SQS receive message error'), {
-                    queueName,
-                    error: err
-                });
-                await new Promise((r) => setTimeout(r, 1000));
             }
+        } finally {
+            this.abortController = null;
         }
     }
 
@@ -89,5 +105,13 @@ export class SqsEventListener implements EventListener {
             });
             return null;
         }
+    }
+
+    async stop(): Promise<void> {
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+        this.client.destroy();
+        return Promise.resolve();
     }
 }
