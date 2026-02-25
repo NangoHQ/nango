@@ -2566,22 +2566,23 @@ builder-io-private:
                 content-type: application/json
             endpoints:
                 - /api/v1/write/page
-    docs: https://nango.dev/docs/integrations/all/builder-io-private
-    docs_connect: https://nango.dev/docs/integrations/all/builder-io-private/connect
+    docs: https://nango.dev/docs/api-integrations/builder-io-private
+    docs_connect: https://nango.dev/docs/api-integrations/builder-io-private/connect
     connection_config:
         domain:
             type: string
             title: Domain
-            description: The domain used to access your Builder.io API
-            example: cdn.builder.io
+            description: The domain used to access your Builder.io write API.
+            example: builder.io
             format: hostname
             prefix: https://
+            order: 1
             doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Builder.io account
+            description: The private key for your Builder.io account.
             pattern: '^bpk-[a-f0-9]+$'
             example: bpk-****************************
             doc_section: '#step-2-finding-your-api-key'
@@ -2603,22 +2604,23 @@ builder-io-public:
                 content-type: application/json
             endpoints:
                 - /api/v1/content/page
-    docs: https://nango.dev/docs/integrations/all/builder-io-public
-    docs_connect: https://nango.dev/docs/integrations/all/builder-io-public/connect
+    docs: https://nango.dev/docs/api-integrations/builder-io-public
+    docs_connect: https://nango.dev/docs/api-integrations/builder-io-public/connect
     connection_config:
         domain:
             type: string
             title: Domain
-            description: The domain used to access your Builder.io API
-            example: builder.io
+            description: The domain used to access your Builder.io content API.
+            example: cdn.builder.io
             format: hostname
             prefix: https://
+            order: 1
             doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Builder.io account
+            description: The public api key for your Builder.io account.
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
             doc_section: '#step-2-finding-your-api-key'
