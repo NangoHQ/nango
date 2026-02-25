@@ -81,8 +81,8 @@ RUN true \
 # Resulting new, minimal image
 FROM node:22.21.1-bookworm-slim AS web
 
-# Install a more recent npm
-RUN npm install -g npm@11.6.4
+# Install a more recent npm - remove when node:24.13.1 or later is used
+RUN npm install -g npm@11.8.0
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \
