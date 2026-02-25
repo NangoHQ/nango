@@ -158,6 +158,10 @@ This is especially useful when:
 
 In CI, dependency updates are automatically disabled to avoid hanging. Passing `--no-dependency-update` explicitly is still recommended to make intent clear and silence the warning.
 
+<Warning>
+When dependency updates are disabled, Nango will not install dependencies for you. Ensure dependencies are already installed before running commands.
+</Warning>
+
 ## Package manager support
 
 Nango supports all major JavaScript package managers. The CLI automatically detects and uses your package manager for installs. Detection works from the current directory upward (monorepo-aware), in this order:
