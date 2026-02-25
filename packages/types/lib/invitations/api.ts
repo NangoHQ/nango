@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api.js';
+import type { ApiError, Endpoint } from '../api.js';
 import type { ApiInvitation, ApiTeam } from '../team/api.js';
 import type { ApiUser } from '../user/api.js';
 
@@ -34,6 +34,7 @@ export type GetInvite = Endpoint<{
             newTeamUsers: number;
         };
     };
+    Errors: ApiError<'not_found'>;
 }>;
 
 export type AcceptInvite = Endpoint<{

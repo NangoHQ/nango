@@ -90,80 +90,88 @@ export const Signin: React.FC = () => {
                 <title>Sign in - Nango</title>
             </Helmet>
 
-            <div className="flex flex-col gap-3 items-center">
-                <h2 className="text-title-group text-text-primary">Log in to Nango</h2>
-                <span className="text-body-medium-regular text-text-tertiary">
-                    Don&apos;t have an account? <StyledLink to="/signup">Sign up.</StyledLink>
-                </span>
-            </div>
+            <div className="flex flex-col items-center gap-5 w-full">
+                <div className="flex flex-col gap-3 items-center">
+                    <h2 className="text-title-group text-text-primary">Log in to Nango</h2>
+                    <span className="text-body-medium-regular text-text-tertiary">
+                        Don&apos;t have an account? <StyledLink to="/signup">Sign up.</StyledLink>
+                    </span>
+                </div>
 
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmitForm)} className="w-full flex flex-col gap-5">
-                    <div className="w-full flex flex-col gap-2.5">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <InputGroup className="h-11">
-                                            <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
-                                        </InputGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                {errorMessage && !showResendEmail && (
+                    <Alert variant="destructive">
+                        <CircleX />
+                        <AlertDescription>{errorMessage}</AlertDescription>
+                    </Alert>
+                )}
 
-                        <div className="order-3">
+                {showResendEmail && (
+                    <Alert variant="warning">
+                        <TriangleAlert />
+                        <AlertTitle>Please verify your email</AlertTitle>
+                        <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
+                        <AlertActions>
+                            <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
+                                Resend
+                                {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
+                            </AlertButton>
+                        </AlertActions>
+                    </Alert>
+                )}
+
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmitForm)} className="w-full flex flex-col gap-5">
+                        <div className="w-full flex flex-col gap-2.5">
                             <FormField
                                 control={form.control}
-                                name="password"
+                                name="email"
                                 render={({ field, fieldState }) => (
                                     <FormItem>
                                         <FormControl>
                                             <InputGroup className="h-11">
-                                                <InputGroupInput placeholder="Password" type="password" {...field} aria-invalid={!!fieldState.error} />
+                                                <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
                                             </InputGroup>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
+                            <div className="order-3">
+                                <FormField
+                                    control={form.control}
+                                    name="password"
+                                    render={({ field, fieldState }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <InputGroup className="h-11">
+                                                    <InputGroupInput
+                                                        placeholder="Password"
+                                                        type="password"
+                                                        autoComplete="current-password"
+                                                        {...field}
+                                                        aria-invalid={!!fieldState.error}
+                                                    />
+                                                </InputGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
+                            <StyledLink to="/forgot-password" className="text-body-small-light text-text-tertiary self-end order-2">
+                                Forgot your password?
+                            </StyledLink>
                         </div>
 
-                        {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
-                        <StyledLink to="/forgot-password" className="text-body-small-light text-text-tertiary self-end order-2">
-                            Forgot your password?
-                        </StyledLink>
-                    </div>
-
-                    {errorMessage && !showResendEmail && (
-                        <Alert variant="destructive">
-                            <CircleX />
-                            <AlertDescription>{errorMessage}</AlertDescription>
-                        </Alert>
-                    )}
-
-                    {showResendEmail && (
-                        <Alert variant="warning">
-                            <TriangleAlert />
-                            <AlertTitle>Please verify your email</AlertTitle>
-                            <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
-                            <AlertActions>
-                                <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
-                                    Resend
-                                    {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
-                                </AlertButton>
-                            </AlertActions>
-                        </Alert>
-                    )}
-
-                    <Button type="submit" size="lg" className="w-full" loading={isPending}>
-                        {isPending ? 'Logging in...' : 'Log in'}
-                    </Button>
-                </form>
-            </Form>
+                        <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                            {isPending ? 'Logging in...' : 'Log in'}
+                        </Button>
+                    </form>
+                </Form>
+            </div>
 
             <div className="flex flex-col gap-10 w-full">
                 {globalEnv.features.managedAuth && (

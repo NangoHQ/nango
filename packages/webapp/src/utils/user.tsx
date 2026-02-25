@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useSWRConfig } from 'swr';
 
 import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
@@ -23,6 +24,7 @@ export function useSignout() {
     const analyticsReset = useAnalyticsReset();
     //const nav = useNavigate();
     const { mutate, cache } = useSWRConfig();
+    const queryClient = useQueryClient();
     const logoutAPI = useLogoutAPI();
 
     return async () => {
@@ -31,6 +33,8 @@ export function useSignout() {
         await logoutAPI(); // Destroy server session.
 
         await mutate(() => true, undefined, { revalidate: false }); // clean all cache
+        await queryClient.cancelQueries();
+        queryClient.clear();
 
         // swr/infinite doesn't currently support clearing cache keys with the
         // default mechanism. see https://github.com/vercel/swr/issues/2497
