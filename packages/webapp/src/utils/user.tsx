@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSWRConfig } from 'swr';
 
 import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
-import { useLogoutAPI } from '../utils/api';
+import { useLogoutAPI } from '../hooks/useAuth';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 
 import type { ApiUser } from '@nangohq/types';
@@ -22,10 +22,9 @@ export function useSignin() {
 
 export function useSignout() {
     const analyticsReset = useAnalyticsReset();
-    //const nav = useNavigate();
     const { mutate, cache } = useSWRConfig();
     const queryClient = useQueryClient();
-    const logoutAPI = useLogoutAPI();
+    const { mutateAsync: logoutAPI } = useLogoutAPI();
 
     return async () => {
         storage.clear();

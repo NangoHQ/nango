@@ -2,7 +2,7 @@ import { toast } from 'react-toastify';
 
 import { globalEnv } from './env';
 
-import type { ApiError, PostSignup } from '@nangohq/types';
+import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
     return await fetch(new URL(input as string, globalEnv.apiUrl), {
@@ -61,32 +61,6 @@ export function requestErrorToast() {
 
 function serverErrorToast() {
     toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
-}
-
-export function useLogoutAPI() {
-    return async () => {
-        const options = {
-            method: 'POST'
-        };
-
-        await apiFetch('/api/v1/account/logout', options);
-    };
-}
-
-export function useSignupAPI() {
-    // Delete
-    return async (body: PostSignup['Body']) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify(body)
-            };
-
-            return await apiFetch('/api/v1/account/signup', options);
-        } catch {
-            requestErrorToast();
-        }
-    };
 }
 
 export function useHostedSigninAPI() {
