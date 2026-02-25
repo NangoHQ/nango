@@ -6,6 +6,7 @@ import { Err, FixedSizeMap, Ok, getLogger, metrics } from '@nangohq/utils';
 
 import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
+import { REFRESHABLE_AUTH_MODES } from '../../../constants.js';
 import { NangoError } from '../../../utils/error.js';
 import { isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
@@ -95,33 +96,28 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         }
 
         let res: Result<DBConnectionDecrypted, NangoError>;
-        switch (props.connection.credentials.type) {
-            case 'OAUTH2':
-            case 'APP':
-            case 'OAUTH2_CC':
-            case 'JWT':
-            case 'BILL':
-            case 'TWO_STEP':
-            case 'SIGNATURE': {
-                res = await refreshCredentials(props, provider as RefreshableProvider);
-                break;
-            }
-            case 'BASIC':
-            case 'API_KEY':
-            case 'TBA': {
-                res = await testCredentials(props, provider as TestableProvider);
-                break;
-            }
-            case 'APP_STORE':
-            case 'CUSTOM':
-            case 'OAUTH1':
-            case undefined: {
-                metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
-                res = Ok(props.connection);
-                break;
-            }
-            default: {
-                throw new Error('Unsupported credentials type');
+        const credType = props.connection.credentials.type;
+        if (credType != null && REFRESHABLE_AUTH_MODES.has(credType)) {
+            res = await refreshCredentials(props, provider as RefreshableProvider);
+        } else {
+            switch (credType) {
+                case 'BASIC':
+                case 'API_KEY':
+                case 'TBA': {
+                    res = await testCredentials(props, provider as TestableProvider);
+                    break;
+                }
+                case 'APP_STORE':
+                case 'CUSTOM':
+                case 'OAUTH1':
+                case undefined: {
+                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
+                    res = Ok(props.connection);
+                    break;
+                }
+                default: {
+                    throw new Error('Unsupported credentials type');
+                }
             }
         }
 
