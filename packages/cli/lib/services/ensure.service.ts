@@ -1,4 +1,5 @@
 import {
+    inferIntegrationsFromConnectionId,
     promptForConnection,
     promptForEnvironment,
     promptForFunctionName,
@@ -65,8 +66,12 @@ export class Ensure {
         return this.ensure(current, () => promptForFunctionToRun(availableFunctions), 'Function name is required');
     }
 
-    public async connection(current: string | undefined, environment: string): Promise<string> {
-        return this.ensure(current, () => promptForConnection(environment), 'Connection ID is required');
+    public async connection(current: string | undefined, environment: string, integrationId?: string): Promise<string> {
+        return this.ensure(current, () => promptForConnection(environment, integrationId), 'Connection ID is required');
+    }
+
+    public async inferIntegrations(connectionId: string, environment: string): Promise<string[]> {
+        return inferIntegrationsFromConnectionId(connectionId, environment);
     }
 
     public async projectPath(current: string | undefined): Promise<string> {

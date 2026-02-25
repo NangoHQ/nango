@@ -121,18 +121,21 @@ export async function promptForFunctionToRun(functions: { name: string; type: st
     return func;
 }
 
-export async function promptForConnection(environment: string): Promise<string> {
+export async function promptForConnection(environment: string, integrationId?: string): Promise<string> {
     await parseSecretKey(environment);
     const nango = new Nango({ secretKey: String(process.env['NANGO_SECRET_KEY']) });
     let connections: GetPublicConnections['Success'];
     try {
-        connections = await nango.listConnections();
+        connections = await nango.listConnections(integrationId ? { integrationId } : {});
     } catch (err: any) {
         throw new Error(`Failed to list connections: ${err.message}`, { cause: err });
     }
 
     if (connections.connections.length === 0) {
-        throw new Error('No connections found in your project for the selected environment. Please create a connection first.');
+        const msg = integrationId
+            ? `No connections found for integration "${integrationId}". Please create a connection first.`
+            : 'No connections found in your project for the selected environment. Please create a connection first.';
+        throw new Error(msg);
     }
     const { connection } = await inquirer.prompt([
         {
@@ -146,6 +149,18 @@ export async function promptForConnection(environment: string): Promise<string> 
         }
     ]);
     return connection;
+}
+
+export async function inferIntegrationsFromConnectionId(connectionId: string, environment: string): Promise<string[]> {
+    await parseSecretKey(environment);
+    const nango = new Nango({ secretKey: String(process.env['NANGO_SECRET_KEY']) });
+    try {
+        const result = await nango.listConnections({ connectionId });
+        return result.connections.map((c) => c.provider_config_key);
+    } catch {
+        // silently ignore: callers should treat an empty array as "couldn't infer"
+        return [];
+    }
 }
 
 export async function promptForProjectPath(): Promise<string> {

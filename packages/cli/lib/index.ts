@@ -345,17 +345,31 @@ program
             environment = await ensure.environment(environment, debug);
 
             const definitions = await buildDefinitions({ fullPath, debug });
-            if (definitions.isOk()) {
-                const functions = definitions.value.integrations
-                    .flatMap((i) => [...i.syncs, ...i.actions])
-                    .map((f) => ({ name: f.name, type: f.type as string }));
-                name = await ensure.function(name, functions);
-            } else {
+            if (definitions.isErr()) {
                 console.error(chalk.red('Could not build function definitions to select from.'));
                 process.exit(1);
             }
 
-            connectionId = await ensure.connection(connectionId, environment);
+            let integrationFilter: string[] | undefined = integrationId ? [integrationId] : undefined;
+            if (connectionId && !integrationFilter) {
+                // integration id not provided, try to infer it from the connection id
+                const inferred = await ensure.inferIntegrations(connectionId, environment);
+                if (inferred.length > 0) {
+                    integrationFilter = inferred;
+                }
+            }
+
+            // Show functions for which a connection with the given id is valid
+            const functions = definitions.value.integrations
+                .filter((i) => !integrationFilter || integrationFilter.includes(i.providerConfigKey))
+                .flatMap((i) => [...i.syncs, ...i.actions])
+                .map((f) => ({ name: f.name, type: f.type as string }));
+            name = await ensure.function(name, functions);
+
+            const selectedIntegrationId = definitions.value.integrations.find((i) =>
+                [...i.syncs, ...i.actions].some((s) => s.name === name)
+            )?.providerConfigKey;
+            connectionId = await ensure.connection(connectionId, environment, selectedIntegrationId);
         } catch (err: any) {
             console.error(chalk.red(err.message));
             if (err instanceof MissingArgumentError) {
