@@ -106,15 +106,27 @@ export async function promptForEnvironment(debug = false): Promise<string> {
     return env;
 }
 
-export async function promptForFunctionToRun(functions: { name: string; type: string }[]): Promise<string> {
+export async function promptForIntegration(integrations: string[]): Promise<string> {
+    const { integration } = await inquirer.prompt([
+        {
+            type: 'rawlist',
+            name: 'integration',
+            message: 'Multiple integrations have this script. Which one do you want to use?',
+            choices: integrations
+        }
+    ]);
+    return integration;
+}
+
+export async function promptForFunctionToRun(functions: { name: string; type: string; integration: string }[]): Promise<{ name: string; integration: string }> {
     const { func } = await inquirer.prompt([
         {
             type: 'rawlist',
             name: 'func',
             message: 'Which function do you want to dry run?',
             choices: functions.map((f) => ({
-                name: `${f.name} (${f.type})`,
-                value: f.name
+                name: `${f.integration} - ${f.name} (${f.type})`,
+                value: { name: f.name, integration: f.integration }
             }))
         }
     ]);
