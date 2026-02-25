@@ -82,6 +82,9 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
             if (clientRegistration === 'dynamic') {
                 const mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
                 config.oauth_client_id = mcpClientId;
+                // currently, dynamic client registration sets "token_endpoint_auth_method" to "none".
+                // This results in no `client_secret` being issued, as the flow uses PKCE instead of passing the client secret in the request body or headers.
+                config.oauth_client_secret = '';
             }
             // static: client_id/secret come from body.auth
             // metadata: not implemented (TODO)

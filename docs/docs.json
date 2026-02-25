@@ -486,6 +486,7 @@
               "api-integrations/google-search-console",
               "api-integrations/google-sheet",
               "api-integrations/granola",
+              "api-integrations/granola-mcp",
               "api-integrations/glyphic",
               "api-integrations/grist",
               "integrations/all/google-slides",
