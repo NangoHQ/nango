@@ -143,6 +143,8 @@ description: "Product updates and improvements."
   - `end_user_display_name` and `end_user_email` are shown directly in the connections list.
   - The domain from the `end_user_email` is used to automatically display the corresponding company logo on the connection detail page.
 
+  ![Connection Tags UI Change](/images/changelog/ConnectionTagsUIChange.png)
+
   You can also filter connections by tags via the API. See the [Connection tags documentation](/implementation-guides/platform/auth/connection-tags).
 
   **Migration Note:** If you currently use `end_user` or `organization` in Connect sessions or webhooks, follow the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. Existing connections have already been backfilled with tags derived from legacy end-user fields.
