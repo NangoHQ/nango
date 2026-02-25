@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from './language-snippets';
+import { httpSnippet, nodeActionSnippet, nodeSyncSnippet } from './language-snippets.js';
 
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';

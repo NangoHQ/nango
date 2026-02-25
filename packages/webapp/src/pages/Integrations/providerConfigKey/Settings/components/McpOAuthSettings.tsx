@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
@@ -51,8 +51,8 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
             }
         } catch (err) {
             let errorMessage = 'Failed to update scopes';
-            if (err instanceof APIError) {
-                errorMessage = err.message;
+            if (err instanceof APIError && err.json.error.message) {
+                errorMessage = err.json.error.message;
             }
             throw new Error(errorMessage);
         }

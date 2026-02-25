@@ -13,7 +13,7 @@ import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud.js';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
