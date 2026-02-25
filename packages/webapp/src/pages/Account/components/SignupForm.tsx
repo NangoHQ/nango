@@ -14,6 +14,7 @@ import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
 import { useResendVerificationEmail, useSignupAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { Password, passwordSchema } from '@/pages/Account/components/Password';
+import { APIError } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
 
 import type { ApiInvitation } from '@nangohq/types';
@@ -82,10 +83,14 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                 title: 'Verification email sent.',
                 variant: 'success'
             });
-            setShowResendEmail(false);
-        } catch {
-            setServerErrorMessage('Issue sending verification email. Please try again.');
+        } catch (err) {
+            if (err instanceof APIError && err.json?.error?.message) {
+                setServerErrorMessage(err.json.error.message);
+            } else {
+                setServerErrorMessage('Issue sending verification email. Please try again.');
+            }
         }
+        setShowResendEmail(false);
     };
 
     return (

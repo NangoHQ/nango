@@ -89,6 +89,21 @@ export function useResendVerificationEmailByUuid() {
     });
 }
 
+export function useLogoutAPI() {
+    return useMutation<undefined, APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch('/api/v1/account/logout', { method: 'POST' });
+
+            if (res.status === 200) {
+                return undefined;
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
 export function useSignupAPI() {
     return useMutation<
         | {
