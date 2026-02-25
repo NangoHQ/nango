@@ -14,7 +14,7 @@ function lambdaErrorTypeFromMessage(errorMessage: string): 'function_runtime_out
     return 'function_runtime_other';
 }
 
-export class InvocationsProcessor {
+export class LambdaInvocationsProcessor {
     private eventListener: EventListener;
 
     constructor() {
@@ -23,11 +23,11 @@ export class InvocationsProcessor {
 
     async start() {
         if (envs.LAMBDA_FAILURE_DESTINATION) {
-            await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, async (message) => await this.processMessage(message));
+            await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, async (message) => await this.processFailureMessage(message));
         }
     }
 
-    private async processMessage(message: QueueMessage) {
+    private async processFailureMessage(message: QueueMessage) {
         const parsedMessage = z
             .object({
                 responseContext: z.object({
