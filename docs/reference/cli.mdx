@@ -109,6 +109,10 @@ Global command flags:
 
 # Command flag to disable interactive mode.
 --no-interactive
+
+# Command flag to skip automatic package.json updates and package installs.
+# Recommended in CI and monorepos where dependency updates are managed elsewhere.
+--no-dependency-update
 ```
 
 Environment variables:
@@ -128,7 +132,41 @@ NANGO_CLI_UPGRADE_MODE=prompt # Default value
 # Whether to prompt before deployments.
 # Note: Destructive changes (like removing a sync or renaming a model) requires confirmation, even when NANGO_DEPLOY_AUTO_CONFIRM is set to true. To bypass this restriction, the --allow-destructive flag can be passed to nango deploy.
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
+
+# Skip automatic dependency updates and package installation.
+# Equivalent to passing --no-dependency-update.
+NANGO_CLI_DEPENDENCY_UPDATE=true # Default value
 ```
+
+## Dependency management
+
+For Zero YAML projects, the CLI can keep required dev dependencies (for example `nango` and related tooling) in sync and run package installation when needed.
+
+### `--no-dependency-update`
+
+Use `--no-dependency-update` to disable automatic `package.json` updates and dependency installs:
+
+```bash
+nango deploy dev --no-dependency-update
+```
+
+This is especially useful when:
+
+- your CI pipeline should not modify files
+- your monorepo manages dependencies at the workspace root
+- you want full control over when `install` runs
+
+In CI, dependency updates are automatically disabled to avoid hanging. Passing `--no-dependency-update` explicitly is still recommended to make intent clear and silence the warning.
+
+## Package manager support
+
+Nango supports all major JavaScript package managers. The CLI automatically detects and uses your package manager for installs. Detection works from the current directory upward (monorepo-aware), in this order:
+
+1. `package.json` `packageManager` field (Corepack standard)
+2. lock files (`pnpm-lock.yaml`, `yarn.lock`, `bun.lockb` / `bun.lock`)
+3. fallback to `npm`
+
+Supported managers are `npm`, `pnpm`, `yarn`, and `bun`.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

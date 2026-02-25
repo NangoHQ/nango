@@ -135,6 +135,27 @@ npm test
 
 See more in the [Testing integrations guide](/implementation-guides/platform/functions/testing).
 
+## Dependency-safe CI and monorepos
+
+When running Nango in CI or monorepos, you often want to avoid modifying `package.json` or running extra package installs from within Nango commands.
+
+Use:
+
+- `--no-dependency-update` on CLI commands
+- or `NANGO_CLI_DEPENDENCY_UPDATE=false` as an environment variable
+
+Example:
+
+```bash
+npx nango@latest deploy dev --no-dependency-update
+```
+
+This is useful when dependency installation is already handled by an earlier CI step (for example at the workspace root).
+
+<Info>
+In CI environments, Nango automatically disables dependency updates to prevent the CI pipeline from modifying the `package.json` file. Passing `--no-dependency-update` explicitly is still helpful for clarity and to silence warning messages.
+</Info>
+
 ## Related resources
 
 - [Testing integrations](/implementation-guides/platform/functions/testing) - A comprehensive guide to testing your Nango integrations.
