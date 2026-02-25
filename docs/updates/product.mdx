@@ -5,7 +5,6 @@ description: "Product updates and improvements."
 ---
 
 <Update label="January 2026">
-
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in December">
       - [3CX](/api-integrations/3cx)
@@ -47,7 +46,6 @@ description: "Product updates and improvements."
       - [Wise (API Key)](/api-integrations/wise-api-key)
     </Accordion>
   </AccordionGroup>
-  
   ## Sync cache data retention and pruning
 
   We added automatic data retention policies for records stored in the Nango sync cache. These policies ensure payload data is not retained indefinitely.
@@ -71,7 +69,7 @@ description: "Product updates and improvements."
 
   ## Shareable Connect UI links
 
-  You can now generate and copy a shareable Connect UI link directly from the Nango dashboard.
+  You can now generate and copy a shareable Connect UI link directly from the Nango dashboard. This enables you to create a link in Nango and share it with another person to complete the auth flow.
 
   ![Share Connect Link R Jan2026](/images/changelog/ShareConnectLinkRJan2026.gif)
 
@@ -79,7 +77,7 @@ description: "Product updates and improvements."
 
   ## Mobile-friendly Connect UI
 
-  We updated the Connect UI to optimize the layout for mobile devices.
+  We updated the Connect UI to optimize the layout for mobile/tablet devices.
 
   On viewports smaller than 640px, the UI now stretches to the full width of the screen. We removed wrapper padding, reduced inner padding, and removed rounded borders to maximize usable screen space.
 
@@ -105,7 +103,6 @@ description: "Product updates and improvements."
   - [Jira OAuth refresh token invalid_grant](https://www.nango.dev/blog/jira-oauth-refresh-token-invalid-grant)
   - [Gong OAuth refresh token invalid_grant](https://www.nango.dev/blog/gong-oauth-refresh-token-invalid-grant)
   - [Confluence OAuth refresh token invalid_grant](https://www.nango.dev/blog/confluence-oauth-refresh-token-invalid-grant)
-
 </Update>
 
 <Update label="December 2025">
@@ -148,11 +145,11 @@ description: "Product updates and improvements."
 
   You can also filter connections by tags via the API. See the [Connection tags documentation](/implementation-guides/platform/auth/connection-tags).
 
-  **Migration Note:** If you currently use `end_user` or `organization` on Connect sessions or in webhooks, follow the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. Existing connections have already been backfilled with tags derived from legacy end-user fields.
+  **Migration Note:** If you currently use `end_user` or `organization` in Connect sessions or webhooks, follow the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. Existing connections have already been backfilled with tags derived from legacy end-user fields.
 
   ## Enhanced OAuth error messaging
 
-  We rebuilt the callback experience to provide better visibility into OAuth errors. Provider error messages are now rendered directly inside the Connect UI form and the popup window
+  We rebuilt the callback experience to provide better visibility into OAuth errors. Provider error messages are now rendered directly inside the Connect UI form and the pop-up window
 
   ![Enhanced OAuth error messaging](../images/changelog/improved-oauth-error-messaging.png)
 
@@ -164,11 +161,11 @@ description: "Product updates and improvements."
 
   We have overhauled the Integrations tab to streamline how you manage and scale your catalog. This update focuses on faster discovery and a more intuitive setup flow.
 
-  - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. The search bar is now auto-focused by default.\\
+  - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. The search bar is now auto-focused by default.
 
     ![Improved Search](../images/changelog/new_integrations_list_page.png)
   - **Decoupled Creation Flow:** Selecting an API in the catalog now leads to a dedicated form where you configure credentials (Client ID, Secret, Scopes) before the integration is created. This prevents empty integrations from cluttering your dashboard.
-  - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list. \\
+  - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list.
 
     ![Improved Navigation](../images/changelog/breadcrumbs.png)
 
@@ -179,7 +176,9 @@ description: "Product updates and improvements."
   - [Finding traction without a product: Our process](https://www.nango.dev/blog/our-process-for-finding-initial-traction-pre-product)
   - [How to find the best integrations partner](https://www.nango.dev/blog/how-to-find-the-best-integrations-partner)
 </Update>
+
 ---
+
 <Update label="November 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="27 new APIs in November">
@@ -216,15 +215,15 @@ description: "Product updates and improvements."
 
   You can now set advanced configurations directly in the Nango UI when creating a connection. This form is split into two distinct sections.
 
-  First, you can specify end-user data. This includes setting a custom ID, email, and display name for the connection.
+  Firstly, you can specify end-user data. This includes setting a custom ID, email, and display name for the connection.
 
   ![Advanced connection settings](../images/changelog/AdvancedConnectionSettings.gif)
 
-  Second, you can override the integration's default configurations. You can modify authorization parameters, customize OAuth scopes, and override developer app credentials (such as the Client ID and Client Secret). This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
+  Secondly, you can also override the integration's default configurations. You can modify authorization parameters, customize OAuth scopes, and override developer app credentials (such as the Client ID and Client Secret). This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
 
   ## Template cloning via CLI
 
-  The Nango CLI now includes a `nango clone` command. This automates the process of pulling function templates and their dependencies from the Nango integration templates repository.
+  The [Nango CLI](/reference/cli) now includes a `nango clone` command. This automates the process of pulling function templates and their dependencies from the Nango integration templates repository.
 
   This replaces the manual process of copying and pasting configuration and TypeScript code. You can clone an entire integration directory, a specific category of functions, or an individual template.
 
@@ -254,7 +253,9 @@ description: "Product updates and improvements."
   - [The hidden costs of building product integrations in-house](https://www.notion.so/blog/the-hidden-costs-of-building-product-integrations-in-house)
   - [Product integrations: Build or buy?](https://www.notion.so/blog/product-integrations-build-or-buy)
 </Update>
+
 ---
+
 <Update label="October 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="23 new APIs in October">
@@ -317,7 +318,9 @@ description: "Product updates and improvements."
   - [The 4 most popular Paragon alternatives](https://www.nango.dev/blog/4-most-popular-paragon-alternatives)
   - [The 4 most popular Merge.dev alternatives](https://www.nango.dev/blog/4-most-popular-merge-dev-alternatives)
 </Update>
+
 ---
+
 <Update label="September 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="28 new APIs in September">
