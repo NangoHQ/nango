@@ -63,7 +63,7 @@ description: "Product updates and improvements."
 
   ![Salesforce JWT](/images/changelog/SalesforceJWT.png)
 
-  This auth mode bypasses the interactive OAuth consent screen, which is often preferred by enterprise customers for easier onboarding and stronger governance. It requires a Consumer Key, Consumer Secret, Private Key, and Username from a JWT-enabled Connected App.
+  This auth mode bypasses the interactive OAuth consent screen, which enterprise customers often prefer for easier onboarding and stronger governance. It requires a Consumer Key, Consumer Secret, Private Key, and Username from a JWT-enabled Connected App.
 
   See the [Salesforce JWT documentation](https://nango.dev/docs/api-integrations/salesforce-jwt) for the setup guide and implementation snippets.
 
@@ -149,7 +149,7 @@ description: "Product updates and improvements."
 
   ## Enhanced OAuth error messaging
 
-  We rebuilt the callback experience to provide better visibility into OAuth errors. Provider error messages are now rendered directly inside the Connect UI form and the pop-up window
+  We rebuilt the callback experience to provide better visibility into OAuth errors. Provider error messages are now rendered directly inside the Connect UI form and the pop-up window.
 
   ![Enhanced OAuth error messaging](../images/changelog/improved-oauth-error-messaging.png)
 
@@ -292,7 +292,7 @@ description: "Product updates and improvements."
 
   You can still provide all arguments upfront to skip prompts (e.g., for scripting): test `nango create --sync --integration my-api --name get-contacts`
 
-  To disable interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments.
+  To turn off interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments.
 
   ## Change in mock file structure for Nango integration tests
 
