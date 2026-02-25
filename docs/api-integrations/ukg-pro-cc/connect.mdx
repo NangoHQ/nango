@@ -1,0 +1,54 @@
+---
+title: UKG Pro HCM (Client Credentials) - How do I link my account?
+sidebarTitle: UKG Pro HCM (Client Credentials)
+---
+
+# Overview
+
+To authenticate with UKG Pro (Client Credentials), you will need:
+
+1. **Client ID** – Unique identifier of the identity client provided by UKG customer support.
+2. **Client Secret** – Client secret associated with the client ID, provided by UKG customer support.
+3. **Identity Server** – Identity server for your tenant (e.g. `signin.ukg.net`, `signin.ultipro.com`), provided by UKG customer support.
+4. **Tenant** – The tenant value from your UKG Pro Recruiting URL.
+5. **Recruiting Application Domain** – The recruiting application domain (hostname) from your UKG Pro Recruiting URL.
+
+This guide walks you through obtaining these values.
+
+### Prerequisites
+
+- Your organization must be registered with UKG.
+
+### Instructions
+
+#### Step 1: Getting the credentials from UKG support
+
+The UKG Identity team registers your integration with UKG Pro Recruiting via an offline process. You need the following provided by UKG customer support:
+
+- **Client ID** – Unique identifier of the identity client.
+- **Client Secret** – Secret associated with the client ID.
+- **Identity Server** – Identity server for your tenant (e.g. `signin.ukg.net`, `signin.ultipro.com`).
+
+Request this authentication information from UKG customer support before setting up the connection.
+
+#### Step 2: Identify tenant and recruiting application domain
+
+Log in to your **UKG Pro Recruiting** account and check the URL in the browser address bar. You can identify:
+
+- **Recruiting Application Domain** – The hostname of the Recruiting application (e.g. `recruiting.example.ultipro.com`).
+- **Tenant** – The tenant value is the segment that follows the **first slash after the domain name** in the URL.
+
+Example: for a URL like `https://recruiting.example.ultipro.com/UO32145HGOGOG/some-path`, the Recruiting Application Domain is `recruiting.example.ultipro.com` and the tenant is `UO32145HGOGOG`.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, **Identity Server**, **Tenant**, and **Recruiting Application Domain**:
+
+1. Open the form where you need to connect UKG Pro (Client Credentials).
+2. Enter **Identity Server** (e.g. `signin.ukg.net`), **Tenant**, and **Recruiting Application Domain** in their respective fields.
+3. Enter **Client ID** and **Client Secret** in their respective fields.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ukg-pro-cc/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to UKG Pro HCM (Client Credentials).

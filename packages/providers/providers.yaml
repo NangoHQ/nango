@@ -16492,6 +16492,64 @@ ukg-pro:
             prefix: https://
             doc_section: '#step-3-finding-your-hostname'
 
+ukg-pro-cc:
+    display_name: UKG Pro HCM (Client Credentials)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.identityServer}/signin/oauth2/t/${connectionConfig.tenantId}/access_token
+    body_format: form
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        retry:
+            after:
+                - 'retry-after'
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/ukg-pro-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ukg-pro-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Unique identifier of the identity client provided by UKG customer support.
+            doc_section: '#step-1-getting-the-credentials-from-ukg-support'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client secret associated with the client ID provided by UKG customer support.
+            secret: true
+            doc_section: '#step-1-getting-the-credentials-from-ukg-support'
+    connection_config:
+        identityServer:
+            type: string
+            title: Identity Server
+            description: Identity server for your tenant.
+            format: hostname
+            example: signin.ukg.net
+            order: 1
+            doc_section: '#step-1-getting-the-credentials-from-ukg-support'
+        tenantId:
+            type: string
+            title: Tenant
+            description: Tenant value from your UKG Pro Recruiting URL.
+            example: UO32145HGOGOG
+            pattern: '^[a-zA-Z0-9]+$'
+            order: 3
+            doc_section: '#step-2-identify-tenant-and-recruiting-application-domain'
+        hostname:
+            type: string
+            title: Recruiting Application Domain
+            description: Recruiting application domain from your UKG Pro Recruiting URL.
+            format: hostname
+            example: recruiting.example.ultipro.com
+            prefix: https://
+            order: 2
+            doc_section: '#step-2-identify-tenant-and-recruiting-application-domain'
+
 ukg-ready:
     display_name: UKG Ready
     categories:

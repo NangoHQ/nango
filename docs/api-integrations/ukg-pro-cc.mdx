@@ -1,0 +1,82 @@
+---
+title: 'UKG Pro HCM (Client Credentials)'
+sidebarTitle: 'UKG Pro HCM (Client Credentials)'
+description: 'Integrate your application with the UKG Pro Recruiting API using OAuth2 client credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to UKG Pro with Nango using client credentials and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _UKG Pro HCM (Client Credentials)_.
+    </Step>
+    <Step title="Authorize UKG Pro">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Client ID, Client Secret, Identity Server, Tenant, and Recruiting Application Domain. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the UKG Pro API">
+    Make your first request to the UKG Pro Recruiting API. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections). Use the **tenant ID** from your connection's connection config in the path (e.g. `UO32145HGOGOG`):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/talent/recruiting/v2/<TENANT_ID>/api/applications?page=1&per_page=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        // Get tenant ID from connection config (set when you created the connection)
+        const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+        const tenantId = connection.connection_config?.tenantId as string;
+
+        const res = await nango.get({
+            endpoint: `/talent/recruiting/v2/${tenantId}/api/applications`,
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { page: 1, per_page: 10 }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your production credentials and connection config values, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 UKG Pro HCM (Client Credentials) Integration Guides
+
+- [How do I link my account?](/api-integrations/ukg-pro-cc/connect)  
+  Connect your UKG Pro account using the Connect UI and get Client ID, Identity Server, Tenant, and Recruiting Application Domain
+
+Official docs: [UKG Pro HCM API Reference](https://developer.ukg.com/hcm/reference/)
+
+## 🧩 Pre-built syncs & actions for UKG Pro HCM (Client Credentials)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ukg-pro-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
