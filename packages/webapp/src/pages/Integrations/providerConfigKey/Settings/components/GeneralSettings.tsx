@@ -10,7 +10,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Label } from '@/components-v2/ui/label';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { apiPatchIntegration } from '@/hooks/useIntegration';
+import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
@@ -25,19 +25,20 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { toast } = useToast();
     const navigate = useNavigate();
     const { confirm, DialogComponent } = useConfirmDialog();
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
 
     const [webhookForwarding, setWebhookForwarding] = useState(integration.forward_webhooks);
 
     const onSave = async (field: PatchIntegration['Body']) => {
-        const updated = await apiPatchIntegration(env, integration.unique_key, field);
-        if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
-            toast({ title: errorMessage, variant: 'error' });
-            throw new Error(errorMessage);
-        } else {
+        try {
+            await patchIntegration(field);
             toast({ title: 'Successfully updated', variant: 'success' });
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 

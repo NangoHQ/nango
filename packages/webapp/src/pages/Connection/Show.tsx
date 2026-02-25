@@ -19,7 +19,6 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Button } from '../../components/ui/button/Button';
 import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import { clearIntegrationsCache } from '../../hooks/useIntegration';
 import { GetUsageQueryKey } from '../../hooks/usePlan';
 import { useSyncs } from '../../hooks/useSyncs';
 import { useToast } from '../../hooks/useToast';
@@ -93,8 +92,9 @@ export const ConnectionShow: React.FC = () => {
                 undefined,
                 { revalidate: false }
             );
+            // TODO: remove after migrating all connection operations to tanstack query
             clearConnectionsCache(cache, mutate);
-            clearIntegrationsCache(cache, mutate);
+            queryClient.invalidateQueries({ queryKey: ['integrations', env] });
             queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
 
             navigate(`/${env}/connections`, { replace: true });

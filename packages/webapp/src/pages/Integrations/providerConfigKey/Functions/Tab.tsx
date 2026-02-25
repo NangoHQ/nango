@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { EmptyCard } from '../../components/EmptyCard.js';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CopyButton } from '@/components-v2/CopyButton';
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert.js';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Badge } from '@/components-v2/ui/badge';
 import { ButtonLink } from '@/components-v2/ui/button';
@@ -40,17 +41,18 @@ interface FunctionsTabProps {
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
-    const { data, loading } = useGetIntegrationFlows(env, integration.unique_key);
+    const { data, isLoading, error: flowsError } = useGetIntegrationFlows(env, integration.unique_key);
+    const flowsData = data?.data;
 
     const [activeTab, setActiveTab] = useHashNavigation('actions');
 
     const { actions, actionsByGroup, syncs, syncsByGroup } = useMemo(() => {
-        const actions = data?.flows.filter((flow) => flow.type === 'action') ?? [];
-        const syncs = data?.flows.filter((flow) => flow.type === 'sync') ?? [];
+        const actions = flowsData?.flows.filter((flow) => flow.type === 'action') ?? [];
+        const syncs = flowsData?.flows.filter((flow) => flow.type === 'sync') ?? [];
         const actionsByGroup = groupByGroup(actions);
         const syncsByGroup = groupByGroup(syncs);
         return { actions, actionsByGroup, syncs, syncsByGroup };
-    }, [data?.flows]);
+    }, [flowsData?.flows]);
 
     const onFunctionClick = useCallback(
         (func: NangoSyncConfig) => {
@@ -59,7 +61,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         [env, integration.unique_key, navigate]
     );
 
-    if (loading) {
+    if (flowsError) {
+        return <CriticalErrorAlert message="Something went wrong while loading the flows" />;
+    }
+
+    if (isLoading) {
         return <Skeleton className="w-full max-w-2xl h-50" />;
     }
 
