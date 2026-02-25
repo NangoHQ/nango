@@ -539,7 +539,7 @@ export class NangoError extends NangoInternalError {
                 this.message = 'The function runtime ran out of memory';
                 break;
 
-            case 'function_runtime_timed_oud':
+            case 'function_runtime_timed_out':
                 this.status = 500;
                 this.message = 'The function runtime timed out';
                 break;

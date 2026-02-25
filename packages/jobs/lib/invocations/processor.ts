@@ -8,9 +8,9 @@ import { nangoPropsSchema } from '../schemas/nango-props.js';
 import type { EventListener, QueueMessage } from '../events/listener.js';
 import type { NangoProps } from '@nangohq/types';
 
-function lambdaErrorTypeFromMessage(errorMessage: string): 'function_runtime_out_of_memory' | 'function_runtime_timed_oud' | 'function_runtime_other' {
+function lambdaErrorTypeFromMessage(errorMessage: string): 'function_runtime_out_of_memory' | 'function_runtime_timed_out' | 'function_runtime_other' {
     if (errorMessage.includes('signal: killed')) return 'function_runtime_out_of_memory';
-    if (errorMessage.includes('Task timed out')) return 'function_runtime_timed_oud';
+    if (errorMessage.includes('Task timed out')) return 'function_runtime_timed_out';
     return 'function_runtime_other';
 }
 
