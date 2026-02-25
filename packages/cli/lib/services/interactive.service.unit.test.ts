@@ -126,19 +126,31 @@ describe('Interactive Service', () => {
         });
     });
 
-    it('should prompt for function to run', async () => {
-        mockedInquirer.prompt.mockResolvedValue({ func: 'my-sync' });
-        const functions = [{ name: 'my-sync', type: 'sync' }];
-        const name = await promptForFunctionToRun(functions);
-        expect(name).toBe('my-sync');
+    it('should prompt for function to run and return name + integration', async () => {
+        const selected = { name: 'my-sync', integration: 'hubspot' };
+        mockedInquirer.prompt.mockResolvedValue({ func: selected });
+        const functions = [{ name: 'my-sync', type: 'sync', integration: 'hubspot' }];
+        const result = await promptForFunctionToRun(functions);
+        expect(result).toEqual({ name: 'my-sync', integration: 'hubspot' });
         expect(mockedInquirer.prompt).toHaveBeenCalledWith([
             {
                 type: 'rawlist',
                 name: 'func',
                 message: expect.any(String),
-                choices: [{ name: 'my-sync (sync)', value: 'my-sync' }]
+                choices: [{ name: 'hubspot - my-sync (sync)', value: { name: 'my-sync', integration: 'hubspot' } }]
             }
         ]);
+    });
+
+    it('should disambiguate same-named functions across integrations', async () => {
+        const selected = { name: 'employees', integration: 'workday' };
+        mockedInquirer.prompt.mockResolvedValue({ func: selected });
+        const functions = [
+            { name: 'employees', type: 'sync', integration: 'workday' },
+            { name: 'employees', type: 'sync', integration: 'ukg-pro' }
+        ];
+        const result = await promptForFunctionToRun(functions);
+        expect(result).toEqual({ name: 'employees', integration: 'workday' });
     });
 
     it('should prompt for project path', async () => {
