@@ -1,12 +1,14 @@
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
 import type { Fleet } from '@nangohq/fleet';
 import type { NangoProps, Result } from '@nangohq/types';
+
+const logger = getLogger('LambdaRuntimeAdapter');
 
 const client = new LambdaClient();
 
@@ -48,7 +50,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             await client.send(command);
             return Ok(true);
         } catch (err) {
-            return Err(new Error(`Lambda was unable to execute the function`, { cause: err }));
+            logger.error('Lambda was unable to execute the function', err);
+            return Err(new Error(`The function runtime was unable to execute the function`, { cause: err }));
         }
     }
 
