@@ -133,8 +133,7 @@ NANGO_CLI_UPGRADE_MODE=prompt # Default value
 # Note: Destructive changes (like removing a sync or renaming a model) requires confirmation, even when NANGO_DEPLOY_AUTO_CONFIRM is set to true. To bypass this restriction, the --allow-destructive flag can be passed to nango deploy.
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 
-# Skip automatic dependency updates and package installation.
-# Equivalent to passing --no-dependency-update.
+# Control automatic dependency updates. Set to "false" to skip installs (equivalent to --no-dependency-update).
 NANGO_CLI_DEPENDENCY_UPDATE=true # Default value
 ```
 
