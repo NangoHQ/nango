@@ -82,7 +82,7 @@ RUN true \
 FROM node:22.21.1-bookworm-slim AS web
 
 # Install a more recent npm
-RUN npm install -g npm@11.8.0
+RUN npm install -g npm@11.10.1
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \
