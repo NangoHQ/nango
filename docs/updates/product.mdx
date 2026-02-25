@@ -4,6 +4,109 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="January 2026">
+
+  <AccordionGroup>
+    <Accordion icon="webhook" title="37 new APIs in December">
+      - [3CX](/integrations/all/3cx)
+      - [8x8](/integrations/all/8x8)
+      - [Adobe Commerce](/integrations/all/adobe-commerce)
+      - [Atlassian Service Account (API Token)](/integrations/all/atlassian-service-account-api-token)
+      - [Atlassian Service Account (OAuth 2.0)](/integrations/all/atlassian-service-account-oauth2)
+      - [Bird](/integrations/all/bird)
+      - [Canvas LMS](/integrations/all/canvas-lms)
+      - [Cloudbeds](/integrations/all/cloudbeds)
+      - [Constant Contact](/integrations/all/constant-contact)
+      - [DemoDesk](/integrations/all/demodesk)
+      - [Crisp (Plugin Install)](/integrations/all/crisp-plugin-install)
+      - [ECU360 (Test)](/integrations/all/ecu360)
+      - [ECU360 (Production)](/integrations/all/ecu360-production)
+      - [FreeAgent](/integrations/all/freeagent)
+      - [FreeAgent (Sandbox)](/integrations/all/freeagent-sandbox)
+      - [Google Meet](/integrations/all/google-meet)
+      - [Greenhouse Harvest Partner (V3)](/integrations/all/greenhouse-harvest-partner)
+      - [Greenhouse Harvest (Client Credentials V3)](/integrations/all/greenhouse-harvest-oauth2-cc)
+      - [Looker](/integrations/all/looker)
+      - [Meta Marketing API](/integrations/all/meta-marketing-api)
+      - [Juniper Mist](/integrations/all/juniper-mist)
+      - [Mollie](/integrations/all/mollie)
+      - [ModMed](/integrations/all/modmed)
+      - [Nerdio](/integrations/all/nerdio)
+      - [nocrm.io](/integrations/all/nocrm)
+      - [Oomnitza](/integrations/all/oomnitza)
+      - [Perdoo](/integrations/all/perdoo)
+      - [Pylon](/integrations/all/pylon)
+      - [Procore](/integrations/all/procore)
+      - [Reapit Connect](/integrations/all/reapit)
+      - [Schwab](/integrations/all/schwab)
+      - [ServiceNow (Client Credentials)](/integrations/all/servicenow-oauth2-cc)
+      - [Stripe (API Key)](/integrations/all/stripe-api-key)
+      - [Wiseagent](/integrations/all/wiseagent)
+      - [WorkOS](/integrations/all/workos)
+      - [Workday (Refresh Token Auth)](/integrations/all/workday-refresh-token)
+      - [Wise (API Key)](/integrations/all/wise-api-key)
+    </Accordion>
+  </AccordionGroup>
+  ## Sync cache data retention and pruning
+
+  We added automatic data retention policies for records stored in the Nango sync cache. These policies ensure payload data is not retained indefinitely.
+
+  - **Automated payload pruning:** If a record has not been updated for 30 days, we automatically empty its payload. The metadata (ID, sync state, payload hash) remains intact so Nango can still track the record and detect future changes.
+  - **Automated hard deletion:** If a sync has not executed for 60 days, we permanently delete all records belonging to that sync (payload and metadata).
+
+  These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/use-cases/syncs/records-cache).
+
+  We also introduced a new endpoint to manually prune records. You can use `PATCH /records/prune` to empty record payloads on demand while preserving the metadata. This endpoint uses cursor-based pagination via the `until_cursor` parameter to prevent collision issues during concurrent operations. See the [Prune records API reference](/reference/api/sync/prune-records).
+
+  ## Support for Salesforce JWT Bearer auth
+
+  You can now authenticate with Salesforce using the JWT Bearer flow. This enables server-to-server authentication using a dedicated "API user" inside the customer's Salesforce org.
+
+  ![Salesforce JWT](/images/changelog/SalesforceJWT.png)
+
+  This auth mode bypasses the interactive OAuth consent screen, which is often preferred by enterprise customers for easier onboarding and stronger governance. It requires a Consumer Key, Consumer Secret, Private Key, and Username from a JWT-enabled Connected App.
+
+  See the [Salesforce JWT documentation](https://nango.dev/docs/api-integrations/salesforce-jwt) for the setup guide and implementation snippets.
+
+  ## Shareable Connect UI links
+
+  You can now generate and copy a shareable Connect UI link directly from the Nango dashboard.
+
+  ![Share Connect Link R Jan2026](/images/changelog/ShareConnectLinkRJan2026.gif)
+
+  The creation form includes a secondary button that mints a session-based URL. The UI displays an expiry notification when you copy the link to your clipboard. Links expire after 30 minutes.
+
+  ## Mobile-friendly Connect UI
+
+  We updated the Connect UI to optimize the layout for mobile devices.
+
+  On viewports smaller than 640px, the UI now stretches to the full width of the screen. We removed wrapper padding, reduced inner padding, and removed rounded borders to maximize usable screen space.
+
+  ![Mobile Support](</images/changelog/Mobile support.png>)
+
+  ## New blog posts
+
+  We published a series of debugging guides detailing what causes OAuth refresh token `invalid_grant` or `BAD_REFRESH_TOKEN` errors and how to fix them across various providers:
+
+  - [QuickBooks OAuth refresh token invalid_grant](https://www.nango.dev/blog/quickbooks-oauth-refresh-token-invalid-grant)
+  - [Airtable OAuth refresh token invalid_grant](https://www.nango.dev/blog/airtable-oauth-refresh-token-invalid-grant)
+  - [GitHub App OAuth BAD_REFRESH_TOKEN](https://www.nango.dev/blog/github-app-oauth-refresh-token-bad-refresh-token)
+  - [Microsoft OAuth refresh token invalid_grant](https://www.nango.dev/blog/microsoft-oauth-refresh-token-invalid-grant)
+  - [LinkedIn OAuth refresh token invalid_grant](https://www.nango.dev/blog/linkedin-oauth-refresh-token-invalid-grant)
+  - [Slack OAuth refresh token invalid_grant](https://www.nango.dev/blog/slack-oauth-refresh-token-invalid-grant)
+  - [Stripe OAuth refresh token invalid_grant](https://www.nango.dev/blog/stripe-oauth-refresh-token-invalid-grant)
+  - [Shopify OAuth refresh token invalid_grant](https://www.nango.dev/blog/shopify-oauth-refresh-token-invalid-grant)
+  - [Xero OAuth refresh token invalid_grant](https://www.nango.dev/blog/xero-oauth-refresh-token-invalid-grant)
+  - [Linear OAuth refresh token invalid_grant](https://www.nango.dev/blog/linear-oauth-refresh-token-invalid-grant)
+  - [PostHog OAuth refresh token invalid_grant](https://www.nango.dev/blog/posthog-oauth-refresh-token-invalid-grant)
+  - [Notion OAuth refresh token invalid_grant](https://www.nango.dev/blog/notion-oauth-refresh-token-invalid-grant)
+  - [Zendesk OAuth refresh token invalid_grant](https://www.nango.dev/blog/zendesk-oauth-refresh-token-invalid-grant)
+  - [Jira OAuth refresh token invalid_grant](https://www.nango.dev/blog/jira-oauth-refresh-token-invalid-grant)
+  - [Gong OAuth refresh token invalid_grant](https://www.nango.dev/blog/gong-oauth-refresh-token-invalid-grant)
+  - [Confluence OAuth refresh token invalid_grant](https://www.nango.dev/blog/confluence-oauth-refresh-token-invalid-grant)
+  
+</Update>
+
 <Update label="December 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="22 new APIs in December">
@@ -64,7 +167,8 @@ description: "Product updates and improvements."
 
     ![Improved Search](../images/changelog/new_integrations_list_page.png)
   - **Decoupled Creation Flow:** Selecting an API in the catalog now leads to a dedicated form where you configure credentials (Client ID, Secret, Scopes) before the integration is created. This prevents empty integrations from cluttering your dashboard.
-  - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list. \
+  - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list. \\
+
     ![Improved Navigation](../images/changelog/breadcrumbs.png)
 
   ## New blog posts
@@ -74,9 +178,7 @@ description: "Product updates and improvements."
   - [Finding traction without a product: Our process](https://www.nango.dev/blog/our-process-for-finding-initial-traction-pre-product)
   - [How to find the best integrations partner](https://www.nango.dev/blog/how-to-find-the-best-integrations-partner)
 </Update>
-
 ---
-
 <Update label="November 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="27 new APIs in November">
@@ -151,9 +253,7 @@ description: "Product updates and improvements."
   - [The hidden costs of building product integrations in-house](https://www.notion.so/blog/the-hidden-costs-of-building-product-integrations-in-house)
   - [Product integrations: Build or buy?](https://www.notion.so/blog/product-integrations-build-or-buy)
 </Update>
-
 ---
-
 <Update label="October 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="23 new APIs in October">
@@ -215,10 +315,8 @@ description: "Product updates and improvements."
   - [Merge pricing: What you should know before you commit](https://www.nango.dev/blog/merge-pricing)
   - [The 4 most popular Paragon alternatives](https://www.nango.dev/blog/4-most-popular-paragon-alternatives)
   - [The 4 most popular Merge.dev alternatives](https://www.nango.dev/blog/4-most-popular-merge-dev-alternatives)
-
-  ---
 </Update>
-
+---
 <Update label="September 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="28 new APIs in September">
