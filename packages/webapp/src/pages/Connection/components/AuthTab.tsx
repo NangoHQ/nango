@@ -20,7 +20,7 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
         <div className="flex w-full gap-11 justify-between">
             <div className="flex flex-col gap-8 max-w-2xl">
                 {errorLog && (
-                    <Alert variant="destructive">
+                    <Alert variant="error">
                         <Info />
                         <AlertDescription>
                             {credentials.type === 'BASIC' || credentials.type === 'API_KEY'
@@ -30,7 +30,7 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                         <AlertActions>
                             <AlertButtonLink
                                 to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
-                                variant="destructive"
+                                variant="error"
                             >
                                 View log <ArrowUpRight />
                             </AlertButtonLink>
