@@ -106,36 +106,6 @@ export function useHostedSigninAPI() {
     };
 }
 
-export function useRequestPasswordResetAPI() {
-    return async (email: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/account/forgot-password`, {
-                method: 'POST',
-                body: JSON.stringify({ email: email })
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useResetPasswordAPI() {
-    return async (token: string, password: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/account/reset-password`, {
-                method: 'PUT',
-                body: JSON.stringify({ password: password, token: token })
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useGetHmacAPI(env: string) {
     return async (providerConfigKey: string, connectionId: string) => {
         try {
