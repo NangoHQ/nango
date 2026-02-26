@@ -32,7 +32,7 @@ To finish connecting an AWS SigV4 integration, you (the end customer) need:
 #### Step 3: Enter connection details
 
 1. If the vendor asked you to use a specific AWS region, enter it in the **AWS Region (optional)** field (e.g., `us-east-1`). Leave it empty to use the vendor’s default region.
-2. Submit the form. Nango will validate the role by assuming it via the vendor’s secure STS endpoint.
+2. Submit the form. Nango will validate the role by assuming it via AWS STS (or the vendor’s custom STS endpoint).
 
 Once the form succeeds, the integration owner can begin proxying requests to AWS services on your behalf.
 

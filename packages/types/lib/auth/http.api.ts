@@ -186,7 +186,8 @@ type AwsSigV4AuthErrors =
     | ApiError<'missing_aws_sigv4_config'>
     | ApiError<'invalid_aws_sigv4_config'>
     | ApiError<'missing_aws_sigv4_service'>
-    | ApiError<'missing_aws_sigv4_sts_endpoint'>;
+    | ApiError<'missing_aws_sigv4_sts_endpoint'>
+    | ApiError<'missing_aws_sigv4_builtin_credentials'>;
 
 export type PostPublicAwsSigV4Authorization = Endpoint<{
     Method: 'POST';

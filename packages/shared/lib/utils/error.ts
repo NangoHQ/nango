@@ -188,6 +188,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `AWS SigV4 integration is missing the STS endpoint configuration.`;
                 break;
 
+            case 'missing_aws_sigv4_builtin_credentials':
+                this.status = 400;
+                this.message = `AWS SigV4 built-in mode requires AWS Access Key ID and Secret Access Key.`;
+                break;
+
             case 'missing_aws_sigv4_region':
                 this.status = 400;
                 this.message = `AWS SigV4 requests require a region.`;
