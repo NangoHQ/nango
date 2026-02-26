@@ -260,12 +260,13 @@ async function fetchAwsTemporaryCredentialsBuiltin({
         const creds = parseAssumeRoleResponse(response.data as string);
         if (!creds) {
             logger.error('AWS STS AssumeRole returned invalid response', response.data);
-            return Err(new NangoError('aws_sigv4_sts_request_failed'));
+            return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'STS returned a response but credentials could not be parsed' }));
         }
         return Ok(creds);
     } catch (err) {
-        logger.error('Failed to call AWS STS AssumeRole', stringifyError(err));
-        return Err(new NangoError('aws_sigv4_sts_request_failed'));
+        const errorMessage = err instanceof Error ? err.message : stringifyError(err);
+        logger.error('Failed to call AWS STS AssumeRole', errorMessage);
+        return Err(new NangoError('aws_sigv4_sts_request_failed', { message: `STS request failed: ${errorMessage}` }));
     }
 }
 
@@ -310,12 +311,13 @@ async function fetchAwsTemporaryCredentialsCustom({
         const creds = normalizeStsResponse(response.data);
         if (!creds) {
             logger.error('STS endpoint returned invalid payload', response.data);
-            return Err(new NangoError('aws_sigv4_sts_request_failed'));
+            return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'Custom STS endpoint returned a response but credentials could not be parsed' }));
         }
         return Ok(creds);
     } catch (err) {
-        logger.error('Failed to fetch AWS credentials from STS endpoint', stringifyError(err));
-        return Err(new NangoError('aws_sigv4_sts_request_failed'));
+        const errorMessage = err instanceof Error ? err.message : stringifyError(err);
+        logger.error('Failed to fetch AWS credentials from STS endpoint', errorMessage);
+        return Err(new NangoError('aws_sigv4_sts_request_failed', { message: `Custom STS request failed: ${errorMessage}` }));
     }
 }
 
