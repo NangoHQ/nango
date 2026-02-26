@@ -12,7 +12,7 @@ import { Button } from '../../../../../components/ui/button/Button';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Input } from '../../../../../components/ui/input/Input';
 import SecretInput from '../../../../../components/ui/input/SecretInput';
-import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
+import { usePatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 import { formatDateToInternationalFormat } from '../../../../../utils/utils';
@@ -69,6 +69,7 @@ export const SettingsGeneral: React.FC<{
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
     const [showEditIntegrationId, setShowEditIntegrationId] = useState(false);
     const [showEditDisplayName, setShowEditDisplayName] = useState(false);
     const [showEditForwardWebhooks, setShowEditForwardWebhooks] = useState(false);
@@ -80,59 +81,57 @@ export const SettingsGeneral: React.FC<{
 
     const onSaveDisplayName = async () => {
         setLoading(true);
-
-        const updated = await apiPatchIntegration(env, integration.unique_key, { displayName });
-
-        setLoading(false);
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
+        try {
+            await patchIntegration({ displayName });
             toast({ title: 'Successfully updated display name', variant: 'success' });
             setShowEditDisplayName(false);
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+        } catch {
+            toast({ title: 'Failed to update, an error occurred', variant: 'error' });
+        } finally {
+            setLoading(false);
         }
     };
 
     const onSaveIntegrationID = async () => {
         setLoading(true);
-
-        const updated = await apiPatchIntegration(env, integration.unique_key, { integrationId });
-
-        setLoading(false);
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
+        try {
+            await patchIntegration({ integrationId });
             toast({ title: 'Successfully updated integration id', variant: 'success' });
             setShowEditIntegrationId(false);
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
             navigate(`/${env}/integrations/${integrationId}/settings`);
+        } catch {
+            toast({ title: 'Failed to update, an error occurred', variant: 'error' });
+        } finally {
+            setLoading(false);
         }
     };
 
     const onSaveWebhookSecret = async () => {
         setLoading(true);
-
-        const updated = await apiPatchIntegration(env, integration.unique_key, { webhookSecret });
-
-        setLoading(false);
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
+        try {
+            await patchIntegration({ webhookSecret });
             toast({ title: 'Successfully updated webhook secret', variant: 'success' });
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
+        } catch {
+            toast({ title: 'Failed to update, an error occurred', variant: 'error' });
+        } finally {
+            setLoading(false);
         }
     };
 
     const onSaveForwardWebhooks = async () => {
         setLoading(true);
-        const updated = await apiPatchIntegration(env, integration.unique_key, { forward_webhooks: forwardWebhooks });
-        setLoading(false);
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
+        try {
+            await patchIntegration({ forward_webhooks: forwardWebhooks });
             toast({ title: 'Successfully updated forward webhooks', variant: 'success' });
             setShowEditForwardWebhooks(false);
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integrationId}`));
+        } catch {
+            toast({ title: 'Failed to update, an error occurred', variant: 'error' });
+        } finally {
+            setLoading(false);
         }
     };
 

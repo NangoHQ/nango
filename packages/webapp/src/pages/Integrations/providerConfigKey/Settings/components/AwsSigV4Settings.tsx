@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from '../../../../../components/ui/button/Button';
 import { Input } from '../../../../../components/ui/input/Input';
 import SecretInput from '../../../../../components/ui/input/SecretInput';
-import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
+import { usePatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
 
@@ -165,6 +165,7 @@ export const AwsSigV4Settings: React.FC<{
 }> = ({ data: { integration } }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const [awsSigV4Config, setAwsSigV4Config] = useState<AwsSigV4Config | null>(() => deserializeAwsSigV4Config(integration.custom?.['aws_sigv4_config']));
     const [loading, setLoading] = useState(false);
@@ -291,15 +292,12 @@ export const AwsSigV4Settings: React.FC<{
         }
 
         setLoading(true);
-        const updated = await apiPatchIntegration(env, integration.unique_key, {
-            custom: {
-                aws_sigv4_config: payload ?? ''
-            }
-        });
-        setLoading(false);
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
+        try {
+            await patchIntegration({
+                custom: {
+                    aws_sigv4_config: payload ?? ''
+                }
+            });
             toast({
                 title: payload ? 'Successfully updated AWS SigV4 settings' : 'Removed AWS SigV4 settings',
                 variant: 'success'
@@ -308,6 +306,10 @@ export const AwsSigV4Settings: React.FC<{
                 setAwsSigV4Config(null);
             }
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations/${integration.unique_key}`));
+        } catch {
+            toast({ title: 'Failed to update, an error occurred', variant: 'error' });
+        } finally {
+            setLoading(false);
         }
     };
 
