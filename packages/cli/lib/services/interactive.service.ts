@@ -4,7 +4,7 @@ import inquirer from 'inquirer';
 import { Nango } from '@nangohq/node';
 
 import { FUNCTION_TYPES } from '../types.js';
-import { getEnvironments, parseSecretKey } from '../utils.js';
+import { getEnvironments, parseSecretKey, resolveHostport } from '../utils.js';
 
 import type { FunctionType } from '../types.js';
 import type { GetPublicConnections } from '@nangohq/types';
@@ -135,7 +135,7 @@ export async function promptForFunctionToRun(functions: { name: string; type: st
 
 export async function promptForConnection(environment: string, integrationId?: string): Promise<string> {
     await parseSecretKey(environment);
-    const nango = new Nango({ secretKey: String(process.env['NANGO_SECRET_KEY']) });
+    const nango = new Nango({ host: resolveHostport(), secretKey: String(process.env['NANGO_SECRET_KEY']) });
     let connections: GetPublicConnections['Success'];
     try {
         connections = await nango.listConnections(integrationId ? { integrationId } : {});
@@ -165,7 +165,7 @@ export async function promptForConnection(environment: string, integrationId?: s
 
 export async function inferIntegrationsFromConnectionId(connectionId: string, environment: string): Promise<string[]> {
     await parseSecretKey(environment);
-    const nango = new Nango({ secretKey: String(process.env['NANGO_SECRET_KEY']) });
+    const nango = new Nango({ host: resolveHostport(), secretKey: String(process.env['NANGO_SECRET_KEY']) });
     try {
         const result = await nango.listConnections({ connectionId });
         return result.connections.map((c) => c.provider_config_key);
