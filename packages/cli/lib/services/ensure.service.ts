@@ -1,5 +1,4 @@
 import {
-    inferIntegrationsFromConnectionId,
     promptForConnection,
     promptForEnvironment,
     promptForFunctionName,
@@ -91,10 +90,6 @@ export class Ensure {
 
     public async integrationForScript(scriptName: string, integrations: string[]): Promise<string> {
         return this.ensure(undefined, () => promptForIntegration(integrations), `Multiple integrations have "${scriptName}". Please use --integration-id`);
-    }
-
-    public async inferIntegrations(connectionId: string, environment: string): Promise<string[]> {
-        return inferIntegrationsFromConnectionId(connectionId, environment);
     }
 
     public async projectPath(current: string | undefined): Promise<string> {
