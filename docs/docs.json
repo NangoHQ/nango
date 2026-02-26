@@ -475,6 +475,7 @@
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
+              "api-integrations/google-bigquery",
               "api-integrations/google-calendar",
               "integrations/all/google-chat",
               "integrations/all/google-cloud-storage",

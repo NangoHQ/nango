@@ -1,0 +1,90 @@
+---
+title: 'Google BigQuery'
+sidebarTitle: 'Google BigQuery'
+description: 'Integrate your application with the Google BigQuery API'
+---
+
+## 🚀 Quickstart
+
+Connect to Google BigQuery with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google BigQuery_.
+
+    <Note>
+      Nango has credentials you can use for testing. Activate them in the dashboard.
+    </Note>
+    </Step>
+    <Step title="Authorize Google BigQuery">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Google BigQuery API">
+    Let's make your first request to the Google BigQuery API (list projects). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/bigquery/v2/projects" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/bigquery/v2/projects',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    <Note>
+     For project-specific calls (datasets, jobs, queries), use paths like `/bigquery/v2/projects/{projectId}/datasets` or `POST /bigquery/v2/projects/{projectId}/queries` for running SQL.
+    </Note>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Google BigQuery Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Google BigQuery OAuth app](/api-integrations/google-bigquery/how-to-register-your-own-google-bigquery-api-oauth-app)  
+Register an OAuth app with Google and obtain credentials to connect it to Nango.
+
+Official docs: [Google BigQuery API Documentation](https://docs.cloud.google.com/bigquery/quotas)
+
+## 🧩 Pre-built syncs & actions for Google BigQuery
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/google-bigquery/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
