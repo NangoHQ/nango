@@ -43,6 +43,9 @@ function defaultAwsSigV4Config() {
     return {
         service: '',
         defaultRegion: '',
+        stsMode: 'builtin' as 'builtin' | 'custom',
+        awsAccessKeyId: '',
+        awsSecretAccessKey: '',
         stsEndpoint: {
             url: '',
             authType: 'none' as 'none' | 'api_key' | 'basic',
@@ -109,6 +112,9 @@ const deserializeAwsSigV4Config = (raw?: string | null) => {
         if (parsed.defaultRegion) {
             base.defaultRegion = parsed.defaultRegion;
         }
+        if (parsed.stsMode === 'builtin' || parsed.stsMode === 'custom') {
+            base.stsMode = parsed.stsMode;
+        }
         if (parsed.stsEndpoint) {
             base.stsEndpoint.url = parsed.stsEndpoint.url || '';
             if (parsed.stsEndpoint.auth?.type === 'api_key') {
@@ -168,7 +174,13 @@ export const AwsSigV4Settings: React.FC<{
         if (!config) {
             return false;
         }
-        if (config.service || config.defaultRegion || config.stsEndpoint.url) {
+        if (config.service || config.defaultRegion) {
+            return true;
+        }
+        if (config.stsMode === 'builtin' && (config.awsAccessKeyId || config.awsSecretAccessKey)) {
+            return true;
+        }
+        if (config.stsEndpoint.url) {
             return true;
         }
         if (config.stsEndpoint.authType === 'api_key' && (config.stsEndpoint.header || config.stsEndpoint.value)) {
@@ -185,32 +197,46 @@ export const AwsSigV4Settings: React.FC<{
             return null;
         }
 
-        if (!config.service || !config.stsEndpoint.url) {
+        if (!config.service) {
+            return null;
+        }
+
+        if (config.stsMode === 'custom' && !config.stsEndpoint.url) {
             return null;
         }
 
         const payload: any = {
             service: config.service,
             defaultRegion: config.defaultRegion,
-            stsEndpoint: {
-                url: config.stsEndpoint.url
-            }
+            stsMode: config.stsMode
         };
 
-        if (config.stsEndpoint.authType === 'api_key') {
-            payload.stsEndpoint.auth = {
-                type: 'api_key',
-                header: config.stsEndpoint.header,
-                // Omit value when empty — backend preserves the existing secret
-                ...(config.stsEndpoint.value ? { value: config.stsEndpoint.value } : {})
+        if (config.stsMode === 'builtin') {
+            // Omit credentials when empty — backend preserves the existing secret
+            if (config.awsAccessKeyId) {
+                payload.awsAccessKeyId = config.awsAccessKeyId;
+            }
+            if (config.awsSecretAccessKey) {
+                payload.awsSecretAccessKey = config.awsSecretAccessKey;
+            }
+        } else {
+            payload.stsEndpoint = {
+                url: config.stsEndpoint.url
             };
-        } else if (config.stsEndpoint.authType === 'basic') {
-            payload.stsEndpoint.auth = {
-                type: 'basic',
-                username: config.stsEndpoint.username,
-                // Omit password when empty — backend preserves the existing secret
-                ...(config.stsEndpoint.password ? { password: config.stsEndpoint.password } : {})
-            };
+
+            if (config.stsEndpoint.authType === 'api_key') {
+                payload.stsEndpoint.auth = {
+                    type: 'api_key',
+                    header: config.stsEndpoint.header,
+                    ...(config.stsEndpoint.value ? { value: config.stsEndpoint.value } : {})
+                };
+            } else if (config.stsEndpoint.authType === 'basic') {
+                payload.stsEndpoint.auth = {
+                    type: 'basic',
+                    username: config.stsEndpoint.username,
+                    ...(config.stsEndpoint.password ? { password: config.stsEndpoint.password } : {})
+                };
+            }
         }
 
         if (config.templates && config.templates.length > 0) {
@@ -260,7 +286,7 @@ export const AwsSigV4Settings: React.FC<{
         const hasValues = hasAwsSigV4Values(awsSigV4Config);
         const payload = hasValues ? buildAwsSigV4Payload(awsSigV4Config) : null;
         if (hasValues && !payload) {
-            toast({ title: 'Service and STS endpoint URL are required', variant: 'error' });
+            toast({ title: awsSigV4Config?.stsMode === 'custom' ? 'Service and STS endpoint URL are required' : 'Service is required', variant: 'error' });
             return;
         }
 
@@ -385,7 +411,7 @@ export const AwsSigV4Settings: React.FC<{
 
     return (
         <div className="grid grid-cols-1 gap-10">
-            <InfoBloc title="AWS SigV4 Settings" help={<p>Configure how this integration issues temporary AWS credentials via your STS endpoint.</p>}>
+            <InfoBloc title="AWS SigV4 Settings" help={<p>Configure how this integration issues temporary AWS credentials.</p>}>
                 <div className="flex flex-col gap-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
@@ -402,35 +428,14 @@ export const AwsSigV4Settings: React.FC<{
                                 variant={'flat'}
                             />
                         </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs text-white font-semibold">STS Endpoint URL</label>
-                        <Input
-                            value={awsSigV4Config?.stsEndpoint.url || ''}
-                            onChange={(e) =>
-                                setAwsSigV4Config((prev) => ({
-                                    ...(prev || defaultAwsSigV4Config()),
-                                    stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), url: e.target.value }
-                                }))
-                            }
-                            placeholder="https://sts.example.com/assume"
-                            variant={'flat'}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
                         <div className="flex flex-col gap-1">
-                            <label className="text-xs text-white font-semibold">Auth Type</label>
+                            <label className="text-xs text-white font-semibold">STS Mode</label>
                             <Select
-                                value={awsSigV4Config?.stsEndpoint.authType || 'none'}
+                                value={awsSigV4Config?.stsMode || 'builtin'}
                                 onValueChange={(value: string) =>
                                     setAwsSigV4Config((prev) => ({
                                         ...(prev || defaultAwsSigV4Config()),
-                                        stsEndpoint: {
-                                            ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
-                                            authType: value as 'none' | 'api_key' | 'basic'
-                                        }
+                                        stsMode: value as 'builtin' | 'custom'
                                     }))
                                 }
                             >
@@ -438,77 +443,165 @@ export const AwsSigV4Settings: React.FC<{
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="none">None</SelectItem>
-                                    <SelectItem value="api_key">API Key</SelectItem>
-                                    <SelectItem value="basic">Basic</SelectItem>
+                                    <SelectItem value="builtin">Built-in AWS STS</SelectItem>
+                                    <SelectItem value="custom">Custom STS Endpoint</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {awsSigV4Config?.stsEndpoint.authType === 'api_key' && (
-                            <>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-white font-semibold">Header</label>
-                                    <Input
-                                        value={awsSigV4Config?.stsEndpoint.header || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), header: e.target.value }
-                                            }))
-                                        }
-                                        placeholder="x-api-key"
-                                        variant={'flat'}
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-white font-semibold">Value</label>
-                                    <SecretInput
-                                        value={awsSigV4Config?.stsEndpoint.value || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), value: e.target.value }
-                                            }))
-                                        }
-                                        placeholder="API key"
-                                    />
-                                </div>
-                            </>
-                        )}
-
-                        {awsSigV4Config?.stsEndpoint.authType === 'basic' && (
-                            <>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-white font-semibold">Username</label>
-                                    <Input
-                                        value={awsSigV4Config?.stsEndpoint.username || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), username: e.target.value }
-                                            }))
-                                        }
-                                        placeholder="Username"
-                                        variant={'flat'}
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-white font-semibold">Password</label>
-                                    <SecretInput
-                                        value={awsSigV4Config?.stsEndpoint.password || ''}
-                                        onChange={(e) =>
-                                            setAwsSigV4Config((prev) => ({
-                                                ...(prev || defaultAwsSigV4Config()),
-                                                stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), password: e.target.value }
-                                            }))
-                                        }
-                                        placeholder="Password"
-                                    />
-                                </div>
-                            </>
-                        )}
                     </div>
+
+                    {awsSigV4Config?.stsMode === 'builtin' && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-white font-semibold">AWS Access Key ID</label>
+                                <SecretInput
+                                    value={awsSigV4Config?.awsAccessKeyId || ''}
+                                    onChange={(e) =>
+                                        setAwsSigV4Config((prev) => ({
+                                            ...(prev || defaultAwsSigV4Config()),
+                                            awsAccessKeyId: e.target.value
+                                        }))
+                                    }
+                                    placeholder="AKIA..."
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-white font-semibold">AWS Secret Access Key</label>
+                                <SecretInput
+                                    value={awsSigV4Config?.awsSecretAccessKey || ''}
+                                    onChange={(e) =>
+                                        setAwsSigV4Config((prev) => ({
+                                            ...(prev || defaultAwsSigV4Config()),
+                                            awsSecretAccessKey: e.target.value
+                                        }))
+                                    }
+                                    placeholder="Secret access key"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {(!awsSigV4Config?.stsMode || awsSigV4Config.stsMode === 'custom') && (
+                        <>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-white font-semibold">STS Endpoint URL</label>
+                                <Input
+                                    value={awsSigV4Config?.stsEndpoint.url || ''}
+                                    onChange={(e) =>
+                                        setAwsSigV4Config((prev) => ({
+                                            ...(prev || defaultAwsSigV4Config()),
+                                            stsEndpoint: { ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint), url: e.target.value }
+                                        }))
+                                    }
+                                    placeholder="https://sts.example.com/assume"
+                                    variant={'flat'}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-white font-semibold">Auth Type</label>
+                                    <Select
+                                        value={awsSigV4Config?.stsEndpoint.authType || 'none'}
+                                        onValueChange={(value: string) =>
+                                            setAwsSigV4Config((prev) => ({
+                                                ...(prev || defaultAwsSigV4Config()),
+                                                stsEndpoint: {
+                                                    ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
+                                                    authType: value as 'none' | 'api_key' | 'basic'
+                                                }
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None</SelectItem>
+                                            <SelectItem value="api_key">API Key</SelectItem>
+                                            <SelectItem value="basic">Basic</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {awsSigV4Config?.stsEndpoint.authType === 'api_key' && (
+                                    <>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Header</label>
+                                            <Input
+                                                value={awsSigV4Config?.stsEndpoint.header || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: {
+                                                            ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
+                                                            header: e.target.value
+                                                        }
+                                                    }))
+                                                }
+                                                placeholder="x-api-key"
+                                                variant={'flat'}
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Value</label>
+                                            <SecretInput
+                                                value={awsSigV4Config?.stsEndpoint.value || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: {
+                                                            ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
+                                                            value: e.target.value
+                                                        }
+                                                    }))
+                                                }
+                                                placeholder="API key"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {awsSigV4Config?.stsEndpoint.authType === 'basic' && (
+                                    <>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Username</label>
+                                            <Input
+                                                value={awsSigV4Config?.stsEndpoint.username || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: {
+                                                            ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
+                                                            username: e.target.value
+                                                        }
+                                                    }))
+                                                }
+                                                placeholder="Username"
+                                                variant={'flat'}
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs text-white font-semibold">Password</label>
+                                            <SecretInput
+                                                value={awsSigV4Config?.stsEndpoint.password || ''}
+                                                onChange={(e) =>
+                                                    setAwsSigV4Config((prev) => ({
+                                                        ...(prev || defaultAwsSigV4Config()),
+                                                        stsEndpoint: {
+                                                            ...(prev?.stsEndpoint || defaultAwsSigV4Config().stsEndpoint),
+                                                            password: e.target.value
+                                                        }
+                                                    }))
+                                                }
+                                                placeholder="Password"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
 
                     <div className="flex flex-col gap-2">
                         <div>

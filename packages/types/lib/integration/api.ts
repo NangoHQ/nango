@@ -218,7 +218,8 @@ export type PatchIntegration = Endpoint<{
         | ApiError<'missing_aws_sigv4_config'>
         | ApiError<'invalid_aws_sigv4_config'>
         | ApiError<'missing_aws_sigv4_service'>
-        | ApiError<'missing_aws_sigv4_sts_endpoint'>;
+        | ApiError<'missing_aws_sigv4_sts_endpoint'>
+        | ApiError<'missing_aws_sigv4_builtin_credentials'>;
     Success: {
         data: {
             success: boolean;
