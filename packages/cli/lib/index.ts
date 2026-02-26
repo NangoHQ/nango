@@ -25,6 +25,7 @@ import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
+import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
@@ -354,7 +355,7 @@ program
             let integrationFilter: string[] | undefined = integrationId ? [integrationId] : undefined;
             if (connectionId && !integrationFilter) {
                 // integration id not provided, try to infer it from the connection id
-                const inferred = await ensure.inferIntegrations(connectionId, environment);
+                const inferred = await inferIntegrationsFromConnectionId(connectionId, environment);
                 if (inferred.length > 0) {
                     integrationFilter = inferred;
                 }
