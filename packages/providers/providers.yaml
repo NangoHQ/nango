@@ -9764,6 +9764,21 @@ metabase:
             description: The API key for your Metabase account
             doc_section: '#step-1-generating-an-api-key'
 
+mercury:
+    display_name: Mercury
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://oauth2.mercury.com/oauth2/auth
+    token_url: https://oauth2.mercury.com/oauth2/token
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.mercury.com
+    docs: https://nango.dev/docs/api-integrations/mercury
+    setup_guide_url: https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app
+
 meta-marketing-api:
     display_name: Meta Marketing API
     categories:
