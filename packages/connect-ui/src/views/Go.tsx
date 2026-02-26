@@ -180,13 +180,19 @@ export const Go: React.FC = () => {
             return;
         }
         if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-            void navigator.clipboard.writeText(awsExternalId);
+            navigator.clipboard
+                .writeText(awsExternalId)
+                .then(() => {
+                    setExternalIdCopied(true);
+                    if (externalIdCopyTimeout.current) {
+                        clearTimeout(externalIdCopyTimeout.current);
+                    }
+                    externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
+                })
+                .catch((err) => {
+                    console.error('Failed to copy to clipboard:', err);
+                });
         }
-        setExternalIdCopied(true);
-        if (externalIdCopyTimeout.current) {
-            clearTimeout(externalIdCopyTimeout.current);
-        }
-        externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
     }, [awsExternalId]);
 
     const { resolver, shouldAutoTrigger, orderedFields } = useMemo<{
