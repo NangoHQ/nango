@@ -166,7 +166,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             return;
         }
 
-        // Always generate ExternalId server-side; reuse stored value on reconnection.
+        // Determine ExternalId: reuse stored value on reconnection, honor client-provided value, or generate new.
         // The external ID must be stable so users can configure AWS trust policies with sts:ExternalId.
         let externalId: string;
         if (isConnectSession && connectSession.connectionId) {
@@ -175,7 +175,9 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
         } else {
             // For non-connect-session flows, check if a connection already exists (reconnection via API)
             const existingResult = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-            externalId = (existingResult.response?.connection_config?.['external_id'] as string) || uuidv4();
+            const storedExternalId = existingResult.response?.connection_config?.['external_id'] as string | undefined;
+            const clientExternalId = typeof connectionConfig['external_id'] === 'string' ? connectionConfig['external_id'].trim() : '';
+            externalId = storedExternalId || clientExternalId || uuidv4();
         }
 
         if (!isValidAwsExternalId(externalId)) {
