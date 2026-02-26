@@ -22,12 +22,14 @@ export async function initZero({
     absolutePath,
     debug = false,
     onlyCopy = false,
-    interactive = true
+    interactive = true,
+    dependencyUpdate = true
 }: {
     absolutePath: string;
     debug?: boolean;
     onlyCopy?: boolean;
     interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<boolean> {
     printDebug(`Creating the nango integrations directory in ${absolutePath}`, debug);
     const spinnerFactory = new Spinner({ interactive });
@@ -83,12 +85,20 @@ export async function initZero({
     }
 
     // Install dependencies
-    {
+    if (dependencyUpdate) {
         const spinner = spinnerFactory.start('Install dependencies');
         try {
             printDebug(`Running package manager install`, debug);
 
             const packageManager = detectPackageManager({ fullPath: absolutePath });
+
+            // Yarn: seed a standalone project so it's not treated as part of the
+            // parent workspace, and use node-modules linker so tsc can resolve packages.
+            if (packageManager === 'yarn' && !fs.existsSync(path.join(absolutePath, 'yarn.lock'))) {
+                await fs.promises.writeFile(path.join(absolutePath, 'yarn.lock'), '');
+                await fs.promises.writeFile(path.join(absolutePath, '.yarnrc.yml'), 'nodeLinker: node-modules\n');
+            }
+
             await execAsync(`${packageManager} install`, { cwd: absolutePath });
             spinner.succeed();
         } catch (err) {
@@ -96,6 +106,9 @@ export async function initZero({
             console.log(chalk.red(`Failed to install dependencies: ${err instanceof Error ? err.message : 'unknown error'}`));
             return false;
         }
+    } else {
+        const spinner = spinnerFactory.start('Install dependencies');
+        spinner.warn('Skipping dependency install (--no-dependency-update)');
     }
 
     {

@@ -20,6 +20,14 @@ describe('stringifyError', () => {
             expect(parsed).toHaveProperty('stack');
         });
 
+        it('should include cause when opts.cause is true', () => {
+            const err = new Error('Test error');
+            err.cause = 'Underlying cause';
+            const parsed = JSON.parse(stringifyError(err, { cause: true }));
+
+            expect(parsed).toHaveProperty('cause');
+        });
+
         it('should handle non-Error values without throwing', () => {
             expect(() => stringifyError('String error')).not.toThrow();
             expect(() => stringifyError(null)).not.toThrow();
@@ -52,6 +60,28 @@ describe('stringifyError', () => {
             });
         });
 
+        it('should extract provider_error_payload from response.data.error object', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        error: {
+                            reason: 'token_expired',
+                            description: 'The access token has expired',
+                            timestamp: '2024-01-01',
+                            request_id: 'abc123'
+                        }
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+
+            expect(parsed.provider_error_payload).toEqual({
+                reason: 'token_expired',
+                description: 'The access token has expired'
+            });
+        });
+
         it('should not include provider_error_payload if no whitelisted fields match', () => {
             const err: any = {
                 response: {
@@ -68,8 +98,8 @@ describe('stringifyError', () => {
             expect(parsed).not.toHaveProperty('provider_error_payload');
         });
 
-        it('should not extract provider_error_payload for invalid error structures', () => {
-            const cases = [{ response: { data: { error: 'string' } } }, { response: { data: { error: null } } }, { response: { data: { status: 'ok' } } }];
+        it('should not extract provider_error_payload for invalid response.data structures', () => {
+            const cases = [{ response: { data: null } }, { response: { data: 'string response' } }, { response: { data: { error: {} } } }];
 
             cases.forEach((err) => {
                 expect(JSON.parse(stringifyError(err))).not.toHaveProperty('provider_error_payload');

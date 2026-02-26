@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Salesmsg OAuth app'
+sidebarTitle: 'Salesmsg OAuth Setup'
+description: 'Create an OAuth client in Salesmsg and connect it to Nango'
+---
+
+This guide shows you how to create an OAuth client in Salesmsg and obtain your OAuth credentials (client ID and secret). These are required so your users can grant your app access to their Salesmsg account via Nango.
+
+## Create an OAuth client in Salesmsg
+
+<Steps>
+  <Step title="Create an account">
+    If you don't have an account, go to the [Salesmsg registration page](https://app.salesmessage.com/register) and sign up.
+  </Step>
+  <Step title="Open OAuth Applications">
+    1. Log in to your Salesmsg account, and navigate to the [OAuth Applications](https://app.salesmessage.com/settings/developer/applications) page.
+  </Step>
+  <Step title="Create a new client">
+    1. Click **Create Client**.
+    2. Enter a name. For the **Redirect URL**, add `https://api.nango.dev/oauth/callback`.
+    3. Click **Create Client** to generate client credentials. Your Client ID and Client secret will be displayed—save them, as you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details on Salesmsg's OAuth implementation, see [Salesmsg's OAuth documentation](https://help.salesmessage.com/en/articles/4855418-the-salesmsg-api#h_b6f897d04f).
+
+---

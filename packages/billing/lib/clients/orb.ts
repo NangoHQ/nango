@@ -238,16 +238,14 @@ export class OrbClient implements BillingClient {
 
             // Invoices created are ordered by due date
             // The first one is the pending one (if there was one) and the second is what we will charge
-            // Since the order and numbers are unreliable, we need to find the one that is due today
+            // The following ones are for coming months
+            // Since the order and numbers are unreliable, we look for the one that is payable now, and is not 0
             let amountDue = 0;
             for (const invoice of pendingUpgrade.changed_resources?.created_invoices || []) {
-                if (!invoice.due_date) {
-                    continue;
-                }
-                if (new Date(invoice.due_date).getTime() > Date.now()) {
-                    continue;
-                }
                 if (invoice.amount_due === '0.00') {
+                    continue;
+                }
+                if (!invoice.is_payable_now) {
                     continue;
                 }
                 amountDue = Number(invoice.amount_due) * 100;

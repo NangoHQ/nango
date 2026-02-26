@@ -91,6 +91,7 @@ export interface BaseProvider {
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
+    token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -110,8 +111,6 @@ export interface ProviderOAuth2 extends BaseProvider {
 
     refresh_url?: string;
     expires_in_unit?: 'milliseconds';
-
-    token_request_auth_method?: 'basic' | 'custom';
 }
 
 export interface ProviderOAuth1 extends BaseProvider {
@@ -135,9 +134,14 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
     };
 }
 
+// currently MCP supports 3 types of client registration
+// https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#client-registration-approaches
+export type McpOAuth2ClientRegistration = 'dynamic' | 'static' | 'metadata';
+
 export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
+    client_registration: McpOAuth2ClientRegistration;
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
@@ -201,6 +205,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     token_headers?: Record<string, string>;
     refresh_url?: string;
     refresh_token_params?: Record<string, string>;
+    refresh_token_headers?: Record<string, string>;
     token_response: {
         token: string;
         token_expiration?: string;

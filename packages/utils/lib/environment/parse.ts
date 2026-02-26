@@ -167,8 +167,8 @@ export const ENVS = z.object({
     RUNNER_MAX_REQUEST_MEMORY: z.coerce.number().optional().default(16384),
     RUNNER_MIN_REQUEST_CPU: z.coerce.number().optional().default(500),
     RUNNER_MIN_REQUEST_MEMORY: z.coerce.number().optional().default(512),
-    RUNNER_REQUEST_CPU_MULTIPLIER: z.coerce.number().optional().default(0.6),
-    RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(0.6),
+    RUNNER_REQUEST_CPU_MULTIPLIER: z.coerce.number().optional().default(1.4),
+    RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(1.4),
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
 

@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useSWR from 'swr';
 
 import { APIError, apiFetch, swrFetcher } from '../utils/api';
@@ -72,34 +72,85 @@ export function useConnectionsCount(env: string) {
 }
 
 export function useConnection(queries: GetConnection['Querystring'], params: GetConnection['Params']) {
-    const { data, error, mutate } = useSWR<GetConnection['Success'], SWRError<GetConnection['Errors']>>(
-        `/api/v1/connections/${encodeURIComponent(params.connectionId)}?env=${queries.env}&provider_config_key=${encodeURIComponent(queries.provider_config_key)}`,
-        swrFetcher
-    );
+    return useQuery<GetConnection['Success']['data'], APIError>({
+        queryKey: ['connection', params.connectionId, queries.env, queries.provider_config_key],
+        queryFn: async (): Promise<GetConnection['Success']['data']> => {
+            const res = await apiFetch(
+                `/api/v1/connections/${encodeURIComponent(params.connectionId)}?env=${queries.env}&provider_config_key=${encodeURIComponent(queries.provider_config_key)}`,
+                {
+                    method: 'GET'
+                }
+            );
 
-    const loading = !data && !error;
+            const json = (await res.json()) as GetConnection['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
 
-    return { loading, error: error?.json, data: data?.data, mutate };
+            return json.data;
+        },
+        enabled: Boolean(queries.env && params.connectionId && queries.provider_config_key)
+    });
 }
 
-export async function apiRefreshConnection(params: PostConnectionRefresh['Params'], query: PostConnectionRefresh['Querystring']) {
-    const res = await apiFetch(`/api/v1/connections/${params.connectionId}/refresh?${new URLSearchParams(query).toString()}`, {
-        method: 'POST'
-    });
+export function useRefreshConnection() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: PostConnectionRefresh['Reply'] },
+        APIError,
+        { params: PostConnectionRefresh['Params']; query: PostConnectionRefresh['Querystring'] }
+    >({
+        mutationFn: async ({ params, query }) => {
+            const res = await apiFetch(`/api/v1/connections/${params.connectionId}/refresh?${new URLSearchParams(query).toString()}`, {
+                method: 'POST'
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostConnectionRefresh['Reply']
-    };
+            const json = (await res.json()) as PostConnectionRefresh['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return {
+                res,
+                json
+            };
+        },
+        onSuccess: async (_, { params, query }) => {
+            await queryClient.invalidateQueries({
+                queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
+            });
+        }
+    });
 }
 
-export async function apiDeleteConnection(params: DeleteConnection['Params'], query: DeleteConnection['Querystring']) {
-    const res = await apiFetch(`/api/v1/connections/${params.connectionId}?${new URLSearchParams(query).toString()}`, {
-        method: 'DELETE'
-    });
+export function useDeleteConnection() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: DeleteConnection['Reply'] },
+        APIError,
+        { params: DeleteConnection['Params']; query: DeleteConnection['Querystring'] }
+    >({
+        mutationFn: async ({ params, query }) => {
+            const queryString = new URLSearchParams({
+                env: query.env,
+                provider_config_key: query.provider_config_key
+            }).toString();
+            const res = await apiFetch(`/api/v1/connections/${params.connectionId}?${queryString}`, {
+                method: 'DELETE'
+            });
 
-    return {
-        res,
-        json: (await res.json()) as DeleteConnection['Reply']
-    };
+            const json = (await res.json()) as DeleteConnection['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return {
+                res,
+                json
+            };
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['connections'] });
+        }
+    });
 }

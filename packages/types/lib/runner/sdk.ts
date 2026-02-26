@@ -62,3 +62,5 @@ export interface TelemetryBag extends Record<string, number> {
     durationMs: number;
     memoryGb: number;
 }
+
+export type FunctionRuntime = 'runner' | 'lambda';

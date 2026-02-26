@@ -6,7 +6,9 @@ import parseLinksHeader from 'parse-link-header';
 import { vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
-import paginateService from '@nangohq/runner-sdk/lib/paginate.service.js';
+import { PaginationService } from '@nangohq/runner-sdk';
+
+import { FILTER_HEADERS as FILTER_HEADERS_UNIFIED } from '../services/response-collector.service.js';
 
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
@@ -250,7 +252,7 @@ class LegacyFixtureProvider implements FixtureProvider {
         const nameBasedPath = `nango/${method.toLowerCase()}/proxy/${normalizedEndpoint}/${this.name}`;
         const response = await this.getMockFile(nameBasedPath, false);
 
-        if (response) {
+        if (response !== undefined) {
             const syntheticMock: LegacyMockFile = {
                 method: method.toLowerCase(),
                 endpoint: normalizedEndpoint,
@@ -368,11 +370,10 @@ class UnifiedFixtureProvider implements FixtureProvider {
         const { method, endpoint, requestIdentityHash } = identity;
 
         const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-
-        let apiMock = this.mockData.api?.[method.toUpperCase()]?.[normalizedEndpoint];
+        let apiMock = this.mockData.api?.[method]?.[normalizedEndpoint];
 
         if (!apiMock) {
-            apiMock = this.mockData.api?.[method.toUpperCase()]?.[`/${normalizedEndpoint}`];
+            apiMock = this.mockData.api?.[method]?.[`/${normalizedEndpoint}`];
         }
 
         if (apiMock) {
@@ -478,6 +479,18 @@ class RecordingFixtureProvider implements FixtureProvider {
         private outputPath: string
     ) {}
 
+    private deserializeRequestData(data: unknown): unknown {
+        if (typeof data !== 'string') {
+            return data;
+        }
+
+        try {
+            return JSON.parse(data);
+        } catch (_) {
+            return data;
+        }
+    }
+
     private async save() {
         const dataToSave = JSON.parse(JSON.stringify(this.recordedData));
 
@@ -559,7 +572,7 @@ class RecordingFixtureProvider implements FixtureProvider {
     async getCachedResponse(identity: ConfigIdentity) {
         const data = await this.delegate.getCachedResponse(identity);
 
-        const method = identity.method.toUpperCase();
+        const method = identity.method;
         const endpoint = identity.endpoint;
 
         if (!this.recordedData.api) this.recordedData.api = {};
@@ -571,17 +584,27 @@ class RecordingFixtureProvider implements FixtureProvider {
         const allMocksForEndpoint = await this.delegate.getAllMocksForEndpoint(identity.method, endpoint);
 
         for (const legacyMock of allMocksForEndpoint) {
-            const mockParams = Object.fromEntries(legacyMock.requestIdentity.params);
-            const mockHeaders = Object.fromEntries(legacyMock.requestIdentity.headers);
+            const hasLegacyIdentity =
+                legacyMock.requestIdentityHash.length > 0 ||
+                legacyMock.requestIdentity.params.length > 0 ||
+                legacyMock.requestIdentity.headers.length > 0 ||
+                legacyMock.requestIdentity.data !== undefined;
+
+            const paramsSource = hasLegacyIdentity ? legacyMock.requestIdentity.params : identity.requestIdentity.params;
+            const headersSource = hasLegacyIdentity ? legacyMock.requestIdentity.headers : identity.requestIdentity.headers;
+            const dataSource = hasLegacyIdentity ? legacyMock.requestIdentity.data : identity.requestIdentity.data;
+
+            const mockParams = Object.fromEntries(paramsSource);
+            const mockHeaders = Object.fromEntries(headersSource);
 
             const record: ApiMockResponse = {
                 request: {
                     params: Object.keys(mockParams).length > 0 ? mockParams : undefined,
                     headers: Object.keys(mockHeaders).length > 0 ? mockHeaders : undefined,
-                    data: legacyMock.requestIdentity.data
+                    data: this.deserializeRequestData(dataSource)
                 },
                 response: legacyMock.response,
-                hash: legacyMock.requestIdentityHash,
+                hash: legacyMock.requestIdentityHash || identity.requestIdentityHash,
                 ...(legacyMock.headers && { headers: legacyMock.headers }),
                 ...(legacyMock.status !== undefined && { status: legacyMock.status })
             };
@@ -779,7 +802,7 @@ class NangoActionMock {
         // For legacy mocks, use the legacy (bugged) pagination implementation to avoid breaking existing tests
         if (fixtureProvider.isUnifiedMocks()) {
             const paginationConfig = args.paginate as Pagination;
-            paginateService.validateConfiguration(paginationConfig);
+            PaginationService.validateConfiguration(paginationConfig);
             const proxyAdapter = async (config: UserProvidedProxyConfiguration): Promise<AxiosResponse> => {
                 const response = await this.proxyData(config);
                 return {
@@ -793,11 +816,11 @@ class NangoActionMock {
 
             switch (paginationConfig.type) {
                 case 'cursor':
-                    return yield* paginateService.cursor(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                    return yield* PaginationService.cursor(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
                 case 'link':
-                    return yield* paginateService.link(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                    return yield* PaginationService.link(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
                 case 'offset':
-                    return yield* paginateService.offset(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
+                    return yield* PaginationService.offset(args, paginationConfig, updatedBodyOrParams, paginateInBody, proxyAdapter);
                 default:
                     throw new Error(`Invalid pagination type: ${(paginationConfig as Pagination).type}`);
             }
@@ -1021,8 +1044,9 @@ class NangoActionMock {
     }
 
     private async proxyData(args: UserProvidedProxyConfiguration) {
-        const identity = computeConfigIdentity(args);
-        const cached = await (await this.fixtureProvider).getCachedResponse(identity);
+        const fixtureProvider = await this.fixtureProvider;
+        const identity = fixtureProvider.isUnifiedMocks() ? computeUnifiedConfigIdentity(args) : computeLegacyConfigIdentity(args);
+        const cached = await fixtureProvider.getCachedResponse(identity);
 
         return { data: cached.response, headers: cached.headers, status: cached.status };
     }
@@ -1040,7 +1064,16 @@ class NangoSyncMock extends NangoActionMock {
     }
 }
 
-const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host', 'connection-id', 'provider-config-key'];
+const FILTER_HEADERS_LEGACY = [
+    'authorization',
+    'user-agent',
+    'nango-proxy-user-agent',
+    'accept-encoding',
+    'retries',
+    'host',
+    'connection-id',
+    'provider-config-key'
+];
 
 interface RequestIdentity {
     method: string;
@@ -1057,14 +1090,14 @@ interface ConfigIdentity {
     requestIdentity: RequestIdentity;
 }
 
-function computeConfigIdentity(config: UserProvidedProxyConfiguration): ConfigIdentity {
+function computeLegacyConfigIdentity(config: UserProvidedProxyConfiguration): ConfigIdentity {
     const method = config.method?.toLowerCase() || 'get';
     const params = sortEntries(Object.entries(config.params || {}));
     const endpoint = config.endpoint.startsWith('/') ? config.endpoint.slice(1) : config.endpoint;
 
     const dataIdentity = computeDataIdentity(config);
 
-    const filteredHeaders = Object.entries(config.headers || {}).filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()));
+    const filteredHeaders = Object.entries(config.headers || {}).filter(([key]) => !FILTER_HEADERS_LEGACY.includes(key.toLowerCase()));
     sortEntries(filteredHeaders);
     const headers = filteredHeaders;
 
@@ -1083,6 +1116,111 @@ function computeConfigIdentity(config: UserProvidedProxyConfiguration): ConfigId
         requestIdentityHash,
         requestIdentity
     };
+}
+
+function computeUnifiedConfigIdentity(config: UserProvidedProxyConfiguration): ConfigIdentity {
+    const method = config.method?.toLowerCase() || 'get';
+
+    const url = parseUnifiedEndpointAsUrl(config.endpoint);
+
+    // Merge params into the endpoint query exactly like our proxy URL builder does.
+    applyParamsToUrl(url, config.params);
+
+    // ResponseCollector stores the endpoint without the `/proxy/` prefix.
+    const endpoint = url.pathname.replace(/^\/proxy\//, '').replace(/^\//, '');
+    const params = sortEntries(Array.from(url.searchParams.entries()).map(([key, value]) => [key, String(value)]));
+
+    const dataIdentity = computeDataIdentity(config);
+    const headers = normalizeHeadersForUnifiedIdentity(config.headers);
+
+    const requestIdentity = {
+        method,
+        endpoint,
+        params,
+        headers,
+        data: dataIdentity
+    };
+
+    const requestIdentityHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
+
+    return {
+        method,
+        endpoint,
+        requestIdentityHash,
+        requestIdentity
+    };
+}
+
+function parseUnifiedEndpointAsUrl(endpoint: string): URL {
+    if (isValidHttpUrl(endpoint)) {
+        return new URL(endpoint);
+    }
+
+    const withLeadingSlash = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return new URL(withLeadingSlash, 'https://nango.invalid');
+}
+
+function applyParamsToUrl(url: URL, params: UserProvidedProxyConfiguration['params']): void {
+    if (!params) {
+        return;
+    }
+
+    if (typeof params === 'string') {
+        const normalized = params.startsWith('?') ? params.slice(1) : params;
+        const extra = new URLSearchParams(normalized);
+        for (const [key, value] of extra.entries()) {
+            url.searchParams.append(key, value);
+        }
+        return;
+    }
+
+    for (const [key, value] of Object.entries(params)) {
+        if (value === undefined) {
+            continue;
+        }
+
+        if (Array.isArray(value)) {
+            url.searchParams.set(key, value.map((v) => String(v)).join(','));
+            continue;
+        }
+
+        url.searchParams.set(key, String(value));
+    }
+}
+
+function normalizeHeadersForUnifiedIdentity(headers: UserProvidedProxyConfiguration['headers']): [string, string][] {
+    if (!headers) {
+        return [];
+    }
+
+    const seen = new Set<string>();
+    const filtered: [string, string][] = [];
+
+    for (const [rawKey, rawValue] of Object.entries(headers)) {
+        const key = rawKey.toLowerCase().startsWith('nango-proxy-') ? rawKey.slice(12) : rawKey;
+        const lowerKey = key.toLowerCase();
+
+        if (seen.has(lowerKey)) {
+            continue;
+        }
+        seen.add(lowerKey);
+
+        if (FILTER_HEADERS_UNIFIED.includes(lowerKey)) {
+            continue;
+        }
+
+        const value = String(rawValue);
+
+        // Match ResponseCollector behavior for axios defaults.
+        if (lowerKey === 'content-type' && (value.toLowerCase() === 'application/json' || value === 'undefined')) {
+            continue;
+        }
+
+        filtered.push([key, value]);
+    }
+
+    sortEntries(filtered);
+    return filtered;
 }
 
 function sortEntries(entries: [string, unknown][]): [string, unknown][] {

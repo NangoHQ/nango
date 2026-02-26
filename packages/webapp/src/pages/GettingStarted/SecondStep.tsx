@@ -2,7 +2,7 @@ import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
 import { CodeXml, Loader } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { CodeBlock } from '../../components-v2/CodeBlock';
+import { MultiLanguageCodeBlock } from '../../components-v2/MultiLanguageCodeBlock';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
@@ -134,7 +134,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
             {connectionId && (
                 <>
                     <div className="w-full min-w-0">
-                        <CodeBlock
+                        <MultiLanguageCodeBlock
                             snippets={[
                                 {
                                     displayLanguage: 'Node Client',

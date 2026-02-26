@@ -18,7 +18,7 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/utils": "file:../utils",
         "@nangohq/kvstore": "file:../kvstore",
-        "axios": "1.12.0",
+        "axios": "1.13.5",
         "dayjs": "1.11.7",
         "dayjs-plugin-utc": "0.1.2",
         "rate-limiter-flexible": "5.0.3"

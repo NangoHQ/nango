@@ -397,6 +397,10 @@
                 "registration_url": {
                     "type": "string"
                 },
+                "client_registration": {
+                    "type": "string",
+                    "enum": ["dynamic", "static", "metadata"]
+                },
                 "request_params": {
                     "type": "object",
                     "patternProperties": {
@@ -513,7 +517,7 @@
                 },
                 "token_request_auth_method": {
                     "type": "string",
-                    "enum": ["basic", "custom"]
+                    "enum": ["basic", "custom", "private_key_jwt"]
                 },
                 "expires_in_unit": {
                     "type": "string",
@@ -532,6 +536,9 @@
                     }
                 },
                 "refresh_token_params": {
+                    "type": "object"
+                },
+                "refresh_token_headers": {
                     "type": "object"
                 },
                 "credentials_verification_script": {

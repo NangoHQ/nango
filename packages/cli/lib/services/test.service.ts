@@ -10,7 +10,7 @@ import chalk from 'chalk';
 import ejs from 'ejs';
 
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
+import { detectPackageManager, printDebug } from '../utils.js';
 import { compileAll } from '../zeroYaml/compile.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 
@@ -163,6 +163,16 @@ async function pathExists(path: string): Promise<boolean> {
     }
 }
 
+async function firstExistingPath(paths: string[]): Promise<string | null> {
+    for (const p of paths) {
+        if (await pathExists(p)) {
+            return p;
+        }
+    }
+
+    return null;
+}
+
 async function findUpFilename(filename: string, fromDir: string): Promise<string | null> {
     let currentDir = fromDir;
 
@@ -207,7 +217,11 @@ async function fetchLatestVersions(packages: string[], debug: boolean): Promise<
     return versions;
 }
 
-async function injectTestDependencies({ debug }: { debug: boolean }): Promise<void> {
+async function injectTestDependencies({ debug, dependencyUpdate = true }: { debug: boolean; dependencyUpdate?: boolean }): Promise<void> {
+    if (!dependencyUpdate) {
+        console.warn(chalk.yellow('Skipping test dependency injection (--no-dependency-update).'));
+        return;
+    }
     const rootPath = await getProjectRoot();
     const packageJsonPath = path.resolve(rootPath, 'package.json');
     if (!(await pathExists(packageJsonPath))) {
@@ -282,10 +296,11 @@ async function injectTestDependencies({ debug }: { debug: boolean }): Promise<vo
                 printDebug(`package.json updated at ${packageJsonPath}`);
             }
 
+            const packageManager = detectPackageManager({ fullPath: rootPath });
             if (debug) {
-                printDebug(`Running npm install in project root`);
+                printDebug(`Running ${packageManager} install in project root`);
             }
-            await execAsync('npm install', { cwd: rootPath });
+            await execAsync(`${packageManager} install`, { cwd: rootPath });
         } else if (debug) {
             printDebug(`All required dependencies already present in package.json`);
         }
@@ -420,7 +435,8 @@ export async function generateTests({
     actionName,
     debug = false,
     autoConfirm = false,
-    interactive = true
+    interactive = true,
+    dependencyUpdate = true
 }: {
     absolutePath: string;
     integrationId?: string;
@@ -429,6 +445,7 @@ export async function generateTests({
     debug?: boolean;
     autoConfirm?: boolean;
     interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<{ success: boolean; generatedFiles: string[] }> {
     try {
         if (debug) {
@@ -438,7 +455,7 @@ export async function generateTests({
         const spinnerFactory = new Spinner({ interactive });
         const spinner = spinnerFactory.start('Setting up test dependencies');
         try {
-            await injectTestDependencies({ debug });
+            await injectTestDependencies({ debug, dependencyUpdate });
             spinner.succeed();
         } catch (err: any) {
             spinner.fail();
@@ -536,9 +553,17 @@ export async function generateTests({
                     continue;
                 }
                 const sync = syncs[currentSyncName];
-                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${currentSyncName}`);
+                const mockCandidates = [
+                    // New unified mocks format (saved by `nango dryrun --save`)
+                    path.resolve(absolutePath, `${integration}/tests/${currentSyncName}.test.json`),
+                    // Support mocks saved alongside previously generated tests
+                    path.resolve(absolutePath, `${integration}/tests/${integration}-${currentSyncName}.test.json`),
+                    // Legacy mocks format
+                    path.resolve(absolutePath, `${integration}/mocks/${currentSyncName}`)
+                ];
+                const mockPath = await firstExistingPath(mockCandidates);
 
-                if (await pathExists(mockPath)) {
+                if (mockPath) {
                     const filePath = await generateSyncTest({
                         integration,
                         syncName: currentSyncName,
@@ -548,7 +573,8 @@ export async function generateTests({
                     });
                     generatedFiles.push(filePath);
                 } else if (debug) {
-                    printDebug(`No mocks found for sync ${currentSyncName}, skipping test generation`);
+                    const tried = mockCandidates.map((p) => path.relative(absolutePath, p)).join(', ');
+                    printDebug(`No mocks found for sync ${currentSyncName}, skipping test generation (tried: ${tried})`);
                 }
             }
 
@@ -557,9 +583,17 @@ export async function generateTests({
                     continue;
                 }
                 const action = actions[currentActionName];
-                const mockPath = path.resolve(absolutePath, `${integration}/mocks/${currentActionName}`);
+                const mockCandidates = [
+                    // New unified mocks format (saved by `nango dryrun --save`)
+                    path.resolve(absolutePath, `${integration}/tests/${currentActionName}.test.json`),
+                    // Support mocks saved alongside previously generated tests
+                    path.resolve(absolutePath, `${integration}/tests/${integration}-${currentActionName}.test.json`),
+                    // Legacy mocks format
+                    path.resolve(absolutePath, `${integration}/mocks/${currentActionName}`)
+                ];
+                const mockPath = await firstExistingPath(mockCandidates);
 
-                if (await pathExists(mockPath)) {
+                if (mockPath) {
                     const filePath = await generateActionTest({
                         integration,
                         actionName: currentActionName,
@@ -569,7 +603,8 @@ export async function generateTests({
                     });
                     generatedFiles.push(filePath);
                 } else if (debug) {
-                    printDebug(`No mocks found for action ${currentActionName}, skipping test generation`);
+                    const tried = mockCandidates.map((p) => path.relative(absolutePath, p)).join(', ');
+                    printDebug(`No mocks found for action ${currentActionName}, skipping test generation (tried: ${tried})`);
                 }
             }
         }

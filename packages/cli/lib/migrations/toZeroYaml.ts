@@ -26,11 +26,13 @@ const methodsWithGenericTypeArguments = ['batchSave', 'batchUpdate', 'batchDelet
 export async function migrateToZeroYaml({
     fullPath,
     debug,
-    interactive = true
+    interactive = true,
+    dependencyUpdate = true
 }: {
     fullPath: string;
     debug: boolean;
     interactive?: boolean;
+    dependencyUpdate?: boolean;
 }): Promise<Result<void>> {
     const spinnerFactory = new Spinner({ interactive });
     const spinner = spinnerFactory.start('Precompiling');
@@ -141,10 +143,13 @@ export async function migrateToZeroYaml({
         await processHelperFiles({ fullPath, parsed, spinnerFactory });
     }
 
-    {
+    if (dependencyUpdate) {
         const spinner = spinnerFactory.start('Installing dependencies');
         await runPackageManagerInstall(fullPath);
         spinner.succeed();
+    } else {
+        const spinner = spinnerFactory.start('Installing dependencies');
+        spinner.warn('Skipping dependency install (--no-dependency-update)');
     }
 
     {

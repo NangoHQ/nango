@@ -49,6 +49,9 @@ nango dryrun fetch-tickets abc-123 -e prod
 # For actions: pass input data
 nango dryrun create-ticket abc-123 --input '{"title": "Test ticket"}'
 
+# For syncs: specify an initial checkpoint
+nango dryrun fetch-tickets abc-123 --checkpoint '{ "lastModifiedAt": "2026-02-01T01:00:00.000Z" }'
+
 # Use a specific integration when sync names overlap
 nango dryrun fetch-tickets abc-123 --integration-id github
 

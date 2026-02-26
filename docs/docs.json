@@ -59,6 +59,26 @@
     }
   },
   "redirects": [
+    {
+      "source": "/introduction",
+      "destination": "/"
+    },
+    {
+      "source": "/changelog/overview",
+      "destination": "/updates/product"
+    },
+    {
+      "source": "/changelog/dev-updates",
+      "destination": "/updates/dev"
+    },
+    {
+      "source": "/guides/mcp",
+      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    },
+    {
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    }
   ],
   "navigation": {
     "tabs": [
@@ -121,9 +141,9 @@
                 "pages": [
                   "implementation-guides/use-cases/syncs/implement-a-sync",
                   "implementation-guides/use-cases/syncs/records-cache",
+                  "implementation-guides/use-cases/syncs/checkpoints",
                   "implementation-guides/use-cases/syncs/deletion-detection",
                   "implementation-guides/use-cases/syncs/realtime-syncs",
-                  "implementation-guides/use-cases/syncs/large-datasets",
                   "implementation-guides/use-cases/syncs/sync-partitioning"
                 ]
               },
@@ -176,6 +196,7 @@
               {
                 "group": "Migrations",
                 "pages": [
+                  "implementation-guides/platform/migrations/migrate-to-checkpoints",
                   "implementation-guides/platform/migrations/migrate-from-end-user",
                   "implementation-guides/platform/migrations/migrate-from-public-key",
                   "implementation-guides/platform/migrations/migrate-to-zero-yaml"
@@ -293,8 +314,8 @@
               "api-integrations/brex-api-key",
               "api-integrations/brex-staging",
               "integrations/all/brightcrowd",
-              "integrations/all/builder-io-private",
-              "integrations/all/builder-io-public",
+              "api-integrations/builder-io-private",
+              "api-integrations/builder-io-public",
               "integrations/all/buildium",
               "integrations/all/bullhorn",
               "integrations/all/builtwith",
@@ -434,6 +455,7 @@
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
+              "api-integrations/fullenrich",
               "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
@@ -454,17 +476,22 @@
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
+              "api-integrations/google-bigquery",
               "api-integrations/google-calendar",
               "integrations/all/google-chat",
               "integrations/all/google-cloud-storage",
               "api-integrations/google-docs",
               "api-integrations/google-drive",
+              "api-integrations/google-forms",
               "api-integrations/google-mail",
               "api-integrations/google-meet",
               "integrations/all/google-play",
               "api-integrations/google-search-console",
               "api-integrations/google-sheet",
               "api-integrations/granola",
+              "api-integrations/granola-mcp",
+              "api-integrations/glyphic",
+              "api-integrations/gamma",
               "api-integrations/grist",
               "integrations/all/google-slides",
               "integrations/all/google-workspace-admin",
@@ -496,6 +523,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "api-integrations/heygen",
               "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
@@ -565,6 +593,7 @@
               "integrations/all/marketo",
               "integrations/all/mcp-generic",
               "integrations/all/medallia",
+              "api-integrations/mercury",
               "integrations/all/metabase",
               "api-integrations/meta-marketing-api",
               "api-integrations/microsoft",
@@ -575,6 +604,7 @@
               "api-integrations/microsoft-planner",
               "integrations/all/microsoft-power-bi",
               "api-integrations/microsoft-teams",
+              "api-integrations/microsoft-teams-bot",
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
               "integrations/all/microsoft-tenant-specific",
@@ -610,6 +640,7 @@
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
               "integrations/all/okta",
+              "api-integrations/okta-cc",
               "integrations/all/okta-preview",
               "api-integrations/onlogist",
               "api-integrations/one-drive",
@@ -663,6 +694,7 @@
               "integrations/all/podium",
               "api-integrations/posthog",
               "api-integrations/practicefusion",
+              "api-integrations/printful",
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
@@ -712,6 +744,8 @@
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
               "api-integrations/salesforce-sandbox",
+              "api-integrations/salesmsg",
+              "api-integrations/salesmsg-oauth2",
               "integrations/all/salesloft",
               "api-integrations/sellercloud",
               "integrations/all/sap-business-one",
@@ -750,6 +784,8 @@
               "integrations/all/skio",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/tally",
+              "api-integrations/timify",
               "api-integrations/torii",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
@@ -814,6 +850,7 @@
               "integrations/all/typeform",
               "integrations/all/typefully",
               "integrations/all/uber",
+              "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
               "integrations/all/ukg-pro",
               "integrations/all/ukg-ready",
@@ -1009,7 +1046,7 @@
             "pages": [
               "reference/cli",
               "reference/functions",
-              "reference/api-configuration"            
+              "reference/api-configuration"
             ]
           }
         ]

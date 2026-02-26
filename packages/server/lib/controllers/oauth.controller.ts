@@ -47,8 +47,7 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    missesInterpolationParamInObject,
-    stringifyEnrichedError
+    missesInterpolationParamInObject
 } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -346,13 +345,13 @@ class OAuthController {
             return;
         }
 
-        if (!body.client_secret) {
+        if (!body.client_secret && !body.client_private_key) {
             errorManager.errRes(res, 'missing_client_secret');
 
             return;
         }
 
-        const { client_id, client_secret, client_certificate, client_private_key }: Record<string, string> = body;
+        const { client_id, client_secret, client_certificate, client_private_key }: Record<string, string | undefined> = body;
 
         if (isConnectSession && receivedConnectionId) {
             errorRestrictConnectionId(res);
@@ -444,6 +443,10 @@ class OAuthController {
                 if (defaults?.connectionConfig) {
                     Object.assign(connectionConfig, defaults.connectionConfig);
                 }
+            }
+
+            if (config.oauth_scopes && !connectionConfig['oauth_scopes']) {
+                connectionConfig['oauth_scopes'] = config.oauth_scopes;
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -1088,7 +1091,6 @@ class OAuthController {
         }
         if (state == null) {
             const err = new Error('No state found in callback');
-
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             authHtml({ res, error: err.message });
             return;
@@ -1366,7 +1368,8 @@ class OAuthController {
         }
 
         if (!authorizationCode) {
-            const error = WSErrBuilder.InvalidCallbackOAuth2();
+            const providerContext = WSErrBuilder.getProviderErrorContextFromQuery(req.query as Record<string, unknown>);
+            const error = WSErrBuilder.InvalidCallbackOAuth2(providerContext);
             void logCtx.error(error.message, {
                 config: {
                     scopes: config.oauth_scopes,
@@ -1874,7 +1877,7 @@ class OAuthController {
             }
             return;
         } catch (err) {
-            const prettyError = stringifyEnrichedError(err, { pretty: true });
+            const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
@@ -1885,8 +1888,7 @@ class OAuthController {
                 }
             });
 
-            const error = WSErrBuilder.UnknownError();
-            void logCtx.error(error.message, { error: err });
+            void logCtx.error(prettyError, { error: err });
             await logCtx.failed();
 
             void connectionCreationFailedHook(
@@ -1897,7 +1899,7 @@ class OAuthController {
                     auth_mode: provider.auth_mode,
                     error: {
                         type: 'unknown',
-                        description: error.message + '\n' + prettyError
+                        description: prettyError
                     },
                     operation: 'unknown'
                 },
@@ -1908,7 +1910,10 @@ class OAuthController {
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
 
             if (res) {
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, {
+                    type: 'unknown_err',
+                    message: prettyError
+                });
             }
         }
     }
@@ -2255,7 +2260,8 @@ class OAuthController {
         const channel = session.webSocketClientId;
 
         if (!authorizationCode) {
-            const error = WSErrBuilder.InvalidCallbackOAuth2();
+            const providerContext = WSErrBuilder.getProviderErrorContextFromQuery(req.query as Record<string, unknown>);
+            const error = WSErrBuilder.InvalidCallbackOAuth2(providerContext);
             void logCtx.error(error.message);
             await logCtx.failed();
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);

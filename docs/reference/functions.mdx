@@ -1,8 +1,8 @@
 ---
-title: "Functions runtime SDK"
+title: "Functions SDK"
 sidebarTitle: "Functions SDK"
 icon: "code"
-description: "Full reference of the SDK available in Nango functions"
+description: "Full reference of the SDK available in Nango Functions."
 ---
 
 ## Examples
@@ -134,7 +134,7 @@ Read more about [integration functions](/guides/primitives/functions) to underst
 
 <ResponseField name="checkpoint" type="ZodSchema">
   Optional schema defining the shape of checkpoint data for this sync.
-  Use checkpoints to save progress and avoid re-fetching all data on every run.
+  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints) for details.
 
   ```ts
   checkpoint: z.object({
@@ -785,7 +785,7 @@ Checkpoints allow syncs to save their progress and resume from where they left o
 - Tracking pagination state across sync runs
 - Storing custom cursor/offset values
 
-To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)).
+To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
 
 #### getCheckpoint()
 

@@ -102,7 +102,8 @@ function startProcedure() {
                     await jobsClient.putTask({
                         taskId,
                         nangoProps,
-                        ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag })
+                        ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
+                        functionRuntime: 'runner'
                     });
                 } finally {
                     clearInterval(heartbeat);

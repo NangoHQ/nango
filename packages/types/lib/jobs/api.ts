@@ -1,6 +1,6 @@
 import type { ApiError, Endpoint } from '../api.js';
 import type { RunnerOutputError } from '../runner/index.js';
-import type { NangoProps, TelemetryBag } from '../runner/sdk.js';
+import type { FunctionRuntime, NangoProps, TelemetryBag } from '../runner/sdk.js';
 import type { JsonValue } from 'type-fest';
 
 export type PostHeartbeat = Endpoint<{
@@ -25,6 +25,7 @@ export type PutTask = Endpoint<{
         error?: RunnerOutputError | undefined;
         output?: JsonValue | undefined;
         telemetryBag: TelemetryBag;
+        functionRuntime: FunctionRuntime;
     };
     Error: ApiError<'put_task_failed'>;
     Success: never;

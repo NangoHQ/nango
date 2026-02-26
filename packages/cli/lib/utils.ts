@@ -329,15 +329,39 @@ export function slash(path: string) {
     return path.replace(/\\/g, '/');
 }
 
-export function detectPackageManager({ fullPath }: { fullPath: string }) {
-    const dir = fs.readdirSync(fullPath);
-    if (dir.includes('pnpm-lock.yaml')) {
-        return 'pnpm';
-    } else if (dir.includes('yarn.lock')) {
-        return 'yarn';
-    } else if (dir.includes('bun.lockb') || dir.includes('bun.lock')) {
-        return 'bun';
-    } else {
-        return 'npm';
+export function detectPackageManager({ fullPath }: { fullPath: string }): 'pnpm' | 'yarn' | 'bun' | 'npm' {
+    let dir = fullPath;
+
+    while (true) {
+        const entries = fs.readdirSync(dir);
+
+        // Check package.json#packageManager field first (corepack standard)
+        if (entries.includes('package.json')) {
+            try {
+                const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf-8')) as { packageManager?: string };
+                if (pkg.packageManager) {
+                    if (pkg.packageManager.startsWith('pnpm')) return 'pnpm';
+                    if (pkg.packageManager.startsWith('yarn')) return 'yarn';
+                    if (pkg.packageManager.startsWith('bun')) return 'bun';
+                    if (pkg.packageManager.startsWith('npm')) return 'npm';
+                }
+            } catch {
+                // ignore malformed package.json, keep walking up
+            }
+        }
+
+        if (entries.includes('pnpm-lock.yaml')) return 'pnpm';
+        if (entries.includes('yarn.lock')) return 'yarn';
+        if (entries.includes('bun.lockb') || entries.includes('bun.lock')) return 'bun';
+
+        // Walk up to parent directory
+        const parent = path.dirname(dir);
+        if (parent === dir) {
+            // Reached filesystem root
+            break;
+        }
+        dir = parent;
     }
+
+    return 'npm';
 }

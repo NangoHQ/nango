@@ -13,6 +13,7 @@ import { useSignout } from '@/utils/user';
 
 export const ProfileDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
+
     const { meta } = useMeta();
     const navigate = useNavigate();
     const signout = useSignout();
@@ -37,7 +38,7 @@ export const ProfileDropdown: React.FC = () => {
             list.push({
                 label: 'Getting Started',
                 icon: Sparkle,
-                href: `/${env}/getting-started`
+                href: `/dev/getting-started`
             });
         }
 
@@ -50,7 +51,7 @@ export const ProfileDropdown: React.FC = () => {
         }
 
         return list;
-    }, [env, meta, showGettingStarted]);
+    }, [meta, showGettingStarted, env]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

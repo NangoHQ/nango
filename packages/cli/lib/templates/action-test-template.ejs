@@ -4,7 +4,7 @@ import createAction from '../actions/<%= actionName %>.js';
 
 describe('<%= integration %> <%= actionName %> tests', () => {
   const nangoMock = new global.vitest.NangoActionMock({ 
-      dirname: '<%= integration %>',
+      dirname: __dirname,
       name: "<%= actionName %>",
       Model: "<%= output %>"
   });

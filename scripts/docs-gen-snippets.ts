@@ -17,7 +17,8 @@ const prettyAuthModes: Record<string, string> = {
     AWS_SIGV4: 'AWS SigV4',
     JWT: 'JWT',
     TWO_STEP: 'Two Step',
-    TABLEAU: 'Tableau'
+    TABLEAU: 'Tableau',
+    MCP_OAUTH2: 'MCP OAuth2'
 };
 
 const flowsPath = 'packages/shared/flows.zero.json';

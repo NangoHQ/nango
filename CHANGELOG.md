@@ -2,6 +2,104 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.38] - 2026-02-24
+
+### Added
+
+- *(metrics)* Add function runtime to function executions metric (#5466) by @rossmcewan
+- *(integrations)* Add support for ms teams bot (#5463) by @hassan254-prog
+- *(integrations)* Add support for tally (#5486) by @hassan254-prog
+- *(OAuth)* Add more context to errors during exchange code for token (#5485) by @hassan254-prog
+- *(integrations)* Add support for hubspot mcp (#5477) by @hassan254-prog
+- *(integrations)* Add subdomain interpolation for timify (#5492) by @hassan254-prog
+- *(webapp)* Change font to geist (#5497) by @kaposke
+- *(integrations)* Add support for salesmsg (#5490) by @hassan254-prog
+- *(integrations)* Okta-cc support (#5482) by @agusayerza
+- *(cli)* Add --checkpoint option to dryrun command (#5440) by @TBonnin
+
+### Changed
+
+- *(deps)* Upgrade deps (#5484) by @rossmcewan
+- Oauth callback session validation (#5493) by @hassan254-prog
+
+### Fixed
+
+- Pro-rated charging of base fee (#5479) by @kaposke
+- *(oauth)* Validate state session ID in Oauth2 callback (#5366) by @thw-nango
+- *(webapp)* Env-agnostic routes (#5481) by @kaposke
+- Set cookies to custom and mcp_oauth2 redirect (#5488) by @hassan254-prog
+- *(server)* Set state cookie sameSite for cross-site redirects callbacks to nango (#5491) by @hassan254-prog
+- *(validations)* Fix api key validations (#5495) by @hassan254-prog
+- *(errors)* Error parsing was broken (#5499) by @rossmcewan
+- *(lambda)* Enable lambda for webhooks for new accounts (#5502) by @rossmcewan
+- *(cli)* NAN-4702: improve package manager support (#5504) by @agusayerza
+- *(providers)* Fix timify refresh token (#5508) by @hassan254-prog
+- *(timify)* Use the correct param for refreshing tokens (#5509) by @hassan254-prog
+- *(github)* Race condition in npm publish action (#5510) by @agusayerza
+
+## [v0.69.36] - 2026-02-18
+
+### Added
+
+- Add checkpoints guide and migration guide (#5458) by @bastienbeurier
+- *(integrations)* Add support for fullenrich (#5464) by @hassan254-prog
+- *(integrations)* Add support for printful (#5465) by @hassan254-prog
+- *(webapp)* Add more context to error messages during OAuth (#5452) by @hassan254-prog
+- *(integrations)* Add support for timify (#5471) by @hassan254-prog
+
+### Changed
+
+- Document new agent skills (#5468) by @marcindobry
+
+### Fixed
+
+- *(deploy)* Set cache-control for index.html for replit (#5459) by @rossmcewan
+- *(kubernetes)* Request is set to node values, limit is multiplied (#5269) by @rossmcewan
+- *(webapp)* Fix 404 after login when default env is missing (#5469) by @hassan254-prog
+- *(onboarding)* Only redirect to onboarding page if user is new (#5474) by @hassan254-prog
+- *(cli)* Fix hash calculation in unified mocks when pagination took place (#5467) by @marcindobry
+
+## [v0.69.35] - 2026-02-16
+
+### Added
+
+- *(webapp)* New referral screen (#5426) by @agusayerza
+
+### Fixed
+
+- Bump axios to 1.13.5 (#5462) by @agusayerza
+
+## [v0.69.34] - 2026-02-16
+
+### Added
+
+- *(integrations)* Add support for attention (#5442) by @hassan254-prog
+- *(integrations)* Add support for ordinal (#5444) by @hassan254-prog
+- Add ninjaone-rmm-oauth2 provider for Authorization Code flow (#5429) by @kmalkan
+- *(integrations)* Add support for glyphic (#5456) by @hassan254-prog
+- Add partial index (pruned_at IS NULL) to records table (#5457) by @TBonnin
+- *(webapp)* Move env-agnostic routes (#5371) by @kaposke
+- *(cli)* Add --no-dependency-update flag to skip automatic dependency management (#5460) by @agusayerza
+
+### Changed
+
+- Records Cache implementation guide (#5433) by @bastienbeurier
+- Deprecate sync type (#5312) by @TBonnin
+- Documentation update (#5453) by @agusayerza
+
+### Fixed
+
+- Replace TRPCClientError with more user-friendly msg (#5347) by @TBonnin
+- *(autodelete)* Non-existing sync should be considered stale (#5446) by @TBonnin
+- *(autoprune)* Records for deleted connections were not pruned (#5445) by @TBonnin
+- Upgrade body-parser package (#5451) by @TBonnin
+- Upgrade undici package (#5450) by @TBonnin
+- Upgrade lodash (#5449) by @TBonnin
+- Upgrade @modelcontextprotocol/sdk package (#5448) by @TBonnin
+- *(cli)* Fix nango generate:tests to work with the unified mocks (#5443) by @marcindobry
+- Update axios to v1.13.5 (#5447) by @TBonnin
+- *(cli)* Migration not generating request and hash (#5461) by @agusayerza
+
 ## [v0.69.33] - 2026-02-12
 
 ### Added
@@ -5889,6 +5987,10 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
+[v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
+[v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35
+[v0.69.34]: https://github.com/NangoHQ/nango/compare/v0.69.33..v0.69.34
 [v0.69.33]: https://github.com/NangoHQ/nango/compare/v0.69.32..v0.69.33
 [v0.69.32]: https://github.com/NangoHQ/nango/compare/v0.69.31..v0.69.32
 [v0.69.31]: https://github.com/NangoHQ/nango/compare/v0.69.30..v0.69.31

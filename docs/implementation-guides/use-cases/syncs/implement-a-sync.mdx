@@ -26,7 +26,7 @@ You can implement two-way syncs by combining syncs with [Actions](/implementatio
 - You control the code: which data to fetch, transformations, data models, etc.
 - All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination
 - Syncs run in the context of each [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
-- Syncs can use **checkpoints** to save progress and avoid re-fetching all data on every run
+- Syncs can use **[checkpoints](/implementation-guides/use-cases/syncs/checkpoints)** to save progress, resume after failures, and avoid re-fetching all data on every run
 - Synced data is cached in Nango (encrypted at rest and in transit)
 - Nango detects changes (additions, updates, deletes) and sends webhooks to your app
 - You set the polling frequency (15 seconds minimum interval)
@@ -44,7 +44,7 @@ If you are using a pre-built reference implementation sync, you can [skip to usi
 
 ### Checkpoints
 
-Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run.
+Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are the foundation for **incremental syncing**, the recommended approach for any non-trivial dataset.
 
 | Approach | Description | Best for |
 |----------|-------------|----------|
@@ -52,6 +52,10 @@ Checkpoints allow syncs to save their progress and resume from where they left o
 | **Without checkpoints** | Fetches the entire dataset on each run | Small datasets; APIs without filtering support |
 
 Define a `checkpoint` schema in your sync to enable checkpoint support.
+
+<Tip>
+For a complete guide on implementing checkpoints, including examples, best practices, and memory management, see the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
+</Tip>
 
 ### Deletion detection
 
@@ -88,6 +92,10 @@ nango dev # Keep the tab open
 This command starts a process that continuously compiles your integration functions and prints code syntax errors.
 
 ### Step 3 - Create the sync file
+
+<Tip>
+    If you prefer to automate this, follow the [Build with AI guide](/implementation-guides/platform/functions/leverage-ai-agents).
+</Tip>
 
 In your `nango-integrations` folder, create the file for your new sync function.
 

@@ -89,7 +89,8 @@ const bodySchema = z.object({
     output: jsonSchema.default(null),
     telemetryBag: z
         .object({ customLogs: z.number(), proxyCalls: z.number(), durationMs: z.number().default(0), memoryGb: z.number().default(1) })
-        .default({ customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 })
+        .default({ customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 }),
+    functionRuntime: z.enum(['runner', 'lambda']).default('runner')
 });
 const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
 
@@ -100,15 +101,15 @@ const validate = validateRequest<PutTask>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
     const { taskId } = res.locals.parsedParams;
-    const { nangoProps, error, output, telemetryBag } = res.locals.parsedBody;
+    const { nangoProps, error, output, telemetryBag, functionRuntime } = res.locals.parsedBody;
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;
     }
     if (error) {
-        await handleError({ taskId, nangoProps, error, telemetryBag });
+        await handleError({ taskId, nangoProps, error, telemetryBag, functionRuntime });
     } else {
-        await handleSuccess({ taskId, nangoProps, output: output || null, telemetryBag });
+        await handleSuccess({ taskId, nangoProps, output: output || null, telemetryBag, functionRuntime });
     }
     res.status(204).send();
     return;

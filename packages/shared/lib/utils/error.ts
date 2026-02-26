@@ -327,6 +327,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'The refresh limit has been reached for this connection.';
                 break;
 
+            case 'connection_refresh_backoff':
+                this.status = 424;
+                this.message = 'A recent refresh attempt failed. Backing off before retrying.';
+                break;
+
             case 'connection_test_failed':
                 this.status = status || 400;
                 this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;

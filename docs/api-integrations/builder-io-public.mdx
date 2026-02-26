@@ -1,0 +1,83 @@
+---
+title: 'Builder.io (Public)'
+sidebarTitle: 'Builder.io (Public)'
+description: 'Integrate your application with the Builder.io Content API (public key)'
+---
+
+## 🚀 Quickstart
+
+Connect to Builder.io (Public) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Builder.io (Public)_.
+    </Step>
+    <Step title="Authorize Builder.io (Public)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API domain and public API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Builder.io API">
+    Make your first request to the Builder.io Content API (fetch entries for a model (e.g. pages, symbols, or a custom model)).  Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/api/v3/content/my-model-name" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v3/content/my-model-name',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    **Query requirements:** Use the path `api/v3/content/<your-model-name>` (e.g. `page` for pages). Nango sends your public API key as the `apiKey` query parameter automatically. Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+
+## 📚 Builder.io (Public) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to link your Builder.io (Public) account](/api-integrations/builder-io-public/connect)  
+Step-by-step guide to connect with your API domain and public API key
+
+Official docs: [Builder.io API docs](https://www.builder.io/c/docs/api-intro) · [Using your API key](https://www.builder.io/c/docs/using-your-api-key#finding-your-public-api-key)
+
+## 🧩 Pre-built syncs & actions for Builder.io (Public)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/builder-io-public/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

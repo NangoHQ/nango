@@ -3,88 +3,281 @@ title: 'How to set Salesforce up with Nango'
 description: 'Register your own OAuth app and configure Salesforce for production use in Nango'
 ---
 
-This guide will show you how to register your application with Salesforce to obtain your own production OAuth credentials (client id & secret).
+This guide shows you how to register your application with Salesforce to obtain your OAuth credentials (client ID and secret). Once you complete this guide, your users can grant your app access to their Salesforce account. You will have access to the [Salesforce REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm), which lets you read and write data in the connected Salesforce accounts.
 
-Once you complete this guide, your users can grant your app access to their Salesforce account. You will have full access to the [Salesforce REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htmn), which lets you read and write any data in the connected Salesforce accounts.
+## Why External Client Apps only
 
-## Connected App vs. External Client Apps
+This guide uses **External Client Apps (ECA)** only. Salesforce is [phasing out Connected Apps](https://help.salesforce.com/s/articleView?id=005228017&type=1): in Winter '26, creating connected apps in the UI was turned off by default on new orgs (customers had to enable "Allow creation of connected apps" to keep doing it). Starting in Spring '26, that option can no longer be turned on unless Salesforce Support approves it.
 
-Salesforce supports two methods to register your application: **Connected App** and **external Client App**.
+**Distribution options:**
 
-**Connected App** should be your default choice. It provides an easier end-user experience, and gives you full read and write access with the Salesforce REST API.
+- **Local**: For use only inside your own Salesforce org.
+- **Packaged**: For distributing your app to other Salesforce orgs (requires packaging and installation).
 
+### Prerequisites for External Client Apps
 
-## How to set Salesforce up with a Connected App (recommended)
+- **External Client Apps** are available in Professional, Performance, Unlimited, and Developer editions.
+- Your user must have the **Create, Edit, and Delete External Client Apps** permission.
 
-Setup is free and no review is required to go to production.
+## Creating an External Client App for internal use (Local distribution)
+
+Use this option if your app will only be used within your own Salesforce organization.
 
 <Steps>
-    <Step title="Sign up for a free Salesforce developer edition account">
-        If you don't already have one, sign up for a [Salesforce Developer Edition account](https://developer.salesforce.com/signup).
-    </Step>
-    <Step title="Enable Connected Apps">
-        <Note>
-            Connected Apps are disabled by default in new Salesforce developer accounts.
-            
-            If your Salesforce developer account is new, follow these steps to enable them. If your organization has already enabled this setting, skip to **Configure Connected App settings**.
-        </Note>
-        1. Log in to your Salesforce account
-        2. Navigate to **Setup**. In the left menu, go to **Apps** → **External Client App Manager** → **Settings**
-        3. Find the **Allow creation of connected apps** option then toggle it to enable **Connected Apps**
-    </Step>
-    <Step title="Configure Connected App settings">
-        1. Log in to your [Salesforce Developer Edition account](https://login.salesforce.com/)
-        2. Navigate to **Setup**. In the left menu, go to **Apps** → **External Client App Manager** → **Settings**. Scroll to the bottom of the page, then click **New Connected App**
-        3. Fill in the required basic information:
-            - **Connected App Name**: Your app's name
-            - **API Name**: This will auto-populate
-            - **Contact Email**: Your email address
-        4. Check the **Enable OAuth Settings** checkbox.
-        5. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`
-            - Use your custom callback URL if your Nango account has one set up.
-        6. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
-            - `Access and manage your data (api)`
-            - `Perform requests on your behalf at any time (refresh_token, offline_access)`
-        7. Check the **Introspect All Tokens** option
-        8. Leave the rest of the default settings unchanged.
-        9. Click **Save**, then **Continue**.
-        <Note>Changes can take up to 10 minutes to take effect</Note>
-    </Step>
-    <Step title="Obtain API credentials">
-        1. After saving your changes, you'll be redirected to the Connected App detail page.
-        2. You may need to wait a few minutes for the app to be fully created.
-        3. Click **Manage Consumer Details** to view your credentials. You may be required to verify your identity.
-        4. Copy the **Consumer Key** to the "Client Id" field in your Salesforce integration in Nango
-        5. Copy the **Consumer Secret** to the "Client Secret" field in your Salesforce integration in Nango
-        6. In Nango, add the `api` and `refresh_token` scopes to your Salesforce integration.
-            - `api` lets you read & write any data from the Salesforce account on the REST API
-    </Step>
-    <Step title="Configure token settings">
-        1. Under the **Connected Apps** dropdown, click **Manage Connected Apps**, then click the **Edit** button next to the application you just created.
-        2. Under **OAuth Policies**, set **Refresh Token Policy** to **Refresh token is valid until revoked** for long-lived access.
-        3. Click **Save**.
-    </Step>
-    <Step title="You are all set">
-        Test the OAuth flow in your Nango dashboard.
-
-        You are now ready to let your customers connect their account and access any data from the Salesforce API.
-
-        Follow the [Quickstart](/getting-started/quickstart) to integrate Nango in your app.
-    </Step>
+  <Step title="Create an External Client App">
+    1. Log in to your Salesforce account.
+    2. Click on the **Setup** menu, in the **Quick Find** box, enter **App Manager**, and then select **App Manager**.
+    3. Click **New External Client App**.
+  </Step>
+  <Step title="Configure External Client App settings">
+  1. Fill in the required **Basic information**:
+   - **External Client App Name**: The display name of your app as it will appear in Salesforce.
+   - **API Name**: Auto-filled based on the app name; used internally by Salesforce.
+   - **Contact Email**: The email address Salesforce can use to contact the app owner.
+   - **Distribution State**: Select **Local** for internal use within your Salesforce organization.
+   - **Contact Phone (Optional)**: A phone number for reaching the app's designated point of contact.
+   - **Info URL (Optional)**: A link to your app's website or documentation.
+   - **Logo Image URL (Optional)**: A direct URL to an image that will be used as the app's logo.
+   - **Icon URL (Optional)**: A direct URL to a smaller icon representing the app.
+   - **Description (Optional)**: A short summary describing what the app does.
+  2. Check the **API (Enable Oauth Settings)** checkbox.
+  3. For **Callback URL**, enter: `https://api.nango.dev/oauth/callback`.
+  4. Under **Selected OAuth Scopes**, add the permissions your app needs. At minimum, add:
+    - "Access and manage your data (api)"
+    - "Perform requests on your behalf at any time (refresh_token, offline_access)"
+  5. Under **Flow Enablement**, check **Enable Authorization Code and Credentials Flow**.
+  6. Under **Security**, leave the default options selected:
+      - ✅ Require secret for Web Server Flow
+      - ✅ Require secret for Refresh Token Flow
+      - ✅ Require Proof Key for Code Exchange (PKCE) extension for Supported Authorization Flows
+  7. Click **Create**.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. After saving, navigate to your app **Settings** tab.
+    2. Scroll down to **Oauth Settings** section.
+    3. Click **Consumer Key and Secret** to view your credentials. You may be required to verify your identity.
+    4. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret).
+    5. You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Configure token settings (recommended)">
+   1. Click your app's **Policies** tab, then click the **Edit** button. Scroll down to **OAuth Policies**, and under **App Authorization**, set the **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+   2. Click **Save**.
+  </Step>
 </Steps>
 
-## External Client Apps
+## Creating an External Client App for external distribution (Packaged distribution)
 
-In the summer of 2025, Salesforce released [External Client Apps](https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5), an alternative authentication method that allows external applications to connect to Salesforce orgs. Nango fully supports this as well.
+Use this option if your app will be distributed to other Salesforce organizations. This requires a more complex setup with packaging.
 
-Compared to connected apps, external client apps have two drawbacks:
-1. They require packaging (custom code bundle you have to create)
-2. End-users must install them in their Salesforce org before users can connect their accounts
+### Environment setup requirements
 
-For the most frictionless integration experience, Nango recommends using **Connected Apps**.
+**Important:** Due to [Salesforce limitations](https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T44UpSAJ), you need **two separate Salesforce accounts**:
 
-External client apps may be a good option if you need to deploy custom code to your customer's Salesforce instance.
+- **Developer Hub (Dev Hub) account**: For creating and managing packages.
+- **Namespace account**: Used to register and manage a unique namespace for packaging and publishing apps.
 
-For a detailed comparison, check out [Salesforce's comparison guide](https://help.salesforce.com/s/articleView?id=sf.connected_apps_and_external_client_apps_features.htm&language=en_US&type=5).
+You cannot have both Dev Hub enabled and register a namespace in the same organization.
 
-To learn how to create External Client Apps, see [Salesforce's creation guide](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5).
+<Steps>
+  <Step title="Set up two Salesforce accounts">
+    1. **Create Developer Hub Account**: 
+       - Go to [Salesforce Developer Edition signup](https://developer.salesforce.com/signup) and create your first account
+       - Enable Dev Hub: **Setup** → **Dev Hub** → **Enable Dev Hub**
+       <Note>Please note that this change is irreversible</Note>
+    
+    2. **Create Namespace Account**: 
+       - Create a second Salesforce Developer Edition account
+       - Register a namespace: **Setup** → **Package Manager** → **Register Namespace**
+       - Choose a unique namespace (this will be part of your package identity)
+    
+    3. **Link the namespace to your Dev Hub account**:
+       - Log in to your **Dev Hub organization** as the System Administrator or as a user with the Salesforce DX Namespace Registry permissions.
+       <Tip>Make sure your browser allows pop-ups from your Dev Hub organization</Tip>
+       - From the App Launcher menu, select **Namespace Registries**
+       - Click **Link Namespace**
+       - In the pop-up window that appears, log in to your **Namespace Account** (the Developer Edition organization where your namespace is registered) using the System Administrator's credentials.
+       - After successful linking, you can view all linked namespaces by selecting the **All Namespace Registries** list view.
+       
+       <Note>You can't link organizations without a namespace - sandboxes, scratch organizations, patch organizations, and branch organizations require a namespace to be linked to the Namespace Registry.</Note>
+  </Step>
+  <Step title="Create External Client App in Developer Hub (Dev Hub)">
+    1. Log in to your **Developer Hub (Dev Hub)** (the first account).
+    2. Click on **Setup** → **App Manager** → **New External Client App**.
+    3. Configure the app settings:
+        - **External Client App Name**: The display name of your app as it will appear in Salesforce.
+        - **API Name**: Auto-filled based on the app name; used internally by Salesforce.
+        - **Contact Email**: The email address Salesforce can use to contact the app owner.
+        - **Distribution State**: Select **Packaged**.
+        - **Contact Phone (Optional)**: A phone number for reaching the app's designated point of contact.
+        - **Info URL (Optional)**: A link to your app's website or documentation.
+        - **Logo Image URL (Optional)**: A direct URL to an image that will be used as the app's logo.
+        - **Icon URL (Optional)**: A direct URL to a smaller icon representing the app.
+        - **Description (Optional)**: A short summary describing what the app does.
+    4. Enable OAuth settings:
+       - Check **API (Enable Oauth Settings)**
+       - **Callback URL**: `https://api.nango.dev/oauth/callback`
+       - **Selected OAuth Scopes**: Add required scopes (minimum: "api", "refresh_token, offline_access")
+       - **Flow Enablement**: Enable Authorization Code and Credentials Flow
+       - Under **Security**, leave the default options selected:
+         - ✅ Require secret for Web Server Flow
+         - ✅ Require secret for Refresh Token Flow
+         - ✅ Require Proof Key for Code Exchange (PKCE) extension for Supported Authorization Flows
+    5. Click **Create**.
+    6. After saving, navigate to your app **Settings** tab.
+    7. Scroll down to **Oauth Settings** section.
+    8. Click **Consumer Key and Secret** to view your credentials. You may be required to verify your identity.
+    9. Copy the **Consumer Key** (this is your Client ID) and **Consumer Secret** (this is your Client Secret). You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Configure token settings (recommended)">
+   1. Click your app's **Policies** tab, then click the **Edit** button. Scroll down to **OAuth Policies**, and under **App Authorization**, set the **Refresh Token Policy** to "Refresh token is valid until revoked" for long-lived access.
+   2. Click **Save**.
+  </Step>
+  <Step title="Install and set up Salesforce CLI">
+    1. **Install Salesforce CLI**:
+       - **Mac**: `brew install salesforce-cli` or download from [Salesforce CLI releases](https://developer.salesforce.com/tools/salesforcecli)
+       - **Windows**: Download the installer from [Salesforce CLI releases](https://developer.salesforce.com/tools/salesforcecli)
+       - **Linux**: Use npm: `npm install -g @salesforce/cli` or download from [Salesforce CLI releases](https://developer.salesforce.com/tools/salesforcecli)
+    
+    2. **Verify installation**:
+       ```bash
+       sf --version
+       ```
+    
+    3. **Login to your Developer Hub account**:
+       ```bash
+       sf org login web --set-default-dev-hub --alias my-dev-hub
+       ```
+       This will open a browser window where you can log in to your **Developer Hub account** (the first account you created).
+    
+    4. **Verify login and see connected organizations**:
+       ```bash
+       sf org list
+       ```
+       You should see your Dev Hub organization listed with a "(D)" indicating it's set as the default Dev Hub.
+    
+    5. **Create a Salesforce project**:
+       ```bash
+       sf project generate --name nango
+       cd nango
+       ```
+       This creates a new Salesforce project directory structure that we'll use for packaging.
+    
+    6. **Create a package**:
+    ```bash
+    sf package create --name "Nango External" --package-type Managed --path force-app --target-dev-hub MyOrgAlias
+    ```
+    Use your Dev Hub alias (e.g. `my-dev-hub`) in place of `MyOrgAlias` if different.
+
+    7. **Open the project in your IDE**:
+       Open the `nango` project folder in your preferred IDE (e.g., VS Code):
+       ```bash
+       code .
+       ```
+    8. **Create package.xml file**:
+       In the project root directory, create a `package.xml` file with the following configuration:
+       ```xml
+       <Package xmlns="http://soap.sforce.com/2006/04/metadata">
+           <types>
+               <members>*</members>
+               <name>ExternalClientApplication</name>
+           </types>
+           <types>
+               <members>*</members>
+               <name>ExtlClntAppOauthSettings</name>
+           </types>
+           <!--  Add this section if you Configured token settings policies above. -->
+           <types>
+            <members>*</members>
+            <name>ExtlClntAppOauthConfigurablePolicies</name>
+          </types>
+           <version>58.0</version>
+       </Package>
+       ```
+       This package.xml defines the metadata types we'll be working with for External Client Apps and their OAuth settings.
+    
+    9. **Retrieve the External Client App from Dev Hub**:
+       Now retrieve the External Client App you created in the Dev Hub account using the following command:
+       ```bash
+       sf project retrieve start --manifest package.xml --target-org johndoe@example.com
+       ```
+       Replace `johndoe@example.com` with the username of your authenticated Dev Hub account. This command retrieves the External Client App metadata and OAuth settings into your local project. This will add 2 folders **(externalClientApps and extlClntAppOauthSettings)** in your `force-app/main/default/` folder of the project you are working on. If you enabled ExtlClntAppOauthConfigurablePolicies in the XML, you will get 3 folders instead, with the third being **extlClntAppOauthConfigurablePolicies**.
+       
+       <Note>If you have more external client apps registered, they will also be added. You can remove them by deleting the specific files inside those folders to remain with the packaged one we created earlier.</Note>
+    
+    10. **Configure sfdx-project.json and create package version**:
+       First, get the package ID by running:
+       ```bash
+       sf package list --target-dev-hub my-dev-hub
+       ```
+       
+       Open the `sfdx-project.json` file in the root of your project and configure it like this:
+       ```json
+       {
+         "packageDirectories": [
+           {
+             "versionName": "ver 0.1", // this is the version number
+             "versionNumber": "0.1.0.NEXT", // auto-incrementing version format
+             "path": "force-app",
+             "default": true,
+             "package": "Nango External App", // package name reference
+             "versionDescription": "" // optional description for this version
+           }
+         ],
+         "name": "my-app", // project name
+         "namespace": "<YOUR_NAMESPACE>", // your registered namespace
+         "sfdcLoginUrl": "https://login.salesforce.com",
+         "sourceApiVersion": "64.0",
+         "packageAliases": {
+           "Nango External App": "<PACKAGE_ID>" // maps package name to package ID
+         }
+       }
+       ```
+       Replace `<PACKAGE_ID>` with the ID obtained from the previous command and `<YOUR_NAMESPACE>` with the namespace you linked to your Dev Hub account.
+       
+       Then create a package version:
+       ```bash
+       sf package version create --package <PACKAGE_ID> --installation-key "" --wait 20 --code-coverage --target-dev-hub my-dev-hub
+       ```
+       You can leave `--installation-key ""` empty to make the package installation open, or provide a key that users will need to enter during installation.
+       
+       After successfully creating the package, you will get a successful message with an installation URL that you can use to distribute your External Client App to other Salesforce organizations.
+    
+    11. **Install the package to target organization**:
+        Use the installation URL above to install your package to the target Salesforce organization where you want to use the External Client App. 
+  </Step>
+ </Steps>
+
+## Already using a Connected App? Migrate to External Client App
+
+If you previously created a **Connected App**, you can migrate it to an **External Client App** that Salesforce recommends.
+
+1. From **Setup**, go to **App Manager** and open the connected app.
+2. If eligible, click the **Migrate to External Client App** button.
+3. Confirm that the app is local and doesn't use the username-password flow.
+4. Click **Migrate**.
+5. A new External Client App will be created; the old Connected App will remain in read-only mode.
+
+<Note>All changes must be made in the new External Client App. Deleting the External Client App reactivates the original Connected App with its previous settings intact.</Note>
+
+## Connection configuration in Nango
+
+Salesforce uses a different API base URL, the `instance_url`, for each customer. Nango automatically retrieves the `instance_url` from Salesforce and stores it in the connection config. If you use the Nango Proxy, it uses the correct API base URL automatically. You can also retrieve the `instance_url` via the [backend SDK](/reference/sdks/node#get-a-connection-with-credentials) or [Connections API](/reference/api/connection/get).
+
+## Important considerations
+
+### Troubleshooting invalid Client ID errors
+
+If you see `invalid_client_id`, [ensure your (developer) user password does not contain special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2).
+
+
+## Next steps
+
+After completing any of the above, follow the [_Quickstart_](/getting-started/quickstart) to start using your Salesforce integration.
+
+## Additional resources
+
+- [Salesforce OAuth documentation](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authorization_code_credentials_flow.htm&type=5)
+- [Create an External Client App (Local)](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5)
+- [External Client Apps vs. Connected Apps](https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps_overview.htm&type=5)
+- [Migrate Connected App to External Client App](https://help.salesforce.com/s/articleView?id=xcloud.migrate_connected_app_to_external_client_app.htm&type=5)
+- [REST API documentation](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm)

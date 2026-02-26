@@ -24,16 +24,9 @@ To initialize your integrations folder (e.g., at the root of your repository), r
 nango init nango-integrations
 ```
 
-<Note>
-    You can also ask Nango to seed your `nango-integrations` folder with instructions for AI agents:
-
-    ```bash
-    nango init --ai cursor
-    ```
-
-    For more details, read our [guide to leveraging AI agents](/implementation-guides/platform/functions/leverage-ai-agents)
-
-</Note>
+<Tip>
+    To code with AI, install our skill: `npx skills add NangoHQ/skills` ([Buid with AI guide](/implementation-guides/platform/functions/leverage-ai-agents)).
+</Tip>
 
 This creates the `./nango-integrations` folder with some initial configuration and an example sync script. The `nango-integrations` directory looks like this:
 ```
@@ -48,7 +41,7 @@ nango-integrations/
 ```
 
 <Tip>
-**The `.nango` directory should be committed to source control. It is used by the Nango CLI internally.**
+The `.nango` directory should be committed to source control. It is used by the Nango CLI internally.
 </Tip>
 
 ## Authenticate the CLI

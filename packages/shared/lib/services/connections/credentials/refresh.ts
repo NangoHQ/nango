@@ -9,7 +9,7 @@ import providerClient from '../../../clients/provider.client.js';
 import { NangoError } from '../../../utils/error.js';
 import { isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
-import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
+import { REFRESH_FAILURE_COOLDOWN_MS, REFRESH_MARGIN_MS, getExpiresAtFromCredentials } from '../utils.js';
 
 import type { Config, Config as ProviderConfig } from '../../../models/index.js';
 import type { NangoInternalError } from '../../../utils/error.js';
@@ -69,7 +69,7 @@ const inFlightRefreshes = new FixedSizeMap<
 >(5_000);
 
 /**
- * Take a connection and try to refresh or test based on it's type
+ * Take a connection and try to refresh or test based on its type
  * If instantRefresh === false, we will not refresh if not necessary
  */
 export async function refreshOrTestCredentials(props: RefreshProps): Promise<Result<DBConnectionDecrypted, NangoError>> {
@@ -90,8 +90,16 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         props.connection = { ...props.connection, last_fetched_at: new Date() };
 
         // short-circuit if we know the refresh will fail
-        if (props.connection.refresh_exhausted && !props.instantRefresh) {
-            return Err(new NangoError('connection_refresh_exhausted'));
+        if (!props.instantRefresh) {
+            if (props.connection.refresh_exhausted) {
+                return Err(new NangoError('connection_refresh_exhausted'));
+            }
+
+            // Fail early if the last refresh attempt failed within the cooldown window.
+            // Manual refreshes (instantRefresh=true) always bypass this check.
+            if (props.connection.last_refresh_failure && Date.now() - props.connection.last_refresh_failure.getTime() < REFRESH_FAILURE_COOLDOWN_MS) {
+                return Err(new NangoError('connection_refresh_backoff'));
+            }
         }
 
         let res: Result<DBConnectionDecrypted, NangoError>;
@@ -478,6 +486,11 @@ export async function refreshCredentialsIfNeeded({
                 delete newCredentials.raw['sharepointAccessToken'];
             }
 
+            if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'botFrameworkAccessToken' in newCredentials.raw) {
+                connectionToRefresh['connection_config']['botFrameworkAccessToken'] = newCredentials.raw['botFrameworkAccessToken'];
+                delete newCredentials.raw['botFrameworkAccessToken'];
+            }
+
             connectionToRefresh = await connectionService.updateConnection({
                 ...connectionToRefresh,
                 last_fetched_at: new Date(),
@@ -524,13 +537,14 @@ export async function shouldRefreshCredentials({
     instantRefresh: boolean;
     refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<{ should: boolean; reason: string }> {
+    const expirationBufferInSeconds = provider.token_expiration_buffer || REFRESH_MARGIN_MS / 1000;
     if (refreshGithubAppJwtToken && (providerConfig.provider === 'github-app' || providerConfig.provider === 'github-app-oauth')) {
         if (connection.connection_config['jwtToken']) {
             const tokenValue = connection.connection_config['jwtToken'];
             const decodedValue = decodeJwt(tokenValue);
             if (decodedValue && decodedValue['exp']) {
                 const exp = new Date(decodedValue['exp'] * 1000);
-                if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+                if (isTokenExpired(exp, expirationBufferInSeconds)) {
                     return { should: true, reason: 'expired_jwt_token' };
                 }
             }
@@ -541,11 +555,26 @@ export async function shouldRefreshCredentials({
         if (connection.connection_config['sharepointAccessToken']) {
             if (connection.connection_config['sharepointAccessToken']['expires_at']) {
                 const exp = new Date(connection.connection_config['sharepointAccessToken']['expires_at']);
-                if (isTokenExpired(exp, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+                if (isTokenExpired(exp, expirationBufferInSeconds)) {
                     return { should: true, reason: 'expired_sharepoint_access_token' };
                 }
             }
         }
+    }
+
+    if (providerConfig.provider === 'microsoft-teams-bot') {
+        if (connection.connection_config['botFrameworkAccessToken']) {
+            if (connection.connection_config['botFrameworkAccessToken']['expires_at']) {
+                const exp = new Date(connection.connection_config['botFrameworkAccessToken']['expires_at']);
+                if (isTokenExpired(exp, expirationBufferInSeconds)) {
+                    return { should: true, reason: 'expired_bot_framework_access_token' };
+                }
+            }
+        }
+    }
+
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
+        return { should: instantRefresh, reason: providerConfig.provider };
     }
 
     if (!instantRefresh) {
@@ -558,16 +587,12 @@ export async function shouldRefreshCredentials({
 
         if (!credentials.expires_at) {
             return { should: false, reason: 'no_expires_at' };
-        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        } else if (!isTokenExpired(credentials.expires_at, expirationBufferInSeconds)) {
             return { should: false, reason: 'fresh' };
         }
     }
 
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
-
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
-        return { should: instantRefresh, reason: providerConfig.provider };
-    }
 
     if (credentials.type === 'OAUTH2') {
         // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and doesn't return a refresh_token.

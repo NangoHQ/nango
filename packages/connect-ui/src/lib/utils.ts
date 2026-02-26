@@ -39,3 +39,20 @@ export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
 
     return fieldString;
 }
+
+export function getAllowedCallbackOrigin(apiURL: string): string | null {
+    try {
+        return new URL(apiURL).origin;
+    } catch {
+        return null;
+    }
+}
+
+export function compactErrorDisplay(message: string): string {
+    try {
+        const parsed = JSON.parse(message);
+        return JSON.stringify(parsed);
+    } catch {
+        return message;
+    }
+}

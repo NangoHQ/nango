@@ -143,7 +143,7 @@ When you [trigger a sync run](/reference/api/sync/trigger) manually (from the UI
 
 | Option | Default | What it does |
 | --- | --- | --- |
-| `reset` | `false` | When `true`, resets the current checkpoint and `lastSyncDate`, resulting in re-fetching all the full dataset from the external API. The cache is preserved, so Nango can still detect which records are new vs. updated. |
+| `reset` | `false` | When `true`, resets the current [checkpoint](/implementation-guides/use-cases/syncs/checkpoints) and `lastSyncDate`, resulting in re-fetching all the full dataset from the external API. The cache is preserved, so Nango can still detect which records are new vs. updated. |
 | `emptyCache` | `false` | When `true`, deletes all cached records before the sync runs. The sync starts completely fresh, all synced records are reported as new. |
 
 **Leave both options off** for a standard incremental sync — only new or changed records are detected.

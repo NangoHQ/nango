@@ -4,10 +4,10 @@ import { useEffect, useRef } from 'react';
 import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
+import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
 import { PrivateRoute } from './components/PrivateRoute';
-import { Toaster } from './components/ui/toast/Toaster';
 import { useMeta } from './hooks/useMeta';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
@@ -32,6 +32,7 @@ import { FunctionsOne } from './pages/Integrations/providerConfigKey/Functions/O
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
 import { NotFound } from './pages/NotFound';
+import { HearAboutUs } from './pages/Onboarding/HearAboutUs';
 import { Root } from './pages/Root';
 import { TeamBilling } from './pages/Team/Billing/Show';
 import { TeamSettings } from './pages/Team/Settings';
@@ -81,132 +82,158 @@ const router = sentryCreateBrowserRouter([
         element: <PrivateRoute />,
         children: [
             {
-                path: '/:env',
-                element: <Homepage />,
-                handle: {
-                    breadcrumb: 'Metrics'
-                }
-            },
-            {
-                path: '/dev/getting-started',
+                path: 'dev/getting-started',
                 element: <GettingStartedRoute />,
                 handle: { breadcrumb: 'Getting started' } as BreadcrumbHandle
             },
             {
-                path: '/:env/integrations',
-                handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
+                path: '/onboarding/hear-about-us',
+                element: <HearAboutUs />
+            },
+            {
+                path: '/:env',
                 children: [
                     {
                         index: true,
-                        element: <IntegrationsList />
+                        element: <Homepage />,
+                        handle: {
+                            breadcrumb: 'Metrics'
+                        }
                     },
                     {
-                        path: 'create',
-                        handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                        path: 'integrations',
+                        handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
                         children: [
                             {
                                 index: true,
-                                element: <CreateIntegrationList />
+                                element: <IntegrationsList />
+                            },
+                            {
+                                path: 'create',
+                                handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <CreateIntegrationList />
+                                    },
+                                    {
+                                        path: ':providerConfigKey',
+                                        element: <CreateIntegration />,
+                                        handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                                    }
+                                ]
                             },
                             {
                                 path: ':providerConfigKey',
-                                element: <CreateIntegration />,
-                                handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                                handle: {
+                                    breadcrumb: (params) => params.providerConfigKey || 'Integration'
+                                } as BreadcrumbHandle,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <ShowIntegration />
+                                    },
+                                    {
+                                        path: 'functions/:functionName',
+                                        element: <FunctionsOne />,
+                                        handle: {
+                                            breadcrumb: (params) => params.functionName || 'Function'
+                                        } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: '*',
+                                        element: <ShowIntegration />
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        path: ':providerConfigKey',
-                        handle: {
-                            breadcrumb: (params) => params.providerConfigKey || 'Integration'
-                        } as BreadcrumbHandle,
+                        path: 'integration/:providerConfigKey',
+                        element: <RedirectWithEnv path="integrations/:providerConfigKey" />
+                    },
+                    {
+                        path: 'connections',
+                        handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
                         children: [
                             {
                                 index: true,
-                                element: <ShowIntegration />
+                                element: <ConnectionList />
                             },
                             {
-                                path: 'functions/:functionName',
-                                element: <FunctionsOne />,
-                                handle: {
-                                    breadcrumb: (params) => params.functionName || 'Function'
-                                } as BreadcrumbHandle
+                                path: 'create',
+                                element: <ConnectionCreate />,
+                                handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
                             },
                             {
-                                path: '*',
-                                element: <ShowIntegration />
+                                path: 'create-legacy',
+                                element: <ConnectionCreateLegacy />,
+                                handle: { breadcrumb: 'Create Connection (Legacy)' } as BreadcrumbHandle
+                            },
+                            {
+                                path: ':providerConfigKey/:connectionId',
+                                element: <ConnectionShow />,
+                                handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
                             }
                         ]
+                    },
+                    {
+                        path: 'logs',
+                        element: <LogsShow />,
+                        handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'activity',
+                        element: <RedirectWithEnv path="logs" />
+                    },
+                    {
+                        path: 'environment-settings',
+                        element: <EnvironmentSettings />,
+                        handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'project-settings',
+                        element: <Navigate to="/environment-settings" />
+                    },
+                    // Not env-specific, but uses env
+                    {
+                        path: 'account-settings',
+                        element: <Navigate to="/team-settings" />
+                    },
+                    {
+                        path: 'team-settings',
+                        element: <TeamSettings />,
+                        handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'team/billing',
+                        element: <TeamBilling />,
+                        handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'user-settings',
+                        element: <UserSettings />,
+                        handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
                     }
                 ]
-            },
-            {
-                path: '/:env/integration/:providerConfigKey',
-                element: <RedirectWithEnv path="integrations/:providerConfigKey" />
-            },
-            {
-                path: '/:env/connections',
-                handle: { breadcrumb: 'Connections' } as BreadcrumbHandle,
-                children: [
-                    {
-                        index: true,
-                        element: <ConnectionList />
-                    },
-                    {
-                        path: 'create',
-                        element: <ConnectionCreate />,
-                        handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
-                    },
-                    {
-                        path: 'create-legacy',
-                        element: <ConnectionCreateLegacy />,
-                        handle: { breadcrumb: 'Create Connection (Legacy)' } as BreadcrumbHandle
-                    },
-                    {
-                        path: ':providerConfigKey/:connectionId',
-                        element: <ConnectionShow />,
-                        handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
-                    }
-                ]
-            },
-            {
-                path: '/:env/logs',
-                element: <LogsShow />,
-                handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
-            },
-            {
-                path: '/:env/activity',
-                element: <RedirectWithEnv path="logs" />
-            },
-            {
-                path: '/:env/environment-settings',
-                element: <EnvironmentSettings />,
-                handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
-            },
-            {
-                path: '/:env/project-settings',
-                element: <Navigate to="/environment-settings" />
-            },
-            {
-                path: '/:env/account-settings',
-                element: <Navigate to="/team-settings" />
-            },
-            {
-                path: '/:env/team-settings',
-                element: <TeamSettings />,
-                handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
-            },
-            {
-                path: '/:env/team/billing',
-                element: <TeamBilling />,
-                handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
-            },
-            {
-                path: '/:env/user-settings',
-                element: <UserSettings />,
-                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
             }
         ]
+    },
+    {
+        path: '/account-settings',
+        element: <RedirectWithEnv path="team-settings" />
+    },
+    {
+        path: '/team-settings',
+        element: <RedirectWithEnv path="team-settings" />
+    },
+    {
+        path: '/team/billing',
+        element: <RedirectWithEnv path="team/billing" />
+    },
+    {
+        path: '/user-settings',
+        element: <RedirectWithEnv path="user-settings" />
     },
     {
         path: '/hn-demo',
@@ -299,6 +326,7 @@ const App = () => {
                 >
                     <RouterProvider router={router} />
                 </SWRConfig>
+                {/* TODO: Remove once remaining legacy toasts have been replaced */}
                 <ToastContainer />
             </TooltipProvider>
             <Toaster />

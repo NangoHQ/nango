@@ -261,6 +261,8 @@ export default class Nango {
 
     /**
      * Clear state of the frontend SDK
+     * Delays closing the popup so the callback page can postMessage to conect ui
+     * and the opener can process the message before the popup is destroyed.
      */
     public clear() {
         if (this.tm) {
@@ -268,13 +270,15 @@ export default class Nango {
         }
 
         if (this.win) {
-            try {
-                this.win.close();
-            } catch (err) {
-                console.log('err', err);
-                // do nothing
-            }
+            const windowRef = this.win;
             this.win = null;
+            setTimeout(() => {
+                try {
+                    windowRef.close();
+                } catch {
+                    // ignore
+                }
+            }, 500);
         }
     }
 
@@ -375,7 +379,7 @@ export default class Nango {
             return appStoreCredentials as unknown as ConnectionConfig;
         }
 
-        if ('client_id' in credentials && 'client_secret' in credentials) {
+        if ('client_id' in credentials && ('client_secret' in credentials || 'client_private_key' in credentials)) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
                 client_id: credentials.client_id,
                 client_secret: credentials.client_secret,
@@ -556,7 +560,7 @@ export default class Nango {
             });
         }
 
-        if ('client_id' in credentials && 'client_secret' in credentials) {
+        if ('client_id' in credentials && ('client_secret' in credentials || 'client_private_key' in credentials)) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/oauth2/auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as OAuth2ClientCredentials
