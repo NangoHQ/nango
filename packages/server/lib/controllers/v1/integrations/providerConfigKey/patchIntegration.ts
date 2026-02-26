@@ -143,36 +143,40 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                         }
                     }
                 } else {
-                    // Custom mode: store STS auth, clean up builtin credentials
+                    // Custom mode: store STS auth, always clean up builtin credentials
                     if (stsAuth) {
                         integration.integration_secrets = { ...existingSecrets, aws_sigv4: { sts_auth: stsAuth } };
                     } else {
                         const authBlock = parsedConfig['stsEndpoint']?.['auth'];
-                        if (authBlock && authBlock['type']) {
-                            const existingStsAuth = existingAwsSigV4['sts_auth'] as Record<string, string> | undefined;
-                            if (authBlock['type'] === 'api_key') {
-                                integration.integration_secrets = {
-                                    ...existingSecrets,
-                                    aws_sigv4: {
-                                        sts_auth: {
-                                            type: 'api_key',
-                                            header: authBlock['header'] || 'x-api-key',
-                                            value: existingStsAuth?.['value'] || ''
-                                        }
+                        const existingStsAuth = existingAwsSigV4['sts_auth'] as Record<string, string> | undefined;
+                        if (authBlock?.['type'] === 'api_key') {
+                            integration.integration_secrets = {
+                                ...existingSecrets,
+                                aws_sigv4: {
+                                    sts_auth: {
+                                        type: 'api_key',
+                                        header: authBlock['header'] || 'x-api-key',
+                                        value: existingStsAuth?.['value'] || ''
                                     }
-                                };
-                            } else if (authBlock['type'] === 'basic') {
-                                integration.integration_secrets = {
-                                    ...existingSecrets,
-                                    aws_sigv4: {
-                                        sts_auth: {
-                                            type: 'basic',
-                                            username: authBlock['username'] || '',
-                                            password: existingStsAuth?.['password'] || ''
-                                        }
+                                }
+                            };
+                        } else if (authBlock?.['type'] === 'basic') {
+                            integration.integration_secrets = {
+                                ...existingSecrets,
+                                aws_sigv4: {
+                                    sts_auth: {
+                                        type: 'basic',
+                                        username: authBlock['username'] || '',
+                                        password: existingStsAuth?.['password'] || ''
                                     }
-                                };
-                            }
+                                }
+                            };
+                        } else {
+                            // No auth block — clear all aws_sigv4 secrets (removes stale builtin credentials)
+                            integration.integration_secrets = {
+                                ...existingSecrets,
+                                aws_sigv4: { ...(existingStsAuth ? { sts_auth: existingStsAuth } : {}) }
+                            };
                         }
                     }
                 }
