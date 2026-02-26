@@ -52,6 +52,7 @@ class ProviderClient {
             case 'stripe-app-sandbox':
             case 'workday-oauth':
             case 'fanvue':
+            case 'heygen':
                 return true;
             default:
                 return false;
@@ -111,6 +112,8 @@ class ProviderClient {
                 return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'fanvue':
                 return this.createFanvueToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'heygen':
+                return this.createHeyGenToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -206,6 +209,8 @@ class ProviderClient {
                 );
             case 'fanvue':
                 return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'heygen':
+                return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -1033,6 +1038,65 @@ class ProviderClient {
             throw new NangoError('fanvue_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('fanvue_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createHeyGenToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                code,
+                client_id,
+                grant_type: 'authorization_code',
+                redirect_uri,
+                code_verifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('heygen_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('heygen_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshHeyGenToken(refreshTokenUrl: string, refreshToken: string, client_id: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(refreshTokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('heygen_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('heygen_refresh_token_request_error', stringifyError(err));
         }
     }
 

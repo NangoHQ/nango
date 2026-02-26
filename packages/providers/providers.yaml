@@ -7824,6 +7824,19 @@ hibob-service-user:
     docs: https://nango.dev/docs/integrations/all/hibob-service-user
     docs_connect: https://nango.dev/docs/integrations/all/hibob-service-user/connect
 
+heygen:
+    display_name: HeyGen
+    categories:
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://app.heygen.com/oauth/authorize
+    token_url: https://api2.heygen.com/v1/oauth/token
+    refresh_url: https://api2.heygen.com/v1/oauth/refresh_token
+    proxy:
+        base_url: https://api2.heygen.com
+    docs: https://nango.dev/docs/api-integrations/heygen
+    setup_guide_url: https://nango.dev/docs/api-integrations/heygen/how-to-register-your-own-heygen-oauth-app
+
 highlevel:
     display_name: HighLevel
     categories:
