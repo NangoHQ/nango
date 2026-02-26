@@ -6926,6 +6926,16 @@ google-analytics:
     docs: https://nango.dev/docs/api-integrations/google-analytics
     setup_guide_url: https://nango.dev/docs/api-integrations/google-analytics/how-to-register-your-own-google-analytics-api-oauth-app
 
+google-bigquery:
+    display_name: Google BigQuery
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://bigquery.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-bigquery
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-bigquery/how-to-register-your-own-google-bigquery-api-oauth-app
+
 google-calendar:
     display_name: Google Calendar
     categories:
