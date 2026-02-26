@@ -10017,6 +10017,7 @@ maximizer:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/authorize
     token_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/token
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
@@ -10048,6 +10049,7 @@ maximizer-on-premise:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Authorize
     token_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Token
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
