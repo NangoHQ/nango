@@ -13,7 +13,7 @@ import npa from 'npm-package-arg';
 import promptly from 'promptly';
 import semver from 'semver';
 
-import { cloudHost } from './constants.js';
+import { cloudHost, localhostUrl } from './constants.js';
 import { state } from './state.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -31,13 +31,16 @@ export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCAT
 export const isCI = process.env['CI'];
 const IGNORE_UPGRADE_FOR = 86400 * 1000;
 
-let parsedHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
+const rawHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
+const resolvedHostport = rawHostport.endsWith('/') ? rawHostport.slice(0, -1) : rawHostport;
+const isHostportFromEnv = Boolean(process.env['NANGO_HOSTPORT']);
 
-if (parsedHostport.slice(-1) === '/') {
-    parsedHostport = parsedHostport.slice(0, -1);
+export function resolveHostport(env?: string): string {
+    if (!isHostportFromEnv && env === 'local') {
+        return localhostUrl;
+    }
+    return resolvedHostport;
 }
-
-export const hostport = parsedHostport;
 
 export function printDebug(message: string, debug?: boolean) {
     if (debug === true || debug === undefined) {
@@ -185,7 +188,7 @@ export async function getConnection(
     setHeaders?: Record<string, string | boolean>,
     debug = false
 ): Promise<GetPublicConnection['Success'] | undefined> {
-    const url = process.env['NANGO_HOSTPORT'] + `/connection/${connectionId}`;
+    const url = resolveHostport() + `/connection/${connectionId}`;
     const headers = enrichHeaders(setHeaders);
     if (debug) {
         printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
@@ -201,7 +204,7 @@ export async function getConnection(
 }
 
 export async function getConfig(providerConfigKey: string, debug = false): Promise<GetPublicIntegration['Success'] | undefined> {
-    const url = process.env['NANGO_HOSTPORT'] + `/integrations/${providerConfigKey}`;
+    const url = resolveHostport() + `/integrations/${providerConfigKey}`;
     const headers = enrichHeaders();
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
@@ -217,7 +220,12 @@ export async function getConfig(providerConfigKey: string, debug = false): Promi
 }
 
 export async function getEnvironments(debug = false): Promise<GetEnvironments['Success'] | undefined> {
-    const url = process.env['NANGO_HOSTPORT'] + `/api/v1/environments`;
+    if (!process.env['NANGO_SECRET_KEY']) {
+        console.warn(chalk.yellow('Warning: NANGO_SECRET_KEY is not set, skipping environment fetch.'));
+        return;
+    }
+
+    const url = resolveHostport() + `/api/v1/environments`;
     const headers = enrichHeaders();
     if (debug) {
         printDebug(`getEnvironments endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
@@ -227,7 +235,7 @@ export async function getEnvironments(debug = false): Promise<GetEnvironments['S
         const res = await http.get(url, { headers });
         return res.data as GetEnvironments['Success'];
     } catch (err) {
-        console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+        console.log(`❌ ${JSON.stringify(err)}`);
         return;
     }
 }

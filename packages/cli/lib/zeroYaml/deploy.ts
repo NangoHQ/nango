@@ -8,7 +8,7 @@ import promptly from 'promptly';
 import { buildDefinitions } from './definitions.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
+import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { ReadableError } from './utils.js';
 import { loadSchemaJson } from '../services/model.service.js';
@@ -40,7 +40,7 @@ export async function deploy({
     environmentName: string;
     interactive?: boolean;
 }): Promise<Result<boolean>> {
-    const { version, debug } = options;
+    const { env, version, debug } = options;
     const spinnerFactory = new Spinner({ interactive });
 
     let pkg: Package;
@@ -85,11 +85,14 @@ export async function deploy({
     const nangoYamlBody = '';
     const sdkVersion = `${NANGO_VERSION}-zero`;
 
+    const hostport = resolveHostport(env);
+
     // Check remote state
     const spinnerState = spinnerFactory.start(`Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}`);
     let confirmation: ScriptDifferences;
     try {
         const confirmationRes = await postConfirmation({
+            hostport,
             body: { ...pkg, reconcile: false, debug, sdkVersion }
         });
         if (confirmationRes.isErr()) {
@@ -117,6 +120,7 @@ export async function deploy({
     const spinnerDeploy = spinnerFactory.start(`Deploying ${total} functions`);
     try {
         const deployRes = await postDeploy({
+            hostport,
             body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }
         });
         if (deployRes.isErr()) {
@@ -358,7 +362,13 @@ async function loadScriptTsFile({
 /**
  * Call Nango api to get the state of the deploy
  */
-async function postConfirmation({ body }: { body: PostDeployConfirmation['Body'] }): Promise<Result<PostDeployConfirmation['Success']>> {
+async function postConfirmation({
+    hostport,
+    body
+}: {
+    hostport: string;
+    body: PostDeployConfirmation['Body'];
+}): Promise<Result<PostDeployConfirmation['Success']>> {
     const url = new URL('/sync/deploy/confirmation', hostport);
 
     try {
@@ -390,7 +400,7 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
 /**
  * Call Nango api to actually deploy
  */
-async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Result<string>> {
+async function postDeploy({ hostport, body }: { hostport: string; body: PostDeploy['Body'] }): Promise<Result<string>> {
     const url = new URL('/sync/deploy', hostport);
 
     try {
