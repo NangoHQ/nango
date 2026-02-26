@@ -50,12 +50,14 @@ description: "Product updates and improvements."
 
   We added automatic data retention policies for records stored in the Nango sync cache. These policies ensure payload data is not retained indefinitely.
 
-  - **Automated payload pruning:** If a record has not been updated for 30 days, we automatically empty its payload. The metadata (ID, sync state, payload hash) remains intact so Nango can still track the record and detect future changes.
+  - **Automated payload pruning:** If a record has not been updated for 30 days, we automatically empty its payload.
   - **Automated hard deletion:** If a sync has not executed for 60 days, we permanently delete all records belonging to that sync (payload and metadata).
 
   These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/use-cases/syncs/records-cache).
 
-  We also introduced a new endpoint to manually prune records. You can use `PATCH /records/prune` to empty record payloads on demand while preserving the metadata. This endpoint uses cursor-based pagination via the `until_cursor` parameter to prevent collision issues during concurrent operations. See the [Prune records API reference](/reference/api/sync/prune-records).
+  We also introduced a new endpoint to manually prune records. 
+
+  You can use `PATCH /records/prune` to empty record payloads on demand while preserving the metadata. See the [Prune records API reference](/reference/api/sync/prune-records).
 
   ## Support for Salesforce JWT Bearer auth
 
@@ -63,7 +65,7 @@ description: "Product updates and improvements."
 
   ![Salesforce JWT](/images/changelog/SalesforceJWT.png)
 
-  This auth mode bypasses the interactive OAuth consent screen, which enterprise customers often prefer for easier onboarding and stronger governance. It requires a Consumer Key, Consumer Secret, Private Key, and Username from a JWT-enabled Connected App.
+  This auth mode bypasses the interactive OAuth consent screen, which enterprise customers often prefer for easier onboarding and stronger governance.
 
   See the [Salesforce JWT documentation](https://nango.dev/docs/api-integrations/salesforce-jwt) for the setup guide and implementation snippets.
 
@@ -73,13 +75,11 @@ description: "Product updates and improvements."
 
   ![Share Connect Link R Jan2026](/images/changelog/ShareConnectLinkRJan2026.gif)
 
-  The creation form includes a secondary button that mints a session-based URL. The UI displays an expiry notification when you copy the link to your clipboard. Links expire after 30 minutes.
+  The UI displays an expiry notification when you copy the link to your clipboard. Links expire after 30 minutes.
 
   ## Mobile-friendly Connect UI
 
   We updated the Connect UI to optimize the layout for mobile/tablet devices.
-
-  On viewports smaller than 640px, the UI now stretches to the full width of the screen. We removed wrapper padding, reduced inner padding, and removed rounded borders to maximize usable screen space.
 
   ![Mobile Support](</images/changelog/Mobile support.png>)
 
@@ -134,7 +134,7 @@ description: "Product updates and improvements."
   </AccordionGroup>
   ## Connection tags
 
-  Connections now support tags. Tags are key/value strings you attach when creating a Connect session to tie a Nango connection back to a specific user, organization, or entity in your system.
+  Connections now support tags. Tags are key/value strings you attach when creating a Connect session to tie a Nango connection to a specific user, organization, or entity in your system.
 
   When a user completes an auth flow, Nango copies these tags to the resulting connection and includes them in the success webhook. This replaces the need for the legacy `end_user` and `organization` objects.
 
@@ -147,7 +147,7 @@ description: "Product updates and improvements."
 
   You can also filter connections by tags via the API. See the [Connection tags documentation](/implementation-guides/platform/auth/connection-tags).
 
-  **Migration Note:** If you currently use `end_user` or `organization` in Connect sessions or webhooks, follow the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags. Existing connections have already been backfilled with tags derived from legacy end-user fields.
+  **Migration Note:** If you currently use `end_user` or `organization` in Connect sessions or webhooks, follow the [migration guide](/implementation-guides/platform/migrations/migrate-from-end-user) to move to tags.
 
   ## Enhanced OAuth error messaging
 
@@ -155,7 +155,7 @@ description: "Product updates and improvements."
 
   ![Enhanced OAuth error messaging](../images/changelog/improved-oauth-error-messaging.png)
 
-  The new UI for the callback renders structured success and error states. It also surfaces provider query parameters in an expandable debug panel. To ensure reliable teardown and state sharing, the popup relays these states back to the SDK via `postMessage` (with a `BroadcastChannel` fallback) and remains open until acknowledged.
+  The new UI for the callback renders structured success and error states. It also surfaces provider query parameters in an expandable debug panel. 
 
   Additionally, provider errors are now delivered via WebSocket for improved logging on your end.
 
@@ -163,7 +163,7 @@ description: "Product updates and improvements."
 
   We have overhauled the Integrations tab to streamline how you manage and scale your catalog. This update focuses on faster discovery and a more intuitive setup flow.
 
-  - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. The search bar is now auto-focused by default.
+  - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. 
 
     ![Improved Search](../images/changelog/new_integrations_list_page.png)
   - **Decoupled Creation Flow:** Selecting an API in the catalog now leads to a dedicated form where you configure credentials (Client ID, Secret, Scopes) before the integration is created. This prevents empty integrations from cluttering your dashboard.
@@ -221,7 +221,7 @@ description: "Product updates and improvements."
 
   ![Advanced connection settings](../images/changelog/AdvancedConnectionSettings.gif)
 
-  Secondly, you can also override the integration's default configurations. You can modify authorization parameters, customize OAuth scopes, and override developer app credentials (such as the Client ID and Client Secret). This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
+  Secondly, you can also override the integration's default configuration, like authorization parameters, customize OAuth scopes, and override developer app credentials. This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
 
   ## Template cloning via CLI
 
@@ -235,13 +235,11 @@ description: "Product updates and improvements."
   nango clone github/actions/list-repos
   ```
 
-  The command supports zero-yaml projects. It safely handles file resolution by confirming before overwriting existing files and automatically updating your local `index.ts` to reference the newly cloned scripts.
-
   See the guide on [customizing a function template](/implementation-guides/platform/functions/customize-template).
 
   ## Better support for Monorepos & Package Managers
 
-  We’ve overhauled how the Nango CLI detects and interacts with your environment, specifically for non-NPM setups:
+  We’ve improved how the Nango CLI detects and interacts with your environment, specifically for non-NPM setups:
 
   - **Monorepo detection**: The CLI now traverses parent directories to find your lockfile or `package.json`. If you run `nango init` in a subdirectory, it will correctly identify and use your root `pnpm`, `yarn`, or `bun` configuration.
   - **Opt-out of auto-installs**: To prevent the CLI from modifying `package.json` in sensitive environments (like CI or projects using pnpm catalogs), use the new `--no-dependency-update` flag or set the `NANGO_CLI_DEPENDENCY_UPDATE=false` environment variable.
