@@ -23,7 +23,6 @@ import {
 
 import { parse } from './config.service.js';
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
-import { loadSchemaJson } from './model.service.js';
 import { ResponseCollector } from './response-collector.service.js';
 import * as nangoScript from '../sdkScripts.js';
 import { displayValidationError } from '../utils/errors.js';
@@ -317,12 +316,6 @@ export class DryRunService {
             stubbedCheckpoint = validateCheckpoint(result.value);
         }
 
-        const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
-        if (!jsonSchema) {
-            console.log(chalk.red('Failed to load schema.json'));
-            return;
-        }
-
         const responseCollector = new ResponseCollector();
 
         try {
@@ -342,7 +335,7 @@ export class DryRunService {
                 nango_config_id: 1,
                 runs: '',
                 webhook_subscriptions: [],
-                models_json_schema: jsonSchema,
+                models_json_schema: scriptInfo?.json_schema || null,
                 created_at: new Date(),
                 updated_at: new Date(),
                 attributes: {},

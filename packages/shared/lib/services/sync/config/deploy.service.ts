@@ -328,7 +328,11 @@ async function compileDeployInfo({
     }
 
     let models_json_schema: JSONSchema7 | null = null;
-    if (jsonSchema) {
+    if (flow.models_json_schema) {
+        // New path: per-function schema sent directly by the CLI (Zero-YAML)
+        models_json_schema = flow.models_json_schema;
+    } else if (jsonSchema) {
+        // Legacy path: filter from global schema (traditional YAML or older CLI versions)
         const allModels = [...models, flow.input].filter(Boolean) as string[];
         const result = filterJsonSchemaForModels(jsonSchema, allModels);
         if (result.isErr()) {

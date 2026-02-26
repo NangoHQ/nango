@@ -81,7 +81,13 @@ export const flowConfig = z
         version: z.string().optional(),
         track_deletes: z.boolean().optional().default(false),
         sync_type: z.enum(['incremental', 'full']).optional(),
-        webhookSubscriptions: z.array(z.string().max(255)).optional()
+        webhookSubscriptions: z.array(z.string().max(255)).optional(),
+        models_json_schema: z
+            .object({
+                $schema: z.literal('http://json-schema.org/draft-07/schema#'),
+                definitions: z.record(z.string(), z.looseObject({}))
+            })
+            .optional()
     })
     .refine(
         (data) => {

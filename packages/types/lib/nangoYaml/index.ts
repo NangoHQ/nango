@@ -115,6 +115,7 @@ export interface ParsedNangoSync {
     usedModels: string[];
     webhookSubscriptions: string[];
     version: string;
+    json_schema?: JSONSchema7 | undefined;
 }
 
 export interface ParsedNangoAction {
@@ -127,6 +128,7 @@ export interface ParsedNangoAction {
     scopes: string[];
     usedModels: string[];
     version: string;
+    json_schema?: JSONSchema7 | undefined;
 }
 
 export type LayoutMode = 'root' | 'nested';

@@ -70,15 +70,10 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
     return Object.values(tmp);
 }
 
-/**
- * Temporary regression - getting a list of models from the json schema to
- * give customers more time to migrate to it
- */
 function modelsFromJsonSchema(jsonSchema: JSONSchema7 | null): NangoModel[] {
     if (!jsonSchema) {
         return [];
     }
-
     return Object.keys(jsonSchema.definitions || {}).map((key) => ({ name: key, fields: [] }));
 }
 

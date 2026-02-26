@@ -46,24 +46,19 @@ describe('buildSync', () => {
             scopes: ['foobar'],
             usedModels: ['Model', 'SyncMetadata_github_fetchIssues'],
             input: 'SyncMetadata_github_fetchIssues',
-            output: ['Model']
-        });
-        expect(Array.from(def.models.values())).toStrictEqual([
-            {
-                fields: [{ name: 'metadata', tsType: true, value: 'void', description: undefined }],
-                isAnon: true,
-                name: 'SyncMetadata_github_fetchIssues',
-                description: undefined
-            },
-            {
-                fields: [
-                    { name: 'id', optional: false, tsType: true, value: 'string', description: undefined },
-                    { name: 'foobar', optional: false, tsType: true, value: 'string', description: undefined }
-                ],
-                name: 'Model',
-                description: undefined
+            output: ['Model'],
+            json_schema: {
+                $schema: 'http://json-schema.org/draft-07/schema#',
+                definitions: {
+                    Model: {
+                        type: 'object',
+                        properties: { id: { type: 'string' }, foobar: { type: 'string' } },
+                        required: ['id', 'foobar'],
+                        additionalProperties: false
+                    }
+                }
             }
-        ]);
+        });
     });
 
     it('should build an action', () => {
@@ -95,21 +90,13 @@ describe('buildSync', () => {
             scopes: ['foobar'],
             input: 'ActionInput_github_createIssue',
             output: ['ActionOutput_github_createIssue'],
-            usedModels: ['ActionInput_github_createIssue', 'ActionOutput_github_createIssue']
-        });
-        expect(Array.from(res.models.values())).toStrictEqual([
-            {
-                fields: [{ name: 'input', tsType: true, value: 'void', description: undefined }],
-                isAnon: true,
-                name: 'ActionInput_github_createIssue',
-                description: undefined
-            },
-            {
-                fields: [{ name: 'output', optional: false, tsType: true, value: 'number', description: undefined }],
-                isAnon: true,
-                name: 'ActionOutput_github_createIssue',
-                description: undefined
+            usedModels: ['ActionInput_github_createIssue', 'ActionOutput_github_createIssue'],
+            json_schema: {
+                $schema: 'http://json-schema.org/draft-07/schema#',
+                definitions: {
+                    ActionOutput_github_createIssue: { type: 'number' }
+                }
             }
-        ]);
+        });
     });
 });
