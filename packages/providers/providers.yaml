@@ -9725,6 +9725,8 @@ mercury:
     scope_separator: ' '
     authorization_url: https://oauth2.mercury.com/oauth2/auth
     token_url: https://oauth2.mercury.com/oauth2/token
+    default_scopes:
+        - offline_access
     proxy:
         base_url: https://api.mercury.com
     docs: https://nango.dev/docs/api-integrations/mercury
