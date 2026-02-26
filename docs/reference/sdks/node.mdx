@@ -2074,7 +2074,29 @@ await nango.listProviders()
 Returns a specific provider.
 
 ```js
-await nango.getProvider({ provider: <NAME> })
+const { data } = await nango.createReconnectSession({
+  // Required
+  connection_id: '<CONNECTION-ID>',
+  integration_id: '<INTEGRATION-ID>',
+
+  // Optional
+  end_user: {
+    id: '<END-USER-ID>',
+    email: '<END-USER-EMAIL>',
+    display_name: '<END-USER-NAME>',
+    tags: { organizationId: '<ORGANIZATION-ID>' }
+  },
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      },
+      credentials: {
+        <CREDENTIAL-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
 ```
 
 **Parameters**
