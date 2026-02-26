@@ -6888,6 +6888,33 @@ glyphic:
             description: Your Glyphic API key
             doc_section: '#step-1-getting-your-api-key'
 
+gamma:
+    display_name: Gamma
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.gamma.app
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /v1.0/folders
+    docs: https://nango.dev/docs/api-integrations/gamma
+    docs_connect: https://nango.dev/docs/api-integrations/gamma/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Gamma API key.
+            example: 'sk-gamma-xxxxxxxx'
+            pattern: '^sk-gamma-'
+            doc_section: '#step-1-getting-your-gamma-api-key'
+
 google:
     display_name: Google
     categories:
@@ -6925,6 +6952,16 @@ google-analytics:
         - analytics
     docs: https://nango.dev/docs/api-integrations/google-analytics
     setup_guide_url: https://nango.dev/docs/api-integrations/google-analytics/how-to-register-your-own-google-analytics-api-oauth-app
+
+google-bigquery:
+    display_name: Google BigQuery
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://bigquery.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-bigquery
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-bigquery/how-to-register-your-own-google-bigquery-api-oauth-app
 
 google-calendar:
     display_name: Google Calendar
@@ -7019,6 +7056,16 @@ google-drive:
     alias: google
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
+
+google-forms:
+    display_name: Google Forms
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://forms.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-forms
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
 
 google-meet:
     display_name: Google Meet
@@ -9730,6 +9777,21 @@ metabase:
             description: The API key for your Metabase account
             doc_section: '#step-1-generating-an-api-key'
 
+mercury:
+    display_name: Mercury
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    scope_separator: ' '
+    authorization_url: https://oauth2.mercury.com/oauth2/auth
+    token_url: https://oauth2.mercury.com/oauth2/token
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.mercury.com
+    docs: https://nango.dev/docs/api-integrations/mercury
+    setup_guide_url: https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app
+
 meta-marketing-api:
     display_name: Meta Marketing API
     categories:
@@ -9983,6 +10045,7 @@ maximizer:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/authorize
     token_url: https://${connectionConfig.region}.maximizercrmlive.com/oauth2/${connectionConfig.company_alias}/token
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
@@ -10014,6 +10077,7 @@ maximizer-on-premise:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Authorize
     token_url: https://${connectionConfig.hostname}/MaximizerWebAuthentication/OAuth2/Token
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
@@ -13583,6 +13647,7 @@ salesforce:
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce/connect
     connection_config:
         instance_url:
             type: string
@@ -13599,6 +13664,7 @@ salesforce:
             example: acme.my.salesforce.com
             prefix: https://
             optional: true
+            doc_section: '#step-1-finding-your-hostname'
 
 salesforce-jwt:
     display_name: Salesforce (JWT)
@@ -13637,21 +13703,21 @@ salesforce-jwt:
             title: Consumer Key
             example: 3MVG9dAEux2v1sLsg0e52***************CJpGsXgqg8E
             description: The Consumer Key from your Salesforce Connected App.
-            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+            doc_section: '#step-3-get-consumer-key-and-consumer-secret'
         clientSecret:
             type: string
             title: Consumer Secret
             example: 954F73F4C234***************9D069B8FCF83B5
             pattern: '^[A-F0-9]{64}$'
             description: The Consumer Secret from your Salesforce Connected App.
-            doc_section: '#step-4-get-consumer-key-and-consumer-secret'
+            doc_section: '#step-3-get-consumer-key-and-consumer-secret'
         username:
             type: string
             title: Username
             description: The Salesforce username of the user the JWT will act on behalf of.
             format: email
             example: john@acme.com
-            doc_section: '#step-7-finding-the-username'
+            doc_section: '#step-6-finding-the-username'
         privateKey:
             type: string
             title: Private Key
@@ -13664,7 +13730,7 @@ salesforce-jwt:
             description: Your Salesforce authorization server URL.
             format: hostname
             example: 'login.salesforce.com'
-            doc_section: '#step-6-finding-the-authorization-server-url'
+            doc_section: '#step-5-finding-the-authorization-server-url'
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
@@ -16504,6 +16570,64 @@ ukg-pro:
             example: servicet.ultipro.com
             prefix: https://
             doc_section: '#step-3-finding-your-hostname'
+
+ukg-pro-cc:
+    display_name: UKG Pro HCM (Client Credentials)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.identityServer}/signin/oauth2/t/${connectionConfig.tenantId}/access_token
+    body_format: form
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        retry:
+            after:
+                - 'retry-after'
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/ukg-pro-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ukg-pro-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Unique identifier of the identity client provided by UKG customer support.
+            doc_section: '#step-1-getting-the-credentials-from-ukg-support'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client secret associated with the client ID provided by UKG customer support.
+            secret: true
+            doc_section: '#step-1-getting-the-credentials-from-ukg-support'
+    connection_config:
+        identityServer:
+            type: string
+            title: Identity Server
+            description: Identity server for your tenant.
+            format: hostname
+            example: signin.ukg.net
+            order: 1
+            doc_section: '#step-1-getting-the-credentials-from-ukg-support'
+        tenantId:
+            type: string
+            title: Tenant
+            description: Tenant value from your UKG Pro Recruiting URL.
+            example: UO32145HGOGOG
+            pattern: '^[a-zA-Z0-9]+$'
+            order: 3
+            doc_section: '#step-2-identify-tenant-and-recruiting-application-domain'
+        hostname:
+            type: string
+            title: Recruiting Application Domain
+            description: Recruiting application domain from your UKG Pro Recruiting URL.
+            format: hostname
+            example: recruiting.example.ultipro.com
+            prefix: https://
+            order: 2
+            doc_section: '#step-2-identify-tenant-and-recruiting-application-domain'
 
 ukg-ready:
     display_name: UKG Ready

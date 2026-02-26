@@ -49,8 +49,14 @@ const Button = React.forwardRef<
 
     if (loading) {
         return (
-            <Comp ref={ref} data-slot="button" data-loading className={cn(buttonVariants({ variant, size, className }))} {...{ ...props, disabled: true }}>
-                <Spinner />
+            <Comp
+                ref={ref}
+                data-slot="button"
+                data-loading
+                className={cn(buttonVariants({ variant, size, className }), '[&>svg]:hidden [&>svg[data-spinner]]:block')}
+                {...{ ...props, disabled: true }}
+            >
+                <Spinner data-spinner />
                 {props.children}
             </Comp>
         );

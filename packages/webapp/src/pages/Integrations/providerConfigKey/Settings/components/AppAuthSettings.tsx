@@ -4,11 +4,11 @@ import { EditableInput } from '@/components-v2/EditableInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
-import { apiPatchIntegration } from '@/hooks/useIntegration';
+import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -18,20 +18,21 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
 }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const setupUrl = (environment.callback_url || defaultCallback()).replace('oauth/callback', 'app-auth/connect');
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
-        const updated = await apiPatchIntegration(env, integration.unique_key, {
-            authType: template.auth_mode as Extract<typeof template.auth_mode, 'APP'>,
-            ...field
-        });
-        if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
-            toast({ title: errorMessage, variant: 'error' });
-            throw new Error(errorMessage);
-        } else {
+        try {
+            await patchIntegration({
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'APP'>,
+                ...field
+            });
             toast({ title: 'Successfully updated', variant: 'success' });
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 

@@ -12,7 +12,7 @@ import { CreateConnectionSelector } from './components/CreateConnectionSelector'
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ButtonLink } from '../../components/ui/button/Button';
 import { Form } from '../../components-v2/ui/form';
-import { useListIntegration } from '../../hooks/useIntegration';
+import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
@@ -40,7 +40,8 @@ export const ConnectionCreate: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
 
     const { user } = useUser(true);
-    const { list: listIntegration, loading } = useListIntegration(env);
+    const { data: listIntegrationData, isLoading } = useListIntegrations(env);
+    const listIntegration = listIntegrationData?.data;
 
     const [integration, setIntegration] = useState<ApiIntegrationList | undefined>();
     const { data: provider } = useProvider(env, integration?.provider);
@@ -103,7 +104,7 @@ export const ConnectionCreate: React.FC = () => {
         return integration && ['OAUTH2', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
     }, [integration]);
 
-    if (loading) {
+    if (isLoading) {
         return (
             <DashboardLayout>
                 <Helmet>
