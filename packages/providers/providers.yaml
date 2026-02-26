@@ -6888,6 +6888,33 @@ glyphic:
             description: Your Glyphic API key
             doc_section: '#step-1-getting-your-api-key'
 
+gamma:
+    display_name: Gamma
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.gamma.app
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /v1.0/folders
+    docs: https://nango.dev/docs/api-integrations/gamma
+    docs_connect: https://nango.dev/docs/api-integrations/gamma/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Gamma API key.
+            example: 'sk-gamma-xxxxxxxx'
+            pattern: '^sk-gamma-'
+            doc_section: '#step-1-getting-your-gamma-api-key'
+
 google:
     display_name: Google
     categories:
