@@ -488,6 +488,7 @@
               "api-integrations/granola",
               "api-integrations/granola-mcp",
               "api-integrations/glyphic",
+              "api-integrations/gamma",
               "api-integrations/grist",
               "integrations/all/google-slides",
               "integrations/all/google-workspace-admin",
