@@ -588,6 +588,7 @@
               "integrations/all/marketo",
               "integrations/all/mcp-generic",
               "integrations/all/medallia",
+              "api-integrations/mercury",
               "integrations/all/metabase",
               "api-integrations/meta-marketing-api",
               "api-integrations/microsoft",
