@@ -480,6 +480,7 @@
               "integrations/all/google-cloud-storage",
               "api-integrations/google-docs",
               "api-integrations/google-drive",
+              "api-integrations/google-forms",
               "api-integrations/google-mail",
               "api-integrations/google-meet",
               "integrations/all/google-play",

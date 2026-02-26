@@ -7020,6 +7020,16 @@ google-drive:
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
+google-forms:
+    display_name: Google Forms
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://forms.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-forms
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
+
 google-meet:
     display_name: Google Meet
     categories:
