@@ -27,6 +27,9 @@ description: "Full reference of the SDK available in Nango Functions."
       },
 
       exec: async (nango) => {
+        // Mark the start of deletion tracking
+        await nango.trackDeletesStart('GithubIssueDemo');
+
         // Fetch issues from GitHub.
         const res = await nango.get({
             endpoint: '/repos/NangoHQ/interactive-demo/issues?labels=demo&sort=created&direction=asc'
@@ -40,8 +43,8 @@ description: "Full reference of the SDK available in Nango Functions."
         // Persist issues to the Nango cache.
         await nango.batchSave(issues, 'GithubIssueDemo');
 
-        // Delete records that don't exist anymore
-        await nango.deleteRecordsFromPreviousExecutions('GithubIssueDemo')
+        // Detect and mark deleted records
+        await nango.trackDeletesEnd('GithubIssueDemo');
       },
     });
     ```
@@ -172,7 +175,7 @@ Read more about [integration functions](/guides/primitives/functions) to underst
 </ResponseField>
 
 <ResponseField name="trackDeletes" type="boolean" deprecated>
-  [DEPRECATED] Instead use `await nango.deleteRecordsFromPreviousExecutions('modelName')` inside the sync `exec` function.
+  [DEPRECATED] Instead use `await nango.trackDeletesStart('modelName')` and `await nango.trackDeletesEnd('modelName')` inside the sync `exec` function.
 
   When `trackDeletes` is set to `true`, Nango automatically detects deleted records **during full syncs only** and marks them as deleted in each record’s metadata (soft delete). These records remain stored in the cache.
 
@@ -883,23 +886,27 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 
 ### Detect deletions automatically
 
-Automatically detects and marks records as deleted by comparing the current sync execution with the previous one.
+Automatically detects and marks records as deleted by comparing what existed before `trackDeletesStart` with what was saved between `trackDeletesStart` and `trackDeletesEnd`.
 
 <Tip>
 This does not remove cached payloads.
 
-`nango.deleteRecordsFromPreviousExecutions()` is used to mark records as deleted in Nango because they were not returned by the external API. Nango may still keep the last-known payload so your customer can react to the deletion event.
+`nango.trackDeletesStart()`/`nango.trackDeletesEnd()` are used to mark records as deleted in Nango because they were not returned by the external API. Nango may still keep the last-known payload so your customer can react to the deletion event.
 
 If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
 </Tip>
 
 ```js
-await nango.deleteRecordsFromPreviousExecutions('ModelName');
+await nango.trackDeletesStart('ModelName');
+
+// ... fetch and save all records ...
+
+await nango.trackDeletesEnd('ModelName');
 ```
 
-This function should be called at the end of your sync execution, after all records have been saved with `batchSave`. Nango will compare the records saved in the current execution with those from the previous execution and mark any missing records as deleted.
+Call `trackDeletesStart` at the beginning of your sync execution, before fetching any data. Call `trackDeletesEnd` after all records have been saved with `batchSave`. Nango will compare the records that existed before `trackDeletesStart` with those saved in the window and mark any missing records as deleted.
 
-**Parameters**
+**Parameters** (both functions)
 
 <Expandable>
   <ResponseField name="modelType" type="string" required>
@@ -909,10 +916,13 @@ This function should be called at the end of your sync execution, after all reco
 
 **Important considerations:**
 
-- Only use within syncs that fetch the complete dataset
-- Call this function only after successfully saving all records
-- If your sync fails or doesn't fetch the complete dataset, avoid calling this function as it may cause false deletions
+- Only use within syncs that fetch the complete dataset between `trackDeletesStart` and `trackDeletesEnd`
+- If your sync fails or doesn't fetch the complete dataset, avoid calling `trackDeletesEnd` as it may cause false deletions
 - Records are soft deleted (marked with `_metadata.deleted = true`) and remain in the cache
+
+<Note>
+`deleteRecordsFromPreviousExecutions` is deprecated. Use `trackDeletesStart`/`trackDeletesEnd` instead.
+</Note>
 
 For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/use-cases/syncs/deletion-detection.mdx).
 

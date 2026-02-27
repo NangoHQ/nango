@@ -32,6 +32,8 @@ const sync = createSync({
 
     // Sync execution
     exec: async (nango) => {
+        await nango.trackDeletesStart('GithubIssue');
+
         const repos = await getAllRepositories(nango);
 
         for (const repo of repos) {
@@ -65,7 +67,7 @@ const sync = createSync({
             }
         }
 
-        await nango.deleteRecordsFromPreviousExecutions('GithubIssue');
+        await nango.trackDeletesEnd('GithubIssue');
     },
 
     // Webhook handler

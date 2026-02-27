@@ -72,7 +72,9 @@ class ParserService {
             'getEnvironmentVariables',
             'triggerAction',
             'setMergingStrategy',
-            'deleteRecordsFromPreviousExecutions'
+            'deleteRecordsFromPreviousExecutions',
+            'trackDeletesStart',
+            'trackDeletesEnd'
         ];
 
         const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
@@ -80,16 +82,24 @@ class ParserService {
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
             getFieldMapping: 'getMetadata',
-            setFieldMapping: 'setMetadata'
+            setFieldMapping: 'setMetadata',
+            deleteRecordsFromPreviousExecutions: 'trackDeletesStart and trackDeletesEnd'
         };
 
         const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
         const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
-        const callsReferencingModelsToCheck = callsBatchingRecords.concat('setMergingStrategy', 'deleteRecordsFromPreviousExecutions', 'getRecordsByIds');
+        const callsReferencingModelsToCheck = callsBatchingRecords.concat(
+            'setMergingStrategy',
+            'deleteRecordsFromPreviousExecutions',
+            'trackDeletesStart',
+            'trackDeletesEnd',
+            'getRecordsByIds'
+        );
         const proxyLines: number[] = [];
         const batchingRecordsLines: number[] = [];
         const setMergingStrategyLines: number[] = [];
         const deleteRecordsFromPreviousExecutionsLines: number[] = [];
+        const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
 
         traverseFn(ast, {
             CallExpression(path: NodePath<t.CallExpression>) {
@@ -184,6 +194,21 @@ class ParserService {
                     if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
                         deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
                     }
+                    if (callee.property.name === 'trackDeletesStart' || callee.property.name === 'trackDeletesEnd') {
+                        const args = path.node.arguments as t.Expression[];
+                        if (args.length > 0 && t.isStringLiteral(args[0])) {
+                            const model = args[0].value;
+                            if (!trackDeletesByModel.has(model)) {
+                                trackDeletesByModel.set(model, { startLines: [], endLines: [] });
+                            }
+                            const entry = trackDeletesByModel.get(model)!;
+                            if (callee.property.name === 'trackDeletesStart') {
+                                entry.startLines.push(lineNumber);
+                            } else {
+                                entry.endLines.push(lineNumber);
+                            }
+                        }
+                    }
                 }
             },
             ExportDefaultDeclaration(path: NodePath<t.ExportDefaultDeclaration>) {
@@ -262,6 +287,35 @@ class ParserService {
                 )
             );
             usedCorrectly = false;
+        }
+
+        for (const [model, { startLines, endLines }] of trackDeletesByModel) {
+            if (endLines.length > 1) {
+                console.log(chalk.red(`trackDeletesEnd for model '${model}' should be called only once in "${filePath}:${Math.max(...endLines)}".`));
+                usedCorrectly = false;
+            }
+            if (endLines.length > 0 && startLines.length === 0) {
+                console.log(chalk.red(`trackDeletesEnd for model '${model}' is called but trackDeletesStart is never called in "${filePath}".`));
+                usedCorrectly = false;
+            }
+            if (startLines.length > 0 && endLines.length === 0) {
+                console.log(chalk.red(`trackDeletesStart for model '${model}' is called but trackDeletesEnd is never called in "${filePath}".`));
+                usedCorrectly = false;
+            }
+            if (startLines.length > 0 && endLines.length > 0 && startLines.some((line) => line > Math.min(...endLines))) {
+                console.log(
+                    chalk.red(`trackDeletesStart for model '${model}' should be called before trackDeletesEnd in "${filePath}:${Math.min(...startLines)}".`)
+                );
+                usedCorrectly = false;
+            }
+            if (endLines.length > 0 && batchingRecordsLines.some((line) => line > Math.min(...endLines))) {
+                console.log(
+                    chalk.red(
+                        `trackDeletesEnd for model '${model}' should be called after all batching records functions in "${filePath}:${Math.min(...endLines)}".`
+                    )
+                );
+                usedCorrectly = false;
+            }
         }
 
         return areAwaited && usedCorrectly && noReturnUsed && retryOnUsedCorrectly;
