@@ -528,9 +528,13 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
+    private trackDeletesKey(model: string): string {
+        return `${this.checkpointKey}:trackDeletes:${model}`;
+    }
+
     public async trackDeletesStart(model: string): Promise<void> {
         this.throwIfAborted();
-        const key = `${this.checkpointKey}:trackDeletes:${model}`;
+        const key = this.trackDeletesKey(model);
         const stored = await this.checkpointing.getCheckpoint(key);
         if (stored === null) {
             await this.checkpointing.saveCheckpoint(key, { syncJobId: this.syncJobId! });
@@ -539,7 +543,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
     public async trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }> {
         this.throwIfAborted();
-        const key = `${this.checkpointKey}:trackDeletes:${model}`;
+        const key = this.trackDeletesKey(model);
         const stored = await this.checkpointing.getCheckpoint<TrackDeletesCheckpoint>(key);
         if (stored === null) {
             throw new Error(`No track deletes starting point found for model '${model}'.`);
