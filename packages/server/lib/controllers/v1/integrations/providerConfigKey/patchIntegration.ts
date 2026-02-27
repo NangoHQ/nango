@@ -175,10 +175,10 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                                 }
                             };
                         } else {
-                            // No auth block — clear all aws_sigv4 secrets (removes stale builtin credentials)
+                            // No auth block — clear all aws_sigv4 secrets (removes stale builtin credentials and STS auth)
                             integration.integration_secrets = {
                                 ...existingSecrets,
-                                aws_sigv4: { ...(existingStsAuth ? { sts_auth: existingStsAuth } : {}) }
+                                aws_sigv4: {}
                             };
                         }
                     }
