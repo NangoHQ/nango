@@ -4791,6 +4791,23 @@ docuware:
             description: The Password to your DocuWare account
             doc_section: '#step-2-finding-your-credentials'
 
+dolthub:
+    display_name: DoltHub
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.dolthub.com/api/v1alpha1
+        headers:
+            authorization: token ${apiKey}
+    docs: https://docs.dolthub.com/guides/dolthub-api
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your DoltHub API token from Settings > API Tokens
+            doc_section: '#api-tokens'
+
 domo:
     display_name: Domo
     categories:
