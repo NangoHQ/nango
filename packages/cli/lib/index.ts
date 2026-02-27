@@ -358,10 +358,15 @@ program
                 const inferred = await inferIntegrationsFromConnectionId(connectionId, environment);
                 if (inferred.length > 0) {
                     integrationFilter = inferred;
+                } else {
+                    printDebug(`Warning: No integrations inferred from connection "${connectionId}" in environment "${environment}".`, debug);
                 }
             }
 
             const filteredIntegrations = definitions.value.integrations.filter((i) => !integrationFilter || integrationFilter.includes(i.providerConfigKey));
+            if (integrationFilter && filteredIntegrations.length === 0) {
+                throw new Error(`Integration "${integrationFilter.join(', ')}" not found in this project.`);
+            }
 
             // Fail early if the provided function name doesn't exist (syncs, actions, or on-event scripts).
             if (name) {
@@ -379,8 +384,12 @@ program
             }
 
             // Show functions for which a connection with the given id is valid
-            const functions = filteredIntegrations.flatMap((i) =>
-                [...i.syncs, ...i.actions].map((f) => ({ name: f.name, type: f.type as string, integration: i.providerConfigKey }))
+            const functions = filteredIntegrations.flatMap(({ syncs, actions, providerConfigKey }) =>
+                [...syncs, ...actions].map(({ name, type }) => ({
+                    name,
+                    type: type as string,
+                    integration: providerConfigKey
+                }))
             );
 
             // When the name is already provided as an arg, derive the integration from definitions.

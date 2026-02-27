@@ -44,6 +44,7 @@
         "@nangohq/node": "0.69.38",
         "@nangohq/providers": "0.69.38",
         "@nangohq/runner-sdk": "0.69.38",
+        "@nangohq/utils": "file:../utils",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
         "ajv": "8.17.1",

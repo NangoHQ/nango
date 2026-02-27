@@ -6,12 +6,14 @@ import os from 'os';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 import npa from 'npm-package-arg';
 import promptly from 'promptly';
 import semver from 'semver';
+
+import { stringifyError } from '@nangohq/utils';
 
 import { cloudHost, localhostUrl } from './constants.js';
 import { state } from './state.js';
@@ -198,7 +200,7 @@ export async function getConnection(
         const res = await http.get(url, { params: { provider_config_key: providerConfigKey }, headers });
         return res.data as GetPublicConnection['Success'];
     } catch (err) {
-        console.log(`❌ ${err instanceof AxiosError ? JSON.stringify(err.response?.data.error) : JSON.stringify(err, ['message'])}`);
+        console.log(`❌ ${stringifyError(err)}`);
         return;
     }
 }
@@ -214,7 +216,7 @@ export async function getConfig(providerConfigKey: string, debug = false): Promi
         const res = await http.get(url, { headers });
         return res.data as GetPublicIntegration['Success'];
     } catch (err) {
-        console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+        console.log(`❌ ${stringifyError(err)}`);
         return;
     }
 }
@@ -235,7 +237,7 @@ export async function getEnvironments(debug = false): Promise<GetEnvironments['S
         const res = await http.get(url, { headers });
         return res.data as GetEnvironments['Success'];
     } catch (err) {
-        console.log(`❌ ${JSON.stringify(err)}`);
+        console.log(`❌ ${stringifyError(err)}`);
         return;
     }
 }
