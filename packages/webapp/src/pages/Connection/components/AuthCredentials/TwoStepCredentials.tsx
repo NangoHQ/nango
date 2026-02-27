@@ -37,8 +37,8 @@ export const TwoStepCredentialsComponent: React.FC<{
                 </div>
             )}
 
-            {/* Special handling for Private key (based on legacy code before redesign) */}
-            {'privateKey' in credentials && 'id' in credentials.privateKey && 'secret' in credentials.privateKey && (
+            {/* TWO_STEP privateKey is always a string (e.g. PEM). */}
+            {'privateKey' in credentials && typeof credentials.privateKey === 'string' && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="privateKey">Private key</Label>
                     <SecretInput id="privateKey" value={credentials.privateKey} disabled copy />
