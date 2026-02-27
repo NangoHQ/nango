@@ -8,6 +8,7 @@ import { getOtlpRoutes } from '@nangohq/shared';
 import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
@@ -35,6 +36,7 @@ try {
     const srv = server.listen(port);
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
+    const invocationsProcessor = new LambdaInvocationsProcessor();
 
     // We are using a setTimeout because we don't want overlapping setInterval if the DB is down
     let healthCheck: NodeJS.Timeout | undefined;
@@ -76,6 +78,7 @@ try {
             await db.knex.destroy();
             await db.readOnly.destroy();
             await destroyKvstore();
+            await invocationsProcessor.stop();
 
             console.info('Closed');
 
@@ -103,6 +106,8 @@ try {
     await startFleets();
 
     processor.start();
+
+    await invocationsProcessor.start();
 
     void otlp.register(getOtlpRoutes);
 } catch (err) {
