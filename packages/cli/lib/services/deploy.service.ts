@@ -7,10 +7,9 @@ import promptly from 'promptly';
 
 import { compileAllFiles, compileSingleFile, getFileToCompile, resolveTsFileLocation } from './compile.service.js';
 import verificationService from './verification.service.js';
-import { enrichHeaders, http, isCI, parseSecretKey, printDebug } from '../utils.js';
+import { enrichHeaders, http, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
-import { cloudHost, localhostUrl } from '../constants.js';
 import { NANGO_VERSION } from '../version.js';
 
 import type { DeployOptions, InternalDeployOptions } from '../types.js';
@@ -36,19 +35,10 @@ class DeployService {
 
         await parseSecretKey(environment, debug);
 
-        if (!process.env['NANGO_HOSTPORT']) {
-            switch (env) {
-                case 'local':
-                    process.env['NANGO_HOSTPORT'] = localhostUrl;
-                    break;
-                default:
-                    process.env['NANGO_HOSTPORT'] = cloudHost;
-                    break;
-            }
-        }
+        const deployHost = resolveHostport(env);
 
         if (debug) {
-            printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+            printDebug(`NANGO_HOSTPORT is set to ${deployHost}.`);
             printDebug(`Environment is set to ${environment}`);
             if (integrationId) {
                 printDebug(`Deploying integration '${integrationId}' only`);
@@ -165,7 +155,7 @@ class DeployService {
         const nangoYamlBody = parser.yaml;
 
         const sdkVersion = `${NANGO_VERSION}-yaml`;
-        const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
+        const url = deployHost + `/sync/deploy`;
         const bodyDeploy: PostDeploy['Body'] = {
             ...postData,
             reconcile: true,
@@ -176,7 +166,7 @@ class DeployService {
         };
 
         const shouldConfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm;
-        const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
+        const confirmationUrl = deployHost + `/sync/deploy/confirmation`;
 
         try {
             const bodyConfirmation: PostDeployConfirmation['Body'] = {
@@ -311,19 +301,10 @@ class DeployService {
 
         await parseSecretKey('dev', debug);
 
-        if (!process.env['NANGO_HOSTPORT']) {
-            switch (env) {
-                case 'local':
-                    process.env['NANGO_HOSTPORT'] = localhostUrl;
-                    break;
-                default:
-                    process.env['NANGO_HOSTPORT'] = cloudHost;
-                    break;
-            }
-        }
+        const deployHost = resolveHostport(env);
 
         if (debug) {
-            printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+            printDebug(`NANGO_HOSTPORT is set to ${deployHost}.`);
             printDebug(`Environment is set to ${environment}`);
             if (integration) {
                 printDebug(`Deploying for integration: '${integration}' only`);
@@ -375,7 +356,7 @@ class DeployService {
 
         const nangoYamlBody = parser.yaml;
 
-        const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy/internal?customEnvironment=${environment}`;
+        const url = deployHost + `/sync/deploy/internal?customEnvironment=${environment}`;
 
         const bodyDeploy: PostDeployInternal['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode: false };
 

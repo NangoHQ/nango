@@ -25,6 +25,7 @@ import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
+import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
 import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
@@ -332,6 +333,7 @@ program
         const fullPath = process.cwd();
         let [name, connectionId] = this.args;
         let { environment } = this.opts();
+        let resolvedIntegrationId: string | undefined = integrationId;
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
@@ -345,17 +347,71 @@ program
             environment = await ensure.environment(environment, debug);
 
             const definitions = await buildDefinitions({ fullPath, debug });
-            if (definitions.isOk()) {
-                const functions = definitions.value.integrations
-                    .flatMap((i) => [...i.syncs, ...i.actions])
-                    .map((f) => ({ name: f.name, type: f.type as string }));
-                name = await ensure.function(name, functions);
-            } else {
+            if (definitions.isErr()) {
                 console.error(chalk.red('Could not build function definitions to select from.'));
                 process.exit(1);
             }
 
-            connectionId = await ensure.connection(connectionId, environment);
+            let integrationFilter: string[] | undefined = integrationId ? [integrationId] : undefined;
+            if (connectionId && !integrationFilter) {
+                // integration id not provided, try to infer it from the connection id
+                const inferred = await inferIntegrationsFromConnectionId(connectionId, environment);
+                if (inferred.length > 0) {
+                    integrationFilter = inferred;
+                } else {
+                    printDebug(`Warning: No integrations inferred from connection "${connectionId}" in environment "${environment}".`, debug);
+                }
+            }
+
+            const filteredIntegrations = definitions.value.integrations.filter((i) => !integrationFilter || integrationFilter.includes(i.providerConfigKey));
+            if (integrationFilter && filteredIntegrations.length === 0) {
+                throw new Error(`Integration "${integrationFilter.join(', ')}" not found in this project.`);
+            }
+
+            // Fail early if the provided function name doesn't exist (syncs, actions, or on-event scripts).
+            if (name) {
+                const allScriptNames = new Set(
+                    filteredIntegrations.flatMap((i) => [
+                        ...i.syncs.map((s) => s.name),
+                        ...i.actions.map((a) => a.name),
+                        ...Object.values(i.onEventScripts).flat()
+                    ])
+                );
+                if (!allScriptNames.has(name)) {
+                    const hint = integrationFilter ? ` in integration "${integrationFilter.join(', ')}"` : '';
+                    throw new Error(`No script named "${name}" found${hint}`);
+                }
+            }
+
+            // Show functions for which a connection with the given id is valid
+            const functions = filteredIntegrations.flatMap(({ syncs, actions, providerConfigKey }) =>
+                [...syncs, ...actions].map(({ name, type }) => ({
+                    name,
+                    type: type as string,
+                    integration: providerConfigKey
+                }))
+            );
+
+            // When the name is already provided as an arg, derive the integration from definitions.
+            // When interactive, the picker returns both name + integration so same-named functions across different integrations are never ambiguous.
+            if (name) {
+                const matches = filteredIntegrations.filter((i) => [...i.syncs, ...i.actions].some((s) => s.name === name));
+                if (matches.length === 1) {
+                    resolvedIntegrationId = matches[0]!.providerConfigKey;
+                } else if (matches.length > 1) {
+                    // Ambiguous: same script name exists in multiple integrations
+                    resolvedIntegrationId = await ensure.integrationForScript(
+                        name,
+                        matches.map((i) => i.providerConfigKey)
+                    );
+                }
+            } else {
+                const selected = await ensure.functionWithIntegration(functions);
+                name = selected.name;
+                resolvedIntegrationId = selected.integration;
+            }
+
+            connectionId = await ensure.connection(connectionId, environment, resolvedIntegrationId);
         } catch (err: any) {
             console.error(chalk.red(err.message));
             if (err instanceof MissingArgumentError) {
@@ -396,7 +452,7 @@ program
             sync: name,
             connectionId,
             optionalEnvironment: environment,
-            optionalProviderConfigKey: integrationId,
+            ...(resolvedIntegrationId && { optionalProviderConfigKey: resolvedIntegrationId }),
             saveResponses,
             input,
             lastSyncDate,

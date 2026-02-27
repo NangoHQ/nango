@@ -4,6 +4,7 @@ import {
     promptForFunctionName,
     promptForFunctionToRun,
     promptForFunctionType,
+    promptForIntegration,
     promptForIntegrationName,
     promptForProjectPath
 } from './interactive.service.js';
@@ -61,12 +62,34 @@ export class Ensure {
         return this.ensure(current, () => promptForEnvironment(debug), 'Environment is required');
     }
 
-    public async function(current: string | undefined, availableFunctions: { name: string; type: string }[]): Promise<string> {
-        return this.ensure(current, () => promptForFunctionToRun(availableFunctions), 'Function name is required');
+    public async functionWithIntegration(
+        availableFunctions: { name: string; type: string; integration: string }[]
+    ): Promise<{ name: string; integration: string }> {
+        if (!this.interactive) {
+            throw new MissingArgumentError('Function name is required');
+        }
+        try {
+            return await promptForFunctionToRun(availableFunctions);
+        } catch (err: any) {
+            if (err.isTtyError) {
+                throw new Error(
+                    "Prompt couldn't be rendered in the current environment. Please use the --no-interactive flag and pass all required arguments."
+                );
+            }
+            if (err.name === 'ExitPromptError') {
+                console.log('Interactive prompt cancelled.');
+                process.exit(0);
+            }
+            throw err;
+        }
     }
 
-    public async connection(current: string | undefined, environment: string): Promise<string> {
-        return this.ensure(current, () => promptForConnection(environment), 'Connection ID is required');
+    public async connection(current: string | undefined, environment: string, integrationId?: string): Promise<string> {
+        return this.ensure(current, () => promptForConnection(environment, integrationId), 'Connection ID is required');
+    }
+
+    public async integrationForScript(scriptName: string, integrations: string[]): Promise<string> {
+        return this.ensure(undefined, () => promptForIntegration(integrations), `Multiple integrations have "${scriptName}". Please use --integration-id`);
     }
 
     public async projectPath(current: string | undefined): Promise<string> {
