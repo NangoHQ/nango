@@ -164,8 +164,15 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 </TableCell>
 
                 {/* Models */}
-                <TableCell>
-                    <span className="text-body-small-semi text-text-primary">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</span>
+                <TableCell className="max-w-38">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-body-small-semi text-text-primary truncate block">
+                                {Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="p-2">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</TooltipContent>
+                    </Tooltip>
                 </TableCell>
 
                 {/* Last Execution */}
