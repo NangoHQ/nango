@@ -281,54 +281,43 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
             );
         }
 
-        if (bag.trackDeletesEndLines.length > 1) {
-            return Err(
-                fileErrorToText({
-                    filePath: friendlyPath,
-                    msg: `trackDeletesEnd should be called only once per sync`,
-                    line: Math.max(...bag.trackDeletesEndLines)
-                })
-            );
-        }
-
-        if (bag.trackDeletesEndLines.length > 0) {
-            if (bag.trackDeletesStartLines.length === 0) {
+        for (const [model, { startLines, endLines }] of bag.trackDeletesByModel) {
+            if (endLines.length > 1) {
                 return Err(
                     fileErrorToText({
                         filePath: friendlyPath,
-                        msg: `trackDeletesEnd is called but trackDeletesStart is never called`,
-                        line: Math.min(...bag.trackDeletesEndLines)
+                        msg: `trackDeletesEnd for model '${model}' should be called only once per sync`,
+                        line: Math.max(...endLines)
                     })
                 );
             }
-            if (bag.batchingRecordsLines.length > 0 && bag.batchingRecordsLines.some((line) => line > Math.min(...bag.trackDeletesEndLines))) {
+            if (endLines.length > 0 && startLines.length === 0) {
                 return Err(
                     fileErrorToText({
                         filePath: friendlyPath,
-                        msg: `trackDeletesEnd should be called after any batching records function`,
-                        line: Math.min(...bag.trackDeletesEndLines)
+                        msg: `trackDeletesEnd for model '${model}' is called but trackDeletesStart is never called`,
+                        line: Math.min(...endLines)
                     })
                 );
             }
-            if (bag.trackDeletesStartLines.length > 0 && bag.trackDeletesStartLines.some((line) => line > Math.min(...bag.trackDeletesEndLines))) {
+            if (startLines.length > 0 && endLines.length === 0) {
                 return Err(
                     fileErrorToText({
                         filePath: friendlyPath,
-                        msg: `trackDeletesStart should be called before trackDeletesEnd`,
-                        line: Math.min(...bag.trackDeletesStartLines)
+                        msg: `trackDeletesStart for model '${model}' is called but trackDeletesEnd is never called`,
+                        line: Math.min(...startLines)
                     })
                 );
             }
-        }
-
-        if (bag.trackDeletesStartLines.length > 0 && bag.trackDeletesEndLines.length === 0) {
-            return Err(
-                fileErrorToText({
-                    filePath: friendlyPath,
-                    msg: `trackDeletesStart is called but trackDeletesEnd is never called`,
-                    line: Math.min(...bag.trackDeletesStartLines)
-                })
-            );
+            if (startLines.length > 0 && endLines.length > 0 && startLines.some((line) => line > Math.min(...endLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' should be called before trackDeletesEnd`,
+                        line: Math.min(...startLines)
+                    })
+                );
+            }
         }
 
         const output = res.outputFiles?.[0]?.text || '';
@@ -405,15 +394,13 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
-    const trackDeletesStartLines: number[] = [];
-    const trackDeletesEndLines: number[] = [];
+    const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
         deleteRecordsFromPreviousExecutionsLines,
-        trackDeletesStartLines,
-        trackDeletesEndLines
+        trackDeletesByModel
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -552,11 +539,20 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
                                         deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
                                     }
-                                    if (callee.property.name === 'trackDeletesStart') {
-                                        trackDeletesStartLines.push(lineNumber);
-                                    }
-                                    if (callee.property.name === 'trackDeletesEnd') {
-                                        trackDeletesEndLines.push(lineNumber);
+                                    if (callee.property.name === 'trackDeletesStart' || callee.property.name === 'trackDeletesEnd') {
+                                        const args = astPath.node.arguments;
+                                        if (args.length > 0 && t.isStringLiteral(args[0])) {
+                                            const model = args[0].value;
+                                            if (!trackDeletesByModel.has(model)) {
+                                                trackDeletesByModel.set(model, { startLines: [], endLines: [] });
+                                            }
+                                            const entry = trackDeletesByModel.get(model)!;
+                                            if (callee.property.name === 'trackDeletesStart') {
+                                                entry.startLines.push(lineNumber);
+                                            } else {
+                                                entry.endLines.push(lineNumber);
+                                            }
+                                        }
                                     }
                                 }
                             }
