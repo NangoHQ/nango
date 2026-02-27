@@ -71,6 +71,25 @@ describe('parseAssumeRoleResponse', () => {
         expect(result!.expiresAt).toEqual(new Date(1772146564 * 1000));
     });
 
+    it('extracts credentials from JSON with ISO-8601 string Expiration', () => {
+        const json = JSON.stringify({
+            AssumeRoleResponse: {
+                AssumeRoleResult: {
+                    Credentials: {
+                        AccessKeyId: 'ASIATESTACCESSKEY',
+                        Expiration: '2025-01-02T04:04:05Z',
+                        SecretAccessKey: 'testSecretAccessKey123',
+                        SessionToken: 'testSessionToken456'
+                    }
+                }
+            }
+        });
+
+        const result = parseAssumeRoleResponse(json);
+        expect(result).not.toBeNull();
+        expect(result!.expiresAt).toEqual(new Date('2025-01-02T04:04:05Z'));
+    });
+
     it('returns null for XML missing required fields', () => {
         const xml = `<AssumeRoleResponse><AssumeRoleResult><Credentials><AccessKeyId>key</AccessKeyId></Credentials></AssumeRoleResult></AssumeRoleResponse>`;
         expect(parseAssumeRoleResponse(xml)).toBeNull();
