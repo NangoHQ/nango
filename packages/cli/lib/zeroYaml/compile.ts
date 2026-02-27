@@ -318,6 +318,15 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                     })
                 );
             }
+            if (endLines.length > 0 && bag.batchingRecordsLines.some((line) => line > Math.min(...endLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesEnd for model '${model}' should be called after any batching records function`,
+                        line: Math.min(...endLines)
+                    })
+                );
+            }
         }
 
         const output = res.outputFiles?.[0]?.text || '';

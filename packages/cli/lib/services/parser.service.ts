@@ -308,6 +308,14 @@ class ParserService {
                 );
                 usedCorrectly = false;
             }
+            if (endLines.length > 0 && batchingRecordsLines.some((line) => line > Math.min(...endLines))) {
+                console.log(
+                    chalk.red(
+                        `trackDeletesEnd for model '${model}' should be called after all batching records functions in "${filePath}:${Math.min(...endLines)}".`
+                    )
+                );
+                usedCorrectly = false;
+            }
         }
 
         return areAwaited && usedCorrectly && noReturnUsed && retryOnUsedCorrectly;
