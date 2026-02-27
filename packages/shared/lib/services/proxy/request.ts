@@ -82,8 +82,9 @@ export class ProxyRequest {
     public async request(): Promise<Result<AxiosResponse>> {
         let refreshTokenAttempts = 0;
 
-        const minRetriesForRefresh = this.config.refreshTokenOn?.length && this.onRefreshToken ? MAX_REFRESH_TOKEN_ATTEMPTS + 1 : 0;
-        const maxRetries = Math.max(this.config.retries ?? 0, minRetriesForRefresh);
+        // when refresh-on-error is enabled we need enough attempt slots: 1 initial try + up to MAX_REFRESH_TOKEN_ATTEMPTS refresh-and-retry cycles
+        const minAttemptSlotsForRefresh = this.config.refreshTokenOn?.length && this.onRefreshToken ? MAX_REFRESH_TOKEN_ATTEMPTS + 1 : 0;
+        const maxRetries = Math.max(this.config.retries ?? 0, minAttemptSlotsForRefresh);
 
         try {
             const response = await retryFlexible<Promise<AxiosResponse>>(
