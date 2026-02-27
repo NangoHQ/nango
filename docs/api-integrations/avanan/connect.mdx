@@ -1,0 +1,63 @@
+---
+title: Avanan - How do I link my account?
+sidebarTitle: Avanan
+---
+
+# Overview
+
+To authenticate with Avanan, you need:
+1. **API Region** - The regional API endpoint for your Avanan tenant
+2. **Application ID** - Your Avanan API Client ID
+3. **Secret Key** - Your Avanan API Secret Key
+
+This guide walks you through obtaining API credentials from the Avanan (Check Point Harmony Email & Collaboration) portal.
+
+### Prerequisites:
+
+- Admin access to your Avanan / Check Point Infinity Portal.
+- Your organization must have SmartAPI access enabled.
+
+### Instructions:
+
+#### Step 1: Determine your region
+
+1. Log in to your Check Point Infinity Portal at [portal.checkpoint.com](https://portal.checkpoint.com).
+2. Identify your regional API endpoint based on your tenant location:
+
+| Region | API Endpoint Value |
+| - | - |
+| USA | `smart-api-production-1-us` |
+| Europe | `smart-api-production-1-eu` |
+| Canada | `smart-api-production-1-ca` |
+| Australia | `smart-api-production-5-ap` |
+| United Kingdom | `smart-api-production-1-euw2` |
+| UAE | `smart-api-production-1-mec1` |
+| India | `smart-api-production-1-aps1` |
+
+<Note>
+If you're unsure which region your tenant is in, contact your Check Point account representative or check your Infinity Portal URL.
+</Note>
+
+#### Step 2: Create API credentials
+
+1. In the Infinity Portal, navigate to **Settings** > **API Keys** or the SmartAPI configuration section.
+2. Click **Create New API Key** or **Generate Credentials**.
+3. Provide a name for your API integration (e.g., "Nango Integration").
+4. Once created, you will receive:
+   - **Application ID (Client ID)**: A unique identifier for your API application
+   - **Secret Key**: A secret key used for authentication
+
+<Note>
+Copy and securely store both values immediately. The Secret Key may only be displayed once during creation and cannot be retrieved later. If you lose the Secret Key, you will need to generate new credentials.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your credentials:
+1. Open the form where you need to authenticate with Avanan.
+2. Enter your **API Region**, **Application ID** and **Secret Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/avanan/avanan_connect_form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Avanan.
