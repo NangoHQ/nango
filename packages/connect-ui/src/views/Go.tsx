@@ -149,7 +149,10 @@ export const Go: React.FC = () => {
             if ((name === 'client_certificate' || name === 'client_private_key') && provider.require_client_certificate !== true) {
                 continue;
             }
-            if (name === 'client_secret' && provider.token_request_auth_method === 'private_key_jwt') {
+            if (
+                name === 'client_secret' &&
+                (provider.token_request_auth_method === 'private_key_jwt' || (provider.credentials && !('client_secret' in provider.credentials)))
+            ) {
                 baseForm.shape['client_secret'] = z.string().optional();
                 continue;
             }

@@ -142,6 +142,8 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
         });
     }, [connection?.connection_id, env, provider, sync.latest_sync?.updated_at, sync.name]);
 
+    const models = Array.isArray(sync.models) ? sync.models.join(', ') : sync.models;
+
     return (
         <>
             <TableRow key={sync.id}>
@@ -164,8 +166,13 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 </TableCell>
 
                 {/* Models */}
-                <TableCell>
-                    <span className="text-body-small-semi text-text-primary">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</span>
+                <TableCell className="max-w-38">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-body-small-semi text-text-primary truncate block">{models}</span>
+                        </TooltipTrigger>
+                        <TooltipContent className="p-2">{models}</TooltipContent>
+                    </Tooltip>
                 </TableCell>
 
                 {/* Last Execution */}
