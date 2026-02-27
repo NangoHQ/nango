@@ -613,6 +613,12 @@
     font-weight: 600;
 }
 
+@utility text-body-small-light {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 300;
+}
+
 @utility text-body-small-regular {
     font-size: 12px;
     line-height: 16px;

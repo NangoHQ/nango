@@ -1,159 +1,187 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import z from 'zod';
 
-import { Password } from './Password';
-import GoogleButton from '../../../components/ui/button/Auth/Google';
-import { Button } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
-import { apiFetch, useSignupAPI } from '../../../utils/api';
-import { globalEnv } from '../../../utils/env';
+import GoogleButton from '@/components/ui/button/Auth/Google';
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
+import { Button } from '@/components-v2/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
+import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
+import { useResendVerificationEmail, useSignupAPI } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { Password, passwordSchema } from '@/pages/Account/components/Password';
+import { APIError } from '@/utils/api';
+import { globalEnv } from '@/utils/env';
 
-import type { ApiInvitation, PostSignup } from '@nangohq/types';
+import type { ApiInvitation } from '@nangohq/types';
+
+const signupSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Please enter a valid email address'),
+    password: passwordSchema
+});
+
+type SignupFormData = z.infer<typeof signupSchema>;
 
 export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }> = ({ invitation, token }) => {
+    const form = useForm<SignupFormData>({
+        resolver: zodResolver(signupSchema),
+        defaultValues: {
+            name: '',
+            email: invitation?.email || '',
+            password: ''
+        }
+    });
+
     const navigate = useNavigate();
-    const signupAPI = useSignupAPI();
+    const { toast } = useToast();
+
+    const { mutateAsync: signupMutation, isPending } = useSignupAPI();
+    const { mutateAsync: resendVerificationEmailMutation, isPending: isResendingEmail } = useResendVerificationEmail();
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [showResendEmail, setShowResendEmail] = useState(false);
-    const [email, setEmail] = useState(() => invitation?.email || '');
-    const [name, setName] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordStrength, setPasswordStrength] = useState(false);
-    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.SyntheticEvent) => {
-        e.preventDefault();
+    const onSubmitForm = async (data: SignupFormData) => {
         setServerErrorMessage('');
-        setShowResendEmail(false);
-        setLoading(true);
-
-        const res = await signupAPI({ name, email, password, token });
-
-        if (res?.status === 200) {
-            const response: PostSignup['Success'] = await res.json();
-            const {
-                data: { uuid, verified }
-            } = response;
-
-            if (!verified) {
-                navigate(`/verify-email/${uuid}`);
-            } else {
-                navigate('/');
+        try {
+            const res = await signupMutation(token ? { ...data, token } : data);
+            if (res.status === 200) {
+                const { uuid, verified } = res.json.data;
+                if (!verified) {
+                    navigate(`/verify-email/${uuid}`);
+                } else {
+                    navigate('/');
+                    if (invitation) {
+                        toast({ title: 'You are now a member of the team', variant: 'success' });
+                    }
+                }
+                return;
             }
-        } else {
-            const errorResponse: PostSignup['Errors'] = await res?.json();
-            if (errorResponse.error.code === 'email_not_verified') {
+
+            setServerErrorMessage(res.json.error.message || 'Issue signing up. Please try again.');
+            if (res.json.error.code === 'email_not_verified') {
                 setShowResendEmail(true);
             }
-            setServerErrorMessage(errorResponse?.error?.message || 'Issue signing up. Please try again.');
+        } catch {
+            setServerErrorMessage('Issue signing up. Please try again.');
         }
-        setLoading(false);
     };
 
     const resendVerificationEmail = async () => {
-        setShowResendEmail(false);
         setServerErrorMessage('');
 
-        const res = await apiFetch('/api/v1/account/resend-verification-email/by-email', {
-            method: 'POST',
-            body: JSON.stringify({
-                email
-            })
-        });
+        const email = form.getValues('email');
 
-        if (res?.status === 200) {
-            setServerErrorMessage('Verification email sent.');
-        } else {
-            setServerErrorMessage('Issue sending verification email. Please try again.');
+        try {
+            await resendVerificationEmailMutation({ email });
+            toast({
+                title: 'Verification email sent.',
+                variant: 'success'
+            });
+        } catch (err) {
+            if (err instanceof APIError && err.json?.error?.message) {
+                setServerErrorMessage(err.json.error.message);
+            } else {
+                setServerErrorMessage('Issue sending verification email. Please try again.');
+            }
         }
+        setShowResendEmail(false);
     };
 
     return (
-        <>
-            <div className="flex flex-col justify-center">
-                <h2 className="mt-4 text-center text-[20px] text-white">Sign up to Nango</h2>
-                <form className="mt-6 flex flex-col gap-6" onSubmit={handleSubmit}>
-                    <div className="flex flex-col gap-6">
-                        <Input
-                            id="name"
-                            name="name"
-                            type="text"
-                            autoComplete="name"
-                            autoFocus
-                            minLength={1}
-                            placeholder="Name"
-                            maxLength={100}
-                            inputSize="lg"
-                            value={name}
-                            required
-                            onChange={(e) => setName(e.target.value)}
-                            className="border-border-gray bg-dark-600"
-                        />
-
-                        <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            placeholder="Email"
-                            inputSize="lg"
-                            value={email}
-                            required
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={Boolean(invitation?.email)}
-                            className="border-border-gray bg-dark-600"
-                        />
-
-                        <Password
-                            setPassword={(tmpPass, tmpStrength) => {
-                                setPassword(tmpPass);
-                                setPasswordStrength(tmpStrength);
-                            }}
-                        />
-                    </div>
-
-                    <div className="grid">
-                        <Button
-                            type="submit"
-                            size={'lg'}
-                            className="justify-center disabled:bg-dark-700"
-                            disabled={!name || !email || !password || !passwordStrength}
-                            isLoading={loading}
-                        >
-                            Sign up
-                        </Button>
-                        {serverErrorMessage && (
-                            <>
-                                <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>
-                                {showResendEmail && (
-                                    <Button onClick={resendVerificationEmail} className="flex justify-center mt-2 text-light-gray" variant="danger">
-                                        Resend verification email
-                                    </Button>
-                                )}
-                            </>
-                        )}
-                    </div>
-                </form>
-                {globalEnv.features.managedAuth && (
-                    <>
-                        <div className="flex items-center justify-center my-4 text-xs">
-                            <div className="border-t border-gray-600 grow mr-7"></div>
-                            <span className="text-dark-500">or continue with</span>
-                            <div className="border-t border-gray-600 grow ml-7"></div>
-                        </div>
-                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} />
-                    </>
+        <div className="flex flex-col gap-10 w-full">
+            <div className="flex flex-col gap-5 w-full">
+                {serverErrorMessage && !showResendEmail && (
+                    <Alert variant="destructive">
+                        <CircleX />
+                        <AlertDescription>{serverErrorMessage}</AlertDescription>
+                    </Alert>
                 )}
+
+                {showResendEmail && (
+                    <Alert variant="warning">
+                        <TriangleAlert />
+                        <AlertTitle>Please verify your email</AlertTitle>
+                        <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
+                        <AlertActions>
+                            <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
+                                Resend
+                                {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
+                            </AlertButton>
+                        </AlertActions>
+                    </Alert>
+                )}
+
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmitForm)} className="w-full flex flex-col gap-5">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field, fieldState }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <InputGroup className="h-11">
+                                            <InputGroupInput placeholder="Name" {...field} aria-invalid={!!fieldState.error} />
+                                        </InputGroup>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field, fieldState }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <InputGroup className="h-11">
+                                            <InputGroupInput disabled={!!invitation?.email} placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
+                                        </InputGroup>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField control={form.control} name="password" render={() => <Password autoComplete="new-password" />} />
+
+                        <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                            {isPending ? 'Signing up...' : 'Sign up'}
+                        </Button>
+                    </form>
+                </Form>
             </div>
-            <div className="grid text-xs">
-                <div className="mt-7 flex place-self-center">
-                    <p className="text-dark-500">Already have an account?</p>
-                    <Link to="/signin" className="text-white ml-1">
-                        Sign in.
-                    </Link>
-                </div>
+
+            <div className="flex flex-col gap-10 w-full">
+                {globalEnv.features.managedAuth && (
+                    <div className="flex flex-col gap-5 items-center w-full">
+                        <div className="flex items-center justify-center gap-3 w-full">
+                            <div className="border-t-[0.5px] border-border-strong w-full"></div>
+                            <span className="text-body-medium-regular text-text-secondary shrink-0">or continue with</span>
+                            <div className="border-t-[0.5px] border-border-strong w-full"></div>
+                        </div>
+
+                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} />
+                    </div>
+                )}
+
+                <span className="text-center w-full text-body-medium-regular text-text-tertiary">
+                    By signing up, you agree to our <br />{' '}
+                    <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
+                        Terms of Service
+                    </StyledLink>{' '}
+                    and{' '}
+                    <StyledLink type="external" to="https://www.nango.dev/privacy-policy" className="text-text-secondary text-body-medium-regular">
+                        Privacy Policy
+                    </StyledLink>
+                    .
+                </span>
             </div>
-        </>
+        </div>
     );
 };
