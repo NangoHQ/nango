@@ -37,17 +37,9 @@ export const TwoStepCredentialsComponent: React.FC<{
                 </div>
             )}
 
-            {/* TWO_STEP privateKey is always a string (e.g. PEM). */}
-            {'privateKey' in credentials && typeof credentials.privateKey === 'string' && (
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="privateKey">Private key</Label>
-                    <SecretInput id="privateKey" value={credentials.privateKey} disabled copy />
-                </div>
-            )}
-
             {/* Other free-form strings */}
             {Object.entries(credentials).map(([key, value]) => {
-                if (['type', 'token', 'refresh_token', 'expires_at', 'raw', 'privateKey'].includes(key) || typeof value !== 'string') {
+                if (['type', 'token', 'refresh_token', 'expires_at', 'raw'].includes(key) || typeof value !== 'string') {
                     return null;
                 }
 
