@@ -47,6 +47,7 @@ _No setup guide yet._
 -   Authentication uses `private_key_jwt`: you generate an RSA key pair, upload the public key to the Okta app, and provide the private key to Nango. No client secret is used.
 -   Scopes must be granted to your application under **Applications > `your app` > Okta API Scopes**. See the full list in the [Okta Management API scopes reference](https://developer.okta.com/docs/api/oauth2/#okta-admin-management).
 -   Client credentials do not use refresh tokens — Nango re-authenticates automatically when the access token expires (default: 1 hour).
+-   Management API endpoints (e.g. `/api/v1/users`) return an empty array (`200 []`) — not a `403` — when the API Services app has no **admin role** assigned. Grant at least **Read-Only Administrator** under **Security > Administrators** (or **Applications > `your app` > Admin roles**) to return results.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/okta-cc.mdx)</Note>
 
