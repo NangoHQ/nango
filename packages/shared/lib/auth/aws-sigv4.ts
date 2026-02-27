@@ -356,11 +356,19 @@ export function parseAssumeRoleResponse(responseBody: string): AwsSigV4Temporary
         const json = JSON.parse(responseBody);
         const creds = json?.AssumeRoleResponse?.AssumeRoleResult?.Credentials;
         if (creds?.AccessKeyId && creds?.SecretAccessKey && creds?.SessionToken) {
+            let expiresAt: Date;
+            if (typeof creds.Expiration === 'number') {
+                expiresAt = new Date(creds.Expiration * 1000);
+            } else if (typeof creds.Expiration === 'string') {
+                expiresAt = new Date(creds.Expiration);
+            } else {
+                expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+            }
             return {
                 accessKeyId: creds.AccessKeyId,
                 secretAccessKey: creds.SecretAccessKey,
                 sessionToken: creds.SessionToken,
-                expiresAt: creds.Expiration ? new Date(creds.Expiration * 1000) : new Date(Date.now() + 60 * 60 * 1000)
+                expiresAt
             };
         }
     } catch {
