@@ -11,6 +11,7 @@ import type {
     AuthErrorType,
     AuthOptions,
     AuthSuccess,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     ConnectionConfig,
@@ -307,6 +308,7 @@ export default class Nango {
             | BillCredentials
             | TwoStepCredentials
             | SignatureCredentials
+            | AwsSigV4Credentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
 
@@ -320,6 +322,17 @@ export default class Nango {
             return { params: signatureCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('type' in credentials && credentials.type === 'AWS_SIGV4') {
+            const awsCredentials: Record<string, string> = {
+                type: credentials.type,
+                role_arn: credentials['role_arn']
+            };
+            if (credentials['region']) {
+                awsCredentials['region'] = credentials['region'];
+            }
+            return { params: awsCredentials } as unknown as ConnectionConfig;
+        }
+
         if ('username' in credentials) {
             params['username'] = credentials.username || '';
         }
@@ -328,6 +341,12 @@ export default class Nango {
         }
         if ('apiKey' in credentials) {
             params['apiKey'] = credentials.apiKey || '';
+        }
+        if ('role_arn' in credentials) {
+            params['role_arn'] = credentials['role_arn'];
+        }
+        if ('region' in credentials && credentials['region']) {
+            params['region'] = credentials['region'];
         }
 
         if (
@@ -424,6 +443,7 @@ export default class Nango {
             | OAuth2ClientCredentials
             | TwoStepCredentials
             | SignatureCredentials
+            | AwsSigV4Credentials
             | undefined;
         assertionOption?: Record<string, string>;
     }): Promise<AuthSuccess> {
@@ -485,6 +505,16 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/signature/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as SignatureCredentials
+            });
+        }
+
+        if ('type' in credentials && credentials['type'] === 'AWS_SIGV4' && 'role_arn' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/aws-sigv4/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: {
+                    role_arn: credentials['role_arn'],
+                    region: credentials['region']
+                }
             });
         }
 

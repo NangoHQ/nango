@@ -216,7 +216,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
                 }
             }
         }
-    } else if (provider.connection_config && !provider.alias && provider.auth_mode !== 'MCP_OAUTH2_GENERIC') {
+    } else if (provider.connection_config && !provider.alias && provider.auth_mode !== 'MCP_OAUTH2_GENERIC' && provider.auth_mode !== 'AWS_SIGV4') {
         // MCP_OAUTH2_GENERIC uses connection_config programmatically for dynamic discovery, not via YAML interpolation
         console.error(chalk.red('error'), chalk.blue(providerKey), `"connection_config" is defined but not required`);
         error = true;
@@ -251,6 +251,14 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     } else if (provider.auth_mode === 'OAUTH2_CC') {
         if (!provider.credentials) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for OAUTH2_CC auth mode`);
+        }
+    } else if (provider.auth_mode === 'AWS_SIGV4') {
+        if (!provider.credentials) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" must be defined for AWS_SIGV4 providers`);
+            error = true;
+        } else if (!provider.credentials['role_arn']) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "role_arn" must be defined for AWS_SIGV4 providers`);
+            error = true;
         }
     } else {
         if (provider.credentials) {

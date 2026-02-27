@@ -15,6 +15,7 @@ import type { EndpointMethod } from './api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
+    PostPublicAwsSigV4Authorization,
     PostPublicBasicAuthorization,
     PostPublicBillAuthorization,
     PostPublicJwtAuthorization,
@@ -120,6 +121,7 @@ export type PublicApiEndpoints =
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
+    | PostPublicAwsSigV4Authorization
     | PostPublicConnection
     | PatchPublicConnection
     | PostPublicSyncStart

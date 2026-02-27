@@ -54,6 +54,7 @@
                         "SIGNATURE",
                         "MCP_OAUTH2",
                         "MCP_OAUTH2_GENERIC",
+                        "AWS_SIGV4",
                         "INSTALL_PLUGIN"
                     ]
                 },

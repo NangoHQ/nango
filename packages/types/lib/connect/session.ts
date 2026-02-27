@@ -27,6 +27,7 @@ export interface ConnectSessionIntegrationConfigDefaults {
               oauth_scopes_override?: string | undefined;
           }
         | undefined;
+    credentials?: Record<string, string> | undefined;
 }
 
 export interface ConnectSessionOverrides {
