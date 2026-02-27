@@ -450,6 +450,18 @@ export function getConnectionMetadata(
     return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }
 
+export function interpolateUrlTemplate(template: string, connectionConfig: Record<string, any>, credentials: Record<string, any>): string {
+    const cleanTemplate = template.replace(/connectionConfig\./g, '').replace(/credentials\./g, '');
+    const merged = removeEmptyValues({ ...connectionConfig, ...credentials });
+    const interpolatedUrl = interpolateStringFromObject(cleanTemplate, merged);
+
+    if (interpolatedUrl.includes('${')) {
+        throw new Error(`Failed to interpolate URL template: ${template}. Missing config parameters.`);
+    }
+
+    return interpolatedUrl;
+}
+
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
     const cleanTemplate = template.replace(/connectionConfig\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);

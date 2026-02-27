@@ -4300,8 +4300,8 @@ dayforce:
     auth_mode: TWO_STEP
     body_format: form
     proxy:
-        base_url: https://www.dayforcehcm.com/api
-    token_url: https://dfid.dayforcehcm.com/connect/token
+        base_url: https://${connectionConfig.clientHostname}/api || https://www.dayforcehcm.com/api
+    token_url: https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token
     token_params:
         grant_type: password
         companyId: ${connectionConfig.companyId}
@@ -4314,15 +4314,37 @@ dayforce:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/dayforce
-    docs_connect: https://nango.dev/docs/integrations/all/dayforce/connect
+    docs: https://nango.dev/docs/api-integrations/dayforce
+    docs_connect: https://nango.dev/docs/api-integrations/dayforce/connect
     connection_config:
         companyId:
             type: string
             title: Company ID
-            order: 1
+            order: 3
             description: The company ID for your Dayforce account.
             doc_section: '#step-1-finding-your-company-id'
+        clientHostname:
+            type: string
+            title: API hostname
+            description: Hostname for the Dayforce API, leave empty for production.
+            format: hostname
+            prefix: https://
+            suffix: /api
+            optional: true
+            example: test.dayforcehcm.com
+            order: 1
+            doc_section: '#step-4-identifying-your-client-host'
+        identityHostname:
+            type: string
+            title: Identity hostname
+            description: Hostname for the Dayforce Identity token endpoint, leave empty for production.
+            format: hostname
+            optional: true
+            prefix: https://
+            suffix: /connect/token
+            example: dfid.dayforcehcm.com
+            order: 2
+            doc_section: '#step-3-identifying-your-identity-host'
     credentials:
         username:
             type: string

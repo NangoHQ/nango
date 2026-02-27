@@ -259,6 +259,71 @@ describe('interpolateObjectValues', () => {
     });
 });
 
+describe('interpolateUrlTemplate', () => {
+    it('interpolates URL with connectionConfig only', () => {
+        const template = 'https://login.example.com/${connectionConfig.tenantId}/oauth2/token';
+        const connectionConfig = { tenantId: 'abc-123' };
+        const credentials = {};
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://login.example.com/abc-123/oauth2/token');
+    });
+
+    it('interpolates URL with credentials only', () => {
+        const template = 'https://api.example.com/auth?user=${credentials.username}';
+        const connectionConfig = {};
+        const credentials = { username: 'alice' };
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://api.example.com/auth?user=alice');
+    });
+
+    it('interpolates URL with both connectionConfig and credentials (credentials override on same key)', () => {
+        const template = 'https://${connectionConfig.host}/v1/${credentials.apiKey}';
+        const connectionConfig = { host: 'api.example.com' };
+        const credentials = { apiKey: 'secret-key-123' };
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://api.example.com/v1/secret-key-123');
+    });
+
+    it('strips connectionConfig. and credentials. prefixes from template', () => {
+        const template = 'https://${connectionConfig.identityHostname}/connect/token || https://dfid.example.com/connect/token';
+        const connectionConfig = {};
+        const credentials = {};
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://dfid.example.com/connect/token');
+    });
+
+    it('uses fallback when connectionConfig value is missing', () => {
+        const template = 'https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token';
+        const connectionConfig = {};
+        const credentials = {};
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://dfid.dayforcehcm.com/connect/token');
+    });
+
+    it('uses fallback when connectionConfig value is empty string (removeEmptyValues)', () => {
+        const template = 'https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token';
+        const connectionConfig = { identityHostname: '' };
+        const credentials = {};
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://dfid.dayforcehcm.com/connect/token');
+    });
+
+    it('uses left side when connectionConfig value is present', () => {
+        const template = 'https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token';
+        const connectionConfig = { identityHostname: 'custom.dfid.example.com' };
+        const credentials = {};
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://custom.dfid.example.com/connect/token');
+    });
+
+    it('throws when required param is missing and no fallback', () => {
+        const template = 'https://${connectionConfig.tenantId}/oauth2/token';
+        const connectionConfig = {};
+        const credentials = {};
+        expect(() => utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toThrow('Failed to interpolate URL template');
+    });
+
+    it('interpolates URL with multiple connectionConfig placeholders', () => {
+        const template = 'https://${connectionConfig.clientHostname}/api/${connectionConfig.companyId}/v1/employees';
+        const connectionConfig = { clientHostname: 'www.example.com', companyId: 'acme' };
+        const credentials = {};
+        expect(utils.interpolateUrlTemplate(template, connectionConfig, credentials)).toBe('https://www.example.com/api/acme/v1/employees');
+    });
+});
+
 describe('parseTokenExpirationDate', () => {
     it('should return the same Date instance if input is already a Date', () => {
         const now = new Date();
