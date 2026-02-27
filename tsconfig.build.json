@@ -2,13 +2,13 @@
     "files": [],
     "references": [
         {
+            "path": "packages/utils"
+        },
+        {
             "path": "packages/cli"
         },
         {
             "path": "packages/frontend"
-        },
-        {
-            "path": "packages/utils"
         },
         {
             "path": "packages/jobs"
