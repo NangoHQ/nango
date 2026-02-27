@@ -332,6 +332,9 @@ await nango.delete(config); // DELETE request
       <ResponseField name="retryOn" type="number[]">
         Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
       </ResponseField>
+      <ResponseField name="refreshTokenOn" type="number[]">
+        Array of status codes that trigger a token refresh before retrying (e.g. <code>[401, 403]</code>). When used with OAuth, Nango will refresh the access token and retry the request. Optional; can also be set per provider in providers.yaml as <code>proxy.refresh_token_on</code>.
+      </ResponseField>
       <ResponseField name="baseUrlOverride" type="string">
         The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
       </ResponseField>
@@ -365,7 +368,7 @@ await nango.delete(config); // DELETE request
 
 ## HTTP request retries
 
-To configure retries when HTTP requests fail, use the `retries` and `retryOn` parameters in your [HTTP requests](#http-requests).
+To configure retries when HTTP requests fail, use the `retries`, `retryOn`, and `refreshTokenOn` parameters in your [HTTP requests](#http-requests).
 
 The following will apply:
 
@@ -374,6 +377,7 @@ The following will apply:
   - Network error: `ECONNRESET`, `ETIMEDOUT`, and `ECONNABORTED`.
   - Pre-configured headers for providers in ([providers.yaml](https://nango.dev/providers.yaml)).
 - Use the `retryOn` parameter to specify an array of additional status codes to retry on.
+- Use the `refreshTokenOn` parameter to specify status codes that trigger a token refresh before retrying (e.g. `[401, 403]`). When a response has one of these statuses, Nango refreshes the access token and retries the request. Providers can also define this in [providers.yaml](https://nango.dev/providers.yaml) as `proxy.refresh_token_on`.
 - By default, no retries are performed: `retries` default to `0`
 - The retry starting delay is `3000ms`, the delay between attempts is multiplied by `2` each time (exponential backoff) and is capped at `10 minutes`.
 

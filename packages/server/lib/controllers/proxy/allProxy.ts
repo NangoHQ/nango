@@ -47,6 +47,10 @@ const schemaHeaders = z.object({
         .string()
         .regex(/^\d+(,\d+)*$/)
         .optional(),
+    'refresh-token-on': z
+        .string()
+        .regex(/^\d+(,\d+)*$/)
+        .optional(),
     'nango-activity-log-id': z.string().max(255).optional(),
     'nango-is-sync': z.enum(['true', 'false']).optional(),
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
@@ -71,6 +75,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const baseUrlOverride = parsedHeaders['base-url-override'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
+    const refreshTokenOn = parsedHeaders['refresh-token-on'] ? parsedHeaders['refresh-token-on'].split(',').map(Number) : null;
     const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
     const isSync = parsedHeaders['nango-is-sync'] === 'true';
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
@@ -187,12 +192,29 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     decompress,
                     method,
                     retryOn,
+                    refreshTokenOn,
                     responseType: 'stream'
                 },
                 internalConfig
             }).unwrap(),
             logger: (msg) => {
                 void logCtx?.log(msg);
+            },
+            onRefreshToken: async () => {
+                const credentialResponse = await refreshOrTestCredentials({
+                    account,
+                    environment,
+                    connection: freshConnection,
+                    integration,
+                    logContextGetter,
+                    instantRefresh: true,
+                    onRefreshSuccess: connectionRefreshSuccess,
+                    onRefreshFailed: connectionRefreshFailed
+                });
+                if (credentialResponse.isOk()) {
+                    freshConnection = credentialResponse.value;
+                    lastConnectionRefresh = Date.now();
+                }
             },
             getConnection: async () => {
                 if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {
