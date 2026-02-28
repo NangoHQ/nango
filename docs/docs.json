@@ -702,6 +702,7 @@
               "api-integrations/procore",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
+              "api-integrations/quentn",
               "integrations/all/quickbase",
               "api-integrations/quickbooks",
               "api-integrations/quickbooks-sandbox",
