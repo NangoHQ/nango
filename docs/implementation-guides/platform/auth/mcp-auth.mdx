@@ -1,0 +1,96 @@
+---
+title: 'MCP Auth'
+sidebarTitle: 'MCP Auth'
+description: 'Let your users connect to MCP servers (Notion, Linear, HubSpot MCP, etc.) via Nango.'
+---
+
+MCP Auth lets your application authorize end users to **external MCP (Model Context Protocol) servers**—such as Notion MCP, Linear MCP, or HubSpot MCP, so you can call those servers’ tools on behalf of each user. Nango handles OAuth with the MCP provider and stores tokens; you then use the connection to call the MCP server via Nango’s [proxy](/reference/api/proxy/request).
+
+<Info>
+Complete the [Configure an integration](/implementation-guides/platform/auth/configure-integration) guide first. The flow below is the same as [Implement API auth](/implementation-guides/platform/auth/implement-api-auth); this page highlights MCP-specific behavior and caveats.
+</Info>
+
+## Two ways to use MCP Auth
+
+| Type | Use case | Example providers |
+|------|----------|--------------------|
+| **Pre-built MCP integrations** | Official MCP servers with fixed OAuth endpoints. | HubSpot (MCP), Notion MCP, Linear MCP, Granola (MCP), Asana MCP |
+| **MCP Server OAuth2 (Generic)** | Any MCP-compatible server that supports OAuth 2.0 with [RFC 8414](https://tools.ietf.org/html/rfc8414) (and optionally [RFC 9728](https://tools.ietf.org/html/rfc9728)) discovery. | Custom or third-party MCP servers |
+
+---
+
+## How to use it (developer perspective)
+
+### Pre-built MCP integrations (e.g. HubSpot MCP, Notion MCP)
+
+1. **Create the integration**  
+   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).  
+   Some providers (e.g. HubSpot MCP) require you to [register an MCP auth app](https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app) and add **Client ID** and **Client Secret** in Nango. Others (e.g. Granola MCP) use **dynamic client registration**—no app registration, just create the integration and authorize.
+
+2. **Run the same auth flow as standard OAuth**  
+   - Backend: [create a Connect session](/implementation-guides/platform/auth/implement-api-auth#1-generate-a-session-token-backend) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).  
+   - Frontend: [open the Connect UI](/implementation-guides/platform/auth/implement-api-auth#2-trigger-the-auth-flow-frontend) with the session token.  
+   - Backend: [persist the connection ID](/implementation-guides/platform/auth/implement-api-auth#3-listen-for-webhooks--save-the-connection-id-backend) from the auth webhook or Connect UI callback.
+
+3. **Call the MCP server**  
+   Use the stored `connection_id` and integration id (e.g. `hubspot-mcp`) with the [Proxy API](/reference/api/proxy/request) (JSON-RPC `tools/call`, etc.) or with the [MCP server](/implementation-guides/use-cases/tool-calling/implement-mcp-server) for Streamable HTTP clients.
+
+### MCP Server OAuth2 (Generic)
+
+1. **Create a generic MCP integration**  
+   [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _MCP Server OAuth2 (Generic)_. Optionally set **OAuth Client Name**, **URI**, and **Logo URI** (used in dynamic client registration with the MCP server).
+
+2. **Same Connect session + Connect UI flow**  
+   As above: backend creates a session with `allowed_integrations: ['mcp-generic']` (or your custom integration id), frontend opens Connect UI with that token, backend stores the connection ID.
+
+3. **End user supplies the MCP server URL**  
+   When the user starts the connection, the Connect UI prompts for **MCP Server URL** (e.g. `https://mcp.notion.com/mcp`). Nango then discovers the OAuth endpoints from that server’s `/.well-known/oauth-authorization-server` (and optionally protected resource metadata). No pre-configuration of the MCP server’s OAuth URLs is required in Nango.
+
+4. **Call the MCP server**  
+   Same as pre-built: use the connection with the [Proxy API](/reference/api/proxy/request) The connection is tied to the MCP server URL the user entered.
+
+---
+
+## End user experience
+
+- **Pre-built MCP (e.g. HubSpot MCP, Notion MCP)**  
+  User clicks connect in your app → is redirected to the provider’s OAuth page (e.g. HubSpot or Notion) → signs in and approves → is redirected back; connection is created. Same as a typical OAuth flow.
+
+- **MCP Generic**  
+  User clicks connect → sees a form asking for **MCP Server URL** (and any other connection config) → submits → is redirected to that MCP server’s OAuth page → signs in and approves → redirected back; connection is created.
+
+In both cases, your app only needs to open the Connect UI and pass the session token; Nango and the Connect UI handle redirects and token storage.
+
+---
+
+## Caveats and specificities
+
+### Pre-built MCP integrations
+
+- **Credentials**  
+  - **Dynamic client registration** (e.g. Granola MCP): no client ID/secret; create the integration and run the auth flow.  
+  - **Static registration** (e.g. HubSpot MCP, Notion MCP): you must register an MCP auth app with the provider and add **Client ID** and **Client Secret** in the integration settings. See each integration’s setup guide (e.g. [HubSpot MCP](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app)).
+
+- **Re-auth and token refresh**  
+  Same as standard OAuth: use [reconnect sessions](/implementation-guides/platform/auth/implement-api-auth#6-re-authorize-an-existing-connection) when the connection is invalid; Nango refreshes tokens when the provider supports refresh tokens.
+
+### MCP Server OAuth2 (Generic)
+
+- **Server requirements**  
+  The MCP server must support:
+  - **OAuth 2.0 Authorization Server Metadata** ([RFC 8414](https://tools.ietf.org/html/rfc8414)) at `/.well-known/oauth-authorization-server`.
+  - **PKCE** (required; no client secret is used).
+  - Optional: **Protected Resource Metadata** ([RFC 9728](https://tools.ietf.org/html/rfc9728)) for scope discovery.
+
+- **URL format**  
+  End users must enter the **full MCP server URL** (e.g. `https://mcp.notion.com/mcp`), not just the hostname.
+
+- **Known limitations**  
+  - OAuth metadata is discovered at connection time and stored with the connection; if the MCP server changes its OAuth endpoints, users may need to reconnect.
+
+- **No per-server client registration**  
+  You do not pre-configure OAuth client credentials for each MCP server. Nango uses dynamic client registration (or the server’s public client flow) during the authorization flow.
+
+---
+
+For the standard steps (session token, Connect UI, webhooks, re-auth), follow [Implement API auth](/implementation-guides/platform/auth/implement-api-auth). For exposing your own Nango actions as MCP tools, see [Implement the MCP server](/implementation-guides/use-cases/tool-calling/implement-mcp-server).
