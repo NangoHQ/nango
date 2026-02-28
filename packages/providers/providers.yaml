@@ -3298,6 +3298,23 @@ clari-copilot:
             title: API Key
             description: The API key for your Clari Copilot account
 
+cleverreach:
+    display_name: CleverReach
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://rest.cleverreach.com/oauth/authorize.php
+    token_url: https://rest.cleverreach.com/oauth/token.php
+    authorization_params:
+        response_type: code
+        grant: basic
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://rest.cleverreach.com
+    docs: https://nango.dev/docs/api-integrations/cleverreach
+    setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-oauth-app
+
 clicksend:
     display_name: ClickSend
     categories:
