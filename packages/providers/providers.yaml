@@ -10397,8 +10397,6 @@ monday:
     disable_pkce: true
     authorization_params:
         force_install_if_needed: true
-    authorization_url_replacements:
-        response_type: ''
     proxy:
         base_url: https://api.monday.com
     docs: https://nango.dev/docs/api-integrations/monday
