@@ -231,11 +231,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should import oauth2 connection with config_override', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: secret.secret,
             body: {
                 provider_config_key: 'github',
                 credentials: {

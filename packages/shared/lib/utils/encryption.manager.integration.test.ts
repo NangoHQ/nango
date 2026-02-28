@@ -4,7 +4,6 @@ import db, { multipleMigrations } from '@nangohq/database';
 
 import encryptionManager, { EncryptionManager } from './encryption.manager.js';
 import { seedAccountEnvAndUser } from '../seeders/index.js';
-import environmentService from '../services/environment.service.js';
 import secretService from '../services/secret.service.js';
 
 describe('encryption', () => {
@@ -67,11 +66,9 @@ describe('encryption', () => {
             await db.knex.from(`_nango_db_config`).del();
 
             const { env } = await seedAccountEnvAndUser();
-            expect(env.secret_key).toBeUUID();
 
-            const defaultSecret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+            const defaultSecret = (await secretService.getDefaultSecretForEnv(db.readOnly, env.id)).unwrap();
             expect(defaultSecret.secret).toBeUUID();
-            expect(defaultSecret.secret).toEqual(env.secret_key);
             expect(defaultSecret.iv).toEqual('');
             expect(defaultSecret.tag).toEqual('');
 
@@ -80,12 +77,8 @@ describe('encryption', () => {
             encryptionManager.key = 'aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=';
             await encryptionManager.encryptDatabaseIfNeeded();
 
-            const envAfterEnc = (await environmentService.getById(env.id))!;
-            expect(envAfterEnc.secret_key).toEqual(env.secret_key);
-
-            const defaultSecretAfterEnc = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+            const defaultSecretAfterEnc = (await secretService.getDefaultSecretForEnv(db.readOnly, env.id)).unwrap();
             expect(defaultSecretAfterEnc.secret).toBeUUID();
-            expect(defaultSecretAfterEnc.secret).toEqual(env.secret_key);
         });
     });
 });
