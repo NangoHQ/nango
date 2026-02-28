@@ -46,7 +46,7 @@
         "@nangohq/runner-sdk": "0.69.38",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
-        "ajv": "8.17.1",
+        "ajv": "8.18.0",
         "ajv-errors": "3.0.0",
         "axios": "1.13.5",
         "chalk": "5.4.1",
