@@ -323,6 +323,7 @@
               "api-integrations/cal-com-oauth",
               "api-integrations/calendly",
               "integrations/all/callrail",
+              "api-integrations/campfire",
               "integrations/all/canny",
               "api-integrations/candis",
               "integrations/all/canva",

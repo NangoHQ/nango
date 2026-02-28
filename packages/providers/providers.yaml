@@ -2868,6 +2868,22 @@ callrail:
             doc_section: '#step-1-finding-your-api-key'
     docs: https://nango.dev/docs/integrations/all/callrail
 
+campfire:
+    display_name: Campfire
+    categories:
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+      base_url: https://api.meetcampfire.com
+      headers:
+        Authorization: Token ${apiKey}
+    credentials:
+      apiKey:
+        type: string
+        title: API Key
+        description: "The API key for your Campfire account"
+    docs: https://docs.campfire.ai
+
 canny:
     display_name: Canny
     categories:
