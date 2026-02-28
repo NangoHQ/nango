@@ -23,7 +23,7 @@ const path = '/v1/retries/:retryKey/output';
 const method = 'GET';
 
 const querySchema = z.object({ ownerKey: z.string().min(1) }).strict();
-const paramsSchema = z.object({ retryKey: z.string().uuid() }).strict();
+const paramsSchema = z.object({ retryKey: z.uuid() }).strict();
 
 const validate = validateRequest<GetRetryOutput>({
     parseQuery: (data) => querySchema.parse(data),

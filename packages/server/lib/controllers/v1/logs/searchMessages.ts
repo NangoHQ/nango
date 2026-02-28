@@ -19,7 +19,7 @@ const validation = z
             .default(['all']),
         cursorBefore: z.string().or(z.null()).optional(),
         cursorAfter: z.string().or(z.null()).optional(),
-        period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional()
+        period: z.object({ from: z.iso.datetime(), to: z.iso.datetime() }).optional()
     })
     .strict();
 

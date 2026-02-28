@@ -22,7 +22,7 @@ export const commonSchemaArgsFields = {
 export const abortArgsSchema = z.object({
     type: z.literal('abort'),
     abortedTask: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         state: z.enum(taskStates)
     }),
     reason: z.string().min(1),
@@ -74,7 +74,7 @@ export const onEventArgsSchema = z.object({
 });
 
 const commonSchemaFields = {
-    id: z.string().uuid(),
+    id: z.uuid(),
     name: z.string().min(1),
     groupKey: z.string().min(1),
     groupMaxConcurrency: z.number().int().min(0).default(0),
@@ -250,7 +250,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
     const scheduleSchema = z
         .object({
-            id: z.string().uuid(),
+            id: z.uuid(),
             name: z.string().min(1),
             state: z.enum(['STARTED', 'PAUSED', 'DELETED']),
             startsAt: z.coerce.date(),
@@ -264,7 +264,7 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             createdAt: z.coerce.date(),
             updatedAt: z.coerce.date(),
             deletedAt: z.coerce.date().nullable(),
-            lastScheduledTaskId: z.string().uuid().nullable(),
+            lastScheduledTaskId: z.uuid().nullable(),
             lastScheduledTaskState: z.enum(taskStates).nullable(),
             nextExecutionAt: z.coerce.date().nullable()
         })

@@ -10,7 +10,7 @@ import type { ResendVerificationEmailByUuid } from '@nangohq/types';
 
 const validation = z
     .object({
-        uuid: z.string().uuid()
+        uuid: z.uuid()
     })
     .strict();
 

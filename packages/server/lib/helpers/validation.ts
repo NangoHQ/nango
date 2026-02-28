@@ -52,7 +52,7 @@ export const frequencySchema = z
     );
 
 export const connectionCredential = z.union([
-    z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }),
+    z.object({ public_key: z.uuid(), hmac: z.string().optional() }),
     z.object({ connect_session_token: connectSessionTokenSchema })
 ]);
 
@@ -166,7 +166,7 @@ export const connectionEndUserTagsSchema = z
 
 export const endUserSchema = z.strictObject({
     id: z.string().max(255).min(1),
-    email: z.string().email().min(5).optional(),
+    email: z.email().min(5).optional(),
     display_name: z.string().max(255).optional(),
     tags: connectionEndUserTagsSchema.optional()
 });

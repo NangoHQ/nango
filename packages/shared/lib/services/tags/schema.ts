@@ -33,7 +33,7 @@ export const validateCaseInsensitiveTagKeys = (tags: Record<string, string>): st
         }
         seen.add(normalized);
         if (normalized === 'end_user_email') {
-            const emailResult = z.string().email().min(5).safeParse(value);
+            const emailResult = z.email().min(5).safeParse(value);
             if (!emailResult.success) {
                 issues.push('Tag "end_user_email" must be a valid email');
             }

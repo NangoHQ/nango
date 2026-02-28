@@ -27,7 +27,7 @@ const path = '/v1/tasks/:taskId';
 const method = 'PUT';
 
 const bodySchema = z.object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED', 'CANCELLED']) }).strict();
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<PutTask>({
     parseBody: (data) => bodySchema.parse(data),
