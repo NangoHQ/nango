@@ -12633,6 +12633,31 @@ procore:
             example: '598134325779301'
             pattern: '^[0-9]+$'
 
+provenexpert:
+    display_name: ProvenExpert
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.provenexpert.com/api/v1
+        verification:
+            method: POST
+            endpoints:
+                - /rating/summary/get
+    docs: https://nango.dev/docs/api-integrations/provenexpert
+    docs_connect: https://nango.dev/docs/api-integrations/provenexpert/connect
+    credentials:
+        username:
+            type: string
+            title: API ID
+            description: Your ProvenExpert API ID
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: API Key
+            description: Your ProvenExpert API Key
+            doc_section: '#step-1-getting-your-credentials'
+
 qualtrics:
     display_name: Qualtrics
     categories:

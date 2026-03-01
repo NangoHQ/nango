@@ -700,6 +700,7 @@
               "integrations/all/prospeo",
               "integrations/all/productboard",
               "api-integrations/procore",
+              "api-integrations/provenexpert",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
               "integrations/all/quickbase",
