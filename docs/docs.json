@@ -870,6 +870,7 @@
               "integrations/all/wealthbox",
               "integrations/all/webflow",
               "integrations/all/webex",
+              "api-integrations/webinarjam",
               "api-integrations/whatsapp-business",
               "integrations/all/whoop",
               "integrations/all/wildix-pbx",
