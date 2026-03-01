@@ -16900,6 +16900,7 @@ webinarjam:
             type: string
             title: API Key
             description: Your WebinarJam API key
+            pattern: '^[a-zA-Z0-9]{64}$'
             doc_section: '#step-1-getting-your-api-key'
 
 whatsapp-business:
