@@ -396,7 +396,7 @@ program
             // When interactive, the picker returns both name + integration so same-named functions across different integrations are never ambiguous.
             if (name) {
                 const matches = filteredIntegrations.filter(
-                    (i) => [...i.syncs, ...i.actions].some((s) => s.name === name) || Object.values(i.onEventScripts).flat().includes(name)
+                    (i) => [...i.syncs, ...i.actions].some((s) => s.name === name) || Object.values(i.onEventScripts).flat().includes(name!)
                 );
                 if (matches.length === 1) {
                     resolvedIntegrationId = matches[0]!.providerConfigKey;

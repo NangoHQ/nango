@@ -12,8 +12,7 @@ import * as dotenv from 'dotenv';
 import npa from 'npm-package-arg';
 import promptly from 'promptly';
 import semver from 'semver';
-
-import { stringifyError } from '@nangohq/utils';
+import { serializeError } from 'serialize-error';
 
 import { cloudHost, localhostUrl } from './constants.js';
 import { state } from './state.js';
@@ -32,6 +31,31 @@ dotenv.config();
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
 export const isCI = process.env['CI'];
 const IGNORE_UPGRADE_FOR = 86400 * 1000;
+
+const PROVIDER_ERROR_MESSAGE_FIELDS = ['message', 'error', 'error_description', 'error_message', 'detail', 'details', 'reason', 'description'];
+
+function stringifyError(err: unknown): string {
+    const serialized = serializeError(err);
+    const enriched: Record<string, unknown> = { ...(serialized && typeof serialized === 'object' ? serialized : {}) };
+
+    if (typeof err === 'object' && err != null) {
+        const anyErr = err as any;
+        if (anyErr.response?.data?.error && typeof anyErr.response.data.error === 'object') {
+            const filteredError: Record<string, unknown> = {};
+            for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
+                if (field in anyErr.response.data.error) {
+                    filteredError[field] = anyErr.response.data.error[field];
+                }
+            }
+            if (Object.keys(filteredError).length > 0) {
+                enriched['provider_error_payload'] = filteredError;
+            }
+        }
+    }
+
+    const allowed = new Set(['name', 'message', 'provider_error_payload']);
+    return JSON.stringify(Object.fromEntries(Object.entries(enriched).filter(([k]) => allowed.has(k))));
+}
 
 const rawHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
 const resolvedHostport = rawHostport.endsWith('/') ? rawHostport.slice(0, -1) : rawHostport;
