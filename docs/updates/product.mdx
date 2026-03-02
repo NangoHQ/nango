@@ -55,7 +55,7 @@ description: "Product updates and improvements."
 
   These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/use-cases/syncs/records-cache).
 
-  We also introduced a new endpoint to manually prune records. 
+  We also introduced a new endpoint to manually prune records.
 
   You can use `PATCH /records/prune` to empty record payloads on demand while preserving the metadata. See the [Prune records API reference](/reference/api/sync/prune-records).
 
@@ -63,7 +63,7 @@ description: "Product updates and improvements."
 
   You can now authenticate with Salesforce using the JWT Bearer flow. This enables server-to-server authentication using a dedicated "API user" inside the customer's Salesforce org.
 
-  ![Salesforce JWT](/images/changelog/SalesforceJWT.png)
+  ![Salesforce JWT](/images/changelog/salesforce-jwt.png)
 
   This auth mode bypasses the interactive OAuth consent screen, which enterprise customers often prefer for easier onboarding and stronger governance.
 
@@ -73,7 +73,7 @@ description: "Product updates and improvements."
 
   You can now generate and copy a shareable Connect UI link directly from the Nango dashboard. This enables you to create a link in Nango and share it with another person to complete the auth flow.
 
-  ![Share Connect Link R Jan2026](/images/changelog/ShareConnectLinkRJan2026.gif)
+  ![Share Connect Link R Jan2026](/images/changelog/share-connect-link.gif)
 
   The UI displays an expiry notification when you copy the link to your clipboard. Links expire after 30 minutes.
 
@@ -81,7 +81,7 @@ description: "Product updates and improvements."
 
   We updated the Connect UI to optimize the layout for mobile/tablet devices.
 
-  ![Mobile Support](</images/changelog/Mobile support.png>)
+  ![Mobile Support](/images/changelog/mobile-support.png)
 
   ## New blog posts
 
@@ -143,7 +143,7 @@ description: "Product updates and improvements."
   - `end_user_display_name` and `end_user_email` are shown directly in the connections list.
   - The domain from the `end_user_email` is used to automatically display the corresponding company logo on the connection detail page.
 
-  ![Connection Tags UI Change](/images/changelog/ConnectionTagsUIChange.png)
+  ![Connection Tags UI Change](/images/changelog/connection-tags-ui-change.png)
 
   You can also filter connections by tags via the API. See the [Connection tags documentation](/implementation-guides/platform/auth/connection-tags).
 
@@ -155,7 +155,7 @@ description: "Product updates and improvements."
 
   ![Enhanced OAuth error messaging](../images/changelog/improved-oauth-error-messaging.png)
 
-  The new UI for the callback renders structured success and error states. It also surfaces provider query parameters in an expandable debug panel. 
+  The new UI for the callback renders structured success and error states. It also surfaces provider query parameters in an expandable debug panel.
 
   Additionally, provider errors are now delivered via WebSocket for improved logging on your end.
 
@@ -163,9 +163,9 @@ description: "Product updates and improvements."
 
   We have overhauled the Integrations tab to streamline how you manage and scale your catalog. This update focuses on faster discovery and a more intuitive setup flow.
 
-  - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results. 
+  - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results.
 
-    ![Improved Search](../images/changelog/new_integrations_list_page.png)
+    ![Improved Search](/images/changelog/new-integrations-list-page.png)
   - **Decoupled Creation Flow:** Selecting an API in the catalog now leads to a dedicated form where you configure credentials (Client ID, Secret, Scopes) before the integration is created. This prevents empty integrations from cluttering your dashboard.
   - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list.
 
@@ -219,7 +219,7 @@ description: "Product updates and improvements."
 
   Firstly, you can specify end-user data. This includes setting a custom ID, email, and display name for the connection.
 
-  ![Advanced connection settings](../images/changelog/AdvancedConnectionSettings.gif)
+  ![Advanced connection settings](/images/changelog/advanced-sonnection-settings.gif)
 
   Secondly, you can also override the integration's default configuration, like authorization parameters, customize OAuth scopes, and override developer app credentials. This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
 
@@ -288,7 +288,7 @@ description: "Product updates and improvements."
 
   The Nango CLI now supports an [interactive mode](https://nango.dev/docs/reference/cli#interactive-mode) that prompts for missing arguments. For example, run `nango create` without specifying the function type, integration, or name, and the CLI will ask for them. Interactive mode is on by default in interactive terminal sessions.
 
-  ![Nango_CLI_interactive_mode](../images/changelog/Nango_CLI_interactive_mode.png)
+  ![Nango_CLI_interactive_mode](/images/changelog/nango-cli-interactive-mode.png)
 
   You can still provide all arguments upfront to skip prompts (e.g., for scripting): test `nango create --sync --integration my-api --name get-contacts`
 
