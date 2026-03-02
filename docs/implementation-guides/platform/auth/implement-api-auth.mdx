@@ -117,6 +117,36 @@ const res = await fetch('/sessionToken', { method: 'POST' }); // Retrieve the se
 connect.setSessionToken(res.sessionToken); // A loading indicator is shown until this is set.
 ```
 
+### Share a connect link
+
+If you want to let a user authenticate later or on another device, your backend can return the `connect_link` from the connect session and share that URL directly.
+
+You can also do this from the Nango dashboard: in the Connections page, use the **Share connect link** button to generate a link, then send it to the end user.
+
+`connect_link` is short-lived and expires after 30 minutes, just like the session token.
+
+```ts
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+
+api.post('/connectLink', async (req, res) => {
+  const { data } = await nango.createConnectSession({
+    tags: {
+      end_user_id: '<END-USER-ID>',
+      end_user_email: '<END-USER-EMAIL>',
+      organization_id: '<ORGANIZATION-ID>'
+    },
+    allowed_integrations: ['<INTEGRATION-ID>']
+  });
+
+  res.status(200).send({
+    connectLink: data.connect_link,
+    expiresAt: data.expires_at
+  });
+});
+```
+
 For more details refer to our [Frontend SDK reference](/reference/sdks/frontend#connect-using-nango-connect-ui).
 
 The pre-built Connect UI is recommended, but optional. If you want full control over the connection UX, follow the [Customize Connect UI](/implementation-guides/platform/auth/customize-connect-ui) guide.
