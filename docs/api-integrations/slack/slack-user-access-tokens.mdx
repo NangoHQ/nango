@@ -1,0 +1,66 @@
+---
+title: 'Slack user access tokens in Nango'
+sidebarTitle: 'Slack User Tokens'
+description: 'How to get, and use, Slack user access tokens with Nango'
+---
+
+Slack issues two separate access tokens during OAuth:
+
+- **Bot Token** (starts with `xoxb-`): Used for actions performed by your app's bot
+- **User Token** (starts with `xoxp-`): Used for actions performed on behalf of the authorizing user
+
+**Important:** By default, Nango uses the bot token as the primary access token. This means when you make API calls through Nango's proxy, it will use the bot token by default.
+
+## When You Need the User Token
+
+Some Slack API endpoints require user-scoped permissions and will only accept user tokens (e.g., certain user profile operations). If you try to call these endpoints with the bot token, Slack will reject the request.
+
+## How to Use the User Token
+
+1. **Fetch the raw connection to get the user token:**
+
+```typescript
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+// Fetch the connection with raw credentials
+const connection = await nango.getConnection(
+  '<INTEGRATION-ID>',
+  '<CONNECTION-ID>'
+);
+
+// The user token is in the raw response
+const userToken = connection.credentials.raw.authed_user?.access_token;
+```
+
+2. **Override the authorization header when making proxy calls:**
+
+```typescript
+// Use the user token by overriding the auth header
+const response = await nango.get({
+  endpoint: '/users.profile.get',
+  providerConfigKey: '<INTEGRATION-ID>',
+  connectionId: '<CONNECTION-ID>',
+  headers: {
+    'nango-proxy-authorization': `Bearer ${userToken}`
+  }
+});
+```
+
+## When Creating Connections in Nango
+
+If you need user tokens for your integration, you can specify [user scopes](/reference/api/connect/sessions/create#body-integrations-config-defaults-key-user_scopes) when creating a connect session:
+
+```typescript
+const { data } = await nango.createConnectSession({
+  end_user_id: '<END-USER-ID>',
+  integrations_config_defaults: {
+    "slack": {
+      user_scopes: "users.profile:read, chat:write"
+    }
+  }
+});
+```
+
+For more details on Slack's OAuth implementation, see [Slack's OAuth documentation](https://api.slack.com/authentication/oauth-v2).

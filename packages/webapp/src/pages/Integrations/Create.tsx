@@ -9,7 +9,7 @@ import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Badge } from '@/components-v2/ui/badge';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
-import { apiPostIntegration } from '@/hooks/useIntegration';
+import { usePostIntegration } from '@/hooks/useIntegration';
 import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -21,6 +21,7 @@ export const CreateIntegration = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const navigate = useNavigate();
+    const { mutateAsync: postIntegration } = usePostIntegration(env);
 
     const { providerConfigKey } = useParams();
     const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey);
@@ -32,14 +33,12 @@ export const CreateIntegration = () => {
             return;
         }
 
-        const response = await apiPostIntegration(env, data);
-
-        if ('error' in response.json) {
-            toast({ title: response.json.error.message || 'Failed to create integration', variant: 'error' });
-            return;
+        try {
+            const response = await postIntegration(data);
+            navigate(`/${env}/integrations/${response.data.unique_key}/settings`);
+        } catch {
+            toast({ title: 'Failed to create integration', variant: 'error' });
         }
-
-        navigate(`/${env}/integrations/${response.json.data.unique_key}/settings`);
     };
 
     if (loadingProvider || !provider) {
