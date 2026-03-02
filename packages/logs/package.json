@@ -23,7 +23,7 @@
         "@opentelemetry/sdk-trace-base": "1.27.0",
         "@opentelemetry/sdk-trace-node": "1.27.0",
         "@opentelemetry/semantic-conventions": "1.27.0",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
