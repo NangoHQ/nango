@@ -4,7 +4,7 @@ sidebarTitle: 'MCP Auth'
 description: 'Let your users connect to MCP servers (Notion, Linear, HubSpot MCP, etc.) via Nango.'
 ---
 
-MCP Auth lets your application authorize end users to **external MCP (Model Context Protocol) servers**—such as Notion MCP, Linear MCP, or HubSpot MCP, so you can call those servers’ tools on behalf of each user. Nango handles OAuth with the MCP provider and stores tokens; you then use the connection to call the MCP server via Nango’s [proxy](/reference/api/proxy/request).
+MCP Auth lets your application authorize end users to access external MCP servers, such as Notion MCP, Linear MCP, or HubSpot MCP, so you can call those servers’ tools on behalf of each user. Nango handles OAuth with the MCP provider and stores tokens; you then use the connection to call the MCP server via Nango’s [proxy](/reference/api/proxy/post).
 
 ## Two ways to use MCP Auth
 
@@ -29,7 +29,7 @@ MCP Auth lets your application authorize end users to **external MCP (Model Cont
    - Backend: [persist the connection ID](/implementation-guides/platform/auth/implement-api-auth#3-listen-for-webhooks--save-the-connection-id-backend) from the auth webhook or Connect UI callback.
 
 3. **Call the MCP server**  
-   Use the stored `connection_id` and integration id (e.g. `hubspot-mcp`) with the [Proxy API](/reference/api/proxy/request) (JSON-RPC `tools/call`, etc.).
+   Use the stored `connection_id` and integration id (e.g. `hubspot-mcp`) with the [Proxy API](/reference/api/proxy/post) (JSON-RPC `tools/call`, etc.).
 
 ### MCP Server OAuth2 (Generic)
 
@@ -43,7 +43,7 @@ MCP Auth lets your application authorize end users to **external MCP (Model Cont
    When the user starts the connection, the Connect UI prompts for **MCP Server URL** (e.g. `https://mcp.notion.com/mcp`). Nango then discovers the OAuth endpoints from that server’s `/.well-known/oauth-authorization-server` (and optionally protected resource metadata). No pre-configuration of the MCP server’s OAuth URLs is required in Nango.
 
 4. **Call the MCP server**  
-   Same as pre-built: use the connection with the [Proxy API](/reference/api/proxy/request) The connection is tied to the MCP server URL the user entered.
+   Same as pre-built: use the connection with the [Proxy API](/reference/api/proxy/post). The connection is tied to the MCP server URL the user entered.
 
 ---
 
