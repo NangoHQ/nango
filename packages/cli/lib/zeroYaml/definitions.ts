@@ -29,9 +29,30 @@ const allowed = ['action', 'sync', 'onEvent'];
  * Void schemas are skipped — they cannot be represented in JSON Schema
  * and indicate an absent input/output.
  */
-function buildFunctionJsonSchema(namedSchemas: Record<string, z.ZodType>): JSONSchema7 {
+function logSchemaDescriptions(schema: z.ZodType, path: string): void {
+    const def = (schema as any)._zod?.def;
+    if (!def) return;
+
+    const meta = z.globalRegistry.get(schema);
+    if (meta?.description) {
+        console.log(`[debug] ${path}: description = "${meta.description}"`);
+    }
+
+    if (def.type === 'object' && def.shape) {
+        for (const [key, field] of Object.entries(def.shape)) {
+            logSchemaDescriptions(field as z.ZodType, `${path}.${key}`);
+        }
+    } else if (def.type === 'array' && def.element) {
+        logSchemaDescriptions(def.element as z.ZodType, `${path}[]`);
+    }
+}
+
+export function buildFunctionJsonSchema(namedSchemas: Record<string, z.ZodType>): JSONSchema7 {
     const definitions: Record<string, JSONSchema7> = {};
+
     for (const [name, schema] of Object.entries(namedSchemas)) {
+        console.log('[debug] buildFunctionJsonSchema called with schemas:', Object.keys(namedSchemas));
+        logSchemaDescriptions(schema, name);
         if (schema.constructor.name === 'ZodVoid') {
             continue;
         }
@@ -47,8 +68,10 @@ function buildFunctionJsonSchema(namedSchemas: Record<string, z.ZodType>): JSONS
         }) as JSONSchema7;
         delete (def as Record<string, unknown>)['$schema'];
         definitions[name] = def;
+        console.log('[debug] buildFunctionJsonSchema result:', JSON.stringify(def, null, 2));
     }
-    return { $schema: 'http://json-schema.org/draft-07/schema#', definitions };
+    const result = { $schema: 'http://json-schema.org/draft-07/schema#', definitions };
+    return result;
 }
 
 export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {

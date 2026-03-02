@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildFunctionJsonSchema > should map zod schema to json schema including descriptions 1`] = `
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Model": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "description": "How many",
+          "type": "number",
+        },
+        "createdAt": {
+          "description": "Creation date",
+          "format": "date-time",
+          "type": "string",
+        },
+        "id": {
+          "description": "Unique identifier",
+          "type": "string",
+        },
+        "nested": {
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "description": "A label",
+              "type": "string",
+            },
+          },
+          "required": [
+            "label",
+          ],
+          "type": "object",
+        },
+        "tags": {
+          "items": {
+            "type": "string",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "id",
+        "count",
+        "createdAt",
+        "tags",
+        "nested",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;

@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
-import { buildAction, buildSync } from './definitions.js';
+import { buildAction, buildFunctionJsonSchema, buildSync } from './definitions.js';
+
+describe('buildFunctionJsonSchema', () => {
+    it('should map zod schema to json schema including descriptions', () => {
+        const result = buildFunctionJsonSchema({
+            Model: z.object({
+                id: z.string().describe('Unique identifier'),
+                count: z.number().describe('How many'),
+                createdAt: z.date().describe('Creation date'),
+                tags: z.array(z.string()),
+                nested: z.object({ label: z.string().describe('A label') })
+            })
+        });
+        expect(result).toMatchSnapshot();
+    });
+});
 
 describe('buildSync', () => {
     it('should build a sync', () => {
