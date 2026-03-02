@@ -282,6 +282,15 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
         }
 
         for (const [model, { startLines, endLines }] of bag.trackDeletesByModel) {
+            if (startLines.length > 1) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' should be called only once per sync`,
+                        line: Math.max(...startLines)
+                    })
+                );
+            }
             if (endLines.length > 1) {
                 return Err(
                     fileErrorToText({
@@ -314,6 +323,15 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                     fileErrorToText({
                         filePath: friendlyPath,
                         msg: `trackDeletesStart for model '${model}' should be called before trackDeletesEnd`,
+                        line: Math.min(...startLines)
+                    })
+                );
+            }
+            if (startLines.length > 0 && bag.batchingRecordsLines.some((line) => line < Math.min(...startLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' should be called before any batching records function`,
                         line: Math.min(...startLines)
                     })
                 );

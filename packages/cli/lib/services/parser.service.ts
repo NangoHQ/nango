@@ -290,6 +290,10 @@ class ParserService {
         }
 
         for (const [model, { startLines, endLines }] of trackDeletesByModel) {
+            if (startLines.length > 1) {
+                console.log(chalk.red(`trackDeletesStart for model '${model}' should be called only once in "${filePath}:${Math.max(...startLines)}".`));
+                usedCorrectly = false;
+            }
             if (endLines.length > 1) {
                 console.log(chalk.red(`trackDeletesEnd for model '${model}' should be called only once in "${filePath}:${Math.max(...endLines)}".`));
                 usedCorrectly = false;
@@ -305,6 +309,14 @@ class ParserService {
             if (startLines.length > 0 && endLines.length > 0 && startLines.some((line) => line > Math.min(...endLines))) {
                 console.log(
                     chalk.red(`trackDeletesStart for model '${model}' should be called before trackDeletesEnd in "${filePath}:${Math.min(...startLines)}".`)
+                );
+                usedCorrectly = false;
+            }
+            if (startLines.length > 0 && batchingRecordsLines.some((line) => line < Math.max(...startLines))) {
+                console.log(
+                    chalk.red(
+                        `trackDeletesStart for model '${model}' should be called before all batching records functions in "${filePath}:${Math.max(...startLines)}".`
+                    )
                 );
                 usedCorrectly = false;
             }
