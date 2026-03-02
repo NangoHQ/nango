@@ -190,14 +190,36 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.telemetryBag.customLogs += 1;
     }
 
+    /**
+     * @deprecated Use opts parameter instead of syncMode
+     */
     public triggerSync(
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
-    ): Promise<void | string> {
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
+    ): Promise<void | string>;
+
+    public triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        opts?: PostPublicTrigger['Body']['opts']
+    ): Promise<void>;
+
+    public triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        optsOrSyncMode?: PostPublicTrigger['Body']['opts'] | PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
+    ): Promise<void> {
         this.throwIfAborted();
-        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, syncMode);
+        // helping typescript to differentiate between the two overloads, we check if the parameter is an object (opts) or not (syncMode/full_resync)
+        const isLegacy = typeof optsOrSyncMode !== 'object';
+        if (isLegacy) {
+            return this.nango.triggerSync(providerConfigKey, [sync], connectionId, optsOrSyncMode);
+        }
+        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, optsOrSyncMode);
     }
 
     public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
