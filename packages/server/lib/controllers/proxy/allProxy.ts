@@ -1,4 +1,4 @@
-import { PassThrough, Readable, Transform } from 'node:stream';
+import { PassThrough, Transform } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
@@ -29,7 +29,7 @@ import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'node:http';
-import type { TransformCallback } from 'node:stream';
+import type { Readable, TransformCallback } from 'node:stream';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -366,7 +366,7 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     });
 }
 
-function handleErrorResponse({
+export function handleErrorResponse({
     res,
     error,
     requestConfig,
@@ -405,13 +405,7 @@ function handleErrorResponse({
         const responseStatus = error.response?.status || 500;
         const responseHeaders = error.response?.headers || {};
 
-        res.writeHead(responseStatus, responseHeaders as OutgoingHttpHeaders);
-
-        const stream = new Readable();
-        stream.push(JSON.stringify(errorObject));
-        stream.push(null);
-
-        stream.pipe(res);
+        res.status(responseStatus).set(responseHeaders).send(errorObject);
 
         return;
     }
@@ -422,12 +416,9 @@ function handleErrorResponse({
             callback(null, chunk);
         }
     });
-    if (error.response?.status) {
-        res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
-    }
     if (errorData) {
         const chunks: Buffer[] = [];
-        errorData.pipe(stringify).pipe(res);
+        errorData.pipe(stringify);
         stringify.on('data', (data) => {
             chunks.push(data);
         });
@@ -444,7 +435,11 @@ function handleErrorResponse({
 
             metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
+            const responseStatus = error.response?.status || 500;
+            const responseHeaders = error.response?.headers || {};
             void logCtx.error('Failed with this body', { body: errorData });
+
+            res.status(responseStatus).set(responseHeaders).send(data);
         });
     }
 }
