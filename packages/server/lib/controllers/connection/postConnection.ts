@@ -293,7 +293,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                     providerConfigKey: body.provider_config_key
                 });
                 await logCtx.failed();
-                res.status(400).send({ error: { code: 'server_error', message: credentialsRes.error.message } });
+                res.status(500).send({ error: { code: 'server_error', message: credentialsRes.error.message } });
                 return;
             }
 
