@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ProxyError } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
@@ -173,6 +173,10 @@ describe('handleErrorResponse', () => {
     beforeEach(() => {
         vi.mocked(mockLogCtx.error).mockClear();
         vi.spyOn(metrics, 'increment').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it('should return 400 with error body for ProxyError', () => {
