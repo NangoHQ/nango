@@ -99,7 +99,7 @@ export const Signin: React.FC = () => {
                 </div>
 
                 {errorMessage && !showResendEmail && (
-                    <Alert variant="destructive">
+                    <Alert variant="error">
                         <CircleX />
                         <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>

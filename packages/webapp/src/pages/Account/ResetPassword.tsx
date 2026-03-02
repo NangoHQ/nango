@@ -61,7 +61,7 @@ export default function ResetPassword() {
             <h2 className="text-title-group text-text-primary">Reset password</h2>
 
             {serverErrorMessage && (
-                <Alert variant="destructive">
+                <Alert variant="error">
                     <CircleX />
                     <AlertDescription>{serverErrorMessage}</AlertDescription>
                 </Alert>

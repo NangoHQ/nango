@@ -59,7 +59,7 @@ export default function Signin() {
             <h2 className="text-title-group text-text-primary">Request password reset</h2>
 
             {serverErrorMessage && (
-                <Alert variant="destructive">
+                <Alert variant="error">
                     <CircleX />
                     <AlertDescription>{serverErrorMessage}</AlertDescription>
                 </Alert>

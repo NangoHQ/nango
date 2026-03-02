@@ -97,7 +97,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
         <div className="flex flex-col gap-10 w-full">
             <div className="flex flex-col gap-5 w-full">
                 {serverErrorMessage && !showResendEmail && (
-                    <Alert variant="destructive">
+                    <Alert variant="error">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>

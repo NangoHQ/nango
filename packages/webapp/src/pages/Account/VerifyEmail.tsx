@@ -61,7 +61,7 @@ export function VerifyEmail() {
                 <h2 className="text-title-group text-text-primary">Verify your email</h2>
 
                 {serverErrorMessage && (
-                    <Alert variant="destructive">
+                    <Alert variant="error">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>
