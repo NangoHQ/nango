@@ -38,7 +38,8 @@ export const Signin: React.FC = () => {
     const [showResendEmail, setShowResendEmail] = useState(false);
 
     const form = useForm<SigninFormData>({
-        resolver: zodResolver(signinSchema)
+        resolver: zodResolver(signinSchema),
+        mode: 'onTouched'
     });
 
     const onSubmitForm = async (data: SigninFormData) => {

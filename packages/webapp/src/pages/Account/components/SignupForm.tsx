@@ -34,7 +34,8 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
             name: '',
             email: invitation?.email || '',
             password: ''
-        }
+        },
+        mode: 'onTouched'
     });
 
     const navigate = useNavigate();

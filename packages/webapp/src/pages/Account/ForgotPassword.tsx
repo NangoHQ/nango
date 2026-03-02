@@ -21,7 +21,8 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function Signin() {
     const form = useForm<ForgotPasswordFormData>({
-        resolver: zodResolver(forgotPasswordSchema)
+        resolver: zodResolver(forgotPasswordSchema),
+        mode: 'onTouched'
     });
 
     const { toast } = useToast();

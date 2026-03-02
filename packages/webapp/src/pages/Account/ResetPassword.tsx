@@ -22,7 +22,8 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPassword() {
     const form = useForm<ResetPasswordFormData>({
-        resolver: zodResolver(resetPasswordSchema)
+        resolver: zodResolver(resetPasswordSchema),
+        mode: 'onTouched'
     });
     const { mutateAsync: resetPassword, isPending } = useResetPasswordAPI();
 
