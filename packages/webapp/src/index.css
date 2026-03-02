@@ -645,6 +645,14 @@
     letter-spacing: -0.04em;
 }
 
+@utility text-code-body-small-medium {
+    font-size: 12px;
+    line-height: 14px;
+    font-family: 'Roboto Mono';
+    font-weight: 500;
+    letter-spacing: -0.04em;
+}
+
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still

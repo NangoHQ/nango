@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import { clearIntegrationsCache, useListIntegration } from '../../../hooks/useIntegration';
+import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
@@ -65,7 +65,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
-    const { list: listIntegration, mutate: listIntegrationMutate, loading } = useListIntegration(env);
+    const { data: listIntegrationData, isLoading: listIntegrationPending } = useListIntegrations(env);
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
@@ -213,15 +213,14 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const onEvent: OnConnectEvent = useCallback(
         (event) => {
             if (event.type === 'close') {
-                void listIntegrationMutate();
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
                     navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
-                void listIntegrationMutate();
+                // TODO: remove after migrating all connection operations to tanstack query
                 clearConnectionsCache(cache, mutate);
-                clearIntegrationsCache(cache, mutate);
+                queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -233,7 +232,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 });
             }
         },
-        [toast, queryClient, env, navigate, integration, listIntegrationMutate, cache, mutate, analyticsTrack]
+        [toast, queryClient, env, navigate, integration, cache, mutate, analyticsTrack]
     );
 
     useUnmount(() => {
@@ -280,10 +279,10 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             <CardContent className={'flex flex-col rounded gap-2.5'}>
                 <div className="flex flex-col w-full">
                     <IntegrationDropdown
-                        integrations={listIntegration || []}
+                        integrations={listIntegrationData?.data ?? []}
                         selectedIntegration={integration}
                         onSelect={setIntegration}
-                        loading={loading}
+                        loading={listIntegrationPending}
                         disabled={Boolean(paramIntegrationId)}
                     />
                 </div>

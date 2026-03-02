@@ -4,10 +4,10 @@ import { useEffect, useRef } from 'react';
 import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
+import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
 import { PrivateRoute } from './components/PrivateRoute';
-import { Toaster } from './components/ui/toast/Toaster';
 import { useMeta } from './hooks/useMeta';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
@@ -326,6 +326,7 @@ const App = () => {
                 >
                     <RouterProvider router={router} />
                 </SWRConfig>
+                {/* TODO: Remove once remaining legacy toasts have been replaced */}
                 <ToastContainer />
             </TooltipProvider>
             <Toaster />

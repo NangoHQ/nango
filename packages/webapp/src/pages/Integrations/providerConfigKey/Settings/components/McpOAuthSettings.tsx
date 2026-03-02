@@ -3,11 +3,12 @@ import { EditableInput } from '@/components-v2/EditableInput';
 import { ScopesInput } from '@/components-v2/ScopesInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
-import { apiPatchIntegration } from '@/hooks/useIntegration';
+import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { defaultCallback } from '@/utils/utils';
+import { APIError } from '@/utils/api';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
@@ -17,39 +18,43 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
 }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const callbackUrl = environment.callback_url || defaultCallback();
     const useUserCredentials = 'client_registration' in template && template.client_registration === 'static';
 
     const onSaveCredentials = async (field: { clientId?: string; clientSecret?: string }) => {
-        const updated = await apiPatchIntegration(env, integration.unique_key, {
-            authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
-            ...field
-        });
-        if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update credentials';
-            toast({ title: errorMessage, variant: 'error' });
-            throw new Error(errorMessage);
+        try {
+            await patchIntegration({
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+                ...field
+            });
+            toast({ title: 'Successfully updated', variant: 'success' });
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
-        toast({ title: 'Successfully updated', variant: 'success' });
     };
 
     const handleScopesChange = async (scopes: string, countDifference: number) => {
-        const updated = await apiPatchIntegration(env, integration.unique_key, {
-            authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
-            scopes
-        });
-
-        if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update scopes';
+        try {
+            await patchIntegration({
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+                scopes
+            });
+            if (countDifference > 0) {
+                const plural = countDifference > 1 ? 'scopes' : 'scope';
+                toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
+            } else {
+                toast({ title: `Scope successfully removed`, variant: 'success' });
+            }
+        } catch (err) {
+            let errorMessage = 'Failed to update scopes';
+            if (err instanceof APIError && err.json.error.message) {
+                errorMessage = err.json.error.message;
+            }
             throw new Error(errorMessage);
-        }
-
-        if (countDifference > 0) {
-            const plural = countDifference > 1 ? 'scopes' : 'scope';
-            toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
-        } else {
-            toast({ title: `Scope successfully removed`, variant: 'success' });
         }
     };
 
