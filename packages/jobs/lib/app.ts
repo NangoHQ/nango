@@ -107,7 +107,7 @@ try {
 
     processor.start();
 
-    await invocationsProcessor.start();
+    invocationsProcessor.start();
 
     void otlp.register(getOtlpRoutes);
 } catch (err) {

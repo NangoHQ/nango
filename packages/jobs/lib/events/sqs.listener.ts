@@ -1,8 +1,9 @@
 import { DeleteMessageCommand, GetQueueUrlCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 
-import { getLogger, report } from '@nangohq/utils';
+import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import type { EventListener, QueueMessage } from './listener.js';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.events.sqs');
 
@@ -22,90 +23,88 @@ const getRegion = (): string => {
 
 export class SqsEventListener implements EventListener {
     private readonly client: SQSClient;
-    private abortController: AbortController | null = null;
+    private abortController: AbortController = new AbortController();
 
     constructor() {
         this.client = new SQSClient({ region: getRegion() });
     }
 
-    async listen(queue: string, onMessage?: (message: QueueMessage) => void | Promise<void>): Promise<void> {
+    async listen(queue: string, onMessage?: (message: QueueMessage) => Promise<void>): Promise<void> {
         const queueName = queueNameFromArn(queue);
         const queueUrlRes = await this.getQueueUrl(queueName);
-        if (queueUrlRes === null) {
-            throw new Error(`SQS: could not get queue URL for ${queueName}`);
+        if (queueUrlRes.isErr()) {
+            throw new Error(`SQS: could not get queue URL for ${queueName}`, { cause: queueUrlRes.error });
         }
-        const queueUrl = queueUrlRes;
+        const queueUrl = queueUrlRes.value;
 
-        this.abortController = new AbortController();
         const signal = this.abortController.signal;
 
         logger.info(`SQS: subscribing to queue ${queueName}`);
 
-        try {
-            while (true) {
-                if (signal.aborted) break;
+        while (true) {
+            if (signal.aborted) break;
 
-                try {
-                    const result = await this.client.send(
-                        new ReceiveMessageCommand({
+            try {
+                const result = await this.client.send(
+                    new ReceiveMessageCommand({
+                        QueueUrl: queueUrl,
+                        MaxNumberOfMessages: 10,
+                        WaitTimeSeconds: 20,
+                        VisibilityTimeout: 60
+                    }),
+                    { abortSignal: signal }
+                );
+
+                const messages = result.Messages ?? [];
+                for (const msg of messages) {
+                    if (signal.aborted) break;
+                    if (!msg.Body || !msg.ReceiptHandle) continue;
+
+                    try {
+                        if (onMessage) {
+                            await onMessage({ body: msg.Body });
+                        }
+                    } catch (err) {
+                        report(new Error('SQS message handler error'), {
+                            queueName,
+                            error: err
+                        });
+                    }
+
+                    await this.client.send(
+                        new DeleteMessageCommand({
                             QueueUrl: queueUrl,
-                            MaxNumberOfMessages: 10,
-                            WaitTimeSeconds: 20,
-                            VisibilityTimeout: 60
+                            ReceiptHandle: msg.ReceiptHandle
                         }),
                         { abortSignal: signal }
                     );
-
-                    const messages = result.Messages ?? [];
-                    for (const msg of messages) {
-                        if (signal.aborted) break;
-                        if (!msg.Body || !msg.ReceiptHandle) continue;
-
-                        try {
-                            if (onMessage) {
-                                await onMessage({ body: msg.Body });
-                            }
-                        } catch (err) {
-                            report(new Error('SQS message handler error'), {
-                                queueName,
-                                error: err
-                            });
-                        }
-
-                        await this.client.send(
-                            new DeleteMessageCommand({
-                                QueueUrl: queueUrl,
-                                ReceiptHandle: msg.ReceiptHandle
-                            }),
-                            { abortSignal: signal }
-                        );
-                    }
-                } catch (err) {
-                    if (err instanceof Error && err.name === 'AbortError') {
-                        break;
-                    }
-                    report(new Error('SQS receive message error'), {
-                        queueName,
-                        error: err
-                    });
-                    await new Promise((r) => setTimeout(r, 1000));
                 }
+            } catch (err) {
+                if (err instanceof Error && err.name === 'AbortError') {
+                    break;
+                }
+                report(new Error('SQS receive message error'), {
+                    queueName,
+                    error: err
+                });
+                await new Promise((r) => setTimeout(r, 1000));
             }
-        } finally {
-            this.abortController = null;
         }
     }
 
-    private async getQueueUrl(queueName: string): Promise<string | null> {
+    private async getQueueUrl(queueName: string): Promise<Result<string>> {
         try {
             const result = await this.client.send(new GetQueueUrlCommand({ QueueName: queueName }));
-            return result.QueueUrl ?? null;
+            if (result.QueueUrl) {
+                return Ok(result.QueueUrl);
+            }
+            return Err(new Error('SQS queue URL was undefined'));
         } catch (err) {
             report(new Error('SQS get queue URL failed'), {
                 queueName,
                 error: err
             });
-            return null;
+            return Err(new Error('SQS get queue URL failed'));
         }
     }
 

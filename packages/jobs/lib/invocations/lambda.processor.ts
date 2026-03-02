@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { envs } from '../env.js';
+import { NoopEventListener } from '../events/noop.listener.js';
 import { SqsEventListener } from '../events/sqs.listener.js';
 import { handleError } from '../execution/operations/handler.js';
 import { nangoPropsSchema } from '../schemas/nango-props.js';
@@ -14,17 +15,33 @@ function lambdaErrorTypeFromMessage(errorMessage: string): 'function_runtime_out
     return 'function_runtime_other';
 }
 
+const parsedMessageSchema = z.object({
+    responseContext: z.object({
+        functionError: z.string(),
+        statusCode: z.number()
+    }),
+    responsePayload: z.object({
+        errorMessage: z.string()
+    }),
+    requestPayload: z.object({
+        taskId: z.string(),
+        nangoProps: nangoPropsSchema
+    })
+});
+
 export class LambdaInvocationsProcessor {
     private eventListener: EventListener;
 
     constructor() {
-        this.eventListener = new SqsEventListener();
+        if (envs.LAMBDA_FAILURE_DESTINATION) {
+            this.eventListener = new SqsEventListener();
+        } else {
+            this.eventListener = new NoopEventListener();
+        }
     }
 
     async start() {
-        if (envs.LAMBDA_FAILURE_DESTINATION) {
-            await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, async (message) => await this.processFailureMessage(message));
-        }
+        await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, async (message) => await this.processFailureMessage(message));
     }
 
     async stop() {
@@ -32,21 +49,7 @@ export class LambdaInvocationsProcessor {
     }
 
     private async processFailureMessage(message: QueueMessage) {
-        const parsedMessage = z
-            .object({
-                responseContext: z.object({
-                    functionError: z.string(),
-                    statusCode: z.number()
-                }),
-                responsePayload: z.object({
-                    errorMessage: z.string()
-                }),
-                requestPayload: z.object({
-                    taskId: z.string(),
-                    nangoProps: nangoPropsSchema
-                })
-            })
-            .parse(JSON.parse(message.body));
+        const parsedMessage = parsedMessageSchema.parse(JSON.parse(message.body));
 
         if (parsedMessage.responseContext.functionError === 'Unhandled') {
             const errorMessage = parsedMessage.responsePayload.errorMessage;
