@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.39] - 2026-03-02
+
+### Added
+
+- *(integrations)* Add support for granola-mcp (#5511) by @hassan254-prog
+- *(integrations)* Add support for ukg pro hcm client credentials (#5523) by @hassan254-prog
+- *(webapp)* Redesign connection page (#5438) by @kaposke
+- *(webapp)* Redesign toasts (#5498) by @kaposke
+- *(integrations)* Add support for google forms (#5528) by @hassan254-prog
+- *(integrations)* Add support for Google BigQuery (#5529) by @hassan254-prog
+- *(integrations)* Add support for gamma (#5530) by @hassan254-prog
+- *(integrations)* Add support for mercury (#5532) by @hassan254-prog
+- *(integrations)* Add support for heygen (#5533) by @hassan254-prog
+
+### Changed
+
+- *(runner)* Expose error.cause in http client (#5513) by @TBonnin
+- Migrate builder-io docs (#5501) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Migrate salesforce docs to use eca instead of connected apps (#5507) by @hassan254-prog
+- Move slack user tokens docs to a separate docs section (#5534) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Improve CLI dependency management guidance for CI and monorepos (#5524) by @agusayerza
+- Removed unused docs pages (#5548) by @bastienbeurier
+- CON-6/backfill-product-updates - October, November, December 25 and January 26 (#5520) by @SapneshNaik
+
+### Fixed
+
+- *(server)* Early exit on failing refresh token connections (#5505) by @agusayerza
+- *(docker)* Upgrade npm version and fix vulns (#5522) by @rossmcewan
+- *(webapp)* Integrations cache invalidation (#5496) by @kaposke
+- *(lambda)* Better logging and error message (#5525) by @rossmcewan
+- *(integrations)* Okta-cc connect guide, hide client_secret in Connect UI (#5526) by @agusayerza
+- *(webapp)* Support JWT privateKey as pem string on connection page (#5537) by @hassan254-prog
+- *(runner)* Use undici default agent in http client (#5515) by @TBonnin
+- *(server)* Set qs array limit to 100 (#5543) by @hassan254-prog
+- *(webapp)* Overflowing models cause sync table to be scrollable (#5542) by @kaposke
+- *(webapp)* Invalidate flows when toggling function (#5541) by @kaposke
+- *(cli)* Smart filtering in dryrun interactive mode (#5519) by @agusayerza
+
 ## [v0.69.38] - 2026-02-24
 
 ### Added
@@ -5987,6 +6027,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.39]: https://github.com/NangoHQ/nango/compare/v0.69.38..v0.69.39
 [v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
 [v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
 [v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35
