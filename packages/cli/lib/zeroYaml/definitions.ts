@@ -35,7 +35,16 @@ function buildFunctionJsonSchema(namedSchemas: Record<string, z.ZodType>): JSONS
         if (schema.constructor.name === 'ZodVoid') {
             continue;
         }
-        const def = z.toJSONSchema(schema, { target: 'draft-7' }) as JSONSchema7;
+        const def = z.toJSONSchema(schema, {
+            target: 'draft-7',
+            unrepresentable: 'any',
+            override(ctx) {
+                if (ctx.zodSchema._zod.def.type === 'date') {
+                    ctx.jsonSchema.type = 'string';
+                    (ctx.jsonSchema as Record<string, unknown>)['format'] = 'date-time';
+                }
+            }
+        }) as JSONSchema7;
         delete (def as Record<string, unknown>)['$schema'];
         definitions[name] = def;
     }
