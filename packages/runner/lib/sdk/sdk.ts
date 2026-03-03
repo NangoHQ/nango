@@ -89,7 +89,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
 
@@ -150,7 +150,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async log(...args: [...any]): Promise<void> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         // if logging is turned off, we bail early
         if (this.logger.level === 'off') {
@@ -218,7 +218,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         sync: string | { name: string; variant: string },
         optsOrSyncMode?: PostPublicTrigger['Body']['opts'] | PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
     ): Promise<void> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         // helping typescript to differentiate between the two overloads, we check if the parameter is an object (opts) or not (syncMode/full_resync)
         const isLegacy = typeof optsOrSyncMode !== 'object';
         if (isLegacy) {
@@ -228,6 +228,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
+        this.throwIfAbortedOrKilled();
         await this.nango.startSync(providerConfigKey, syncs, connectionId);
     }
 
@@ -305,26 +306,36 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        this.throwIfAbortedOrKilled();
         return this.locking.tryAcquireLock(props);
     }
 
     public override async releaseLock(props: { key: string }): Promise<boolean> {
-        return this.locking.releaseLock(props);
+        const res = await this.locking.releaseLock(props);
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async releaseAllLocks(): Promise<void> {
-        return this.locking.releaseAllLocks();
+        const res = await this.locking.releaseAllLocks();
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async getCheckpoint(): Promise<Checkpoint | null> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.getCheckpoint(this.checkpointKey);
     }
 
     public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-        return this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        const res = await this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        this.throwIfAbortedOrKilled();
+        this.throwIfInterrupted();
+        return res;
     }
 
     public override async clearCheckpoint(): Promise<void> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 }
@@ -390,6 +401,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
 
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
+        this.throwIfAbortedOrKilled();
         const now = new Date();
         const modelFullName = this.modelFullName(model);
         if (this.mergingByModel.has(modelFullName)) {
@@ -441,7 +453,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async batchSave<T extends object>(results: T[], model: string) {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         if (!results || results.length === 0) {
             return true;
         }
@@ -472,7 +484,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async batchDelete<T extends object>(results: T[], model: string) {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         if (!results || results.length === 0) {
             return true;
         }
@@ -504,7 +516,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async batchUpdate<T extends object>(results: T[], model: string) {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         if (!results || results.length === 0) {
             return true;
         }
@@ -535,7 +547,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const res = await this.persistClient.deleteOutdatedRecords({
             model: this.modelFullName(model),
             environmentId: this.environmentId,
@@ -555,7 +567,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async trackDeletesStart(model: string): Promise<void> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const key = this.trackDeletesKey(model);
         const stored = await this.checkpointing.getCheckpoint(key);
         if (stored === null) {
@@ -564,7 +576,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const key = this.trackDeletesKey(model);
         const stored = await this.checkpointing.getCheckpoint<TrackDeletesCheckpoint>(key);
         if (stored === null) {
@@ -589,7 +601,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         const objects = new Map<K, T>();
 
@@ -629,26 +641,36 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        this.throwIfAbortedOrKilled();
         return this.locking.tryAcquireLock(props);
     }
 
     public override async releaseLock(props: { key: string }): Promise<boolean> {
-        return this.locking.releaseLock(props);
+        const res = await this.locking.releaseLock(props);
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async releaseAllLocks(): Promise<void> {
-        return this.locking.releaseAllLocks();
+        const res = await this.locking.releaseAllLocks();
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async getCheckpoint(): Promise<Checkpoint | null> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.getCheckpoint(this.checkpointKey);
     }
 
     public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-        return this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        const res = await this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        this.throwIfAbortedOrKilled();
+        this.throwIfInterrupted();
+        return res;
     }
 
     public override async clearCheckpoint(): Promise<void> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 }

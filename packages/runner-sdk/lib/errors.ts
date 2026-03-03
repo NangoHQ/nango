@@ -10,8 +10,16 @@ export abstract class SDKError extends Error {
     }
 }
 
-export class AbortedSDKError extends SDKError {
+export class ExecutionAbortedSDKError extends SDKError {
     code = 'script_aborted';
+}
+
+export class ExecutionInterruptedSDKError extends SDKError {
+    code = 'execution_interrupted';
+}
+
+export class ExecutionTimeoutSDKError extends SDKError {
+    code = 'execution_timeout';
 }
 
 export class UnknownProviderSDKError extends SDKError {
