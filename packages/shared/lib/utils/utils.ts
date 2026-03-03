@@ -289,7 +289,7 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         if (b === 'random') {
             return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
         }
-        if (b.startsWith('endpoint')) {
+        if (b === 'endpoint') {
             return (replacers['endpoint'] as string | undefined) ?? '';
         }
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);

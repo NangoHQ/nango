@@ -1603,14 +1603,14 @@ avanan:
     connection_config:
         subdomain:
             type: string
-            title: API Region / Subdomain
+            title: Subdomain
             description: The Avanan API subdomain for your region.
             example: smart-api-production-1-us
             suffix: .avanan.net
             prefix: https://
             pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
             order: 1
-            doc_section: '#step-1-api-region'
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         appId:
             type: string
@@ -1618,7 +1618,7 @@ avanan:
             description: Your Avanan Client ID from Avanan Support.
             example: 9k8m****************ht3w
             pattern: '^[a-z0-9]+$'
-            doc_section: '#step-2-credentials'
+            doc_section: '#step-2-getting-your-client-id-and-secret-key'
         secretKey:
             type: string
             title: Secret Key
@@ -1626,7 +1626,7 @@ avanan:
             example: 3k9t****************************0uj5gtrpqlz8x2nvy
             pattern: '^[a-z0-9]+$'
             secret: true
-            doc_section: '#step-2-credentials'
+            doc_section: '#step-2-getting-your-client-id-and-secret-key'
 
 availity:
     display_name: Availity
