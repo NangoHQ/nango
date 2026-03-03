@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.40] - 2026-03-03
+
+### Added
+
+- *(lambda)* Add lambda destination for failures (#5503) by @rossmcewan
+- Make track deletes work across execution (#5517) by @TBonnin
+
+### Changed
+
+- Add Share Connect link docs (#5549) by @agusayerza
+
+### Fixed
+
+- *(runner-sdk)* TriggerSync to support new opts param (#5550) by @TBonnin
+
 ## [v0.69.39] - 2026-03-02
 
 ### Added
@@ -6027,6 +6042,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.40]: https://github.com/NangoHQ/nango/compare/v0.69.39..v0.69.40
 [v0.69.39]: https://github.com/NangoHQ/nango/compare/v0.69.38..v0.69.39
 [v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
 [v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
