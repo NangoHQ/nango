@@ -31,17 +31,20 @@ const parsedMessageSchema = z.object({
 
 export class LambdaInvocationsProcessor {
     private eventListener: EventListener;
+    private queueName: string;
 
     constructor() {
         if (envs.LAMBDA_FAILURE_DESTINATION) {
             this.eventListener = new SqsEventListener();
+            this.queueName = envs.LAMBDA_FAILURE_DESTINATION;
         } else {
             this.eventListener = new NoopEventListener();
+            this.queueName = 'noop';
         }
     }
 
     async start() {
-        await this.eventListener.listen(envs.LAMBDA_FAILURE_DESTINATION, async (message) => await this.processFailureMessage(message));
+        await this.eventListener.listen(this.queueName, async (message) => await this.processFailureMessage(message));
     }
 
     async stop() {
