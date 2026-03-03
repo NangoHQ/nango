@@ -23,6 +23,8 @@ interface FixtureProvider {
     getCachedResponse(identity: ConfigIdentity): Promise<any>;
     getUpdateMetadata(): Promise<any>;
     getDeleteRecordsFromPreviousExecutions(): Promise<any>;
+    getTrackDeletesStart(): Promise<any>;
+    getTrackDeletesEnd(): Promise<any>;
     isUnifiedMocks(): boolean;
 }
 
@@ -226,6 +228,14 @@ class LegacyFixtureProvider implements FixtureProvider {
         return this.getMockFile('nango/deleteRecordsFromPreviousExecutions', false);
     }
 
+    async getTrackDeletesStart() {
+        return this.getMockFile('nango/trackDeletesStart', false);
+    }
+
+    async getTrackDeletesEnd() {
+        return this.getMockFile('nango/trackDeletesEnd', false);
+    }
+
     isUnifiedMocks(): boolean {
         return false;
     }
@@ -300,6 +310,8 @@ interface UnifiedMockData {
         getMetadata?: any;
         updateMetadata?: any;
         deleteRecordsFromPreviousExecutions?: any;
+        trackDeletesStart?: any;
+        trackDeletesEnd?: any;
     };
     api?: Record<string, Record<string, ApiMockResponse | ApiMockResponse[]>>;
     /** Indicates this mock file was migrated from the legacy format */
@@ -363,6 +375,16 @@ class UnifiedFixtureProvider implements FixtureProvider {
     // eslint-disable-next-line @typescript-eslint/require-await
     async getDeleteRecordsFromPreviousExecutions() {
         return this.mockData.nango?.deleteRecordsFromPreviousExecutions;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async getTrackDeletesStart() {
+        return this.mockData.nango?.trackDeletesStart;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async getTrackDeletesEnd() {
+        return this.mockData.nango?.trackDeletesEnd;
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -569,6 +591,22 @@ class RecordingFixtureProvider implements FixtureProvider {
         return data;
     }
 
+    async getTrackDeletesStart() {
+        const data = await this.delegate.getTrackDeletesStart();
+        if (!this.recordedData.nango) this.recordedData.nango = {};
+        this.recordedData.nango.trackDeletesStart = data;
+        await this.save();
+        return data;
+    }
+
+    async getTrackDeletesEnd() {
+        const data = await this.delegate.getTrackDeletesEnd();
+        if (!this.recordedData.nango) this.recordedData.nango = {};
+        this.recordedData.nango.trackDeletesEnd = data;
+        await this.save();
+        return data;
+    }
+
     async getCachedResponse(identity: ConfigIdentity) {
         const data = await this.delegate.getCachedResponse(identity);
 
@@ -711,6 +749,8 @@ class NangoActionMock {
     getWebhookURL: ReturnType<typeof vi.fn>;
     zodValidateInput: ReturnType<typeof vi.fn>;
     deleteRecordsFromPreviousExecutions: ReturnType<typeof vi.fn>;
+    trackDeletesStart: ReturnType<typeof vi.fn>;
+    trackDeletesEnd: ReturnType<typeof vi.fn>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         this.dirname = dirname;
@@ -724,6 +764,8 @@ class NangoActionMock {
         this.getMetadata = vi.fn(this.getMetadataData.bind(this));
         this.updateMetadata = vi.fn(this.getUpdateMetadata.bind(this));
         this.deleteRecordsFromPreviousExecutions = vi.fn(this.getDeleteRecordsFromPreviousExecutions.bind(this));
+        this.trackDeletesStart = vi.fn(this.getTrackDeletesStart.bind(this));
+        this.trackDeletesEnd = vi.fn(this.getTrackDeletesEnd.bind(this));
 
         this.paginate = vi.fn(this.getProxyPaginateData.bind(this));
         this.get = vi.fn(this.proxyGetData.bind(this));
@@ -772,6 +814,14 @@ class NangoActionMock {
 
     private async getDeleteRecordsFromPreviousExecutions() {
         return (await this.fixtureProvider).getDeleteRecordsFromPreviousExecutions();
+    }
+
+    private async getTrackDeletesStart() {
+        return (await this.fixtureProvider).getTrackDeletesStart();
+    }
+
+    private async getTrackDeletesEnd() {
+        return (await this.fixtureProvider).getTrackDeletesEnd();
     }
 
     private async *getProxyPaginateData(args: UserProvidedProxyConfiguration) {

@@ -152,7 +152,7 @@ After the initial run completes, subsequent runs are fast and incremental — on
 Not every sync can be incremental. You need to fetch the full dataset when:
 
 - **The external API doesn't support filtering by modification date** — Some APIs have no way to ask "give me everything that changed since X." In this case, you must fetch all records on every run.
-- **You need automated delete detection** — To detect deleted records automatically using [`deleteRecordsFromPreviousExecutions()`](/reference/functions#detect-deletions-automatically), Nango must compare the full current dataset against the previous one. This requires a full sync. (If the external API exposes deleted records, you can use [`batchDelete()`](/reference/functions#delete-records) with checkpoints instead — see [deletion detection guide](/implementation-guides/use-cases/syncs/deletion-detection).)
+- **You need automated delete detection** — To detect deleted records automatically using [`trackDeletesStart`/`trackDeletesEnd`](/reference/functions#detect-deletions-automatically), Nango compares the records that existed before `trackDeletesStart` against what was saved between `trackDeletesStart` and `trackDeletesEnd`. This requires fetching the complete dataset between the two calls. (If the external API exposes deleted records, you can use [`batchDelete()`](/reference/functions#delete-records) instead — see [deletion detection guide](/implementation-guides/use-cases/syncs/deletion-detection).)
 
 For small datasets (e.g., a list of Slack users for an organization with fewer than 100 employees), a full sync on every run is perfectly fine:
 
@@ -173,7 +173,7 @@ export default createSync({
 As datasets grow, full syncs become unscalable — taking longer to run, triggering rate limits, and consuming more compute and memory. If your dataset has more than a few thousand records and the API supports filtering by date or cursor, use checkpoints.
 
 <Warning>
-Checkpoints are currently incompatible with `deleteRecordsFromPreviousExecutions()` because that function requires comparing the full dataset between consecutive runs. Support for checkpoints with full syncs is coming soon.
+`deleteRecordsFromPreviousExecutions()` is incompatible with checkpoints because it requires comparing the full dataset between consecutive runs. Use `trackDeletesStart`/`trackDeletesEnd` instead, which explicitly bounds the deletion detection window and supports checkpointed syncs.
 </Warning>
 
 # Avoiding memory overuse
