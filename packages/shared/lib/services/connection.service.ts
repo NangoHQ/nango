@@ -36,7 +36,7 @@ import {
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
-    interpolateUrlTemplate,
+    makeUrl,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
@@ -1356,16 +1356,11 @@ class ConnectionService {
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
         const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
-        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
         const urlWithConnectionConfig =
             typeof tokenUrl === 'string'
-                ? interpolateUrlTemplate(tokenUrl, connectionConfig, dynamicCredentials)
-                : interpolateString(strippedTokenUrl, connectionConfig);
-        const strippedCredentialsUrl = typeof tokenUrl === 'string' ? urlWithConnectionConfig : urlWithConnectionConfig.replace(/credentials\./g, '');
-        const url =
-            typeof tokenUrl === 'string'
-                ? new URL(urlWithConnectionConfig).toString()
-                : new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
+                ? makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString()
+                : interpolateString(interpolateString('', connectionConfig), dynamicCredentials);
+        const url = new URL(urlWithConnectionConfig).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
