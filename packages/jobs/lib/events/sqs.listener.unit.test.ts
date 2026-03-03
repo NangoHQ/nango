@@ -15,15 +15,19 @@ vi.mock('@aws-sdk/client-sqs', () => ({
     DeleteMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input }))
 }));
 
-vi.mock('@nangohq/utils', () => ({
-    getLogger: vi.fn(() => ({
-        info: vi.fn(),
-        error: vi.fn(),
-        warn: vi.fn(),
-        debug: vi.fn()
-    })),
-    report: vi.fn()
-}));
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...(actual as Record<string, unknown>),
+        getLogger: vi.fn(() => ({
+            info: vi.fn(),
+            error: vi.fn(),
+            warn: vi.fn(),
+            debug: vi.fn()
+        })),
+        report: vi.fn()
+    };
+});
 
 import { SqsEventListener } from './sqs.listener.js';
 
