@@ -23,6 +23,10 @@ import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type { ApiPublicConnectionFull, Checkpoint, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
+interface TrackDeletesCheckpoint {
+    syncJobId: number;
+}
+
 export const oldLevelToNewLevel = {
     debug: 'debug',
     info: 'info',
@@ -44,6 +48,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     protected persistClient: PersistClient;
     protected locking: Locking;
     protected checkpointing: Checkpointing;
+    protected checkpointKey: string;
     protected httpLogSample: number = 0;
 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
@@ -75,11 +80,11 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
+        this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
         this.checkpointing = new Checkpointing({
             persistClient: this.persistClient,
             environmentId: this.environmentId,
-            nangoConnectionId: this.nangoConnectionId,
-            key: getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name })
+            nangoConnectionId: this.nangoConnectionId
         });
     }
 
@@ -190,14 +195,36 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.telemetryBag.customLogs += 1;
     }
 
+    /**
+     * @deprecated Use opts parameter instead of syncMode
+     */
     public triggerSync(
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
-    ): Promise<void | string> {
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
+    ): Promise<void | string>;
+
+    public triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        opts?: PostPublicTrigger['Body']['opts']
+    ): Promise<void>;
+
+    public triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        optsOrSyncMode?: PostPublicTrigger['Body']['opts'] | PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
+    ): Promise<void> {
         this.throwIfAborted();
-        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, syncMode);
+        // helping typescript to differentiate between the two overloads, we check if the parameter is an object (opts) or not (syncMode/full_resync)
+        const isLegacy = typeof optsOrSyncMode !== 'object';
+        if (isLegacy) {
+            return this.nango.triggerSync(providerConfigKey, [sync], connectionId, optsOrSyncMode);
+        }
+        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, optsOrSyncMode);
     }
 
     public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
@@ -290,15 +317,15 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async getCheckpoint(): Promise<Checkpoint | null> {
-        return this.checkpointing.getCheckpoint();
+        return this.checkpointing.getCheckpoint(this.checkpointKey);
     }
 
     public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-        return this.checkpointing.saveCheckpoint(checkpoint);
+        return this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
     }
 
     public override async clearCheckpoint(): Promise<void> {
-        return this.checkpointing.clearCheckpoint();
+        return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 }
 
@@ -311,6 +338,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     protected persistClient: PersistClient;
     protected locking: Locking;
     protected checkpointing: Checkpointing;
+    protected checkpointKey: string;
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
@@ -345,11 +373,11 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
+        this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });
         this.checkpointing = new Checkpointing({
             persistClient: this.persistClient,
             environmentId: this.environmentId,
-            nangoConnectionId: this.nangoConnectionId,
-            key: getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant })
+            nangoConnectionId: this.nangoConnectionId
         });
     }
 
@@ -522,6 +550,44 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
+    private trackDeletesKey(model: string): string {
+        return `${this.checkpointKey}:trackDeletes:${model}`;
+    }
+
+    public async trackDeletesStart(model: string): Promise<void> {
+        this.throwIfAborted();
+        const key = this.trackDeletesKey(model);
+        const stored = await this.checkpointing.getCheckpoint(key);
+        if (stored === null) {
+            await this.checkpointing.saveCheckpoint(key, { syncJobId: this.syncJobId! });
+        }
+    }
+
+    public async trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }> {
+        this.throwIfAborted();
+        const key = this.trackDeletesKey(model);
+        const stored = await this.checkpointing.getCheckpoint<TrackDeletesCheckpoint>(key);
+        if (stored === null) {
+            throw new Error(`No track deletes starting point found for model '${model}'.`);
+        }
+
+        const res = await this.persistClient.deleteOutdatedRecords({
+            model: this.modelFullName(model),
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            syncId: this.syncId!,
+            syncJobId: stored.syncJobId,
+            activityLogId: this.activityLogId
+        });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        await this.checkpointing.clearCheckpoint(key);
+
+        return res.value;
+    }
+
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         this.throwIfAborted();
 
@@ -575,15 +641,15 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public override async getCheckpoint(): Promise<Checkpoint | null> {
-        return this.checkpointing.getCheckpoint();
+        return this.checkpointing.getCheckpoint(this.checkpointKey);
     }
 
     public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-        return this.checkpointing.saveCheckpoint(checkpoint);
+        return this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
     }
 
     public override async clearCheckpoint(): Promise<void> {
-        return this.checkpointing.clearCheckpoint();
+        return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 }
 
