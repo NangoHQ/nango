@@ -212,12 +212,20 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
         return getFingerprint(resolvedInner);
     });
 
+    str = str.replace(/\${sha256Hex\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateString(inner, replacers);
+        return crypto.createHash('sha256').update(resolvedInner, 'utf8').digest('hex');
+    });
+
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        if (b === 'now') {
-            return new Date().toISOString();
+        if (b === 'now' || b.startsWith('now | date:')) {
+            const nowDateMatch = b.match(/^now \| date: "([^"]*)"$/);
+            const isoNow = replacers['now'] as string | undefined;
+            const dateForFormat = isoNow ? new Date(isoNow) : new Date();
+            return nowDateMatch ? formatDate(dateForFormat, nowDateMatch[1]) : (isoNow ?? new Date().toISOString());
         }
         if (b === 'random') {
-            return crypto.randomUUID();
+            return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
         }
         if (b.startsWith('base64(')) {
             return a;
@@ -255,6 +263,11 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         return Buffer.from(resolvedInner).toString('base64');
     });
 
+    str = str.replace(/\${sha256Hex\((.*?)\)}/g, (_, inner) => {
+        const resolvedInner = interpolateString(inner, replacers);
+        return crypto.createHash('sha256').update(resolvedInner, 'utf8').digest('hex');
+    });
+
     if (str.includes('||')) {
         const [left, right = ''] = str.split('||').map((part) => part.trim());
 
@@ -267,6 +280,18 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
+        if (b === 'now' || b.startsWith('now | date:')) {
+            const nowDateMatch = b.match(/^now \| date: "([^"]*)"$/);
+            const isoNow = replacers['now'] as string | undefined;
+            const dateForFormat = isoNow ? new Date(isoNow) : new Date();
+            return nowDateMatch ? formatDate(dateForFormat, nowDateMatch[1]) : (isoNow ?? new Date().toISOString());
+        }
+        if (b === 'random') {
+            return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
+        }
+        if (b.startsWith('endpoint')) {
+            return (replacers['endpoint'] as string | undefined) ?? '';
+        }
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
@@ -521,4 +546,25 @@ function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
         }
     }
     return cleaned;
+}
+/**
+ * format a date with strftime-style placeholders: %Y %m %d %H %M %S %L (UTC), for providers.yaml date interpolation.
+ */
+export function formatDate(date: Date, format: string): string {
+    const pad = (n: number, len: number) => String(n).padStart(len, '0');
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    const hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const seconds = date.getUTCSeconds();
+    const ms = date.getUTCMilliseconds();
+    return format
+        .replace(/%Y/g, pad(year, 4))
+        .replace(/%m/g, pad(month, 2))
+        .replace(/%d/g, pad(day, 2))
+        .replace(/%H/g, pad(hours, 2))
+        .replace(/%M/g, pad(minutes, 2))
+        .replace(/%S/g, pad(seconds, 2))
+        .replace(/%L/g, pad(ms, 3));
 }

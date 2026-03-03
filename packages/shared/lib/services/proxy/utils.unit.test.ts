@@ -282,6 +282,162 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('TWO_STEP: interpolates proxy.headers ${endpoint} with config.endpoint', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-request-path': '${endpoint}'
+                    }
+                }
+            },
+            endpoint: '/v1.0/msp/tenants'
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'token',
+                    raw: {}
+                }
+            })
+        });
+
+        expect(result['x-request-path']).toBe('/v1.0/msp/tenants');
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${random} and uses same value across headers (stable per request)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-av-req-id': '${random}',
+                        'x-av-req-id-copy': '${random}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 't',
+                    raw: {}
+                }
+            })
+        });
+
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        expect(result['x-av-req-id']).toMatch(uuidRegex);
+        expect(result['x-av-req-id-copy']).toMatch(uuidRegex);
+        expect(result['x-av-req-id']).toBe(result['x-av-req-id-copy']);
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${now} and uses same value across headers (stable per request)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-av-date': '${now}',
+                        'x-av-date-copy': '${now}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 't',
+                    raw: {}
+                }
+            })
+        });
+
+        const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+        expect(result['x-av-date']).toMatch(isoRegex);
+        expect(result['x-av-date-copy']).toMatch(isoRegex);
+        expect(result['x-av-date']).toBe(result['x-av-date-copy']);
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${now | date: "..."} with stable now', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-date-formatted': '${now | date: "%Y-%m-%d"}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 't',
+                    raw: {}
+                }
+            })
+        });
+
+        expect(result['x-date-formatted']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('TWO_STEP: interpolates proxy.headers with accessToken, random, now, and endpoint together', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        authorization: 'Bearer ${accessToken}',
+                        'x-av-req-id': '${random}',
+                        'x-av-date': '${now}',
+                        'x-path': '${endpoint}'
+                    }
+                }
+            },
+            endpoint: '/v1.0/auth'
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'my-access-token',
+                    raw: {}
+                }
+            })
+        });
+
+        expect(result['authorization']).toBe('Bearer my-access-token');
+        expect(result['x-path']).toBe('/v1.0/auth');
+        expect(result['x-av-req-id']).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        expect(result['x-av-date']).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    });
+
     it('should correctly override headers with different casing', () => {
         const config: UserProvidedProxyConfiguration = {
             endpoint: '/top',

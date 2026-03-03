@@ -480,12 +480,24 @@ export async function refreshCredentialsIfNeeded({
                 }
             }
 
-            if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'sharepointAccessToken' in newCredentials.raw) {
+            if (
+                newCredentials &&
+                'raw' in newCredentials &&
+                newCredentials.raw &&
+                typeof newCredentials.raw === 'object' &&
+                'sharepointAccessToken' in newCredentials.raw
+            ) {
                 connectionToRefresh['connection_config']['sharepointAccessToken'] = newCredentials.raw['sharepointAccessToken'];
                 delete newCredentials.raw['sharepointAccessToken'];
             }
 
-            if (newCredentials && 'raw' in newCredentials && newCredentials.raw && 'botFrameworkAccessToken' in newCredentials.raw) {
+            if (
+                newCredentials &&
+                'raw' in newCredentials &&
+                newCredentials.raw &&
+                typeof newCredentials.raw === 'object' &&
+                'botFrameworkAccessToken' in newCredentials.raw
+            ) {
                 connectionToRefresh['connection_config']['botFrameworkAccessToken'] = newCredentials.raw['botFrameworkAccessToken'];
                 delete newCredentials.raw['botFrameworkAccessToken'];
             }

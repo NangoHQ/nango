@@ -1575,6 +1575,59 @@ auvik:
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
+avanan:
+    display_name: Avanan
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://${connectionConfig.subdomain}.avanan.net/v1.0/auth
+    token_headers:
+        x-av-app-id: ${credentials.appId}
+        x-av-req-id: ${random}
+        x-av-date: '${now | date: "%Y-%m-%dT%H:%M:%S"}'
+        x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now | date: "%Y-%m-%dT%H:%M:%S"}${credentials.secretKey})})}'
+    token_response:
+        token: ''
+    token_expires_in_ms: 86400000
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.avanan.net
+        headers:
+            x-av-app-id: ${credentials.appId}
+            x-av-token: ${accessToken}
+            x-av-req-id: ${random}
+            x-av-date: '${now | date: "%Y-%m-%dT%H:%M:%S"}'
+            x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now | date: "%Y-%m-%dT%H:%M:%S"}${endpoint}${credentials.secretKey})})}'
+    docs: https://nango.dev/docs/api-integrations/avanan
+    docs_connect: https://nango.dev/docs/api-integrations/avanan/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Region / Subdomain
+            description: The Avanan API subdomain for your region.
+            example: smart-api-production-1-us
+            suffix: .avanan.net
+            prefix: https://
+            pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
+            order: 1
+            doc_section: '#step-1-api-region'
+    credentials:
+        appId:
+            type: string
+            title: Client ID
+            description: Your Avanan Client ID from Avanan Support.
+            example: 9k8m****************ht3w
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-credentials'
+        secretKey:
+            type: string
+            title: Secret Key
+            description: Your Avanan Secret Key from Avanan Support.
+            example: 3k9t****************************0uj5gtrpqlz8x2nvy
+            pattern: '^[a-z0-9]+$'
+            secret: true
+            doc_section: '#step-2-credentials'
+
 availity:
     display_name: Availity
     categories:
