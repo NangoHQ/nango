@@ -262,6 +262,7 @@
               "integrations/all/apple-app-store",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
+              "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "integrations/all/atlas-so",
