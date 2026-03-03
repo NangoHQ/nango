@@ -71,13 +71,20 @@ export class SqsEventListener implements EventListener {
                         });
                     }
 
-                    await this.client.send(
-                        new DeleteMessageCommand({
-                            QueueUrl: queueUrl,
-                            ReceiptHandle: msg.ReceiptHandle
-                        }),
-                        { abortSignal: signal }
-                    );
+                    try {
+                        await this.client.send(
+                            new DeleteMessageCommand({
+                                QueueUrl: queueUrl,
+                                ReceiptHandle: msg.ReceiptHandle
+                            }),
+                            { abortSignal: signal }
+                        );
+                    } catch (err) {
+                        report(new Error('SQS delete message error'), {
+                            queueName,
+                            error: err
+                        });
+                    }
                 }
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') {
