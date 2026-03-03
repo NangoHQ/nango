@@ -29,6 +29,7 @@ export type PostDeploy = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         singleDeployMode?: boolean;
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };
@@ -48,6 +49,7 @@ export type PostDeployInternal = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         singleDeployMode?: boolean;
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };
