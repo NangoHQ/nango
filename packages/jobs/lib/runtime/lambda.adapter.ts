@@ -54,11 +54,10 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     async cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
-        try {
-            await setAbortFlag(params.taskId);
-            return Ok(true);
-        } catch (err) {
-            return Err(new Error(`Error setting abort flag for task: ${params.taskId}`, { cause: err }));
+        const result = await setAbortFlag(params.taskId);
+        if (result.isErr()) {
+            return Err(new Error(`Error setting abort flag for task: ${params.taskId}`, { cause: result.error }));
         }
+        return Ok(true);
     }
 }

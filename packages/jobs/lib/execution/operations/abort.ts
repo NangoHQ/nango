@@ -56,11 +56,13 @@ export async function abortTaskWithId({ taskId, teamId }: { taskId: string; team
     }
 }
 
-export async function setAbortFlag(taskId: string): Promise<void> {
+export async function setAbortFlag(taskId: string): Promise<Result<void>> {
     try {
         const kvStore = await getKVStore('customer');
         await kvStore.set(`function:${taskId}:abort`, '1', { ttlMs: envs.RUNNER_ABORT_CHECK_INTERVAL_MS * 5 });
+        return Ok(undefined);
     } catch (err) {
         logger.error(`Error setting abort flag for task: ${taskId}`, err);
+        return Err(new Error(`Error setting abort flag for task: ${taskId}`, { cause: err }));
     }
 }
