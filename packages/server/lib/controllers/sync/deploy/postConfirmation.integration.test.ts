@@ -60,8 +60,7 @@ describe(`POST ${endpoint}`, () => {
                 flowConfigs: [],
                 onEventScriptsByProvider: [],
                 reconcile: false,
-                singleDeployMode: false,
-                jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
+                singleDeployMode: false
             }
         });
 
