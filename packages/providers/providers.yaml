@@ -9866,6 +9866,7 @@ microsoft-teams-bot:
         base_url: https://smba.trafficmanager.net/teams
         connection_config:
             botHostTenantId: ${connectionConfig.botHostTenantId}
+    webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsBotPostConnection
     docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
