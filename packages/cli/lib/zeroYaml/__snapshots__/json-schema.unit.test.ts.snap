@@ -1,0 +1,189 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildJsonSchemaDefinitionsFromZodModels > should match snapshot 1`] = `
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Nested": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "number",
+              },
+              "label": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "id",
+              "label",
+            ],
+            "type": "object",
+          },
+          "type": "array",
+        },
+        "user": {
+          "additionalProperties": false,
+          "properties": {
+            "address": {
+              "additionalProperties": false,
+              "properties": {
+                "city": {
+                  "type": "string",
+                },
+                "zip": {
+                  "type": "string",
+                },
+              },
+              "required": [
+                "city",
+              ],
+              "type": "object",
+            },
+            "id": {
+              "type": "string",
+            },
+          },
+          "required": [
+            "id",
+            "address",
+          ],
+          "type": "object",
+        },
+      },
+      "required": [
+        "user",
+        "items",
+      ],
+      "type": "object",
+    },
+    "Primitives": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "boolean",
+        },
+        "age": {
+          "description": "Age in years",
+          "type": "number",
+        },
+        "name": {
+          "description": "The full name of the user",
+          "type": "string",
+        },
+      },
+      "required": [
+        "name",
+        "age",
+        "active",
+      ],
+      "type": "object",
+    },
+    "WithArray": {
+      "additionalProperties": false,
+      "properties": {
+        "scores": {
+          "items": {
+            "type": "number",
+          },
+          "type": "array",
+        },
+        "tags": {
+          "items": {
+            "type": "string",
+          },
+          "type": "array",
+        },
+      },
+      "required": [
+        "tags",
+        "scores",
+      ],
+      "type": "object",
+    },
+    "WithDate": {
+      "additionalProperties": false,
+      "properties": {
+        "createdAt": {
+          "description": "ISO 8601 creation timestamp",
+          "format": "date-time",
+          "type": "string",
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string",
+        },
+      },
+      "required": [
+        "createdAt",
+      ],
+      "type": "object",
+    },
+    "WithEnum": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "const": "admin",
+              "type": "string",
+            },
+            {
+              "const": "user",
+              "type": "string",
+            },
+          ],
+        },
+        "status": {
+          "description": "Current lifecycle status",
+          "enum": [
+            "active",
+            "inactive",
+            "pending",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "status",
+        "role",
+      ],
+      "type": "object",
+    },
+    "WithNullable": {
+      "additionalProperties": false,
+      "properties": {
+        "deletedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string",
+            },
+            {
+              "type": "null",
+            },
+          ],
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+            },
+            {
+              "type": "null",
+            },
+          ],
+        },
+      },
+      "required": [
+        "deletedAt",
+      ],
+      "type": "object",
+    },
+  },
+}
+`;
