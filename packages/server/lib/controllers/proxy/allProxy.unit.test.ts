@@ -290,15 +290,11 @@ describe('handleErrorResponse', () => {
             }
         };
 
-        handleErrorResponse({ res, error: axiosError, logCtx: mockLogCtx });
-
-        await new Promise<void>((resolve) => {
-            if (sendFn.mock.calls.length > 0) {
-                resolve();
-            } else {
-                sendFn.mockImplementationOnce(() => resolve());
-            }
+        const endPromise = new Promise<void>((resolve) => {
+            stream.once('end', () => resolve());
         });
+        handleErrorResponse({ res, error: axiosError, logCtx: mockLogCtx });
+        await endPromise;
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.set).toHaveBeenCalledWith(expect.objectContaining({ 'content-type': 'application/json; charset=utf-8' }));
