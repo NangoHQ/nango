@@ -54,6 +54,24 @@ description: "Product updates and improvements."
 
   This replaces the legacy `last_sync_date` behavior and allows Nango to safely interrupt and reschedule long-running functions. Checkpoints are optional, not using them implies the function will always run from scratch.
 
+  ```typescript
+  // Simplified Example
+  export default createSync({
+      frequency: 'every hour',
+      checkpoint: z.object({ lastModifiedISO: z.string() }),
+      models: { Contact: ContactSchema },
+  
+      exec: async (nango) => {
+          const checkpoint = await nango.getCheckpoint();
+  
+          const contacts = await fetchContacts({ since: checkpoint?.lastModifiedISO });
+          await nango.batchSave(contacts, 'Contact');
+  
+          await nango.saveCheckpoint({ lastModifiedISO: contacts.at(-1).lastModifiedISO });
+      },
+  });
+  ```
+
   See the [Sync checkpoints documentation](https://nango.dev/docs/implementation-guides/use-cases/syncs/checkpoints) and the [Migration guide](https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-checkpoints).
 
   ## Serverless runtime for Function execution
@@ -70,11 +88,29 @@ description: "Product updates and improvements."
 
   The builder is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
 
-  [IMAGE/GIF PLACEHOLDER: Screen recording of the AI integration builder generating a sync function]
-
-  ![Image](/images/image.png)
+  ![Nango Ai Integration Builder Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
 
   See the [AI integration builder guide](https://nango.dev/docs/guides/platform/ai-integration-builder) and [AI agents documentation](https://nango.dev/docs/implementation-guides/platform/functions/leverage-ai-agents).
+
+  ## Support for HubSpot MCP auth
+
+  We added full platform support for Model Context Protocol (MCP) integrations, starting with HubSpot MCP.\
+  You can now authenticate and connect your in-product AI Agent with HubSpot CRM using [HubSpot's MCP Auth flow.](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/integrate-with-the-remote-hubspot-mcp-server) 
+
+  ![Hubspot Mcp](/images/changelog/hubspot-mcp.png)
+
+  See the [HubSpot MCP quickstart](https://nango.dev/docs/api-integrations/hubspot-mcp#quickstart) and [Setup guide](https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app#how-to-register-your-own-hubspot-mcp-oauth-app).
+
+  ## New blog posts
+
+  New posts from the Nango team in February:
+
+  - [Best AI integration platforms](https://www.nango.dev/blog/best-ai-integration-platforms)
+  - [Preserve user permissions & roles in API integrations for AI agents & RAG](https://www.nango.dev/blog/preserve-user-permissions-roles-api-integrations-ai-agents-rag)
+  - [How to get Slack user access token (OAuth)](https://www.nango.dev/blog/how-to-get-slack-user-access-token-oauth)
+  - [Fix Slack OAuth error: invalid_team for non-distributed app](https://www.nango.dev/blog/fix-slack-oauth-error-invalid-team-for-non-distributed-app)
+  - [Fix Salesforce OAuth error: oauth_approval_error_generic](https://www.nango.dev/blog/fix-salesforce-oauth-error-oauth-approval-error-generic)
+  - [Fix Salesforce OAuth approval error generic](https://www.nango.dev/blog/fix-salesforce-oauth-approval-error-generic)
 </Update>
 
 ---
