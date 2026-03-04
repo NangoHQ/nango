@@ -18,3 +18,5 @@ export type CheckpointValue = string | number | boolean;
  * ```
  */
 export type Checkpoint = Record<string, CheckpointValue>;
+
+export type CheckpointRange = { from: Checkpoint | null; to: Checkpoint | null } | null;

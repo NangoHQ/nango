@@ -43,6 +43,7 @@ import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
 import type {
+    CheckpointRange,
     ConnectionJobs,
     DBEnvironment,
     DBSyncConfig,
@@ -259,12 +260,14 @@ export async function handleSyncSuccess({
     taskId,
     nangoProps,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
@@ -481,12 +484,18 @@ export async function handleSyncSuccess({
         }
 
         await logCtx.enrichOperation({
-            meta: syncPayload
+            meta: {
+                ...syncPayload,
+                checkpoints
+            }
         });
 
         void logCtx.info(
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
-            syncPayload
+            {
+                ...syncPayload,
+                checkpoints
+            }
         );
 
         // set the last sync date to when the sync started in case
@@ -604,13 +613,15 @@ export async function handleSyncError({
     nangoProps,
     error,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -660,7 +671,8 @@ export async function handleSyncError({
         endUser: nangoProps.endUser,
         startedAt: nangoProps.startedAt,
         telemetryBag,
-        functionRuntime
+        functionRuntime,
+        checkpoints
     });
 }
 
@@ -775,7 +787,8 @@ async function onFailure({
     endUser,
     startedAt,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -800,6 +813,7 @@ async function onFailure({
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    checkpoints?: CheckpointRange | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -928,8 +942,8 @@ async function onFailure({
         }
     }
 
-    void logCtx?.error(error.message, { error });
-    await logCtx?.enrichOperation({ error });
+    void logCtx?.error(error.message, { error, checkpoints });
+    await logCtx?.enrichOperation({ error, meta: { checkpoints } });
     if (isCancel) {
         await logCtx?.cancel();
     } else {

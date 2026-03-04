@@ -1,4 +1,4 @@
-import type { RunnerOutputError, TelemetryBag } from '@nangohq/types';
+import type { CheckpointRange, RunnerOutputError, TelemetryBag } from '@nangohq/types';
 
 export abstract class SDKError extends Error {
     abstract code: string;
@@ -52,14 +52,16 @@ export class ExecutionError extends Error {
     status: RunnerOutputError['status'];
     additional_properties: RunnerOutputError['additional_properties'];
     telemetryBag: TelemetryBag;
+    checkpoints?: CheckpointRange | undefined;
 
-    constructor(payload: RunnerOutputError & { telemetryBag: TelemetryBag }) {
+    constructor(payload: RunnerOutputError & { telemetryBag: TelemetryBag; checkpoints?: CheckpointRange | undefined }) {
         super();
         this.type = payload.type;
         this.payload = payload.payload;
         this.status = payload.status;
         this.additional_properties = payload.additional_properties;
         this.telemetryBag = payload.telemetryBag;
+        this.checkpoints = payload.checkpoints;
     }
 
     toJSON(): RunnerOutputError {
