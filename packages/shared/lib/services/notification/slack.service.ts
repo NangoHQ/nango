@@ -69,7 +69,8 @@ interface PostSlackMessageResponse {
     };
 }
 
-export const generateSlackConnectionId = (accountUUID: string, environmentName: string) => `account-${accountUUID}-${environmentName}`;
+export const generateSlackConnectionId = (accountUUID: string, environmentId: number) => `account-${accountUUID}-${environmentId}`;
+export const generateLegacySlackConnectionId = (accountUUID: string, environmentName: string) => `account-${accountUUID}-${environmentName}`;
 
 /**
  * _nango_slack_notifications
@@ -597,14 +598,21 @@ export class SlackService {
             return Err('failed_to_get_integration');
         }
 
-        const slackConnectionId = generateSlackConnectionId(account.uuid, environment.name);
+        // Try new ID-based connection ID first, fall back to legacy name-based for existing installations
+        let slackConnectionResult = await connectionService.getConnection(
+            generateSlackConnectionId(account.uuid, environment.id),
+            this.integrationKey,
+            adminRes.environment.id
+        );
+        if (!slackConnectionResult.success) {
+            slackConnectionResult = await connectionService.getConnection(
+                generateLegacySlackConnectionId(account.uuid, environment.name),
+                this.integrationKey,
+                adminRes.environment.id
+            );
+        }
 
-        // we get the connection on the nango admin account to be able to send the notification
-        const {
-            success: connectionSuccess,
-            error: slackConnectionError,
-            response: slackConnection
-        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, adminRes.environment.id);
+        const { success: connectionSuccess, error: slackConnectionError, response: slackConnection } = slackConnectionResult;
 
         if (!connectionSuccess || !slackConnection) {
             logger.error(slackConnectionError);
