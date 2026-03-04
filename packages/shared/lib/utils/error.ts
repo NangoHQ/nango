@@ -554,6 +554,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'An unknown error occurred with the function runtime';
                 break;
 
+            case 'execution_timeout':
+                this.status = 500;
+                this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

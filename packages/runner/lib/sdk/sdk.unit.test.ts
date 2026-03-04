@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from '@nangohq/node';
-import { AbortedSDKError } from '@nangohq/runner-sdk';
+import { ExecutionAbortedSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
@@ -476,7 +476,7 @@ describe('Aborted script', () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
-        await expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
+        await expect(nango.log('hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
     });
 });
 
@@ -485,7 +485,7 @@ describe('getRecordsById', () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
-        await expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
+        await expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
     });
 
     it('should return empty map if no ids', async () => {
