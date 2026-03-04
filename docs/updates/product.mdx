@@ -72,7 +72,7 @@ description: "Product updates and improvements."
 
   Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints).
 
-  **Migration Note:** Checkpoints replace the legacy `last_sync_date` and `syncType`behavior. Follow the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
+  **Migration Note:** Checkpoints are a more flexible replacement of `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. Follow the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
 
   ## Serverless runtime for execution
 
@@ -84,7 +84,7 @@ description: "Product updates and improvements."
 
   ## AI integration builder skill
 
-  We released a new AI skill for writing and testing Nango [Actions ](/implementation-guides/use-cases/actions/implement-an-action)& [Syncs ](/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
+  We released a new AI skill for writing and testing Nango [Actions](/implementation-guides/use-cases/actions/implement-an-action) & [Syncs ](/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
 
   The builder is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
 
