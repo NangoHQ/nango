@@ -1,11 +1,48 @@
 ---
-title: 'Dev Updates'
-sidebarTitle: 'Dev Updates'
+title: "Dev Updates"
+sidebarTitle: "Dev Updates"
 description: "Updates and breaking changes for developers."
 ---
 
-<Update label="January 6, 2026">
+<Update label="February 5, 2026">
+  ## Better Incremental syncing with checkpoints
 
+  ### ✨ What's new
+
+  [Sync ](https://nango.dev/docs/implementation-guides/use-cases/syncs/realtime-syncs#real-time-syncs)functions now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync only retrieves what changed since the last checkpoint.
+
+  ```ts
+  // Simplified Example
+  export default createSync({
+      frequency: 'every hour',
+      checkpoint: z.object({ lastModifiedISO: z.string() }),
+      models: { Contact: ContactSchema },
+  
+      exec: async (nango) => {
+          const checkpoint = await nango.getCheckpoint();
+  
+          const contacts = await fetchContacts({ since: checkpoint?.lastModifiedISO });
+          await nango.batchSave(contacts, 'Contact');
+  
+          await nango.saveCheckpoint({ lastModifiedISO: contacts.at(-1).lastModifiedISO });
+      },
+  });
+  ```
+
+  This replaces `syncType: 'incremental'` and `nango.lastSyncDate`, which declared intent but left progress tracking to Nango. With checkpoints, your sync function owns the entire progress: you define the schema (timestamps, cursors, or any other composite), and call `saveCheckpoint()` after each batch. This means mid-run failures no longer cost you a full re-fetch, and you're no longer limited to timestamp-based progress tracking.
+
+  ### 🧐 Am I impacted?
+
+  No breaking changes. Existing syncs without a `checkpoint` declaration continue to run as full syncs.
+
+  ### 💡 What should I do?
+
+  - For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
+  - If you use `nango.lastSyncDate`, follow the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
+  - See the full [checkpoints documentation](/implementation-guides/platform/functions/checkpoints) for details.
+</Update>
+
+<Update label="January 6, 2026">
   ## Sync cache: new data retention policies
 
   ### ✨ What's changing
@@ -41,11 +78,9 @@ description: "Updates and breaking changes for developers."
   These retention policies are part of our broader commitment to helping customers meet modern data compliance and security expectations. They ensure that sensitive user data is not stored indefinitely in the Nango sync cache when it is no longer needed for syncing.
 
   ---
-
 </Update>
 
 <Update label="December 5, 2025">
-
   ## New HMAC-based webhook signature header
 
   Nango webhooks now include a new `X-Nango-Hmac-Sha256` header that uses HMAC-SHA256 for improved security. The legacy `X-Nango-Signature` header (which uses plain SHA-256 with key concatenation) is still sent for backwards compatibility but should no longer be used.
@@ -63,10 +98,12 @@ description: "Updates and breaking changes for developers."
   ### 💡 What should I do?
 
   **For new integrations:**
+
   - Use the `X-Nango-Hmac-Sha256` header to verify webhook signatures
   - See the updated [webhook documentation](/implementation-guides/platform/webhooks-from-nango#verifying-webhooks-from-nango) for code examples
 
   **For existing integrations:**
+
   - Migrate to using `X-Nango-Hmac-Sha256` when convenient
   - The old `X-Nango-Signature` header will continue to work, but we recommend migrating for better security
 
@@ -75,14 +112,13 @@ description: "Updates and breaking changes for developers."
   HMAC-SHA256 is cryptographically more secure than plain SHA-256 with concatenation. HMAC provides better protection against length extension attacks and is the industry standard for webhook signature verification.
 
   ---
-
 </Update>
 
 <Update label="November 27, 2025">
-
   ## Behavior change of webhooks from Nango to your app
 
-  New behavior: 
+  New behavior:
+
   - Timeout: 20s (instead of 60s)
   - Retries: 2 (instead of 7)
 
@@ -102,13 +138,10 @@ description: "Updates and breaking changes for developers."
 
   The long timeout and many retries created incidents when webhook endpoints were unavailable. The new behavior is in line with other popular APIs (e.g. Stripe, Hubspot).
 
-
   ---
-
 </Update>
 
 <Update label="October 29, 2025">
-
   ## Function custom logs won't be ingested by default for remote environments
 
   Function custom logs are calls to `nango.log(...)` in your functions (actions, syncs, webhooks, and on-event handlers).
@@ -143,7 +176,7 @@ description: "Updates and breaking changes for developers."
   nango.logger({
     level: 'info' // info-level logs and above (warn & error) will be indexed
   });
-
+  
   // Now all your regular nango.log() calls will be ingested
   nango.log('This will now appear in the UI');
   ```
@@ -157,6 +190,7 @@ description: "Updates and breaking changes for developers."
   ⚠️ **Warning**: This will ingest all function logs across all your syncs and actions. Carefully monitor your log volume starting in November to avoid unexpectedly high bills.
 
   **Important notes:**
+
   - Options 1 and 2 require changes in your functions' code and must be deployed using the Nango CLI
   - Option 3 can be configured directly in the Nango UI without code changes
   - Local development is unaffected - all logs continue to appear when using `nango dryrun`
@@ -167,14 +201,12 @@ description: "Updates and breaking changes for developers."
   Many customers generate a large number of custom logs for local development purposes without using them in their remote environments. With the new pricing model starting in November (which includes generous included usage for function custom logs), this change ensures that customers don't get billed for logs they're not actively using.
 
   ---
-
 </Update>
 
 <Update label="September 1, 2025">
-
   ## End-user info is no longer shared between connections
 
-Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and it was impossible to declare multiple organizations for a given user.
+  Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and it was impossible to declare multiple organizations for a given user.
 
   ### 🗓️ Timeline
 
@@ -188,10 +220,9 @@ Currently, if multiple connections share the same `end_user_id`, they also share
   ### 💡 What should I do?
 
   End user fields are mostly for display and tagging purposes:
+
   - If you are not using them, you can safely ignore this update.
-
   - If you are using them, and wish to keep them in sync (e.g: display name, across connections) you will need to patch each connection when your end user is updated on your side
-
 
   ```ts
   await nango.patchConnection({
@@ -210,15 +241,12 @@ Currently, if multiple connections share the same `end_user_id`, they also share
   There is no batch endpoint for this operation. If you need one, please reach out on Slack.
 
   ---
-
 </Update>
 
 <Update label="August 22, 2025">
-
   ## Action payload output limit
 
-  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit
-  to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](https://nango.dev/docs/implementation-guides/platform/proxy/implement-requests-proxy).
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](https://nango.dev/docs/implementation-guides/platform/proxy/implement-requests-proxy).
 
   Additionally, we will also soon restrict action inputs so please take note of your inputs.
 
@@ -238,28 +266,21 @@ Currently, if multiple connections share the same `end_user_id`, they also share
   - Migrate the action to use the proxy instead
 
   If your action logs exceed the 2MB limitation you'll now see a warning like this
-  <img src="/images/action-output-size-warning.png" />
 
+  ![](/images/action-output-size-warning.png)
 
   Please reach out with any questions or concerns in our Slack community.
 
   ---
-
 </Update>
 
-
 <Update label="August 20, 2025">
-
   ## Deprecation of `/connection` endpoints
 
   In this release, we've made some changes to the API that are breaking for some users.
 
-  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead.
-  They all, except one, take and return the same data. Only the base path has changed.
-
-  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body, but returns the same data as previously.
-  This new body is more flexible and ensure stricter typings on your side and validation on our side.
-
+  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead. They all, except one, take and return the same data. Only the base path has changed.
+  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body, but returns the same data as previously. This new body is more flexible and ensure stricter typings on your side and validation on our side.
   - The endpoint `POST /connection/:connectionId/metadata` and `PATCH /connection/:connectionId/metadata` who have been deprecated for a while will not be migrated to /connections and will be removed at the end of the grace period.
 
   ### 🗓️ Timeline
@@ -280,11 +301,10 @@ Currently, if multiple connections share the same `end_user_id`, they also share
   - If you use the `POST /connection/:connectionId/metadata` or `PATCH /connection/:connectionId/metadata` endpoints, you should migrate to `/connections/metadata`
   - If you specifically use the `POST /connection` endpoint to import connections, check the migration section below.
 
-
   ### Migrating to `POST /connections`
 
-  Only this endpoint requires a manual migration.
-  Previously, the credentials were all at the root of the body.
+  Only this endpoint requires a manual migration. Previously, the credentials were all at the root of the body.
+
   ```bash
   curl -X POST https://api.nango.dev/v1/connection \
   -H "Authorization: Bearer <your-secret-key>" \
@@ -297,6 +317,7 @@ Currently, if multiple connections share the same `end_user_id`, they also share
   ```
 
   Now they are nested under the `credentials` key:
+
   ```bash
   curl -X POST https://api.nango.dev/v1/connections \
   -H "Authorization: Bearer <your-secret-key>" \
@@ -314,17 +335,12 @@ Currently, if multiple connections share the same `end_user_id`, they also share
   Please report any inconsistencies or issues with the new endpoints in our slack community.
 
   ---
-
 </Update>
 
-
 <Update label="July 21, 2025">
-
   ## Deprecation of `nango.yaml` configuration file
 
-The new script format is now officially released under `>=0.64.0`.
-If you are already using it or have tried before, the only big change between beta and now is that we now use zod v4.
-By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install zod: `4.0.5`
+  The new script format is now officially released under `>=0.64.0`. If you are already using it or have tried before, the only big change between beta and now is that we now use zod v4. By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install zod: `4.0.5`
 
   ### 🗓️ Timeline
 
@@ -336,6 +352,5 @@ By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the 
 
   ### 💡 What should I do?
 
-  - Follow migration guide -> https://nango.dev/docs/guides/custom-integrations/migrate-to-zero-yaml
-
+  - Follow migration guide -\> https://nango.dev/docs/guides/custom-integrations/migrate-to-zero-yaml
 </Update>
