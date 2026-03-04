@@ -4,6 +4,114 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="February 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="37 new APIs in February">
+      - [Attention](/api-integrations/attention)
+      - [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
+      - [Candis](/api-integrations/candis)
+      - [CloudTalk](/api-integrations/cloudtalk)
+      - [Cloudflare](/api-integrations/cloudflare)
+      - [ConnectWise RMM](/api-integrations/connectwise-rmm)
+      - [Domo](/api-integrations/domo)
+      - [Fiber AI](/api-integrations/fiber-ai)
+      - [FullEnrich](/api-integrations/fullenrich)
+      - [Granola](/api-integrations/granola)
+      - [Granola (MCP)](/api-integrations/granola-mcp)
+      - [Glyphic](/api-integrations/glyphic)
+      - [Gamma](/api-integrations/gamma)
+      - [Google BigQuery](/api-integrations/google-bigquery)
+      - [Google Forms](/api-integrations/google-forms)
+      - [HeyGen](/api-integrations/heygen)
+      - [HubSpot (MCP)](/api-integrations/hubspot-mcp)
+      - [Mercury](/api-integrations/mercury)
+      - [Microsoft Teams Bot](/api-integrations/microsoft-teams-bot)
+      - [Microsoft Planner](/api-integrations/microsoft-planner)
+      - [Maximizer (Cloud)](/api-integrations/maximizer)
+      - [Maximizer (On-Premise)](/api-integrations/maximizer-on-premise)
+      - [NinjaOne RMM (OAuth2)](/api-integrations/ninjaone-rmm-oauth2)
+      - [Nyne AI](/api-integrations/nyne-ai)
+      - [Okta (Client Credentials)](/api-integrations/okta-cc)
+      - [Ordinal](/api-integrations/ordinal)
+      - [Printful](/api-integrations/printful)
+      - [ResearchDesk](/api-integrations/researchdesk)
+      - [Resend](/api-integrations/resend)
+      - [Salesforce (JWT)](/api-integrations/salesforce-jwt)
+      - [Salesmsg (PAT)](/api-integrations/salesmsg)
+      - [Salesmsg (OAuth2)](/api-integrations/salesmsg-oauth2)
+      - [Sellercloud](/api-integrations/sellercloud)
+      - [Tally](/api-integrations/tally)
+      - [Timify](/api-integrations/timify)
+      - [UKG Pro HCM (Client Credentials)](/api-integrations/ukg-pro-cc)
+      - [Upsales](/api-integrations/upsales)
+    </Accordion>
+  </AccordionGroup>
+  ## Sync checkpoints
+
+  We introduced customizable Sync checkpoints to make syncs interruptible and resumable.
+
+  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now set a `checkpoint` field with a custom comparison object and use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
+
+  ```typescript
+  // Simplified Example
+  export default createSync({
+      frequency: 'every hour',
+      checkpoint: z.object({ lastModifiedISO: z.string() }),
+      models: { Contact: ContactSchema },
+  
+      exec: async (nango) => {
+          const checkpoint = await nango.getCheckpoint();
+  
+          const contacts = await fetchContacts({ since: checkpoint?.lastModifiedISO });
+          await nango.batchSave(contacts, 'Contact');
+  
+          await nango.saveCheckpoint({ lastModifiedISO: contacts.at(-1).lastModifiedISO });
+      },
+  });
+  ```
+
+  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints).
+
+  **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. Follow the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
+
+  ## Serverless runtime for execution
+
+  We overhauled the underlying execution infrastructure to be fully serverless.
+
+  [Function](/guides/primitives/functions) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
+
+  This change is at the infrastructure level; your function code and APIs are unaffected.
+
+  ## AI integration builder skill
+
+  We released a new AI skill for writing and testing Nango [Actions](/implementation-guides/use-cases/actions/implement-an-action) & [Syncs ](/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
+
+  The builder is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
+
+  ![Nango Ai Integration Builder Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
+
+  See the [AI integration builder guide](/guides/platform/ai-integration-builder) and [AI agents documentation](/implementation-guides/platform/functions/leverage-ai-agents).
+
+  ## Support for MCP Auth
+
+  We added full platform support for Model Context Protocol (MCP) Auth integrations, starting with [HubSpot MCP](/api-integrations/hubspot-mcp) and [Granola MCP](/api-integrations/granola-mcp).\
+  You can now authenticate and connect your AI Agents with providers that support MCP Auth.
+
+  ![Hubspot Mcp Connect Ui](/images/changelog/hubspot-mcp-connect-ui.png)
+
+  ## New blog posts
+
+  New posts from the Nango team in February:
+
+  - [Best AI integration platforms in 2026](https://www.nango.dev/blog/best-ai-integration-platforms)
+  - [Preserve user permissions & roles in API integrations for AI agents & RAG](https://www.nango.dev/blog/preserve-user-permissions-roles-api-integrations-ai-agents-rag)
+  - [How to get Slack user access token (OAuth)](https://www.nango.dev/blog/how-to-get-slack-user-access-token-oauth)
+  - [Fix Slack OAuth error: invalid_team for non-distributed app](https://www.nango.dev/blog/fix-slack-oauth-error-invalid-team-for-non-distributed-app)
+  - [Fix Salesforce OAuth error: oauth_approval_error_generic](https://www.nango.dev/blog/fix-salesforce-oauth-approval-error-generic)
+</Update>
+
+---
+
 <Update label="January 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in January">
