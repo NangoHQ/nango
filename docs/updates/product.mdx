@@ -7,48 +7,48 @@ description: "Product updates and improvements."
 <Update label="February 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in February">
-      - [Attention](/integrations/all/attention)
-      - [Cal.com (OAuth)](/integrations/all/cal-com-oauth)
-      - [Candis](/integrations/all/candis)
-      - [CloudTalk](/integrations/all/cloudtalk)
-      - [Cloudflare](/integrations/all/cloudflare)
-      - [ConnectWise RMM](/integrations/all/connectwise-rmm)
-      - [Domo](/integrations/all/domo)
-      - [Fiber AI](/integrations/all/fiber-ai)
-      - [FullEnrich](/integrations/all/fullenrich)
-      - [Granola](/integrations/all/granola)
-      - [Granola (MCP)](/integrations/all/granola-mcp)
-      - [Glyphic](/integrations/all/glyphic)
-      - [Gamma](/integrations/all/gamma)
-      - [Google BigQuery](/integrations/all/google-bigquery)
-      - [Google Forms](/integrations/all/google-forms)
-      - [HeyGen](/integrations/all/heygen)
-      - [HubSpot (MCP)](/integrations/all/hubspot-mcp)
-      - [Mercury](/integrations/all/mercury)
-      - [Microsoft Teams Bot](/integrations/all/microsoft-teams-bot)
-      - [Microsoft Planner](/integrations/all/microsoft-planner)
-      - [Maximizer (Cloud)](/integrations/all/maximizer)
-      - [Maximizer (On-Premise)](/integrations/all/maximizer-on-premise)
-      - [NinjaOne RMM (OAuth2)](/integrations/all/ninjaone-rmm-oauth2)
-      - [Nyne AI](/integrations/all/nyne-ai)
-      - [Okta (Client Credentials)](/integrations/all/okta-cc)
-      - [Ordinal](/integrations/all/ordinal)
-      - [Printful](/integrations/all/printful)
-      - [ResearchDesk](/integrations/all/researchdesk)
-      - [Resend](/integrations/all/resend)
-      - [Salesforce (JWT)](/integrations/all/salesforce-jwt)
-      - [Salesmsg (PAT)](/integrations/all/salesmsg)
-      - [Salesmsg (OAuth2)](/integrations/all/salesmsg-oauth2)
-      - [Sellercloud](/integrations/all/sellercloud)
-      - [Tally](/integrations/all/tally)
-      - [Timify](/integrations/all/timify)
-      - [UKG Pro HCM (Client Credentials)](/integrations/all/ukg-pro-cc)
-      - [Upsales](/integrations/all/upsales)
+      - [Attention](/api-integrations/attention)
+      - [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
+      - [Candis](/api-integrations/candis)
+      - [CloudTalk](/api-integrations/cloudtalk)
+      - [Cloudflare](/api-integrations/cloudflare)
+      - [ConnectWise RMM](/api-integrations/connectwise-rmm)
+      - [Domo](/api-integrations/domo)
+      - [Fiber AI](/api-integrations/fiber-ai)
+      - [FullEnrich](/api-integrations/fullenrich)
+      - [Granola](/api-integrations/granola)
+      - [Granola (MCP)](/api-integrations/granola-mcp)
+      - [Glyphic](/api-integrations/glyphic)
+      - [Gamma](/api-integrations/gamma)
+      - [Google BigQuery](/api-integrations/google-bigquery)
+      - [Google Forms](/api-integrations/google-forms)
+      - [HeyGen](/api-integrations/heygen)
+      - [HubSpot (MCP)](/api-integrations/hubspot-mcp)
+      - [Mercury](/api-integrations/mercury)
+      - [Microsoft Teams Bot](/api-integrations/microsoft-teams-bot)
+      - [Microsoft Planner](/api-integrations/microsoft-planner)
+      - [Maximizer (Cloud)](/api-integrations/maximizer)
+      - [Maximizer (On-Premise)](/api-integrations/maximizer-on-premise)
+      - [NinjaOne RMM (OAuth2)](/api-integrations/ninjaone-rmm-oauth2)
+      - [Nyne AI](/api-integrations/nyne-ai)
+      - [Okta (Client Credentials)](/api-integrations/okta-cc)
+      - [Ordinal](/api-integrations/ordinal)
+      - [Printful](/api-integrations/printful)
+      - [ResearchDesk](/api-integrations/researchdesk)
+      - [Resend](/api-integrations/resend)
+      - [Salesforce (JWT)](/api-integrations/salesforce-jwt)
+      - [Salesmsg (PAT)](/api-integrations/salesmsg)
+      - [Salesmsg (OAuth2)](/api-integrations/salesmsg-oauth2)
+      - [Sellercloud](/api-integrations/sellercloud)
+      - [Tally](/api-integrations/tally)
+      - [Timify](/api-integrations/timify)
+      - [UKG Pro HCM (Client Credentials)](/api-integrations/ukg-pro-cc)
+      - [Upsales](/api-integrations/upsales)
     </Accordion>
   </AccordionGroup>
   ## Sync checkpoints
 
-  We introduced explicit checkpointing to make syncs interruptible and resumable.
+  We introduced Sync checkpoints to make syncs interruptible and resumable.
 
   Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
 
@@ -74,13 +74,13 @@ description: "Product updates and improvements."
 
   See the [Sync checkpoints documentation](https://nango.dev/docs/implementation-guides/use-cases/syncs/checkpoints) and the [Migration guide](https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-checkpoints).
 
-  ## Serverless runtime for Function execution
+  ## Serverless runtime for execution
 
   We overhauled the underlying execution infrastructure to be fully serverless.
 
-  [Function](https://nango.dev/docs/guides/primitives/functions) executions now run on isolated AWS Lambda environments instead of utilizing a single VM per customer. This provides dedicated resources and an isolated runtime for every individual function execution, significantly improving tenant-isolation, execution fairness, reliability and performance scaling.
+  [Function](https://nango.dev/docs/guides/primitives/functions) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
 
-  This change is infrastructure-level, your function code and APIs are unaffected.
+  This change is at the infrastructure level; your function code and APIs are unaffected.
 
   ## AI integration builder skill
 
@@ -92,14 +92,12 @@ description: "Product updates and improvements."
 
   See the [AI integration builder guide](https://nango.dev/docs/guides/platform/ai-integration-builder) and [AI agents documentation](https://nango.dev/docs/implementation-guides/platform/functions/leverage-ai-agents).
 
-  ## Support for HubSpot MCP auth
+  ## Support for MCP Auth
 
-  We added full platform support for Model Context Protocol (MCP) integrations, starting with HubSpot MCP.\
-  You can now authenticate and connect your in-product AI Agent with HubSpot CRM using [HubSpot's MCP Auth flow.](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/integrate-with-the-remote-hubspot-mcp-server)
+  We added full platform support for Model Context Protocol (MCP) Auth integrations, starting with [HubSpot MCP](https://nango.dev/docs/api-integrations/hubspot-mcp#quickstart) and [Granola MCP](https://nango.mintlify.app/api-integrations/granola-mcp).\
+  You can now authenticate and connect your AI Agent with providers that support MCP Auth.
 
   ![Hubspot Mcp Connect Ui](/images/changelog/hubspot-mcp-connect-ui.png)
-
-  See the [HubSpot MCP quickstart](https://nango.dev/docs/api-integrations/hubspot-mcp#quickstart) and [Setup guide](https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app#how-to-register-your-own-hubspot-mcp-oauth-app).
 
   ## New blog posts
 
