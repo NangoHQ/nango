@@ -72,29 +72,29 @@ description: "Product updates and improvements."
   });
   ```
 
-  See the [Sync checkpoints documentation](https://nango.dev/docs/implementation-guides/use-cases/syncs/checkpoints) and the [Migration guide](https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-checkpoints).
+  See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints) and the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
 
   ## Serverless runtime for execution
 
   We overhauled the underlying execution infrastructure to be fully serverless.
 
-  [Function](https://nango.dev/docs/guides/primitives/functions) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
+  [Function](/guides/primitives/functions) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
 
   This change is at the infrastructure level; your function code and APIs are unaffected.
 
   ## AI integration builder skill
 
-  We released a new AI skill for writing and testing Nango [Actions ](https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action)& [Syncs ](https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
+  We released a new AI skill for writing and testing Nango [Actions ](/implementation-guides/use-cases/actions/implement-an-action)& [Syncs ](/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
 
   The builder is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
 
   ![Nango Ai Integration Builder Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
 
-  See the [AI integration builder guide](https://nango.dev/docs/guides/platform/ai-integration-builder) and [AI agents documentation](https://nango.dev/docs/implementation-guides/platform/functions/leverage-ai-agents).
+  See the [AI integration builder guide](/guides/platform/ai-integration-builder) and [AI agents documentation](/implementation-guides/platform/functions/leverage-ai-agents).
 
   ## Support for MCP Auth
 
-  We added full platform support for Model Context Protocol (MCP) Auth integrations, starting with [HubSpot MCP](https://nango.dev/docs/api-integrations/hubspot-mcp#quickstart) and [Granola MCP](https://nango.mintlify.app/api-integrations/granola-mcp).\
+  We added full platform support for Model Context Protocol (MCP) Auth integrations, starting with [HubSpot MCP](/api-integrations/hubspot-mcp) and [Granola MCP](/api-integrations/granola-mcp).\
   You can now authenticate and connect your AI Agents with providers that support MCP Auth.
 
   ![Hubspot Mcp Connect Ui](/images/changelog/hubspot-mcp-connect-ui.png)
