@@ -161,6 +161,33 @@ describe('Scheduler', () => {
         expect(scheduleAfter?.lastScheduledTaskState).toBe('CANCELLED');
         expect(scheduleAfter?.nextExecutionAt).toEqual(new Date((scheduleAfter?.startsAt.getTime() || 0) + (scheduleAfter?.frequencyMs || 0)));
     });
+    it('should override next execution when succeed is called with nextExecutionInMs', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        const nextExecutionInMs = 9_999_999;
+        (await scheduler.succeed({ taskId: task.id, output: {}, nextExecutionInMs })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
+    });
+    it('should override next execution when fail is called with nextExecutionInMs', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        const nextExecutionInMs = 9_999_999;
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure' }, nextExecutionInMs })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
+    });
+    it('should override next execution when cancel is called with nextExecutionInMs', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        const nextExecutionInMs = 9_999_999;
+        (await scheduler.cancel({ taskId: task.id, reason: 'cancelled', nextExecutionInMs })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
+    });
     it('should not run an immediate task for a schedule if another task is already running', async () => {
         const schedule = await recurring({ scheduler });
         await immediate(scheduler, { schedule }); // first task: OK
