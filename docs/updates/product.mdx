@@ -4,6 +4,81 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="February 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="37 new APIs in February">
+      - [Attention](/integrations/all/attention)
+      - [Cal.com (OAuth)](/integrations/all/cal-com-oauth)
+      - [Candis](/integrations/all/candis)
+      - [CloudTalk](/integrations/all/cloudtalk)
+      - [Cloudflare](/integrations/all/cloudflare)
+      - [ConnectWise RMM](/integrations/all/connectwise-rmm)
+      - [Domo](/integrations/all/domo)
+      - [Fiber AI](/integrations/all/fiber-ai)
+      - [FullEnrich](/integrations/all/fullenrich)
+      - [Granola](/integrations/all/granola)
+      - [Granola (MCP)](/integrations/all/granola-mcp)
+      - [Glyphic](/integrations/all/glyphic)
+      - [Gamma](/integrations/all/gamma)
+      - [Google BigQuery](/integrations/all/google-bigquery)
+      - [Google Forms](/integrations/all/google-forms)
+      - [HeyGen](/integrations/all/heygen)
+      - [HubSpot (MCP)](/integrations/all/hubspot-mcp)
+      - [Mercury](/integrations/all/mercury)
+      - [Microsoft Teams Bot](/integrations/all/microsoft-teams-bot)
+      - [Microsoft Planner](/integrations/all/microsoft-planner)
+      - [Maximizer (Cloud)](/integrations/all/maximizer)
+      - [Maximizer (On-Premise)](/integrations/all/maximizer-on-premise)
+      - [NinjaOne RMM (OAuth2)](/integrations/all/ninjaone-rmm-oauth2)
+      - [Nyne AI](/integrations/all/nyne-ai)
+      - [Okta (Client Credentials)](/integrations/all/okta-cc)
+      - [Ordinal](/integrations/all/ordinal)
+      - [Printful](/integrations/all/printful)
+      - [ResearchDesk](/integrations/all/researchdesk)
+      - [Resend](/integrations/all/resend)
+      - [Salesforce (JWT)](/integrations/all/salesforce-jwt)
+      - [Salesmsg (PAT)](/integrations/all/salesmsg)
+      - [Salesmsg (OAuth2)](/integrations/all/salesmsg-oauth2)
+      - [Sellercloud](/integrations/all/sellercloud)
+      - [Tally](/integrations/all/tally)
+      - [Timify](/integrations/all/timify)
+      - [UKG Pro HCM (Client Credentials)](/integrations/all/ukg-pro-cc)
+      - [Upsales](/integrations/all/upsales)
+    </Accordion>
+  </AccordionGroup>
+  ## Sync checkpoints
+
+  We introduced explicit checkpointing to make syncs interruptible and resumable.
+
+  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
+
+  This replaces the legacy `last_sync_date` behavior and allows Nango to safely interrupt and reschedule long-running functions. Checkpoints are optional, not using them implies the function will always run from scratch.
+
+  See the [Sync checkpoints documentation](https://nango.dev/docs/implementation-guides/use-cases/syncs/checkpoints) and the [Migration guide](https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-checkpoints).
+
+  ## Serverless runtime for Function execution
+
+  We overhauled the underlying execution infrastructure to be fully serverless.
+
+  [Function](https://nango.dev/docs/guides/primitives/functions) executions now run on isolated AWS Lambda environments instead of utilizing a single VM per customer. This provides dedicated resources and an isolated runtime for every individual function execution, significantly improving tenant-isolation, execution fairness, reliability and performance scaling.
+
+  This change is infrastructure-level, your function code and APIs are unaffected.
+
+  ## AI integration builder skill
+
+  We released a new AI skill for writing and testing Nango [Actions ](https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action)& [Syncs ](https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
+
+  The builder is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
+
+  [IMAGE/GIF PLACEHOLDER: Screen recording of the AI integration builder generating a sync function]
+
+  ![Image](/images/image.png)
+
+  See the [AI integration builder guide](https://nango.dev/docs/guides/platform/ai-integration-builder) and [AI agents documentation](https://nango.dev/docs/implementation-guides/platform/functions/leverage-ai-agents).
+</Update>
+
+---
+
 <Update label="January 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in January">
