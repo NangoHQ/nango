@@ -6,12 +6,12 @@ import columnify from 'columnify';
 import promptly from 'promptly';
 
 import { buildDefinitions } from './definitions.js';
+import { ReadableError } from './utils.js';
+import { loadSchemaJson } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
-import { ReadableError } from './utils.js';
-import { loadSchemaJson } from '../services/model.service.js';
 
 import type { DeployOptions } from '../types.js';
 import type {
@@ -219,7 +219,8 @@ async function createPackage({
                     type: sync.type,
                     fileBody: files,
                     endpoints: sync.endpoints,
-                    webhookSubscriptions: sync.webhookSubscriptions
+                    webhookSubscriptions: sync.webhookSubscriptions,
+                    models_json_schema: sync.json_schema
                 };
 
                 postData.push(body);
@@ -256,7 +257,8 @@ async function createPackage({
                     type: action.type,
                     fileBody: files,
                     endpoints: action.endpoint ? [action.endpoint] : [],
-                    track_deletes: false
+                    track_deletes: false,
+                    models_json_schema: action.json_schema
                 };
 
                 postData.push(body);
@@ -268,6 +270,7 @@ async function createPackage({
         return Err(new Error('No functions to deploy'));
     }
 
+    // TODO: stop sending this when nango-yaml is fully removed
     const jsonSchema = loadSchemaJson({ fullPath });
     if (!jsonSchema) {
         return Err(new Error('Failed to load schema.json'));
