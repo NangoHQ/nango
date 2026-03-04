@@ -7,7 +7,6 @@ import promptly from 'promptly';
 
 import { buildDefinitions } from './definitions.js';
 import { ReadableError } from './utils.js';
-import { loadSchemaJson } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
@@ -27,7 +26,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode' | 'jsonSchema'>;
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode'>;
 
 export async function deploy({
     fullPath,
@@ -270,16 +269,9 @@ async function createPackage({
         return Err(new Error('No functions to deploy'));
     }
 
-    // TODO: stop sending this when nango-yaml is fully removed
-    const jsonSchema = loadSchemaJson({ fullPath });
-    if (!jsonSchema) {
-        return Err(new Error('Failed to load schema.json'));
-    }
-
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        jsonSchema,
         singleDeployMode
     });
 }
