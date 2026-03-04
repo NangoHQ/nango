@@ -11,7 +11,6 @@ import { Spinner } from '../utils/spinner.js';
 import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { ReadableError } from './utils.js';
-import { loadSchemaJson } from '../services/model.service.js';
 
 import type { DeployOptions } from '../types.js';
 import type {
@@ -27,7 +26,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode' | 'jsonSchema'>;
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode'>;
 
 export async function deploy({
     fullPath,
@@ -219,7 +218,8 @@ async function createPackage({
                     type: sync.type,
                     fileBody: files,
                     endpoints: sync.endpoints,
-                    webhookSubscriptions: sync.webhookSubscriptions
+                    webhookSubscriptions: sync.webhookSubscriptions,
+                    models_json_schema: sync.json_schema
                 };
 
                 postData.push(body);
@@ -256,7 +256,8 @@ async function createPackage({
                     type: action.type,
                     fileBody: files,
                     endpoints: action.endpoint ? [action.endpoint] : [],
-                    track_deletes: false
+                    track_deletes: false,
+                    models_json_schema: action.json_schema
                 };
 
                 postData.push(body);
@@ -268,15 +269,9 @@ async function createPackage({
         return Err(new Error('No functions to deploy'));
     }
 
-    const jsonSchema = loadSchemaJson({ fullPath });
-    if (!jsonSchema) {
-        return Err(new Error('Failed to load schema.json'));
-    }
-
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        jsonSchema,
         singleDeployMode
     });
 }

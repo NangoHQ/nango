@@ -23,6 +23,6 @@
         "@nangohq/utils": "file:../utils",
         "datadog-lambda-js": "12.130.0",
         "dd-trace": "5.80.0",
-        "zod": "4.1.12"
+        "zod": "4.3.6"
     }
 }

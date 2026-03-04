@@ -51,7 +51,7 @@
         "uuid": "9.0.0",
         "webflow-api": "3.2.1",
         "xml-crypto": "6.1.2",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/logs": "file:../logs",

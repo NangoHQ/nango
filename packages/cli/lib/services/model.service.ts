@@ -194,7 +194,17 @@ ${typesContent}
 `;
 }
 
-export function generateAdditionalExports({ fullPath, parsed, debug }: { fullPath: string; parsed: NangoYamlParsed; debug: boolean }): void {
+export function generateAdditionalExports({
+    fullPath,
+    parsed,
+    debug,
+    skipSchemas = false
+}: {
+    fullPath: string;
+    parsed: NangoYamlParsed;
+    debug: boolean;
+    skipSchemas?: boolean;
+}): void {
     const exportPath = path.resolve(fullPath, '.nango');
     if (debug) {
         printDebug(`Generating schemas in ${exportPath}`);
@@ -203,18 +213,20 @@ export function generateAdditionalExports({ fullPath, parsed, debug }: { fullPat
         fs.mkdirSync(exportPath, { recursive: true });
     }
 
-    // Standalone typescript schema
-    const pathTS = path.join(exportPath, 'schema.ts');
-    fs.writeFileSync(pathTS, getExportToTS({ parsed }));
-    if (debug) {
-        printDebug(`Generated export ${pathTS}`);
-    }
+    if (!skipSchemas) {
+        // Standalone typescript schema
+        const pathTS = path.join(exportPath, 'schema.ts');
+        fs.writeFileSync(pathTS, getExportToTS({ parsed }));
+        if (debug) {
+            printDebug(`Generated export ${pathTS}`);
+        }
 
-    // Standalone json schema
-    const pathJSON = path.join(exportPath, 'schema.json');
-    fs.writeFileSync(pathJSON, JSON.stringify(getExportToJSON({ pathTS }), null, 2));
-    if (debug) {
-        printDebug(`Generated export ${pathJSON}`);
+        // Standalone json schema
+        const pathJSON = path.join(exportPath, 'schema.json');
+        fs.writeFileSync(pathJSON, JSON.stringify(getExportToJSON({ pathTS }), null, 2));
+        if (debug) {
+            printDebug(`Generated export ${pathJSON}`);
+        }
     }
 
     fs.writeFileSync(path.join(exportPath, 'nango.json'), JSON.stringify(parsed.integrations, null, 2));

@@ -110,7 +110,7 @@ export async function compileAll({
             }
         }
 
-        generateAdditionalExports({ parsed: def.value, fullPath, debug });
+        generateAdditionalExports({ parsed: def.value, fullPath, debug, skipSchemas: true });
 
         spinner.succeed();
     } catch (err) {
