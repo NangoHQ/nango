@@ -7,7 +7,7 @@
 <h1 align="center">API access for AI agents & apps</h1>
 
 <div align="center">
-Easily integrate your AI agents & SaaS product with 600+ APIs.
+Easily integrate your AI agents & SaaS product with 700+ APIs.
 </div>
 
 <p align="center">
@@ -16,7 +16,7 @@ Easily integrate your AI agents & SaaS product with 600+ APIs.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">600+ supported APIs</a>
+    <a href="https://nango.dev/integrations">700+ supported APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
@@ -27,7 +27,7 @@ Easily integrate your AI agents & SaaS product with 600+ APIs.
 
 Nango provides a set of powerful primitives that you can combine to build any integration:
 
-- **[Auth](https://nango.dev/docs/guides/primitives/auth)**: Managed API authorization for [600+ APIs](https://www.nango.dev/api-integrations)
+- **[Auth](https://nango.dev/docs/guides/primitives/auth)**: Managed API authorization for [700+ APIs](https://www.nango.dev/api-integrations)
 - **[Proxy](https://nango.dev/docs/guides/primitives/proxy)**: Query APIs via Nango with credentials injection
 - **[Functions](https://nango.dev/docs/guides/primitives/functions)**: Build custom integrations in code with a scalable runtime
 
