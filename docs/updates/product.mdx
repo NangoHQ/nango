@@ -48,11 +48,9 @@ description: "Product updates and improvements."
   </AccordionGroup>
   ## Sync checkpoints
 
-  We introduced Sync checkpoints to make syncs interruptible and resumable.
+  We introduced customizable Sync checkpoints to make syncs interruptible and resumable.
 
-  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
-
-  This replaces the legacy `last_sync_date` behavior and allows Nango to safely interrupt and reschedule long-running functions. Checkpoints are optional, not using them implies the function will always run from scratch.
+  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now set a `checkpoint` field with custom comparison fields and use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
 
   ```typescript
   // Simplified Example
@@ -72,7 +70,9 @@ description: "Product updates and improvements."
   });
   ```
 
-  See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints) and the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
+  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints).
+
+  **Migration Note:** Checkpoints replace the legacy `last_sync_date` and `syncType`behavior. Follow the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
 
   ## Serverless runtime for execution
 
