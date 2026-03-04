@@ -273,6 +273,7 @@
               "api-integrations/atlassian-service-account-oauth2",
               "api-integrations/attention",
               "api-integrations/attio",
+              "api-integrations/axiom",
               "api-integrations/availity",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
