@@ -1170,17 +1170,24 @@ asana-mcp:
         - ticketing
         - mcp
     auth_mode: MCP_OAUTH2
-    client_registration: dynamic
-    authorization_url: https://mcp.asana.com/authorize
-    token_url: https://mcp.asana.com/token
-    registration_url: https://mcp.asana.com/register
+    client_registration: static
+    authorization_url: https://app.asana.com/-/oauth_authorize
+    token_url: https://app.asana.com/-/oauth_token
     authorization_params:
         response_type: code
+        resource: https://mcp.asana.com/v2
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/api-integrations/asana
+    default_scopes:
+        - default
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.asana.com/
+    docs: https://nango.dev/docs/api-integrations/asana-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/asana-mcp/how-to-register-your-own-asana-mcp-oauth-app
 
 asana-scim:
     display_name: Asana (SCIM API)
@@ -1703,6 +1710,38 @@ avoma:
             pattern: '^[a-z0-9]{10,}:[a-z0-9]{10,}$'
             example: '1awcbx0njh:02k6er2pld4q5irffn23'
             doc_section: '#step-1-generating-your-api-key'
+
+axiom:
+    display_name: Axiom
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.axiom.co
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/axiom
+    docs_connect: https://nango.dev/docs/api-integrations/axiom/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Edge / region subdomain
+            description: The subdomain of the API you would wish to connect to.
+            example: us-east-1.aws.edge
+            pattern: '^(api|us-east-1\.aws\.edge|eu-central-1\.aws\.edge)$'
+            suffix: .axiom.co
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Axiom API token.
+            example: 'xaat-********-****-****-****-********8ec6'
+            pattern: '^xaat-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            doc_section: '#step-2-generating-your-api-token'
 
 aws:
     display_name: AWS
@@ -7871,6 +7910,19 @@ hibob-service-user:
     docs: https://nango.dev/docs/integrations/all/hibob-service-user
     docs_connect: https://nango.dev/docs/integrations/all/hibob-service-user/connect
 
+heygen:
+    display_name: HeyGen
+    categories:
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://app.heygen.com/oauth/authorize
+    token_url: https://api2.heygen.com/v1/oauth/token
+    refresh_url: https://api2.heygen.com/v1/oauth/refresh_token
+    proxy:
+        base_url: https://api2.heygen.com
+    docs: https://nango.dev/docs/api-integrations/heygen
+    setup_guide_url: https://nango.dev/docs/api-integrations/heygen/how-to-register-your-own-heygen-oauth-app
+
 highlevel:
     display_name: HighLevel
     categories:
@@ -9866,6 +9918,7 @@ microsoft-teams-bot:
         base_url: https://smba.trafficmanager.net/teams
         connection_config:
             botHostTenantId: ${connectionConfig.botHostTenantId}
+    webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsBotPostConnection
     docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
