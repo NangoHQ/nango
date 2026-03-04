@@ -89,6 +89,7 @@ export interface CLIDeployFlowConfig {
     /** @deprecated **/
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
+    // TODO: make non-optional when nango-yaml and `schema.ts` are fully removed
     models_json_schema?: JSONSchema7 | undefined;
 }
 
