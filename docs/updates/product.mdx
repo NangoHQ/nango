@@ -50,7 +50,7 @@ description: "Product updates and improvements."
 
   We introduced customizable Sync checkpoints to make syncs interruptible and resumable.
 
-  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now set a `checkpoint` field with custom comparison object and use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
+  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now set a `checkpoint` field with a custom comparison object and use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
 
   ```typescript
   // Simplified Example
