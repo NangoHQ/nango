@@ -28,6 +28,7 @@ export type PostEnvironment = Endpoint<{
 export type GetEnvironment = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/environments/current';
+    Querystring: { env: string };
     Success: {
         plan: ApiPlan | null;
         environmentAndAccount: {
