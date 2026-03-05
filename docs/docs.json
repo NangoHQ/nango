@@ -339,6 +339,7 @@
               "integrations/all/checkr-partner-staging",
               "integrations/all/chorus",
               "integrations/all/circle-so",
+              "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
               "integrations/all/clicksend",
               "api-integrations/clickup",
