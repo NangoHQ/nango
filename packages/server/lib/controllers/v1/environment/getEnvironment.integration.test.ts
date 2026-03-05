@@ -19,6 +19,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should be protected', async () => {
+        // @ts-expect-error query params are required
         const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' } });
 
         shouldBeProtected(res);
@@ -27,7 +28,6 @@ describe(`GET ${route}`, () => {
     it('should enforce env query params', async () => {
         const { secret } = await seeders.seedAccountEnvAndUser();
 
-        // @ts-expect-error intentionally missing query to test enforcement
         const res = await api.fetch(route, {
             method: 'GET',
             token: secret.secret
@@ -42,6 +42,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
+            // @ts-expect-error query params are required
             query: { env: env.name },
             session
         });
@@ -90,7 +91,12 @@ describe(`GET ${route}`, () => {
 
             (envs as any).NANGO_ADMIN_UUID = adminAccount.uuid;
             const session = await authenticateUser(api, user);
-            const res = await api.fetch(route, { method: 'GET', query: { env: customerEnv.name }, session });
+            const res = await api.fetch(route, {
+                method: 'GET',
+                // @ts-expect-error query params are required
+                query: { env: customerEnv.name },
+                session
+            });
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
@@ -114,7 +120,12 @@ describe(`GET ${route}`, () => {
 
             (envs as any).NANGO_ADMIN_UUID = adminAccount.uuid;
             const session = await authenticateUser(api, user);
-            const res = await api.fetch(route, { method: 'GET', query: { env: customerEnv.name }, session });
+            const res = await api.fetch(route, {
+                method: 'GET',
+                // @ts-expect-error query params are required
+                query: { env: customerEnv.name },
+                session
+            });
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
