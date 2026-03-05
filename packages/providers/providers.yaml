@@ -15500,15 +15500,15 @@ supabase:
     proxy:
         base_url: https://${connectionConfig.projectUrl}
         headers:
-            authorization: Bearer ${credentials.apiKey}
-            apikey: ${credentials.apiKey}
-    docs: https://nango.dev/docs/integrations/all/supabase
-    docs_connect: https://nango.dev/docs/integrations/all/supabase/connect
+            authorization: Bearer ${apiKey}
+            apikey: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/supabase
+    docs_connect: https://nango.dev/docs/api-integrations/supabase/connect
     connection_config:
         projectUrl:
             type: string
             title: Project URL
-            description: The Supabase project url
+            description: The Supabase project url you want to connect to.
             example: project.supabase.co
             format: hostname
             prefix: https://
@@ -15516,10 +15516,10 @@ supabase:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The anon or service_role API key for your Supabase project
-            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-            pattern: '^[A-Za-z0-9\._-]+$'
+            title: Secret Key
+            description: The secret key from your Supabase project.
+            example: sb_secret_*******************************hm
+            pattern: '^sb_secret_[A-Za-z0-9_]+$'
             doc_section: '#step-2-get-your-api-key'
 
 survey-monkey:
