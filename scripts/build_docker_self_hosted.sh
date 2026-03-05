@@ -23,8 +23,18 @@ echo -e "Building self-hosted nangohq/nango-server:hosted-$GIT_HASH"
 
 VERSION=$(node -p "require('../package.json').version")
 
+if [ "$PUSH" == "true" ]; then
+  PLATFORM="linux/amd64,linux/arm64"
+  OUTPUT="--output=type=registry"
+  echo "Building and pushing"
+else
+  PLATFORM="linux/amd64"
+  OUTPUT="--output=type=docker"
+  echo "Building only"
+fi
+
 docker buildx build \
-  --platform linux/amd64 \
+  --platform "$PLATFORM" \
   --build-arg BASE_IMAGE_HASH="$GIT_HASH" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
@@ -32,14 +42,5 @@ docker buildx build \
   -t "nangohq/nango-server:hosted-$GIT_HASH" \
   -t "nangohq/nango-server:hosted-$VERSION" \
   --file ../Dockerfile.self_hosted \
-  --output=type=docker \
+  $OUTPUT \
   ../
-
-if [ $PUSH ]; then
-  echo "Pushing"
-  docker push nangohq/nango-server:hosted
-  docker push "nangohq/nango-server:hosted-$GIT_HASH"
-  docker push "nangohq/nango-server:hosted-$VERSION"
-else
-  echo "Not pushing"
-fi

@@ -19,7 +19,6 @@ services:
         # https://hub.docker.com/r/nangohq/nango-server/tags
         image: nangohq/nango-server:hosted
         container_name: nango-server
-        platform: linux/amd64
         environment:
             - NANGO_ENCRYPTION_KEY
             - NANGO_DB_USER
@@ -49,8 +48,8 @@ services:
             - './packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml'
         restart: always
         ports:
-            - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
-            - '${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}'
+            - '${SERVER_PORT:-3003}:3003'
+            - '${CONNECT_UI_PORT:-3009}:3009'
         depends_on:
             - nango-db
             # - nango-elasticsearch
