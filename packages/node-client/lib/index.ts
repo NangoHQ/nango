@@ -669,7 +669,7 @@ export class Nango {
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        opts?: { reset?: boolean; emptyCache?: boolean }
+        opts?: PostPublicTrigger['Body']['opts']
     ): Promise<void>;
 
     /**
@@ -680,14 +680,14 @@ export class Nango {
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
         // eslint-disable-next-line @typescript-eslint/unified-signatures
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
     ): Promise<void>;
 
     public async triggerSync(
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        optsOrSyncMode?: { reset?: boolean; emptyCache?: boolean } | PostPublicTrigger['Body']['sync_mode'] | boolean
+        optsOrSyncMode?: PostPublicTrigger['Body']['opts'] | PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
     ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 

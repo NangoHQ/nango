@@ -168,6 +168,7 @@
                 "pages": [
                   "implementation-guides/platform/auth/configure-integration",
                   "implementation-guides/platform/auth/implement-api-auth",
+                  "implementation-guides/platform/auth/share-connect-link",
                   "implementation-guides/platform/auth/connection-tags",
                   "implementation-guides/platform/auth/customize-connect-ui",
                   "implementation-guides/platform/auth/contribute-new-api"
@@ -261,6 +262,7 @@
               "integrations/all/apple-app-store",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
+              "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "integrations/all/atlas-so",
@@ -271,6 +273,7 @@
               "api-integrations/atlassian-service-account-oauth2",
               "api-integrations/attention",
               "api-integrations/attio",
+              "api-integrations/axiom",
               "api-integrations/availity",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
@@ -522,6 +525,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "api-integrations/heygen",
               "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
