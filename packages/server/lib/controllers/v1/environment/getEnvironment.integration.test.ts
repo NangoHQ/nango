@@ -27,6 +27,7 @@ describe(`GET ${route}`, () => {
     it('should enforce env query params', async () => {
         const { secret } = await seeders.seedAccountEnvAndUser();
 
+        // @ts-expect-error intentionally missing query to test enforcement
         const res = await api.fetch(route, {
             method: 'GET',
             token: secret.secret
