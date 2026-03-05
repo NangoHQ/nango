@@ -48,7 +48,6 @@ export function buildJsonSchemaDefinitionsFromZodModels(models: Record<string, z
     }
 
     return {
-        $schema: 'http://json-schema.org/draft-07/schema#',
         definitions
     };
 }
