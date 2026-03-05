@@ -63,7 +63,6 @@ describe('parseSync', () => {
             input: 'SyncMetadata_github_fetchIssues',
             output: ['Model'],
             json_schema: {
-                $schema: 'http://json-schema.org/draft-07/schema#',
                 definitions: {
                     Model: {
                         type: 'object',
@@ -123,7 +122,6 @@ describe('parseAction', () => {
             output: ['ActionOutput_github_createIssue'],
             usedModels: ['ActionInput_github_createIssue', 'ActionOutput_github_createIssue'],
             json_schema: {
-                $schema: 'http://json-schema.org/draft-07/schema#',
                 definitions: {
                     ActionOutput_github_createIssue: { type: 'number' }
                 }
