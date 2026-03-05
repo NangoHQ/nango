@@ -1,7 +1,6 @@
 import { promises as fs } from 'node:fs';
 
 import { printDebug } from '../utils.js';
-import { loadSchemaJson } from './model.service.js';
 
 import type { NangoYamlParsed, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
 import type { JSONSchema7Definition } from 'json-schema';
@@ -37,11 +36,6 @@ export async function generate({
 
     await fs.mkdir(writePath, { recursive: true });
 
-    const jsonSchema = loadSchemaJson({ fullPath: absolutePath });
-    if (!jsonSchema) {
-        return false;
-    }
-
     const integrations = parsed.integrations;
     for (const config of integrations) {
         const integration = config.providerConfigKey;
@@ -66,7 +60,7 @@ export async function generate({
                     scriptPath,
                     endpointType: entry.type,
                     scriptConfig: entry,
-                    models: entry.usedModels.map((name) => ({ name, def: jsonSchema.definitions![name]! })),
+                    models: entry.usedModels.map((name) => ({ name, def: entry.json_schema?.definitions?.[name] as JSONSchema7Definition })),
                     isForIntegrationTemplates
                 });
                 await fs.writeFile(path ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
