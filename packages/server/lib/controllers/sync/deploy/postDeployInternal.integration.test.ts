@@ -82,7 +82,6 @@ describe(`POST ${endpoint}`, () => {
                             input: 'Input',
                             models: ['Output'],
                             models_json_schema: {
-                                $schema: 'http://json-schema.org/draft-07/schema#',
                                 definitions: {
                                     Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
                                     Output: {
@@ -110,7 +109,6 @@ describe(`POST ${endpoint}`, () => {
             const syncConfigs = await getSyncConfigsAsStandardConfig(env.id);
             expect(syncConfigs).toHaveLength(1);
             expect(syncConfigs?.[0]?.syncs[0]?.json_schema).toStrictEqual({
-                $schema: 'http://json-schema.org/draft-07/schema#',
                 definitions: {
                     Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
                     Output: { type: 'object', properties: { ref: { $ref: '#/definitions/Ref' } }, required: ['ref'], additionalProperties: false },
