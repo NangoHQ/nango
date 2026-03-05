@@ -2,13 +2,13 @@ import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels } from '@nangohq/utils';
 
-import configService from '../../config.service.js';
-import remoteFileService from '../../file/remote.service.js';
-import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { NangoError } from '../../../utils/error.js';
+import configService from '../../config.service.js';
 import { switchActiveSyncConfig } from '../../deploy/utils.js';
+import remoteFileService from '../../file/remote.service.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
+import { getSyncsByProviderConfigKey } from '../sync.service.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
@@ -66,7 +66,7 @@ export async function deploy({
     environment,
     account,
     flows,
-    jsonSchema,
+    aggregatedJsonSchema,
     onEventScriptsByProvider,
     nangoYamlBody,
     logContextGetter,
@@ -77,7 +77,8 @@ export async function deploy({
     environment: DBEnvironment;
     account: DBTeam;
     flows: CleanedIncomingFlowConfig[];
-    jsonSchema?: JSONSchema7 | undefined;
+    /** @deprecated */
+    aggregatedJsonSchema?: JSONSchema7 | undefined;
     onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
@@ -105,7 +106,7 @@ export async function deploy({
 
         const { success, error, response } = await compileDeployInfo({
             flow,
-            jsonSchema,
+            aggregatedJsonSchema,
             env,
             environment_id: environment.id,
             account,
@@ -212,7 +213,7 @@ export async function deploy({
 
 async function compileDeployInfo({
     flow,
-    jsonSchema,
+    aggregatedJsonSchema,
     env,
     environment_id,
     account,
@@ -222,7 +223,8 @@ async function compileDeployInfo({
     sdkVersion
 }: {
     flow: FlowParsed;
-    jsonSchema?: JSONSchema7 | undefined;
+    /** @deprecated */
+    aggregatedJsonSchema?: JSONSchema7 | undefined;
     env: string;
     environment_id: number;
     account: DBTeam;
@@ -327,10 +329,11 @@ async function compileDeployInfo({
         }
     }
 
-    let models_json_schema: JSONSchema7 | null = null;
-    if (jsonSchema) {
+    let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
+    if (!models_json_schema && aggregatedJsonSchema) {
+        // Legacy: jsonSchema for all functions were sent at the root of the body
         const allModels = [...models, flow.input].filter(Boolean) as string[];
-        const result = filterJsonSchemaForModels(jsonSchema, allModels);
+        const result = filterJsonSchemaForModels(aggregatedJsonSchema, allModels);
         if (result.isErr()) {
             return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
         }

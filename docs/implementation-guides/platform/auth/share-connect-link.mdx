@@ -1,0 +1,65 @@
+---
+title: 'Share a connect link'
+sidebarTitle: 'Share a connect link'
+description: 'Generate a short-lived connect link and share it with your end user.'
+---
+
+Use a connect link when you want to trigger authorization without opening Connect UI immediately in your app (for example: email-based onboarding, support-assisted setup, or cross-device flows).
+
+## Option 1: Generate a link from your backend
+
+Create a connect session and return the `connect_link` to your frontend or internal tools:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+
+    api.post('/connectLink', async (req, res) => {
+      const { data } = await nango.createConnectSession({
+        tags: {
+          end_user_id: '<END-USER-ID>',
+          end_user_email: '<END-USER-EMAIL>',
+          organization_id: '<ORGANIZATION-ID>'
+        },
+        allowed_integrations: ['<INTEGRATION-ID>']
+      });
+
+      res.status(200).send({
+        connectLink: data.connect_link,
+        expiresAt: data.expires_at
+      });
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "tags": {
+          "end_user_id": "<END-USER-ID>",
+          "end_user_email": "<END-USER-EMAIL>",
+          "organization_id": "<ORGANIZATION-ID>"
+        },
+        "allowed_integrations": [
+          "<INTEGRATION-ID>"
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+The returned `connect_link` expires after 30 minutes.
+
+## Option 2: Generate a link from the dashboard
+
+In the Nango dashboard, open the Connections page and use the **Share connect link** button. This generates a link that you can share directly with the end user.
+
+## Notes
+
+- For the API details, see [Create a connect session](/reference/api/connect/sessions/create).

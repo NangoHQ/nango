@@ -5,6 +5,7 @@ import http from 'node:http';
 
 import express from 'express';
 import * as cron from 'node-cron';
+import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
 import { billing } from '@nangohq/billing';
@@ -48,7 +49,11 @@ process.on('uncaughtException', (err) => {
 });
 
 const app = express();
-app.set('query parser', 'extended');
+
+app.set('query parser', (str: string) => {
+    return qs.parse(str, { arrayLimit: 100 });
+});
+
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 

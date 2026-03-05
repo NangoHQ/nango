@@ -31,10 +31,21 @@ export const JwtCredentialsComponent: React.FC<{
             )}
 
             {/* Special handling for Private key (based on legacy code before redesign) */}
-            {'privateKey' in credentials && 'id' in credentials.privateKey && 'secret' in credentials.privateKey && (
+            {'privateKey' in credentials && credentials.privateKey != null && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="privateKey">Private key</Label>
-                    <SecretInput id="privateKey" value={`${credentials.privateKey.id}:${credentials.privateKey.secret}`} disabled copy />
+                    <SecretInput
+                        id="privateKey"
+                        value={
+                            typeof credentials.privateKey === 'object' && 'id' in credentials.privateKey && 'secret' in credentials.privateKey
+                                ? `${credentials.privateKey.id}:${credentials.privateKey.secret}`
+                                : typeof credentials.privateKey === 'string'
+                                  ? credentials.privateKey
+                                  : ''
+                        }
+                        disabled
+                        copy
+                    />
                 </div>
             )}
 

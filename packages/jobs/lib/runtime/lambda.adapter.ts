@@ -2,6 +2,7 @@ import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
+import { setAbortFlag } from '../execution/operations/abort.js';
 import { getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
@@ -55,7 +56,11 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         }
     }
 
-    async cancel(_params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
-        return Promise.resolve(Err(new Error('Lambda functions do not support cancellation')));
+    async cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
+        const result = await setAbortFlag(params.taskId);
+        if (result.isErr()) {
+            return Err(new Error(`Error setting abort flag for task: ${params.taskId}`, { cause: result.error }));
+        }
+        return Ok(true);
     }
 }

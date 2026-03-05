@@ -199,7 +199,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 await navigator.clipboard.writeText(shareUrl.toString());
                 toast.toast({
                     title: 'Shareable link copied',
-                    description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
+                    description: `Session expires in 30 mins (${formatDateToPreciseUSFormat(expiresAt)})`,
                     variant: 'success'
                 });
             } catch (_) {

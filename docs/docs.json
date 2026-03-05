@@ -168,6 +168,7 @@
                 "pages": [
                   "implementation-guides/platform/auth/configure-integration",
                   "implementation-guides/platform/auth/implement-api-auth",
+                  "implementation-guides/platform/auth/share-connect-link",
                   "implementation-guides/platform/auth/connection-tags",
                   "implementation-guides/platform/auth/customize-connect-ui",
                   "implementation-guides/platform/auth/contribute-new-api"
@@ -261,6 +262,7 @@
               "integrations/all/apple-app-store",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
+              "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "integrations/all/atlas-so",
@@ -284,6 +286,7 @@
               "integrations/all/aws-iam",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
+              "api-integrations/axiom",
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
               "api-integrations/bamboohr",
@@ -523,6 +526,7 @@
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "api-integrations/heygen",
               "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
