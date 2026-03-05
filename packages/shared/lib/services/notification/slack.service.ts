@@ -604,7 +604,7 @@ export class SlackService {
             this.integrationKey,
             adminRes.environment.id
         );
-        if (!slackConnectionResult.success && slackConnectionResult.error?.type === 'unknown_connection') {
+        if (slackConnectionResult.error?.type === 'unknown_connection') {
             slackConnectionResult = await connectionService.getConnection(
                 generateLegacySlackConnectionId(account.uuid, environment.name),
                 this.integrationKey,

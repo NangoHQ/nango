@@ -56,7 +56,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
                 environment_id: info.environmentId,
                 connection_id: generateSlackConnectionId(account.uuid, environment.id)
             });
-            if (!connectionConfig) {
+            if (!connectionConfig['incoming_webhook.channel']) {
                 connectionConfig = await connectionService.getConnectionConfig({
                     provider_config_key: integrationId,
                     environment_id: info.environmentId,
