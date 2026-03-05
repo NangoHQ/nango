@@ -48,8 +48,8 @@ services:
             - './packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml'
         restart: always
         ports:
-            - '${SERVER_PORT:-3003}:3003'
-            - '${CONNECT_UI_PORT:-3009}:3009'
+            - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
+            - '${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}'
         depends_on:
             - nango-db
             # - nango-elasticsearch
