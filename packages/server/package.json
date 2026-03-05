@@ -51,7 +51,7 @@
         "helmet": "7.1.0",
         "jsonwebtoken": "9.0.3",
         "lodash-es": "4.17.21",
-        "multer": "2.0.2",
+        "multer": "2.1.1",
         "node-cron": "3.0.2",
         "oauth": "0.10.0",
         "passport": "0.6.0",
