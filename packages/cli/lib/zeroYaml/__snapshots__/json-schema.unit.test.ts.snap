@@ -4,6 +4,27 @@ exports[`buildJsonSchemaDefinitionsFromZodModels > should match snapshot 1`] = `
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "AsRecord": {
+      "additionalProperties": {
+        "type": "boolean",
+      },
+      "propertyNames": {
+        "type": "string",
+      },
+      "type": "object",
+    },
+    "LooseObject": {
+      "additionalProperties": {},
+      "properties": {
+        "id": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "id",
+      ],
+      "type": "object",
+    },
     "Nested": {
       "additionalProperties": false,
       "properties": {
@@ -83,6 +104,9 @@ exports[`buildJsonSchemaDefinitionsFromZodModels > should match snapshot 1`] = `
       ],
       "type": "object",
     },
+    "Voided": {
+      "type": "null",
+    },
     "WithArray": {
       "additionalProperties": false,
       "properties": {
@@ -102,6 +126,20 @@ exports[`buildJsonSchemaDefinitionsFromZodModels > should match snapshot 1`] = `
       "required": [
         "tags",
         "scores",
+      ],
+      "type": "object",
+    },
+    "WithCatchall": {
+      "additionalProperties": {
+        "type": "number",
+      },
+      "properties": {
+        "id": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "id",
       ],
       "type": "object",
     },

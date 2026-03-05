@@ -4,7 +4,7 @@ import type { JSONSchema7 } from 'json-schema';
 
 function zodSchemaToJsonSchema(schema: z.ZodTypeAny): JSONSchema7 | null {
     if (schema.constructor.name === 'ZodVoid') {
-        return null;
+        return { type: 'null' };
     }
 
     const jsonSchema = z.toJSONSchema(schema, {

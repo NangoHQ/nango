@@ -42,6 +42,15 @@ describe('buildJsonSchemaDefinitionsFromZodModels', () => {
                 deletedAt: z.date().nullable(),
                 note: z.string().nullable().optional()
             }),
+            LooseObject: z.looseObject({
+                id: z.string()
+            }),
+            WithCatchall: z
+                .object({
+                    id: z.string()
+                })
+                .catchall(z.number()),
+            AsRecord: z.record(z.string(), z.boolean()),
             Voided: z.void()
         };
 
