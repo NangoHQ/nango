@@ -64,7 +64,15 @@ describe(`GET ${route}`, () => {
     });
 
     describe('slack_notifications_channel', () => {
+        let adminProdEnv: Awaited<ReturnType<typeof seeders.createEnvironmentSeed>>;
         let originalAdminUUID: string | undefined;
+
+        beforeAll(async () => {
+            const { account: adminAccount } = await seeders.seedAccountEnvAndUser();
+            adminProdEnv = await seeders.createEnvironmentSeed(adminAccount.id, 'prod');
+            await seeders.createConfigSeed(adminProdEnv, 'slack', 'slack');
+            (envs as any).NANGO_ADMIN_UUID = adminAccount.uuid;
+        });
 
         beforeEach(() => {
             originalAdminUUID = envs.NANGO_ADMIN_UUID;
@@ -75,10 +83,6 @@ describe(`GET ${route}`, () => {
         });
 
         it('should return channel using new ID-based connection', async () => {
-            const { account: adminAccount } = await seeders.seedAccountEnvAndUser();
-            const adminProdEnv = await seeders.createEnvironmentSeed(adminAccount.id, 'prod');
-            await seeders.createConfigSeed(adminProdEnv, 'slack', 'slack');
-
             const { account: customerAccount, env: customerEnv, user } = await seeders.seedAccountEnvAndUser();
             await db.knex('_nango_environments').where({ id: customerEnv.id }).update({ slack_notifications: true });
 
@@ -89,7 +93,6 @@ describe(`GET ${route}`, () => {
                 connectionConfig: { 'incoming_webhook.channel': '#new-format-alerts' }
             });
 
-            (envs as any).NANGO_ADMIN_UUID = adminAccount.uuid;
             const session = await authenticateUser(api, user);
             const res = await api.fetch(route, {
                 method: 'GET',
@@ -104,10 +107,6 @@ describe(`GET ${route}`, () => {
         });
 
         it('should return channel using legacy name-based connection', async () => {
-            const { account: adminAccount } = await seeders.seedAccountEnvAndUser();
-            const adminProdEnv = await seeders.createEnvironmentSeed(adminAccount.id, 'prod');
-            await seeders.createConfigSeed(adminProdEnv, 'slack', 'slack');
-
             const { account: customerAccount, env: customerEnv, user } = await seeders.seedAccountEnvAndUser();
             await db.knex('_nango_environments').where({ id: customerEnv.id }).update({ slack_notifications: true });
 
@@ -118,7 +117,6 @@ describe(`GET ${route}`, () => {
                 connectionConfig: { 'incoming_webhook.channel': '#legacy-format-alerts' }
             });
 
-            (envs as any).NANGO_ADMIN_UUID = adminAccount.uuid;
             const session = await authenticateUser(api, user);
             const res = await api.fetch(route, {
                 method: 'GET',
