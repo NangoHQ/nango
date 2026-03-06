@@ -12658,6 +12658,7 @@ provenexpert:
             type: string
             title: API Key
             description: Your ProvenExpert API Key.
+            secret: true
             pattern: '^[A-Za-z0-9]{43}$'
             example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
             doc_section: '#step-1-getting-your-credentials'
