@@ -224,7 +224,8 @@ export const lambdaNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 0,
         executionTimeoutSecs: 900,
-        provisionedConcurrency: 1
+        provisionedConcurrency: 1,
+        replicas: 1
     },
     start: async (node: Node) => {
         return Lambda.getInstance().createFunction(node);

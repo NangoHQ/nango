@@ -184,7 +184,7 @@ class Kubernetes {
                 labels: { app: name }
             },
             spec: {
-                replicas: 1,
+                replicas: node.replicas,
                 selector: { matchLabels: { app: name } },
                 template: {
                     metadata: {
@@ -462,7 +462,8 @@ export const kubernetesNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 1
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();
