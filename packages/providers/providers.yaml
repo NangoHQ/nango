@@ -3309,6 +3309,28 @@ circle-so:
             title: API Key
             description: The API key for your Circle.so account
 
+circleback-mcp:
+    display_name: Circleback (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.circleback.ai/api/oauth/authorize
+    token_url: https://app.circleback.ai/api/oauth/access-token
+    registration_url: https://app.circleback.ai/api/oauth/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.circleback.ai/api/
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/circleback-mcp
+
 clari-copilot:
     display_name: Clari Copilot
     categories:
@@ -15574,6 +15596,50 @@ supabase:
             example: sb_secret_*******************************hm
             pattern: '^sb_secret_[A-Za-z0-9_]+$'
             doc_section: '#step-2-get-your-api-key'
+
+supabase-mcp:
+    display_name: Supabase (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mcp.supabase.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /mcp?project_ref=${connectionConfig.projectRef}
+            data:
+                {
+                    'jsonrpc': '2.0',
+                    'id': 1,
+                    'method': 'initialize',
+                    'params': { 'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': { 'name': 'nango-client', 'version': '1.0.0' } }
+                }
+    docs: https://nango.dev/docs/api-integrations/supabase-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/supabase-mcp/connect
+    connection_config:
+        projectRef:
+            type: string
+            title: Project reference
+            description: Your Supabase project reference ID.
+            example: bvzzcafzoysezumrdvif
+            pattern: '^[a-z0-9]{20}$'
+            doc_section: '#step-1-finding-your-project-reference'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Supabase account personal access token.
+            example: sbp_*******************************23d
+            pattern: '^sbp_[A-Za-z0-9]{40}$'
+            doc_section: '#step-2-obtaining-your-personal-access-token'
 
 survey-monkey:
     display_name: SurveyMonkey
