@@ -3,6 +3,7 @@ import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
@@ -393,6 +394,22 @@ export function buildProxyHeaders({
 
     // Custom headers handling
     if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
+        const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
+        const needsStableRandom = headerValues.some((v) => v.includes('${random}'));
+        const needsStableNow = headerValues.some((v) => v.includes('${now}') || v.includes('now | date:'));
+        const stableReplacers: Record<string, unknown> = {};
+
+        if (needsStableRandom || needsStableNow) {
+            if (needsStableRandom) {
+                stableReplacers['random'] = uuidv4();
+            }
+            if (needsStableNow) {
+                stableReplacers['now'] = new Date().toISOString();
+            }
+        }
+
+        const baseReplacers = { endpoint: config.endpoint };
+
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
                 headers[key] = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
@@ -409,7 +426,12 @@ export function buildProxyHeaders({
                     break;
                 }
                 case 'TWO_STEP': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '', credentials: connection.credentials });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.token || '',
+                        credentials: connection.credentials,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
                 }
                 case 'JWT': {

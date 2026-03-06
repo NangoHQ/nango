@@ -1382,6 +1382,18 @@ class ConnectionService {
         const headers: Record<string, any> | string = {};
 
         if (tokenHeaders) {
+            const headerValues = Object.values(tokenHeaders).filter((v): v is string => typeof v === 'string');
+            const needsStableRandom = headerValues.some((v) => v.includes('${random}'));
+            const needsStableNow = headerValues.some((v) => v.includes('${now}') || v.includes('now | date:'));
+            // some providers may use now or random values which they expect these to be the same allthrough
+            if (needsStableRandom || needsStableNow) {
+                if (needsStableRandom) {
+                    dynamicCredentials['random'] = uuidv4();
+                }
+                if (needsStableNow) {
+                    dynamicCredentials['now'] = new Date().toISOString();
+                }
+            }
             for (const [key, value] of Object.entries(tokenHeaders)) {
                 const strippedValue = stripCredential(value);
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
@@ -1391,6 +1403,10 @@ class ConnectionService {
                 } else {
                     headers[key] = strippedValue;
                 }
+            }
+            if (needsStableRandom || needsStableNow) {
+                delete dynamicCredentials['random'];
+                delete dynamicCredentials['now'];
             }
         }
 

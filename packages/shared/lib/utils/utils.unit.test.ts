@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as utils from './utils.js';
@@ -169,6 +171,24 @@ describe('interpolateString', () => {
         expect(output).toMatch(/^Current time: \d{4}-\d{2}-\d{2}T/);
     });
 
+    it('should interpolate ${now} with exact ISO string when using fake timers', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
+        const input = 'Current time: ${now}';
+        const output = utils.interpolateString(input, replacers);
+        expect(output).toBe('Current time: 2026-03-02T14:30:55.000Z');
+        vi.useRealTimers();
+    });
+
+    it('should interpolate ${now | date: "%Y-%m-%dT%H:%M:%S"} with formatted date (exact)', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
+        const input = 'Timestamp: ${now | date: "%Y-%m-%dT%H:%M:%S"}';
+        const output = utils.interpolateString(input, replacers);
+        expect(output).toBe('Timestamp: 2026-03-02T14:30:55');
+        vi.useRealTimers();
+    });
+
     it('should resolve values inside base64 properly', () => {
         const input = '${base64(${username}:${password})}';
         const output = utils.interpolateString(input, replacers);
@@ -185,6 +205,43 @@ describe('interpolateString', () => {
         const input = 'Installation ID: ${installation.uuid}';
         const output = utils.interpolateString(input, nestedReplacers);
         expect(output).toBe('Installation ID: abc-123-xyz');
+    });
+
+    it('should interpolate ${sha256Hex(inner)} with hex digest of resolved inner string', () => {
+        const input = 'Hash: ${sha256Hex(hello)}';
+        const output = utils.interpolateString(input, {});
+        const expected = crypto.createHash('sha256').update('hello', 'utf8').digest('hex');
+        expect(output).toBe(`Hash: ${expected}`);
+    });
+
+    it('should interpolate ${sha256Hex(inner)} with replacers inside inner', () => {
+        const input = 'Hash: ${sha256Hex(${username})}';
+        const output = utils.interpolateString(input, replacers);
+        const expected = crypto.createHash('sha256').update('john', 'utf8').digest('hex');
+        expect(output).toBe(`Hash: ${expected}`);
+    });
+
+    it('should interpolate ${random} with replacer when provided', () => {
+        const stableRandom = 'fixed-uuid-12345';
+        const input = 'Id: ${random}';
+        const output = utils.interpolateString(input, { random: stableRandom });
+        expect(output).toBe('Id: fixed-uuid-12345');
+    });
+
+    it('should interpolate ${now} with replacer when provided', () => {
+        const stableNow = '2026-03-02T12:00:00.000Z';
+        const input = 'Time: ${now}';
+        const output = utils.interpolateString(input, { now: stableNow });
+        expect(output).toBe('Time: 2026-03-02T12:00:00.000Z');
+    });
+
+    it('should interpolate ${now | date: "%Y-%m-%d"} with replacer when provided', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
+        const input = 'Date: ${now | date: "%Y-%m-%d"}';
+        const output = utils.interpolateString(input, { now: '2026-03-02T14:30:55.000Z' });
+        expect(output).toBe('Date: 2026-03-02');
+        vi.useRealTimers();
     });
 });
 
@@ -236,6 +293,47 @@ describe('interpolateStringFromObject', () => {
         const output = utils.interpolateStringFromObject(input, context);
         const expected = Buffer.from('XYZ-987:abc.def.ghi').toString('base64');
         expect(output).toBe(`Authorization: ${expected}`);
+    });
+
+    it('interpolates ${sha256Hex(inner)} with hex digest of resolved inner', () => {
+        const input = 'Sig: ${sha256Hex(${credentials.username})}';
+        const output = utils.interpolateStringFromObject(input, context);
+        const expected = crypto.createHash('sha256').update('user123', 'utf8').digest('hex');
+        expect(output).toBe(`Sig: ${expected}`);
+    });
+
+    it('interpolates ${now} with replacer when provided', () => {
+        const replacers = { now: '2026-03-02T10:00:00.000Z' };
+        const input = 'At: ${now}';
+        const output = utils.interpolateStringFromObject(input, replacers);
+        expect(output).toBe('At: 2026-03-02T10:00:00.000Z');
+    });
+
+    it('interpolates ${now | date: "%Y-%m-%dT%H:%M:%S"} with replacer when provided', () => {
+        const replacers = { now: '2026-03-02T10:05:30.000Z' };
+        const input = 'TS: ${now | date: "%Y-%m-%dT%H:%M:%S"}';
+        const output = utils.interpolateStringFromObject(input, replacers);
+        expect(output).toBe('TS: 2026-03-02T10:05:30');
+    });
+
+    it('interpolates ${random} with replacer when provided', () => {
+        const replacers = { random: 'my-fixed-uuid' };
+        const input = 'ReqId: ${random}';
+        const output = utils.interpolateStringFromObject(input, replacers);
+        expect(output).toBe('ReqId: my-fixed-uuid');
+    });
+
+    it('interpolates ${endpoint} with replacer when provided', () => {
+        const replacers = { endpoint: '/v1.0/msp/tenants' };
+        const input = 'Path: ${endpoint}';
+        const output = utils.interpolateStringFromObject(input, replacers);
+        expect(output).toBe('Path: /v1.0/msp/tenants');
+    });
+
+    it('interpolates ${endpoint} with empty string when not in replacers', () => {
+        const input = 'Path: ${endpoint}';
+        const output = utils.interpolateStringFromObject(input, {});
+        expect(output).toBe('Path: ');
     });
 });
 
@@ -411,5 +509,26 @@ describe('makeUrl', () => {
         const template = '${connectionConfig.invalidUrl}';
         const config = { invalidUrl: 'not-a-valid-url' };
         expect(() => utils.makeUrl(template, config)).toThrow('Invalid URL after interpolation');
+    });
+});
+
+describe('formatDate', () => {
+    it('should format date with UTC placeholders %Y %m %d %H %M %S %L', () => {
+        const date = new Date('2025-03-15T14:30:45.123Z');
+        expect(utils.formatDate(date, '%Y-%m-%dT%H:%M:%S')).toBe('2025-03-15T14:30:45');
+        expect(utils.formatDate(date, '%Y/%m/%d')).toBe('2025/03/15');
+        expect(utils.formatDate(date, '%H:%M:%S.%L')).toBe('14:30:45.123');
+    });
+
+    it('should pad month, day, hours, minutes, seconds with leading zeros', () => {
+        const date = new Date('2025-01-05T09:05:03.007Z');
+        expect(utils.formatDate(date, '%Y-%m-%d')).toBe('2025-01-05');
+        expect(utils.formatDate(date, '%H:%M:%S.%L')).toBe('09:05:03.007');
+    });
+
+    it('should handle format string with repeated placeholders', () => {
+        const date = new Date('2025-12-31T23:59:59.999Z');
+        expect(utils.formatDate(date, '%Y-%Y')).toBe('2025-2025');
+        expect(utils.formatDate(date, '%d/%m/%Y')).toBe('31/12/2025');
     });
 });
