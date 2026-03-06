@@ -65,7 +65,8 @@ export class LambdaInvocationsProcessor {
                     status: parsedMessage.responseContext.statusCode
                 },
                 telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0 },
-                functionRuntime: 'lambda'
+                functionRuntime: 'lambda',
+                checkpoints: null
             });
         }
     }

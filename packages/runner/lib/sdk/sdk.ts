@@ -20,7 +20,16 @@ import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
 import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
-import type { ApiPublicConnectionFull, Checkpoint, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type {
+    ApiPublicConnectionFull,
+    Checkpoint,
+    CheckpointRange,
+    MergingStrategy,
+    MessageRowInsert,
+    NangoProps,
+    PostPublicTrigger,
+    UserLogParameters
+} from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface TrackDeletesCheckpoint {
@@ -47,7 +56,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     nango: Nango;
     protected persistClient: PersistClient;
     protected locking: Locking;
-    protected checkpointing: Checkpointing;
+    private checkpointing: Checkpointing;
     protected checkpointKey: string;
     protected httpLogSample: number = 0;
 
@@ -338,6 +347,10 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.throwIfAbortedOrKilled();
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
+
+    public getCheckpointRange(): CheckpointRange | null {
+        return this.checkpointing.getRange(this.checkpointKey);
+    }
 }
 
 /**
@@ -348,7 +361,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
     protected persistClient: PersistClient;
     protected locking: Locking;
-    protected checkpointing: Checkpointing;
+    private checkpointing: Checkpointing;
     protected checkpointKey: string;
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
@@ -673,6 +686,10 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         this.throwIfAbortedOrKilled();
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
+
+    public getCheckpointRange(): CheckpointRange | null {
+        return this.checkpointing.getRange(this.checkpointKey);
+    }
 }
 
 class Locking {
@@ -711,7 +728,7 @@ class Locking {
     }
 }
 
-const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
+const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncRunner | keyof NangoActionRunner)[] = [
     'batchDelete',
     'batchSave',
     'batchUpdate',
