@@ -3312,7 +3312,7 @@ cleverreach:
     proxy:
         base_url: https://rest.cleverreach.com
     docs: https://nango.dev/docs/api-integrations/cleverreach
-    setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-api-oauth-app
 
 clicksend:
     display_name: ClickSend
