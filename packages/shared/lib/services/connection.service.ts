@@ -1356,10 +1356,11 @@ class ConnectionService {
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
         const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
-        const urlWithConnectionConfig =
-            typeof tokenUrl === 'string'
-                ? makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString()
-                : interpolateString(interpolateString('', connectionConfig), dynamicCredentials);
+        if (typeof tokenUrl !== 'string' || !tokenUrl.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+
+        const urlWithConnectionConfig = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
         const url = new URL(urlWithConnectionConfig).toString();
 
         const bodyFormat = provider.body_format || 'json';
