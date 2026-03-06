@@ -133,7 +133,7 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
+    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, refreshTokenOn } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -198,7 +198,13 @@ export function getProxyConfiguration({
         decompress: externalConfig.decompress === 'true' || externalConfig.decompress === true,
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
-        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+        refreshTokenOn:
+            refreshTokenOn && Array.isArray(refreshTokenOn)
+                ? refreshTokenOn.map(Number)
+                : provider.proxy?.refresh_token_on?.length
+                  ? provider.proxy.refresh_token_on.map(Number)
+                  : null
     };
 
     return Ok(configBody);
