@@ -16899,7 +16899,8 @@ webinarjam:
         apiKey:
             type: string
             title: API Key
-            description: Your WebinarJam API key
+            description: Your WebinarJam API key.
+            example: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2
             pattern: '^[a-zA-Z0-9]{64}$'
             doc_section: '#step-1-getting-your-api-key'
 
