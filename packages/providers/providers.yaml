@@ -15595,7 +15595,7 @@ supabase:
             description: The secret key from your Supabase project.
             example: sb_secret_*******************************hm
             pattern: '^sb_secret_[A-Za-z0-9_]+$'
-            doc_section: '#step-2-get-your-api-key'
+            doc_section: '#step-2-finding-your-secret-key'
 
 supabase-mcp:
     display_name: Supabase (MCP)
