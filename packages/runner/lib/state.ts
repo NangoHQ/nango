@@ -18,8 +18,7 @@ if (envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'REDIS') {
 export const usage = new RunnerMonitor({
     runnerId: envs.RUNNER_NODE_ID,
     conflictTracking: {
-        tracker: conflictTracker,
-        functionTypes: envs.RUNNER_CONFLICT_FUNCTION_TYPES
+        tracker: conflictTracker
     }
 });
 export const locks = new MapLocks();

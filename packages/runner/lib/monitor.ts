@@ -9,12 +9,12 @@ import { idle } from './idle.js';
 import { logger } from './logger.js';
 
 import type { KVStore } from '@nangohq/kvstore';
-import type { NangoProps, ScriptType } from '@nangohq/types';
+import type { NangoProps } from '@nangohq/types';
 
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
 export class RunnerMonitor {
     private runnerId: number;
-    private conflictTracking: { tracker: KVStore; functionTypes: ScriptType[] };
+    private conflictTracking: { tracker: KVStore };
     private tracked = new Map<string, { nangoProps: NangoProps }>();
     private persistClient: PersistClient | null = null;
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
@@ -24,7 +24,7 @@ export class RunnerMonitor {
     private memoryInterval: NodeJS.Timeout | null = null;
     private runnerAccountId: string | null = null;
 
-    constructor({ runnerId, conflictTracking }: { runnerId: number; conflictTracking: { tracker: KVStore; functionTypes: ScriptType[] } }) {
+    constructor({ runnerId, conflictTracking }: { runnerId: number; conflictTracking: { tracker: KVStore } }) {
         this.runnerId = runnerId;
         this.conflictTracking = conflictTracking;
         this.memoryInterval = this.checkMemoryUsage();
@@ -43,19 +43,22 @@ export class RunnerMonitor {
     }
 
     async track(nangoProps: NangoProps, taskId: string): Promise<void> {
+        if (nangoProps.scriptType == 'sync') {
+            await this.conflictTracking.tracker.set(`function:${nangoProps.scriptType}:${nangoProps.syncId}`, '1', {
+                canOverride: false,
+                ttlMs: 1000 * 60 * 60 * 24 * 7 // 1 week
+            });
+        }
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
         if (!this.persistClient) {
             this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
         }
-        if (this.conflictTracking.functionTypes.includes(nangoProps.scriptType)) {
-            await this.conflictTracking.tracker.set(`function:${nangoProps.scriptType}:${nangoProps.syncId}`, '1');
-        }
     }
 
     async untrack(taskId: string): Promise<void> {
         const nangoProps = this.tracked.get(taskId)?.nangoProps;
-        if (nangoProps && this.conflictTracking.functionTypes.includes(nangoProps.scriptType)) {
+        if (nangoProps && nangoProps.scriptType == 'sync') {
             await this.conflictTracking.tracker.delete(`function:${nangoProps.scriptType}:${nangoProps.syncId}`);
         }
         this.tracked.delete(taskId);
@@ -140,7 +143,7 @@ export class RunnerMonitor {
     }
 
     async hasConflictingSync(newTask: NangoProps): Promise<boolean> {
-        if (this.conflictTracking.functionTypes.includes(newTask.scriptType)) {
+        if (newTask.scriptType == 'sync') {
             const key = `function:${newTask.scriptType}:${newTask.syncId}`;
             const exists = await this.conflictTracking.tracker.exists(key);
             return exists;

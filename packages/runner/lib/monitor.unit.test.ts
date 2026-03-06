@@ -50,8 +50,7 @@ describe('RunnerMonitor conflict tracking', () => {
         monitor = new RunnerMonitor({
             runnerId: 1,
             conflictTracking: {
-                tracker,
-                functionTypes: ['sync', 'action']
+                tracker
             }
         });
     });
@@ -62,7 +61,7 @@ describe('RunnerMonitor conflict tracking', () => {
     });
 
     describe('track', () => {
-        it('writes conflict key to KV store when scriptType is in functionTypes', async () => {
+        it('writes conflict key to KV store when scriptType is sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123' });
             await monitor.track(nangoProps, 'task-1');
 
@@ -74,31 +73,16 @@ describe('RunnerMonitor conflict tracking', () => {
             expect(value).toBe('1');
         });
 
-        it('uses key format function:scriptType:syncId', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'action', syncId: 'action-456' });
-            await monitor.track(nangoProps, 'task-2');
-
-            expect(await tracker.exists('function:action:action-456')).toBe(true);
-            expect(await tracker.get('function:action:action-456')).toBe('1');
-        });
-
-        it('does not write to KV store when scriptType is not in functionTypes', async () => {
+        it('does not write to KV store when scriptType is not sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789' });
             await monitor.track(nangoProps, 'task-3');
 
             expect(await tracker.exists('function:webhook:webhook-789')).toBe(false);
         });
-
-        it('does not write to KV store for on-event when not in functionTypes', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'on-event', syncId: 'on-event-1' });
-            await monitor.track(nangoProps, 'task-4');
-
-            expect(await tracker.exists('function:on-event:on-event-1')).toBe(false);
-        });
     });
 
     describe('untrack', () => {
-        it('removes conflict key from KV store when task had tracked scriptType', async () => {
+        it('removes conflict key from KV store when task had tracked sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack' });
             await monitor.track(nangoProps, 'task-untrack');
             expect(await tracker.exists('function:sync:sync-untrack')).toBe(true);
@@ -106,17 +90,10 @@ describe('RunnerMonitor conflict tracking', () => {
             await monitor.untrack('task-untrack');
             expect(await tracker.exists('function:sync:sync-untrack')).toBe(false);
         });
-
-        it('does not delete key for scriptType not in functionTypes', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'wh-1' });
-            await monitor.track(nangoProps, 'task-w');
-            await monitor.untrack('task-w');
-            expect(await tracker.exists('function:webhook:wh-1')).toBe(false);
-        });
     });
 
     describe('hasConflictingSync', () => {
-        it('returns true when same scriptType and syncId are already tracked', async () => {
+        it('returns true when same syncId is already tracked', async () => {
             const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'conflict-sync' });
             await monitor.track(nangoProps, 'task-a');
 
@@ -125,7 +102,7 @@ describe('RunnerMonitor conflict tracking', () => {
             expect(hasConflict).toBe(true);
         });
 
-        it('returns false when syncId differs for same scriptType', async () => {
+        it('returns false when syncId differs', async () => {
             const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-one' });
             await monitor.track(nangoProps, 'task-b');
 
@@ -134,22 +111,12 @@ describe('RunnerMonitor conflict tracking', () => {
             expect(hasConflict).toBe(false);
         });
 
-        it('returns false when scriptType is not in functionTypes', async () => {
+        it('returns false when scriptType is not sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-1' });
             await monitor.track(nangoProps, 'task-c');
 
             const newTask = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-1' });
             const hasConflict = await monitor.hasConflictingSync(newTask);
-            expect(hasConflict).toBe(false);
-        });
-
-        it('returns false after untrack for same scriptType and syncId', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'action', syncId: 'action-x' });
-            await monitor.track(nangoProps, 'task-d');
-            expect(await monitor.hasConflictingSync(createNangoProps({ scriptType: 'action', syncId: 'action-x' }))).toBe(true);
-
-            await monitor.untrack('task-d');
-            const hasConflict = await monitor.hasConflictingSync(createNangoProps({ scriptType: 'action', syncId: 'action-x' }));
             expect(hasConflict).toBe(false);
         });
     });
