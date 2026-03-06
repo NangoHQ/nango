@@ -53,11 +53,12 @@ export class RunnerMonitor {
         }
     }
 
-    async untrack(nangoProps: NangoProps, taskId: string): Promise<void> {
-        this.tracked.delete(taskId);
-        if (this.conflictTracking.functionTypes.includes(nangoProps.scriptType)) {
+    async untrack(taskId: string): Promise<void> {
+        const nangoProps = this.tracked.get(taskId)?.nangoProps;
+        if (nangoProps && this.conflictTracking.functionTypes.includes(nangoProps.scriptType)) {
             await this.conflictTracking.tracker.delete(`function:${nangoProps.scriptType}:${nangoProps.syncId}`);
         }
+        this.tracked.delete(taskId);
     }
 
     resetIdleMaxDurationMs(): void {
