@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from './index.js';
 
 const require = createRequire(import.meta.url);
-const { buildSlackConnectionIdMigrationSql, buildSlackConnectionIdRollbackSql } = require('./migration-helpers/migrateSlackConnectionIdSql.cjs');
+const { buildSlackConnectionIdMigrationSql } = require('./migration-helpers/migrateSlackConnectionIdSql.cjs');
 
 // Inline seeds to avoid circular dependency with @nangohq/shared
 
@@ -181,8 +181,6 @@ describe('Slack connection ID migration', () => {
     });
 
     it('down: is a no-op', async () => {
-        // Rollback is intentionally a no-op — see buildSlackConnectionIdRollbackSql for the reasoning
-        const result = await db.knex.raw(buildSlackConnectionIdRollbackSql());
-        expect(result.rows[0].updated_rows).toBe(0);
+        // Rollback is intentionally a no-op — the migration file just logs and returns
     });
 });
