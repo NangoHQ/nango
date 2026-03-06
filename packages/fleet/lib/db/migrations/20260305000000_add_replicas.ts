@@ -3,12 +3,8 @@ import { NODES_TABLE } from '../../models/nodes.js';
 import { NODE_CONFIG_OVERRIDES_TABLE } from '../../models/node_config_overrides.js';
 
 export async function up(knex: Knex): Promise<void> {
-    await knex.schema.alterTable(NODES_TABLE, (table) => {
-        table.integer('replicas').notNullable().defaultTo(1);
-    });
-    await knex.schema.alterTable(NODE_CONFIG_OVERRIDES_TABLE, (table) => {
-        table.integer('replicas').nullable().defaultTo(null);
-    });
+    await knex.raw(`ALTER TABLE ${NODES_TABLE} ADD COLUMN IF NOT EXISTS replicas INTEGER NOT NULL DEFAULT 1`);
+    await knex.raw(`ALTER TABLE ${NODE_CONFIG_OVERRIDES_TABLE} ADD COLUMN IF NOT EXISTS replicas INTEGER DEFAULT NULL`);
 }
 
 export async function down(_knex: Knex): Promise<void> {}
