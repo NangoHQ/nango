@@ -184,7 +184,7 @@ class Kubernetes {
                 labels: { app: name }
             },
             spec: {
-                replicas: 1,
+                replicas: node.replicas,
                 selector: { matchLabels: { app: name } },
                 template: {
                     metadata: {
@@ -424,7 +424,8 @@ class Kubernetes {
             { name: 'DD_TRACE_ENABLED', value: String(node.isTracingEnabled || node.isProfilingEnabled) },
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
-            { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() }
+            { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
+            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_FUNCTION_MODE', value: 'REDIS' }] : [])
         ];
     }
 
@@ -462,7 +463,8 @@ export const kubernetesNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 1
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();
