@@ -11,7 +11,7 @@ import remoteFileService from './services/file/remote.service.js';
 import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
-import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
+import { SlackService, generateLegacySlackConnectionId, generateSlackConnectionId } from './services/notification/slack.service.js';
 import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
@@ -73,6 +73,7 @@ export {
     errorNotificationService,
     externalWebhookService,
     flowService,
+    generateLegacySlackConnectionId,
     generateSlackConnectionId,
     hmacService,
     localFileService,
