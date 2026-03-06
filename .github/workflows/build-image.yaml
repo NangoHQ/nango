@@ -77,15 +77,15 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
               uses: crazy-max/ghaction-github-runtime@v2
 
-            - name: Build image
-              if: needs.should-run.outputs.should_skip != 'true'
+            - name: Build image (PR only)
+              if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH != 'true'
               run: |
                   ./scripts/build_docker.sh build ${{ env.SHA }}
 
-            - name: Push image
+            - name: Build and push image
               if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
               run: |
-                  docker push nangohq/nango:${{ env.SHA }}
+                  ./scripts/build_docker.sh push ${{ env.SHA }}
 
             - name: (self-hosted) Build and push
               if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'pull_request'

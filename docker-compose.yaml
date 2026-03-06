@@ -19,7 +19,6 @@ services:
         # https://hub.docker.com/r/nangohq/nango-server/tags
         image: nangohq/nango-server:hosted
         container_name: nango-server
-        platform: linux/amd64
         environment:
             - NANGO_ENCRYPTION_KEY
             - NANGO_DB_USER

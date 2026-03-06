@@ -28,15 +28,17 @@ tags="-t nangohq/nango:${GIT_HASH}"
 
 if [ $ACTION == 'build' ]; then
   tags+=" --output=type=docker"
+  PLATFORM="linux/amd64"
 else
   tags+=" --output=type=registry"
+  PLATFORM="linux/amd64,linux/arm64"
 fi
 
 echo ""
 echo -e "Building nangohq/nango\n"
 
 docker buildx build \
-  --platform linux/amd64 \
+  --platform "$PLATFORM" \
   --build-arg git_hash="$GIT_HASH" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
