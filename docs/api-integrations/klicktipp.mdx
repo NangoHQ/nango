@@ -1,7 +1,7 @@
 ---
 title: 'KlickTipp'
 sidebarTitle: 'KlickTipp'
-description: 'Integrate your application with the KlickTipp Listbuilding API'
+description: 'Integrate your application with the KlickTipp API'
 ---
 
 ## 🚀 Quickstart
@@ -28,7 +28,7 @@ Connect to KlickTipp with Nango and see data flow in 2 minutes.
             # → { "credentials": { "apiKey": "..." } }
 
             # 2. Subscribe a contact (include apikey in the body)
-            curl -X POST "https://www.klick-tipp.com/api/subscriber/signin" \
+            curl -X POST "https://api.klicktipp.com/subscriber/signin" \
               -H "Content-Type: application/x-www-form-urlencoded" \
               -d "apikey=<API-KEY>&email=test@example.com"
             ```
@@ -81,12 +81,12 @@ Connect to KlickTipp with Nango and see data flow in 2 minutes.
 Nango maintained guides for common use cases.
 
 - [How to obtain your KlickTipp API key](/api-integrations/klicktipp/connect)
-  Get your Listbuilding API key to connect KlickTipp to Nango
+  Get your API key to connect KlickTipp to Nango
 
 Official docs: [KlickTipp API Documentation](https://developers.klicktipp.com/)
 
 <Note>
-KlickTipp's Listbuilding API authenticates via an API key sent in the request body. The Nango proxy stores the key securely; at runtime, retrieve it via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) and include it in your request body directly.
+KlickTipp authenticates via an API key sent in the request body. The Nango proxy stores the key securely; at runtime, retrieve it via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) and include it in your request body directly.
 </Note>
 
 ## 🧩 Pre-built syncs & actions for KlickTipp
