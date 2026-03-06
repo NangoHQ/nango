@@ -78,6 +78,7 @@ export interface AuthModes {
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
+    AwsSigV4: 'AWS_SIGV4';
     InstallPlugin: 'INSTALL_PLUGIN';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
