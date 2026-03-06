@@ -1,19 +1,17 @@
 exports.config = { transaction: true };
 
-const { buildSlackConnectionIdMigrationSql, buildSlackConnectionIdRollbackSql } = require('../migration-helpers/migrateSlackConnectionIdSql.cjs');
+const { buildSlackConnectionIdMigrationSql } = require('../migration-helpers/migrateSlackConnectionIdSql.cjs');
 
 exports.up = async function (knex) {
-    const result = await knex.raw(buildSlackConnectionIdMigrationSql());
-    const summary = result?.rows?.[0];
-    if (summary) {
-        console.log('[slack connection id migration] summary', summary);
+    const sql = buildSlackConnectionIdMigrationSql();
+    if (!sql) {
+        console.log('[slack connection id migration] skipped: NANGO_ADMIN_UUID not set');
+        return;
     }
+    const result = await knex.raw(sql);
+    console.log('[slack connection id migration] updated rows:', result.rowCount);
 };
 
-exports.down = async function (knex) {
-    const result = await knex.raw(buildSlackConnectionIdRollbackSql());
-    const summary = result?.rows?.[0];
-    if (summary) {
-        console.log('[slack connection id rollback] summary', summary);
-    }
+exports.down = async function () {
+    console.log('[slack connection id rollback] no-op');
 };
