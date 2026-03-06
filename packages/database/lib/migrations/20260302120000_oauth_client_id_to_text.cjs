@@ -6,7 +6,7 @@ const tableName = '_nango_configs';
  */
 exports.up = async function (knex) {
     await knex.schema.alterTable(tableName, (table) => {
-        table.text('oauth_client_id').nullable().defaultTo(null).alter({ alterType: true });
+        table.string('oauth_client_id', 512).nullable().defaultTo(null).alter({ alterType: true });
     });
 };
 
