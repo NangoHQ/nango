@@ -3307,6 +3307,8 @@ cleverreach:
         grant: basic
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://rest.cleverreach.com
     docs: https://nango.dev/docs/api-integrations/cleverreach
