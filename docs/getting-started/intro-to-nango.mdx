@@ -1,45 +1,94 @@
 ---
-title: 'Intro to Nango'
-sidebarTitle: 'Intro to Nango'
-description: 'Understand Nango in 5 minutes.'
+title: 'Introduction'
+sidebarTitle: 'Introduction'
+description: 'Build product integrations with AI, on open-source infrastructure built for scale.'
 ---
 
-Nango is the leading provider of **API access for AI agents & apps**. It is designed for developers building integrations for their users, with full flexibility.
+## What is Nango?
 
-## Integration primitives
+Nango is an open-source platform for building product integrations with AI. 
 
-Nango provides a set of powerful primitives that you can combine to build any integration:
+It supports [**700+ APIs**](/integrations/overview) and works with any backend language, AI coding tool, and agent SDK.
 
-- **[Auth](/guides/primitives/auth)**: Managed API authorization for 600+ APIs
-- **[Proxy](/guides/primitives/proxy)**: Query APIs via Nango with credentials injection
-- **[Functions](/guides/primitives/functions)**: Build custom integrations in code with a scalable runtime
+Nango handles auth, execution, scaling, and observability so you ship integrations in minutes.
 
-## Flexible use cases
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/getting-started/quickstart">
+    Authorize an API and make your first request in under 5 minutes.
+  </Card>
+  <Card title="Try the AI Builder" icon="wand-magic-sparkles" href="/guides/platform/ai-integration-builder">
+    Describe what you need and get production-ready integration code.
+  </Card>
+</CardGroup>
 
-Flexible by design, Nango never constrains the integrations you need to build:
-- **[Tool calling](/implementation-guides/use-cases/tool-calling/overview)**
-- **[MCPs](/implementation-guides/use-cases/tool-calling/implement-mcp-server)**
-- **[Data syncing & RAG](/implementation-guides/use-cases/syncs/implement-a-sync)**
-- **[Triggers](/implementation-guides/use-cases/syncs/implement-a-sync)**
-- **[Real-time webhooks](/implementation-guides/use-cases/webhooks-from-external-apis)**
-- **[Per customer configs](/implementation-guides/use-cases/customer-configuration)**
-- **[Unified APIs](/implementation-guides/use-cases/unified-apis)** 
-- **[More](/implementation-guides/use-cases)**
+## How it works
 
-## Approach & Benefits
+Nango gives you 3 primitives that cover every integration pattern:
 
-We believe teams should build their own integrations, but with better primitives.
+<Steps>
+  <Step title="Auth">
+    Embed a white label, managed auth flow in your app. Nango handles OAuth, API keys, token refresh, and credential storage for 700+ APIs. Never deal with auth plumbing again.
+  </Step>
+  <Step title="Proxy">
+    Make authenticated API requests on behalf of your users. Send requests through Nango's proxy gateway and it resolves the provider, injects credentials, handles retries and rate limits, and returns the response. No credential management in your codebase.
+  </Step>
+  <Step title="Functions">
+    Write integration logic as TypeScript functions and deploy them to Nango. Functions execute on a production runtime with built-in API access, retries, storage, and observability. Use the AI builder to generate them from a description of your use case.
 
-By leveraging Nango, developers can save weeks per integration:
-- **Fast**: Avoid rebuilding hard infrastructure & per-API tools.
-- **Flexible**: code-based integrations with full access to external APIs.
-- **Dev-centric**: API-first & infrastructure as code for mature development workflows.
-- **Reliable**: Production-ready primitives from day one.
-- **Secure**: Secure handling of credentials and user data.
-- **Observable**: Full visibility into every API interaction.
-- **Modular**: Use only what you need, without vendor lock-in.
-- **Proven at scale**: Powers millions of users for companies like Replit, Linux, etc.
+    The runtime handles per-tenant isolation, elastic scaling, and predictable execution. Deploy like you deploy your app, with CI/CD, git, and a CLI.
+  </Step>
+</Steps>
+
+## What you can build
+
+Nango supports every common integration pattern:
+
+<CardGroup cols={3}>
+  <Card title="AI tool calling & MCP" icon="robot" href="/implementation-guides/use-cases/tool-calling/overview">
+    Give AI agents the ability to act on external APIs.
+  </Card>
+  <Card title="Data syncing" icon="arrows-rotate" href="/implementation-guides/use-cases/syncs/implement-a-sync">
+    One or two-way sync for RAG pipelines, indexing and triggers.
+  </Card>
+  <Card title="Webhook processing" icon="bell" href="/implementation-guides/use-cases/webhooks-from-external-apis">
+    Receive and process webhooks from external APIs reliably.
+  </Card>
+  <Card title="API unification" icon="layer-group" href="/implementation-guides/use-cases/unified-apis">
+    Normalize APIs to your own universal schema.
+  </Card>
+  <Card title="Actions" icon="play" href="/implementation-guides/use-cases/actions/implement-an-action">
+    Write data and execute operations on behalf of your users.
+  </Card>
+  <Card title="Per-customer config" icon="sliders" href="/implementation-guides/use-cases/customer-configuration">
+    Customize integration behavior for each of your customers.
+  </Card>
+</CardGroup>
+
+## Why Nango?
+
+**AI-generated, human-controlled code.** Nango's AI builder generates TypeScript integration functions from natural language. Unlike black-box solutions, you get readable code you can review, edit, and version control. With full type safety and a built-in testing framework.
+
+**Production-grade infrastructure.** Nango processes billions of API requests. The runtime provides per-tenant isolation, elastic scaling, automatic retries, and rate-limit handling. Battle-tested by hundreds of companies in production.
+
+**Auth for 700+ APIs, out of the box.** OAuth flows, token refresh, credential storage, and multi-tenant support handled for you. Connect to any API without building auth from scratch.
+
+**Open source and self-hostable.** Nango is fully open source. Run it on Nango Cloud or self-host on your own infrastructure. SOC 2 Type II, HIPAA, and GDPR compliant.
+
+**Fits your workflow.** Fully operable via CLI and API. Compatible with any backend language or framework, AI coding tools (Cursor, Codex, Claude Code), and agent SDKs (MCP, LangChain).
 
 ## Get started
 
-Access any API in minutes and embed the full flow in your app within an hour: [Quickstart](/getting-started/quickstart).
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/getting-started/quickstart">
+    Authorize an API and make your first request in under 5 minutes.
+  </Card>
+  <Card title="Auth guide" icon="lock" href="/implementation-guides/platform/auth/implement-api-auth">
+    Embed managed auth for 700+ APIs in your product.
+  </Card>
+  <Card title="Functions guide" icon="code" href="/implementation-guides/platform/functions/functions-setup">
+    Write and deploy TypeScript integration functions.
+  </Card>
+  <Card title="AI Builder" icon="wand-magic-sparkles" href="/implementation-guides/platform/functions/leverage-ai-agents">
+    Generate integration code with AI.
+  </Card>
+</CardGroup>

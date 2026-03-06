@@ -381,7 +381,19 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
     }
 
     public override async deleteRecordsFromPreviousExecutions(_model: string): Promise<{ deletedKeys: string[] }> {
-        this.log(`This has no effect but on a remote Nango instance would delete records that were not added or updated during the current execution.`);
+        this.log(
+            `This has no effect locally. On a remote Nango instance, it would mark as deleted any records that were not saved during this sync execution.`
+        );
+        return Promise.resolve({ deletedKeys: [] });
+    }
+
+    public override async trackDeletesStart(model: string): Promise<void> {
+        this.log(`This has no effect locally, but on a remote Nango instance it marks the start of deletion tracking for model '${model}'.`);
+        return Promise.resolve();
+    }
+
+    public override async trackDeletesEnd(_model: string): Promise<{ deletedKeys: string[] }> {
+        this.log(`This has no effect locally. On a remote Nango instance, it would mark as deleted any records that were not saved since trackDeletesStart.`);
         return Promise.resolve({ deletedKeys: [] });
     }
 }

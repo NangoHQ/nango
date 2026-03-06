@@ -1,5 +1,3 @@
-import { Agent } from 'node:https';
-
 import { networkError, retryWithBackoff, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
@@ -22,9 +20,8 @@ function shouldRetry(error: unknown, response?: Response): boolean {
     return false;
 }
 
-export interface HttpFetchOptions extends Omit<RequestInit, 'keepalive'> {
+export interface HttpFetchOptions extends RequestInit {
     userAgent?: string;
-    keepAlive?: boolean;
 }
 
 export interface BackoffOptions {
@@ -33,16 +30,8 @@ export interface BackoffOptions {
     numOfAttempts?: number;
 }
 
-let keepAliveAgent: Agent | null = null;
-function getKeepAliveAgent(): Agent {
-    if (!keepAliveAgent) {
-        keepAliveAgent = new Agent({ keepAlive: true });
-    }
-    return keepAliveAgent;
-}
-
 export async function httpFetch(url: string | URL, options?: HttpFetchOptions, backoffOptions?: BackoffOptions): Promise<Response> {
-    const { userAgent, keepAlive = true, ...requestInit } = options ?? {};
+    const { userAgent, ...requestInit } = options ?? {};
 
     const method = requestInit.method || 'GET';
 
@@ -51,15 +40,10 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
         headers.set('User-Agent', userAgent);
     }
 
-    const fetchOptions: RequestInit & { dispatcher?: Agent } = {
+    const fetchOptions: RequestInit = {
         ...requestInit,
-        headers,
-        keepalive: keepAlive
+        headers
     };
-
-    if (keepAlive && url.toString().startsWith('https')) {
-        fetchOptions.dispatcher = getKeepAliveAgent();
-    }
 
     try {
         return await retryWithBackoff(async () => {

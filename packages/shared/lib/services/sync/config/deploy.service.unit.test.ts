@@ -10,10 +10,12 @@ import { getTestTeam } from '../../../seeders/account.seeder.js';
 import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
 import accountService from '../../account.service.js';
 import configService from '../../config.service.js';
+import remoteFileService from '../../file/remote.service.js';
 import * as SyncService from '../sync.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
@@ -254,5 +256,161 @@ describe('Sync config create', () => {
                 onEventScriptsByProvider: []
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
+    });
+});
+
+describe('Sync config models_json_schema handling', () => {
+    const environment = getTestEnvironment();
+    const account = getTestTeam();
+
+    const baseFlow: CleanedIncomingFlowConfig = {
+        syncName: 'test-sync',
+        type: 'sync',
+        providerConfigKey: 'google',
+        fileBody: { js: 'integrations.js', ts: 'integrations.ts' },
+        models: ['Model_1'],
+        runs: null,
+        version: '1',
+        track_deletes: false,
+        endpoints: []
+    };
+
+    const mockProviderConfig = {
+        id: 1,
+        unique_key: 'google',
+        display_name: null,
+        provider: 'google',
+        oauth_client_id: '123',
+        oauth_client_secret: '123',
+        post_connection_scripts: null,
+        environment_id: 1,
+        created_at: new Date(),
+        updated_at: new Date(),
+        missing_fields: [],
+        forward_webhooks: true,
+        shared_credentials_id: null
+    };
+
+    function setupInfrastructureMocks(capturedSyncConfigs: any[]) {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigsBySyncNameAndConfigId').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        // Mock the transaction to capture the sync config being inserted into the database
+        vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
+            const mockTrx = {
+                from: (_table: string) => ({
+                    update: () => ({ whereIn: () => Promise.resolve() }),
+                    insert: (data: any) => {
+                        capturedSyncConfigs.push(...(Array.isArray(data) ? data : [data]));
+                        return { returning: () => Promise.resolve([{ id: 1 }]) };
+                    }
+                })
+            };
+            await callback(mockTrx);
+        });
+    }
+
+    it('Uses flow.models_json_schema directly when provided (new format)', async () => {
+        const capturedSyncConfigs: any[] = [];
+        setupInfrastructureMocks(capturedSyncConfigs);
+
+        const flowJsonSchema: JSONSchema7 = {
+            definitions: {
+                Model_1: { type: 'object', properties: { id: { type: 'string' } } }
+            }
+        };
+
+        const { success, error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [{ ...baseFlow, models_json_schema: flowJsonSchema }],
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0-yaml'
+        });
+
+        expect(success).toBe(true);
+        expect(error).toBeNull();
+        expect(capturedSyncConfigs).toHaveLength(1);
+        expect(capturedSyncConfigs[0].models_json_schema).toEqual(flowJsonSchema);
+    });
+
+    it('Filters aggregatedJsonSchema for the flow models (legacy format)', async () => {
+        const capturedSyncConfigs: any[] = [];
+        setupInfrastructureMocks(capturedSyncConfigs);
+
+        const aggregatedJsonSchema: JSONSchema7 = {
+            definitions: {
+                Model_1: { type: 'object', properties: { id: { type: 'string' } } },
+                Model_2: { type: 'object', properties: { name: { type: 'string' } } }
+            }
+        };
+
+        const { success, error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [baseFlow], // models: ['Model_1'], no models_json_schema
+            aggregatedJsonSchema,
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0-yaml'
+        });
+
+        expect(success).toBe(true);
+        expect(error).toBeNull();
+        expect(capturedSyncConfigs).toHaveLength(1);
+        // Only Model_1 should be present, Model_2 filtered out
+        expect(capturedSyncConfigs[0].models_json_schema).toEqual({
+            definitions: {
+                Model_1: { type: 'object', properties: { id: { type: 'string' } } }
+            }
+        });
+    });
+
+    it('Returns an error when a model is missing from aggregatedJsonSchema (legacy format)', async () => {
+        setupInfrastructureMocks([]);
+
+        const aggregatedJsonSchema: JSONSchema7 = {
+            definitions: {
+                Other_Model: { type: 'object', properties: { id: { type: 'string' } } }
+            }
+        };
+
+        const { success, error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [baseFlow], // models: ['Model_1'], not present in aggregatedJsonSchema
+            aggregatedJsonSchema,
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0-yaml'
+        });
+
+        expect(success).toBe(false);
+        expect(error?.type).toBe('deploy_missing_json_schema_model');
+    });
+
+    it('Sets models_json_schema to null when neither format provides a schema', async () => {
+        const capturedSyncConfigs: any[] = [];
+        setupInfrastructureMocks(capturedSyncConfigs);
+
+        const { success, error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [baseFlow], // no models_json_schema, no aggregatedJsonSchema
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0-yaml'
+        });
+
+        expect(success).toBe(true);
+        expect(error).toBeNull();
+        expect(capturedSyncConfigs).toHaveLength(1);
+        expect(capturedSyncConfigs[0].models_json_schema).toBeNull();
     });
 });

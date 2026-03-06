@@ -27,7 +27,7 @@ import { loadSchemaJson } from './model.service.js';
 import { ResponseCollector } from './response-collector.service.js';
 import * as nangoScript from '../sdkScripts.js';
 import { displayValidationError } from '../utils/errors.js';
-import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
+import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
@@ -124,15 +124,8 @@ export class DryRunService {
 
         await parseSecretKey(environment, debug);
 
-        if (!process.env['NANGO_HOSTPORT']) {
-            if (debug) {
-                printDebug(`NANGO_HOSTPORT is not set. Setting the default to ${hostport}`);
-            }
-            process.env['NANGO_HOSTPORT'] = hostport;
-        }
-
         if (debug) {
-            printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}`);
+            printDebug(`NANGO_HOSTPORT is set to ${resolveHostport()}`);
         }
 
         if (Object.keys(options).length > 0) {
@@ -265,7 +258,7 @@ export class DryRunService {
             printDebug(`Provider found: ${provider}`);
         }
 
-        if (process.env['NANGO_HOSTPORT']?.endsWith('.nango.dev')) {
+        if (resolveHostport().endsWith('.nango.dev')) {
             process.env['NANGO_CLOUD'] = 'true';
         }
 
@@ -360,7 +353,7 @@ export class DryRunService {
             const nangoProps: NangoProps = {
                 isCLI: true,
                 scriptType: scriptInfo?.type || 'sync',
-                host: process.env['NANGO_HOSTPORT'],
+                host: resolveHostport(),
                 connectionId: nangoConnection.connection_id,
                 environmentId: -1,
                 environmentName: environment,
