@@ -22,6 +22,7 @@ export interface ComboboxProps<TValue extends string = string> {
     emptyText?: string;
     renderValue?: (option: ComboboxOption<TValue>) => React.ReactNode;
     renderOption?: (option: ComboboxOption<TValue>, selected: boolean) => React.ReactNode;
+    renderOptionRight?: (option: ComboboxOption<TValue>, selected: boolean) => React.ReactNode;
     footer?: React.ReactNode;
     className?: string;
     contentClassName?: string;
@@ -39,6 +40,7 @@ export function Combobox<TValue extends string = string>({
     emptyText = 'No results found.',
     renderValue,
     renderOption,
+    renderOptionRight,
     footer,
     className,
     contentClassName,
@@ -86,8 +88,7 @@ export function Combobox<TValue extends string = string>({
                     type="button"
                     disabled={disabled}
                     className={cn(
-                        'cursor-pointer flex h-9 w-full min-w-0 items-center justify-between gap-1.5 rounded border border-border-muted bg-dropdown-bg-press px-2 text-s leading-5 outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
-                        selectedOption ? 'text-text-secondary' : 'text-text-tertiary',
+                        'cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-1.5 text-body-medium-regular leading-[160%] tracking-normal text-text-secondary outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
                         className
                     )}
                 >
@@ -103,40 +104,67 @@ export function Combobox<TValue extends string = string>({
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
-                className={cn('z-[70] w-[var(--radix-dropdown-menu-trigger-width)] p-0 overflow-hidden', contentClassName)}
+                className={cn(
+                    'z-[70] flex w-[var(--radix-dropdown-menu-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-bg-subtle p-1 pb-0',
+                    contentClassName
+                )}
                 side="bottom"
                 align="start"
                 sideOffset={0}
             >
                 <div
-                    className="p-2 border-b border-border-muted"
+                    className="w-full border-b border-border-muted p-2"
                     onKeyDown={(e) => {
                         e.stopPropagation();
                     }}
                 >
-                    <InputGroup className="bg-bg-surface">
-                        <InputGroupInput type="text" placeholder={searchPlaceholder} value={search} onChange={(e) => setSearch(e.target.value)} />
-                        <InputGroupAddon>
+                    <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-bg-surface px-2.5 py-1.5">
+                        <InputGroupAddon className="p-0 pr-2">
                             <Search className="size-4 text-text-tertiary" />
                         </InputGroupAddon>
+                        <InputGroupInput
+                            type="text"
+                            placeholder={searchPlaceholder}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="h-auto p-0 text-body-medium-regular text-text-tertiary placeholder:text-text-tertiary"
+                        />
                     </InputGroup>
                 </div>
 
-                <div className="p-1 max-h-64 overflow-y-auto">
+                <div className="max-h-72 w-full overflow-y-auto p-2">
                     {filteredOptions.length > 0 ? (
                         filteredOptions.map((opt) => {
                             const selected = opt.value === value;
+                            const rightOptionContent = renderOptionRight ? renderOptionRight(opt, selected) : null;
                             return (
                                 <DropdownMenuItem
                                     key={opt.value}
                                     disabled={opt.disabled}
                                     onSelect={() => onValueChange(opt.value)}
-                                    className="group flex items-center justify-between gap-2 rounded cursor-pointer hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                    className={cn(
+                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary',
+                                        selected && 'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated'
+                                    )}
                                 >
-                                    <span className="flex items-center gap-2 min-w-0">
-                                        {renderOption ? renderOption(opt, selected) : <span className="truncate">{opt.label}</span>}
-                                    </span>
-                                    {selected && <Check className="size-4 shrink-0" />}
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span
+                                            className={cn(
+                                                'flex size-5 shrink-0 items-center justify-center rounded-sm border',
+                                                selected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                            )}
+                                        >
+                                            {selected ? <Check className="size-3.5" /> : null}
+                                        </span>
+                                        <div className="flex min-w-0 items-center gap-2 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal text-text-secondary">
+                                            {renderOption ? renderOption(opt, selected) : <span className="truncate">{opt.label}</span>}
+                                        </div>
+                                    </div>
+                                    {rightOptionContent ? (
+                                        <div className="shrink-0">{rightOptionContent}</div>
+                                    ) : selected ? (
+                                        <Check className="size-4 shrink-0 text-text-primary" />
+                                    ) : null}
                                 </DropdownMenuItem>
                             );
                         })
@@ -147,7 +175,7 @@ export function Combobox<TValue extends string = string>({
                     )}
                 </div>
 
-                {footer ? <div className="border-t border-border-muted px-2 py-2">{footer}</div> : null}
+                {footer ? <div className="w-full border-t border-border-muted px-2 py-2">{footer}</div> : null}
             </DropdownMenuContent>
         </DropdownMenu>
     );
