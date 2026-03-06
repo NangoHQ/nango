@@ -36,6 +36,7 @@ import {
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
+    makeUrl,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
@@ -1355,10 +1356,12 @@ class ConnectionService {
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
         const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
-        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
-        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
-        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
-        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
+        if (typeof tokenUrl !== 'string' || !tokenUrl.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+
+        const urlWithConnectionConfig = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
+        const url = new URL(urlWithConnectionConfig).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
