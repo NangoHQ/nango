@@ -815,6 +815,7 @@
               "integrations/all/stripe-app-sandbox",
               "integrations/all/stripe-express",
               "integrations/all/supabase",
+              "api-integrations/supabase-mcp",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
