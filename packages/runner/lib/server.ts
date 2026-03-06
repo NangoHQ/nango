@@ -47,7 +47,7 @@ function healthProcedure() {
 function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
-        .mutation((arg): boolean => {
+        .mutation(async (arg): Promise<boolean> => {
             const startTime = Date.now();
             const { taskId, nangoProps, code, codeParams } = arg.input;
             logger.info('Received task', {
@@ -62,12 +62,12 @@ function startProcedure() {
 
             // Sometimes we can receive the same job (http retry) or a job for the same sync (orchestrator miss scheduling)
             // Here is the last safety net to be sure nothing runs in parallel
-            if (usage.hasConflictingSync(nangoProps)) {
+            if (await usage.hasConflictingSync(nangoProps)) {
                 logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
                 throw new Error('Conflicting sync detected');
             }
 
-            usage.track(nangoProps, taskId);
+            await usage.track(nangoProps, taskId);
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
@@ -108,7 +108,7 @@ function startProcedure() {
                 } finally {
                     clearInterval(heartbeat);
                     abortControllers.delete(taskId);
-                    usage.untrack(taskId);
+                    await usage.untrack(nangoProps, taskId);
                     logger.info(`Task ${taskId} completed`);
                 }
             });
