@@ -12639,23 +12639,27 @@ provenexpert:
         - marketing
     auth_mode: BASIC
     proxy:
-        base_url: https://www.provenexpert.com/api/v1
+        base_url: https://www.provenexpert.com/api/
         verification:
             method: POST
             endpoints:
-                - /rating/summary/get
+                - v1/rating/summary/get
     docs: https://nango.dev/docs/api-integrations/provenexpert
     docs_connect: https://nango.dev/docs/api-integrations/provenexpert/connect
     credentials:
         username:
             type: string
             title: API ID
-            description: Your ProvenExpert API ID
+            description: Your ProvenExpert API ID.
+            pattern: '^[A-Za-z0-9]{32}$'
+            example: '3yxp1qwZl5UAmyHZ5qRC2Sbpk5KAlEDZ'
             doc_section: '#step-1-getting-your-credentials'
         password:
             type: string
             title: API Key
-            description: Your ProvenExpert API Key
+            description: Your ProvenExpert API Key.
+            pattern: '^[A-Za-z0-9]{43}$'
+            example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
             doc_section: '#step-1-getting-your-credentials'
 
 qualtrics:

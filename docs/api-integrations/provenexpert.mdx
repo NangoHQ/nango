@@ -21,7 +21,7 @@ Connect to ProvenExpert with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl -X POST "https://api.nango.dev/proxy/rating/summary/get" \
+            curl -X POST "https://api.nango.dev/proxy/v1/rating/summary/get" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to ProvenExpert with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/rating/summary/get',
+            endpoint: '/v1/rating/summary/get',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
