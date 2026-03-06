@@ -16899,8 +16899,9 @@ webinarjam:
         apiKey:
             type: string
             title: API Key
-            description: Your WebinarJam API key
-            pattern: '^[a-zA-Z0-9]{64}$'
+            description: Your WebinarJam API key.
+            example: b7e2d4f1-8a3c-4e6b-9d5f-1a2b3c4d5e6f
+            format: uuid
             doc_section: '#step-1-getting-your-api-key'
 
 whatsapp-business:
