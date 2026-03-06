@@ -9,6 +9,8 @@ export interface SdkLogger {
     level: LogLevel | 'off';
 }
 
+export type ConflictResolutionMode = 'IN_MEMORY' | 'REDIS';
+
 export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event';
 
 export interface NangoProps {
