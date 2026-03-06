@@ -44,14 +44,11 @@ class EnvironmentService {
     }
 
     async getById(id: number): Promise<DBEnvironment | null> {
-        return await db.readOnly.transaction(async (trx) => {
-            const env = await this.getByIdWithoutSecrets(trx, id);
-            if (!env) {
-                return null;
-            }
-            await this.setSecretsOnEnv(trx, env);
-            return env;
-        });
+        const env = await this.getByIdWithoutSecrets(db.readOnly, id);
+        if (!env) {
+            return null;
+        }
+        return env;
     }
 
     private async getByIdWithoutSecrets(trx: Knex, id: number): Promise<DBEnvironment | null> {
@@ -72,14 +69,11 @@ class EnvironmentService {
     }
 
     async getByEnvironmentName(accountId: number, name: string): Promise<DBEnvironment | null> {
-        return await db.readOnly.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE).select('*').where({ account_id: accountId, name, deleted: false });
-            if (!environment) {
-                return null;
-            }
-            await this.setSecretsOnEnv(trx, environment);
-            return environment;
-        });
+        const [environment] = await db.readOnly<DBEnvironment>(TABLE).select('*').where({ account_id: accountId, name, deleted: false });
+        if (!environment) {
+            return null;
+        }
+        return environment;
     }
 
     async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
@@ -98,9 +92,6 @@ class EnvironmentService {
             if (created.isErr()) {
                 throw created.error;
             }
-            const secret = created.value;
-            environment.secret_key = secret.secret;
-            environment.pending_secret_key = null;
             return environment;
         });
     }
@@ -123,22 +114,16 @@ class EnvironmentService {
     }
 
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
-        return await db.readOnly.transaction(async (trx) => {
-            const envs = await trx<DBEnvironment>(TABLE).select('*').where({ deleted: false }).whereNotNull('otlp_settings');
-            await this.setAllSecrets(trx, envs);
-            return envs;
-        });
+        const envs = await db.readOnly<DBEnvironment>(TABLE).select('*').where({ deleted: false }).whereNotNull('otlp_settings');
+        return envs;
     }
 
     async getEnvironmentsByIds(environmentIds: number[]): Promise<DBEnvironment[]> {
         if (environmentIds.length === 0) {
             return [];
         }
-        return await db.readOnly.transaction(async (trx) => {
-            const envs = await trx<DBEnvironment>(TABLE).select('*').whereIn('id', environmentIds).andWhere({ deleted: false });
-            await this.setAllSecrets(trx, envs);
-            return envs;
-        });
+        const envs = await db.readOnly<DBEnvironment>(TABLE).select('*').whereIn('id', environmentIds).andWhere({ deleted: false });
+        return envs;
     }
 
     async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
@@ -160,18 +145,15 @@ class EnvironmentService {
         environmentId: number;
         data: Omit<Partial<DBEnvironment>, 'account_id' | 'id' | 'created_at' | 'updated_at'>;
     }): Promise<DBEnvironment | null> {
-        return await db.knex.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE)
-                .where({ account_id: accountId, id: environmentId, deleted: false })
-                .update(data)
-                .returning('*');
-            if (!environment) {
-                trx.rollback();
-                return null;
-            }
-            await this.setSecretsOnEnv(trx, environment);
-            return environment;
-        });
+        const [environment] = await db
+            .knex<DBEnvironment>(TABLE)
+            .where({ account_id: accountId, id: environmentId, deleted: false })
+            .update(data)
+            .returning('*');
+        if (!environment) {
+            return null;
+        }
+        return environment;
     }
 
     async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[]> {
@@ -411,46 +393,6 @@ class EnvironmentService {
 
     async hardDelete(id: number): Promise<number> {
         return await db.knex.from<DBEnvironment>(TABLE).where({ id }).delete();
-    }
-
-    private async setAllSecrets(trx: Knex, envs: DBEnvironment[]) {
-        // Precondition: `envs` contains no duplicates.
-
-        // Note: For now, exactly one default secret per environment exists
-        // and zero or one non-default secret: The pending secret (during rotation).
-        const envByID = new Map(envs.map((env) => [env.id, env]));
-        const allSecrets = await secretService.getAllSecretsForAllEnvs(trx, Array.from(envByID.keys()));
-        if (allSecrets.isErr()) {
-            throw allSecrets.error;
-        }
-        for (const [envId, secrets] of allSecrets.value) {
-            const env = envByID.get(envId)!;
-            env.pending_secret_key = null;
-            for (const secret of secrets) {
-                if (secret.is_default) {
-                    env.secret_key = secret.secret;
-                } else {
-                    env.pending_secret_key = secret.secret;
-                }
-            }
-        }
-    }
-
-    private async setSecretsOnEnv(trx: Knex, env: DBEnvironment) {
-        // Note: For now, exactly one default secret per environment exists
-        // and zero or one non-default secret: The pending secret (during rotation).
-        env.pending_secret_key = null;
-        const secrets = await secretService.getAllSecretsForEnv(trx, env.id);
-        if (secrets.isErr()) {
-            throw secrets.error;
-        }
-        for (const secret of secrets.value) {
-            if (secret.is_default) {
-                env.secret_key = secret.secret;
-            } else {
-                env.pending_secret_key = secret.secret;
-            }
-        }
     }
 }
 

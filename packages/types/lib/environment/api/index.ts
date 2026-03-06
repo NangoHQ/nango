@@ -38,6 +38,8 @@ export type GetEnvironment = Endpoint<{
             name: string;
             email: string;
             slack_notifications_channel: string | null;
+            secret: string;
+            pending_secret: string | null;
         };
     };
 }>;
