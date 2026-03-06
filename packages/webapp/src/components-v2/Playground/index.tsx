@@ -6,7 +6,6 @@ import { CodeBlock } from '../CodeBlock';
 import { IntegrationLogo } from '../IntegrationLogo';
 import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription } from '../ui/alert';
 import { Badge } from '../ui/badge';
-import { BinaryToggle } from '../ui/binary-toggle';
 import { Button } from '../ui/button';
 import { Combobox } from '../ui/combobox';
 import { Input } from '../ui/input';
@@ -69,7 +68,6 @@ export const Playground: React.FC = () => {
     const setPlaygroundConnection = useStore((s) => s.setPlaygroundConnection);
     const setPlaygroundFunction = useStore((s) => s.setPlaygroundFunction);
     const inputValues = useStore((s) => s.playground.inputValues);
-    const setPlaygroundInputValues = useStore((s) => s.setPlaygroundInputValues);
     const setPlaygroundInputValue = useStore((s) => s.setPlaygroundInputValue);
 
     const navigate = useNavigate();
@@ -168,36 +166,6 @@ export const Playground: React.FC = () => {
     const [result, setResult] = useState<RunResult | null>(null);
     const [inputErrors, setInputErrors] = useState<Record<string, string>>({});
     const abortRef = useRef<AbortController | null>(null);
-
-    useEffect(() => {
-        if (!playgroundOpen || playgroundFunctionType !== 'action') {
-            return;
-        }
-
-        if (inputFields.length === 0) {
-            return;
-        }
-
-        const requiredBooleanFields = inputFields.filter((f) => f.type === 'boolean' && f.required);
-        if (requiredBooleanFields.length === 0) {
-            return;
-        }
-
-        const next: Record<string, string> = { ...inputValues };
-        let changed = false;
-
-        for (const field of requiredBooleanFields) {
-            const current = next[field.name];
-            if (current === undefined || current === '') {
-                next[field.name] = 'false';
-                changed = true;
-            }
-        }
-
-        if (changed) {
-            setPlaygroundInputValues(next);
-        }
-    }, [playgroundOpen, playgroundFunctionType, inputFields, inputValues, setPlaygroundInputValues]);
 
     const integrationByKey = useMemo(() => {
         const list = integrations?.data ?? [];
@@ -569,8 +537,6 @@ export const Playground: React.FC = () => {
 
     const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunction);
     const isSync = playgroundFunctionType === 'sync';
-    const showRunAgain = Boolean(result && result.state !== 'invalid_input');
-    const showLogLinks = Boolean(result && result.state !== 'invalid_input');
 
     let resultJson = '';
     if (result) {
@@ -590,17 +556,17 @@ export const Playground: React.FC = () => {
             <SheetContent
                 side="right"
                 className={cn(
-                    'bg-bg-elevated dark:bg-bg-elevated text-text-primary border border-border-muted rounded-xl shadow-2xl p-0 gap-0',
-                    'top-20 bottom-6 right-6 h-auto',
-                    'w-[calc(100vw-2rem)] sm:w-[600px] sm:max-w-[600px]',
+                    'bg-bg-elevated dark:bg-bg-elevated text-text-primary border border-border-muted rounded-xl shadow-2xl p-6',
+                    'flex flex-col items-start gap-8',
+                    'inset-y-auto bottom-auto top-20 right-6 h-[748px] w-[537px] max-w-none sm:max-w-none',
                     '[&>button]:hidden'
                 )}
             >
                 {/* Header */}
-                <div className="flex items-start justify-between px-6 pt-5 pb-4 shrink-0">
+                <div className="flex w-full shrink-0 items-start justify-between">
                     <div className="min-w-0">
-                        <h2 className="text-text-primary text-body-large-semi">Playground</h2>
-                        <p className="text-text-tertiary text-body-small-regular mt-0.5">Quickly run any function.</p>
+                        <h2 className="text-text-primary text-heading-medium">Playground</h2>
+                        <p className="text-text-secondary text-body-medium-medium">Quickly run any function.</p>
                     </div>
                     <Button variant="ghost" size="icon" className="size-7 mt-0.5" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
                         <X className="size-4" />
@@ -608,10 +574,10 @@ export const Playground: React.FC = () => {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto px-6 pb-6 flex flex-col gap-4">
+                <div className="flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto">
                     {/* Select rows */}
-                    <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-4">
-                        <label className="text-text-primary text-body-small-regular">Integration</label>
+                    <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-6">
+                        <label className="text-text-primary text-label-large">Integration</label>
                         <Combobox
                             value={playgroundIntegration || ''}
                             onValueChange={handleIntegrationChange}
@@ -626,7 +592,10 @@ export const Playground: React.FC = () => {
 
                                 return (
                                     <>
-                                        <IntegrationLogo provider={integration.provider} className="size-5 p-0.5" />
+                                        <IntegrationLogo
+                                            provider={integration.provider}
+                                            className="size-6 rounded-[3.871px] px-[3.484px] pt-[5.033px] pb-[4.708px] !bg-transparent !border-transparent"
+                                        />
                                         <span className="truncate">{integration.display_name || integration.unique_key}</span>
                                     </>
                                 );
@@ -639,19 +608,24 @@ export const Playground: React.FC = () => {
 
                                 return (
                                     <>
-                                        <IntegrationLogo provider={integration.provider} className="size-5 p-0.5" />
+                                        <IntegrationLogo
+                                            provider={integration.provider}
+                                            className="size-6 rounded-[3.871px] px-[3.484px] pt-[5.033px] pb-[4.708px] !bg-transparent !border-transparent"
+                                        />
                                         <span className="truncate">{integration.display_name || integration.unique_key}</span>
                                     </>
                                 );
                             }}
                             footer={
                                 <div className="flex items-center justify-between gap-3">
-                                    <span className="text-text-tertiary text-body-small-regular">Need a new integration?</span>
+                                    <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                        Need a new integration?
+                                    </span>
                                     <Button
                                         type="button"
                                         variant="secondary"
                                         size="sm"
-                                        className="h-6 text-xs px-2 gap-1"
+                                        className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-xs gap-0.5 justify-center items-center"
                                         onClick={() => {
                                             setPlaygroundOpen(false);
                                             navigate(`/${env}/integrations/create`);
@@ -663,7 +637,7 @@ export const Playground: React.FC = () => {
                             }
                         />
 
-                        <label className="text-text-primary text-body-small-regular">Connection</label>
+                        <label className="text-text-primary text-label-large">Connection</label>
                         <Combobox
                             value={playgroundConnection || ''}
                             onValueChange={handleConnectionChange}
@@ -675,12 +649,14 @@ export const Playground: React.FC = () => {
                             onSearchValueChange={setConnectionSearch}
                             footer={
                                 <div className="flex items-center justify-between gap-3">
-                                    <span className="text-text-tertiary text-body-small-regular">Need a new connection?</span>
+                                    <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                        Need a new connection?
+                                    </span>
                                     <Button
                                         type="button"
                                         variant="secondary"
                                         size="sm"
-                                        className="h-6 text-xs px-2 gap-1"
+                                        className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-xs gap-0.5 justify-center items-center"
                                         onClick={() => {
                                             setPlaygroundOpen(false);
                                             navigate(`/${env}/connections/create`);
@@ -692,7 +668,7 @@ export const Playground: React.FC = () => {
                             }
                         />
 
-                        <label className="text-text-primary text-body-small-regular">Function</label>
+                        <label className="text-text-primary text-label-large">Function</label>
                         <Combobox
                             value={playgroundFunction || ''}
                             onValueChange={handleFunctionChange}
@@ -714,16 +690,18 @@ export const Playground: React.FC = () => {
                                 );
                             }}
                             renderOption={(opt) => {
+                                return <span className="truncate">{opt.label}</span>;
+                            }}
+                            renderOptionRight={(opt) => {
                                 const flow = flowByName.get(opt.value);
+                                if (!flow) {
+                                    return null;
+                                }
+
                                 return (
-                                    <>
-                                        <span className="truncate">{opt.label}</span>
-                                        {flow && (
-                                            <Badge variant="gray" size="xs" className="normal-case font-mono">
-                                                {flow.resolvedType}
-                                            </Badge>
-                                        )}
-                                    </>
+                                    <span className="flex h-5 min-w-5 items-center justify-center gap-1 rounded-[4px] bg-bg-elevated px-1 text-body-small-regular text-text-primary">
+                                        {flow.resolvedType}
+                                    </span>
                                 );
                             }}
                         />
@@ -732,7 +710,7 @@ export const Playground: React.FC = () => {
                     {/* Inputs / metadata */}
                     {selectedFlow && (isSync || inputFields.length > 0) && (
                         <div className="grid grid-cols-[110px_1fr] gap-x-4">
-                            <label className="text-text-primary text-body-small-regular pt-1">{isSync ? 'Metadata' : 'Inputs'}</label>
+                            <label className="text-text-primary text-label-large">{isSync ? 'Metadata' : 'Inputs'}</label>
                             <div className="min-w-0 flex flex-col gap-3">
                                 {isSync ? (
                                     <>
@@ -753,7 +731,7 @@ export const Playground: React.FC = () => {
                                                 )}
                                                 <AlertButton asChild variant="info">
                                                     <a
-                                                        href="https://docs.nango.dev/reference/integration-configuration#connection-configuration"
+                                                        href="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
@@ -770,7 +748,7 @@ export const Playground: React.FC = () => {
                                                 displayLanguage="JSON"
                                                 icon={<Braces />}
                                                 code={
-                                                    JSON.stringify(connectionMetadata || {}, null, 4).length < 250_000
+                                                    JSON.stringify(connectionMetadata || {}, null, 4).length < JSON_DISPLAY_LIMIT
                                                         ? JSON.stringify(connectionMetadata || {}, null, 4)
                                                         : 'Connection metadata too large to display'
                                                 }
@@ -783,37 +761,24 @@ export const Playground: React.FC = () => {
                                     inputFields.map((field) => (
                                         <div key={field.name} className="flex flex-col gap-1">
                                             <div className="flex items-center justify-between gap-3">
-                                                <span className="text-body-small-regular text-text-primary min-w-0 truncate">
+                                                <span className="text-text-primary text-body-medium-medium">
                                                     {field.name}
-                                                    {field.required && <span className="text-feedback-error-fg ml-0.5">*</span>}
+                                                    {field.required && <span className="text-feedback-error-fg text-body-medium-medium">*</span>}
                                                 </span>
                                                 <Badge variant="gray" size="xs" className="normal-case font-mono shrink-0">
                                                     {String(field.type)}
                                                 </Badge>
                                             </div>
                                             {field.description && <p className="text-text-tertiary text-xs">{field.description}</p>}
-                                            {field.type === 'boolean' ? (
-                                                <BinaryToggle
-                                                    className="mt-1"
-                                                    value={String(inputValues[field.name] ?? '').toLowerCase() === 'true'}
-                                                    onChange={(value) => {
-                                                        setPlaygroundInputValue(field.name, value ? 'true' : 'false');
-                                                        clearInputError(field.name);
-                                                    }}
-                                                    offLabel="false"
-                                                    onLabel="true"
-                                                />
-                                            ) : (
-                                                <Input
-                                                    value={inputValues[field.name] || ''}
-                                                    aria-invalid={Boolean(inputErrors[field.name])}
-                                                    placeholder={field.type === 'object' ? '{}' : field.type === 'array' ? '[]' : undefined}
-                                                    onChange={(e) => {
-                                                        setPlaygroundInputValue(field.name, e.target.value);
-                                                        clearInputError(field.name);
-                                                    }}
-                                                />
-                                            )}
+                                            <Input
+                                                value={inputValues[field.name] || ''}
+                                                aria-invalid={Boolean(inputErrors[field.name])}
+                                                placeholder={field.type === 'object' ? '{}' : field.type === 'array' ? '[]' : undefined}
+                                                onChange={(e) => {
+                                                    setPlaygroundInputValue(field.name, e.target.value);
+                                                    clearInputError(field.name);
+                                                }}
+                                            />
                                             {inputErrors[field.name] && <p className="text-feedback-error-fg text-xs">{inputErrors[field.name]}</p>}
                                         </div>
                                     ))
@@ -834,7 +799,7 @@ export const Playground: React.FC = () => {
                                     Cancel run
                                 </Button>
                             </>
-                        ) : showRunAgain ? (
+                        ) : result ? (
                             <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
                                 <RotateCcw className="size-4" />
                                 Run again
@@ -876,37 +841,35 @@ export const Playground: React.FC = () => {
                                                   ? `Ran in ${(result.durationMs / 1000).toFixed(1)}s`
                                                   : `Failed after ${(result.durationMs / 1000).toFixed(1)}s`}
                                     </AlertDescription>
-                                    {showLogLinks && (
-                                        <AlertActions>
-                                            {isSync && playgroundIntegration && playgroundConnection && (
-                                                <AlertButtonLink
-                                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}`}
-                                                    variant={result.success ? 'success-secondary' : 'error-secondary'}
-                                                >
-                                                    Records
-                                                </AlertButtonLink>
-                                            )}
-                                            {playgroundIntegration && playgroundConnection && playgroundFunction && (
-                                                <AlertButtonLink
-                                                    to={
-                                                        result.operationId
-                                                            ? getLogsUrl({ env, operationId: result.operationId })
-                                                            : getLogsUrl({
-                                                                  env,
-                                                                  integrations: playgroundIntegration,
-                                                                  connections: playgroundConnection,
-                                                                  syncs: playgroundFunction
-                                                              })
-                                                    }
-                                                    variant={result.success ? 'success-secondary' : 'error-secondary'}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    Logs <ExternalLink />
-                                                </AlertButtonLink>
-                                            )}
-                                        </AlertActions>
-                                    )}
+                                    <AlertActions>
+                                        {isSync && playgroundIntegration && playgroundConnection && (
+                                            <AlertButtonLink
+                                                to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}`}
+                                                variant={result.success ? 'success-secondary' : 'error-secondary'}
+                                            >
+                                                Records
+                                            </AlertButtonLink>
+                                        )}
+                                        {playgroundIntegration && playgroundConnection && playgroundFunction && (
+                                            <AlertButtonLink
+                                                to={
+                                                    result.operationId
+                                                        ? getLogsUrl({ env, operationId: result.operationId })
+                                                        : getLogsUrl({
+                                                              env,
+                                                              integrations: playgroundIntegration,
+                                                              connections: playgroundConnection,
+                                                              syncs: playgroundFunction
+                                                          })
+                                                }
+                                                variant={result.success ? 'success' : 'error'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Logs <ExternalLink />
+                                            </AlertButtonLink>
+                                        )}
+                                    </AlertActions>
                                 </Alert>
 
                                 <CodeBlock language="json" displayLanguage="JSON" icon={<Braces />} code={resultJson} />
