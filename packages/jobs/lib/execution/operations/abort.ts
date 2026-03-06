@@ -2,6 +2,7 @@ import { getKVStore } from '@nangohq/kvstore';
 import { accountService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { setTaskSuccess } from './state.js';
 import { orchestratorClient } from '../../clients.js';
 import { envs } from '../../env.js';
 import { logger } from '../../logger.js';
@@ -28,10 +29,8 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
         }
     }
 
-    const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
-    if (setSuccess.isErr()) {
-        logger.error(`failed to set cancel task ${task.id} as succeeded`, setSuccess.error);
-    }
+    await setTaskSuccess({ taskId: task.id, output: {} });
+
     return abortedScript;
 }
 

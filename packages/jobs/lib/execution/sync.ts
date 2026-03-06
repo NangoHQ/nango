@@ -749,10 +749,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             lastSyncDate: lastSyncDate || undefined,
             startedAt: new Date()
         });
-        const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
-        if (setSuccess.isErr()) {
-            logger.error(`failed to set cancel task ${task.id} as succeeded`, setSuccess.error);
-        }
+        await setTaskSuccess({ taskId: task.id, output: {} });
         return Ok(undefined);
     } catch (err) {
         const error = new Error(`Failed to cancel`, { cause: err });
