@@ -252,6 +252,7 @@
               "integrations/all/amazon-selling-partner",
               "integrations/all/amazon-selling-partner-beta",
               "api-integrations/amplitude",
+              "api-integrations/amplitude-mcp",
               "integrations/all/anrok",
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
