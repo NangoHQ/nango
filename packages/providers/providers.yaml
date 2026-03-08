@@ -9721,6 +9721,7 @@ mailjet:
             type: string
             title: Secret Key
             description: Your Mailjet Secret Key.
+            secret: true
             doc_section: '#step-1-getting-your-credentials'
 
 mcp-generic:
