@@ -9715,12 +9715,12 @@ mailjet:
         username:
             type: string
             title: API Key
-            description: Your Mailjet API Key
+            description: Your Mailjet API Key.
             doc_section: '#step-1-getting-your-credentials'
         password:
             type: string
             title: Secret Key
-            description: Your Mailjet Secret Key
+            description: Your Mailjet Secret Key.
             doc_section: '#step-1-getting-your-credentials'
 
 mcp-generic:
