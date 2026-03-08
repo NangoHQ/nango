@@ -9716,12 +9716,16 @@ mailjet:
             type: string
             title: API Key
             description: Your Mailjet API Key.
+            pattern: '^[a-f0-9]{32}$'
+            example: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
             doc_section: '#step-1-getting-your-credentials'
         password:
             type: string
             title: Secret Key
             description: Your Mailjet Secret Key.
             secret: true
+            pattern: '^[a-f0-9]{32}$'
+            example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
 mcp-generic:
