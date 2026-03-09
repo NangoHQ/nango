@@ -1,21 +1,44 @@
-import useSWR from 'swr';
+import { useQuery } from '@tanstack/react-query';
 
-import { apiFetch, swrFetcher } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { SWRError } from '../utils/api';
 import type { AcceptInvite, DeclineInvite, DeleteInvite, GetInvite, PostInvite } from '@nangohq/types';
 
 export function useInvite(token: string | undefined) {
-    const { data, error, mutate } = useSWR<GetInvite['Success'], SWRError<GetInvite['Errors']>>(token ? `/api/v1/invite/${token}` : null, swrFetcher);
+    return useQuery<
+        | {
+              status: 200;
+              json: GetInvite['Success'];
+          }
+        | {
+              status: 400;
+              json: GetInvite['Errors'];
+          },
+        APIError
+    >({
+        queryKey: ['invite', token],
+        queryFn: async () => {
+            const res = await apiFetch(`/api/v1/invite/${token}`);
 
-    const loading = !data && !error;
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as GetInvite['Success']
+                };
+            }
 
-    return {
-        loading,
-        error: error?.json,
-        data: data?.data,
-        mutate
-    };
+            if (res.status === 400) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as GetInvite['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        },
+        enabled: !!token
+    });
 }
 
 export async function apiPostInvite(env: string, body: PostInvite['Body']) {
