@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { JSONSchema7 } from 'json-schema';
 
 function zodSchemaToJsonSchema(schema: z.ZodTypeAny): JSONSchema7 | null {
-    if (schema.constructor.name === 'ZodVoid') {
+    if (schema instanceof z.ZodVoid) {
         return { type: 'null' };
     }
 
@@ -12,7 +12,7 @@ function zodSchemaToJsonSchema(schema: z.ZodTypeAny): JSONSchema7 | null {
         unrepresentable: 'any',
         override(ctx) {
             // Override date behavior
-            if (ctx.zodSchema._zod.def.type === 'date') {
+            if (ctx.zodSchema instanceof z.ZodDate) {
                 ctx.jsonSchema.type = 'string';
                 (ctx.jsonSchema as Record<string, unknown>)['format'] = 'date-time';
             }
@@ -29,7 +29,6 @@ function zodSchemaToJsonSchema(schema: z.ZodTypeAny): JSONSchema7 | null {
  * Converts a map of named Zod schemas into a single JSON Schema document
  * with a `definitions` block containing each model.
  *
- * Zod schemas that resolve to `void` are silently skipped.
  * @example
  * const schema = buildJsonSchemaDefinitionsFromZodModels({
  *   User: z.object({ id: z.string(), age: z.number() }),
