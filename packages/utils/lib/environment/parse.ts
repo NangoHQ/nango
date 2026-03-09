@@ -155,6 +155,7 @@ export const ENVS = z.object({
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().default(1),
+    RUNNER_CONFLICT_RESOLUTION_MODE: z.enum(['IN_MEMORY', 'REDIS']).default('IN_MEMORY'),
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
@@ -171,6 +172,7 @@ export const ENVS = z.object({
     RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(1.4),
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),

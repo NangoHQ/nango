@@ -47,7 +47,7 @@ function healthProcedure() {
 function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
-        .mutation((arg): boolean => {
+        .mutation(async (arg): Promise<boolean> => {
             const startTime = Date.now();
             const { taskId, nangoProps, code, codeParams } = arg.input;
             logger.info('Received task', {
@@ -60,14 +60,9 @@ function startProcedure() {
                 input: codeParams
             });
 
-            // Sometimes we can receive the same job (http retry) or a job for the same sync (orchestrator miss scheduling)
-            // Here is the last safety net to be sure nothing runs in parallel
-            if (usage.hasConflictingSync(nangoProps)) {
-                logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
-                throw new Error('Conflicting sync detected');
-            }
+            // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
+            await usage.track(nangoProps, taskId);
 
-            usage.track(nangoProps, taskId);
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
@@ -92,6 +87,11 @@ function startProcedure() {
                     if (res.isOk()) {
                         lastSuccessHeartbeatAt = Date.now();
                     }
+                    try {
+                        await usage.trackForConflicts(nangoProps, { refresh: true });
+                    } catch (err) {
+                        logger.error('Failed to update conflict tracking with new ttl', { error: err });
+                    }
                 }, heartbeatIntervalMs);
 
                 try {
@@ -110,7 +110,7 @@ function startProcedure() {
                 } finally {
                     clearInterval(heartbeat);
                     abortControllers.delete(taskId);
-                    usage.untrack(taskId);
+                    await usage.untrack(taskId);
                     logger.info(`Task ${taskId} completed`);
                 }
             });
