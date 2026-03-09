@@ -91,33 +91,4 @@ describe('RunnerMonitor conflict tracking', () => {
             expect(await tracker.exists('function:sync:sync-untrack')).toBe(false);
         });
     });
-
-    describe('hasConflictingSync', () => {
-        it('returns true when same syncId is already tracked', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'conflict-sync' });
-            await monitor.track(nangoProps, 'task-a');
-
-            const newTask = createNangoProps({ scriptType: 'sync', syncId: 'conflict-sync' });
-            const hasConflict = await monitor.hasConflictingSync(newTask);
-            expect(hasConflict).toBe(true);
-        });
-
-        it('returns false when syncId differs', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-one' });
-            await monitor.track(nangoProps, 'task-b');
-
-            const newTask = createNangoProps({ scriptType: 'sync', syncId: 'sync-two' });
-            const hasConflict = await monitor.hasConflictingSync(newTask);
-            expect(hasConflict).toBe(false);
-        });
-
-        it('returns false when scriptType is not sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-1' });
-            await monitor.track(nangoProps, 'task-c');
-
-            const newTask = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-1' });
-            const hasConflict = await monitor.hasConflictingSync(newTask);
-            expect(hasConflict).toBe(false);
-        });
-    });
 });

@@ -51,11 +51,12 @@ export class RunnerMonitor {
             try {
                 await this.conflictTracking.tracker.set(this.generateConflictKey(nangoProps), '1', {
                     canOverride: opts.refresh,
-                    ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_HEARTBEAT_INTERVAL_MULTIPLIER
+                    ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER
                 });
             } catch (err) {
+                logger.error('Failed to track sync for conflicts', { error: err });
                 if (err instanceof Error && err.message.includes('set_key_already_exists')) {
-                    throw new Error('conflicting_sync');
+                    throw new Error('Conflicting sync detected');
                 }
                 throw err;
             }
@@ -159,15 +160,6 @@ export class RunnerMonitor {
             }
             this.checkIdle(nextTimeout);
         }, timeoutMs);
-    }
-
-    async hasConflictingSync(newTask: NangoProps): Promise<boolean> {
-        if (newTask.scriptType == 'sync') {
-            const key = `function:${newTask.scriptType}:${newTask.syncId}`;
-            const exists = await this.conflictTracking.tracker.exists(key);
-            return exists;
-        }
-        return false;
     }
 }
 
