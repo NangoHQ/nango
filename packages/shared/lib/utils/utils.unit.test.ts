@@ -412,4 +412,11 @@ describe('makeUrl', () => {
         const config = { invalidUrl: 'not-a-valid-url' };
         expect(() => utils.makeUrl(template, config)).toThrow('Invalid URL after interpolation');
     });
+
+    it('should strip credentials. prefix and interpolate with merged config', () => {
+        const template = 'https://api.example.com/auth?user=${credentials.username}';
+        const config = { username: 'alice' };
+        const result = utils.makeUrl(template, config, ['base_url']);
+        expect(result.toString()).toBe('https://api.example.com/auth?user=alice');
+    });
 });
