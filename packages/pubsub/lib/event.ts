@@ -1,4 +1,4 @@
-import type { DBTeam, DBUser } from '@nangohq/types';
+import type { DBTeam, DBUser, FunctionRuntime } from '@nangohq/types';
 
 type Serializable = string | number | boolean | Date | null | undefined | Serializable[] | { [key: string]: Serializable };
 
@@ -46,6 +46,7 @@ interface UsageEventBase<TType extends string, TPayload extends Serializable> ex
             environmentName: string;
             integrationId: string;
             connectionId: string;
+            functionRuntime?: FunctionRuntime | undefined;
         };
     };
 }

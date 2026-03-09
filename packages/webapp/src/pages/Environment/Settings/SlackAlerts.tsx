@@ -32,13 +32,27 @@ export const SlackAlertsSettings: React.FC = () => {
         const onFailure = () => {
             setSlackIsConnecting(false);
         };
-        await connectSlack({ accountUUID: environmentAndAccount.uuid, env, hostUrl: globalEnv.apiUrl, onFinish, onFailure });
+        await connectSlack({
+            accountUUID: environmentAndAccount.uuid,
+            envId: environmentAndAccount.environment.id,
+            env,
+            hostUrl: globalEnv.apiUrl,
+            onFinish,
+            onFailure
+        });
     };
 
     const slackDisconnect = async () => {
-        const res = await apiFetch(`/api/v1/connections/admin/account-${environmentAndAccount?.uuid}-${env}?env=${env}`, {
+        let res = await apiFetch(`/api/v1/connections/admin/account-${environmentAndAccount?.uuid}-${environmentAndAccount?.environment.id}?env=${env}`, {
             method: 'DELETE'
         });
+
+        // Fall back to legacy name-based connection id for existing installations
+        if (res.status === 404) {
+            res = await apiFetch(`/api/v1/connections/admin/account-${environmentAndAccount?.uuid}-${env}?env=${env}`, {
+                method: 'DELETE'
+            });
+        }
 
         if (res.status !== 204) {
             toast({ title: 'There was a problem when disconnecting Slack', variant: 'error' });

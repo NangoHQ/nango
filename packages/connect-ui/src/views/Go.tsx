@@ -18,7 +18,7 @@ import { useI18n } from '@/lib/i18n';
 import { useNango } from '@/lib/nango';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { cn, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
+import { cn, compactErrorDisplay, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
@@ -147,6 +147,13 @@ export const Go: React.FC = () => {
         // Base credentials are usually the first in the list so we start here
         for (const name of Object.keys(baseForm.shape)) {
             if ((name === 'client_certificate' || name === 'client_private_key') && provider.require_client_certificate !== true) {
+                continue;
+            }
+            if (
+                name === 'client_secret' &&
+                (provider.token_request_auth_method === 'private_key_jwt' || (provider.credentials && !('client_secret' in provider.credentials)))
+            ) {
+                baseForm.shape['client_secret'] = z.string().optional();
                 continue;
             }
             order += 1;
@@ -459,7 +466,9 @@ export const Go: React.FC = () => {
                                 </button>
                                 {showErrorDetails && (
                                     <div className="border-t border-subtle px-4 py-3 bg-muted/30">
-                                        <pre className="text-xs font-mono text-red-600 whitespace-pre-wrap break-all overflow-x-hidden">{error}</pre>
+                                        <pre className="text-xs font-mono text-red-600 whitespace-pre-wrap break-all overflow-x-hidden">
+                                            {compactErrorDisplay(error)}
+                                        </pre>
                                     </div>
                                 )}
                             </div>
@@ -514,7 +523,7 @@ export const Go: React.FC = () => {
                 {error && (
                     <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
                         <TriangleAlert className="w-5 h-5" />
-                        {error}
+                        {compactErrorDisplay(error)}
                     </p>
                 )}
 

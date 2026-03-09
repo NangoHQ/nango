@@ -1,0 +1,79 @@
+---
+title: 'Microsoft Teams Bot'
+sidebarTitle: 'Microsoft Teams Bot'
+description: 'Integrate your application with the Microsoft Teams Bot Framework'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft Teams Bot with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft Teams Bot_.
+    </Step>
+    <Step title="Authorize Microsoft Teams Bot">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, enter your **Tenant ID** then log in to Microsoft. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Bot / Microsoft API">
+    Use the proxy to call the [Bot Framework Connector](https://learn.microsoft.com/en-us/azure/bot-service/rest-api/bot-framework-rest-connector-api-reference) or Microsoft Graph. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v3/conversations" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v3/conversations',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+    Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Microsoft Teams Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Microsoft Teams Bot](/api-integrations/microsoft-teams-bot/how-to-register-your-own-microsoft-teams-bot-oauth-app) — Create an Azure Bot resource and get credentials to connect it to Nango.
+- [Connect: Tenant ID](/api-integrations/microsoft-teams-bot/connect) — Find your Tenant ID and enter it in the Connect UI when creating a connection.
+
+Official docs: [Microsoft Graph API docs](https://learn.microsoft.com/en-us/graph/overview)
+
+## 🧩 Pre-built syncs & actions for Microsoft Teams Bot
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-teams-bot/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

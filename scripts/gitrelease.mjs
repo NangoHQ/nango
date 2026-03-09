@@ -36,8 +36,12 @@ echo`Creating tag`;
 await $`git tag -a ${nextTag} HEAD -m ${releaseMessage}`;
 
 echo`Pushing`;
-await $`git push --follow-tags origin HEAD:refs/heads/${branch}`;
-await $`git push --tags origin`;
+// Rebase on latest to handle commits that landed on ${branch} during publish
+await $`git fetch origin ${branch}`;
+await $`git rebase origin/${branch}`;
+// Push branch and tag separately — tag intentionally points to the pre-rebase commit
+await $`git push origin HEAD:refs/heads/${branch}`;
+await $`git push origin ${nextTag}`;
 
 echo`Commit pushed, publishing release...`;
 // Push GitHub release

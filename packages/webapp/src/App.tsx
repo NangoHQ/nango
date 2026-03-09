@@ -4,16 +4,16 @@ import { useEffect, useRef } from 'react';
 import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
+import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
 import { PrivateRoute } from './components/PrivateRoute';
-import { Toaster } from './components/ui/toast/Toaster';
 import { useMeta } from './hooks/useMeta';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
 import { InviteSignup } from './pages/Account/InviteSignup';
 import ResetPassword from './pages/Account/ResetPassword';
-import Signin from './pages/Account/Signin';
+import { Signin } from './pages/Account/Signin';
 import { Signup } from './pages/Account/Signup';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
@@ -194,29 +194,46 @@ const router = sentryCreateBrowserRouter([
                     {
                         path: 'project-settings',
                         element: <Navigate to="/environment-settings" />
+                    },
+                    // Not env-specific, but uses env
+                    {
+                        path: 'account-settings',
+                        element: <Navigate to="/team-settings" />
+                    },
+                    {
+                        path: 'team-settings',
+                        element: <TeamSettings />,
+                        handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'team/billing',
+                        element: <TeamBilling />,
+                        handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'user-settings',
+                        element: <UserSettings />,
+                        handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
                     }
                 ]
-            },
-            {
-                path: 'account-settings',
-                element: <Navigate to="/team-settings" />
-            },
-            {
-                path: 'team-settings',
-                element: <TeamSettings />,
-                handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
-            },
-            {
-                path: 'team/billing',
-                element: <TeamBilling />,
-                handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
-            },
-            {
-                path: 'user-settings',
-                element: <UserSettings />,
-                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
             }
         ]
+    },
+    {
+        path: '/account-settings',
+        element: <RedirectWithEnv path="team-settings" />
+    },
+    {
+        path: '/team-settings',
+        element: <RedirectWithEnv path="team-settings" />
+    },
+    {
+        path: '/team/billing',
+        element: <RedirectWithEnv path="team/billing" />
+    },
+    {
+        path: '/user-settings',
+        element: <RedirectWithEnv path="user-settings" />
     },
     {
         path: '/hn-demo',
@@ -309,6 +326,7 @@ const App = () => {
                 >
                     <RouterProvider router={router} />
                 </SWRConfig>
+                {/* TODO: Remove once remaining legacy toasts have been replaced */}
                 <ToastContainer />
             </TooltipProvider>
             <Toaster />

@@ -426,10 +426,18 @@ export class OrchestratorClient {
         }
     }
 
-    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<OrchestratorTask, ClientError>> {
+    public async succeed({
+        taskId,
+        output,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        output: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
-            body: { output, state: 'SUCCEEDED' }
+            body: { output, state: 'SUCCEEDED', nextExecutionInMs }
         });
         if ('error' in res) {
             return Err({
@@ -446,7 +454,15 @@ export class OrchestratorClient {
         }
     }
 
-    public async failed({ taskId, error }: { taskId: string; error: Error }): Promise<Result<OrchestratorTask, ClientError>> {
+    public async failed({
+        taskId,
+        error,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        error: Error;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<OrchestratorTask, ClientError>> {
         const output = {
             name: error.name,
             type: 'type' in error ? (error.type as string) : 'unknown_error',
@@ -456,7 +472,7 @@ export class OrchestratorClient {
         };
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
-            body: { output, state: 'FAILED' }
+            body: { output, state: 'FAILED', nextExecutionInMs }
         });
         if ('error' in res) {
             return Err({
@@ -473,10 +489,18 @@ export class OrchestratorClient {
         }
     }
 
-    public async cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask, ClientError>> {
+    public async cancel({
+        taskId,
+        reason,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        reason: string;
+        nextExecutionInMs?: number;
+    }): Promise<Result<OrchestratorTask, ClientError>> {
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
-            body: { output: reason, state: 'CANCELLED' }
+            body: { output: reason, state: 'CANCELLED', nextExecutionInMs }
         });
         if ('error' in res) {
             return Err({

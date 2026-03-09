@@ -7,7 +7,14 @@ import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
 import type { Config as ProviderConfig } from '../models/index.js';
-import type { AuthorizationTokenResponse, ConnectionConfig, DBConnectionDecrypted, ProviderOAuth2, RefreshTokenResponse } from '@nangohq/types';
+import type {
+    AuthorizationTokenResponse,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    OAuth2Credentials,
+    ProviderOAuth2,
+    RefreshTokenResponse
+} from '@nangohq/types';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
@@ -34,6 +41,7 @@ class ProviderClient {
             case 'instagram':
             case 'jobber':
             case 'microsoft-admin':
+            case 'microsoft-teams-bot':
             case 'one-drive':
             case 'sharepoint-online':
             case 'tiktok-ads':
@@ -44,6 +52,8 @@ class ProviderClient {
             case 'stripe-app-sandbox':
             case 'workday-oauth':
             case 'fanvue':
+            case 'heygen':
+            case 'mercury':
                 return true;
             default:
                 return false;
@@ -86,6 +96,8 @@ class ProviderClient {
             case 'one-drive':
             case 'sharepoint-online':
                 return this.createSharepointToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'microsoft-teams-bot':
+                return this.createMicrosoftTeamsBotToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'microsoft-admin':
                 return this.createMicrosoftAdminToken(tokenUrl, config.oauth_client_id, config.oauth_client_secret, config.oauth_scopes);
             case 'sentry-oauth':
@@ -101,6 +113,10 @@ class ProviderClient {
                 return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'fanvue':
                 return this.createFanvueToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'heygen':
+                return this.createHeyGenToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'mercury':
+                return this.createMercuryToken(tokenUrl, code, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -158,6 +174,8 @@ class ProviderClient {
                     config.oauth_client_secret,
                     connection.connection_config
                 );
+            case 'microsoft-teams-bot':
+                return this.refreshMicrosoftTeamsBotToken(interpolatedTokenUrl.href, config.oauth_client_id, config.oauth_client_secret, connection);
             case 'microsoft-admin':
                 return this.refreshMicrosoftAdminToken(interpolatedTokenUrl.href, config.oauth_client_id, config.oauth_client_secret, config.oauth_scopes);
             case 'tiktok-accounts':
@@ -194,6 +212,10 @@ class ProviderClient {
                 );
             case 'fanvue':
                 return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'mercury':
+                return this.refreshMercuryToken(interpolatedTokenUrl.href, credentials.refresh_token!);
+            case 'heygen':
+                return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -1024,6 +1046,116 @@ class ProviderClient {
         }
     }
 
+    private async createMercuryToken(tokenUrl: string, code: string, redirect_uri: string, code_verifier: string): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri,
+                code_verifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('mercury_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('mercury_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshMercuryToken(tokenUrl: string, refreshToken: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('mercury_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('mercury_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createHeyGenToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                code,
+                client_id,
+                grant_type: 'authorization_code',
+                redirect_uri,
+                code_verifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('heygen_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('heygen_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshHeyGenToken(refreshTokenUrl: string, refreshToken: string, client_id: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(refreshTokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('heygen_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('heygen_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
     private async introspectedSalesforceTokenExpired(
         accessToken: string,
         clientId: string,
@@ -1099,6 +1231,41 @@ class ProviderClient {
         }
     }
 
+    private async createMicrosoftTeamsBotToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                code: code,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code'
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('microsoft_teams_bot_token_request_error', response.data);
+        } catch (err: any) {
+            console.log(err);
+            throw new NangoError('microsoft_teams_bot_token_request_error', stringifyError(err));
+        }
+    }
+
     private async refreshSharepointToken(
         tokenUrl: string,
         refreshToken: string,
@@ -1161,6 +1328,55 @@ class ProviderClient {
             throw new NangoError('sharepoint_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('sharepoint_refresh_token_request_error', err.message);
+        }
+    }
+
+    private async refreshMicrosoftTeamsBotToken(tokenUrl: string, clientId: string, clientSecret: string, connection: DBConnectionDecrypted): Promise<object> {
+        try {
+            const credentials = connection.credentials as OAuth2Credentials;
+            const connectionConfig = connection.connection_config;
+            const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+
+            const graphBody = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: credentials.refresh_token!,
+                grant_type: 'refresh_token'
+            };
+            const graphResponse = await axios.post(tokenUrl, graphBody, { headers });
+            if (graphResponse.status !== 200 || !graphResponse.data) {
+                throw new NangoError('microsoft_teams_bot_refresh_token_request_error', graphResponse.data);
+            }
+            const graphToken = graphResponse.data as Record<string, unknown>;
+
+            const botHostTenantId = connectionConfig['botHostTenantId'];
+            if (!botHostTenantId) {
+                return graphToken;
+            }
+
+            const botTokenUrl = `https://login.microsoftonline.com/${botHostTenantId}/oauth2/v2.0/token`;
+            const botBody = new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'client_credentials',
+                scope: 'https://api.botframework.com/.default'
+            });
+            const botResponse = await axios.post(botTokenUrl, botBody.toString(), { headers });
+            if (botResponse.status !== 200 || !botResponse.data?.access_token) {
+                throw new NangoError('microsoft_teams_bot_bot_token_request_error', botResponse.data);
+            }
+            const expiresIn = Number(botResponse.data.expires_in) || 3600;
+            const botFrameworkAccessToken = {
+                access_token: botResponse.data.access_token,
+                expires_in: botResponse.data.expires_in,
+                expires_at: Date.now() + expiresIn * 1000
+            };
+            return {
+                ...graphToken,
+                botFrameworkAccessToken
+            };
+        } catch (err: any) {
+            throw new NangoError('microsoft_teams_bot_refresh_token_request_error', stringifyError(err));
         }
     }
 

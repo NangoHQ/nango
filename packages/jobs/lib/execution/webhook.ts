@@ -30,7 +30,18 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type {
+    CheckpointRange,
+    ConnectionJobs,
+    DBEnvironment,
+    DBSyncConfig,
+    DBTeam,
+    FunctionRuntime,
+    NangoProps,
+    RuntimeContext,
+    SdkLogger,
+    TelemetryBag
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -210,11 +221,15 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 export async function handleWebhookSuccess({
     taskId,
     nangoProps,
-    telemetryBag
+    telemetryBag,
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
 
@@ -328,11 +343,13 @@ export async function handleWebhookSuccess({
                 type: 'webhook',
                 functionName: nangoProps.syncConfig.sync_name,
                 success: true,
-                telemetryBag
+                telemetryBag,
+                functionRuntime
             }
         }
     });
 
+    await logCtx.enrichOperation({ meta: { checkpoints } });
     await logCtx.success();
 }
 
@@ -340,12 +357,16 @@ export async function handleWebhookError({
     taskId,
     nangoProps,
     error,
-    telemetryBag
+    telemetryBag,
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -388,7 +409,9 @@ export async function handleWebhookError({
         error,
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
-        telemetryBag
+        telemetryBag,
+        functionRuntime,
+        checkpoints
     });
 }
 
@@ -408,7 +431,9 @@ async function onFailure({
     runTime,
     error,
     endUser,
-    telemetryBag
+    telemetryBag,
+    functionRuntime,
+    checkpoints
 }: {
     connection: ConnectionJobs;
     team: DBTeam | undefined;
@@ -426,6 +451,8 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
+    functionRuntime?: FunctionRuntime | undefined;
+    checkpoints?: CheckpointRange | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -516,13 +543,14 @@ async function onFailure({
                     type: 'webhook',
                     functionName: syncName,
                     success: false,
-                    telemetryBag
+                    telemetryBag,
+                    functionRuntime
                 }
             }
         });
     }
 
-    void logCtx?.error(error.message, { error });
-    await logCtx?.enrichOperation({ error });
+    void logCtx?.error(error.message, { error, checkpoints });
+    await logCtx?.enrichOperation({ error, meta: { checkpoints } });
     await logCtx?.failed();
 }

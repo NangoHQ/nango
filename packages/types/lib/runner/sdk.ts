@@ -40,6 +40,12 @@ export interface NangoProps {
     startedAt: Date;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
     heartbeatTimeoutSecs?: number | undefined;
+    lifecycle?:
+        | {
+              interruptAfterMs: number;
+              killAfterMs: number;
+          }
+        | undefined;
     isCLI?: boolean | undefined;
     integrationConfig?: IntegrationConfigForProxy;
 
@@ -62,3 +68,5 @@ export interface TelemetryBag extends Record<string, number> {
     durationMs: number;
     memoryGb: number;
 }
+
+export type FunctionRuntime = 'runner' | 'lambda';

@@ -1,0 +1,83 @@
+---
+title: 'How to register your own Microsoft Teams Bot'
+sidebarTitle: 'Microsoft Teams Bot Setup'
+description: 'Create an Azure Bot resource and get credentials to connect your bot to Nango'
+---
+
+This guide shows how to register your bot using the **Azure Bot** resource so you can obtain a Microsoft App ID and client secret for the Microsoft Teams Bot integration in Nango. Your users sign in with Microsoft, and Nango obtains Graph and Bot Framework tokens for your bot.
+
+<Steps>
+    <Step title="Create the Azure Bot resource">
+    Create the Azure Bot resource, which registers your bot with the Azure AI Bot Service.
+
+    1. Go to the [Azure portal](https://portal.azure.com).
+    2. In the search box, enter **Bot Services**, press Enter, then click **Create** at the top.
+    3. Select the **Azure Bot** card and select **Create**.
+    4. Fill in the form: for **Type of App**, select **Single tenant**; for **Creation type**, use the default **Create new Microsoft App ID**.
+    5. Select **Review + create**.
+    6. When validation passes, select **Create**.
+    7. Once deployment completes, select **Go to resource**. Your bot and related resources appear in the resource group you selected.
+    </Step>
+
+    <Step title="Note your Microsoft App ID (client ID)">
+    On the Azure Bot resource’s **Settings** > **Configuration** page, find the **Microsoft App ID**. This is the OAuth client ID you’ll use in Nango. Copy it and keep it secure.
+    </Step>
+
+    <Step title="Find your Bot tenant ID">
+    The **bot tenant ID** is the Azure AD tenant where your bot’s app is registered. You’ll need it for the connection config when creating a connect session (so Nango can generate bot tokens in `connection_config`).
+
+    1. In the [Microsoft Entra admin center](https://entra.microsoft.com), switch to the directory where you created the Azure Bot (and its app registration).
+    2. Go to **Microsoft Entra ID** (or **Azure Active Directory**) → **Overview**.
+    3. Copy the **Tenant ID** (Directory ID). This is your **bot tenant ID**; you’ll need it for the connection config later.
+    </Step>
+
+    <Step title="Create a client secret for the bot’s app registration">
+    The bot uses an app registration in Microsoft Entra ID. You need a client secret for that app.
+
+    1. From the **Microsoft App ID** section, click **Manage Password** to create a secret.
+    2. Click **New client secret**, enter a description, select an expiration, and submit the form.
+    3. Copy the **Value** immediately and store it securely. You won’t be able to see it again; this is your OAuth client secret for Nango.
+    </Step>
+
+    <Step title="Add the Nango redirect URI">
+    So users can complete the OAuth flow in Nango, add Nango’s callback URL to the bot’s app registration.
+
+    1. In the same app registration, select **Authentication** in the left menu.
+    2. Under **Platform configurations**, click **Add a platform** and choose **Web** (if not already added).
+    3. Add redirect URI: `https://api.nango.dev/oauth/callback`.
+    4. Click **Save**.
+    5. On the same page, open the **Supported account types** tab, click the dropdown, select **Microsoft Entra ID tenants**, choose **Allow all tenants**, then click **Save**.
+    </Step>
+
+    <Step title="Select API permissions">
+        Choose the permissions you want your delegated tokens to have. For example, to [publish an app to the catalog](https://learn.microsoft.com/en-us/graph/api/teamsapp-publish?view=graph-rest-1.0&tabs=http#http-request) and [install the app on a tenant](https://learn.microsoft.com/en-us/graph/api/teamsappinstallation-add), you need the appropriate delegated permissions i.e `AppCatalog.Submit` and `AppCatalog.ReadWrite.All`. In the app registration, go to **API permissions**, add **Microsoft Graph**, choose **Delegated permissions**, and select the scopes you need. Configure the same scopes when setting up your integration in Nango.
+    </Step>
+
+    <Step title="Next">
+    Follow the [Connect guide](/api-integrations/microsoft-teams-bot/connect) to set the bot host tenant ID, then the [_Quickstart_](/getting-started/quickstart) to create your first connection.
+    </Step>
+</Steps>
+
+## Connection configuration
+
+The only connection config value you need to set as a developer is **`botHostTenantId`**. This is the tenant used to request the Bot Framework token (scope `https://api.botframework.com/.default`). Nango uses it to obtain and store the Bot Framework token in `connection_config`. Set it when creating a connect session by passing `connection_config` with `botHostTenantId`. Example request body for `POST /connect/sessions`:
+
+```json
+{
+  "allowed_integrations": ["microsoft-teams-bot"],
+  "integrations_config_defaults": {
+    "microsoft-teams-bot": {
+      "connection_config": {
+        "botHostTenantId": "a1b2c3d4-e5f6-47a8-9b0c-d1234567890f"
+      }
+    }
+  }
+}
+```
+To use bot operations in the end user’s tenant, the bot must be installed in that tenant. You can use a [Nango post-connection event handler](/implementation-guides/use-cases/implement-event-handler) to run publish and install operations for the bot using your delegated permissions. After that, use the `botFrameworkAccessToken` from the connection config to perform operations on the end user’s tenant.
+
+## Documentation
+
+For Microsoft’s official guidance on registering a bot:
+
+- [Create an Azure Bot resource](https://learn.microsoft.com/en-us/azure/bot-service/abs-quickstart?view=azure-bot-service-4.0&tabs=userassigned)

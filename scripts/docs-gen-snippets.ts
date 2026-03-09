@@ -16,7 +16,8 @@ const prettyAuthModes: Record<string, string> = {
     SIGNATURE: 'Signature',
     JWT: 'JWT',
     TWO_STEP: 'Two Step',
-    TABLEAU: 'Tableau'
+    TABLEAU: 'Tableau',
+    MCP_OAUTH2: 'MCP OAuth2'
 };
 
 const flowsPath = 'packages/shared/flows.zero.json';

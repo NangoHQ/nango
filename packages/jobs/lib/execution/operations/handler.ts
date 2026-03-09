@@ -5,32 +5,36 @@ import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { toNangoError } from './utils/errors.js';
 
-import type { NangoProps, RunnerOutputError, TelemetryBag } from '@nangohq/types';
+import type { CheckpointRange, FunctionRuntime, NangoProps, RunnerOutputError, TelemetryBag } from '@nangohq/types';
 import type { JsonValue } from 'type-fest';
 
 export async function handleSuccess({
     taskId,
     nangoProps,
     output,
-    telemetryBag
+    telemetryBag,
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     output: JsonValue;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     switch (nangoProps.scriptType) {
         case 'action':
-            await handleActionSuccess({ taskId, nangoProps, output, telemetryBag });
+            await handleActionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'sync':
-            await handleSyncSuccess({ taskId, nangoProps, telemetryBag });
+            await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'webhook':
-            await handleWebhookSuccess({ taskId, nangoProps, telemetryBag });
+            await handleWebhookSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'on-event':
-            await handleOnEventSuccess({ taskId, nangoProps, telemetryBag });
+            await handleOnEventSuccess({ taskId, nangoProps, telemetryBag, functionRuntime });
             break;
     }
 }
@@ -39,12 +43,16 @@ export async function handleError({
     taskId,
     nangoProps,
     error,
-    telemetryBag
+    telemetryBag,
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: RunnerOutputError;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     if (error.type === 'script_aborted') {
         // do nothing, the script was aborted and its state already updated
@@ -66,16 +74,16 @@ export async function handleError({
 
     switch (nangoProps.scriptType) {
         case 'action':
-            await handleActionError({ taskId, nangoProps, error: formattedError, telemetryBag });
+            await handleActionError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'sync':
-            await handleSyncError({ taskId, nangoProps, error: formattedError, telemetryBag });
+            await handleSyncError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'webhook':
-            await handleWebhookError({ taskId, nangoProps, error: formattedError, telemetryBag });
+            await handleWebhookError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'on-event':
-            await handleOnEventError({ taskId, nangoProps, error: formattedError, telemetryBag });
+            await handleOnEventError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime });
             break;
     }
 }

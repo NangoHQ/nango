@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { shouldRefreshCredentials } from './refresh.js';
 import { getTestConnection } from '../../../seeders/connection.seeder.js';
-import { REFRESH_MARGIN_S } from '../utils.js';
+import { REFRESH_MARGIN_MS } from '../utils.js';
 
 import type { Config } from '../../../models/index.js';
 import type { ProviderOAuth2 } from '@nangohq/types';
@@ -128,7 +128,7 @@ describe('shouldRefreshCredentials', () => {
                     client_id: '',
                     client_secret: '',
                     token: '',
-                    expires_at: new Date(Date.now() + REFRESH_MARGIN_S * 2000),
+                    expires_at: new Date(Date.now() + REFRESH_MARGIN_MS * 2),
                     raw: {}
                 },
                 instantRefresh: false,

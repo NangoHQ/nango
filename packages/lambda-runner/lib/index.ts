@@ -105,7 +105,8 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         await jobsClient.putTask({
             taskId: request.taskId,
             nangoProps: request.nangoProps as unknown as NangoProps,
-            ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag })
+            ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
+            functionRuntime: 'lambda'
         });
     } catch (err: any) {
         await jobsClient.putTask({
@@ -122,7 +123,8 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
                 proxyCalls: 0,
                 durationMs: Date.now() - startTime,
                 memoryGb: Number(context.memoryLimitInMB) / 1024
-            }
+            },
+            functionRuntime: 'lambda'
         });
     } finally {
         clearInterval(heartbeat);

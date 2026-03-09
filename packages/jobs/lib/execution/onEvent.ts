@@ -12,7 +12,7 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, FunctionRuntime, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
@@ -171,11 +171,13 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
 export async function handleOnEventSuccess({
     taskId,
     nangoProps,
-    telemetryBag
+    telemetryBag,
+    functionRuntime
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
 }): Promise<void> {
     await setTaskSuccess({ taskId, output: null });
 
@@ -217,7 +219,8 @@ export async function handleOnEventSuccess({
                 functionName: nangoProps.syncConfig.sync_name,
                 type: 'on-event',
                 success: true,
-                telemetryBag
+                telemetryBag,
+                functionRuntime
             }
         }
     });
@@ -227,12 +230,14 @@ export async function handleOnEventError({
     taskId,
     nangoProps,
     error,
-    telemetryBag
+    telemetryBag,
+    functionRuntime
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
 }): Promise<void> {
     await setTaskFailed({ taskId, error });
 
@@ -252,7 +257,8 @@ export async function handleOnEventError({
         syncConfig: nangoProps.syncConfig,
         ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {}),
         endUser: nangoProps.endUser,
-        telemetryBag
+        telemetryBag,
+        functionRuntime
     });
 }
 
@@ -267,7 +273,8 @@ function onFailure({
     runTime,
     error,
     endUser,
-    telemetryBag
+    telemetryBag,
+    functionRuntime
 }: {
     connection: ConnectionJobs;
     team?: { id: number; name: string };
@@ -280,6 +287,7 @@ function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
+    functionRuntime?: FunctionRuntime | undefined;
 }): void {
     const logCtx = team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
     void logCtx?.error(error.message, { error });
@@ -320,7 +328,8 @@ function onFailure({
                     functionName: syncName,
                     type: 'on-event',
                     success: false,
-                    telemetryBag
+                    telemetryBag,
+                    functionRuntime
                 }
             }
         });
