@@ -66,7 +66,22 @@ export abstract class NangoSyncBase<
         model: TModelName
     ): MaybePromise<Map<TKey, TModel>>;
 
+    /**
+     * @deprecated please use trackDeletesStart and trackDeletesEnd
+     */
     public abstract deleteRecordsFromPreviousExecutions(model: TModelName): MaybePromise<{ deletedKeys: string[] }>;
+
+    /*
+     * Mark the start of a deletes tracking phase for a given model, if not already started.
+     * During this phase, the sync will keep track of all records that are not present anymore in the saved data.
+     */
+    public abstract trackDeletesStart(model: TModelName): MaybePromise<void>;
+
+    /*
+     * Mark the end of a deletes tracking phase for a given model
+     * All the records that are not present anymore in the saved data since the start of the tracking phase will be marked as deleted, and their keys will be returned.
+     */
+    public abstract trackDeletesEnd(model: TModelName): MaybePromise<{ deletedKeys: string[] }>;
 
     public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: TModelName): Promise<void>;
 

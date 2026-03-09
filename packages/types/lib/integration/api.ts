@@ -130,6 +130,8 @@ export interface CustomAuthBody {
 
 export interface MCPOAuth2AuthBody {
     authType: Extract<AuthModeType, 'MCP_OAUTH2'>;
+    clientId?: string | undefined;
+    clientSecret?: string | undefined;
     scopes?: string | undefined;
 }
 

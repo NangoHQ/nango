@@ -1,4 +1,4 @@
-import { PassThrough, Readable, Transform } from 'node:stream';
+import { PassThrough } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
@@ -29,7 +29,7 @@ import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'node:http';
-import type { TransformCallback } from 'node:stream';
+import type { Readable } from 'node:stream';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -146,12 +146,15 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             onRefreshFailed: connectionRefreshFailed
         });
         if (credentialResponse.isErr()) {
-            void logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
+            const err = credentialResponse.error;
+            void logCtx.error('Failed to get connection credentials', { error: err });
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
-            res.status(400).send({
-                error: { code: 'server_error', message: `Failed to get connection credentials: '${credentialResponse.error.message}'` }
-            });
+            if (err.type === 'connection_refresh_backoff') {
+                res.status(err.status).send({ error: { code: err.type, message: err.message } });
+            } else {
+                metrics.increment(metrics.Types.PROXY_FAILURE);
+                res.status(err.status).send({ error: { code: 'server_error', message: `Failed to get connection credentials: '${err.message}'` } });
+            }
             return;
         }
 
@@ -363,7 +366,7 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     });
 }
 
-function handleErrorResponse({
+export function handleErrorResponse({
     res,
     error,
     requestConfig,
@@ -402,46 +405,39 @@ function handleErrorResponse({
         const responseStatus = error.response?.status || 500;
         const responseHeaders = error.response?.headers || {};
 
-        res.writeHead(responseStatus, responseHeaders as OutgoingHttpHeaders);
-
-        const stream = new Readable();
-        stream.push(JSON.stringify(errorObject));
-        stream.push(null);
-
-        stream.pipe(res);
+        res.status(responseStatus).set(responseHeaders).send(errorObject);
 
         return;
     }
 
-    const errorData = error.response?.data as Readable;
-    const stringify = new Transform({
-        transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
-            callback(null, chunk);
-        }
-    });
-    if (error.response?.status) {
-        res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
-    }
-    if (errorData) {
+    const errorStream = error.response?.data as Readable;
+    if (errorStream) {
         const chunks: Buffer[] = [];
-        errorData.pipe(stringify).pipe(res);
-        stringify.on('data', (data) => {
-            chunks.push(data);
+        errorStream.on('data', (chunk: Buffer | string) => {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8'));
         });
-        stringify.on('end', () => {
+        errorStream.on('error', (err) => {
+            void logCtx.error('Error reading upstream error stream', { error: err });
+            res.status(500).send();
+        });
+        errorStream.on('end', () => {
             const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
-            let errorData: string | Record<string, string> = data;
+            let parsedBody: string | Record<string, string> = data;
             if (error.response?.headers?.['content-type']?.includes('application/json')) {
                 try {
-                    errorData = JSON.parse(data);
+                    parsedBody = JSON.parse(data);
                 } catch {
-                    // Intentionally left blank - errorData will be a string
+                    // Intentionally left blank - parsedBody stays string
                 }
             }
 
             metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
-            void logCtx.error('Failed with this body', { body: errorData });
+            const responseStatus = error.response?.status || 500;
+            const responseHeaders = error.response?.headers || {};
+            void logCtx.error('Failed with this body', { body: parsedBody });
+
+            res.status(responseStatus).set(responseHeaders).send(data);
         });
     }
 }

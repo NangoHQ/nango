@@ -270,12 +270,24 @@ export class Scheduler {
      * @example
      * const succeed = await scheduler.succeed({ taskId: '00000000-0000-0000-0000-000000000000', output: {foo: 'bar'} });
      */
-    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<Task>> {
+    public async succeed({
+        taskId,
+        output,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        output: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<Task>> {
         const newState: TaskState = 'SUCCEEDED';
         const succeeded: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(trx, { taskId, newState, output });
             if (res.isOk()) {
-                const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [taskId], taskState: newState });
+                const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                    taskIds: [taskId],
+                    taskState: newState,
+                    nextExecutionInMs
+                });
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
                 }
@@ -297,7 +309,15 @@ export class Scheduler {
      * @example
      * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000', error: {message: 'error'});
      */
-    public async fail({ taskId, error }: { taskId: string; error: JsonValue }): Promise<Result<Task>> {
+    public async fail({
+        taskId,
+        error,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        error: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<Task>> {
         const newState: TaskState = 'FAILED';
         return await this.db.transaction(async (trx) => {
             const task = await tasks.get(trx, taskId);
@@ -313,7 +333,11 @@ export class Scheduler {
 
             const failed = await tasks.transitionState(trx, { taskId, newState, output: error });
             if (failed.isOk()) {
-                const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [taskId], taskState: newState });
+                const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                    taskIds: [taskId],
+                    taskState: newState,
+                    nextExecutionInMs
+                });
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
                 }
@@ -352,7 +376,15 @@ export class Scheduler {
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
-    public async cancel({ taskId, reason }: { taskId: string; reason: JsonValue }): Promise<Result<Task>> {
+    public async cancel({
+        taskId,
+        reason,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        reason: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<Task>> {
         const newState: TaskState = 'CANCELLED';
         const cancelled: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(this.db, {
@@ -361,7 +393,11 @@ export class Scheduler {
                 output: { reason }
             });
             if (res.isOk()) {
-                const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [taskId], taskState: newState });
+                const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                    taskIds: [taskId],
+                    taskState: newState,
+                    nextExecutionInMs
+                });
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
                 }
@@ -417,7 +453,7 @@ export class Scheduler {
                     if (t.isErr()) {
                         return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
                     }
-                    const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [task.id], taskState: newState });
+                    const scheduleRes = await schedules.scheduleNextExecution(trx, { taskIds: [task.id], taskState: newState });
                     if (scheduleRes.isErr()) {
                         return Err(`Error updating last scheduled task state for task '${task.id}': ${stringifyError(scheduleRes.error)}`);
                     }

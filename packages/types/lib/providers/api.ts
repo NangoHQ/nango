@@ -32,6 +32,7 @@ export interface ApiProviderListItem {
     docs_connect?: string | undefined;
     preConfigured: boolean;
     preConfiguredScopes: string[];
+    clientRegistration?: 'dynamic' | 'static' | 'metadata';
 }
 
 export type GetProviders = Endpoint<{

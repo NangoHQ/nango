@@ -1,0 +1,145 @@
+---
+title: Okta (Client Credentials) - How do I link my account?
+sidebarTitle: Okta (Client Credentials)
+---
+
+
+# Overview
+
+To authenticate with Okta using Client Credentials, you need the following:
+1. **Client ID** - A unique identifier for your Okta API Services application.
+2. **Private Key (JWK)** - The RSA private key in JSON Web Key format, whose public key is registered in your Okta application.
+3. **Okta Domain** - The subdomain of your Okta organization.
+4. **Scopes** - A space-separated list of Okta Management API scopes (e.g. `okta.users.read okta.users.manage`).
+
+This guide will walk you through creating an API Services application in Okta with `private_key_jwt` authentication.
+
+### Prerequisites:
+
+- You must have an Okta account. Sign up for a free developer account at [developer.okta.com](https://developer.okta.com/signup/).
+
+
+#### Step 1: Creating your Okta API Services application
+
+1. Log in to your [Okta Admin Console](https://login.okta.com/).
+2. In the left sidebar, navigate to **Applications** > **Applications**.
+3. Click **Create App Integration**.
+4. Select **API Services** as the sign-in method and click **Next**.
+
+<img src="/api-integrations/okta-cc/select-api-service.png" style={{maxWidth: "550px"}} />
+
+5. Give your application a name and click **Save**.
+6. On the application's **General** tab, find your **Client ID** — you will need it in the final step.
+7. Set Client authentication to **Public key / Private key**. `okta.*` scopes are only supported with this authentication method.
+
+<img src="/api-integrations/okta-cc/select-public-private-key.png" style={{maxWidth: "550px"}} />
+
+8. Disable **Proof of possession (DPoP)** — it is not supported by Nango.
+
+<img src="/api-integrations/okta-cc/disable-dpop.png" style={{maxWidth: "550px"}} />
+
+<Note>
+The application must be created as **API Services**.
+</Note>
+
+
+#### Step 2: Generating and registering your RSA key pair
+
+##### Use Okta key generator
+
+Okta can generate the RSA key pair for you directly in the Admin Console:
+
+1. In the Admin Console, open your API Services application.
+2. Go to the **General** tab and scroll to the **PUBLIC KEYS** section.
+3. Click **Add Key**, then select **Generate new key**.
+4. Click **Save** — Okta generates the key pair and displays the **Private Key (JWK)** once.
+5. Copy and save the private key JSON immediately — it will not be shown again.
+<img src="/api-integrations/okta-cc/create-public-key.png" style={{maxWidth: "550px"}} />
+6. The public key is automatically registered with your application.
+
+<Note>
+Copy the private JWK before closing the dialog. Paste it into the **Private Key** field in the Nango Connect UI in the final step.
+</Note>
+
+##### Create your own key
+Okta uses `private_key_jwt` for API Services apps. You generate an RSA key pair, register the **public** JWK with Okta, and provide the **private** JWK to Nango.
+
+**Generate a private JWK** using the following Node.js script (requires Node.js 18+):
+
+```javascript
+const { generateKeyPairSync } = require('crypto');
+const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+
+const privateJwk = privateKey.export({ format: 'jwk' });
+const publicJwk  = publicKey.export({ format: 'jwk' });
+
+// Assign a kid — must match between private and public JWK
+const kid = require('crypto').randomUUID();
+privateJwk.kid = kid;
+publicJwk.kid  = kid;
+
+console.log('=== PUBLIC JWK (upload to Okta) ===');
+console.log(JSON.stringify(publicJwk, null, 2));
+console.log('\n=== PRIVATE JWK (paste into Nango) ===');
+console.log(JSON.stringify(privateJwk));
+```
+
+**Register the public JWK in Okta:**
+
+1. In the Admin Console, open your API Services application.
+2. Go to the **General** tab and scroll to the **PUBLIC KEYS** section.
+3. Click **Add Key**, paste the **public JWK JSON** output from the script above, and click **Save**.
+
+<Note>
+The private JWK is what you paste into Nango. It includes all key material (`d`, `p`, `q`, `dp`, `dq`, `qi`) and the `kid`. Keep it secret.
+</Note>
+
+
+#### Step 3: Finding your Okta Domain
+
+Your Okta Domain is the subdomain of your Okta organization URL.
+
+- In the Admin Console, your browser's address bar will show a URL like `https://dev-12345678-admin.okta.com`.
+- Your **Okta Domain** is the part before `.okta.com`, ignoring `-admin` (e.g., `dev-12345678`).
+- Alternatively, go to **Settings** > **Account** in the Admin Console to find your Okta domain.
+
+
+#### Step 4: Grant API scopes to your application
+
+Okta requires at least one scope in every token request. Before your application can request specific scopes, they must be granted:
+
+1. In the Admin Console, navigate to **Applications** > **Applications** and open your application.
+2. Click the **Okta API Scopes** tab.
+3. Grant the scopes your integration requires (e.g. `okta.users.read`, `okta.users.manage`).
+
+A full list of available scopes is in the [Okta Management API reference](https://developer.okta.com/docs/api/oauth2/#okta-admin-management).
+
+
+#### Step 5: Assign an admin role to your application
+
+Granting scopes alone is not enough — Okta Management API endpoints (e.g. `/api/v1/users`) silently return an empty `200 []` response if your application has no admin role. You must assign at least **Read-Only Administrator**:
+
+1. In the Admin Console, navigate to **Security** > **Administrators** (or go to **Applications** > **Applications** > your app > **Admin roles**).
+2. Click **Add administrator assignment** and select your API Services application.
+<img src="/api-integrations/okta-cc/admin-role-dropdown.png" style={{maxWidth: "550px"}} />
+3. Assign the **Read-Only Administrator** role (or higher, depending on the scopes you need).
+4. Click **Save**.
+
+<img src="/api-integrations/okta-cc/add-admin-role.png" style={{maxWidth: "550px"}} />
+
+<Note>
+Without an admin role, API calls succeed with `200 OK` but return empty results and there is no `403` error to indicate the problem.
+</Note>
+
+
+#### Step 6: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Private Key (JWK)**, **Okta Domain**, and **Scopes**:
+1. Open the form where you need to authenticate with Okta (Client Credentials).
+2. Enter your **Client ID**.
+3. Paste your **Private Key (JWK)** — the full JSON object from the script above (single-line or formatted).
+4. Enter your **Okta Domain** (e.g., `dev-12345678`).
+5. Enter the **Scopes** as a space-separated list (e.g., `okta.users.read okta.users.manage`).
+6. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Okta (Client Credentials).

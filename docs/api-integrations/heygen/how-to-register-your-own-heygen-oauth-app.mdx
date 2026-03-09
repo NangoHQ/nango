@@ -1,0 +1,24 @@
+---
+title: 'How to register your own HeyGen OAuth app'
+sidebarTitle: 'HeyGen OAuth Setup'
+description: 'Request OAuth access from HeyGen and connect your app to Nango'
+---
+
+This guide shows you how to register your own app with HeyGen to obtain your OAuth credentials (client ID). This is required to let your users grant your app access to their HeyGen account.
+
+
+<Steps>
+  <Step title="Request OAuth access">
+    1. Submit HeyGen's [Integration Intake form](https://form.typeform.com/to/m3EYcOaM) to apply to become a HeyGen Integration partner.
+    2. The Partnerships team will review your submission and get in touch.
+    3. After approval, request an OAuth app and use `https://api.nango.dev/oauth/callback` as your redirect URI.
+    4. You will then receive your **Client ID** for use with Nango. When configuring the integration in Nango, you can use a placeholder value (e.g. `x`) for **Client Secret**, since HeyGen uses PKCE and the client secret is not used during the OAuth flow.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [HeyGen's OAuth 2.0 documentation](https://docs.heygen.com/docs/heygen-oauth).
+
+---

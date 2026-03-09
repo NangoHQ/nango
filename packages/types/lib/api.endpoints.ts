@@ -46,7 +46,7 @@ import type {
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
-import type { DeleteEnvironment, GetEnvironments, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
+import type { DeleteEnvironment, GetEnvironment, GetEnvironments, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
@@ -174,6 +174,7 @@ export type PrivateApiEndpoints =
     | PatchEnvironment
     | DeleteEnvironment
     | GetEnvironments
+    | GetEnvironment
     | PatchWebhook
     | PostEnvironmentVariables
     | PostImpersonate

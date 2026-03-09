@@ -29,7 +29,8 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        action_function_runtime: 'lambda'
+        action_function_runtime: 'lambda',
+        webhook_function_runtime: 'lambda'
     }
 };
 

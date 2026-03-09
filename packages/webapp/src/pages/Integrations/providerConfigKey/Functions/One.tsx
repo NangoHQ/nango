@@ -4,13 +4,13 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { EmptyCard } from '../../components/EmptyCard';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
-import { IntegrationsBadge } from '../../components/IntegrationsBadge';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { CopyButton } from '@/components-v2/CopyButton';
+import { EmptyCard } from '@/components-v2/EmptyCard';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
@@ -31,10 +31,12 @@ export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
 
     const env = useStore((state) => state.env);
-    const { data: integrationData, loading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
-    const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
+    const { data: integrationResponse, isLoading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
+    const integrationData = integrationResponse?.data;
+    const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
+    const flowsData = flowsResponse?.data;
 
-    const func = data?.flows.find((flow) => flow.name === functionName);
+    const func = flowsData?.flows.find((flow) => flow.name === functionName);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -131,18 +133,23 @@ export const FunctionsOne: React.FC = () => {
                     <span className="text-text-secondary text-body-medium-medium">{func.description}</span>
 
                     <div className="flex flex-wrap gap-4 gap-y-2">
-                        <IntegrationsBadge label="Type">
+                        <KeyValueBadge label="Type">
                             <span>{func.type}</span>
-                        </IntegrationsBadge>
-                        {func.runs && (
-                            <IntegrationsBadge label="Frequency">
-                                <span>{func.runs}</span>
-                            </IntegrationsBadge>
+                        </KeyValueBadge>
+                        {func.sync_type && (
+                            <KeyValueBadge label="Sync type">
+                                <span>{func.sync_type}</span>
+                            </KeyValueBadge>
                         )}
-                        {func.auto_start !== undefined && <IntegrationsBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</IntegrationsBadge>}
-                        <IntegrationsBadge label="Source">{func.pre_built ? 'template' : 'custom'}</IntegrationsBadge>
-                        {func.version && <IntegrationsBadge label="Version">v{func.version}</IntegrationsBadge>}
-                        {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
+                        {func.runs && (
+                            <KeyValueBadge label="Frequency">
+                                <span>{func.runs}</span>
+                            </KeyValueBadge>
+                        )}
+                        {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
+                        <KeyValueBadge label="Source">{func.pre_built ? 'template' : 'custom'}</KeyValueBadge>
+                        {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
+                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
                     </div>
                 </CardHeader>
 
@@ -201,7 +208,9 @@ export const FunctionsOne: React.FC = () => {
                                     <JsonSchemaTopLevelObject schema={inputSchema} />
                                 </>
                             ) : (
-                                <EmptyCard content={`No inputs.`} />
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">No inputs.</span>
+                                </EmptyCard>
                             )}
                         </TabsContent>
                         <TabsContent value="output" className="flex flex-col gap-4">
@@ -226,7 +235,9 @@ export const FunctionsOne: React.FC = () => {
                                     </Navigation>
                                 </>
                             ) : (
-                                <EmptyCard content="No outputs." />
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">No outputs.</span>
+                                </EmptyCard>
                             )}
                         </TabsContent>
                     </Tabs>

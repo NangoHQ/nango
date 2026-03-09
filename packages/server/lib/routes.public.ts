@@ -1,5 +1,4 @@
 import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
@@ -125,7 +124,7 @@ publicAPI.options('/', publicAPICorsHandler); // Pre-flight
 publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
-publicAPI.route('/oauth/callback').get(cookieParser(), oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);

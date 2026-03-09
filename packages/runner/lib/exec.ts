@@ -139,7 +139,11 @@ export async function exec({
                     }
 
                     const output = await payload.onWebhook(nango as any, codeParams);
-                    return Ok({ output, telemetryBag: nango.telemetryBag });
+                    return Ok({
+                        output,
+                        telemetryBag: nango.telemetryBag,
+                        checkpoints: nango.getCheckpointRange()
+                    });
                 } else {
                     if (!scriptExports.onWebhookPayloadReceived) {
                         const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
@@ -148,7 +152,11 @@ export async function exec({
                     }
 
                     const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
-                    return Ok({ output, telemetryBag: nango.telemetryBag });
+                    return Ok({
+                        output,
+                        telemetryBag: nango.telemetryBag,
+                        checkpoints: nango.getCheckpointRange()
+                    });
                 }
             }
 
@@ -168,7 +176,7 @@ export async function exec({
                     if (!payload.exec) {
                         throw new Error(`Missing exec function`);
                     }
-                    output = await payload.exec(nango as any, codeParams);
+                    output = await payload.exec(nango, codeParams);
                 } else {
                     output = await def(nango, inputParams);
                 }
@@ -187,10 +195,14 @@ export async function exec({
                     }
                 }
 
-                return Ok({ output, telemetryBag: nango.telemetryBag });
+                return Ok({
+                    output,
+                    telemetryBag: nango.telemetryBag,
+                    checkpoints: nango.getCheckpointRange()
+                });
             }
 
-            // Action
+            // On-event
             if (nangoProps.scriptType === 'on-event') {
                 let output: unknown;
                 if (isZeroYaml) {
@@ -219,10 +231,18 @@ export async function exec({
                 }
 
                 await payload.exec(nango as any);
-                return Ok({ output: true, telemetryBag: nango.telemetryBag });
+                return Ok({
+                    output: true,
+                    telemetryBag: nango.telemetryBag,
+                    checkpoints: nango.getCheckpointRange()
+                });
             } else {
                 await def(nango);
-                return Ok({ output: true, telemetryBag: nango.telemetryBag });
+                return Ok({
+                    output: true,
+                    telemetryBag: nango.telemetryBag,
+                    checkpoints: nango.getCheckpointRange()
+                });
             }
         } catch (err) {
             if (err instanceof ActionError) {
@@ -236,7 +256,8 @@ export async function exec({
                             Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}
                         ), // TODO: fix ActionError so payload is always an object
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.telemetryBag,
+                        checkpoints: nango.getCheckpointRange()
                     })
                 );
             }
@@ -248,7 +269,8 @@ export async function exec({
                         type: err.code,
                         payload: truncateJson(err.payload),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.telemetryBag,
+                        checkpoints: nango.getCheckpointRange()
                     })
                 );
             } else if (isAxiosError<unknown, unknown>(err)) {
@@ -297,7 +319,8 @@ export async function exec({
                                     body: responseBody
                                 }
                             },
-                            telemetryBag: nango.telemetryBag
+                            telemetryBag: nango.telemetryBag,
+                            checkpoints: nango.getCheckpointRange()
                         })
                     );
                 } else {
@@ -314,7 +337,8 @@ export async function exec({
                                 ...(stacktrace.length > 0 ? { stacktrace } : {})
                             }),
                             status: 500,
-                            telemetryBag: nango.telemetryBag
+                            telemetryBag: nango.telemetryBag,
+                            checkpoints: nango.getCheckpointRange()
                         })
                     );
                 }
@@ -334,7 +358,8 @@ export async function exec({
                             ...(stacktrace.length > 0 ? { stacktrace } : {})
                         }),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.telemetryBag,
+                        checkpoints: nango.getCheckpointRange()
                     })
                 );
             } else {
@@ -353,7 +378,8 @@ export async function exec({
                             ...(stacktrace.length > 0 ? { stacktrace } : {})
                         }),
                         status: 500,
-                        telemetryBag: nango.telemetryBag
+                        telemetryBag: nango.telemetryBag,
+                        checkpoints: nango.getCheckpointRange()
                     })
                 );
             }

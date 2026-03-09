@@ -45,6 +45,8 @@ export const integrationAuthTypeCustomSchema = z
 export const integrationAuthTypeMcpOAuth2Schema = z
     .object({
         authType: z.enum(['MCP_OAUTH2']),
+        clientId: z.string().min(1).max(255).optional(),
+        clientSecret: z.string().min(1).optional(),
         scopes: scopesSchema
     })
     .strict();
