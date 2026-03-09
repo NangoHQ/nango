@@ -70,7 +70,6 @@ interface PostSlackMessageResponse {
 }
 
 export const generateSlackConnectionId = (accountUUID: string, environmentId: number) => `account-${accountUUID}-${environmentId}`;
-export const generateLegacySlackConnectionId = (accountUUID: string, environmentName: string) => `account-${accountUUID}-${environmentName}`;
 
 /**
  * _nango_slack_notifications
@@ -598,21 +597,11 @@ export class SlackService {
             return Err('failed_to_get_integration');
         }
 
-        // Try new ID-based connection ID first, fall back to legacy name-based for existing installations
-        let slackConnectionResult = await connectionService.getConnection(
-            generateSlackConnectionId(account.uuid, environment.id),
-            this.integrationKey,
-            adminRes.environment.id
-        );
-        if (slackConnectionResult.error?.type === 'unknown_connection') {
-            slackConnectionResult = await connectionService.getConnection(
-                generateLegacySlackConnectionId(account.uuid, environment.name),
-                this.integrationKey,
-                adminRes.environment.id
-            );
-        }
-
-        const { success: connectionSuccess, error: slackConnectionError, response: slackConnection } = slackConnectionResult;
+        const {
+            success: connectionSuccess,
+            error: slackConnectionError,
+            response: slackConnection
+        } = await connectionService.getConnection(generateSlackConnectionId(account.uuid, environment.id), this.integrationKey, adminRes.environment.id);
 
         if (!connectionSuccess || !slackConnection) {
             logger.error(slackConnectionError);
