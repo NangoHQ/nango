@@ -6,19 +6,19 @@ import { RunnerMonitor } from './monitor.js';
 
 import type { DBSyncConfig, NangoProps, ScriptType } from '@nangohq/types';
 
-function createNangoProps(overrides: { scriptType: ScriptType; syncId?: string }): NangoProps {
+function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; environmentId: number }): NangoProps {
     return {
         scriptType: overrides.scriptType,
         host: 'http://localhost:3003',
         connectionId: 'connection-id',
-        environmentId: 1,
+        environmentId: overrides.environmentId,
         environmentName: 'dev',
         providerConfigKey: 'provider-config-key',
         provider: 'provider',
         activityLogId: '1',
         secretKey: 'secret-key',
         nangoConnectionId: 1,
-        syncId: overrides.syncId ?? 'sync-id',
+        syncId: overrides.syncId,
         syncJobId: 1,
         lastSyncDate: new Date(),
         attributes: {},
@@ -62,10 +62,10 @@ describe('RunnerMonitor conflict tracking', () => {
 
     describe('track', () => {
         it('writes conflict key to KV store when scriptType is sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123' });
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123', environmentId: 1 });
             await monitor.track(nangoProps, 'task-1');
 
-            const key = 'function:sync:sync-123';
+            const key = 'function:1:sync:sync-123';
             const exists = await tracker.exists(key);
             expect(exists).toBe(true);
 
@@ -74,21 +74,21 @@ describe('RunnerMonitor conflict tracking', () => {
         });
 
         it('does not write to KV store when scriptType is not sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789' });
+            const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789', environmentId: 1 });
             await monitor.track(nangoProps, 'task-3');
 
-            expect(await tracker.exists('function:webhook:webhook-789')).toBe(false);
+            expect(await tracker.exists('function:1:webhook:webhook-789')).toBe(false);
         });
     });
 
     describe('untrack', () => {
         it('removes conflict key from KV store when task had tracked sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack' });
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack', environmentId: 1 });
             await monitor.track(nangoProps, 'task-untrack');
-            expect(await tracker.exists('function:sync:sync-untrack')).toBe(true);
+            expect(await tracker.exists('function:1:sync:sync-untrack')).toBe(true);
 
             await monitor.untrack('task-untrack');
-            expect(await tracker.exists('function:sync:sync-untrack')).toBe(false);
+            expect(await tracker.exists('function:1:sync:sync-untrack')).toBe(false);
         });
     });
 });
