@@ -9756,6 +9756,37 @@ mailchimp:
             example: us6
             automated: true
 
+mailjet:
+    display_name: Mailjet
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.mailjet.com
+        verification:
+            method: GET
+            endpoints:
+                - /v3/REST/myprofile
+    docs: https://nango.dev/docs/api-integrations/mailjet
+    docs_connect: https://nango.dev/docs/api-integrations/mailjet/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Mailjet API Key.
+            secret: true
+            pattern: '^[a-f0-9]{32}$'
+            example: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Mailjet Secret Key.
+            secret: true
+            pattern: '^[a-f0-9]{32}$'
+            example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
+            doc_section: '#step-1-getting-your-credentials'
+
 mcp-generic:
     display_name: MCP Server OAuth2 (Generic)
     categories:
