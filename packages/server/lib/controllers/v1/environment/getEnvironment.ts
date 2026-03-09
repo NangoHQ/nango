@@ -3,7 +3,6 @@ import {
     connectionService,
     environmentService,
     externalWebhookService,
-    generateLegacySlackConnectionId,
     generateSlackConnectionId,
     getGlobalWebhookReceiveUrl,
     getWebsocketsPath
@@ -46,23 +45,16 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     let slack_notifications_channel = '';
     if (environment.slack_notifications) {
+        const connectionId = generateSlackConnectionId(account.uuid, environment.name);
         const integrationId = envs.NANGO_SLACK_INTEGRATION_KEY;
         const env = 'prod';
         const info = await accountService.getAccountAndEnvironmentIdByUUID(envs.NANGO_ADMIN_UUID!, env);
         if (info) {
-            // Try new ID-based connection ID first, fall back to legacy name-based for existing installations
-            let connectionConfig = await connectionService.getConnectionConfig({
+            const connectionConfig = await connectionService.getConnectionConfig({
                 provider_config_key: integrationId,
                 environment_id: info.environmentId,
-                connection_id: generateSlackConnectionId(account.uuid, environment.id)
+                connection_id: connectionId
             });
-            if (!connectionConfig || !connectionConfig['incoming_webhook.channel']) {
-                connectionConfig = await connectionService.getConnectionConfig({
-                    provider_config_key: integrationId,
-                    environment_id: info.environmentId,
-                    connection_id: generateLegacySlackConnectionId(account.uuid, environment.name)
-                });
-            }
             if (connectionConfig && connectionConfig['incoming_webhook.channel']) {
                 slack_notifications_channel = connectionConfig['incoming_webhook.channel'];
             }
