@@ -1360,8 +1360,7 @@ class ConnectionService {
             return { success: false, error: new NangoError('missing_token_url'), response: null };
         }
 
-        const urlWithConnectionConfig = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
-        const url = new URL(urlWithConnectionConfig).toString();
+        const url = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
