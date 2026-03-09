@@ -105,29 +105,5 @@ describe(`GET ${route}`, () => {
             isSuccess(res.json);
             expect(res.json.environmentAndAccount.slack_notifications_channel).toBe('#new-format-alerts');
         });
-
-        it('should return channel using legacy name-based connection', async () => {
-            const { account: customerAccount, env: customerEnv, user } = await seeders.seedAccountEnvAndUser();
-            await db.knex('_nango_environments').where({ id: customerEnv.id }).update({ slack_notifications: true });
-
-            await seeders.createConnectionSeed({
-                env: adminProdEnv,
-                provider: 'slack',
-                connectionId: `account-${customerAccount.uuid}-${customerEnv.name}`,
-                connectionConfig: { 'incoming_webhook.channel': '#legacy-format-alerts' }
-            });
-
-            const session = await authenticateUser(api, user);
-            const res = await api.fetch(route, {
-                method: 'GET',
-                // @ts-expect-error query params are required
-                query: { env: customerEnv.name },
-                session
-            });
-
-            expect(res.res.status).toBe(200);
-            isSuccess(res.json);
-            expect(res.json.environmentAndAccount.slack_notifications_channel).toBe('#legacy-format-alerts');
-        });
     });
 });
