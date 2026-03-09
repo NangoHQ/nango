@@ -60,7 +60,10 @@ export async function generate({
                     scriptPath,
                     endpointType: entry.type,
                     scriptConfig: entry,
-                    models: entry.usedModels.map((name) => ({ name, def: entry.json_schema?.definitions?.[name] as JSONSchema7Definition })),
+                    models: entry.usedModels.map((name) => ({
+                        name,
+                        def: entry.json_schema?.definitions?.[name] || {}
+                    })),
                     isForIntegrationTemplates
                 });
                 await fs.writeFile(path ? `${writePath}/${entry.name}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
