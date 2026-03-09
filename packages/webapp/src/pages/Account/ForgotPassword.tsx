@@ -72,11 +72,11 @@ export default function Signin() {
                         <FormField
                             control={form.control}
                             name="email"
-                            render={({ field }) => (
+                            render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
                                         <InputGroup className="h-11">
-                                            <InputGroupInput placeholder="Email" {...field} />
+                                            <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
                                     <FormMessage />
