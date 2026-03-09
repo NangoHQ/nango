@@ -31,6 +31,7 @@ import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
 import { abortTaskWithId } from './operations/abort.js';
@@ -203,7 +204,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
                 oauth_client_secret: providerConfig.oauth_client_secret
-            }
+            },
+            ...(plan?.sync_function_runtime === 'lambda'
+                ? {
+                      lifecycle: {
+                          interruptAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER * 1000,
+                          killAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_KILL_AFTER_MULTIPLER * 1000
+                      }
+                  }
+                : {}) // non-lambda runtimes do not need interrupting/resuming long-running executions
         };
 
         const runtimeContext: RuntimeContext = {
