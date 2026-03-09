@@ -21,6 +21,7 @@ interface DBNodeConfigOverride {
     readonly idle_max_duration_ms: number | null;
     readonly execution_timeout_secs: number | null;
     readonly provisioned_concurrency: number | null;
+    readonly replicas: number | null;
     readonly created_at: Date;
     readonly updated_at: Date;
 }
@@ -40,7 +41,8 @@ const DBNodeConfigOverride = {
             created_at: nodeConfigOverride.createdAt,
             updated_at: nodeConfigOverride.updatedAt,
             execution_timeout_secs: nodeConfigOverride.executionTimeoutSecs,
-            provisioned_concurrency: nodeConfigOverride.provisionedConcurrency
+            provisioned_concurrency: nodeConfigOverride.provisionedConcurrency,
+            replicas: nodeConfigOverride.replicas
         };
     },
     from: (dbNodeConfigOverride: DBNodeConfigOverride): NodeConfigOverride => {
@@ -56,6 +58,7 @@ const DBNodeConfigOverride = {
             idleMaxDurationMs: dbNodeConfigOverride.idle_max_duration_ms,
             executionTimeoutSecs: dbNodeConfigOverride.execution_timeout_secs,
             provisionedConcurrency: dbNodeConfigOverride.provisioned_concurrency,
+            replicas: dbNodeConfigOverride.replicas,
             createdAt: dbNodeConfigOverride.created_at,
             updatedAt: dbNodeConfigOverride.updated_at
         };
@@ -80,6 +83,7 @@ export async function upsert(
             idle_max_duration_ms: props.idleMaxDurationMs ?? null,
             execution_timeout_secs: props.executionTimeoutSecs ?? null,
             provisioned_concurrency: props.provisionedConcurrency ?? null,
+            replicas: props.replicas ?? null,
             created_at: now,
             updated_at: now
         };
@@ -92,6 +96,7 @@ export async function upsert(
             ...(props.isTracingEnabled !== undefined ? { is_tracing_enabled: props.isTracingEnabled } : {}),
             ...(props.isProfilingEnabled !== undefined ? { is_profiling_enabled: props.isProfilingEnabled } : {}),
             ...(props.idleMaxDurationMs !== undefined ? { idle_max_duration_ms: props.idleMaxDurationMs } : {}),
+            ...(props.replicas !== undefined ? { replicas: props.replicas } : {}),
             updated_at: now
         };
 
