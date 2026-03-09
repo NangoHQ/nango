@@ -11,7 +11,6 @@ export interface ComboboxOption<TValue extends string = string> {
     filterValue?: string;
     disabled?: boolean;
 }
-
 export interface ComboboxProps<TValue extends string = string> {
     value: TValue | '';
     onValueChange: (value: TValue) => void;
@@ -28,6 +27,7 @@ export interface ComboboxProps<TValue extends string = string> {
     contentClassName?: string;
     searchValue?: string;
     onSearchValueChange?: (value: string) => void;
+    showCheckbox?: boolean;
 }
 
 export function Combobox<TValue extends string = string>({
@@ -45,7 +45,8 @@ export function Combobox<TValue extends string = string>({
     className,
     contentClassName,
     searchValue,
-    onSearchValueChange
+    onSearchValueChange,
+    showCheckbox = true
 }: ComboboxProps<TValue>) {
     const [open, setOpen] = React.useState(false);
     const [internalSearch, setInternalSearch] = React.useState('');
@@ -148,14 +149,16 @@ export function Combobox<TValue extends string = string>({
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <span
-                                            className={cn(
-                                                'flex size-5 shrink-0 items-center justify-center rounded-sm border',
-                                                selected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
-                                            )}
-                                        >
-                                            {selected ? <Check className="size-3.5" /> : null}
-                                        </span>
+                                        {showCheckbox ? (
+                                            <span
+                                                className={cn(
+                                                    'flex size-5 shrink-0 items-center justify-center rounded-sm border',
+                                                    selected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                                )}
+                                            >
+                                                {selected ? <Check className="size-3.5" /> : null}
+                                            </span>
+                                        ) : null}
                                         <div className="flex min-w-0 items-center gap-2 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal text-text-secondary">
                                             {renderOption ? renderOption(opt, selected) : <span className="truncate">{opt.label}</span>}
                                         </div>

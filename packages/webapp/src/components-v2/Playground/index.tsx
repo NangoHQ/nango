@@ -1,4 +1,4 @@
-import { ArrowUpRight, Braces, CheckCircle2, ExternalLink, Info, Play, Plus, RotateCcw, X, XCircle } from 'lucide-react';
+import { Braces, CheckCircle2, ExternalLink, Info, Play, Plug, Plus, RotateCcw, X, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -128,7 +128,7 @@ export const Playground: React.FC = () => {
     }, [allFlows]);
 
     const functionOptions = useMemo(() => {
-        const opts = allFlows.map((f) => ({ value: f.name, label: f.name, filterValue: `${f.name} ${f.resolvedType}` }));
+        const opts = allFlows.filter((f) => f.enabled === true).map((f) => ({ value: f.name, label: f.name, filterValue: `${f.name} ${f.resolvedType}` }));
         if (playgroundFunction && !opts.some((o) => o.value === playgroundFunction)) {
             opts.unshift({ value: playgroundFunction, label: playgroundFunction, filterValue: playgroundFunction });
         }
@@ -565,7 +565,7 @@ export const Playground: React.FC = () => {
                 {/* Header */}
                 <div className="flex w-full shrink-0 items-start justify-between">
                     <div className="min-w-0">
-                        <h2 className="text-text-primary text-heading-medium">Playground</h2>
+                        <h2 className="text-text-primary text-heading-medium font-medium">Playground</h2>
                         <p className="text-text-secondary text-body-medium-medium">Quickly run any function.</p>
                     </div>
                     <Button variant="ghost" size="icon" className="size-7 mt-0.5" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
@@ -584,6 +584,7 @@ export const Playground: React.FC = () => {
                             placeholder="Pick integration"
                             options={integrationOptions}
                             searchPlaceholder="Search integrations"
+                            showCheckbox={false}
                             renderValue={(opt) => {
                                 const integration = integrationByKey.get(opt.value);
                                 if (!integration) {
@@ -647,6 +648,7 @@ export const Playground: React.FC = () => {
                             searchPlaceholder="Search connections"
                             searchValue={connectionSearch}
                             onSearchValueChange={setConnectionSearch}
+                            showCheckbox={false}
                             footer={
                                 <div className="flex items-center justify-between gap-3">
                                     <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
@@ -672,10 +674,11 @@ export const Playground: React.FC = () => {
                         <Combobox
                             value={playgroundFunction || ''}
                             onValueChange={handleFunctionChange}
-                            placeholder="Add function"
+                            placeholder="Select function"
                             disabled={!playgroundIntegration}
                             options={functionOptions}
                             searchPlaceholder="Search functions"
+                            showCheckbox={false}
                             renderValue={(opt) => {
                                 const flow = flowByName.get(opt.value);
                                 return (
@@ -704,6 +707,25 @@ export const Playground: React.FC = () => {
                                     </span>
                                 );
                             }}
+                            footer={
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                        Activate more functions
+                                    </span>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-xs gap-0.5 justify-center items-center"
+                                        onClick={() => {
+                                            setPlaygroundOpen(false);
+                                            navigate(`/${env}/integrations/create`);
+                                        }}
+                                    >
+                                        <Plug className="size-3" /> Activate
+                                    </Button>
+                                </div>
+                            }
                         />
                     </div>
 
@@ -714,10 +736,10 @@ export const Playground: React.FC = () => {
                             <div className="min-w-0 flex flex-col gap-3">
                                 {isSync ? (
                                     <>
-                                        <Alert variant="info" className="px-3 py-2">
+                                        <Alert variant="info" className="px-3 py-2" actionsBelow>
                                             <Info className="size-4" />
                                             <AlertDescription className="text-body-small-regular">
-                                                Sync inputs are read from connection metadata (Playground is read-only).
+                                                Sync inputs are read from connection metadata. Playground is read-only.
                                             </AlertDescription>
                                             <AlertActions>
                                                 {playgroundIntegration && playgroundConnection && (
@@ -726,7 +748,7 @@ export const Playground: React.FC = () => {
                                                         variant="info-secondary"
                                                         onClick={() => setPlaygroundOpen(false)}
                                                     >
-                                                        View metadata <ArrowUpRight />
+                                                        View metadata
                                                     </AlertButtonLink>
                                                 )}
                                                 <AlertButton asChild variant="info">
@@ -735,7 +757,7 @@ export const Playground: React.FC = () => {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        View Docs <ExternalLink />
+                                                        Docs <ExternalLink />
                                                     </a>
                                                 </AlertButton>
                                             </AlertActions>
