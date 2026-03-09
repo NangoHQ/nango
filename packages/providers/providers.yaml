@@ -9716,6 +9716,7 @@ mailjet:
             type: string
             title: API Key
             description: Your Mailjet API Key.
+            secret: true
             pattern: '^[a-f0-9]{32}$'
             example: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
             doc_section: '#step-1-getting-your-credentials'
