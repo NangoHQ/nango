@@ -7,6 +7,7 @@ import * as url from 'url';
 
 import { AxiosError } from 'axios';
 import chalk from 'chalk';
+import inquirer from 'inquirer';
 import { serializeError } from 'serialize-error';
 import * as unzipper from 'unzipper';
 import * as zod from 'zod';
@@ -431,7 +432,42 @@ export class DryRunService {
             if (nangoInstance instanceof NangoSyncCLI) {
                 const logMessages = nangoInstance.logMessages;
                 if (logMessages && logMessages.messages.length > 0) {
-                    // ... (rest of the logging logic)
+                    const messages = logMessages.messages;
+                    let index = 0;
+                    const batchCount = 10;
+
+                    const displayBatch = () => {
+                        for (let i = 0; i < batchCount && index < messages.length; i++, index++) {
+                            const logs = messages[index];
+                            console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
+                            resultOutput.push(JSON.stringify(logs, null, 2));
+                        }
+                    };
+
+                    console.log(chalk.yellow(`The dry run would produce the following results: ${JSON.stringify(logMessages.counts, null, 2)}`));
+                    resultOutput.push(`The dry run would produce the following results: ${JSON.stringify(logMessages.counts, null, 2)}`);
+                    console.log(chalk.yellow('The following log messages were generated:'));
+                    resultOutput.push('The following log messages were generated:');
+
+                    displayBatch();
+
+                    while (index < messages.length) {
+                        const remaining = messages.length - index;
+                        const { confirmation } = options.autoConfirm
+                            ? { confirmation: true }
+                            : await inquirer.prompt([
+                                  {
+                                      type: 'confirm',
+                                      name: 'confirmation',
+                                      message: `There are ${remaining} log messages remaining. Would you like to see the next 10 log messages?`
+                                  }
+                              ]);
+                        if (confirmation) {
+                            displayBatch();
+                        } else {
+                            break;
+                        }
+                    }
                 }
 
                 if (options.saveResponses) {
