@@ -375,14 +375,14 @@ describe('buildProxyHeaders', () => {
         expect(result['x-av-date']).toBe(result['x-av-date-copy']);
     });
 
-    it('TWO_STEP: interpolates proxy.headers ${now | date: "..."} with stable now', () => {
+    it('TWO_STEP: interpolates proxy.headers ${now:...} with stable now', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
                     base_url: 'http://example.com',
                     headers: {
-                        'x-date-formatted': '${now | date: "%Y-%m-%d"}'
+                        'x-date-formatted': '${now:YYYY-MM-DD}'
                     }
                 }
             }

@@ -1592,8 +1592,8 @@ avanan:
     token_headers:
         x-av-app-id: ${credentials.appId}
         x-av-req-id: ${random}
-        x-av-date: '${now | date: "%Y-%m-%dT%H:%M:%S"}'
-        x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now | date: "%Y-%m-%dT%H:%M:%S"}${credentials.secretKey})})}'
+        x-av-date: '${now:YYYY-MM-DDTHH:mm:ss}'
+        x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
     token_response:
         token: ''
     token_expires_in_ms: 86400000
@@ -1603,8 +1603,8 @@ avanan:
             x-av-app-id: ${credentials.appId}
             x-av-token: ${accessToken}
             x-av-req-id: ${random}
-            x-av-date: '${now | date: "%Y-%m-%dT%H:%M:%S"}'
-            x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now | date: "%Y-%m-%dT%H:%M:%S"}${endpoint}${credentials.secretKey})})}'
+            x-av-date: '${now:YYYY-MM-DDTHH:mm:ss}'
+            x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${endpoint}${credentials.secretKey})})}'
     docs: https://nango.dev/docs/api-integrations/avanan
     docs_connect: https://nango.dev/docs/api-integrations/avanan/connect
     connection_config:

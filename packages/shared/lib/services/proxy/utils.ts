@@ -3,11 +3,16 @@ import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
+import {
+    connectionCopyWithParsedConnectionConfig,
+    formatPem,
+    getStableInterpolationReplacers,
+    interpolateIfNeeded,
+    interpolateProxyUrlParts
+} from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -395,18 +400,7 @@ export function buildProxyHeaders({
     // Custom headers handling
     if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
         const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
-        const needsStableRandom = headerValues.some((v) => v.includes('${random}'));
-        const needsStableNow = headerValues.some((v) => v.includes('${now}') || v.includes('now | date:'));
-        const stableReplacers: Record<string, unknown> = {};
-
-        if (needsStableRandom || needsStableNow) {
-            if (needsStableRandom) {
-                stableReplacers['random'] = uuidv4();
-            }
-            if (needsStableNow) {
-                stableReplacers['now'] = new Date().toISOString();
-            }
-        }
+        const stableReplacers = getStableInterpolationReplacers(headerValues);
 
         const baseReplacers = { endpoint: config.endpoint };
 

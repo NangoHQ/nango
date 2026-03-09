@@ -2,6 +2,8 @@ import crypto, { createPrivateKey, createPublicKey } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import get from 'lodash-es/get.js';
 
 import { isEnterprise, localhostUrl } from '@nangohq/utils';
@@ -13,6 +15,8 @@ export enum NodeEnv {
     Staging = 'staging',
     Prod = 'production'
 }
+
+dayjs.extend(utc);
 
 export function getPort() {
     if (process.env['SERVER_PORT']) {
@@ -218,11 +222,9 @@ export function interpolateString(str: string, replacers: Record<string, any>): 
     });
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        if (b === 'now' || b.startsWith('now | date:')) {
-            const nowDateMatch = b.match(/^now \| date: "([^"]*)"$/);
-            const isoNow = replacers['now'] as string | undefined;
-            const dateForFormat = isoNow ? new Date(isoNow) : new Date();
-            return nowDateMatch ? formatDate(dateForFormat, nowDateMatch[1]) : (isoNow ?? new Date().toISOString());
+        const nowValue = resolveNowExpression(b, replacers);
+        if (nowValue !== null) {
+            return nowValue;
         }
         if (b === 'random') {
             return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
@@ -280,11 +282,9 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        if (b === 'now' || b.startsWith('now | date:')) {
-            const nowDateMatch = b.match(/^now \| date: "([^"]*)"$/);
-            const isoNow = replacers['now'] as string | undefined;
-            const dateForFormat = isoNow ? new Date(isoNow) : new Date();
-            return nowDateMatch ? formatDate(dateForFormat, nowDateMatch[1]) : (isoNow ?? new Date().toISOString());
+        const nowValue = resolveNowExpression(b, replacers);
+        if (nowValue !== null) {
+            return nowValue;
         }
         if (b === 'random') {
             return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
@@ -324,6 +324,21 @@ export function interpolateObject(obj: Record<string, any>, dynamicValues: Recor
     }
 
     return interpolated;
+}
+
+export function getStableInterpolationReplacers(values: string[]): Record<string, string> {
+    const needsStableRandom = values.some((value) => value.includes('${random}'));
+    const needsStableNow = values.some((value) => value.includes('${now}') || value.includes('${now:'));
+    const stableReplacers: Record<string, string> = {};
+
+    if (needsStableRandom) {
+        stableReplacers['random'] = crypto.randomUUID();
+    }
+    if (needsStableNow) {
+        stableReplacers['now'] = new Date().toISOString();
+    }
+
+    return stableReplacers;
 }
 
 export function stripCredential(obj: any): any {
@@ -547,24 +562,22 @@ function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
     }
     return cleaned;
 }
-/**
- * format a date with strftime-style placeholders: %Y %m %d %H %M %S %L (UTC), for providers.yaml date interpolation.
- */
-export function formatDate(date: Date, format: string): string {
-    const pad = (n: number, len: number) => String(n).padStart(len, '0');
-    const year = date.getUTCFullYear();
-    const month = date.getUTCMonth() + 1;
-    const day = date.getUTCDate();
-    const hours = date.getUTCHours();
-    const minutes = date.getUTCMinutes();
-    const seconds = date.getUTCSeconds();
-    const ms = date.getUTCMilliseconds();
-    return format
-        .replace(/%Y/g, pad(year, 4))
-        .replace(/%m/g, pad(month, 2))
-        .replace(/%d/g, pad(day, 2))
-        .replace(/%H/g, pad(hours, 2))
-        .replace(/%M/g, pad(minutes, 2))
-        .replace(/%S/g, pad(seconds, 2))
-        .replace(/%L/g, pad(ms, 3));
+function resolveNowExpression(expression: string, replacers: Record<string, any>): string | null {
+    if (expression === 'now') {
+        const isoNow = replacers['now'] as string | undefined;
+        return isoNow ?? new Date().toISOString();
+    }
+
+    const formatMatch = expression.match(/^now:(.+)$/);
+    if (formatMatch) {
+        const format = formatMatch[1];
+        return format ? dayjs.utc(getNowDate(replacers)).format(format) : null;
+    }
+
+    return null;
+}
+
+function getNowDate(replacers: Record<string, any>): Date {
+    const isoNow = replacers['now'] as string | undefined;
+    return isoNow ? new Date(isoNow) : new Date();
 }

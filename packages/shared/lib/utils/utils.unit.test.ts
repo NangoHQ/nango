@@ -180,10 +180,10 @@ describe('interpolateString', () => {
         vi.useRealTimers();
     });
 
-    it('should interpolate ${now | date: "%Y-%m-%dT%H:%M:%S"} with formatted date (exact)', () => {
+    it('should interpolate ${now:YYYY-MM-DDTHH:mm:ss} with formatted date (exact)', () => {
         vi.useFakeTimers();
         vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
-        const input = 'Timestamp: ${now | date: "%Y-%m-%dT%H:%M:%S"}';
+        const input = 'Timestamp: ${now:YYYY-MM-DDTHH:mm:ss}';
         const output = utils.interpolateString(input, replacers);
         expect(output).toBe('Timestamp: 2026-03-02T14:30:55');
         vi.useRealTimers();
@@ -235,10 +235,10 @@ describe('interpolateString', () => {
         expect(output).toBe('Time: 2026-03-02T12:00:00.000Z');
     });
 
-    it('should interpolate ${now | date: "%Y-%m-%d"} with replacer when provided', () => {
+    it('should interpolate ${now:YYYY-MM-DD} with replacer when provided', () => {
         vi.useFakeTimers();
         vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
-        const input = 'Date: ${now | date: "%Y-%m-%d"}';
+        const input = 'Date: ${now:YYYY-MM-DD}';
         const output = utils.interpolateString(input, { now: '2026-03-02T14:30:55.000Z' });
         expect(output).toBe('Date: 2026-03-02');
         vi.useRealTimers();
@@ -309,9 +309,9 @@ describe('interpolateStringFromObject', () => {
         expect(output).toBe('At: 2026-03-02T10:00:00.000Z');
     });
 
-    it('interpolates ${now | date: "%Y-%m-%dT%H:%M:%S"} with replacer when provided', () => {
+    it('interpolates ${now:YYYY-MM-DDTHH:mm:ss} with replacer when provided', () => {
         const replacers = { now: '2026-03-02T10:05:30.000Z' };
-        const input = 'TS: ${now | date: "%Y-%m-%dT%H:%M:%S"}';
+        const input = 'TS: ${now:YYYY-MM-DDTHH:mm:ss}';
         const output = utils.interpolateStringFromObject(input, replacers);
         expect(output).toBe('TS: 2026-03-02T10:05:30');
     });
@@ -512,23 +512,9 @@ describe('makeUrl', () => {
     });
 });
 
-describe('formatDate', () => {
-    it('should format date with UTC placeholders %Y %m %d %H %M %S %L', () => {
-        const date = new Date('2025-03-15T14:30:45.123Z');
-        expect(utils.formatDate(date, '%Y-%m-%dT%H:%M:%S')).toBe('2025-03-15T14:30:45');
-        expect(utils.formatDate(date, '%Y/%m/%d')).toBe('2025/03/15');
-        expect(utils.formatDate(date, '%H:%M:%S.%L')).toBe('14:30:45.123');
-    });
-
-    it('should pad month, day, hours, minutes, seconds with leading zeros', () => {
-        const date = new Date('2025-01-05T09:05:03.007Z');
-        expect(utils.formatDate(date, '%Y-%m-%d')).toBe('2025-01-05');
-        expect(utils.formatDate(date, '%H:%M:%S.%L')).toBe('09:05:03.007');
-    });
-
-    it('should handle format string with repeated placeholders', () => {
-        const date = new Date('2025-12-31T23:59:59.999Z');
-        expect(utils.formatDate(date, '%Y-%Y')).toBe('2025-2025');
-        expect(utils.formatDate(date, '%d/%m/%Y')).toBe('31/12/2025');
+describe('now formatting', () => {
+    it('supports dayjs format tokens with UTC output', () => {
+        const output = utils.interpolateString('TS: ${now:YYYY-MM-DDTHH:mm:ss.SSS}', { now: '2025-03-15T14:30:45.123Z' });
+        expect(output).toBe('TS: 2025-03-15T14:30:45.123');
     });
 });
