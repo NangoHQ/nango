@@ -88,7 +88,7 @@ function startProcedure() {
                         lastSuccessHeartbeatAt = Date.now();
                     }
                     try {
-                        await usage.trackForConflicts(nangoProps, taskId, { refresh: true });
+                        await usage.trackForConflicts(nangoProps, { refresh: true });
                     } catch (err) {
                         logger.error('Failed to update conflict tracking with new ttl', { error: err });
                     }

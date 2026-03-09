@@ -46,7 +46,7 @@ export class RunnerMonitor {
         return `function:${nangoProps.environmentId}:${nangoProps.scriptType}:${nangoProps.syncId}`;
     }
 
-    async trackForConflicts(nangoProps: NangoProps, _taskId: string, opts = { refresh: false }): Promise<void> {
+    async trackForConflicts(nangoProps: NangoProps, opts = { refresh: false }): Promise<void> {
         if (nangoProps.scriptType == 'sync') {
             try {
                 await this.conflictTracking.tracker.set(this.generateConflictKey(nangoProps), '1', {
@@ -64,7 +64,7 @@ export class RunnerMonitor {
     }
 
     async track(nangoProps: NangoProps, taskId: string): Promise<void> {
-        await this.trackForConflicts(nangoProps, taskId);
+        await this.trackForConflicts(nangoProps);
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
         if (!this.persistClient) {
