@@ -60,14 +60,16 @@ function startProcedure() {
                 input: codeParams
             });
 
-            // Sometimes we can receive the same job (http retry) or a job for the same sync (orchestrator miss scheduling)
-            // Here is the last safety net to be sure nothing runs in parallel
-            if (await usage.hasConflictingSync(nangoProps)) {
-                logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
-                throw new Error('Conflicting sync detected');
+            try {
+                // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
+                await usage.track(nangoProps, taskId);
+            } catch (err) {
+                if (err instanceof Error && err.message.includes('conflicting_sync')) {
+                    logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
+                    throw new Error('Conflicting sync detected');
+                }
+                throw err;
             }
-
-            await usage.track(nangoProps, taskId);
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
@@ -91,6 +93,11 @@ function startProcedure() {
                     const res = await jobsClient.postHeartbeat({ taskId });
                     if (res.isOk()) {
                         lastSuccessHeartbeatAt = Date.now();
+                    }
+                    try {
+                        await usage.trackForConflicts(nangoProps, taskId, { refresh: true });
+                    } catch (err) {
+                        logger.error('Failed to update conflict tracking with new ttl', { error: err });
                     }
                 }, heartbeatIntervalMs);
 

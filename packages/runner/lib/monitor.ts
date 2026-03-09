@@ -42,13 +42,28 @@ export class RunnerMonitor {
         }
     }
 
-    async track(nangoProps: NangoProps, taskId: string): Promise<void> {
+    generateConflictKey(nangoProps: NangoProps): string {
+        return `function:${nangoProps.environmentId}:${nangoProps.scriptType}:${nangoProps.syncId}`;
+    }
+
+    async trackForConflicts(nangoProps: NangoProps, _taskId: string, opts = { refresh: false }): Promise<void> {
         if (nangoProps.scriptType == 'sync') {
-            await this.conflictTracking.tracker.set(`function:${nangoProps.scriptType}:${nangoProps.syncId}`, '1', {
-                canOverride: false,
-                ttlMs: 1000 * 60 * 60 * 24 * 7 // 1 week
-            });
+            try {
+                await this.conflictTracking.tracker.set(this.generateConflictKey(nangoProps), '1', {
+                    canOverride: opts.refresh,
+                    ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_HEARTBEAT_INTERVAL_MULTIPLIER
+                });
+            } catch (err) {
+                if (err instanceof Error && err.message.includes('set_key_already_exists')) {
+                    throw new Error('conflicting_sync');
+                }
+                throw err;
+            }
         }
+    }
+
+    async track(nangoProps: NangoProps, taskId: string): Promise<void> {
+        await this.trackForConflicts(nangoProps, taskId);
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
         if (!this.persistClient) {
@@ -59,7 +74,11 @@ export class RunnerMonitor {
     async untrack(taskId: string): Promise<void> {
         const nangoProps = this.tracked.get(taskId)?.nangoProps;
         if (nangoProps && nangoProps.scriptType == 'sync') {
-            await this.conflictTracking.tracker.delete(`function:${nangoProps.scriptType}:${nangoProps.syncId}`);
+            try {
+                await this.conflictTracking.tracker.delete(this.generateConflictKey(nangoProps));
+            } catch (err) {
+                logger.error('Failed to untrack sync', { error: err });
+            }
         }
         this.tracked.delete(taskId);
     }
