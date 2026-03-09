@@ -9,10 +9,11 @@ import { useStore } from '../store';
 import { useAnalyticsIdentify } from '../utils/analytics';
 
 export const PrivateRoute: React.FC = () => {
-    const { meta, error, loading: loadingMeta } = useMeta();
+    const { user, loading: loadingUser, error: userError } = useUser();
+    const { data, error: metaError, isLoading: loadingMeta } = useMeta(!!user);
+    const meta = data?.data;
     const [notFoundEnv, setNotFoundEnv] = useState(false);
     const [ready, setReady] = useState(false);
-    const { user, loading: loadingUser } = useUser(Boolean(meta && ready && !notFoundEnv));
     const identify = useAnalyticsIdentify();
 
     const env = useStore((state) => state.env);
@@ -23,7 +24,7 @@ export const PrivateRoute: React.FC = () => {
     const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
-        if (!meta || error) {
+        if (!meta || metaError) {
             return;
         }
 
@@ -31,10 +32,10 @@ export const PrivateRoute: React.FC = () => {
         setBaseUrl(meta.baseUrl);
         setDebugMode(meta.debugMode);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [meta, error]);
+    }, [meta, metaError]);
 
     useEffect(() => {
-        if (!meta || error) {
+        if (!meta || metaError) {
             return;
         }
 
@@ -70,7 +71,7 @@ export const PrivateRoute: React.FC = () => {
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loadingMeta, env, error, setEnv]);
+    }, [meta, loadingMeta, env, metaError, setEnv]);
 
     useEffect(() => {
         if (user && environmentAndAccount && meta && !meta.debugMode) {
@@ -78,14 +79,14 @@ export const PrivateRoute: React.FC = () => {
         }
     }, [user, environmentAndAccount, meta, identify]);
 
-    if (loadingMeta || !ready || loadingUser) {
+    if (loadingUser || loadingMeta || !ready) {
         return null;
     }
 
     if (notFoundEnv) {
         return <PageNotFound />;
     }
-    if (error) {
+    if (userError || metaError) {
         return <Navigate to="/signin" replace />;
     }
 

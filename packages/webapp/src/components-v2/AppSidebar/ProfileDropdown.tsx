@@ -14,7 +14,8 @@ import { useSignout } from '@/utils/user';
 export const ProfileDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { meta } = useMeta();
+    const { data: metaData } = useMeta();
+    const meta = metaData?.data;
     const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();

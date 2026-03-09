@@ -18,7 +18,7 @@ export const InviteSignup: React.FC = () => {
     const navigate = useNavigate();
     const signout = useSignout();
 
-    const { user: isLogged } = useUser(true, { onError: () => null });
+    const { user: isLogged } = useUser(true);
     const { data: inviteResponse, error: inviteError, isPending: _isInvitePending } = useInvite(token);
     const [loadingDecline, setLoadingDecline] = useState(false);
     const [loadingAccept, setLoadingAccept] = useState(false);
