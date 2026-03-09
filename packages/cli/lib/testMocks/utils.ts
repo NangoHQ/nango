@@ -8,7 +8,7 @@ import { vi } from 'vitest';
 import { getProvider } from '@nangohq/providers';
 import { PaginationService } from '@nangohq/runner-sdk';
 
-import { FILTER_HEADERS as FILTER_HEADERS_UNIFIED } from '../services/response-collector.service.js';
+import { FILTER_HEADERS as FILTER_HEADERS_UNIFIED, isAxiosDefaultContentTypeForMockIdentity } from '../services/response-collector.service.js';
 
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
@@ -427,22 +427,42 @@ class UnifiedFixtureProvider implements FixtureProvider {
                         }
                     }
 
-                    const mockHeaderCount = mock.request.headers ? Object.keys(mock.request.headers).length : 0;
-                    const requestHeaderCount = identity.requestIdentity.headers.length;
+                    const normalizeHeaderEntries = (entries: [string, unknown][]): Map<string, string> => {
+                        const normalized = new Map<string, string>();
 
-                    // Headers must match exactly (same count and same values)
-                    if (mockHeaderCount !== requestHeaderCount) {
+                        for (const [rawKey, rawValue] of entries) {
+                            const key = String(rawKey).toLowerCase();
+                            const value = String(rawValue);
+
+                            // Axios injects this content-type for POST/PUT/PATCH requests.
+                            // Treat it as optional to avoid unified mock identity mismatches.
+                            if (key === 'content-type' && isAxiosDefaultUrlEncodedContentType(value)) {
+                                continue;
+                            }
+
+                            if (!normalized.has(key)) {
+                                normalized.set(key, value);
+                            }
+                        }
+
+                        return normalized;
+                    };
+
+                    const mockHeaders = normalizeHeaderEntries(Object.entries(mock.request.headers || {}));
+                    const requestHeaders = normalizeHeaderEntries(identity.requestIdentity.headers);
+
+                    // Headers must match exactly (same keys and same values) after normalization.
+                    if (mockHeaders.size !== requestHeaders.size) {
                         return false;
                     }
 
-                    if (mock.request.headers) {
-                        for (const [key, value] of Object.entries(mock.request.headers)) {
-                            const actualHeader = identity.requestIdentity.headers.find(([k]) => k.toLowerCase() === key.toLowerCase());
-                            if (!actualHeader || String(actualHeader[1]) !== String(value)) {
-                                return false;
-                            }
+                    for (const [key, value] of mockHeaders.entries()) {
+                        const actualValue = requestHeaders.get(key);
+                        if (actualValue === undefined || String(actualValue) !== String(value)) {
+                            return false;
                         }
                     }
+
                     if (mock.request.data !== undefined) {
                         const expectedDataIdentity = computeDataIdentity({ data: mock.request.data } as UserProvidedProxyConfiguration);
                         if (expectedDataIdentity !== identity.requestIdentity.data) {
@@ -1260,9 +1280,8 @@ function normalizeHeadersForUnifiedIdentity(headers: UserProvidedProxyConfigurat
         }
 
         const value = String(rawValue);
-
         // Match ResponseCollector behavior for axios defaults.
-        if (lowerKey === 'content-type' && (value.toLowerCase() === 'application/json' || value === 'undefined')) {
+        if (isAxiosDefaultContentTypeForMockIdentity(lowerKey, value)) {
             continue;
         }
 
@@ -1271,6 +1290,10 @@ function normalizeHeadersForUnifiedIdentity(headers: UserProvidedProxyConfigurat
 
     sortEntries(filtered);
     return filtered;
+}
+
+function isAxiosDefaultUrlEncodedContentType(value: unknown): boolean {
+    return String(value).toLowerCase().startsWith('application/x-www-form-urlencoded');
 }
 
 function sortEntries(entries: [string, unknown][]): [string, unknown][] {
