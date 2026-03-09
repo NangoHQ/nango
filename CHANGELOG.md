@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.41] - 2026-03-09
+
+### Added
+
+- *(integrations)* Migrate asana-mcp to v2 (#5547) by @hassan254-prog
+- *(webhooks)* Add na, eu, au to trusted ConnectWise PSA subdomains (#5557) by @mayankj
+- *(integrations)* Add support for axiom (#5558) by @hassan254-prog
+- *(webhooks)* Add support for ms teams bot webhooks (#5560) by @hassan254-prog
+- *(runner-sdk)* Add execution lifecycle with interrupt and kill timeouts (#5555) by @TBonnin
+- *(server)* Support flow-level json-schema (#5561) by @kaposke
+- *(integrations)* Add support for supabase mcp (#5569) by @hassan254-prog
+- *(integrations)* Add support for circleback mcp (#5571) by @hassan254-prog
+- *(integrations)* Add support for amplitude mcp (#5568) by @hassan254-prog
+- Expose function checkpoints (from/to) in Nango logs (#5565) by @TBonnin
+- *(orch)* Allow overriding next execution when completing a task (#5566) by @TBonnin
+- *(integrations)* Add support for quentn (#5470) by @alex-onepage
+- *(migrations)* Increase `oauth_client_id` size limit (#5573) by @hassan254-prog
+- *(providers)* Allow for interpolation of hostnames for dayforce (#5539) by @hassan254-prog
+- *(integrations)* Add support for klicktipp (#5473) by @alex-onepage
+- *(db)* Migrate Slack connection IDs from env name to env id (#5564) by @pfreixes
+- *(webapp)* Redesign auth pages (#5518) by @kaposke
+- *(integrations)* Add support for cleverreach (#5480) by @alex-onepage
+- *(integrations)* Add support for mailjet (#5583) by @alex-onepage
+- *(fleet)* Add support for runner replicas (#5579) by @TBonnin
+
+### Changed
+
+- Reposition intro + update API count to 700+ (#5562) by @bastienbeurier
+- Changelog and Dev update for February 2026 (#5556) by @SapneshNaik
+- Update README.md (#5574) by @bastienbeurier
+- *(slack)* Remove legacy name-based connection ID fallback (#5586) by @pfreixes
+
+### Fixed
+
+- *(proxy)* Properly send error responses (#5551) by @hassan254-prog
+- *(vulns)* Npm audit fix and some upgrades (#5563) by @rossmcewan
+- *(deps)* Upgrades and vuln fixes (#5570) by @rossmcewan
+- *(providers)* Fix supabase apikey interpolation (#5575) by @hassan254-prog
+- *(orchestrator)* Enforce group max concurrency when dequeuing with wildcard pattern (#5578) by @TBonnin
+- *(slack)* Use environment id for slack connection id with legacy fallback (#5559) by @pfreixes
+- *(runner)* Distributed conflict tracking (#5580) by @rossmcewan
+- *(cli)* Restore pagination logging after dryrun (#5588) by @agusayerza
+
 ## [v0.69.40] - 2026-03-03
 
 ### Added
@@ -6042,6 +6085,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.41]: https://github.com/NangoHQ/nango/compare/v0.69.40..v0.69.41
 [v0.69.40]: https://github.com/NangoHQ/nango/compare/v0.69.39..v0.69.40
 [v0.69.39]: https://github.com/NangoHQ/nango/compare/v0.69.38..v0.69.39
 [v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
