@@ -7,13 +7,13 @@ sidebarTitle: 'Salesforce JWT'
 
 To authenticate with Salesforce using JWT, you need:
 
-1. **Consumer Key** – from your Salesforce Connected App
-2. **Consumer Secret** – from your Salesforce Connected App
-3. **Private Key** – the private key that matches the certificate you upload to the Connected App
+1. **Consumer Key** – from your Salesforce External Client App
+2. **Consumer Secret** – from your Salesforce External Client App
+3. **Private Key** – the private key that matches the certificate you upload to the External Client App
 4. **Username** – the Salesforce user the JWT will act on behalf of
 5. **Authorization server's URL** – the Salesforce OAuth/token endpoint base URL (see Step 6 below)
 
-This guide walks you through generating a certificate and private key, creating a JWT-enabled Connected App in Salesforce, and entering your credentials in Nango.
+This guide walks you through generating a certificate and private key, creating a JWT-enabled External Client App in Salesforce.
 
 ### Prerequisites
 
@@ -29,7 +29,7 @@ JWT authentication requires a digital certificate and the private key used to si
 **You will create two files:**
 
 - **server.key** – Your private key. Use this file (or its PEM content) in Nango as **Private Key**.
-- **server.crt** – The digital certificate. Upload this file when creating the Connected App (under **Use digital signatures**).
+- **server.crt** – The digital certificate. Upload this file when creating the External Client App (under **Enable JWT Bearer Flow**).
 
 **Steps:**
 
@@ -45,58 +45,53 @@ JWT authentication requires a digital certificate and the private key used to si
 These steps are for getting started only. For production, use a key and certificate from a CA and follow your company's security policies.
 </Note>
 
-#### Step 2: Enable creation of Connected Apps (if needed)
+#### Step 2: Create a new External Client App
 
-If your org does not allow creating Connected Apps yet:
+1. Log in to Salesforce.
+2. Go to **Setup** → **Apps** → **App Manager**, then click **New External Client App**.
+3. Fill in all the required fields, for **Distribution State**: Choose **Local**.
 
-1. Log in to your org instance.
-2. In **Setup**, go to **Apps** → **External Client Apps** in the left navigation, then select **Settings**.
-3. Turn on **Allow creation of connected apps** and click **Enable**.
+<img src="/api-integrations/salesforce-jwt/app_basic_info.png" />
 
-<img src="/api-integrations/salesforce-jwt/external_client_app_settings.png" />
-
-#### Step 3: Create a new Connected App
-
-1. From the same External Client App Settings page, click **New Connected App**.
-2. Fill in the basic information (e.g. app name, contact email).
-3. Select **Enable OAuth Settings**.
-4. For **Callback URL**, enter `https://api.nango.dev/oauth/callback`. Salesforce requires this field to be filled, but it is not used.
-5. Select **Use digital signatures**, click **Choose File**, and upload your certificate file (e.g. `server.crt`).
+4. In the **API (Enable OAuth Settings)** section, check **Enable OAuth**.
+5. For **Callback URL**, enter `https://api.nango.dev/oauth/callback`. Salesforce requires this field even though JWT Bearer Flow does not use it.
 6. Under **Selected OAuth Scopes**, add:
    - **Manage user data via APIs (api)**
    - **Perform requests at any time (refresh_token, offline_access)**
-7. Check the **Introspect All Tokens** option
-8. Click **Save**, then **Continue**.
+7. Enable the **Introspect all Tokens** option.
 
-<img src="/api-integrations/salesforce-jwt/app_manager.png" />
+<img src="/api-integrations/salesforce-jwt/enable_oauth.png" />
 
-#### Step 4: Get Consumer Key and Consumer Secret
+8. Under **Flow Enablement**, check **Enable JWT Bearer Flow**, then click **Choose File** and upload your certificate file (e.g. `server.crt` from Step 1).
 
-1. Click **Manage Consumer Details**.
-2. If prompted, verify your identity (e.g. enter the code sent to your email).
-3. Copy the **Consumer Key** and **Consumer Secret**, as you’ll need them when setting up a connection in Nango.
+<img src="/api-integrations/salesforce-jwt/enable_jwt.png" />
+
+9. Click **Create** to finish.
+
+
+#### Step 3: Get Consumer Key and Consumer Secret
+
+1. Open your app, go to the **Settings** tab.
+2. Expand the **OAuth Settings** section and click **Consumer Key and Secret**.
+
+<img src="/api-integrations/salesforce-jwt/client_credentials.png" />
+
+3. If prompted, verify your identity (e.g. enter the code sent to your email).
+4. Copy the **Consumer Key** and **Consumer Secret**; you’ll need them when setting up a connection in Nango.
 
 <img src="/api-integrations/salesforce-jwt/consumer_credentials.png" />
 
-Changes can take up to 10 minutes to take effect, please wait for these to propagate.
+#### Step 4: Configure token and session policies
 
-
-#### Step 5: Configure token and session policies
-
-1. From the left navigation go to **App Manager** then click the drop down to the far right of your applicaton, then click the dropdown and click manage.
-
-
-2. At the top click Edit policies, under **OAuth Policies**, select **Admin approved users are pre-authorized**, then click **OK**.
+1. In your app, go to the **Policies** tab and click **Edit**. Under **OAuth Policies**, select **Admin approved users are pre-authorized**, then click **OK**, then **Save**.
 
 <img src="/api-integrations/salesforce-jwt/oauth_policies.png" />
 
-3. Click **Save**.
+2. Click **App Policies**, select the profiles or permission sets that can use this app, then click **Save**.
 
-4. Click **Manage Profiles** (and **Manage Permission Sets** if needed), select the profiles or permission sets that are allowed to use this app, then click **Save**.
+<img src="/api-integrations/salesforce-jwt/app_policies.png" />
 
-<img src="/api-integrations/salesforce-jwt/manage_profiles.png" />
-
-#### Step 6: Finding the authorization server URL
+#### Step 5: Finding the authorization server URL
 
 Use the authorization server's URL that matches your environment:
 
@@ -106,18 +101,18 @@ Use the authorization server's URL that matches your environment:
 
 Enter this URL in Nango as the **Authorization server's URL**.
 
-#### Step 7: Finding the username
+#### Step 6: Finding the username
 
-The **Username** you use for JWT must belong to a user who has one of the profiles you selected in **Manage Profiles** above. To find a valid username:
+The **Username** you use for JWT must belong to a user who has one of the profiles you selected in **Selected Profiles** above. To find a valid username:
 
 1. In Salesforce, go to **Setup**.
 2. In the Quick Find box, search for **Users**, then select **Users**.
-3. Open a user record that has one of the profiles you authorized for the Connected App.
+3. Open a user record that has one of the profiles you authorized for the External Client App.
 4. On the user detail page, copy the **Username** value.
 
 <img src="/api-integrations/salesforce-jwt/users.png" />
 
-#### Step 8: Enter credentials in the Connect UI
+#### Step 7: Enter credentials in the Connect UI
 
 When you have your **Consumer Key**, **Consumer Secret**, **Private Key**, **Username**, and **Authorization server's URL**:
 

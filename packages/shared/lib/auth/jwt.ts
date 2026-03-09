@@ -170,7 +170,7 @@ export function decode(token: string): Record<string, any> | null {
     }
 }
 
-function signJWT({
+export function signJWT({
     payload,
     secretOrPrivateKey,
     options

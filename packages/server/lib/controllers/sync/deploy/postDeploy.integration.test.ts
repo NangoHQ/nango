@@ -57,6 +57,55 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(400);
     });
 
+    it('should reject models_json_schema missing definitions for declared models', async () => {
+        const { secret } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: secret.secret,
+            body: {
+                debug: false,
+                flowConfigs: [
+                    {
+                        syncName: 'test',
+                        fileBody: { js: 'js file', ts: 'ts file' },
+                        providerConfigKey: 'unauthenticated',
+                        endpoints: [],
+                        runs: 'every day',
+                        type: 'sync',
+                        track_deletes: false,
+                        models: ['Output'],
+                        input: 'Input',
+                        models_json_schema: {
+                            $schema: 'http://json-schema.org/draft-07/schema#',
+                            definitions: {
+                                // Output and Input are missing
+                                Unrelated: { type: 'object' }
+                            }
+                        }
+                    }
+                ],
+                nangoYamlBody: '',
+                reconcile: false,
+                singleDeployMode: false
+            }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: 'models_json_schema is missing definitions for some models or input',
+                        path: ['flowConfigs', '0', 'models_json_schema']
+                    }
+                ]
+            }
+        });
+    });
+
     it('should accept empty body', async () => {
         const { secret } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
@@ -228,6 +277,135 @@ describe(`POST ${endpoint}`, () => {
             // Check that everything was inserted in DB
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
             expect(syncConfigs).toBeNull();
+        });
+    });
+
+    describe('models_json_schema handling', () => {
+        it('should use per-flow models_json_schema directly', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    debug: false,
+                    flowConfigs: [
+                        {
+                            syncName: 'test',
+                            fileBody: { js: 'js file', ts: 'ts file' },
+                            providerConfigKey: 'unauthenticated',
+                            endpoints: [{ method: 'GET', path: '/path' }],
+                            runs: 'every day',
+                            type: 'sync',
+                            attributes: {},
+                            auto_start: false,
+                            metadata: { description: 'a' },
+                            sync_type: 'full',
+                            track_deletes: false,
+                            input: 'Input',
+                            models: ['Output'],
+                            models_json_schema: {
+                                $schema: 'http://json-schema.org/draft-07/schema#',
+                                definitions: {
+                                    Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
+                                    Output: {
+                                        type: 'object',
+                                        properties: { ref: { $ref: '#/definitions/Ref' } },
+                                        required: ['ref'],
+                                        additionalProperties: false
+                                    },
+                                    Ref: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false }
+                                }
+                            }
+                        }
+                    ],
+                    nangoYamlBody: '',
+                    onEventScriptsByProvider: [],
+                    reconcile: false,
+                    singleDeployMode: false,
+                    sdkVersion: '0.61.3-yaml'
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+
+            const syncConfigs = await getSyncConfigsAsStandardConfig(env.id);
+            expect(syncConfigs).toHaveLength(1);
+            expect(syncConfigs?.[0]?.syncs[0]?.json_schema).toStrictEqual({
+                $schema: 'http://json-schema.org/draft-07/schema#',
+                definitions: {
+                    Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
+                    Output: { type: 'object', properties: { ref: { $ref: '#/definitions/Ref' } }, required: ['ref'], additionalProperties: false },
+                    Ref: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false }
+                }
+            });
+        });
+
+        it('should filter top-level jsonSchema to only the models used by a flow (legacy format)', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    debug: false,
+                    jsonSchema: {
+                        $comment: '',
+                        $schema: 'http://json-schema.org/draft-07/schema#',
+                        definitions: {
+                            Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
+                            Output: {
+                                type: 'object',
+                                properties: { ref: { $ref: '#/definitions/Ref' } },
+                                required: ['ref'],
+                                additionalProperties: false
+                            },
+                            Ref: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false },
+                            // This model is in the aggregated schema but not used by the flow — it should be filtered out
+                            Unrelated: { type: 'object', properties: { name: { type: 'string' } }, additionalProperties: false }
+                        }
+                    },
+                    flowConfigs: [
+                        {
+                            syncName: 'test',
+                            fileBody: { js: 'js file', ts: 'ts file' },
+                            providerConfigKey: 'unauthenticated',
+                            endpoints: [{ method: 'GET', path: '/path' }],
+                            runs: 'every day',
+                            type: 'sync',
+                            attributes: {},
+                            auto_start: false,
+                            metadata: { description: 'a' },
+                            sync_type: 'full',
+                            track_deletes: false,
+                            input: 'Input',
+                            models: ['Output']
+                        }
+                    ],
+                    nangoYamlBody: '',
+                    onEventScriptsByProvider: [],
+                    reconcile: false,
+                    singleDeployMode: false,
+                    sdkVersion: '0.61.3-yaml'
+                }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+
+            const syncConfigs = await getSyncConfigsAsStandardConfig(env.id);
+            expect(syncConfigs).toHaveLength(1);
+            expect(syncConfigs?.[0]?.syncs[0]?.json_schema).toStrictEqual({
+                definitions: {
+                    Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
+                    Output: { type: 'object', properties: { ref: { $ref: '#/definitions/Ref' } }, required: ['ref'], additionalProperties: false },
+                    Ref: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false }
+                    // Unrelated is absent
+                }
+            });
         });
     });
 });

@@ -20,6 +20,14 @@ describe('stringifyError', () => {
             expect(parsed).toHaveProperty('stack');
         });
 
+        it('should include cause when opts.cause is true', () => {
+            const err = new Error('Test error');
+            err.cause = 'Underlying cause';
+            const parsed = JSON.parse(stringifyError(err, { cause: true }));
+
+            expect(parsed).toHaveProperty('cause');
+        });
+
         it('should handle non-Error values without throwing', () => {
             expect(() => stringifyError('String error')).not.toThrow();
             expect(() => stringifyError(null)).not.toThrow();

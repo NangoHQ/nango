@@ -292,6 +292,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'The refresh limit has been reached for this connection.';
                 break;
 
+            case 'connection_refresh_backoff':
+                this.status = 424;
+                this.message = 'A recent refresh attempt failed. Backing off before retrying.';
+                break;
+
             case 'connection_test_failed':
                 this.status = status || 400;
                 this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;
@@ -532,6 +537,26 @@ export class NangoError extends NangoInternalError {
             case 'no_default_api_secret':
                 this.status = status ?? 500;
                 this.message = 'Environment does not have a default API secret';
+                break;
+
+            case 'function_runtime_out_of_memory':
+                this.status = 500;
+                this.message = 'The function runtime ran out of memory';
+                break;
+
+            case 'function_runtime_timed_out':
+                this.status = 500;
+                this.message = 'The function runtime timed out';
+                break;
+
+            case 'function_runtime_other':
+                this.status = 500;
+                this.message = 'An unknown error occurred with the function runtime';
+                break;
+
+            case 'execution_timeout':
+                this.status = 500;
+                this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
                 break;
 
             default:

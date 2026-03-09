@@ -11,7 +11,15 @@ import { serializeError } from 'serialize-error';
 import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
-import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
+import {
+    ActionError,
+    BASE_VARIANT,
+    InvalidActionInputSDKError,
+    InvalidActionOutputSDKError,
+    SDKError,
+    validateCheckpoint,
+    validateData
+} from '@nangohq/runner-sdk';
 
 import { parse } from './config.service.js';
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
@@ -19,14 +27,23 @@ import { loadSchemaJson } from './model.service.js';
 import { ResponseCollector } from './response-collector.service.js';
 import * as nangoScript from '../sdkScripts.js';
 import { displayValidationError } from '../utils/errors.js';
-import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
+import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
-import type { NangoActionBase } from '@nangohq/runner-sdk';
-import type { DBSyncConfig, Metadata, NangoProps, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, ScriptFileType, SdkLogger } from '@nangohq/types';
+import type {
+    Checkpoint,
+    DBSyncConfig,
+    Metadata,
+    NangoProps,
+    NangoYamlParsed,
+    ParsedNangoAction,
+    ParsedNangoSync,
+    ScriptFileType,
+    SdkLogger
+} from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
@@ -36,6 +53,7 @@ interface RunArgs extends GlobalOptions {
     useServerLastSyncDate?: boolean;
     input?: string;
     metadata?: string;
+    checkpoint?: string;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
@@ -95,7 +113,7 @@ export class DryRunService {
 
     public async run(options: RunArgs, debug = false): Promise<string | undefined> {
         let syncName = '';
-        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, syncVariant;
+        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
 
         const environment = options.optionalEnvironment || this.environment;
 
@@ -106,15 +124,8 @@ export class DryRunService {
 
         await parseSecretKey(environment, debug);
 
-        if (!process.env['NANGO_HOSTPORT']) {
-            if (debug) {
-                printDebug(`NANGO_HOSTPORT is not set. Setting the default to ${hostport}`);
-            }
-            process.env['NANGO_HOSTPORT'] = hostport;
-        }
-
         if (debug) {
-            printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}`);
+            printDebug(`NANGO_HOSTPORT is set to ${resolveHostport()}`);
         }
 
         if (Object.keys(options).length > 0) {
@@ -124,7 +135,8 @@ export class DryRunService {
                 connectionId,
                 lastSyncDate: suppliedLastSyncDate,
                 input: actionInput,
-                metadata: rawStubbedMetadata
+                metadata: rawStubbedMetadata,
+                checkpoint: rawStubbedCheckpoint
             } = options);
         }
 
@@ -246,7 +258,7 @@ export class DryRunService {
             printDebug(`Provider found: ${provider}`);
         }
 
-        if (process.env['NANGO_HOSTPORT']?.endsWith('.nango.dev')) {
+        if (resolveHostport().endsWith('.nango.dev')) {
             process.env['NANGO_CLOUD'] = 'true';
         }
 
@@ -270,47 +282,32 @@ export class DryRunService {
         let normalizedInput;
 
         if (actionInput) {
-            if (actionInput.startsWith('@') && actionInput.endsWith('.json')) {
-                const fileContents = readFile(actionInput);
-                if (!fileContents) {
-                    console.log(chalk.red('The file could not be read. Please make sure it exists.'));
-                    return;
-                }
-                try {
-                    normalizedInput = JSON.parse(fileContents);
-                } catch {
-                    console.log(chalk.red('There was an issue parsing the action input file. Please make sure it is valid JSON.'));
-                    return;
-                }
-            } else {
-                try {
-                    normalizedInput = JSON.parse(actionInput);
-                } catch {
-                    throw new Error('Failed to parse --input');
-                }
+            const result = parseJsonArg(actionInput, 'input');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return;
             }
+            normalizedInput = result.value;
         }
 
         if (rawStubbedMetadata) {
-            if (rawStubbedMetadata.startsWith('@') && rawStubbedMetadata.endsWith('.json')) {
-                const fileContents = readFile(rawStubbedMetadata);
-                if (!fileContents) {
-                    console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
-                    return;
-                }
-                try {
-                    stubbedMetadata = JSON.parse(fileContents);
-                } catch {
-                    console.log(chalk.red('There was an issue parsing the metadata file. Please make sure it is valid JSON.'));
-                    return;
-                }
-            } else {
-                try {
-                    stubbedMetadata = JSON.parse(rawStubbedMetadata);
-                } catch {
-                    throw new Error('fail to parse --metadata');
-                }
+            const result = parseJsonArg(rawStubbedMetadata, 'metadata');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return;
             }
+            stubbedMetadata = result.value;
+        }
+
+        let stubbedCheckpoint: Checkpoint | undefined = undefined;
+
+        if (rawStubbedCheckpoint) {
+            const result = parseJsonArg(rawStubbedCheckpoint, 'checkpoint');
+            if (!result.ok) {
+                console.log(chalk.red(result.message));
+                return;
+            }
+            stubbedCheckpoint = validateCheckpoint(result.value);
         }
 
         const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
@@ -356,7 +353,7 @@ export class DryRunService {
             const nangoProps: NangoProps = {
                 isCLI: true,
                 scriptType: scriptInfo?.type || 'sync',
-                host: process.env['NANGO_HOSTPORT'],
+                host: resolveHostport(),
                 connectionId: nangoConnection.connection_id,
                 environmentId: -1,
                 environmentName: environment,
@@ -396,7 +393,8 @@ export class DryRunService {
                 nangoProps,
                 loadLocation: './',
                 input: normalizedInput,
-                stubbedMetadata: stubbedMetadata,
+                stubbedMetadata,
+                stubbedCheckpoint,
                 ...(options.diagnostics && { diagnostics: options.diagnostics })
             });
 
@@ -474,6 +472,7 @@ export class DryRunService {
         loadLocation,
         input,
         stubbedMetadata,
+        stubbedCheckpoint,
         diagnostics
     }: {
         syncName: string;
@@ -481,6 +480,7 @@ export class DryRunService {
         loadLocation: string;
         input: object;
         stubbedMetadata: Metadata | undefined;
+        stubbedCheckpoint: Checkpoint | undefined;
         diagnostics?: boolean;
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
@@ -494,8 +494,8 @@ export class DryRunService {
         });
         const nango =
             nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
-                ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata })
-                : new NangoActionCLI(nangoProps, { dryRunService: drs });
+                ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata, stubbedCheckpoint })
+                : new NangoActionCLI(nangoProps, { dryRunService: drs, stubbedCheckpoint });
 
         const monitor = diagnostics ? new DiagnosticsMonitor() : null;
 
@@ -567,8 +567,9 @@ export class DryRunService {
                 };
 
                 const context = vm.createContext(sandbox);
-                const scriptExports: { default?: ((nango: NangoActionBase, payload?: object) => Promise<unknown>) | nangoScript.CreateAnyResponse } =
-                    scriptObj.runInContext(context);
+                const scriptExports: {
+                    default?: ((nango: NangoActionCLI | NangoSyncCLI, payload?: object) => Promise<unknown>) | nangoScript.CreateAnyResponse;
+                } = scriptObj.runInContext(context);
 
                 if (!scriptExports.default) {
                     const content = `There is no default export that is a function for ${syncName}`;
@@ -734,6 +735,25 @@ export class DryRunService {
                 console.log(formatDiagnostics(stats));
             }
         }
+    }
+}
+
+function parseJsonArg(raw: string, argName: string): { ok: true; value: any } | { ok: false; message: string } {
+    if (raw.startsWith('@') && raw.endsWith('.json')) {
+        const fileContents = readFile(raw);
+        if (!fileContents) {
+            return { ok: false, message: `The ${argName} file could not be read. Please make sure it exists.` };
+        }
+        try {
+            return { ok: true, value: JSON.parse(fileContents) };
+        } catch {
+            return { ok: false, message: `There was an issue parsing the ${argName} file. Please make sure it is valid JSON.` };
+        }
+    }
+    try {
+        return { ok: true, value: JSON.parse(raw) };
+    } catch {
+        return { ok: false, message: `Failed to parse --${argName}` };
     }
 }
 

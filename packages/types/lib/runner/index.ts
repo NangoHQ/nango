@@ -1,4 +1,5 @@
 import type { TelemetryBag } from './sdk.js';
+import type { CheckpointRange } from '../checkpoint/types.js';
 import type { DBPlan } from '../plans/db.js';
 
 export interface RunnerOutputError {
@@ -14,6 +15,7 @@ export interface RunnerOutputError {
 export interface RunnerOutput {
     output: unknown;
     telemetryBag: TelemetryBag;
+    checkpoints?: CheckpointRange | undefined;
 }
 
 export interface RunnerFlags {

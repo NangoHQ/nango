@@ -126,7 +126,7 @@ describe('Task', () => {
         const dequeued = (await tasks.dequeue(db, { groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
         expect(dequeued).toHaveLength(0);
     });
-    it('should be dequeued according to group max concurrency ', async () => {
+    it('should be dequeued according to group max concurrency', async () => {
         const groupKey = nanoid();
         const groupMaxConcurrency = 2;
         const t0 = await createTask(db, { groupKey, groupMaxConcurrency });
@@ -154,6 +154,39 @@ describe('Task', () => {
 
         // group should be able to dequeue again
         dequeued = (await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(1);
+        expect(dequeued[0]).toMatchObject({ id: t2.id, state: 'STARTED' });
+    });
+    it('should be dequeued according to group pattern max concurrency', async () => {
+        const groupPrefix = nanoid();
+        const groupKey = `${groupPrefix}${nanoid()}`;
+        const groupMaxConcurrency = 2;
+        const t0 = await createTask(db, { groupKey, groupMaxConcurrency });
+        const t1 = await createTask(db, { groupKey, groupMaxConcurrency });
+
+        const groupKeyPattern = `${groupPrefix}*`;
+        let dequeued = (await tasks.dequeue(db, { groupKeyPattern, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(2);
+        expect(dequeued[0]).toMatchObject({ id: t0.id, state: 'STARTED' });
+        expect(dequeued[1]).toMatchObject({ id: t1.id, state: 'STARTED' });
+
+        // group has reached its max concurrency, so no more tasks should be dequeued
+        const t2 = await createTask(db, { groupKey, groupMaxConcurrency });
+        dequeued = (await tasks.dequeue(db, { groupKeyPattern, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(0);
+
+        // dequeuing tasks with different group key should not be affected
+        const t3 = await createTask(db, { groupKey: nanoid(), groupMaxConcurrency });
+        dequeued = (await tasks.dequeue(db, { groupKeyPattern: t3.groupKey, limit: 10 })).unwrap();
+        expect(dequeued).toHaveLength(1);
+        expect(dequeued[0]).toMatchObject({ id: t3.id, state: 'STARTED' });
+
+        // tasks now completes
+        await succeedTask(db, t0.id);
+        await succeedTask(db, t1.id);
+
+        // group should be able to dequeue again
+        dequeued = (await tasks.dequeue(db, { groupKeyPattern, limit: 10 })).unwrap();
         expect(dequeued).toHaveLength(1);
         expect(dequeued[0]).toMatchObject({ id: t2.id, state: 'STARTED' });
     });

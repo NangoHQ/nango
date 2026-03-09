@@ -5,7 +5,10 @@ import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
 import type * as z from 'zod';
 
-export type CreateAnyResponse = CreateSyncResponse<any, any> | CreateActionResponse<any, any> | CreateOnEventResponse;
+export type CreateAnyResponse =
+    | CreateSyncResponse<any, ZodMetadata, ZodCheckpoint>
+    | CreateActionResponse<any, any, ZodMetadata, ZodCheckpoint>
+    | CreateOnEventResponse<ZodMetadata, ZodCheckpoint>;
 
 export type { ActionError } from './errors.js';
 export type { NangoActionBase as NangoAction, ProxyConfiguration } from './action.js';
@@ -76,7 +79,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
     /**
      * If `true`, automatically detects deleted records and removes them when you fetch the latest data.
      *
-     * @deprecated This option will be removed in future versions. Please automatically detect deletions by calling `nango.deleteRecordsFromPreviousExecutions()` in your sync script.
+     * @deprecated This option will be removed in future versions. Please automatically detect deletions by calling `nango.trackDeletesStart()` and `nango.trackDeletesEnd()` in your sync function.
      * @default false
      */
     trackDeletes?: boolean;
@@ -115,7 +118,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
 
     /**
      * The checkpoint schema for storing sync progress and resume state.
-     * Checkpoint must be an object with string, number, boolean, or Date values.
+     * Checkpoint must be an object with string, number or boolean values.
      * Nested objects or arrays are not supported.
      *
      * @example
@@ -277,7 +280,7 @@ export interface CreateActionProps<
 
     /**
      * The checkpoint schema for storing action progress and resume state.
-     * Checkpoint must be an object with string, number, boolean, or Date values.
+     * Checkpoint must be an object with string, number or boolean values.
      * Nested objects or arrays are not supported.
      *
      * @example
@@ -388,7 +391,7 @@ export interface CreateOnEventProps<TMetadata extends ZodMetadata = undefined, T
 
     /**
      * The checkpoint schema for storing OnEvent script progress and resume state.
-     * Checkpoint must be an object with string, number, boolean, or Date values.
+     * Checkpoint must be an object with string, number or boolean values.
      * Nested objects or arrays are not supported.
      *
      * @example

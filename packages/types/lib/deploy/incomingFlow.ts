@@ -1,5 +1,6 @@
 import type { NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { JSONSchema7 } from 'json-schema';
 import type { Merge } from 'type-fest';
 
 export interface IncomingScriptFiles {
@@ -88,6 +89,7 @@ export interface CLIDeployFlowConfig {
     /** @deprecated **/
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
+    models_json_schema?: JSONSchema7 | undefined;
 }
 
 /**

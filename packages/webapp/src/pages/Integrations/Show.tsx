@@ -14,22 +14,22 @@ import { ButtonLink } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
-import { useListIntegration } from '@/hooks/useIntegration';
+import { useListIntegrations } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
-import type { ApiIntegrationList } from '@nangohq/types';
+import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
 
 export const IntegrationsList = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
-    const { list, loading, error } = useListIntegration(env);
+    const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
 
     const initialIntegrations = useMemo(() => {
-        return list ?? null;
-    }, [list]);
+        return data?.data ?? null;
+    }, [data?.data]);
 
     useEffect(() => {
         if (initialIntegrations) {
@@ -87,7 +87,7 @@ export const IntegrationsList = () => {
     );
 
     if (error) {
-        return <ErrorPageComponent title="Integrations" error={error.json} />;
+        return <ErrorPageComponent title="Integrations" error={error.json as GetIntegrations['Errors']} />;
     }
 
     return (
@@ -111,7 +111,7 @@ export const IntegrationsList = () => {
 
             <AutoIdlingBanner />
 
-            {loading && (
+            {isPending && (
                 <div className="flex flex-col gap-1">
                     <Skeleton className="h-10 w-full" />
                     {Array.from({ length: 4 }).map((_, index) => (
@@ -120,7 +120,7 @@ export const IntegrationsList = () => {
                 </div>
             )}
 
-            {list && list.length === 0 && (
+            {data?.data && data.data.length === 0 && (
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No available integrations</h3>
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
@@ -130,7 +130,7 @@ export const IntegrationsList = () => {
                 </div>
             )}
 
-            {list && list.length > 0 && integrations && integrations.length === 0 && (
+            {data?.data && data.data.length > 0 && integrations && integrations.length === 0 && (
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
