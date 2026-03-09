@@ -261,13 +261,15 @@ export async function handleSyncSuccess({
     nangoProps,
     telemetryBag,
     functionRuntime,
-    checkpoints
+    checkpoints,
+    interrupted = false
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
     checkpoints: CheckpointRange;
+    interrupted?: boolean;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
@@ -486,7 +488,8 @@ export async function handleSyncSuccess({
         await logCtx.enrichOperation({
             meta: {
                 ...syncPayload,
-                checkpoints
+                checkpoints,
+                interrupted
             }
         });
 
@@ -494,7 +497,8 @@ export async function handleSyncSuccess({
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
             {
                 ...syncPayload,
-                checkpoints
+                checkpoints,
+                interrupted
             }
         );
 
@@ -506,7 +510,11 @@ export async function handleSyncSuccess({
         if (nangoProps.syncJobId) {
             await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.SUCCESS);
         }
-        await setTaskSuccess({ taskId, output: null });
+        await setTaskSuccess({
+            taskId,
+            output: null,
+            ...(interrupted ? { nextExecutionInMs: 0 } : {}) // if the sync was interrupted, we trigger next execution immediately
+        });
 
         void slackService.removeFailingConnection({
             connection,
