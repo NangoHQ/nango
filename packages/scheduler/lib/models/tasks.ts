@@ -261,6 +261,7 @@ export async function transitionState(
 
 export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { groupKeyPattern: string; limit: number }): Promise<Result<Task[]>> {
     try {
+        const groupKeyLikePattern = groupKeyPattern.replace(/\*/g, '%');
         const tasks = await db.transaction(async (trx) => {
             // Acquire a lock to prevent concurrent dequeueing of the same group
             // in order to ensure max concurrency is respected
@@ -274,7 +275,7 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
                         qb.select('id', 'group_key', 'created_at', 'group_max_concurrency')
                             .from(TASKS_TABLE)
                             .where('state', 'CREATED')
-                            .whereLike('group_key', groupKeyPattern.replace(/\*/g, '%'))
+                            .whereLike('group_key', groupKeyLikePattern)
                             .where('starts_after', '<=', db.fn.now())
                             .forUpdate()
                             .skipLocked();
@@ -284,7 +285,7 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
                         qb.select(db.raw('count(id) as running_count'), 'group_key')
                             .from(TASKS_TABLE)
                             .where('state', 'STARTED')
-                            .whereLike('group_key', groupKeyPattern)
+                            .whereLike('group_key', groupKeyLikePattern)
                             .groupBy('group_key');
                     })
                     // 3. rank the candidate tasks by created_at for each group

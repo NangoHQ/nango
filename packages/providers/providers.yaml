@@ -947,6 +947,54 @@ amplitude:
             optional: true
             pattern: '^(?:analytics\.eu\.)?amplitude\.com$'
 
+amplitude-mcp:
+    display_name: Amplitude (MCP US)
+    categories:
+        - analytics
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.amplitude.com/authorize
+    token_url: https://mcp.amplitude.com/token
+    registration_url: https://mcp.amplitude.com/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.amplitude.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/amplitude-mcp
+
+amplitude-mcp-eu:
+    display_name: Amplitude (MCP EU)
+    categories:
+        - analytics
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.eu.amplitude.com/authorize
+    token_url: https://mcp.eu.amplitude.com/token
+    registration_url: https://mcp.eu.amplitude.com/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.eu.amplitude.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/amplitude-mcp
+
 anthropic:
     display_name: Anthropic
     categories:
@@ -1170,17 +1218,24 @@ asana-mcp:
         - ticketing
         - mcp
     auth_mode: MCP_OAUTH2
-    client_registration: dynamic
-    authorization_url: https://mcp.asana.com/authorize
-    token_url: https://mcp.asana.com/token
-    registration_url: https://mcp.asana.com/register
+    client_registration: static
+    authorization_url: https://app.asana.com/-/oauth_authorize
+    token_url: https://app.asana.com/-/oauth_token
     authorization_params:
         response_type: code
+        resource: https://mcp.asana.com/v2
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/api-integrations/asana
+    default_scopes:
+        - default
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.asana.com/
+    docs: https://nango.dev/docs/api-integrations/asana-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/asana-mcp/how-to-register-your-own-asana-mcp-oauth-app
 
 asana-scim:
     display_name: Asana (SCIM API)
@@ -1703,6 +1758,38 @@ avoma:
             pattern: '^[a-z0-9]{10,}:[a-z0-9]{10,}$'
             example: '1awcbx0njh:02k6er2pld4q5irffn23'
             doc_section: '#step-1-generating-your-api-key'
+
+axiom:
+    display_name: Axiom
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.axiom.co
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/axiom
+    docs_connect: https://nango.dev/docs/api-integrations/axiom/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Edge / region subdomain
+            description: The subdomain of the API you would wish to connect to.
+            example: us-east-1.aws.edge
+            pattern: '^(api|us-east-1\.aws\.edge|eu-central-1\.aws\.edge)$'
+            suffix: .axiom.co
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Axiom API token.
+            example: 'xaat-********-****-****-****-********8ec6'
+            pattern: '^xaat-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            doc_section: '#step-2-generating-your-api-token'
 
 aws:
     display_name: AWS
@@ -3270,6 +3357,28 @@ circle-so:
             title: API Key
             description: The API key for your Circle.so account
 
+circleback-mcp:
+    display_name: Circleback (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.circleback.ai/api/oauth/authorize
+    token_url: https://app.circleback.ai/api/oauth/access-token
+    registration_url: https://app.circleback.ai/api/oauth/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.circleback.ai/api/
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/circleback-mcp
+
 clari-copilot:
     display_name: Clari Copilot
     categories:
@@ -4300,8 +4409,8 @@ dayforce:
     auth_mode: TWO_STEP
     body_format: form
     proxy:
-        base_url: https://www.dayforcehcm.com/api
-    token_url: https://dfid.dayforcehcm.com/connect/token
+        base_url: https://${connectionConfig.clientHostname}/api || https://www.dayforcehcm.com/api
+    token_url: https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token
     token_params:
         grant_type: password
         companyId: ${connectionConfig.companyId}
@@ -4314,15 +4423,8 @@ dayforce:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/integrations/all/dayforce
-    docs_connect: https://nango.dev/docs/integrations/all/dayforce/connect
-    connection_config:
-        companyId:
-            type: string
-            title: Company ID
-            order: 1
-            description: The company ID for your Dayforce account.
-            doc_section: '#step-1-finding-your-company-id'
+    docs: https://nango.dev/docs/api-integrations/dayforce
+    docs_connect: https://nango.dev/docs/api-integrations/dayforce/connect
     credentials:
         username:
             type: string
@@ -4334,6 +4436,33 @@ dayforce:
             title: Password
             description: Your Dayforce account password.
             doc_section: '#step-2-configure-your-dayforce-user'
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID for your Dayforce account.
+            doc_section: '#step-1-finding-your-company-id'
+        clientHostname:
+            type: string
+            title: API hostname
+            description: Hostname for the Dayforce API, leave empty for production.
+            format: hostname
+            prefix: https://
+            suffix: /api
+            optional: true
+            example: test.dayforcehcm.com
+            doc_section: '#step-4-identifying-your-client-host'
+        identityHostname:
+            type: string
+            title: Identity hostname
+            description: Hostname for the Dayforce Identity token endpoint, leave empty for production.
+            format: hostname
+            optional: true
+            prefix: https://
+            suffix: /connect/token
+            example: dfid.dayforcehcm.com
+            doc_section: '#step-3-identifying-your-identity-host'
+
 datto-rmm:
     display_name: Datto RMM
     categories:
@@ -8973,6 +9102,25 @@ klaviyo-oauth:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/klaviyo-oauth
 
+klicktipp:
+    display_name: KlickTipp
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.klicktipp.com
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your KlickTipp API key.
+            example: a1b2c3d4e5f6g7h8
+            pattern: '^[a-z0-9]{16}$'
+            secret: true
+            doc_section: '#step-1-getting-your-api-key'
+    docs: https://nango.dev/docs/api-integrations/klicktipp
+    docs_connect: https://nango.dev/docs/api-integrations/klicktipp/connect
+
 kustomer:
     display_name: Kustomer
     categories:
@@ -9879,6 +10027,7 @@ microsoft-teams-bot:
         base_url: https://smba.trafficmanager.net/teams
         connection_config:
             botHostTenantId: ${connectionConfig.botHostTenantId}
+    webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsBotPostConnection
     docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
@@ -12682,6 +12831,42 @@ qualtrics:
             example: domain
             suffix: .qualtrics.com
             prefix: https://
+
+quentn:
+    display_name: Quentn
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.quentn.com/public/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/terms
+    docs: https://nango.dev/docs/api-integrations/quentn
+    docs_connect: https://nango.dev/docs/api-integrations/quentn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Quentn API key.
+            secret: true
+            example: a1bcDeFgHi-jkLmNoPqRsTuVwXyZ0123456789AbCdE
+            pattern: '^[A-Za-z0-9_-]{43}$'
+            doc_section: '#step-1-getting-your-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Quentn account subdomain.
+            format: hostname
+            example: xk7mdf.eu-5
+            suffix: .quentn.com/public/api
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-subdomain'
 
 quickbase:
     display_name: Quickbase
@@ -15543,15 +15728,15 @@ supabase:
     proxy:
         base_url: https://${connectionConfig.projectUrl}
         headers:
-            authorization: Bearer ${credentials.apiKey}
-            apikey: ${credentials.apiKey}
-    docs: https://nango.dev/docs/integrations/all/supabase
-    docs_connect: https://nango.dev/docs/integrations/all/supabase/connect
+            authorization: Bearer ${apiKey}
+            apikey: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/supabase
+    docs_connect: https://nango.dev/docs/api-integrations/supabase/connect
     connection_config:
         projectUrl:
             type: string
             title: Project URL
-            description: The Supabase project url
+            description: The Supabase project url you want to connect to.
             example: project.supabase.co
             format: hostname
             prefix: https://
@@ -15559,11 +15744,55 @@ supabase:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The anon or service_role API key for your Supabase project
-            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-            pattern: '^[A-Za-z0-9\._-]+$'
-            doc_section: '#step-2-get-your-api-key'
+            title: Secret Key
+            description: The secret key from your Supabase project.
+            example: sb_secret_*******************************hm
+            pattern: '^sb_secret_[A-Za-z0-9_]+$'
+            doc_section: '#step-2-finding-your-secret-key'
+
+supabase-mcp:
+    display_name: Supabase (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mcp.supabase.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /mcp?project_ref=${connectionConfig.projectRef}
+            data:
+                {
+                    'jsonrpc': '2.0',
+                    'id': 1,
+                    'method': 'initialize',
+                    'params': { 'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': { 'name': 'nango-client', 'version': '1.0.0' } }
+                }
+    docs: https://nango.dev/docs/api-integrations/supabase-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/supabase-mcp/connect
+    connection_config:
+        projectRef:
+            type: string
+            title: Project reference
+            description: Your Supabase project reference ID.
+            example: bvzzcafzoysezumrdvif
+            pattern: '^[a-z0-9]{20}$'
+            doc_section: '#step-1-finding-your-project-reference'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Supabase account personal access token.
+            example: sbp_*******************************23d
+            pattern: '^sbp_[A-Za-z0-9]{40}$'
+            doc_section: '#step-2-obtaining-your-personal-access-token'
 
 survey-monkey:
     display_name: SurveyMonkey

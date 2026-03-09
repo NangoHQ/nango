@@ -17,6 +17,7 @@
     "dependencies": {
         "@aws-sdk/client-application-auto-scaling": "3.993.0",
         "@aws-sdk/client-lambda": "3.993.0",
+        "@aws-sdk/client-sqs": "3.993.0",
         "@kubernetes/client-node": "1.3.0",
         "@nangohq/account-usage": "file:../account-usage",
         "@nangohq/data-ingestion": "file:../data-ingestion",

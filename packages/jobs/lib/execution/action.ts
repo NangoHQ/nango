@@ -28,6 +28,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
 import type {
+    CheckpointRange,
     ConnectionJobs,
     DBAPISecret,
     DBEnvironment,
@@ -204,13 +205,15 @@ export async function handleActionSuccess({
     nangoProps,
     output,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     output: JsonValue;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const logCtx = getLogCtx(nangoProps);
     const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
@@ -245,8 +248,10 @@ export async function handleActionSuccess({
     void logCtx.info(`The action was successfully run${formatAttempts(task)}`, {
         action: nangoProps.syncConfig.sync_name,
         connection: nangoProps.connectionId,
-        integration: nangoProps.providerConfigKey
+        integration: nangoProps.providerConfigKey,
+        meta: { checkpoints }
     });
+    void logCtx.enrichOperation({ meta: { checkpoints } });
     void logCtx.success();
 
     const connection: ConnectionJobs = {
@@ -319,13 +324,15 @@ export async function handleActionError({
     nangoProps,
     error,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
@@ -364,8 +371,10 @@ export async function handleActionError({
         error,
         action: nangoProps.syncConfig.sync_name,
         connection: nangoProps.connectionId,
-        integration: nangoProps.providerConfigKey
+        integration: nangoProps.providerConfigKey,
+        meta: { checkpoints }
     });
+    void logCtx?.enrichOperation({ meta: { checkpoints } });
 
     if (task.value.attempt === task.value.attemptMax) {
         void logCtx.failed();
