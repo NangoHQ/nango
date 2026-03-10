@@ -18,7 +18,7 @@ import {
 import { zodToNangoModelField } from './zodToNango.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
-import type { ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
+import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type { NangoModel, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type * as z from 'zod';
 
@@ -52,8 +52,8 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         printDebug(`Parsing ${filePath}`, debug);
 
         const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, ZodModel>, z.ZodObject>
-            | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>
+            | CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>
+            | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse;
 
         const basename = path.basename(filePath, '.js');
@@ -136,7 +136,7 @@ export function parseSync({
     basenameClean
 }: {
     filePath: string;
-    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata>;
+    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
@@ -205,7 +205,7 @@ export function parseAction({
     basename,
     basenameClean
 }: {
-    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>;
+    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
@@ -278,7 +278,7 @@ function postValidation(parsed: NangoYamlParsed): Result<void> {
  * To remove when we deprecate `schema.ts` and `schema.json` files.
  */
 export function buildNangoModelsForSync(
-    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata>,
+    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>,
     integrationIdClean: string,
     basenameClean: string
 ): Map<string, NangoModel> {
@@ -313,7 +313,7 @@ export function buildNangoModelsForSync(
  * To remove when we deprecate `schema.ts` and `schema.json` files.
  */
 export function buildNangoModelsForAction(
-    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>,
+    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>,
     integrationIdClean: string,
     basenameClean: string
 ): Map<string, NangoModel> {
