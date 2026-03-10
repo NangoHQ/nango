@@ -95,6 +95,25 @@ class NangoCommand extends Command {
     }
 }
 
+async function validateNangoFolder(fullPath: string, debug: boolean) {
+    const precheck = await verificationService.preCheck({ fullPath, debug });
+    if (!precheck.isNango) {
+        console.error(chalk.red(`Not inside a Nango folder`));
+        process.exitCode = 1;
+        return false;
+    }
+    if (!precheck.isZeroYaml) {
+        console.error(
+            chalk.red(
+                'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+            )
+        );
+        process.exitCode = 1;
+        return false;
+    }
+    return true;
+}
+
 const program = new NangoCommand();
 
 dotenv.config();
@@ -203,29 +222,20 @@ program
         let [integration, name] = this.args;
         const absolutePath = process.cwd();
 
-        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug: debug });
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        const isValid = await validateNangoFolder(absolutePath, debug);
+        if (!isValid) return;
 
         try {
             const ensure = new Ensure(interactive);
             const functionType = await ensure.functionType(sync, action, onEvent);
 
             let integrations: string[] = [];
-            if (precheck.isNango) {
-                const definitions = await buildDefinitions({ fullPath: absolutePath, debug: debug });
-                if (definitions.isOk()) {
-                    integrations = definitions.value.integrations.flatMap((i) => i.providerConfigKey);
-                } else {
-                    console.error(chalk.red(definitions.error));
-                }
+
+            const definitions = await buildDefinitions({ fullPath: absolutePath, debug: debug });
+            if (definitions.isOk()) {
+                integrations = definitions.value.integrations.flatMap((i) => i.providerConfigKey);
+            } else {
+                console.error(chalk.red(definitions.error));
             }
 
             integration = await ensure.integration(integration, { integrations });
@@ -249,22 +259,7 @@ program
     .action(async function (this: Command) {
         const { debug, interactive, dependencyUpdate } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isNango) {
-            console.error(chalk.red(`Not inside a Nango folder`));
-            process.exitCode = 1;
-            return;
-        }
-
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        if (!(await validateNangoFolder(fullPath, debug))) return;
 
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
@@ -334,22 +329,7 @@ program
         let { environment } = this.opts();
         let resolvedIntegrationId: string | undefined = integrationId;
 
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isNango) {
-            console.error(chalk.red(`Not inside a Nango folder`));
-            process.exitCode = 1;
-            return;
-        }
-
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        if (!(await validateNangoFolder(fullPath, debug))) return;
 
         try {
             const ensure = new Ensure(interactive);
@@ -444,7 +424,7 @@ program
             return;
         }
 
-        const dryRun = new DryRunService({ fullPath, validation: shouldValidate, isZeroYaml: precheck.isZeroYaml });
+        const dryRun = new DryRunService({ fullPath, validation: shouldValidate });
         await dryRun.run({
             autoConfirm,
             debug,
@@ -471,22 +451,7 @@ program
         const { debug, dependencyUpdate } = this.opts();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isNango) {
-            console.error(chalk.red(`Not inside a Nango folder`));
-            process.exitCode = 1;
-            return;
-        }
-
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        if (!(await validateNangoFolder(fullPath, debug))) return;
 
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
@@ -524,22 +489,7 @@ program
             process.exit(1);
         }
 
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isNango) {
-            console.error(chalk.red(`Not inside a Nango folder`));
-            process.exitCode = 1;
-            return;
-        }
-
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        if (!(await validateNangoFolder(fullPath, debug))) return;
 
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
@@ -625,22 +575,7 @@ program
     .action(async function (this: Command) {
         const { debug, dependencyUpdate, path: optionalPath, integrationTemplates } = this.opts();
         const fullPath = path.resolve(process.cwd(), this.args[0] || '');
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isNango) {
-            console.error(chalk.red(`Not inside a Nango folder`));
-            process.exitCode = 1;
-            return;
-        }
-
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        if (!(await validateNangoFolder(fullPath, debug))) return;
 
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
@@ -676,16 +611,8 @@ program
         const { debug, dependencyUpdate, integration: integrationId, sync: syncName, action: actionName, autoConfirm } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
 
-        const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        const isValid = await validateNangoFolder(absolutePath, debug);
+        if (!isValid) return;
 
         const { success, generatedFiles } = await generateTests({
             absolutePath,
@@ -720,16 +647,7 @@ program
         const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.preCheck({ fullPath, debug });
-        if (!precheck.isZeroYaml) {
-            console.error(
-                chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
-                )
-            );
-            process.exitCode = 1;
-            return;
-        }
+        if (!(await validateNangoFolder(fullPath, debug))) return;
 
         const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
         if (!success) {
