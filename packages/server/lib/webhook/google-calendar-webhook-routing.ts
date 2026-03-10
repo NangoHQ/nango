@@ -18,17 +18,32 @@ const route: WebhookHandler = async (nango, headers, body) => {
         }
     }
 
-    const response = await nango.executeScriptForWebhooks({
+    const baseArgs = {
         body,
         ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] }),
-        ...(emailAddress && { connectionIdentifierValue: emailAddress }),
-        propName: 'metadata.emailAddress'
-    });
+        ...(emailAddress && { connectionIdentifierValue: emailAddress })
+    };
+
+    let response = await nango.executeScriptForWebhooks({ ...baseArgs, propName: 'emailAddress' });
+
+    if (response.connectionIds.length === 0) {
+        response = await nango.executeScriptForWebhooks({
+            ...baseArgs,
+            propName: 'metadata.emailAddress'
+        });
+
+        if (response.connectionIds.length === 0) {
+            response = await nango.executeScriptForWebhooks({
+                ...baseArgs,
+                propName: 'metadata.email'
+            });
+        }
+    }
 
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
-        connectionIds: response?.connectionIds || [],
+        connectionIds: response.connectionIds,
         toForward: headers
     });
 };
