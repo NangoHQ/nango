@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.42] - 2026-03-10
+
+### Added
+
+- Resume sync immediately when interrupted gracefully (#5591) by @TBonnin
+
+### Fixed
+
+- *(docs)* Replace while loop with nango.paginate in checkpoints doc (#5587) by @TBonnin
+- *(runner)* Correct env var name for conflict resolution mode (#5593) by @rossmcewan
+- *(runner)* Pass redis url (#5595) by @rossmcewan
+- *(runner-lambda)* Return checkpoints (#5589) by @TBonnin
+- *(cli)* Ignore axios default urlencoded Content-Type in unified mocks (#5590) by @marcindobry
+
 ## [v0.69.41] - 2026-03-09
 
 ### Added
@@ -6085,6 +6099,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.42]: https://github.com/NangoHQ/nango/compare/v0.69.41..v0.69.42
 [v0.69.41]: https://github.com/NangoHQ/nango/compare/v0.69.40..v0.69.41
 [v0.69.40]: https://github.com/NangoHQ/nango/compare/v0.69.39..v0.69.40
 [v0.69.39]: https://github.com/NangoHQ/nango/compare/v0.69.38..v0.69.39
