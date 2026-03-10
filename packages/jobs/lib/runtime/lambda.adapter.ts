@@ -23,6 +23,14 @@ interface LambdaFunction {
     arn: string;
 }
 
+interface S3ObjectRef {
+    kind: 's3';
+    bucket: string;
+    key: string;
+    versionId?: string;
+    etag?: string;
+}
+
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
     constructor(private readonly fleet: Fleet) {}
 
@@ -40,82 +48,80 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         };
     }
 
-    private async uploadCode(params: {
-        taskId: string;
-        nangoProps: NangoProps;
-        code: string;
-    }): Promise<{ kind: 's3'; bucket: string; key: string; versionId?: string | undefined; etag?: string | undefined }> {
+    private getPayloadsBucket(): string {
         const bucket = envs.LAMBDA_PAYLOADS_BUCKET_NAME;
         if (!bucket) {
             throw new Error('LAMBDA_PAYLOADS_BUCKET_NAME is not set');
         }
-        const body = gzipSync(Buffer.from(params.code, 'utf8'));
-        const hash = createHash('sha256').update(params.code).digest('hex');
-        const key = `environments/${params.nangoProps.environmentId}/function-code/${hash}.cjs.gz`;
-        try {
-            const head = await s3.send(
-                new HeadObjectCommand({
-                    Bucket: bucket,
-                    Key: key
-                })
-            );
-
-            return {
-                kind: 's3' as const,
-                bucket,
-                key,
-                versionId: head.VersionId,
-                etag: head.ETag?.replace(/"/g, '')
-            };
-        } catch {
-            const put = await s3.send(
-                new PutObjectCommand({
-                    Bucket: bucket,
-                    Key: key,
-                    Body: body,
-                    ContentType: 'text/plain',
-                    ContentEncoding: 'gzip'
-                })
-            );
-
-            return {
-                kind: 's3' as const,
-                bucket,
-                key,
-                versionId: put.VersionId,
-                etag: put.ETag?.replace(/"/g, '')
-            };
-        }
+        return bucket;
     }
 
-    private async uploadCodeParams(params: {
-        taskId: string;
-        nangoProps: NangoProps;
-        codeParams: object;
-    }): Promise<{ kind: 's3'; bucket: string; key: string; versionId?: string | undefined; etag?: string | undefined }> {
-        const body = gzipSync(Buffer.from(JSON.stringify(params.codeParams), 'utf8'));
-        const key = `environments/${params.nangoProps.environmentId}/function-params/${params.taskId}/codeParams.json.gz`;
-        const bucket = envs.LAMBDA_PAYLOADS_BUCKET_NAME;
-        if (!bucket) {
-            throw new Error('LAMBDA_PAYLOADS_BUCKET_NAME is not set');
+    private async uploadToS3(params: {
+        bucket: string;
+        key: string;
+        body: Buffer;
+        contentType: string;
+        contentEncoding?: 'gzip';
+        skipIfExists?: boolean;
+    }): Promise<S3ObjectRef> {
+        if (params.skipIfExists) {
+            try {
+                const head = await s3.send(new HeadObjectCommand({ Bucket: params.bucket, Key: params.key }));
+                return {
+                    kind: 's3' as const,
+                    bucket: params.bucket,
+                    key: params.key,
+                    ...(head.VersionId !== undefined && { versionId: head.VersionId }),
+                    ...(head.ETag !== undefined && { etag: head.ETag.replace(/"/g, '') })
+                };
+            } catch {
+                // fall through to put
+            }
         }
         const put = await s3.send(
             new PutObjectCommand({
-                Bucket: bucket,
-                Key: key,
-                Body: body,
-                ContentType: 'application/json',
-                ContentEncoding: 'gzip'
+                Bucket: params.bucket,
+                Key: params.key,
+                Body: params.body,
+                ContentType: params.contentType,
+                ...(params.contentEncoding && { ContentEncoding: params.contentEncoding })
             })
         );
-
         return {
             kind: 's3' as const,
+            bucket: params.bucket,
+            key: params.key,
+            ...(put.VersionId !== undefined && { versionId: put.VersionId }),
+            ...(put.ETag !== undefined && { etag: put.ETag.replace(/"/g, '') })
+        };
+    }
+
+    private async uploadCode(params: { taskId: string; nangoProps: NangoProps; code: string }): Promise<S3ObjectRef> {
+        const bucket = this.getPayloadsBucket();
+        const body = gzipSync(Buffer.from(params.code, 'utf8'));
+        const hash = createHash('sha256').update(params.code).digest('hex');
+        const key = `environments/${params.nangoProps.environmentId}/function-code/${hash}.cjs.gz`;
+        return this.uploadToS3({
             bucket,
             key,
-            versionId: put.VersionId,
-            etag: put.ETag?.replace(/"/g, '')
-        };
+            body,
+            contentType: 'text/plain',
+            contentEncoding: 'gzip',
+            skipIfExists: true
+        });
+    }
+
+    private async uploadCodeParams(params: { taskId: string; nangoProps: NangoProps; codeParams: object }): Promise<S3ObjectRef> {
+        const bucket = this.getPayloadsBucket();
+        const body = gzipSync(Buffer.from(JSON.stringify(params.codeParams), 'utf8'));
+        const key = `environments/${params.nangoProps.environmentId}/function-params/${params.taskId}/codeParams.json.gz`;
+        return this.uploadToS3({
+            bucket,
+            key,
+            body,
+            contentType: 'application/json',
+            contentEncoding: 'gzip'
+        });
     }
 
     private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<string> {
@@ -126,12 +132,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             codeParams: params.codeParams
         };
         const payloadString = JSON.stringify(payload);
-        //need to check if they payload exceeds 1024 kb, if it does need to upload the paylaod to s3 and a pre-signed url
-        //perhaps could use the hash of the code as the key prefixed with something like nangoProps.environmentId
-        //only upload if it doesn't exist already and can just get the pre-signed url
-        if (Buffer.byteLength(payloadString, 'utf-8') > 1024 * 1024) {
+        if (Buffer.byteLength(payloadString, 'utf-8') > 1024 * 1024 && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
             const [codeRef, codeParamsRef] = await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)]);
-            //need to upload the code and codeParams to s3 and get a pre-signed url for each
             return JSON.stringify({
                 taskId: params.taskId,
                 nangoProps: params.nangoProps,
