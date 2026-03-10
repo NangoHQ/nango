@@ -245,8 +245,8 @@ class ProviderClient {
             clientId = credentials['clientId'];
             clientSecret = credentials['clientSecret'];
         } else if (isOAuth2CC) {
-            clientId = credentials['client_id'];
-            clientSecret = credentials['client_secret'];
+            clientId = credentials.client_id;
+            clientSecret = credentials.client_secret;
         }
 
         if (!clientId || !clientSecret) {
