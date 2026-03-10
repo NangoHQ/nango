@@ -1,3 +1,5 @@
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+
 import { getKVStore, getLocking } from '@nangohq/kvstore';
 import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
 import { getLogger } from '@nangohq/utils';
@@ -10,6 +12,7 @@ import type { Context } from 'aws-lambda';
 import type * as zod from 'zod';
 
 const logger = getLogger('lambda-function-runner');
+const s3 = new S3Client();
 
 interface GatePass {
     lock?: Lock;
@@ -44,6 +47,38 @@ class Gate {
 
 function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
+}
+
+async function getCode(request: zod.infer<typeof requestSchema>): Promise<string> {
+    if (request.code) {
+        return request.code;
+    }
+    if (request.codeRef) {
+        const response = await s3.send(
+            new GetObjectCommand({
+                Bucket: request.codeRef.bucket,
+                Key: request.codeRef.key
+            })
+        );
+        return response.Body?.transformToString() || '';
+    }
+    return '';
+}
+
+async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<object> {
+    if (request.codeParams) {
+        return request.codeParams;
+    }
+    if (request.codeParamsRef) {
+        const response = await s3.send(
+            new GetObjectCommand({
+                Bucket: request.codeParamsRef.bucket,
+                Key: request.codeParamsRef.key
+            })
+        );
+        return JSON.parse((await response.Body?.transformToString()) || '{}');
+    }
+    return {};
 }
 
 export const handler = async (event: zod.infer<typeof requestSchema>, context: Context) => {
@@ -94,8 +129,8 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
     try {
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },
-            code: request.code,
-            codeParams: request.codeParams,
+            code: await getCode(request),
+            codeParams: await getCodeParams(request),
             locks,
             abortController: abortController
         };

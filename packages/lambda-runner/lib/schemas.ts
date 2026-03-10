@@ -83,6 +83,24 @@ export const nangoPropsSchema = zod.object({
 export const requestSchema = zod.object({
     taskId: zod.string(),
     codeParams: zod.any().optional(),
-    code: zod.string(),
+    code: zod.string().optional(),
+    codeRef: zod
+        .object({
+            kind: zod.literal('s3'),
+            bucket: zod.string(),
+            key: zod.string(),
+            versionId: zod.string().optional(),
+            etag: zod.string().optional()
+        })
+        .optional(),
+    codeParamsRef: zod
+        .object({
+            kind: zod.literal('s3'),
+            bucket: zod.string(),
+            key: zod.string(),
+            versionId: zod.string().optional(),
+            etag: zod.string().optional()
+        })
+        .optional(),
     nangoProps: nangoPropsSchema
 });
