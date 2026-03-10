@@ -37,7 +37,7 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
 
     const { toast } = useToast();
     const navigate = useNavigate();
-    const { mutate: mutateMeta } = useMeta();
+    const { refetch: refetchMeta } = useMeta();
 
     const [loading, setLoading] = useState(false);
 
@@ -58,7 +58,7 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
             navigate(`/${res.json.data.name}`);
             onOpenChange(false);
             form.reset();
-            void mutateMeta();
+            void refetchMeta();
         }
 
         setLoading(false);

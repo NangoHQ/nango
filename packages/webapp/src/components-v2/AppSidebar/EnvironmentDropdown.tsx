@@ -18,7 +18,8 @@ export const EnvironmentDropdown: React.FC = () => {
     const setEnv = useStore((state) => state.setEnv);
     const envs = useStore((state) => state.envs);
     const environment = useEnvironment(env);
-    const { meta } = useMeta();
+    const { data: metaData } = useMeta();
+    const meta = metaData?.data;
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
 
     const navigate = useNavigate();
