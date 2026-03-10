@@ -1385,26 +1385,15 @@ class ConnectionService {
         if (tokenHeaders) {
             const headerValues = Object.values(tokenHeaders).filter((v): v is string => typeof v === 'string');
             const stableReplacers = getStableInterpolationReplacers(headerValues);
-            // some providers may use now or random values which they expect these to be the same allthrough
-            if (stableReplacers['random']) {
-                dynamicCredentials['random'] = stableReplacers['random'];
-            }
-            if (stableReplacers['now']) {
-                dynamicCredentials['now'] = stableReplacers['now'];
-            }
             for (const [key, value] of Object.entries(tokenHeaders)) {
                 const strippedValue = stripCredential(value);
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
-                    headers[key] = interpolateObject(strippedValue, dynamicCredentials);
+                    headers[key] = interpolateObject(strippedValue, dynamicCredentials, stableReplacers);
                 } else if (typeof strippedValue === 'string') {
-                    headers[key] = interpolateString(strippedValue, dynamicCredentials);
+                    headers[key] = interpolateString(strippedValue, dynamicCredentials, stableReplacers);
                 } else {
                     headers[key] = strippedValue;
                 }
-            }
-            if (stableReplacers['random'] || stableReplacers['now']) {
-                delete dynamicCredentials['random'];
-                delete dynamicCredentials['now'];
             }
         }
 

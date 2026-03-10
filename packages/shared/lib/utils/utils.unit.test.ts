@@ -221,6 +221,14 @@ describe('interpolateString', () => {
         expect(output).toBe(`Hash: ${expected}`);
     });
 
+    it('should interpolate base64 nested inside sha256Hex', () => {
+        const input = 'Hash: ${sha256Hex(${base64(${username}:${password})})}';
+        const output = utils.interpolateString(input, replacers);
+        const base64Value = Buffer.from('john:doe123').toString('base64');
+        const expected = crypto.createHash('sha256').update(base64Value, 'utf8').digest('hex');
+        expect(output).toBe(`Hash: ${expected}`);
+    });
+
     it('should interpolate ${random} with replacer when provided', () => {
         const stableRandom = 'fixed-uuid-12345';
         const input = 'Id: ${random}';
@@ -302,6 +310,14 @@ describe('interpolateStringFromObject', () => {
         expect(output).toBe(`Sig: ${expected}`);
     });
 
+    it('interpolates base64 nested inside sha256Hex', () => {
+        const input = 'Sig: ${sha256Hex(${base64(${credentials.username}:${credentials.password})})}';
+        const output = utils.interpolateStringFromObject(input, context);
+        const base64Value = Buffer.from('user123:pass456').toString('base64');
+        const expected = crypto.createHash('sha256').update(base64Value, 'utf8').digest('hex');
+        expect(output).toBe(`Sig: ${expected}`);
+    });
+
     it('interpolates ${now} with replacer when provided', () => {
         const replacers = { now: '2026-03-02T10:00:00.000Z' };
         const input = 'At: ${now}';
@@ -354,6 +370,54 @@ describe('interpolateObjectValues', () => {
 
         const result = utils.interpolateObjectValues(obj, {});
         expect(result['audience']).toBe('https://api.pax8.com');
+    });
+});
+
+describe('interpolateObject', () => {
+    it('interpolates string values in a flat object', () => {
+        const obj = { greeting: 'Hello ${name}', count: '${count}' };
+        const dynamicValues = { name: 'World', count: 42 };
+        const result = utils.interpolateObject(obj, dynamicValues);
+        expect(result).toEqual({ greeting: 'Hello World', count: '42' });
+    });
+
+    it('interpolates nested objects recursively', () => {
+        const obj = { level1: { level2: '${a}-${b}' } };
+        const dynamicValues = { a: 'x', b: 'y' };
+        const result = utils.interpolateObject(obj, dynamicValues);
+        expect(result).toEqual({ level1: { level2: 'x-y' } });
+    });
+
+    it('leaves non-string values unchanged', () => {
+        const obj = { str: '${x}', num: 100, bool: true, nil: null };
+        const dynamicValues = { x: 'filled' };
+        const result = utils.interpolateObject(obj, dynamicValues);
+        expect(result).toEqual({ str: 'filled', num: 100, bool: true, nil: null });
+    });
+
+    it('uses optionalReplacers when provided, without mutating dynamicValues', () => {
+        const obj = { id: '${random}', time: '${now}' };
+        const dynamicValues = { other: 'value' };
+        const optionalReplacers = { random: 'fixed-uuid-123', now: '2026-01-15T12:00:00.000Z' };
+        const result = utils.interpolateObject(obj, dynamicValues, optionalReplacers);
+        expect(result).toEqual({ id: 'fixed-uuid-123', time: '2026-01-15T12:00:00.000Z' });
+        expect(dynamicValues).not.toHaveProperty('random');
+        expect(dynamicValues).not.toHaveProperty('now');
+    });
+
+    it('optionalReplacers override dynamicValues for same key', () => {
+        const obj = { key: '${foo}' };
+        const dynamicValues = { foo: 'from-dynamic' };
+        const optionalReplacers = { foo: 'from-optional' };
+        const result = utils.interpolateObject(obj, dynamicValues, optionalReplacers);
+        expect(result).toEqual({ key: 'from-optional' });
+    });
+
+    it('works without optionalReplacers (two-arg signature)', () => {
+        const obj = { a: '${x}' };
+        const dynamicValues = { x: 'only' };
+        const result = utils.interpolateObject(obj, dynamicValues);
+        expect(result).toEqual({ a: 'only' });
     });
 });
 
