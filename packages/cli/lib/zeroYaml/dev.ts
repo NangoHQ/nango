@@ -9,7 +9,7 @@ import ts from 'typescript';
 
 import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
-import { compileOne, tsToJsPath } from './compile.js';
+import { compileFunction, tsToJsPath } from './compile.js';
 import { tsconfig } from './constants.js';
 import { CompileError, fileErrorToText, syncTsConfig, tsDiagnosticToText } from './utils.js';
 
@@ -116,7 +116,7 @@ function manualWatch({ fullPath, debug, interactive }: { fullPath: string; debug
 
             spinner = spinnerFactory.start(`Compiling ${filePath}`);
 
-            const res = await compileOne({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
+            const res = await compileFunction({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
             if (res.isErr()) {
                 spinner.fail();
                 failingFiles.add(filePath);
