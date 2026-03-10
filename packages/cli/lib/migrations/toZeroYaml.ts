@@ -10,7 +10,7 @@ import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
-import { compileAll } from '../zeroYaml/compile.js';
+import { compileAllFunctions } from '../zeroYaml/compile.js';
 import { compileAllFiles } from '../services/compile.service.js';
 import { loadYamlAndGenerate } from '../services/model.service.js';
 
@@ -165,7 +165,7 @@ export async function migrateToZeroYaml({
     }
 
     {
-        await compileAll({ fullPath, debug, interactive });
+        await compileAllFunctions({ fullPath, debug, interactive });
     }
 
     return Ok(undefined);

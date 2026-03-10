@@ -26,7 +26,7 @@ import type { Result } from '@nangohq/types';
  * - Compile the code to .cjs
  * - Rebuild nango.yaml in memory
  */
-export async function compileAll({
+export async function compileAllFunctions({
     fullPath,
     debug,
     interactive = true

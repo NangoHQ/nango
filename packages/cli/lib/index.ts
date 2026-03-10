@@ -32,7 +32,7 @@ import verificationService from './services/verification.service.js';
 import { MissingArgumentError } from './utils/errors.js';
 import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
-import { compileAll } from './zeroYaml/compile.js';
+import { compileAllFunctions } from './zeroYaml/compile.js';
 import { buildDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
@@ -269,7 +269,7 @@ program
             return;
         }
 
-        const res = await compileAll({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive });
         if (res.isErr()) {
             process.exitCode = 1;
         }
@@ -433,7 +433,7 @@ program
                 return;
             }
 
-            const res = await compileAll({ fullPath, debug, interactive });
+            const res = await compileAllFunctions({ fullPath, debug, interactive });
             if (res.isErr()) {
                 process.exitCode = 1;
                 return;
@@ -531,7 +531,7 @@ program
                 return;
             }
 
-            const resCompile = await compileAll({ fullPath, debug, interactive });
+            const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
             if (resCompile.isErr()) {
                 process.exitCode = 1;
                 return;
