@@ -483,6 +483,10 @@ class OAuthController {
                 return;
             }
 
+            if (connectionConfig['hostname'] && !connectionConfig['instance_url']) {
+                connectionConfig['instance_url'] = `https://${connectionConfig['hostname']}`;
+            }
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,

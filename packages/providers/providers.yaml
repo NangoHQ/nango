@@ -14238,6 +14238,36 @@ salesforce:
             optional: true
             doc_section: '#step-1-finding-your-hostname'
 
+salesforce-cc:
+    display_name: Salesforce (Client Credentials)
+    categories:
+        - crm
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/services/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://nango.dev/docs/api-integrations/salesforce-cc
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce-cc/connect
+    token_expires_in_ms: 0
+    connection_config:
+        instance_url:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname to your Salesforce instance
+            format: hostname
+            example: acme.my.salesforce.com
+            prefix: https://
+            optional: false
+
 salesforce-jwt:
     display_name: Salesforce (JWT)
     categories:

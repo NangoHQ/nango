@@ -63,6 +63,7 @@ class ProviderClient {
     public shouldIntrospectToken(provider: string): boolean {
         switch (provider) {
             case 'salesforce':
+            case 'salesforce-cc':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
             case 'salesforce-jwt':
@@ -223,28 +224,29 @@ class ProviderClient {
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
         const { credentials } = connection;
-        const isOAuth2 = credentials.type === 'OAUTH2';
-        const isTwoStep = credentials.type === 'TWO_STEP';
 
-        if (!isOAuth2 && !isTwoStep) {
-            throw new NangoError('wrong_credentials_type');
-        }
-
-        const accessToken = isOAuth2 ? credentials.access_token : credentials.token;
-        if (!accessToken) {
-            throw new NangoError('access_token_missing');
+        function resolveByType(): { accessToken: string; clientId: string; clientSecret: string } {
+            switch (credentials.type) {
+                case 'OAUTH2':
+                    return { accessToken: credentials.access_token, clientId: config.oauth_client_id, clientSecret: config.oauth_client_secret };
+                case 'TWO_STEP':
+                    return { accessToken: credentials.token!, clientId: credentials['clientId'], clientSecret: credentials['clientSecret'] };
+                case 'OAUTH2_CC':
+                    return { accessToken: credentials.token, clientId: credentials.client_id, clientSecret: credentials.client_secret };
+                default:
+                    throw new NangoError('wrong_credentials_type');
+            }
         }
 
         const connectionConfig = connection.connection_config as Record<string, string>;
-        const clientId = isTwoStep ? credentials['clientId'] : config.oauth_client_id;
-        const clientSecret = isTwoStep ? credentials['clientSecret'] : config.oauth_client_secret;
+        const { accessToken, clientId, clientSecret } = resolveByType();
 
-        if (!clientId || !clientSecret) {
-            throw new NangoError('client_credentials_missing');
-        }
+        if (!accessToken) throw new NangoError('access_token_missing');
+        if (!clientId || !clientSecret) throw new NangoError('client_credentials_missing');
 
         switch (config.provider) {
             case 'salesforce':
+            case 'salesforce-cc':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
             case 'salesforce-jwt':
