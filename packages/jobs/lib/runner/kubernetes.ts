@@ -425,7 +425,7 @@ class Kubernetes {
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
-            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_FUNCTION_MODE', value: 'REDIS' }] : [])
+            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'REDIS' }] : [])
         ];
     }
 
