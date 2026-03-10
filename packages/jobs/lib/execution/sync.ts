@@ -209,7 +209,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 ? {
                       lifecycle: {
                           interruptAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER * 1000,
-                          killAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_KILL_AFTER_MULTIPLER * 1000
+                          killAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER * 1000
                       }
                   }
                 : {}) // non-lambda runtimes do not need interrupting/resuming long-running executions
