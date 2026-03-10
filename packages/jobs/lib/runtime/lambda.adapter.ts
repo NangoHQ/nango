@@ -37,14 +37,19 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
         try {
             const func = await this.getFunction(params.nangoProps);
+            const payload = JSON.stringify({
+                taskId: params.taskId,
+                nangoProps: params.nangoProps,
+                code: params.code,
+                codeParams: params.codeParams
+            });
+            //need to check if they payload exceeds 1024 kb, if it does need to upload the paylaod to s3 and a pre-signed url
+            //perhaps could use the hash of the code as the key prefixed with something like nangoProps.environmentId
+            //only upload if it doesn't exist already and can just get the pre-signed url
+            //
             const command = new InvokeCommand({
                 FunctionName: func.arn,
-                Payload: JSON.stringify({
-                    taskId: params.taskId,
-                    nangoProps: params.nangoProps,
-                    code: params.code,
-                    codeParams: params.codeParams
-                }),
+                Payload: payload,
                 //InvocationType is Event for async invocation, RequestResponse for sync invocation
                 InvocationType: 'Event'
             });
