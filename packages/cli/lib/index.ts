@@ -15,10 +15,9 @@ import figlet from 'figlet';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 import { initAI } from './ai/init.js';
-import { generate, getVersionOutput, tscWatch } from './cli.js';
+import { generate, getVersionOutput } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { cloneTemplate } from './services/clone.service.js';
-import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
@@ -206,7 +205,12 @@ program
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug: debug });
         if (!precheck.isZeroYaml) {
-            console.log(chalk.yellow(`Function creation skipped - detected nango yaml project`));
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
             return;
         }
 
@@ -337,6 +341,16 @@ program
             return;
         }
 
+        if (!precheck.isZeroYaml) {
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
+            return;
+        }
+
         try {
             const ensure = new Ensure(interactive);
             environment = await ensure.environment(environment, debug);
@@ -417,27 +431,17 @@ program
             process.exit(1);
         }
 
-        if (!precheck.isNango || precheck.hasNangoYaml) {
-            await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-            const { success } = await compileAllFiles({ fullPath, debug });
-            if (!success) {
-                console.log(chalk.red('Failed to compile. Exiting'));
-                process.exitCode = 1;
-                return;
-            }
-        } else {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
-            if (resCheck.isErr()) {
-                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-                process.exitCode = 1;
-                return;
-            }
+        const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
+        if (resCheck.isErr()) {
+            console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+            process.exitCode = 1;
+            return;
+        }
 
-            const res = await compileAllFunctions({ fullPath, debug, interactive });
-            if (res.isErr()) {
-                process.exitCode = 1;
-                return;
-            }
+        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        if (res.isErr()) {
+            process.exitCode = 1;
+            return;
         }
 
         const dryRun = new DryRunService({ fullPath, validation: shouldValidate, isZeroYaml: precheck.isZeroYaml });
@@ -462,10 +466,9 @@ program
 
 program
     .command('dev')
-    .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
-    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
+    .description('Watch tsc files while developing.')
     .action(async function (this: Command) {
-        const { compileInterfaces, debug, dependencyUpdate } = this.opts();
+        const { debug, dependencyUpdate } = this.opts();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
@@ -475,19 +478,24 @@ program
             return;
         }
 
-        if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
-            if (resCheck.isErr()) {
-                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-                process.exitCode = 1;
-                return;
-            }
-
-            await dev({ fullPath, debug });
+        if (!precheck.isZeroYaml) {
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
             return;
         }
 
-        tscWatch({ fullPath, debug, watchConfigFile: compileInterfaces });
+        const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
+        if (resCheck.isErr()) {
+            console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+            process.exitCode = 1;
+            return;
+        }
+
+        await dev({ fullPath, debug });
     });
 
 program
@@ -523,29 +531,34 @@ program
             return;
         }
 
-        if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
-            if (resCheck.isErr()) {
-                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-                process.exitCode = 1;
-                return;
-            }
-
-            const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
-            if (resCompile.isErr()) {
-                process.exitCode = 1;
-                return;
-            }
-
-            const res = await deploy({ fullPath, options, environmentName: environment });
-            if (res.isErr()) {
-                process.exitCode = 1;
-                return;
-            }
+        if (!precheck.isZeroYaml) {
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
             return;
         }
 
-        await deployService.prep({ fullPath, options: { ...options, env: 'cloud' }, environment, debug });
+        const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
+        if (resCheck.isErr()) {
+            console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+            process.exitCode = 1;
+            return;
+        }
+
+        const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
+        if (resCompile.isErr()) {
+            process.exitCode = 1;
+            return;
+        }
+
+        const res = await deploy({ fullPath, options, environmentName: environment });
+        if (res.isErr()) {
+            process.exitCode = 1;
+            return;
+        }
     });
 
 program
@@ -619,33 +632,32 @@ program
             return;
         }
 
-        let parsed: NangoYamlParsed;
-        if (precheck.isZeroYaml) {
-            const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
-            if (resCheck.isErr()) {
-                console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-                process.exitCode = 1;
-                return;
-            }
-
-            const def = await buildDefinitions({ fullPath, debug });
-            if (def.isErr()) {
-                console.log('');
-                console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
-                process.exitCode = 1;
-                return;
-            }
-
-            parsed = def.value;
-        } else {
-            const parsing = parse(fullPath, debug);
-            if (parsing.isErr()) {
-                console.log(chalk.red(`Error parsing nango.yaml: ${parsing.error}`));
-                process.exitCode = 1;
-                return;
-            }
-            parsed = parsing.value.parsed!;
+        if (!precheck.isZeroYaml) {
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
+            return;
         }
+
+        const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
+        if (resCheck.isErr()) {
+            console.log(chalk.red('Failed to check and sync package.json. Exiting'));
+            process.exitCode = 1;
+            return;
+        }
+
+        const def = await buildDefinitions({ fullPath, debug });
+        if (def.isErr()) {
+            console.log('');
+            console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
+            process.exitCode = 1;
+            return;
+        }
+
+        const parsed: NangoYamlParsed = def.value;
 
         const ok = await generateDocs({ absolutePath: fullPath, path: optionalPath, debug, isForIntegrationTemplates: integrationTemplates, parsed });
 
@@ -666,7 +678,12 @@ program
 
         const precheck = await verificationService.preCheck({ fullPath: absolutePath, debug });
         if (!precheck.isZeroYaml) {
-            console.log(chalk.yellow(`Test generation skipped - detected nango yaml project`));
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
             return;
         }
 
@@ -705,7 +722,12 @@ program
 
         const precheck = await verificationService.preCheck({ fullPath, debug });
         if (!precheck.isZeroYaml) {
-            console.log(chalk.yellow(`Clone skipped - only available for zero yaml projects`));
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
             return;
         }
 
