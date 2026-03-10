@@ -79,15 +79,15 @@ export const PrivateRoute: React.FC = () => {
         }
     }, [user, environmentAndAccount, meta, identify]);
 
+    if (userError || metaError) {
+        return <Navigate to="/signin" replace />;
+    }
     if (loadingUser || loadingMeta || !ready) {
         return null;
     }
 
     if (notFoundEnv) {
         return <PageNotFound />;
-    }
-    if (userError || metaError) {
-        return <Navigate to="/signin" replace />;
     }
 
     return <Outlet />;
