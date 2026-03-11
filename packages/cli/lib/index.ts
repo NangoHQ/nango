@@ -12,8 +12,6 @@ import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
-import { nangoConfigFile } from '@nangohq/nango-yaml';
-
 import { initAI } from './ai/init.js';
 import { getVersionOutput } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
@@ -453,7 +451,6 @@ program
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
