@@ -7196,6 +7196,16 @@ google-forms:
     docs: https://nango.dev/docs/api-integrations/google-forms
     setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
 
+google-tasks:
+    display_name: Google Tasks
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://tasks.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-tasks
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-tasks/how-to-register-your-own-google-tasks-api-oauth-app
+
 google-meet:
     display_name: Google Meet
     categories:
