@@ -9,12 +9,6 @@ exports.up = async function (knex) {
 };
 
 /**
- * Revert only rows that have the new defaults back to old defaults. Could restrict previously overwritten values.
- *
  * @param {import('knex').Knex} knex
  */
-exports.down = async function (knex) {
-    await knex('plans').whereIn('name', ['free', 'starter']).where({ sync_frequency_secs_min: 30 }).update({
-        sync_frequency_secs_min: 3600
-    });
-};
+exports.down = async function () {};
