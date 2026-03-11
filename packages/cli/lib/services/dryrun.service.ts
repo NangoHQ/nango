@@ -613,16 +613,11 @@ export class DryRunService {
                         }
                     }
 
-                    let output: unknown;
-                    if (typeof scriptExports.default !== 'function') {
-                        const payload = scriptExports.default;
-                        if (payload.type !== 'action') {
-                            throw new Error('Incorrect script loaded for action');
-                        }
-                        output = await payload.exec(nango, input);
-                    } else {
-                        output = await scriptExports.default(nango, input);
+                    const payload = scriptExports.default;
+                    if (payload.type !== 'action') {
+                        throw new Error('Incorrect script loaded for action');
                     }
+                    const output = await payload.exec(nango, input);
 
                     // Validate action output against json schema
                     const modelNameOutput =
@@ -648,18 +643,13 @@ export class DryRunService {
                 }
 
                 // Sync
-                if (typeof scriptExports.default !== 'function') {
-                    const payload = scriptExports.default as unknown as nangoScript.CreateSyncResponse<any, any>;
-                    if (payload.type !== 'sync') {
-                        throw new Error('Incorrect script loaded for sync');
-                    }
-
-                    const results = await payload.exec(nango as any);
-                    return { success: true, response: { output: results, nango }, error: null };
-                } else {
-                    const results = await scriptExports.default(nango);
-                    return { success: true, error: null, response: { output: results, nango } };
+                const syncPayload = scriptExports.default as unknown as nangoScript.CreateSyncResponse<any, any>;
+                if (syncPayload.type !== 'sync') {
+                    throw new Error('Incorrect script loaded for sync');
                 }
+
+                await syncPayload.exec(nango as any);
+                return { success: true, response: { output: undefined, nango }, error: null };
             } catch (err) {
                 if (err instanceof ActionError) {
                     return {
