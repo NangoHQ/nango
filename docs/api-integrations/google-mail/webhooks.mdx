@@ -78,7 +78,7 @@ export default createOnEvent({
             data: {
                 labelIds: ['INBOX'],
                 topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
-                labelFilterAction: 'include',
+                labelFilterBehavior: 'INCLUDE',
             },
         };
 
@@ -113,7 +113,7 @@ export default createSync({
             data: {
                 labelIds: ['INBOX'],
                 topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
-                labelFilterAction: 'include',
+                labelFilterBehavior: 'INCLUDE',
             },
         };
 
