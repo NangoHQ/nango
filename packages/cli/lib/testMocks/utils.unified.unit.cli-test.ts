@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { NangoActionMock } from './utils.js';
+import { NangoActionMock, NangoSyncMock } from './utils.js';
 
 async function withMigrateMocksEnv<T>(value: string | undefined, fn: () => Promise<T>): Promise<T> {
     const previous = process.env['MIGRATE_MOCKS'];
@@ -259,6 +259,44 @@ describe('UnifiedFixtureProvider matching behavior', () => {
         expect(response.data).toEqual({ ok: true });
     });
 
+    it('ignores axios default application/x-www-form-urlencoded content-type when matching', async () => {
+        const testsDir = await createTestDir('nango-unified-ignore-form-content-type-');
+        await fs.writeFile(
+            path.join(testsDir, 'ignore-form-content-type.test.json'),
+            JSON.stringify(
+                {
+                    api: {
+                        post: {
+                            foo: [
+                                {
+                                    request: {
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded'
+                                        }
+                                    },
+                                    response: { ok: true },
+                                    hash: ''
+                                }
+                            ]
+                        }
+                    }
+                },
+                null,
+                2
+            )
+        );
+
+        const nangoMock = new NangoActionMock({
+            dirname: testsDir,
+            name: 'ignore-form-content-type',
+            Model: 'IgnoreFormContentTypeModel'
+        });
+
+        // Deliberately omit headers; axios would inject this header at runtime.
+        const response = await nangoMock.post({ endpoint: '/foo' });
+        expect(response.data).toEqual({ ok: true });
+    });
+
     it('only applies single-mock fallback when request has no params', async () => {
         const testsDir = await createTestDir('nango-unified-fallback-');
         await fs.writeFile(
@@ -288,5 +326,30 @@ describe('UnifiedFixtureProvider matching behavior', () => {
         expect(noParams.data).toEqual({ ok: true });
 
         await expect(nangoMock.get({ endpoint: '/foo', params: { q: '1' } })).rejects.toThrow('No mock found for GET foo');
+    });
+});
+
+describe('NangoSyncMock checkpoint behavior', () => {
+    it('stores and clears checkpoints in memory', async () => {
+        const testsDir = await createTestDir('nango-sync-checkpoint-');
+        const nangoMock = new NangoSyncMock({
+            dirname: testsDir,
+            name: 'checkpoint',
+            Model: 'CheckpointModel'
+        });
+
+        expect(await nangoMock.getCheckpoint()).toBeNull();
+
+        const checkpoint = {
+            cursor: 'next-page',
+            page: 2,
+            done: false
+        };
+
+        await nangoMock.saveCheckpoint(checkpoint);
+        expect(await nangoMock.getCheckpoint()).toEqual(checkpoint);
+
+        await nangoMock.clearCheckpoint();
+        expect(await nangoMock.getCheckpoint()).toBeNull();
     });
 });

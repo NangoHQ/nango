@@ -31,6 +31,7 @@ import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
 import { abortTaskWithId } from './operations/abort.js';
@@ -203,7 +204,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
                 oauth_client_secret: providerConfig.oauth_client_secret
-            }
+            },
+            ...(plan?.sync_function_runtime === 'lambda'
+                ? {
+                      lifecycle: {
+                          interruptAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER * 1000,
+                          killAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER * 1000
+                      }
+                  }
+                : {}) // non-lambda runtimes do not need interrupting/resuming long-running executions
         };
 
         const runtimeContext: RuntimeContext = {
@@ -261,13 +270,15 @@ export async function handleSyncSuccess({
     nangoProps,
     telemetryBag,
     functionRuntime,
-    checkpoints
+    checkpoints,
+    interrupted = false
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
     checkpoints: CheckpointRange;
+    interrupted?: boolean;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
@@ -486,7 +497,8 @@ export async function handleSyncSuccess({
         await logCtx.enrichOperation({
             meta: {
                 ...syncPayload,
-                checkpoints
+                checkpoints,
+                interrupted
             }
         });
 
@@ -494,7 +506,8 @@ export async function handleSyncSuccess({
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
             {
                 ...syncPayload,
-                checkpoints
+                checkpoints,
+                interrupted
             }
         );
 
@@ -506,7 +519,11 @@ export async function handleSyncSuccess({
         if (nangoProps.syncJobId) {
             await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.SUCCESS);
         }
-        await setTaskSuccess({ taskId, output: null });
+        await setTaskSuccess({
+            taskId,
+            output: null,
+            ...(interrupted ? { nextExecutionInMs: 0 } : {}) // if the sync was interrupted, we trigger next execution immediately
+        });
 
         void slackService.removeFailingConnection({
             connection,

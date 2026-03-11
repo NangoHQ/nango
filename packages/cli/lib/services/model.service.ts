@@ -226,6 +226,14 @@ export function getExportToTS({ parsed }: { parsed: NangoYamlParsed }): string {
 // You can version this file
 // ---------------------------
 
+/**
+ * ! ** DEPRECATION NOTICE **
+ * ! This file will stop being generated in future versions of nango.
+ * ! For access to function types, please export types directly from your code.
+ * ! You can leverage \`zod.infer\` to generate types from your zod schemas.
+ * ! See the official zod documentation: https://zod.dev/basics?id=inferring-types
+ */
+
 ${generateInterfaces({ parsed }).join('\n\n')}
 `;
 }

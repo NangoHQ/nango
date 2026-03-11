@@ -74,6 +74,34 @@ describe('Connection service integration tests', () => {
         });
     });
 
+    describe('findConnectionsByMetadataValue', () => {
+        it('should match scalar values and set-like values (arrays)', async () => {
+            const env = await createEnvironmentSeed();
+
+            const integrationA = await createConfigSeed(env, 'google-calendar-a', 'google-calendar');
+            const integrationB = await createConfigSeed(env, 'google-calendar-b', 'google-calendar');
+
+            const scalar = await createConnectionSeed({ env, provider: integrationA.unique_key, metadata: { email: 'user@example.com' } });
+            const array = await createConnectionSeed({
+                env,
+                provider: integrationA.unique_key,
+                metadata: { email: ['user@example.com', 'other@example.com'] }
+            });
+            const otherIntegration = await createConnectionSeed({ env, provider: integrationB.unique_key, metadata: { email: 'user@example.com' } });
+
+            const matches = await connectionService.findConnectionsByMetadataValue({
+                metadataProperty: 'email',
+                payloadIdentifier: 'user@example.com',
+                configId: integrationA.id,
+                environmentId: env.id
+            });
+
+            const matchedConnectionIds = (matches || []).map((c) => c.connection_id);
+            expect(matchedConnectionIds).toEqual(expect.arrayContaining([scalar.connection_id, array.connection_id]));
+            expect(matchedConnectionIds).not.toContain(otherIntegration.connection_id);
+        });
+    });
+
     describe('listConnections', () => {
         it('should return all connections', async () => {
             const env = await createEnvironmentSeed();

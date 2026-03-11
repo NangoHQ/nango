@@ -209,6 +209,9 @@ export class Supervisor {
                     if (configOverride.idleMaxDurationMs && configOverride.idleMaxDurationMs !== node.idleMaxDurationMs) {
                         return true;
                     }
+                    if (configOverride.replicas !== null && configOverride.replicas !== node.replicas) {
+                        return true;
+                    }
                     return false;
                 };
                 plan.push(
@@ -358,7 +361,8 @@ export class Supervisor {
                 isProfilingEnabled: nodeConfigOverrideValue.isProfilingEnabled || newNodeConfig.isProfilingEnabled,
                 idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs,
                 executionTimeoutSecs: nodeConfigOverrideValue.executionTimeoutSecs || newNodeConfig.executionTimeoutSecs,
-                provisionedConcurrency: nodeConfigOverrideValue.provisionedConcurrency || newNodeConfig.provisionedConcurrency
+                provisionedConcurrency: nodeConfigOverrideValue.provisionedConcurrency || newNodeConfig.provisionedConcurrency,
+                replicas: nodeConfigOverrideValue.replicas || newNodeConfig.replicas
             };
         }
 
@@ -374,7 +378,8 @@ export class Supervisor {
             isProfilingEnabled: newNodeConfig.isProfilingEnabled,
             idleMaxDurationMs: newNodeConfig.idleMaxDurationMs,
             executionTimeoutSecs: newNodeConfig.executionTimeoutSecs,
-            provisionedConcurrency: newNodeConfig.provisionedConcurrency
+            provisionedConcurrency: newNodeConfig.provisionedConcurrency,
+            replicas: newNodeConfig.replicas
         });
     }
 

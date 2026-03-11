@@ -8,7 +8,8 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { globalEnv } from '../../utils/env';
 
 export const Homepage: React.FC = () => {
-    const { meta } = useMeta();
+    const { data: metaData } = useMeta();
+    const meta = metaData?.data;
     const { user: me } = useUser();
 
     if (!me || !meta) {

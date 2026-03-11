@@ -101,12 +101,15 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         };
         const execRes = await exec(payload);
         const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
+        const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
         telemetryBag.durationMs = Date.now() - startTime;
         await jobsClient.putTask({
             taskId: request.taskId,
             nangoProps: request.nangoProps as unknown as NangoProps,
-            ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
-            functionRuntime: 'lambda'
+            functionRuntime: 'lambda',
+            telemetryBag,
+            checkpoints,
+            ...(execRes.isErr() ? { error: execRes.error.toJSON() } : { output: execRes.value.output as any })
         });
     } catch (err: any) {
         await jobsClient.putTask({

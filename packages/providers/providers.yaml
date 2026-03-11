@@ -7132,6 +7132,7 @@ google-calendar:
                 - '401'
                 - '429'
     webhook_routing_script: googleCalendarWebhookRouting
+    post_connection_script: googleCalendarPostConnection
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
 
@@ -7163,6 +7164,7 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
+    post_connection_script: googleMailPostConnection
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
 
