@@ -801,6 +801,25 @@ describe('buildProxyURL', () => {
 
         expect(url).toBe('https://example.com/api/test?existing=param&application_key=app-key-123&version=v1');
     });
+
+    it('should interpolate ${apiKey} in the base URL', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://${apiKey}.example.com'
+                    }
+                },
+                endpoint: '/api/test'
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'my-secret-key' }
+            })
+        });
+
+        expect(url).toBe('https://my-secret-key.example.com/api/test');
+    });
 });
 
 describe('getProxyConfiguration', () => {

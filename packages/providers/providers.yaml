@@ -15843,6 +15843,30 @@ teamwork:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://nango.dev/docs/integrations/all/teamwork
 
+telegram:
+    display_name: Telegram
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.telegram.org/bot${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /getMe
+    docs: https://nango.dev/docs/api-integrations/telegram
+    docs_connect: https://nango.dev/docs/api-integrations/telegram/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Bot Token
+            description: Your Telegram Bot token from @BotFather.
+            example: 1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ1234567
+            pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-creating-your-telegram-bot'
+
 terraform:
     display_name: Terraform
     categories:
