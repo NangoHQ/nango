@@ -160,23 +160,30 @@ class Lambda {
     }
 
     protected getEnvironmentVariables(node: Node): Environment {
+        const variables: Record<string, string> = {
+            NODE_ENV: envs.NODE_ENV,
+            NANGO_CLOUD: String(envs.NANGO_CLOUD),
+            RUNNER_NODE_ID: `${node.id}`,
+            PERSIST_SERVICE_URL: envs.LAMBDA_PERSIST_SERVICE_URL || '',
+            JOBS_SERVICE_URL: envs.LAMBDA_JOBS_SERVICE_URL || '',
+            PROVIDERS_URL: envs.LAMBDA_PROVIDERS_URL || '',
+            NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '',
+            NANGO_TELEMETRY_SDK: String(envs.NANGO_TELEMETRY_SDK),
+            DD_ENV: envs.DD_ENV || '',
+            DD_SITE: envs.DD_SITE || '',
+            DD_PROFILING_ENABLED: String(node.isProfilingEnabled),
+            DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
+            DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
+            DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || ''
+        };
+        if (envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
+            variables['LAMBDA_PAYLOADS_BUCKET_NAME'] = envs.LAMBDA_PAYLOADS_BUCKET_NAME;
+        }
+        if (envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) {
+            variables['LAMBDA_PAYLOAD_MAX_SIZE_BYTES'] = String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES);
+        }
         return {
-            Variables: {
-                NODE_ENV: envs.NODE_ENV,
-                NANGO_CLOUD: String(envs.NANGO_CLOUD),
-                RUNNER_NODE_ID: `${node.id}`,
-                PERSIST_SERVICE_URL: envs.LAMBDA_PERSIST_SERVICE_URL || '',
-                JOBS_SERVICE_URL: envs.LAMBDA_JOBS_SERVICE_URL || '',
-                PROVIDERS_URL: envs.LAMBDA_PROVIDERS_URL || '',
-                NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '',
-                NANGO_TELEMETRY_SDK: String(envs.NANGO_TELEMETRY_SDK),
-                DD_ENV: envs.DD_ENV || '',
-                DD_SITE: envs.DD_SITE || '',
-                DD_PROFILING_ENABLED: String(node.isProfilingEnabled),
-                DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
-                DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
-                DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || ''
-            }
+            Variables: variables
         };
     }
 
