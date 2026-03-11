@@ -282,7 +282,7 @@ program
     )
     .option(
         '--integration-id [integrationId]',
-        'Optional: The integration id to use for the dryrun. If not provided, the integration id will be retrieved from the nango.yaml file. This is useful using nested directories and script names are repeated'
+        'Optional: The integration id to use for the dryrun. If not provided, the integration id will be inferred from the connection id.'
     )
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
