@@ -138,6 +138,25 @@ class VerificationService {
         };
     }
 
+    public async ensureZeroYaml({ fullPath, debug }: { fullPath: string; debug: boolean }) {
+        const precheck = await this.preCheck({ fullPath, debug });
+        if (!precheck.isNango) {
+            console.error(chalk.red(`Not inside a Nango folder`));
+            process.exitCode = 1;
+            return false;
+        }
+        if (!precheck.isZeroYaml) {
+            console.error(
+                chalk.red(
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                )
+            );
+            process.exitCode = 1;
+            return false;
+        }
+        return true;
+    }
+
     public async ensureNangoYaml({ fullPath, debug }: { fullPath: string; debug: boolean }) {
         const precheck = await this.preCheck({ fullPath, debug });
         if (!precheck.isNango) {
