@@ -19,9 +19,26 @@ Checkpoints solve this by tracking how far your sync has progressed. The benefit
 - **Lower costs** — Less compute time on Nango, fewer API calls against the external API's rate limits, and lower bandwidth consumption.
 - **Higher freshness** — Faster syncs mean you can run them more frequently, keeping your data closer to real-time.
 
+# Function interruption and resumption
+
+By default, functions have a capped execution duration. When a function reaches the limit, Nango interrupts it gracefully and schedules the next execution to start immediately.
+
+Checkpoints are what make this seamless: the next execution should call `getCheckpoint()` and resumes from where the previous one stopped. **Without checkpoints, each execution starts from scratch**, meaning any function that takes longer than the execution cap will loop indefinitely without ever completing.
+
+<Warning>
+If your sync processes a large dataset, you must call `saveCheckpoint()` after every `batchSave`. A sync without checkpoints that exceeds the execution duration will restart from the beginning on every run and never finish.
+</Warning>
+
+The interrupt-and-resume flow:
+
+1. Sync runs, processes records, saves a checkpoint after each page.
+2. Nango interrupts the sync gracefully when the execution cap is reached (ie: after the current `saveCheckpoint()` call completes).
+3. The next execution starts immediately, calls `getCheckpoint()`, and continues from that point.
+4. This repeats until the sync finishes naturally.
+
 # How checkpoints work
 
-A checkpoint is a small payload — defined by a schema you control — that your sync saves after processing each batch of data. On the next execution, the sync reads the checkpoint to know where it left off.
+A checkpoint is a small payload, defined by a schema you control,  that your sync saves after processing each batch of data. On the next execution, the sync reads the checkpoint to know where it left off.
 
 The typical flow is:
 
