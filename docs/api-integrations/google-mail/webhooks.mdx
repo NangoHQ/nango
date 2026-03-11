@@ -1,0 +1,206 @@
+---
+title: 'How to setup webhooks with Gmail on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to set up Gmail push notifications with Google Pub/Sub and Nango'
+---
+
+This guide shows you how to receive real-time Gmail push notifications in Nango using [Google Pub/Sub](https://developers.google.com/workspace/gmail/api/guides/push).
+
+## How it works
+
+Gmail uses Google Cloud Pub/Sub to deliver push notifications. The flow is:
+
+1. You create a Pub/Sub topic and subscription pointing to your Nango webhook URL
+2. You call Gmail's `watch` endpoint for each connection to start receiving notifications
+3. When a user's mailbox changes, Google publishes a notification to your topic
+4. The Pub/Sub subscription pushes it to Nango
+5. Nango matches the notification to the correct connection and forwards it to your app
+
+Nango automatically identifies which connection a webhook belongs to using the `emailAddress` from the notification payload. For new connections, Nango persists the user's email address automatically at connection time — no manual setup required.
+
+## Setup
+
+### 1. Create a Pub/Sub topic
+
+Create a topic in the [Google Cloud Console](https://console.cloud.google.com/cloudpubsub/topic/list). You can use the default options Google sets. See Google's [documentation](https://cloud.google.com/pubsub/docs/create-topic) for details.
+
+### 2. Grant Gmail publish rights
+
+Gmail needs permission to publish to your topic. Run this with the [gcloud CLI](https://cloud.google.com/sdk/docs/install):
+
+```bash
+gcloud pubsub topics add-iam-policy-binding <TOPIC_ID> \
+  --project=<GOOGLE_PROJECT_ID> \
+  --member="serviceAccount:gmail-api-push@system.gserviceaccount.com" \
+  --role="roles/pubsub.publisher"
+```
+
+<Note>
+The **topic ID** is the short name (e.g. `my-gmail-topic`), while the **topic name** is the fully qualified path (e.g. `projects/my-project/topics/my-gmail-topic`). You'll need the topic name later when calling the `watch` endpoint.
+</Note>
+
+### 3. Create a push subscription
+
+Click on the default subscription for your topic (if one was created) or create a new one. Set the delivery type to **Push** and configure it as follows:
+
+1. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
+2. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+
+### 4. Activate the watch subscription
+
+Call Gmail's [`users.watch`](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users/watch) endpoint for each connection you want to receive notifications for:
+
+```bash
+curl -X POST "https://www.googleapis.com/gmail/v1/users/me/watch" \
+  -H "Authorization: Bearer <AUTH_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topicName": "projects/<PROJECT_ID>/topics/<TOPIC_ID>",
+    "labelIds": ["INBOX"],
+    "labelFilterBehavior": "INCLUDE"
+  }'
+```
+
+You can automate this for new connections with a [post-connection-creation script](/guides/custom-integrations/event-based-scripts):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Activate the Gmail watch webhook subscription for new connections',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/gmail',
+            endpoint: '/v1/users/me/watch',
+            data: {
+                labelIds: ['INBOX'],
+                topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
+                labelFilterAction: 'include',
+            },
+        };
+
+        await nango.post(config);
+    }
+});
+```
+
+### 5. Renew the watch subscription daily
+
+Google [recommends](https://developers.google.com/workspace/gmail/api/guides/push#renewing_mailbox_watch) calling the `watch` endpoint at least once a day to keep the subscription active. You can use a Nango sync with a `1d` frequency for this:
+
+```typescript
+import { createSync, ProxyConfiguration } from 'nango';
+import { Empty } from '../../models.js';
+
+export default createSync({
+    description: 'Calls the watch endpoint daily to keep a Gmail webhook subscription active',
+    models: { Empty },
+    endpoints: [{
+        method: 'GET',
+        path: '/watch',
+    }],
+    syncType: 'full',
+    frequency: '1d',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/gmail',
+            endpoint: '/v1/users/me/watch',
+            data: {
+                labelIds: ['INBOX'],
+                topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
+                labelFilterAction: 'include',
+            },
+        };
+
+        const response = await nango.post(config);
+        await nango.log(response.data);
+    }
+});
+```
+
+### 6. Handle forwarded webhooks
+
+When a Gmail notification arrives, Nango matches it to the correct connection and forwards it to your system. The forwarded payload looks like this:
+
+```json
+{
+  "from": "google-mail",
+  "providerConfigKey": "google-mail",
+  "type": "forward",
+  "payload": {
+    "message": {
+      "data": "eyJlbWFpbEFkZHJlc3MiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaGlzdG9yeUlkIjoxMjM0NTY3fQ==",
+      "messageId": "15648488012403560",
+      "publishTime": "2025-07-21T12:00:31.793Z"
+    },
+    "subscription": "projects/my-project/subscriptions/my-subscription"
+  },
+  "connectionId": "connection-123"
+}
+```
+
+The `message.data` field is base64-encoded and contains:
+
+```json
+{"emailAddress": "user@example.com", "historyId": 1234567}
+```
+
+Once you receive the webhook, trigger your existing sync for that connection:
+
+```bash
+curl -X POST "https://api.nango.dev/sync/trigger" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sync_mode": "incremental",
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "google-mail",
+    "syncs": ["emails"]
+  }'
+```
+
+With webhooks triggering syncs in real time, you can reduce your sync frequency to a lower value (`1d`/`1h`) just to act as a safety net for any missed webhooks.
+
+## Connection matching
+
+Nango uses the `emailAddress` from the webhook payload to find the matching connection. The lookup order is:
+
+1. `connection_config.emailAddress` — automatically set by Nango for connections created after 2026-03-11
+2. `metadata.emailAddress` — legacy fallback
+
+For **new connections** (created after 2026-03-11), no action is needed. Nango automatically persists the email address at connection time.
+
+For **existing connections** created before this feature was available, you have two options:
+
+- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email address automatically
+- **Set the metadata manually** via the API:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connection/metadata" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "google-mail",
+    "metadata": {"emailAddress": "<USER_EMAIL>"}
+  }'
+```
+
+To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
+
+<Warning>
+If Nango cannot match the incoming webhook to a connection (because neither `connection_config` nor `metadata` contains the email address), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
+</Warning>
+
+## Rollback strategy
+
+If you need to stop webhooks, detach the Pub/Sub subscription from your topic in the Google Cloud Console. This immediately stops notifications from flowing to Nango. The subscription can be re-attached at any time.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---
