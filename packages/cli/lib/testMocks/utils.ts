@@ -10,7 +10,15 @@ import { PaginationService } from '@nangohq/runner-sdk';
 
 import { FILTER_HEADERS as FILTER_HEADERS_UNIFIED, isAxiosDefaultContentTypeForMockIdentity } from '../services/response-collector.service.js';
 
-import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type {
+    Checkpoint,
+    CursorPagination,
+    LinkPagination,
+    OffsetCalculationMethod,
+    OffsetPagination,
+    Pagination,
+    UserProvidedProxyConfiguration
+} from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface FixtureProvider {
@@ -1123,14 +1131,36 @@ class NangoActionMock {
 }
 class NangoSyncMock extends NangoActionMock {
     lastSyncDate = null;
+    private checkpoint: Checkpoint | null = null;
 
     batchSave: ReturnType<typeof vi.fn>;
     batchDelete: ReturnType<typeof vi.fn>;
+    getCheckpoint: ReturnType<typeof vi.fn>;
+    saveCheckpoint: ReturnType<typeof vi.fn>;
+    clearCheckpoint: ReturnType<typeof vi.fn>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         super({ dirname, name, Model });
         this.batchSave = vi.fn();
         this.batchDelete = vi.fn();
+        this.getCheckpoint = vi.fn(this.getCheckpointData.bind(this));
+        this.saveCheckpoint = vi.fn(this.saveCheckpointData.bind(this));
+        this.clearCheckpoint = vi.fn(this.clearCheckpointData.bind(this));
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    private async getCheckpointData() {
+        return this.checkpoint;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    private async saveCheckpointData(checkpoint: Checkpoint) {
+        this.checkpoint = checkpoint;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    private async clearCheckpointData() {
+        this.checkpoint = null;
     }
 }
 
