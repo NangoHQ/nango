@@ -132,7 +132,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             codeParams: params.codeParams
         };
         const payloadString = JSON.stringify(payload);
-        if (Buffer.byteLength(payloadString, 'utf-8') > 1024 * 1024 && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
+        if (Buffer.byteLength(payloadString, 'utf-8') > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
             const [codeRef, codeParamsRef] = await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)]);
             return JSON.stringify({
                 taskId: params.taskId,

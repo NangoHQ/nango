@@ -421,6 +421,10 @@ export const ENVS = z.object({
     LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET: z.coerce.number().optional().default(0.7),
     LAMBDA_FAILURE_DESTINATION: z.string().optional(),
     LAMBDA_PAYLOADS_BUCKET_NAME: z.string().optional(),
+    LAMBDA_PAYLOAD_MAX_SIZE_BYTES: z.coerce
+        .number()
+        .optional()
+        .default(1024 * 1024), // 1MB
     // WEBHOOK DELIVERY CIRCUIT BREAKER
     NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),
     NANGO_WEBHOOK_RETRY_ATTEMPTS: z.coerce.number().optional().default(2),
