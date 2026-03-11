@@ -130,7 +130,7 @@ export const Signin: React.FC = () => {
                                     <FormItem>
                                         <FormControl>
                                             <InputGroup className="h-11">
-                                                <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
+                                                <InputGroupInput placeholder="Email" autoComplete="email" {...field} aria-invalid={!!fieldState.error} />
                                             </InputGroup>
                                         </FormControl>
                                         <FormMessage />

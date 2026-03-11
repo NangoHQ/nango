@@ -12,7 +12,11 @@ export const freePlan: PlanDefinition = {
         api_rate_limit_size: 'm',
         environments_max: 2,
         has_otel: false,
+<<<<<<< ryan/nan-4966-enable-sync-partitions-and-fast-syncing-for-all-accounts
         has_sync_variants: true,
+=======
+
+>>>>>>> master
         connections_max: 10,
         records_max: 100_000,
         proxy_max: 100_000,
@@ -47,8 +51,13 @@ export const starterV1Plan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
+<<<<<<< ryan/nan-4966-enable-sync-partitions-and-fast-syncing-for-all-accounts
         has_sync_variants: true,
         sync_frequency_secs_min: 30,
+=======
+
+        sync_frequency_secs_min: 3600,
+>>>>>>> master
         connections_max: null,
         records_max: null,
         proxy_max: null,
@@ -85,7 +94,7 @@ export const growthV1Plan: PlanDefinition = {
         api_rate_limit_size: 'xl',
         environments_max: 10,
         has_otel: true,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -121,7 +130,7 @@ export const starterV2Plan: PlanDefinition = {
     flags: {
         ...starterV1Plan.flags,
         sync_frequency_secs_min: 30,
-        has_sync_variants: true,
+
         has_webhooks_script: true,
         has_webhooks_forward: true
     }
@@ -150,7 +159,7 @@ export const enterprisePlan: PlanDefinition = {
         api_rate_limit_size: '2xl',
         environments_max: 10,
         has_otel: true,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -188,7 +197,7 @@ export const starterLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -225,7 +234,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -262,7 +271,7 @@ export const growthLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,

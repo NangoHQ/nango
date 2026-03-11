@@ -97,12 +97,6 @@ export interface DBPlan extends Timestamps {
     sync_frequency_secs_min: number;
 
     /**
-     * Enable or disabled sync variant
-     * @default false
-     */
-    has_sync_variants: boolean;
-
-    /**
      * Enable or disabled open telemetry export
      * @default false
      */
@@ -179,4 +173,10 @@ export interface DBPlan extends Timestamps {
      * @default true
      */
     has_records_autopruning: boolean;
+
+    /**
+     * Limit the number of variants per sync
+     * @default 100
+     */
+    variants_per_sync_max: number;
 }
