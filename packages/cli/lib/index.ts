@@ -15,21 +15,18 @@ import figlet from 'figlet';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 import { initAI } from './ai/init.js';
-import { generate, getVersionOutput } from './cli.js';
+import { getVersionOutput } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { cloneTemplate } from './services/clone.service.js';
-import { parse } from './services/config.service.js';
-import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
 import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
-import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { MissingArgumentError } from './utils/errors.js';
-import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
 import { buildDefinitions } from './zeroYaml/definitions.js';
@@ -498,48 +495,6 @@ program
     });
 
 program
-    .command('migrate-config')
-    .description('Migrate the nango.yaml from v1 (deprecated) to v2')
-    .action(async function (this: Command) {
-        const { debug } = this.opts<DeployOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        v1toV2Migration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
-    });
-
-program
-    .command('migrate-to-directories')
-    .description('Migrate the script files from root level to structured directories.')
-    .action(async function (this: Command) {
-        const { debug } = this.opts<DeployOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        await directoryMigration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION), debug);
-    });
-
-program
-    .command('migrate-endpoints')
-    .description('Migrate the endpoint format')
-    .action(async function (this: Command) {
-        const { debug } = this.opts<DeployOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        endpointMigration(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
-    });
-
-program
     .command('migrate-to-zero-yaml')
     .description('Migrate from nango.yaml to pure typescript')
     .action(async function (this: Command) {
@@ -635,7 +590,7 @@ program
         const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
         const fullPath = process.cwd();
 
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
+        const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
         if (!precheck) return;
 
         const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
@@ -643,68 +598,11 @@ program
             process.exitCode = 1;
         }
     });
-
-// Hidden commands //
-program
-    .command('generate', { hidden: true })
-    .description('Generate a new Nango integration')
-    .action(async function (this: Command) {
-        const { debug } = this.opts<GlobalOptions>();
-        const fullPath = process.cwd();
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        generate({ fullPath: process.cwd(), debug });
-    });
 program
     .command('cli-location', { hidden: true })
     .alias('cli')
     .action(() => {
         getNangoRootPath(true);
-    });
-
-program
-    .command('sync:config.check', { hidden: true })
-    .alias('scc')
-    .description('Verify the parsed sync config and output the object for verification')
-    .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts<GlobalOptions>();
-        const fullPath = process.cwd();
-
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const parsing = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
-        if (parsing.isErr()) {
-            console.error(chalk.red(parsing.error.message));
-            process.exitCode = 1;
-            return;
-        }
-
-        console.log(chalk.green(JSON.stringify({ ...parsing.value.parsed, models: Array.from(parsing.value.parsed!.models.values()) }, null, 2)));
-    });
-
-program
-    .command('admin:deploy-internal', { hidden: true })
-    .description('Deploy a Nango integration to the internal Nango dev account')
-    .arguments('environment')
-    .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, cloud).')
-    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
-    .action(async function (this: Command, environment: string) {
-        const { debug, nangoRemoteEnvironment, integration } = this.opts();
-        const fullPath = process.cwd();
-
-        const precheck = await verificationService.ensureNangoYaml({ fullPath, debug });
-        if (!precheck) {
-            return;
-        }
-
-        await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
     });
 
 program.parse();
