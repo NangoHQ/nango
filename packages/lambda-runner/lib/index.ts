@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import { getKVStore, getLocking } from '@nangohq/kvstore';
 import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
@@ -63,6 +63,22 @@ async function getCode(request: zod.infer<typeof requestSchema>): Promise<string
         return response.Body?.transformToString() || '';
     }
     return '';
+}
+
+async function deleteCodeParams(request: zod.infer<typeof requestSchema>): Promise<void> {
+    try {
+        if (request.codeParamsRef) {
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: request.codeParamsRef.bucket,
+                    Key: request.codeParamsRef.key
+                })
+            );
+        }
+    } catch (err) {
+        logger.error('Error deleting code params', { error: err });
+        //ignore error - the payload will be deleted by the bucket lifecycle policy
+    }
 }
 
 async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<object> {
@@ -169,6 +185,7 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         if (pass.lock) {
             await gate.exit(pass.lock);
         }
+        await deleteCodeParams(request);
         logger.info(`Task ${request.taskId} completed`);
     }
 };
