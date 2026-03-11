@@ -207,7 +207,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
     deploy_lambda:
         if: inputs.service == 'lambda' && inputs.stage != 'replit'
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04-arm
         permissions:
             id-token: write
             contents: read
