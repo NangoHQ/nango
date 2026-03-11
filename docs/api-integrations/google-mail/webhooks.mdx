@@ -61,7 +61,7 @@ curl -X POST "https://www.googleapis.com/gmail/v1/users/me/watch" \
   }'
 ```
 
-You can automate this for new connections with a [post-connection-creation script](/guides/custom-integrations/event-based-scripts):
+You can automate this for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
