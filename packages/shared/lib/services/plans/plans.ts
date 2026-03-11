@@ -221,7 +221,6 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             }
             // BOOLEAN FLAGS - keep override if true
             case 'has_otel':
-            case 'has_sync_variants':
             case 'has_webhooks_script':
             case 'has_webhooks_forward':
             case 'can_disable_connect_ui_watermark':
@@ -248,7 +247,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 break;
             }
             // NUMBER FLAGS - keep override if higher
-            case 'environments_max': {
+            case 'environments_max':
+            case 'variants_per_sync_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
                 if (currentValue > newValue) {
