@@ -12,11 +12,6 @@ export const freePlan: PlanDefinition = {
         api_rate_limit_size: 'm',
         environments_max: 2,
         has_otel: false,
-<<<<<<< ryan/nan-4966-enable-sync-partitions-and-fast-syncing-for-all-accounts
-        has_sync_variants: true,
-=======
-
->>>>>>> master
         connections_max: 10,
         records_max: 100_000,
         proxy_max: 100_000,
@@ -51,13 +46,7 @@ export const starterV1Plan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-<<<<<<< ryan/nan-4966-enable-sync-partitions-and-fast-syncing-for-all-accounts
-        has_sync_variants: true,
         sync_frequency_secs_min: 30,
-=======
-
-        sync_frequency_secs_min: 3600,
->>>>>>> master
         connections_max: null,
         records_max: null,
         proxy_max: null,
