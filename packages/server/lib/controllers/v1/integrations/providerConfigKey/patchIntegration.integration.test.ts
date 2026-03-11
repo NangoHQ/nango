@@ -103,4 +103,163 @@ describe(`PATCH ${endpoint}`, () => {
             data: { success: true }
         });
     });
+
+    it('should update custom fields such as aws_sigv4_config', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const payload = JSON.stringify({
+            service: 's3',
+            stsEndpoint: { url: 'https://example.com/hooks' }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: payload } }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: { success: true }
+        });
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json).toMatchObject({
+            data: { integration: { custom: { aws_sigv4_config: payload } } }
+        });
+    });
+
+    it('should reject invalid aws_sigv4_config payloads', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: '{"service":""' } }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' }
+        });
+
+        const resMissingFields = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: JSON.stringify({ service: 's3' }) } }
+        });
+
+        isError(resMissingFields.json);
+        expect(resMissingFields.json).toStrictEqual<typeof resMissingFields.json>({
+            error: { code: 'missing_aws_sigv4_sts_endpoint', message: 'AWS SigV4 integration is missing the STS endpoint configuration.' }
+        });
+    });
+
+    it('should accept builtin STS mode with AWS credentials', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const payload = JSON.stringify({
+            service: 's3',
+            stsMode: 'builtin',
+            awsAccessKeyId: 'AKIATESTKEY123',
+            awsSecretAccessKey: 'testSecretKey456'
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: payload } }
+        });
+
+        isSuccess(res.json);
+
+        // Verify the stored config does NOT contain the raw credentials
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' }
+        });
+
+        isSuccess(resGet.json);
+        const stored = JSON.parse(resGet.json.data.integration.custom?.['aws_sigv4_config'] || '{}');
+        expect(stored.stsMode).toBe('builtin');
+        expect(stored.awsAccessKeyId).toBeUndefined();
+        expect(stored.awsSecretAccessKey).toBeUndefined();
+    });
+
+    it('should reject builtin STS mode without AWS credentials', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const payload = JSON.stringify({
+            service: 's3',
+            stsMode: 'builtin'
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: payload } }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'missing_aws_sigv4_builtin_credentials', message: 'AWS SigV4 built-in mode requires AWS Access Key ID and Secret Access Key.' }
+        });
+    });
+
+    it('should allow removing aws_sigv4_config', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
+        const payload = JSON.stringify({
+            service: 's3',
+            stsEndpoint: { url: 'https://example.com/hooks' }
+        });
+
+        await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: payload } }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' },
+            body: { custom: { aws_sigv4_config: null } }
+        });
+
+        isSuccess(res.json);
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: secret.secret,
+            params: { providerConfigKey: 'aws-sigv4' }
+        });
+
+        isSuccess(resGet.json);
+        const custom = resGet.json.data.integration.custom ?? {};
+        expect(custom).not.toHaveProperty('aws_sigv4_config');
+    });
 });

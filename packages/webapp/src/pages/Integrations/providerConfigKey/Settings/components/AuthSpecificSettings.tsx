@@ -1,4 +1,5 @@
 import { AppAuthSettings } from './AppAuthSettings';
+import { AwsSigV4Settings } from './AwsSigV4Settings';
 import { CustomAuthSettings } from './CustomAuthSettings';
 import { InstallPluginSettings } from './InstallPluginSettings';
 import { McpGenericSettings } from './McpGenericSettings';
@@ -30,6 +31,9 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
 
         case 'INSTALL_PLUGIN':
             return <InstallPluginSettings data={data} environment={environment} />;
+
+        case 'AWS_SIGV4':
+            return <AwsSigV4Settings data={data} environment={environment} />;
 
         default:
             return null;
