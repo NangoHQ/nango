@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.43] - 2026-03-11
+
+### Fixed
+
+- *(webapp)* Long wait time after Sign in (#5592) by @kaposke
+- *(webapp)* SignIn autoComplete (#5598) by @kaposke
+- Build lambda on arm64 github runner (#5597) by @TBonnin
+- *(sdk)* Add checkpoint methods to mock classes (#5603) by @marcindobry
+
 ## [v0.69.42] - 2026-03-10
 
 ### Added
@@ -6099,6 +6108,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.43]: https://github.com/NangoHQ/nango/compare/v0.69.42..v0.69.43
 [v0.69.42]: https://github.com/NangoHQ/nango/compare/v0.69.41..v0.69.42
 [v0.69.41]: https://github.com/NangoHQ/nango/compare/v0.69.40..v0.69.41
 [v0.69.40]: https://github.com/NangoHQ/nango/compare/v0.69.39..v0.69.40
