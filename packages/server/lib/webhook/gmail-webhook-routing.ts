@@ -107,17 +107,35 @@ const route: WebhookHandler = async (nango, headers, body) => {
     }
     const editedBodyWithCatchAll = { ...body, type: '*', emailAddress: decodedBody?.emailAddress };
 
-    const response = await nango.executeScriptForWebhooks({
+    let response = await nango.executeScriptForWebhooks({
         body: editedBodyWithCatchAll,
         webhookType: 'type',
         connectionIdentifier: 'emailAddress',
-        propName: 'metadata.emailAddress'
+        propName: 'emailAddress'
     });
+
+    if (response.connectionIds.length === 0) {
+        response = await nango.executeScriptForWebhooks({
+            body: editedBodyWithCatchAll,
+            webhookType: 'type',
+            connectionIdentifier: 'emailAddress',
+            propName: 'metadata.emailAddress'
+        });
+
+        if (response.connectionIds.length === 0) {
+            response = await nango.executeScriptForWebhooks({
+                body: editedBodyWithCatchAll,
+                webhookType: 'type',
+                connectionIdentifier: 'emailAddress',
+                propName: 'metadata.email'
+            });
+        }
+    }
 
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
-        connectionIds: response?.connectionIds || [],
+        connectionIds: response.connectionIds,
         toForward: body
     });
 };
