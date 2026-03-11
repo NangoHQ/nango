@@ -63,6 +63,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         contentType: string;
         contentEncoding?: 'gzip';
         skipIfExists?: boolean;
+        tagging?: string;
     }): Promise<S3ObjectRef> {
         if (params.skipIfExists) {
             try {
@@ -84,7 +85,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 Key: params.key,
                 Body: params.body,
                 ContentType: params.contentType,
-                ...(params.contentEncoding && { ContentEncoding: params.contentEncoding })
+                ...(params.contentEncoding && { ContentEncoding: params.contentEncoding }),
+                Tagging: params.tagging
             })
         );
         return {
@@ -107,7 +109,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             body,
             contentType: 'text/plain',
             contentEncoding: 'gzip',
-            skipIfExists: true
+            skipIfExists: true,
+            tagging: `type=function-code`
         });
     }
 
@@ -120,7 +123,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             key,
             body,
             contentType: 'application/json',
-            contentEncoding: 'gzip'
+            contentEncoding: 'gzip',
+            tagging: `type=function-params`
         });
     }
 
