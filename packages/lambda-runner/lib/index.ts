@@ -1,3 +1,5 @@
+import { gunzipSync } from 'node:zlib';
+
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import { getKVStore, getLocking } from '@nangohq/kvstore';
@@ -60,7 +62,9 @@ async function getCode(request: zod.infer<typeof requestSchema>): Promise<string
                 Key: request.codeRef.key
             })
         );
-        return response.Body?.transformToString() || '';
+        if (!response.Body) return '';
+        const bytes = await response.Body.transformToByteArray();
+        return gunzipSync(Buffer.from(bytes)).toString('utf8');
     }
     return '';
 }
@@ -92,7 +96,10 @@ async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<
                 Key: request.codeParamsRef.key
             })
         );
-        return JSON.parse((await response.Body?.transformToString()) || '{}');
+        if (!response.Body) return {};
+        const bytes = await response.Body.transformToByteArray();
+        const json = gunzipSync(Buffer.from(bytes)).toString('utf8');
+        return JSON.parse(json || '{}');
     }
     return {};
 }
@@ -161,24 +168,6 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
             telemetryBag,
             checkpoints,
             ...(execRes.isErr() ? { error: execRes.error.toJSON() } : { output: execRes.value.output as any })
-        });
-    } catch (err: any) {
-        await jobsClient.putTask({
-            taskId: request.taskId,
-            error: {
-                type: 'lambda_error',
-                payload: {
-                    message: err.message as string
-                },
-                status: 500
-            },
-            telemetryBag: {
-                customLogs: 0,
-                proxyCalls: 0,
-                durationMs: Date.now() - startTime,
-                memoryGb: Number(context.memoryLimitInMB) / 1024
-            },
-            functionRuntime: 'lambda'
         });
     } finally {
         clearInterval(heartbeat);
