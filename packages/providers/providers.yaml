@@ -10066,6 +10066,8 @@ microsoft-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
+    webhook_routing_script: microsoftClientCredentialsWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc/connect
     connection_config:

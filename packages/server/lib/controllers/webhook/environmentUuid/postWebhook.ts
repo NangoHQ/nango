@@ -13,6 +13,15 @@ import { routeWebhook } from '../../../webhook/webhook.manager.js';
 
 import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
 
+/**
+ * Names of query parameters that are forwarded to webhook routing.
+ * Only these parameters are forwarded; all others are ignored for security reasons.
+ * By default, query parameters are not passed through: some providers send
+ * unverifiable parameters, which are ignored to maintain security,
+ * since they generally cannot be included in webhook signatures.
+ */
+const ALLOWED_WEBHOOK_QUERY_PARAMS = ['validationToken'];
+
 const paramValidation = z
     .object({
         environmentUuid: z.string().uuid(),
@@ -80,10 +89,14 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            // Note that we do not pass on query parameters!
-            // Some providers send unverifiable query parameters
-            // we ignore them for security reasons, as they generally
-            // cannot be included in the webhook signatures.
+            const queryFiltered = ALLOWED_WEBHOOK_QUERY_PARAMS.reduce<Record<string, string>>((acc, name) => {
+                const v = req.query[name];
+                if (v) acc[name] = typeof v === 'string' ? v : String(v);
+                return acc;
+            }, {});
+
+            const query = Object.keys(queryFiltered).length > 0 ? queryFiltered : undefined;
+
             const response = await routeWebhook({
                 environment,
                 account,
@@ -92,6 +105,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 headers,
                 body: req.body,
                 rawBody: req.rawBody!,
+                ...(query !== undefined ? { query } : {}),
                 logContextGetter
             });
 
