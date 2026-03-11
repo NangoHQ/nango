@@ -2,7 +2,6 @@ import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
 import { Button } from '../../components/ui/button/Button';
@@ -10,6 +9,7 @@ import { Input } from '../../components/ui/input/Input';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();
@@ -47,7 +47,7 @@ export const UserSettings: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Profile Settings" error={error} />;
+        return <CriticalErrorAlert message="Failed to load profile settings" />;
     }
 
     if (!user) {

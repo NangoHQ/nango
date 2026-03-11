@@ -425,7 +425,12 @@ class Kubernetes {
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
-            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'REDIS' }] : [])
+            ...(node.replicas > 1
+                ? [
+                      { name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'REDIS' },
+                      { name: 'NANGO_CUSTOMER_REDIS_URL', value: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '' }
+                  ]
+                : [])
         ];
     }
 

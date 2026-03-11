@@ -259,6 +259,44 @@ describe('UnifiedFixtureProvider matching behavior', () => {
         expect(response.data).toEqual({ ok: true });
     });
 
+    it('ignores axios default application/x-www-form-urlencoded content-type when matching', async () => {
+        const testsDir = await createTestDir('nango-unified-ignore-form-content-type-');
+        await fs.writeFile(
+            path.join(testsDir, 'ignore-form-content-type.test.json'),
+            JSON.stringify(
+                {
+                    api: {
+                        post: {
+                            foo: [
+                                {
+                                    request: {
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded'
+                                        }
+                                    },
+                                    response: { ok: true },
+                                    hash: ''
+                                }
+                            ]
+                        }
+                    }
+                },
+                null,
+                2
+            )
+        );
+
+        const nangoMock = new NangoActionMock({
+            dirname: testsDir,
+            name: 'ignore-form-content-type',
+            Model: 'IgnoreFormContentTypeModel'
+        });
+
+        // Deliberately omit headers; axios would inject this header at runtime.
+        const response = await nangoMock.post({ endpoint: '/foo' });
+        expect(response.data).toEqual({ ok: true });
+    });
+
     it('only applies single-mock fallback when request has no params', async () => {
         const testsDir = await createTestDir('nango-unified-fallback-');
         await fs.writeFile(
