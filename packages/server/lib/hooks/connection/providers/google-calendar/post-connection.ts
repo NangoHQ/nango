@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { hashEmailAddress } from '../../../../utils/pii.js';
+
 import type { InternalNango as Nango } from '../../internal-nango.js';
 
 interface CalendarListEntry {
@@ -19,5 +21,5 @@ export default async function execute(nango: Nango) {
     }
 
     // For a user's primary calendar, the calendar id is the user's email address.
-    await nango.updateConnectionConfig({ emailAddress: response.data.id });
+    await nango.updateConnectionConfig({ emailAddressHash: hashEmailAddress(response.data.id) });
 }

@@ -16,7 +16,7 @@ Gmail uses Google Cloud Pub/Sub to deliver push notifications. The flow is:
 4. The Pub/Sub subscription pushes it to Nango
 5. Nango matches the notification to the correct connection and forwards it to your app
 
-Nango automatically identifies which connection a webhook belongs to using the `emailAddress` from the notification payload. For new connections, Nango persists the user's email address automatically at connection time — no manual setup required.
+Nango automatically identifies which connection a webhook belongs to using the `emailAddress` from the notification payload. For new connections, Nango persists only a hash of the user's email (`connection_config.emailAddressHash`) automatically at connection time — no manual setup required.
 
 ## Setup
 
@@ -168,16 +168,17 @@ With webhooks triggering syncs in real time, you can reduce your sync frequency 
 
 ## Connection matching
 
-Nango uses the `emailAddress` from the webhook payload to find the matching connection. The lookup order is:
+Nango uses the `emailAddress` from the webhook payload to find the matching connection (by hashing it internally). The lookup order is:
 
-1. `connection_config.emailAddress` — automatically set by Nango for connections created after 2026-03-11
-2. `metadata.emailAddress` — legacy fallback
+1. `connection_config.emailAddressHash` — automatically set by Nango for new connections (created after 2026-03-11)
+2. `metadata.emailAddress` — fallback (customer-controlled)
+3. `metadata.email` — fallback (customer-controlled)
 
-For **new connections** (created after 2026-03-11), no action is needed. Nango automatically persists the email address at connection time.
+For **new connections** (created after 2026-03-11), no action is needed. Nango automatically persists the email hash at connection time.
 
 For **existing connections** created before this feature was available, you have two options:
 
-- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email address automatically
+- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email hash automatically
 - **Set the metadata manually** via the API:
 
 ```bash
@@ -194,7 +195,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
 
 <Warning>
-If Nango cannot match the incoming webhook to a connection (because neither `connection_config` nor `metadata` contains the email address), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
+If Nango cannot match the incoming webhook to a connection (because it can't find a matching hash/email in `connection_config` or `metadata`), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
 </Warning>
 
 ## Rollback strategy

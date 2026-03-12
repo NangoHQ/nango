@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { hashEmailAddress } from '../../../../utils/pii.js';
+
 import type { InternalNango as Nango } from '../../internal-nango.js';
 
 interface GmailProfileResponse {
@@ -18,5 +20,5 @@ export default async function execute(nango: Nango) {
         return;
     }
 
-    await nango.updateConnectionConfig({ emailAddress: response.data.emailAddress });
+    await nango.updateConnectionConfig({ emailAddressHash: hashEmailAddress(response.data.emailAddress) });
 }

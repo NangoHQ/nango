@@ -6,9 +6,10 @@ import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
 import * as GmailWebhookRouting from './gmail-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
+import { hashEmailAddress } from '../utils/pii.js';
 
 describe('gmailWebhookRouting', () => {
-    it('routes by connection_config.emailAddress first', async () => {
+    it('routes by connection_config.emailAddressHash first', async () => {
         const integration = getTestConfig({ provider: 'google-mail' });
 
         const mock = vi.fn().mockResolvedValue({ connectionIds: ['conn-1'], connectionMetadata: {} });
@@ -30,19 +31,24 @@ describe('gmailWebhookRouting', () => {
         expect(mock).toHaveBeenCalledTimes(1);
         expect(mock).toHaveBeenCalledWith(
             expect.objectContaining({
-                propName: 'emailAddress',
+                propName: 'emailAddressHash',
                 webhookType: 'type',
-                connectionIdentifier: 'emailAddress',
-                body: expect.objectContaining({ type: '*', emailAddress: 'user@example.com' })
+                connectionIdentifier: 'emailAddressHash',
+                body: expect.objectContaining({
+                    type: '*',
+                    emailAddress: 'user@example.com',
+                    emailAddressHash: hashEmailAddress('user@example.com')
+                })
             })
         );
     });
 
-    it('falls back to metadata.emailAddress then metadata.email', async () => {
+    it('falls back to legacy config then metadata', async () => {
         const integration = getTestConfig({ provider: 'google-mail' });
 
         const mock = vi
             .fn()
+            .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} })
             .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} })
             .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} })
             .mockResolvedValueOnce({ connectionIds: ['conn-2'], connectionMetadata: {} });
@@ -62,7 +68,7 @@ describe('gmailWebhookRouting', () => {
         await GmailWebhookRouting.default(nangoMock as unknown as InternalNango, {}, body as any, '');
 
         expect(mock).toHaveBeenCalledTimes(3);
-        expect(mock).toHaveBeenNthCalledWith(1, expect.objectContaining({ propName: 'emailAddress' }));
+        expect(mock).toHaveBeenNthCalledWith(1, expect.objectContaining({ propName: 'emailAddressHash' }));
         expect(mock).toHaveBeenNthCalledWith(2, expect.objectContaining({ propName: 'metadata.emailAddress' }));
         expect(mock).toHaveBeenNthCalledWith(3, expect.objectContaining({ propName: 'metadata.email' }));
     });
