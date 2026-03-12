@@ -21,7 +21,7 @@ Checkpoints solve this by tracking how far your sync has progressed. The benefit
 
 # Function interruption and resumption
 
-By default, functions have a capped execution duration. When a function reaches the limit, Nango interrupts it gracefully and schedules the next execution to start immediately.
+Nango reserves the right to cap the duration of a function execution. When an execution reaches the limit, Nango interrupts it gracefully and schedules the next execution to start immediately.
 
 Checkpoints are what make this seamless: the next execution should call `getCheckpoint()` and resumes from where the previous one stopped. **Without checkpoints, each execution starts from scratch**, meaning any function that takes longer than the execution cap will loop indefinitely without ever completing.
 
