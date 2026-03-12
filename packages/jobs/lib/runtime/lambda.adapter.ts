@@ -68,13 +68,15 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         if (params.skipIfExists) {
             try {
                 const head = await s3.send(new HeadObjectCommand({ Bucket: params.bucket, Key: params.key }));
-                return {
-                    kind: 's3' as const,
-                    bucket: params.bucket,
-                    key: params.key,
-                    ...(head.VersionId && { versionId: head.VersionId }),
-                    ...(head.ETag && { etag: head.ETag.replace(/"/g, '') })
-                };
+                if (head.LastModified && head.LastModified.getTime() > Date.now() - envs.LAMBDA_PAYLOAD_MAX_AGE_MS) {
+                    return {
+                        kind: 's3' as const,
+                        bucket: params.bucket,
+                        key: params.key,
+                        ...(head.VersionId && { versionId: head.VersionId }),
+                        ...(head.ETag && { etag: head.ETag.replace(/"/g, '') })
+                    };
+                }
             } catch {
                 // fall through to put
             }
@@ -136,7 +138,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         });
     }
 
-    private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<string> {
+    private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<string>> {
         const payload = {
             taskId: params.taskId,
             nangoProps: params.nangoProps,
@@ -144,16 +146,22 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             codeParams: params.codeParams
         };
         const payloadString = JSON.stringify(payload);
-        if (Buffer.byteLength(payloadString, 'utf-8') > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
+        const payloadSize = Buffer.byteLength(payloadString, 'utf8');
+        if (payloadSize > envs.LAMBDA_PAYLOAD_LIMIT_BYTES) {
+            return Err(new Error(`Payload size exceeds limit: ${payloadSize} bytes > ${envs.LAMBDA_PAYLOAD_LIMIT_BYTES} bytes`));
+        }
+        if (payloadSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
             const [codeRef, codeParamsRef] = await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)]);
-            return JSON.stringify({
-                taskId: params.taskId,
-                nangoProps: params.nangoProps,
-                codeRef: codeRef,
-                codeParamsRef: codeParamsRef
-            });
+            return Ok(
+                JSON.stringify({
+                    taskId: params.taskId,
+                    nangoProps: params.nangoProps,
+                    codeRef: codeRef,
+                    codeParamsRef: codeParamsRef
+                })
+            );
         } else {
-            return payloadString;
+            return Ok(payloadString);
         }
     }
 
@@ -162,9 +170,12 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             const func = await this.getFunction(params.nangoProps);
 
             const payload = await this.preparePayload(params);
+            if (payload.isErr()) {
+                return Err(new Error(`Failed to prepare payload`, { cause: payload.error }));
+            }
             const command = new InvokeCommand({
                 FunctionName: func.arn,
-                Payload: payload,
+                Payload: payload.value,
                 //InvocationType is Event for async invocation, RequestResponse for sync invocation
                 InvocationType: 'Event'
             });

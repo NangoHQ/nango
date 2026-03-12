@@ -151,6 +151,9 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
     }, heartbeatIntervalMs);
     try {
         const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
+        if (code === '') {
+            throw new Error('No code found');
+        }
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },
             code,

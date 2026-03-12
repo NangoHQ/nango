@@ -427,6 +427,14 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(1024 * 1024), // 1MB
+    LAMBDA_PAYLOAD_LIMIT_BYTES: z.coerce
+        .number()
+        .optional()
+        .default(1024 * 1024 * 100), // 100MB
+    LAMBDA_PAYLOAD_MAX_AGE_MS: z.coerce
+        .number()
+        .optional()
+        .default(1000 * 60 * 60 * 24 * 29), // 29 days (1 less than lifecycle policy)
     // WEBHOOK DELIVERY CIRCUIT BREAKER
     NANGO_WEBHOOK_TIMEOUT_MS: z.coerce.number().optional().default(20_000),
     NANGO_WEBHOOK_RETRY_ATTEMPTS: z.coerce.number().optional().default(2),
