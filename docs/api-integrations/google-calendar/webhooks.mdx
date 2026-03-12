@@ -164,7 +164,7 @@ With webhooks driving real-time updates, you can run syncs less often (e.g. `1d`
 
 ## Connection matching
 
-Nango uses the `emailAddress` from the webhook payload to find the matching connection. The lookup order is:
+Nango matches the incoming request to a connection using the calendar identifier (email) extracted from `X-Goog-Resource-URI` (e.g. `.../calendars/user@example.com/events...`). The lookup order is:
 
 1. `connection_config.emailAddressHash` — automatically set by Nango for new connections (created after 2026-03-11)
 2. `metadata.emailAddress` — fallback (customer-controlled)
@@ -183,7 +183,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
   -H "Content-Type: application/json" \
   -d '{
     "connection_id": "<CONNECTION_ID>",
-    "provider_config_key": "google-mail",
+    "provider_config_key": "google-calendar",
     "metadata": {"emailAddress": "<USER_EMAIL>"}
   }'
 ```
