@@ -52,10 +52,10 @@ function getNangoHost() {
 }
 
 async function getCode(request: zod.infer<typeof requestSchema>): Promise<string> {
-    if (request.code) {
+    if ('code' in request && request.code) {
         return request.code;
     }
-    if (request.codeRef) {
+    if ('codeRef' in request && request.codeRef) {
         const response = await s3.send(
             new GetObjectCommand({
                 Bucket: request.codeRef.bucket,
@@ -71,7 +71,7 @@ async function getCode(request: zod.infer<typeof requestSchema>): Promise<string
 
 async function deleteCodeParams(request: zod.infer<typeof requestSchema>): Promise<void> {
     try {
-        if (request.codeParamsRef) {
+        if ('codeParamsRef' in request && request.codeParamsRef) {
             await s3.send(
                 new DeleteObjectCommand({
                     Bucket: request.codeParamsRef.bucket,
@@ -86,10 +86,10 @@ async function deleteCodeParams(request: zod.infer<typeof requestSchema>): Promi
 }
 
 async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<object> {
-    if (request.codeParams) {
+    if ('codeParams' in request && request.codeParams) {
         return request.codeParams;
     }
-    if (request.codeParamsRef) {
+    if ('codeParamsRef' in request && request.codeParamsRef) {
         const response = await s3.send(
             new GetObjectCommand({
                 Bucket: request.codeParamsRef.bucket,
@@ -168,6 +168,24 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
             telemetryBag,
             checkpoints,
             ...(execRes.isErr() ? { error: execRes.error.toJSON() } : { output: execRes.value.output as any })
+        });
+    } catch (err: any) {
+        await jobsClient.putTask({
+            taskId: request.taskId,
+            error: {
+                type: 'function_internal_error',
+                payload: {
+                    message: err.message as string
+                },
+                status: 500
+            },
+            telemetryBag: {
+                customLogs: 0,
+                proxyCalls: 0,
+                durationMs: Date.now() - startTime,
+                memoryGb: Number(context.memoryLimitInMB) / 1024
+            },
+            functionRuntime: 'lambda'
         });
     } finally {
         clearInterval(heartbeat);

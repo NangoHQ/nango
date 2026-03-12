@@ -48,12 +48,12 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         };
     }
 
-    private getPayloadsBucket(): string {
+    private getPayloadsBucket(): Result<string> {
         const bucket = envs.LAMBDA_PAYLOADS_BUCKET_NAME;
         if (!bucket) {
-            throw new Error('LAMBDA_PAYLOADS_BUCKET_NAME is not set');
+            return Err(new Error('LAMBDA_PAYLOADS_BUCKET_NAME is not set'));
         }
-        return bucket;
+        return Ok(bucket);
     }
 
     private async uploadToS3(params: {
@@ -72,8 +72,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                     kind: 's3' as const,
                     bucket: params.bucket,
                     key: params.key,
-                    ...(head.VersionId !== undefined && { versionId: head.VersionId }),
-                    ...(head.ETag !== undefined && { etag: head.ETag.replace(/"/g, '') })
+                    ...(head.VersionId && { versionId: head.VersionId }),
+                    ...(head.ETag && { etag: head.ETag.replace(/"/g, '') })
                 };
             } catch {
                 // fall through to put
@@ -86,23 +86,27 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 Body: params.body,
                 ContentType: params.contentType,
                 ...(params.contentEncoding && { ContentEncoding: params.contentEncoding }),
-                Tagging: params.tagging
+                ...(params.tagging && { Tagging: params.tagging })
             })
         );
         return {
             kind: 's3' as const,
             bucket: params.bucket,
             key: params.key,
-            ...(put.VersionId !== undefined && { versionId: put.VersionId }),
-            ...(put.ETag !== undefined && { etag: put.ETag.replace(/"/g, '') })
+            ...(put.VersionId && { versionId: put.VersionId }),
+            ...(put.ETag && { etag: put.ETag.replace(/"/g, '') })
         };
     }
 
-    private async uploadCode(params: { taskId: string; nangoProps: NangoProps; code: string }): Promise<S3ObjectRef> {
-        const bucket = this.getPayloadsBucket();
+    private async uploadCode(params: { nangoProps: NangoProps; code: string }): Promise<S3ObjectRef> {
+        const bucketResult = this.getPayloadsBucket();
+        if (bucketResult.isErr()) {
+            throw new Error(`Failed to get payloads bucket`, { cause: bucketResult.error });
+        }
+        const bucket = bucketResult.value;
         const body = gzipSync(Buffer.from(params.code, 'utf8'));
         const hash = createHash('sha256').update(params.code).digest('hex');
-        const key = `environments/${params.nangoProps.environmentId}/function-code/${hash}.cjs.gz`;
+        const key = `accounts/${params.nangoProps.team.id}/environments/${params.nangoProps.environmentId}/function-code/${hash}.cjs.gz`;
         return this.uploadToS3({
             bucket,
             key,
@@ -115,9 +119,13 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     private async uploadCodeParams(params: { taskId: string; nangoProps: NangoProps; codeParams: object }): Promise<S3ObjectRef> {
-        const bucket = this.getPayloadsBucket();
+        const bucketResult = this.getPayloadsBucket();
+        if (bucketResult.isErr()) {
+            throw new Error(`Failed to get payloads bucket`, { cause: bucketResult.error });
+        }
+        const bucket = bucketResult.value;
         const body = gzipSync(Buffer.from(JSON.stringify(params.codeParams), 'utf8'));
-        const key = `environments/${params.nangoProps.environmentId}/function-params/${params.taskId}/codeParams.json.gz`;
+        const key = `accounts/${params.nangoProps.team.id}/environments/${params.nangoProps.environmentId}/function-params/${params.taskId}/codeParams.json.gz`;
         return this.uploadToS3({
             bucket,
             key,
@@ -145,7 +153,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 codeParamsRef: codeParamsRef
             });
         } else {
-            return JSON.stringify(payload);
+            return payloadString;
         }
     }
 
