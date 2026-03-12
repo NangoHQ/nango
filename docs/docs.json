@@ -171,6 +171,7 @@
                   "implementation-guides/platform/auth/share-connect-link",
                   "implementation-guides/platform/auth/connection-tags",
                   "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/connect-ui-i18n",
                   "implementation-guides/platform/auth/contribute-new-api"
                 ]
               },

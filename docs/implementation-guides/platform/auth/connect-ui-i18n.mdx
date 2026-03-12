@@ -1,0 +1,80 @@
+---
+title: 'Connect UI internationalization'
+sidebarTitle: 'Internationalization (i18n)'
+description: 'Configure Connect UI to display in your users preferred language.'
+---
+
+Connect UI supports multiple languages to provide a localized experience for your users.
+
+## Supported languages
+
+Connect UI currently supports the following languages:
+
+| Language | Code |
+|----------|------|
+| English | `en` |
+| French | `fr` |
+| German | `de` |
+| Spanish | `es` |
+
+## Setting the language
+
+You can explicitly set the language when opening Connect UI using the `lang` parameter:
+
+```ts
+const connectUI = nango.openConnectUI({
+    sessionToken: 'SESSION_TOKEN',
+    lang: 'fr' // Display Connect UI in French
+});
+```
+
+**Parameters**
+
+<ResponseField name="lang" type="string">
+  The language code to use for the UI. Accepts `en`, `fr`, `de`, or `es`.
+</ResponseField>
+
+## Automatic browser detection
+
+When no `lang` parameter is provided, Connect UI automatically detects and uses the user's browser language preference.
+
+```ts
+// Language will be automatically detected from the user's browser
+const connectUI = nango.openConnectUI({
+    sessionToken: 'SESSION_TOKEN'
+});
+```
+
+## Fallback behavior
+
+If the detected or specified language is not supported, Connect UI falls back to English (`en`).
+
+The fallback order is:
+1. Explicitly set `lang` parameter (if supported)
+2. User's browser language preference (if supported)
+3. English (default)
+
+## Example implementation
+
+```ts
+import Nango from '@nangohq/frontend';
+
+const nango = new Nango({ connectSessionToken: '<CONNECT-SESSION-TOKEN>' });
+
+// Open Connect UI with explicit French language
+const connectUI = nango.openConnectUI({
+    sessionToken: 'SESSION_TOKEN',
+    lang: 'de'
+});
+
+// Listen for connection events
+connectUI.onEvent((event) => {
+    if (event.type === 'connect') {
+        console.log('Connection created:', event.payload);
+    }
+});
+```
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
