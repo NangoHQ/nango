@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { envs } from '@nangohq/logs';
-import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
+import { disableScriptConfig, getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -276,6 +276,118 @@ describe(`POST ${endpoint}`, () => {
             // Check that everything was inserted in DB
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
             expect(syncConfigs).toBeNull();
+        });
+
+        it('should delete a disabled action when a same-named sync is still deployed', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            const sharedJsonSchema = {
+                definitions: {
+                    SharedSyncInput: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },
+                    SharedSyncOutput: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false },
+                    SharedActionInput: { type: 'object', properties: { slug: { type: 'string' } }, required: ['slug'], additionalProperties: false },
+                    SharedActionOutput: { type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: false }
+                }
+            };
+
+            const initialDeploy = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    debug: false,
+                    flowConfigs: [
+                        {
+                            syncName: 'shared',
+                            fileBody: { js: 'js file', ts: 'ts file' },
+                            providerConfigKey: 'unauthenticated',
+                            endpoints: [{ method: 'GET', path: '/shared' }],
+                            runs: 'every day',
+                            type: 'sync',
+                            attributes: {},
+                            auto_start: false,
+                            metadata: { description: 'shared sync' },
+                            sync_type: 'full',
+                            track_deletes: false,
+                            input: 'SharedSyncInput',
+                            models: ['SharedSyncOutput'],
+                            models_json_schema: sharedJsonSchema
+                        },
+                        {
+                            syncName: 'shared',
+                            fileBody: { js: 'js file', ts: 'ts file' },
+                            providerConfigKey: 'unauthenticated',
+                            endpoints: [],
+                            runs: '',
+                            type: 'action',
+                            attributes: {},
+                            metadata: { description: 'shared action' },
+                            input: 'SharedActionInput',
+                            models: ['SharedActionOutput'],
+                            models_json_schema: sharedJsonSchema
+                        }
+                    ],
+                    nangoYamlBody: '',
+                    onEventScriptsByProvider: [],
+                    reconcile: true,
+                    singleDeployMode: false,
+                    sdkVersion: '0.61.3-zero'
+                }
+            });
+
+            isSuccess(initialDeploy.json);
+            expect(initialDeploy.res.status).toBe(200);
+
+            const deployedConfig = await getSyncConfigsAsStandardConfig(env.id, 'unauthenticated');
+            expect(deployedConfig).not.toBeNull();
+            expect(deployedConfig?.syncs).toHaveLength(1);
+            expect(deployedConfig?.actions).toHaveLength(1);
+
+            const actionId = deployedConfig?.actions[0]?.id;
+            expect(actionId).toBeDefined();
+            if (actionId === undefined) {
+                throw new Error('Expected deployed action to have an id');
+            }
+            await disableScriptConfig({ id: actionId, environmentId: env.id });
+
+            const secondDeploy = await api.fetch(endpoint, {
+                method: 'POST',
+                token: secret.secret,
+                body: {
+                    debug: false,
+                    flowConfigs: [
+                        {
+                            syncName: 'shared',
+                            fileBody: { js: 'updated js file', ts: 'updated ts file' },
+                            providerConfigKey: 'unauthenticated',
+                            endpoints: [{ method: 'GET', path: '/shared' }],
+                            runs: 'every day',
+                            type: 'sync',
+                            attributes: {},
+                            auto_start: false,
+                            metadata: { description: 'shared sync' },
+                            sync_type: 'full',
+                            track_deletes: false,
+                            input: 'SharedSyncInput',
+                            models: ['SharedSyncOutput'],
+                            models_json_schema: sharedJsonSchema
+                        }
+                    ],
+                    nangoYamlBody: '',
+                    onEventScriptsByProvider: [],
+                    reconcile: true,
+                    singleDeployMode: false,
+                    sdkVersion: '0.61.3-zero'
+                }
+            });
+
+            isSuccess(secondDeploy.json);
+            expect(secondDeploy.res.status).toBe(200);
+
+            const remainingConfig = await getSyncConfigsAsStandardConfig(env.id, 'unauthenticated');
+            expect(remainingConfig).not.toBeNull();
+            expect(remainingConfig?.syncs.map((sync) => sync.name)).toStrictEqual(['shared']);
+            expect(remainingConfig?.actions).toStrictEqual([]);
         });
     });
 
