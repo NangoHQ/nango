@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { NangoActionMock } from './utils.js';
+import { NangoActionMock, NangoSyncMock } from './utils.js';
 
 async function withMigrateMocksEnv<T>(value: string | undefined, fn: () => Promise<T>): Promise<T> {
     const previous = process.env['MIGRATE_MOCKS'];
@@ -326,5 +326,30 @@ describe('UnifiedFixtureProvider matching behavior', () => {
         expect(noParams.data).toEqual({ ok: true });
 
         await expect(nangoMock.get({ endpoint: '/foo', params: { q: '1' } })).rejects.toThrow('No mock found for GET foo');
+    });
+});
+
+describe('NangoSyncMock checkpoint behavior', () => {
+    it('stores and clears checkpoints in memory', async () => {
+        const testsDir = await createTestDir('nango-sync-checkpoint-');
+        const nangoMock = new NangoSyncMock({
+            dirname: testsDir,
+            name: 'checkpoint',
+            Model: 'CheckpointModel'
+        });
+
+        expect(await nangoMock.getCheckpoint()).toBeNull();
+
+        const checkpoint = {
+            cursor: 'next-page',
+            page: 2,
+            done: false
+        };
+
+        await nangoMock.saveCheckpoint(checkpoint);
+        expect(await nangoMock.getCheckpoint()).toEqual(checkpoint);
+
+        await nangoMock.clearCheckpoint();
+        expect(await nangoMock.getCheckpoint()).toBeNull();
     });
 });

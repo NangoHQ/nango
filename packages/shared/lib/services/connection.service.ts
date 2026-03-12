@@ -645,18 +645,28 @@ class ConnectionService {
         return newConfig;
     }
 
-    public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
+    public async findConnectionsByConnectionConfigValue(
+        key: string,
+        value: string,
+        environmentId: number,
+        configId?: number
+    ): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId })
+            .modify((query) => {
+                if (typeof configId === 'number') {
+                    query.andWhere({ config_id: configId });
+                }
+            })
             .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
 
         if (!result || result.length == 0) {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => encryptionManager.decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -678,8 +688,9 @@ class ConnectionService {
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId, config_id: configId })
-            // escape the question mark so it doesn't try to bind it as a parameter
-            .where(db.knex.raw(`metadata->? \\? ?`, [metadataProperty, payloadIdentifier]))
+            // Match both scalar values (metadata.key === value) and set-like values (metadata.key contains value).
+            // We escape the question mark so it doesn't try to bind it as a parameter.
+            .where(db.knex.raw(`(metadata->>? = ? OR metadata->? \\? ?)`, [metadataProperty, payloadIdentifier, metadataProperty, payloadIdentifier]))
             .andWhere('deleted', false);
 
         if (!result || result.length == 0) {
