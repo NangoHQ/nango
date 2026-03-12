@@ -16478,6 +16478,30 @@ tldv:
             description: The API key for your tl;dv account
             doc_section: '#step-1-finding-your-api-key'
 
+trigify-io-mcp:
+    display_name: Trigify IO (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://clerk.trigify.io/oauth/authorize
+    token_url: https://clerk.trigify.io/oauth/token
+    registration_url: https://clerk.trigify.io/oauth/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.trigify.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
+
 tsheetsteam:
     display_name: TSheets
     categories:
