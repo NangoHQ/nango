@@ -89,8 +89,8 @@ export async function compileAllFunctions({
         spinner.succeed();
 
         // Build and export the definitions
-        spinner = spinnerFactory.start('Exporting definitions');
-        const def = await buildDefinitions({ fullPath, debug });
+        spinner = spinnerFactory.start('Generating artifacts');
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
             console.log('');

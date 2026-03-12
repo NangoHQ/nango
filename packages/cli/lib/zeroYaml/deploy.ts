@@ -137,7 +137,12 @@ export async function deploy({
     }
 }
 
-async function createPackage({
+/**
+ * Maps NangoYamlParsed (which is a list of integrations and its function definitions) into the shape expected by the API,
+ * while also loading the content of the related script files.
+ * It also supports filtering by integration, sync or action name for single deploys.
+ */
+async function createDeployConfirmationPackage({
     parsed,
     fullPath,
     debug,
