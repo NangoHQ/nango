@@ -123,7 +123,35 @@ export default createSync({
 });
 ```
 
-### 6. Handle forwarded webhooks
+### 6. Stop the watch subscription on connection deletion
+
+If a connection is deleted in Nango but the Gmail watch remains active, Google may continue sending notifications for that mailbox until the watch expires. To stop notifications immediately for a deleted connection, call Gmail's [`users.stop`](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users/stop) endpoint before deletion.
+
+You can automate this with a `pre-connection-deletion` lifecycle event:
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Stop Gmail watch subscription before connection deletion',
+    exec: async (nango) => {
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/gmail',
+            endpoint: '/v1/users/me/stop'
+        };
+
+        try {
+            await nango.post(config);
+        } catch (err) {
+            // Avoid blocking connection deletion if stop fails.
+            await nango.log(`Failed to stop Gmail watch subscription: ${String(err)}`);
+        }
+    }
+});
+```
+
+### 7. Handle forwarded webhooks
 
 When a Gmail notification arrives, Nango matches it to the correct connection and forwards it to your system. The forwarded payload looks like this:
 
@@ -165,6 +193,12 @@ curl -X POST "https://api.nango.dev/sync/trigger" \
 ```
 
 With webhooks triggering syncs in real time, you can reduce your sync frequency to a lower value (`1d`/`1h`) just to act as a safety net for any missed webhooks.
+
+<Note>
+If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`. For Gmail, subscribe to `'*'` and decode `payload.message.data` to get `historyId`.
+
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+</Note>
 
 ## Connection matching
 

@@ -162,6 +162,12 @@ curl -X POST "https://api.nango.dev/sync/trigger" \
 
 With webhooks driving real-time updates, you can run syncs less often (e.g. `1d` or `1h`) as a safety net for missed notifications.
 
+<Note>
+If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`. For Google Calendar, subscribe to `'*'` and use the forwarded headers (e.g. `x-goog-resource-state`, `x-goog-resource-uri`) to decide what to fetch.
+
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+</Note>
+
 ## Connection matching
 
 Nango matches the incoming request to a connection using the calendar identifier (email) extracted from `X-Goog-Resource-URI` (e.g. `.../calendars/user@example.com/events...`). The lookup order is:
@@ -174,7 +180,7 @@ For **new connections** (created after 2026-03-11), no action is needed. Nango a
 
 For **existing connections** created before this feature was available, you have two options:
 
-- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email address automatically
+- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email hash automatically
 - **Set the metadata manually** via the API:
 
 ```bash
@@ -191,10 +197,48 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
 
 <Warning>
-If Nango cannot match the incoming webhook to a connection (because neither `connection_config` nor `metadata` contains the email address), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
+If Nango cannot match the incoming webhook to a connection (because it can't find a matching hash/email in `connection_config` or `metadata`), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
 </Warning>
 
 ## Stop notifications
+
+If a connection is deleted in Nango but the channel remains active, Google may continue sending notifications until the channel expires. To stop notifications immediately for a deleted connection, call `channels.stop` before deletion.
+
+You can automate this with a `pre-connection-deletion` lifecycle event (this expects `googleCalendarChannelId` and `googleCalendarResourceId` to be present in connection metadata):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Stop Google Calendar notification channel before connection deletion',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const channelId = metadata['googleCalendarChannelId'];
+        const resourceId = metadata['googleCalendarResourceId'];
+
+        if (!channelId || !resourceId) {
+            return;
+        }
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/calendar',
+            endpoint: '/v3/channels/stop',
+            data: {
+                id: channelId,
+                resourceId
+            }
+        };
+
+        try {
+            await nango.post(config);
+        } catch (err) {
+            // Avoid blocking connection deletion if stop fails.
+            await nango.log(`Failed to stop Calendar channel: ${String(err)}`);
+        }
+    }
+});
+```
 
 To stop receiving notifications before the channel expires, call the [channels.stop](https://developers.google.com/workspace/calendar/api/guides/push#stop-notifications) method with the channel `id` and `resourceId` returned when you created the channel:
 
