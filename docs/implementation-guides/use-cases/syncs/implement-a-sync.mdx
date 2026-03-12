@@ -44,12 +44,7 @@ If you are using a pre-built reference implementation sync, you can [skip to usi
 
 ### Checkpoints
 
-Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are the foundation for **incremental syncing**, the recommended approach for any non-trivial dataset.
-
-| Approach | Description | Best for |
-|----------|-------------|----------|
-| **With checkpoints** | Saves progress (e.g., last page, cursor, timestamp) and resumes from there | Large datasets; APIs that support filtering by date or cursor |
-| **Without checkpoints** | Fetches the entire dataset on each run | Small datasets; APIs without filtering support |
+Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are what make syncs **resilient to failures** and enable **incremental syncing**, the recommended approach for any non-trivial dataset.
 
 Define a `checkpoint` schema in your sync to enable checkpoint support.
 

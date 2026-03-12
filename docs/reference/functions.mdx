@@ -824,7 +824,7 @@ await nango.saveCheckpoint({ cursor: nextCursor });
 
 #### clearCheckpoint()
 
-Clears the checkpoint. Rarely needed as checkpoints are automatically cleared when triggering a sync with `reset: true`.
+Clears the checkpoint. Use at the end of a full sync so the next run starts from the first page. Checkpoints are also automatically cleared when triggering a sync with `reset: true`.
 
 ```ts
 await nango.clearCheckpoint();
