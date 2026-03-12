@@ -491,7 +491,9 @@ export const getAndReconcileDifferences = async ({
                 continue;
             }
 
-            const flow = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            const flow = flows.find(
+                (sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key && sync.type === existingSync.type
+            );
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
 
             if (!flow) {
