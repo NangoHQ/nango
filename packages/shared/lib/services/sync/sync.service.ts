@@ -352,8 +352,8 @@ export const getAndReconcileDifferences = async ({
     flows,
     performAction,
     debug = false,
-    singleDeployMode = false,
-    deployedProviderConfigKeys,
+    deployMode = 'all',
+    deployedProviderConfigKey,
     logCtx,
     logContextGetter,
     orchestrator
@@ -362,8 +362,8 @@ export const getAndReconcileDifferences = async ({
     flows: CLIDeployFlowConfig[];
     performAction: boolean;
     debug?: boolean | undefined;
-    singleDeployMode?: boolean | undefined;
-    deployedProviderConfigKeys?: string[] | undefined;
+    deployMode?: 'all' | 'single' | 'integration' | undefined;
+    deployedProviderConfigKey?: string | undefined;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -485,9 +485,9 @@ export const getAndReconcileDifferences = async ({
     const deletedActions: SlimAction[] = [];
     const deletedModels: string[] = [];
 
-    if (!singleDeployMode) {
+    if (deployMode !== 'single') {
         for (const existingSync of existingSyncs) {
-            if (deployedProviderConfigKeys && !deployedProviderConfigKeys.includes(existingSync.unique_key)) {
+            if (deployedProviderConfigKey && deployedProviderConfigKey !== existingSync.unique_key) {
                 continue;
             }
 

@@ -151,14 +151,18 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        singleDeployMode: z.boolean().optional().default(false),
-        deployedProviderConfigKeys: z.array(z.string()).optional(),
+        deployMode: z.enum(['all', 'single', 'integration']).optional().default('all'),
+        deployedProviderConfigKey: z.string().optional(),
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
             .optional()
     })
-    .strict();
+    .strict()
+    .refine((data) => !(data.deployMode === 'integration' && !data.deployedProviderConfigKey), {
+        message: 'deployedProviderConfigKey is required when deployMode is "integration"',
+        path: ['deployedProviderConfigKey']
+    });
 
 export const validation = commonValidation.transform((data) => {
     return {
