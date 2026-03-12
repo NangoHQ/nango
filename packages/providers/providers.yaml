@@ -10068,6 +10068,8 @@ microsoft-oauth2-cc:
         base_url: https://graph.microsoft.com
     webhook_routing_script: microsoftClientCredentialsWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc/connect
     connection_config:

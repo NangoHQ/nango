@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { accountService, configService, getPlan } from '@nangohq/shared';
+import { accountService, configService, getPlan, getProvider } from '@nangohq/shared';
 import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -12,15 +12,6 @@ import { featureFlags } from '../../../utils/utils.js';
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
 
 import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
-
-/**
- * Names of query parameters that are forwarded to webhook routing.
- * Only these parameters are forwarded; all others are ignored for security reasons.
- * By default, query parameters are not passed through: some providers send
- * unverifiable parameters, which are ignored to maintain security,
- * since they generally cannot be included in webhook signatures.
- */
-const ALLOWED_WEBHOOK_QUERY_PARAMS = ['validationToken'];
 
 const paramValidation = z
     .object({
@@ -89,7 +80,13 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            const queryFiltered = ALLOWED_WEBHOOK_QUERY_PARAMS.reduce<Record<string, string>>((acc, name) => {
+            const provider = getProvider(integration.provider);
+
+            // Query params are blocked by default — providers may include unverifiable params
+            // that can't be covered by webhook signatures. Only params explicitly listed in
+            // `webhook_allowed_query_params` (provider config) are forwarded.
+            const allowedQueryParams = provider?.webhook_allowed_query_params ?? [];
+            const queryFiltered = allowedQueryParams.reduce<Record<string, string>>((acc, name) => {
                 const v = req.query[name];
                 if (v) acc[name] = typeof v === 'string' ? v : String(v);
                 return acc;

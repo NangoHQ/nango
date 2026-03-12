@@ -1,3 +1,4 @@
+import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
@@ -36,7 +37,7 @@ const route: WebhookHandler<MicrosoftNotificationPayload> = async (nango, _heade
     const validNotifications = expectedClientState ? notifications.filter((n) => n.clientState === expectedClientState) : notifications;
 
     if (validNotifications.length === 0) {
-        return Err('webhook_invalid_client_state');
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const connectionIds = new Set<string>();
@@ -58,7 +59,7 @@ const route: WebhookHandler<MicrosoftNotificationPayload> = async (nango, _heade
         content: { status: 'success' },
         statusCode: 200,
         connectionIds: Array.from(connectionIds),
-        toForward: payload
+        toForward: { value: validNotifications }
     });
 };
 
