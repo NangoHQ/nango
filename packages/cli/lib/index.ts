@@ -168,7 +168,7 @@ program
         };
 
         const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
-        if (check.hasNangoYaml || check.isZeroYaml) {
+        if (check.isZeroYaml) {
             await setupAI();
             console.log(chalk.red(`The path provided is already a Nango integrations folder.`));
             return;
