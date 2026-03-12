@@ -84,7 +84,6 @@ export const flowConfig = z
         webhookSubscriptions: z.array(z.string().max(255)).optional(),
         models_json_schema: z
             .object({
-                $schema: z.literal('http://json-schema.org/draft-07/schema#'),
                 definitions: z.record(z.string(), z.looseObject({}))
             })
             .optional()

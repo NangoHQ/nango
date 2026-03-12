@@ -28,7 +28,6 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         function_logs_max: 10000,
         monthly_actions_max: 10000,
         monthly_active_records_max: 5000,
-        has_sync_variants: false,
         has_otel: false,
         api_rate_limit_size: 'm',
         auto_idle: true,
@@ -44,6 +43,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
         has_records_autopruning: true,
+        variants_per_sync_max: 100,
         ...override
     };
 }

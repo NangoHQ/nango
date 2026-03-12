@@ -68,8 +68,8 @@ export abstract class NangoActionBase<
     scriptType: NangoProps['scriptType'];
     lifecycle?:
         | {
-              interruptAfter?: Date | undefined;
-              killAfter?: Date | undefined;
+              interruptAfter: Date;
+              killAfter: Date;
           }
         | undefined;
 
@@ -142,8 +142,8 @@ export abstract class NangoActionBase<
 
         if (config.lifecycle) {
             this.lifecycle = {
-                interruptAfter: config.lifecycle?.interruptAfterMs ? new Date(Date.now() + config.lifecycle.interruptAfterMs) : undefined,
-                killAfter: config.lifecycle?.killAfterMs ? new Date(Date.now() + config.lifecycle.killAfterMs) : undefined
+                interruptAfter: new Date(Date.now() + config.lifecycle.interruptAfterMs),
+                killAfter: new Date(Date.now() + config.lifecycle.killAfterMs)
             };
         }
     }

@@ -8,11 +8,13 @@ import { envs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
 
+import type { KVStore } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
 export class RunnerMonitor {
     private runnerId: number;
+    private conflictTracking: { tracker: KVStore };
     private tracked = new Map<string, { nangoProps: NangoProps }>();
     private persistClient: PersistClient | null = null;
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
@@ -22,8 +24,9 @@ export class RunnerMonitor {
     private memoryInterval: NodeJS.Timeout | null = null;
     private runnerAccountId: string | null = null;
 
-    constructor({ runnerId }: { runnerId: number }) {
+    constructor({ runnerId, conflictTracking }: { runnerId: number; conflictTracking: { tracker: KVStore } }) {
         this.runnerId = runnerId;
+        this.conflictTracking = conflictTracking;
         this.memoryInterval = this.checkMemoryUsage();
         this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
@@ -39,7 +42,29 @@ export class RunnerMonitor {
         }
     }
 
-    track(nangoProps: NangoProps, taskId: string): void {
+    generateConflictKey(nangoProps: NangoProps): string {
+        return `function:${nangoProps.environmentId}:${nangoProps.scriptType}:${nangoProps.syncId}`;
+    }
+
+    async trackForConflicts(nangoProps: NangoProps, opts = { refresh: false }): Promise<void> {
+        if (nangoProps.scriptType == 'sync') {
+            try {
+                await this.conflictTracking.tracker.set(this.generateConflictKey(nangoProps), '1', {
+                    canOverride: opts.refresh,
+                    ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER
+                });
+            } catch (err) {
+                logger.error('Failed to track sync for conflicts', { error: err });
+                if (err instanceof Error && err.message.includes('set_key_already_exists')) {
+                    throw new Error('Conflicting sync detected');
+                }
+                throw err;
+            }
+        }
+    }
+
+    async track(nangoProps: NangoProps, taskId: string): Promise<void> {
+        await this.trackForConflicts(nangoProps);
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
         if (!this.persistClient) {
@@ -47,7 +72,15 @@ export class RunnerMonitor {
         }
     }
 
-    untrack(taskId: string): void {
+    async untrack(taskId: string): Promise<void> {
+        const nangoProps = this.tracked.get(taskId)?.nangoProps;
+        if (nangoProps && nangoProps.scriptType == 'sync') {
+            try {
+                await this.conflictTracking.tracker.delete(this.generateConflictKey(nangoProps));
+            } catch (err) {
+                logger.error('Failed to untrack sync', { error: err });
+            }
+        }
         this.tracked.delete(taskId);
     }
 
@@ -127,21 +160,6 @@ export class RunnerMonitor {
             }
             this.checkIdle(nextTimeout);
         }, timeoutMs);
-    }
-
-    hasConflictingSync(newTask: NangoProps): boolean {
-        if (newTask.scriptType !== 'sync') {
-            return false;
-        }
-
-        for (const task of this.tracked.values()) {
-            // Should cover sync and sync variant
-            // Webhooks have the same syncId so we allow them to run in parallel
-            if (task.nangoProps.syncId === newTask.syncId && task.nangoProps.scriptType === 'sync') {
-                return true;
-            }
-        }
-        return false;
     }
 }
 

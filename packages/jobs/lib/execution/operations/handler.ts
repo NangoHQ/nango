@@ -54,8 +54,8 @@ export async function handleError({
     functionRuntime: FunctionRuntime;
     checkpoints: CheckpointRange;
 }): Promise<void> {
+    // If the function was aborted, we do nothing as the function's state has already been updated
     if (error.type === 'script_aborted') {
-        // do nothing, the script was aborted and its state already updated
         logger.info(`Script was aborted. Ignoring output.`, {
             taskId,
             syncId: nangoProps.syncId,
@@ -63,6 +63,12 @@ export async function handleError({
             providerConfigKey: nangoProps.providerConfigKey,
             connectionId: nangoProps.connectionId
         });
+        return;
+    }
+
+    // if sync was interrupted gracefully, we consider it a success
+    if (nangoProps.scriptType === 'sync' && error.type === 'execution_interrupted') {
+        await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints, interrupted: true });
         return;
     }
 

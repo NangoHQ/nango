@@ -14,6 +14,7 @@ export type PostDeployConfirmation = Endpoint<{
         debug: boolean;
         singleDeployMode?: boolean;
         deployedProviderConfigKeys?: string[] | undefined;
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };

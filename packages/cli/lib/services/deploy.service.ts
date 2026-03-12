@@ -6,10 +6,10 @@ import chalk from 'chalk';
 import promptly from 'promptly';
 
 import { compileAllFiles, compileSingleFile, getFileToCompile, resolveTsFileLocation } from './compile.service.js';
-import verificationService from './verification.service.js';
 import { enrichHeaders, http, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
+import verificationService from './verification.service.js';
 import { NANGO_VERSION } from '../version.js';
 
 import type { DeployOptions, InternalDeployOptions } from '../types.js';

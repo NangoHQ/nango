@@ -127,7 +127,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                                 <FormItem>
                                     <FormControl>
                                         <InputGroup className="h-11">
-                                            <InputGroupInput placeholder="Name" {...field} aria-invalid={!!fieldState.error} />
+                                            <InputGroupInput placeholder="Name" autoComplete="name" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
                                     <FormMessage />
@@ -141,7 +141,13 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                                 <FormItem>
                                     <FormControl>
                                         <InputGroup className="h-11">
-                                            <InputGroupInput disabled={!!invitation?.email} placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
+                                            <InputGroupInput
+                                                disabled={!!invitation?.email}
+                                                placeholder="Email"
+                                                autoComplete="email"
+                                                {...field}
+                                                aria-invalid={!!fieldState.error}
+                                            />
                                         </InputGroup>
                                     </FormControl>
                                     <FormMessage />

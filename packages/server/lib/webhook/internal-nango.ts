@@ -77,7 +77,8 @@ export class InternalNango {
             connections = await connectionService.findConnectionsByConnectionConfigValue(
                 propName || connectionIdentifier || '',
                 identifierValue,
-                this.environment.id
+                this.environment.id,
+                this.integration.id
             );
         }
 
