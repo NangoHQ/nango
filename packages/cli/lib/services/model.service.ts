@@ -225,7 +225,7 @@ export function generateAdditionalExports({ fullPath, parsed, debug }: { fullPat
 
     console.log(
         chalk.yellow(
-            '[DEPRECATION NOTICE] The generated .nango/schema.ts and .nango/schema.json files are deprecated and will stop being generated in future versions of nango. For access to function types, please export types directly from your code. You can leverage `zod.infer` to generate types from your zod schemas. See the official zod documentation: https://zod.dev/basics?id=inferring-types'
+            'The generated .nango/schema.ts and .nango/schema.json are deprecated and will stop being generated in future versions. For access to function types, please export types directly from your code. You can leverage `zod.infer` to generate types from your zod schemas. See the official zod documentation: https://zod.dev/basics?id=inferring-types'
         )
     );
 }

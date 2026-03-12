@@ -27,7 +27,7 @@ import { MissingArgumentError } from './utils/errors.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
-import { buildDefinitions } from './zeroYaml/definitions.js';
+import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';
 import { deploy } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
@@ -207,7 +207,7 @@ program
 
             let integrations: string[] = [];
 
-            const definitions = await buildDefinitions({ fullPath: absolutePath, debug: debug });
+            const definitions = await parseIntegrationDefinitions({ fullPath: absolutePath, debug: debug });
             if (definitions.isOk()) {
                 integrations = definitions.value.integrations.flatMap((i) => i.providerConfigKey);
             } else {
@@ -314,7 +314,7 @@ program
             const ensure = new Ensure(interactive);
             environment = await ensure.environment(environment, debug);
 
-            const definitions = await buildDefinitions({ fullPath, debug });
+            const definitions = await parseIntegrationDefinitions({ fullPath, debug });
             if (definitions.isErr()) {
                 console.error(chalk.red('Could not build function definitions to select from.'));
                 process.exit(1);
@@ -524,7 +524,7 @@ program
             return;
         }
 
-        const def = await buildDefinitions({ fullPath, debug });
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             console.log('');
             console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));

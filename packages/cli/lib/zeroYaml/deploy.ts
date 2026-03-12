@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
-import { buildDefinitions } from './definitions.js';
+import { parseIntegrationDefinitions } from './definitions.js';
 import { ReadableError } from './utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
@@ -45,8 +45,7 @@ export async function deploy({
     let pkg: Package;
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
-        // Prepare retro-compat json
-        const def = await buildDefinitions({ fullPath, debug });
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinnerPackage.fail();
             console.log('');
@@ -54,8 +53,7 @@ export async function deploy({
             return Err(def.error);
         }
 
-        // Create deploy package
-        const postData = await createPackage({
+        const postData = await createDeployConfirmationPackage({
             parsed: def.value,
             fullPath,
             debug,

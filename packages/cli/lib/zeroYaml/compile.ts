@@ -8,7 +8,7 @@ import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { buildDefinitions } from './definitions.js';
+import { parseIntegrationDefinitions } from './definitions.js';
 import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
