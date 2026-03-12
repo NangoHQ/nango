@@ -1,0 +1,81 @@
+---
+title: 'Telegram'
+sidebarTitle: 'Telegram'
+description: 'Integrate your application with the Telegram Bot API'
+---
+
+## 🚀 Quickstart
+
+Connect to Telegram with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Telegram_.
+    </Step>
+    <Step title="Authorize Telegram">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Bot Token from @BotFather. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Telegram Bot API">
+    Make your first request to the Telegram Bot API (e.g. get bot info). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/getMe" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/getMe',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production Bot Token, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Telegram Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Telegram account?](/api-integrations/telegram/connect)  
+Learn how to obtain your Telegram Bot Token and link your account.
+
+Official docs: [Telegram Bot API](https://core.telegram.org/bots/api)
+
+## 🧩 Pre-built syncs & actions for Telegram
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/telegram/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

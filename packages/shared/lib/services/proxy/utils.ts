@@ -234,7 +234,10 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
     const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
+    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+        ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
+        ...connection.credentials
+    });
 
     let url = new URL(fullEndpoint);
     if (config.params) {
