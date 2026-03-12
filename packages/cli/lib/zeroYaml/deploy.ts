@@ -26,10 +26,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<
-    PostDeployConfirmation['Body'],
-    'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode' | 'deployedProviderConfigKeys' | 'jsonSchema'
->;
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode' | 'deployedProviderConfigKeys'>;
 
 export async function deploy({
     fullPath,
@@ -277,7 +274,6 @@ async function createPackage({
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        jsonSchema,
         singleDeployMode,
         deployedProviderConfigKeys
     });
