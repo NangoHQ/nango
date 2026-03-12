@@ -3,8 +3,6 @@ import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
-import { Err, Ok } from '../utils/result.js';
-import { printDebug } from '../utils.js';
 import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
 import {
@@ -16,6 +14,8 @@ import {
     TrackDeletesDefinitionError
 } from './utils.js';
 import { zodToNangoModelField } from './zodToNango.js';
+import { Err, Ok } from '../utils/result.js';
+import { printDebug } from '../utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';

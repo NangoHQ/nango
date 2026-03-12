@@ -1630,6 +1630,59 @@ auvik:
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
+avanan:
+    display_name: Avanan
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://${connectionConfig.subdomain}.avanan.net/v1.0/auth
+    token_headers:
+        x-av-app-id: ${credentials.appId}
+        x-av-req-id: ${random}
+        x-av-date: '${now:YYYY-MM-DDTHH:mm:ss}'
+        x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
+    token_response:
+        token: ''
+    token_expires_in_ms: 86400000
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.avanan.net
+        headers:
+            x-av-app-id: ${credentials.appId}
+            x-av-token: ${accessToken}
+            x-av-req-id: ${random}
+            x-av-date: '${now:YYYY-MM-DDTHH:mm:ss}'
+            x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${endpoint}${credentials.secretKey})})}'
+    docs: https://nango.dev/docs/api-integrations/avanan
+    docs_connect: https://nango.dev/docs/api-integrations/avanan/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The Avanan API subdomain for your region.
+            example: smart-api-production-1-us
+            suffix: .avanan.net
+            prefix: https://
+            pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        appId:
+            type: string
+            title: Client ID
+            description: Your Avanan Client ID from Avanan Support.
+            example: 9k8m****************ht3w
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-getting-your-client-id-and-secret-key'
+        secretKey:
+            type: string
+            title: Secret Key
+            description: Your Avanan Secret Key from Avanan Support.
+            example: 3k9t****************************0uj5gtrpqlz8x2nvy
+            pattern: '^[a-z0-9]+$'
+            secret: true
+            doc_section: '#step-2-getting-your-client-id-and-secret-key'
+
 availity:
     display_name: Availity
     categories:
@@ -16094,6 +16147,30 @@ teamwork:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://nango.dev/docs/integrations/all/teamwork
 
+telegram:
+    display_name: Telegram
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.telegram.org/bot${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /getMe
+    docs: https://nango.dev/docs/api-integrations/telegram
+    docs_connect: https://nango.dev/docs/api-integrations/telegram/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Bot Token
+            description: Your Telegram Bot token from @BotFather.
+            example: 1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ1234567
+            pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-creating-your-telegram-bot'
+
 terraform:
     display_name: Terraform
     categories:
@@ -16400,6 +16477,30 @@ tldv:
             title: API Key
             description: The API key for your tl;dv account
             doc_section: '#step-1-finding-your-api-key'
+
+trigify-io-mcp:
+    display_name: Trigify IO (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://clerk.trigify.io/oauth/authorize
+    token_url: https://clerk.trigify.io/oauth/token
+    registration_url: https://clerk.trigify.io/oauth/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.trigify.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
 
 tsheetsteam:
     display_name: TSheets

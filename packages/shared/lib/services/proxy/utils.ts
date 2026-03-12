@@ -6,7 +6,13 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
+import {
+    connectionCopyWithParsedConnectionConfig,
+    formatPem,
+    getStableInterpolationReplacers,
+    interpolateIfNeeded,
+    interpolateProxyUrlParts
+} from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -228,7 +234,10 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
     const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
+    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+        ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
+        ...connection.credentials
+    });
 
     let url = new URL(fullEndpoint);
     if (config.params) {
@@ -393,6 +402,11 @@ export function buildProxyHeaders({
 
     // Custom headers handling
     if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
+        const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
+        const stableReplacers = getStableInterpolationReplacers(headerValues);
+
+        const baseReplacers = { endpoint: config.endpoint };
+
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
                 headers[key] = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
@@ -409,7 +423,12 @@ export function buildProxyHeaders({
                     break;
                 }
                 case 'TWO_STEP': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '', credentials: connection.credentials });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.token || '',
+                        credentials: connection.credentials,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
                 }
                 case 'JWT': {

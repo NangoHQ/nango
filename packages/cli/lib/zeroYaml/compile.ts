@@ -26,7 +26,7 @@ import type { Result } from '@nangohq/types';
  * - Compile the code to .cjs
  * - Rebuild nango.yaml in memory
  */
-export async function compileAll({
+export async function compileAllFunctions({
     fullPath,
     debug,
     interactive = true
@@ -76,7 +76,7 @@ export async function compileAll({
             spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
-            const buildRes = await compileOne({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
                 console.log('');
@@ -370,7 +370,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
  * We use esbuild to compile the code to .cjs.
  * node.vm only supports CJS and we also bundle all imported files in the same file.
  */
-export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+export async function compileFunction({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
     // Because it's easier to manipulate the files and it's easier in S3
