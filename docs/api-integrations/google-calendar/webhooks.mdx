@@ -13,9 +13,9 @@ The Google Calendar API uses notification channels to deliver push notifications
 1. You call the `watch` endpoint for the Google Calendar you want to monitor, passing your Nango webhook URL as the channel `address`.
 2. Google creates a notification channel and sends an initial `sync` message to your URL.
 3. When the watched calendar changes, Google sends a notification to Nango
-5. Nango matches the notification to the correct connection and forwards it to your app
+4. Nango matches the notification to the correct connection and forwards it to your app
 
-Nango extracts the calendar owner from the `X-Goog-Resource-URI` header (e.g. `.../calendars/user@example.com/events...`) to match the webhook to a connection. For new connections, Nango persists the user's email address automatically at connection time — no manual setup required.
+Nango extracts the calendar owner from the `X-Goog-Resource-URI` header (e.g. `.../calendars/user@example.com/events...`) to match the webhook to a connection. For new connections, Nango persists only a hash of the user's email (`connection_config.emailAddressHash`) automatically at connection time — no manual setup required.
 
 ## Setup
 
@@ -164,15 +164,18 @@ With webhooks driving real-time updates, you can run syncs less often (e.g. `1d`
 
 ## Connection matching
 
-Nango matches the incoming request to a connection using the calendar identifier (email) extracted from `X-Goog-Resource-URI` (e.g. `.../calendars/user@example.com/events...`). The lookup order is:
+Nango uses the `emailAddress` from the webhook payload to find the matching connection. The lookup order is:
 
-1. `connection_config.emailAddress` — set by Nango for connections that persist it (e.g. via post-connection script).
-2. `metadata.emailAddress` — legacy fallback.
-3. `metadata.email` — fallback.
+1. `connection_config.emailAddressHash` — automatically set by Nango for new connections (created after 2026-03-11)
+2. `metadata.emailAddress` — fallback (customer-controlled)
+3. `metadata.email` — fallback (customer-controlled)
 
-For **new connections**, use a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler) to fetch the user’s email (e.g. from the Calendar API or OAuth profile) and store it in metadata or connection config so webhooks resolve to the right connection.
+For **new connections** (created after 2026-03-11), no action is needed. Nango automatically persists the email hash at connection time.
 
-For **existing connections** that don’t have this set, you can set metadata via the API:
+For **existing connections** created before this feature was available, you have two options:
+
+- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email address automatically
+- **Set the metadata manually** via the API:
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connection/metadata" \
@@ -180,7 +183,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
   -H "Content-Type: application/json" \
   -d '{
     "connection_id": "<CONNECTION_ID>",
-    "provider_config_key": "google-calendar",
+    "provider_config_key": "google-mail",
     "metadata": {"emailAddress": "<USER_EMAIL>"}
   }'
 ```
@@ -188,7 +191,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
 
 <Warning>
-If Nango cannot match the webhook to a connection (no matching email in connection config or metadata), the webhook is still received but the forwarded payload will not include a `connectionId`.
+If Nango cannot match the incoming webhook to a connection (because neither `connection_config` nor `metadata` contains the email address), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
 </Warning>
 
 ## Stop notifications
