@@ -150,10 +150,11 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         }
     }, heartbeatIntervalMs);
     try {
+        const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },
-            code: await getCode(request),
-            codeParams: await getCodeParams(request),
+            code,
+            codeParams,
             locks,
             abortController: abortController
         };
