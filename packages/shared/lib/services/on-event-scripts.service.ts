@@ -165,11 +165,13 @@ export const onEventScriptService = {
         environmentId,
         onEventScriptsByProvider,
         deployMode = 'all',
+        deployedProviderConfigKey,
         sdkVersion
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
         deployMode?: 'all' | 'single' | 'integration';
+        deployedProviderConfigKey?: string;
         sdkVersion: string | undefined;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
@@ -186,9 +188,14 @@ export const onEventScriptService = {
 
         const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
-        // Filter existing scripts to only include those from providers being deployed when not in all-providers deploy mode
+        // Filter existing scripts to only include those from providers being deployed when not in all-providers deploy mode.
+        // For 'integration' mode, use deployedProviderConfigKey directly so stale scripts are detected even when no scripts are incoming.
         const relevantExistingScripts =
-            deployMode !== 'all' ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey)) : existingScripts;
+            deployMode === 'integration' && deployedProviderConfigKey
+                ? existingScripts.filter((script) => script.providerConfigKey === deployedProviderConfigKey)
+                : deployMode === 'single'
+                  ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
+                  : existingScripts;
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
