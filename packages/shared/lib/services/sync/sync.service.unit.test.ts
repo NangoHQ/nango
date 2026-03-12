@@ -161,7 +161,7 @@ describe('getAndReconcileDifferences', () => {
     });
 
     describe('mode: integration', () => {
-        it('should only detect deleted syncs for the specified deployedProviderConfigKey', async () => {
+        it('should only detect deleted syncs for the integration scope inferred from flows', async () => {
             const existingSyncs = [
                 makeSyncConfig({ id: 1, sync_name: 'old-sync-github', unique_key: 'github' }),
                 makeSyncConfig({ id: 2, sync_name: 'old-sync-slack', unique_key: 'slack' })
@@ -176,19 +176,18 @@ describe('getAndReconcileDifferences', () => {
                 flows,
                 performAction: false,
                 deployMode: 'integration',
-                deployedProviderConfigKey: 'github',
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });
 
             expect(result).not.toBeNull();
-            // old-sync-github is deleted (in 'github' scope and not in flows)
+            // old-sync-github is deleted (in 'github' scope inferred from flows[0].providerConfigKey and not in flows)
             expect(result!.deletedSyncs.map((s) => s.name)).toContain('old-sync-github');
             // old-sync-slack should NOT be detected as deleted (outside 'github' scope)
             expect(result!.deletedSyncs.map((s) => s.name)).not.toContain('old-sync-slack');
         });
 
-        it('should not detect deletions for providers outside deployedProviderConfigKey', async () => {
+        it('should not detect deletions for providers outside the integration scope', async () => {
             const existingSyncs = [
                 makeSyncConfig({ id: 1, sync_name: 'slack-sync', unique_key: 'slack' }),
                 makeSyncConfig({ id: 2, sync_name: 'github-sync', unique_key: 'github' })
@@ -204,7 +203,6 @@ describe('getAndReconcileDifferences', () => {
                 flows,
                 performAction: false,
                 deployMode: 'integration',
-                deployedProviderConfigKey: 'github',
                 logContextGetter,
                 orchestrator: mockOrchestrator
             });

@@ -353,7 +353,6 @@ export const getAndReconcileDifferences = async ({
     performAction,
     debug = false,
     deployMode = 'all',
-    deployedProviderConfigKey,
     logCtx,
     logContextGetter,
     orchestrator
@@ -363,7 +362,6 @@ export const getAndReconcileDifferences = async ({
     performAction: boolean;
     debug?: boolean | undefined;
     deployMode?: 'all' | 'single' | 'integration' | undefined;
-    deployedProviderConfigKey?: string | undefined;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -486,8 +484,9 @@ export const getAndReconcileDifferences = async ({
     const deletedModels: string[] = [];
 
     if (deployMode !== 'single') {
+        const integrationScopeKey = deployMode === 'integration' ? flows[0]?.providerConfigKey : undefined;
         for (const existingSync of existingSyncs) {
-            if (deployedProviderConfigKey && deployedProviderConfigKey !== existingSync.unique_key) {
+            if (integrationScopeKey && integrationScopeKey !== existingSync.unique_key) {
                 continue;
             }
 

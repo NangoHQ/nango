@@ -13,7 +13,6 @@ export type PostDeployConfirmation = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         deployMode?: 'all' | 'single' | 'integration';
-        deployedProviderConfigKey?: string | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
@@ -31,7 +30,6 @@ export type PostDeploy = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         deployMode?: 'all' | 'single' | 'integration';
-        deployedProviderConfigKey?: string | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
@@ -52,7 +50,6 @@ export type PostDeployInternal = Endpoint<{
         reconcile: boolean;
         debug: boolean;
         deployMode?: 'all' | 'single' | 'integration';
-        deployedProviderConfigKey?: string | undefined;
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
