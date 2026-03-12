@@ -153,6 +153,7 @@ const commonValidation = z
         reconcile: z.boolean(),
         debug: z.boolean(),
         singleDeployMode: z.boolean().optional().default(false),
+        deployedProviderConfigKeys: z.array(z.string()).optional(),
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)

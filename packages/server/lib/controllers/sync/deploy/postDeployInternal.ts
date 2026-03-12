@@ -110,6 +110,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             performAction: body.reconcile,
             debug: body.debug,
             singleDeployMode: body.singleDeployMode,
+            deployedProviderConfigKeys: body.deployedProviderConfigKeys,
             logCtx,
             logContextGetter,
             orchestrator

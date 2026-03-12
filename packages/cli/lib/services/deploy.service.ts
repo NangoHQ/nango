@@ -61,7 +61,8 @@ class DeployService {
 
         const hasSingleScript = Boolean(optionalSyncName || optionalActionName);
         const integrationIdMode = Boolean(integrationId);
-        const singleDeployMode = hasSingleScript || integrationIdMode;
+        const singleDeployMode = hasSingleScript;
+        const deployedProviderConfigKeys = integrationIdMode && !hasSingleScript ? [integrationId!] : undefined;
 
         let successfulCompile = false;
 
@@ -162,6 +163,7 @@ class DeployService {
             debug,
             nangoYamlBody,
             singleDeployMode,
+            deployedProviderConfigKeys,
             sdkVersion
         };
 
@@ -174,6 +176,7 @@ class DeployService {
                 reconcile: false,
                 debug,
                 singleDeployMode,
+                deployedProviderConfigKeys,
                 sdkVersion
             };
             const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });

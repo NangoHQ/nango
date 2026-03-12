@@ -35,6 +35,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         performAction: false,
         debug: body.debug,
         singleDeployMode: body.singleDeployMode,
+        deployedProviderConfigKeys: body.deployedProviderConfigKeys,
         logContextGetter,
         orchestrator
     });

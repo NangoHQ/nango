@@ -353,6 +353,7 @@ export const getAndReconcileDifferences = async ({
     performAction,
     debug = false,
     singleDeployMode = false,
+    deployedProviderConfigKeys,
     logCtx,
     logContextGetter,
     orchestrator
@@ -362,6 +363,7 @@ export const getAndReconcileDifferences = async ({
     performAction: boolean;
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;
+    deployedProviderConfigKeys?: string[] | undefined;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -485,6 +487,10 @@ export const getAndReconcileDifferences = async ({
 
     if (!singleDeployMode) {
         for (const existingSync of existingSyncs) {
+            if (deployedProviderConfigKeys && !deployedProviderConfigKeys.includes(existingSync.unique_key)) {
+                continue;
+            }
+
             const flow = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
 

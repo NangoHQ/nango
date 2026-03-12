@@ -87,6 +87,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
             performAction: body.reconcile,
             debug: body.debug,
             singleDeployMode: body.singleDeployMode,
+            deployedProviderConfigKeys: body.deployedProviderConfigKeys,
             logCtx,
             logContextGetter,
             orchestrator
