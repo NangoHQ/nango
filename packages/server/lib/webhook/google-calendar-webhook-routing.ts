@@ -1,5 +1,7 @@
 import { Ok } from '@nangohq/utils';
 
+import { hashEmailAddress } from '../utils/pii.js';
+
 import type { WebhookHandler } from './types.js';
 
 const route: WebhookHandler = async (nango, headers, body) => {
@@ -20,21 +22,31 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     const baseArgs = {
         body,
-        ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] }),
-        ...(emailAddress && { connectionIdentifierValue: emailAddress })
+        ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] })
     };
 
-    let response = await nango.executeScriptForWebhooks({ ...baseArgs, propName: 'emailAddress' });
+    const emailAddressHash = emailAddress ? hashEmailAddress(emailAddress) : undefined;
+
+    let response = await nango.executeScriptForWebhooks({
+        ...baseArgs,
+        connectionIdentifier: 'emailAddressHash',
+        ...(emailAddressHash && { connectionIdentifierValue: emailAddressHash }),
+        propName: 'emailAddressHash'
+    });
 
     if (response.connectionIds.length === 0) {
         response = await nango.executeScriptForWebhooks({
             ...baseArgs,
+            connectionIdentifier: 'emailAddress',
+            ...(emailAddress && { connectionIdentifierValue: emailAddress }),
             propName: 'metadata.emailAddress'
         });
 
         if (response.connectionIds.length === 0) {
             response = await nango.executeScriptForWebhooks({
                 ...baseArgs,
+                connectionIdentifier: 'emailAddress',
+                ...(emailAddress && { connectionIdentifierValue: emailAddress }),
                 propName: 'metadata.email'
             });
         }
