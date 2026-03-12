@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
 
-import { bundleFile, compileAll } from './compile.js';
+import { bundleFile, compileAllFunctions } from './compile.js';
 import { CompileError } from './utils.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 
@@ -35,7 +35,7 @@ describe('compileAll', () => {
 
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
         await exec('npm i', { cwd: dir });
-        const result = await compileAll({ fullPath: dir, debug: false });
+        const result = await compileAllFunctions({ fullPath: dir, debug: false });
         result.unwrap();
         expect(result.isOk()).toBe(true);
     });
