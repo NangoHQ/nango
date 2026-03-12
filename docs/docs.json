@@ -493,6 +493,7 @@
               "integrations/all/google-play",
               "api-integrations/google-search-console",
               "api-integrations/google-sheet",
+              "api-integrations/google-tasks",
               "api-integrations/granola",
               "api-integrations/granola-mcp",
               "api-integrations/glyphic",
