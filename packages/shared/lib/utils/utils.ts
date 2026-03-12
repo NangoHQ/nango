@@ -485,7 +485,7 @@ export function getConnectionMetadata(
 }
 
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
-    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const cleanTemplate = template.replace(/connectionConfig\./g, '').replace(/credentials\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
     const interpolatedUrl = interpolateStringFromObject(cleanTemplate, removeEmptyValues(encodedParams));
 

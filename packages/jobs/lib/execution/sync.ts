@@ -31,6 +31,7 @@ import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
 import { abortTaskWithId } from './operations/abort.js';
@@ -43,6 +44,7 @@ import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
 import type {
+    CheckpointRange,
     ConnectionJobs,
     DBEnvironment,
     DBSyncConfig,
@@ -202,7 +204,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
                 oauth_client_secret: providerConfig.oauth_client_secret
-            }
+            },
+            ...(plan?.sync_function_runtime === 'lambda'
+                ? {
+                      lifecycle: {
+                          interruptAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER * 1000,
+                          killAfterMs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS * envs.LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER * 1000
+                      }
+                  }
+                : {}) // non-lambda runtimes do not need interrupting/resuming long-running executions
         };
 
         const runtimeContext: RuntimeContext = {
@@ -259,12 +269,16 @@ export async function handleSyncSuccess({
     taskId,
     nangoProps,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints,
+    interrupted = false
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
+    interrupted?: boolean;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
     logCtx.attachSpan(
@@ -481,12 +495,20 @@ export async function handleSyncSuccess({
         }
 
         await logCtx.enrichOperation({
-            meta: syncPayload
+            meta: {
+                ...syncPayload,
+                checkpoints,
+                interrupted
+            }
         });
 
         void logCtx.info(
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
-            syncPayload
+            {
+                ...syncPayload,
+                checkpoints,
+                interrupted
+            }
         );
 
         // set the last sync date to when the sync started in case
@@ -497,7 +519,11 @@ export async function handleSyncSuccess({
         if (nangoProps.syncJobId) {
             await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.SUCCESS);
         }
-        await setTaskSuccess({ taskId, output: null });
+        await setTaskSuccess({
+            taskId,
+            output: null,
+            ...(interrupted ? { nextExecutionInMs: 0 } : {}) // if the sync was interrupted, we trigger next execution immediately
+        });
 
         void slackService.removeFailingConnection({
             connection,
@@ -604,13 +630,15 @@ export async function handleSyncError({
     nangoProps,
     error,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -660,7 +688,8 @@ export async function handleSyncError({
         endUser: nangoProps.endUser,
         startedAt: nangoProps.startedAt,
         telemetryBag,
-        functionRuntime
+        functionRuntime,
+        checkpoints
     });
 }
 
@@ -737,10 +766,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             lastSyncDate: lastSyncDate || undefined,
             startedAt: new Date()
         });
-        const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
-        if (setSuccess.isErr()) {
-            logger.error(`failed to set cancel task ${task.id} as succeeded`, setSuccess.error);
-        }
+        await setTaskSuccess({ taskId: task.id, output: {} });
         return Ok(undefined);
     } catch (err) {
         const error = new Error(`Failed to cancel`, { cause: err });
@@ -775,7 +801,8 @@ async function onFailure({
     endUser,
     startedAt,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -800,6 +827,7 @@ async function onFailure({
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    checkpoints?: CheckpointRange | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -928,8 +956,8 @@ async function onFailure({
         }
     }
 
-    void logCtx?.error(error.message, { error });
-    await logCtx?.enrichOperation({ error });
+    void logCtx?.error(error.message, { error, checkpoints });
+    await logCtx?.enrichOperation({ error, meta: { checkpoints } });
     if (isCancel) {
         await logCtx?.cancel();
     } else {

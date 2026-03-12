@@ -37,6 +37,7 @@ import {
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
+    makeUrl,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
@@ -645,18 +646,28 @@ class ConnectionService {
         return newConfig;
     }
 
-    public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
+    public async findConnectionsByConnectionConfigValue(
+        key: string,
+        value: string,
+        environmentId: number,
+        configId?: number
+    ): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId })
+            .modify((query) => {
+                if (typeof configId === 'number') {
+                    query.andWhere({ config_id: configId });
+                }
+            })
             .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
 
         if (!result || result.length == 0) {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => encryptionManager.decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -678,8 +689,9 @@ class ConnectionService {
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId, config_id: configId })
-            // escape the question mark so it doesn't try to bind it as a parameter
-            .where(db.knex.raw(`metadata->? \\? ?`, [metadataProperty, payloadIdentifier]))
+            // Match both scalar values (metadata.key === value) and set-like values (metadata.key contains value).
+            // We escape the question mark so it doesn't try to bind it as a parameter.
+            .where(db.knex.raw(`(metadata->>? = ? OR metadata->? \\? ?)`, [metadataProperty, payloadIdentifier, metadataProperty, payloadIdentifier]))
             .andWhere('deleted', false);
 
         if (!result || result.length == 0) {
@@ -1356,10 +1368,11 @@ class ConnectionService {
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
         const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
-        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
-        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
-        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
-        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
+        if (typeof tokenUrl !== 'string' || !tokenUrl.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+
+        const url = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
 
         const bodyFormat = provider.body_format || 'json';
 

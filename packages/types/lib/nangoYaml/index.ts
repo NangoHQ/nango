@@ -89,6 +89,7 @@ export interface NangoYamlParsed {
     integrations: NangoYamlParsedIntegration[];
     models: Map<string, NangoModel>;
 }
+
 export interface NangoYamlParsedIntegration {
     providerConfigKey: string;
     syncs: ParsedNangoSync[];
@@ -99,6 +100,7 @@ export interface NangoYamlParsedIntegration {
      */
     postConnectionScripts?: string[];
 }
+
 export interface ParsedNangoSync {
     name: string;
     type: 'sync';
@@ -115,6 +117,8 @@ export interface ParsedNangoSync {
     usedModels: string[];
     webhookSubscriptions: string[];
     version: string;
+    // TODO: make non-optional when nango-yaml is fully removed
+    json_schema?: JSONSchema7 | undefined;
 }
 
 export interface ParsedNangoAction {
@@ -127,6 +131,8 @@ export interface ParsedNangoAction {
     scopes: string[];
     usedModels: string[];
     version: string;
+    // TODO: make non-optional when nango-yaml is fully removed
+    json_schema?: JSONSchema7 | undefined;
 }
 
 export type LayoutMode = 'root' | 'nested';

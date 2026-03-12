@@ -1,88 +1,94 @@
-import * as zod from 'zod';
+import * as z from 'zod';
 
-export const nangoPropsSchema = zod.object({
-    scriptType: zod.enum(['sync', 'action', 'webhook', 'on-event']),
-    host: zod.string().optional(),
-    secretKey: zod.string().min(1),
-    team: zod.object({
-        id: zod.number(),
-        name: zod.string().min(1)
+export const nangoPropsSchema = z.object({
+    scriptType: z.enum(['sync', 'action', 'webhook', 'on-event']),
+    host: z.string().optional(),
+    secretKey: z.string().min(1),
+    team: z.object({
+        id: z.number(),
+        name: z.string().min(1)
     }),
-    plan: zod
+    plan: z
         .object({
-            id: zod.number(),
-            name: zod.string().min(1)
+            id: z.number(),
+            name: z.string().min(1)
         })
         .optional(),
-    connectionId: zod.string().min(1),
-    environmentId: zod.number(),
-    environmentName: zod.string().min(1),
-    activityLogId: zod.string().min(1),
-    providerConfigKey: zod.string().min(1),
-    provider: zod.string().min(1),
-    lastSyncDate: zod.coerce.date().optional(),
-    syncId: zod.string().uuid().optional(),
-    syncVariant: zod.string().optional(),
-    nangoConnectionId: zod.number(),
-    syncJobId: zod.number().optional(),
-    track_deletes: zod.boolean().optional(),
-    attributes: zod.record(zod.string(), zod.any()).optional(),
-    abortSignal: zod.any().optional(), // AbortSignal cannot be validated
-    syncConfig: zod.object({
-        id: zod.number(),
-        sync_name: zod.string().min(1),
-        nango_config_id: zod.number(),
-        file_location: zod.string(),
-        version: zod.string(),
-        models: zod.array(zod.string()),
-        active: zod.boolean(),
-        runs: zod.string().nullable(),
-        model_schema: zod.array(zod.any()).optional().nullable(),
-        environment_id: zod.number(),
-        track_deletes: zod.boolean(),
-        type: zod.enum(['sync', 'action', 'on-event']),
-        auto_start: zod.boolean(),
-        attributes: zod.record(zod.string(), zod.any()),
-        pre_built: zod.boolean(),
-        is_public: zod.boolean(),
-        metadata: zod.record(zod.string(), zod.any()),
-        input: zod.string().nullable(),
-        sync_type: zod.enum(['full', 'incremental']).nullable(),
-        webhook_subscriptions: zod.array(zod.string()).nullable(),
-        enabled: zod.boolean(),
-        models_json_schema: zod.any().nullable(), // JSONSchema7
-        sdk_version: zod.string().nullable(),
-        created_at: zod.coerce.date(),
-        updated_at: zod.coerce.date(),
-        deleted_at: zod.coerce.date().optional().nullable(),
-        deleted: zod.boolean().optional()
+    connectionId: z.string().min(1),
+    environmentId: z.number(),
+    environmentName: z.string().min(1),
+    activityLogId: z.string().min(1),
+    providerConfigKey: z.string().min(1),
+    provider: z.string().min(1),
+    lastSyncDate: z.coerce.date().optional(),
+    syncId: z.string().uuid().optional(),
+    syncVariant: z.string().optional(),
+    nangoConnectionId: z.number(),
+    syncJobId: z.number().optional(),
+    track_deletes: z.boolean().optional(),
+    attributes: z.record(z.string(), z.any()).optional(),
+    abortSignal: z.any().optional(), // AbortSignal cannot be validated
+    syncConfig: z.object({
+        id: z.number(),
+        sync_name: z.string().min(1),
+        nango_config_id: z.number(),
+        file_location: z.string(),
+        version: z.string(),
+        models: z.array(z.string()),
+        active: z.boolean(),
+        runs: z.string().nullable(),
+        model_schema: z.array(z.any()).optional().nullable(),
+        environment_id: z.number(),
+        track_deletes: z.boolean(),
+        type: z.enum(['sync', 'action', 'on-event']),
+        auto_start: z.boolean(),
+        attributes: z.record(z.string(), z.any()),
+        pre_built: z.boolean(),
+        is_public: z.boolean(),
+        metadata: z.record(z.string(), z.any()),
+        input: z.string().nullable(),
+        sync_type: z.enum(['full', 'incremental']).nullable(),
+        webhook_subscriptions: z.array(z.string()).nullable(),
+        enabled: z.boolean(),
+        models_json_schema: z.any().nullable(), // JSONSchema7
+        sdk_version: z.string().nullable(),
+        created_at: z.coerce.date(),
+        updated_at: z.coerce.date(),
+        deleted_at: z.coerce.date().optional().nullable(),
+        deleted: z.boolean().optional()
     }),
-    runnerFlags: zod.looseObject({
-        validateActionInput: zod.boolean(),
-        validateActionOutput: zod.boolean(),
-        validateSyncRecords: zod.boolean(),
-        validateSyncMetadata: zod.boolean(),
-        functionLogs: zod.boolean().optional()
+    runnerFlags: z.looseObject({
+        validateActionInput: z.boolean(),
+        validateActionOutput: z.boolean(),
+        validateSyncRecords: z.boolean(),
+        validateSyncMetadata: z.boolean(),
+        functionLogs: z.boolean().optional()
     }),
-    logger: zod.object({
-        level: zod.enum(['debug', 'info', 'warn', 'error', 'off'])
+    logger: z.object({
+        level: z.enum(['debug', 'info', 'warn', 'error', 'off'])
     }),
-    debug: zod.boolean(),
-    startedAt: zod.coerce.date(),
-    endUser: zod
+    debug: z.boolean(),
+    startedAt: z.coerce.date(),
+    endUser: z
         .object({
-            id: zod.number(),
-            endUserId: zod.string().nullable(),
-            orgId: zod.string().nullable()
+            id: z.number(),
+            endUserId: z.string().nullable(),
+            orgId: z.string().nullable()
         })
         .nullable(),
-    heartbeatTimeoutSecs: zod.number().optional(),
-    isCLI: zod.boolean().optional()
+    heartbeatTimeoutSecs: z.number().optional(),
+    isCLI: z.boolean().optional(),
+    lifecycle: z
+        .object({
+            killAfterMs: z.number(),
+            interruptAfterMs: z.number()
+        })
+        .optional()
 });
 
-export const requestSchema = zod.object({
-    taskId: zod.string(),
-    codeParams: zod.any().optional(),
-    code: zod.string(),
+export const requestSchema = z.object({
+    taskId: z.string(),
+    codeParams: z.any().optional(),
+    code: z.string(),
     nangoProps: nangoPropsSchema
 });

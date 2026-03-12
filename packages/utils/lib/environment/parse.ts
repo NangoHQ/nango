@@ -123,9 +123,9 @@ export const ENVS = z.object({
                 maxConcurrency: 50
             }
         ]),
-    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
-    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
-    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
+    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
     ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
 
     // Runner
@@ -155,6 +155,7 @@ export const ENVS = z.object({
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().default(1),
+    RUNNER_CONFLICT_RESOLUTION_MODE: z.enum(['IN_MEMORY', 'REDIS']).default('IN_MEMORY'),
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
@@ -171,6 +172,7 @@ export const ENVS = z.object({
     RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(1.4),
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
@@ -414,6 +416,8 @@ export const ENVS = z.object({
     LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
     LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
     LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
+    LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.8), // interrupt execution after 80% of the timeout, to leave time for checkpointing and graceful shutdown
+    LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.95), // force kill the lambda after 95% of the timeout, to allow for runner-controlled shutdown
     LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
     LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
     LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET: z.coerce.number().optional().default(0.7),
