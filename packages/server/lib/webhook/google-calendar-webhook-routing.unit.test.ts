@@ -6,13 +6,15 @@ import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
 import * as GoogleCalendarWebhookRouting from './google-calendar-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
+import { hashEmailAddress } from '../utils/pii.js';
 
 describe('googleCalendarWebhookRouting', () => {
-    it('routes by connection_config.emailAddress first and falls back to metadata', async () => {
+    it('routes by connection_config.emailAddressHash first then falls back', async () => {
         const integration = getTestConfig({ provider: 'google-calendar' });
 
         const mock = vi
             .fn()
+            .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} })
             .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} })
             .mockResolvedValueOnce({ connectionIds: ['conn-1'], connectionMetadata: {} });
 
@@ -32,8 +34,30 @@ describe('googleCalendarWebhookRouting', () => {
 
         await GoogleCalendarWebhookRouting.default(nangoMock as unknown as InternalNango, headers as any, {}, '');
 
-        expect(mock).toHaveBeenCalledTimes(2);
-        expect(mock).toHaveBeenNthCalledWith(1, expect.objectContaining({ propName: 'emailAddress', connectionIdentifierValue: 'user@example.com' }));
-        expect(mock).toHaveBeenNthCalledWith(2, expect.objectContaining({ propName: 'metadata.emailAddress', connectionIdentifierValue: 'user@example.com' }));
+        expect(mock).toHaveBeenCalledTimes(3);
+        expect(mock).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                propName: 'emailAddressHash',
+                connectionIdentifier: 'emailAddressHash',
+                connectionIdentifierValue: hashEmailAddress('user@example.com')
+            })
+        );
+        expect(mock).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                propName: 'metadata.emailAddress',
+                connectionIdentifier: 'emailAddress',
+                connectionIdentifierValue: 'user@example.com'
+            })
+        );
+        expect(mock).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                propName: 'metadata.email',
+                connectionIdentifier: 'emailAddress',
+                connectionIdentifierValue: 'user@example.com'
+            })
+        );
     });
 });
