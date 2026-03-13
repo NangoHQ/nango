@@ -81,7 +81,11 @@
     },
     {
       "source": "/guides/primitives/proxy",
-      "destination": "/guides/primitives/functions"
+      "destination": "/implementation-guides/platform/proxy/implement-requests-proxy"
+    },
+    {
+      "source": "/guides/platform/ai-integration-builder",
+      "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
     }
   ],
   "navigation": {
