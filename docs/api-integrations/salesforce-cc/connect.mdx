@@ -1,0 +1,61 @@
+---
+title: Salesforce (Client Credentials) - How do I link my account?
+sidebarTitle: Salesforce (Client Credentials)
+---
+
+# Overview
+
+To authenticate with Salesforce (Client Credentials), you will need:
+
+1. **Client ID** – The Consumer Key from your Salesforce Connected App or External Client App.
+2. **Client Secret** – The Consumer Secret from your Salesforce Connected App or External Client App.
+3. **Hostname** – Your Salesforce instance hostname (e.g. `acme.my.salesforce.com`).
+
+This guide walks you through obtaining these values.
+
+### Prerequisites
+
+- A Salesforce account with administrative privileges to create Connected Apps or External Client Apps.
+
+### Instructions
+
+#### Step 1: Create a Connected App (or External Client App)
+
+1. Log in to Salesforce and go to **Setup**.
+2. In the Quick Find box, enter **App Manager**, then select **App Manager**.
+3. Click **New Connected App** (or **New External Client App**).
+4. Fill in the required basic information (Name, API Name, Contact Email).
+5. Check **Enable OAuth Settings**.
+6. For **Callback URL**, you can enter `https://api.nango.dev/oauth/callback` (even though it's not used for Client Credentials, it's often required by the UI).
+7. Under **Selected OAuth Scopes**, add at least `Access and manage your data (api)`.
+8. **Crucial:** Enable the Client Credentials flow:
+   - For **Connected Apps**: Check **Enable Client Credentials Flow**.
+   - For **External Client Apps**: Under **Flow Enablement**, check **Enable Authorization Code and Credentials Flow**.
+9. Click **Save**.
+
+#### Step 2: Assign an Execution User (Connected Apps only)
+
+For Connected Apps using Client Credentials, Salesforce requires you to specify an execution user:
+
+1. In the **App Manager**, find your app, click the dropdown arrow next to it, and select **Manage**.
+2. Click **Edit Policies**.
+3. Under **Client Credentials Flow**, search for and select an **Execution User**. This user's permissions will be used for the API calls.
+4. Click **Save**.
+
+#### Step 3: Obtain Client ID and Client Secret
+
+1. In the **App Manager**, find your app and select **View** (for Connected Apps) or go to the **Settings** tab (for External Client Apps).
+2. Click **Manage Consumer Details** or **Consumer Key and Secret** to view your credentials.
+3. Copy the **Consumer Key** (Client ID) and **Consumer Secret** (Client Secret).
+
+#### Step 4: Find your Hostname
+
+Your hostname is your full Salesforce instance hostname (e.g., if your URL is `https://acme.my.salesforce.com`, your hostname is `acme.my.salesforce.com`).
+
+#### Step 5: Enter credentials in Nango
+
+1. In the Nango Connect UI or dashboard, select the Salesforce (Client Credentials) integration.
+2. Enter your **Hostname**, **Client ID**, and **Client Secret**.
+3. Click **Authorize** to establish the connection.
+
+You are now connected to Salesforce using Client Credentials.

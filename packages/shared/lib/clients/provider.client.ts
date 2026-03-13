@@ -63,6 +63,7 @@ class ProviderClient {
     public shouldIntrospectToken(provider: string): boolean {
         switch (provider) {
             case 'salesforce':
+            case 'salesforce-cc':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
             case 'salesforce-jwt':
@@ -225,8 +226,9 @@ class ProviderClient {
         const { credentials } = connection;
         const isOAuth2 = credentials.type === 'OAUTH2';
         const isTwoStep = credentials.type === 'TWO_STEP';
+        const isOAuth2CC = credentials.type === 'OAUTH2_CC';
 
-        if (!isOAuth2 && !isTwoStep) {
+        if (!isOAuth2 && !isTwoStep && !isOAuth2CC) {
             throw new NangoError('wrong_credentials_type');
         }
 
@@ -236,8 +238,16 @@ class ProviderClient {
         }
 
         const connectionConfig = connection.connection_config as Record<string, string>;
-        const clientId = isTwoStep ? credentials['clientId'] : config.oauth_client_id;
-        const clientSecret = isTwoStep ? credentials['clientSecret'] : config.oauth_client_secret;
+        let clientId = config.oauth_client_id;
+        let clientSecret = config.oauth_client_secret;
+
+        if (isTwoStep) {
+            clientId = credentials['clientId'];
+            clientSecret = credentials['clientSecret'];
+        } else if (isOAuth2CC) {
+            clientId = credentials.client_id;
+            clientSecret = credentials.client_secret;
+        }
 
         if (!clientId || !clientSecret) {
             throw new NangoError('client_credentials_missing');
@@ -245,6 +255,7 @@ class ProviderClient {
 
         switch (config.provider) {
             case 'salesforce':
+            case 'salesforce-cc':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
             case 'salesforce-jwt':
@@ -1162,11 +1173,12 @@ class ProviderClient {
         clientSecret: string,
         connectionConfig: Record<string, string>
     ): Promise<boolean> {
-        if (!connectionConfig['instance_url']) {
+        const instanceUrl = connectionConfig['instance_url'] || (connectionConfig['hostname'] ? `https://${connectionConfig['hostname']}` : null);
+        if (!instanceUrl) {
             throw new NangoError('salesforce_instance_url_missing');
         }
 
-        const url = `${connectionConfig['instance_url']}/services/oauth2/introspect`;
+        const url = `${instanceUrl}/services/oauth2/introspect`;
 
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
