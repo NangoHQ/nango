@@ -12,7 +12,7 @@ import ejs from 'ejs';
 import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
 import { compileAllFunctions } from '../zeroYaml/compile.js';
-import { buildDefinitions } from '../zeroYaml/definitions.js';
+import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 
 const execAsync = promisify(exec);
 
@@ -498,7 +498,7 @@ export async function generateTests({
             return { success: false, generatedFiles: [] };
         }
 
-        const defsResult = await buildDefinitions({ fullPath: absolutePath, debug });
+        const defsResult = await parseIntegrationDefinitions({ fullPath: absolutePath, debug });
         if (defsResult.isErr()) {
             console.error(chalk.red(`Failed to build definitions: ${defsResult.error}`));
             return { success: false, generatedFiles: [] };

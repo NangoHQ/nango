@@ -217,7 +217,17 @@ export function generateAdditionalExports({ fullPath, parsed, debug }: { fullPat
         printDebug(`Generated export ${pathJSON}`);
     }
 
-    fs.writeFileSync(path.join(exportPath, 'nango.json'), JSON.stringify(parsed.integrations, null, 2));
+    const nangoJsonPath = path.join(exportPath, 'nango.json');
+    fs.writeFileSync(nangoJsonPath, JSON.stringify(parsed.integrations, null, 2));
+    if (debug) {
+        printDebug(`Generated export ${nangoJsonPath}`);
+    }
+
+    console.log(
+        chalk.yellow(
+            'The generated .nango/schema.ts and .nango/schema.json are deprecated and will stop being generated in future versions. For access to function types, please export types directly from your code. You can leverage `zod.infer` to generate types from your zod schemas. See the official zod documentation: https://zod.dev/basics?id=inferring-types'
+        )
+    );
 }
 
 export function getExportToTS({ parsed }: { parsed: NangoYamlParsed }): string {

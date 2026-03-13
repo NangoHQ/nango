@@ -8,7 +8,7 @@ import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { buildDefinitions } from './definitions.js';
+import { parseIntegrationDefinitions } from './definitions.js';
 import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
@@ -89,8 +89,8 @@ export async function compileAllFunctions({
         spinner.succeed();
 
         // Build and export the definitions
-        spinner = spinnerFactory.start('Exporting definitions');
-        const def = await buildDefinitions({ fullPath, debug });
+        spinner = spinnerFactory.start('Generating artifacts');
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
             console.log('');
