@@ -50,8 +50,8 @@ curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
   -d '{
     "changeType": "created,updated",
     "notificationUrl": "https://api.nango.dev/webhook/<ENV-UUID>/<INTEGRATION-ID>",
-    "resource": "users",
-    "expirationDateTime": "", // your expected expirationDateTime based on the resource
+    "resource": '<RESOURCE>', // build your own resource
+    "expirationDateTime": "<expirationDateTime>", // replace with your actual expected expirationDateTime based on the resource
     "clientState": "<YOUR-WEBHOOK-SECRET>"
   }'
 ```
@@ -73,7 +73,7 @@ const res = await nango.post({
     data: {
         changeType: 'created,updated',
         notificationUrl: 'https://api.nango.dev/webhook/<ENV-UUID>/<INTEGRATION-ID>',
-        resource: 'users',
+        resource: '<RESOURCE>', // build your own resource
         expirationDateTime,
         clientState: '<YOUR-WEBHOOK-SECRET>',
     },
@@ -108,7 +108,7 @@ export default createOnEvent({
             data: {
                 changeType: 'created,updated',
                 notificationUrl: webhookUrl,
-                resource: ,// build your own resource
+                resource: '<RESOURCE>', // build your own resource
                 expirationDateTime,
                 clientState: webhookSecret,
             },
