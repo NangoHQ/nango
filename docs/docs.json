@@ -614,7 +614,7 @@
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
               "integrations/all/microsoft-tenant-specific",
-              "integrations/all/microsoft-oauth2-cc",
+              "api-integrations/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
               "integrations/all/mindbody",
               "integrations/all/minimax",
