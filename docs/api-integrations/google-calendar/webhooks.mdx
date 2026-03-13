@@ -1,14 +1,14 @@
 ---
 title: 'How to setup webhooks with Google Calendar on Nango'
 sidebarTitle: 'Webhooks'
-description: 'Learn how to set up Google Calendar push notifications with notification channels and Nango'
+description: 'Learn how to set up Google Calendar webhooks with notification channels and Nango'
 ---
 
-This guide shows you how to receive real-time Google Calendar push notifications in Nango using [notification channels](https://developers.google.com/workspace/calendar/api/guides/push#create-notification-channels). Unlike Gmail, Google Calendar does **not** require Google Cloud Pub/Sub—you configure a webhook URL directly with the Calendar API.
+This guide shows you how to receive real-time Google Calendar webhooks in Nango using [notification channels](https://developers.google.com/workspace/calendar/api/guides/push#create-notification-channels). Unlike Gmail, Google Calendar does **not** require Google Cloud Pub/Sub—you configure a webhook URL directly with the Calendar API.
 
 ## How it works
 
-The Google Calendar API uses notification channels to deliver push notifications. The flow is:
+The Google Calendar API uses notification channels to deliver webhooks. The flow is:
 
 1. You call the `watch` endpoint for the Google Calendar you want to monitor, passing your Nango webhook URL as the channel `address`.
 2. Google creates a notification channel and sends an initial `sync` message to your URL.
@@ -86,7 +86,7 @@ curl -X POST "https://www.googleapis.com/calendar/v3/calendars/<CALENDAR_ID>/eve
     "id": "01234567-89ab-cdef-0123456789ab",
     "type": "web_hook",
     "address": "<REPLACE_WITH_NANGO_WEBHOOK_URL>",
-    "expiration": 1426325213000
+    "expiration": <EXPIRATION>
   }'
 ```
 
@@ -100,7 +100,7 @@ Replace:
 
 ### 3. Renew the notification channel
 
-Google does **not** renew channels automatically. When a channel is close to its expiration, you must create a new channel by calling the `watch` endpoint again with a **new** unique `id`. See [Renew notification channels](https://developers.google.com/workspace/calendar/api/guides/push#renew-notification-channels).
+Google does **not** renew channels automatically. When a channel is close to its expiration, you must create a new channel by calling the `watch` endpoint again with a **new** unique `id`. After the new channel is created successfully, stop the old channel so only one remains active. See [Renew notification channels](https://developers.google.com/workspace/calendar/api/guides/push#renew-notification-channels).
 
 You can use a Nango sync with a suitable frequency (e.g. every few days) to renew the watch before it expires:
 
@@ -120,6 +120,10 @@ export default createSync({
     syncType: 'full',
     frequency: '1d',
     exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const oldChannelId = metadata['googleCalendarChannelId'];
+        const oldResourceId = metadata['googleCalendarResourceId'];
+
         const calResponse = await nango.get({
             baseUrlOverride: 'https://www.googleapis.com/calendar',
             endpoint: '/v3/users/me/calendarList/primary' 
@@ -143,6 +147,19 @@ export default createSync({
         };
 
         const response = await nango.post(config);
+
+        // Stop the old channel only after the new one was successful
+        if (response.status === 200 && oldChannelId && oldResourceId) {
+            try {
+                await nango.post({
+                    baseUrlOverride: 'https://www.googleapis.com/calendar',
+                    endpoint: '/v3/channels/stop',
+                    data: { id: oldChannelId, resourceId: oldResourceId },
+                });
+            } catch (err) {
+                await nango.log(`Failed to stop previous channel: ${String(err)}`, { level: 'error' });
+            }
+        }
 
         // Update stored channel info for use in stop notifications (step 4)
         await nango.updateMetadata({
@@ -187,7 +204,7 @@ export default createOnEvent({
             await nango.post(config);
         } catch (err) {
             // Avoid blocking connection deletion if stop fails.
-            await nango.log(`Failed to stop Calendar channel: ${String(err)}`);
+            await nango.log(`Failed to stop Calendar channel: ${String(err)}`, { level: 'error' });
         }
     }
 });

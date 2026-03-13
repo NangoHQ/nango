@@ -99,10 +99,11 @@ export default createOnEvent({
 
 ### 5. Renew the watch subscription daily
 
-Google [recommends](https://developers.google.com/workspace/gmail/api/guides/push#renewing_mailbox_watch) calling the `watch` endpoint at least once a day to keep the subscription active. You can use a Nango sync with a `1d` frequency for this:
+Google [recommends](https://developers.google.com/workspace/gmail/api/guides/push#renewing_mailbox_watch) calling the `watch` endpoint at least once a day to keep the subscription active. Each call replaces any existing watch for the user, so no separate cleanup is needed. You can use a Nango sync with a `1d` frequency for this:
 
 ```typescript
 import { createSync, ProxyConfiguration } from 'nango';
+import { z } from 'zod';
 
 export default createSync({
     description: 'Calls the watch endpoint daily to keep a Gmail webhook subscription active',
@@ -154,7 +155,7 @@ export default createOnEvent({
             await nango.post(config);
         } catch (err) {
             // Avoid blocking connection deletion if stop fails.
-            await nango.log(`Failed to stop Gmail watch subscription: ${String(err)}`);
+            await nango.log(`Failed to stop Gmail watch subscription: ${String(err)}`, { level: 'error' });
         }
     }
 });
