@@ -10181,6 +10181,10 @@ microsoft-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
+    webhook_routing_script: microsoftClientCredentialsWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc/connect
     connection_config:
@@ -12896,6 +12900,36 @@ procore:
             optional: true
             example: '598134325779301'
             pattern: '^[0-9]+$'
+
+provenexpert:
+    display_name: ProvenExpert
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.provenexpert.com/api/
+        verification:
+            method: POST
+            endpoints:
+                - v1/rating/summary/get
+    docs: https://nango.dev/docs/api-integrations/provenexpert
+    docs_connect: https://nango.dev/docs/api-integrations/provenexpert/connect
+    credentials:
+        username:
+            type: string
+            title: API ID
+            description: Your ProvenExpert API ID.
+            pattern: '^[A-Za-z0-9]{32}$'
+            example: '3yxp1qwZl5UAmyHZ5qRC2Sbpk5KAlEDZ'
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: API Key
+            description: Your ProvenExpert API Key.
+            secret: true
+            pattern: '^[A-Za-z0-9]{43}$'
+            example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
+            doc_section: '#step-1-getting-your-credentials'
 
 qualtrics:
     display_name: Qualtrics
@@ -17434,6 +17468,32 @@ webex:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/webex
+
+webinarjam:
+    display_name: WebinarJam
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.webinarjam.com/webinarjam
+        query:
+            api_key: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/x-www-form-urlencoded
+            endpoints:
+                - /webinars
+    docs: https://nango.dev/docs/api-integrations/webinarjam
+    docs_connect: https://nango.dev/docs/api-integrations/webinarjam/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your WebinarJam API key.
+            example: b7e2d4f1-8a3c-4e6b-9d5f-1a2b3c4d5e6f
+            format: uuid
+            doc_section: '#step-1-getting-your-api-key'
 
 whatsapp-business:
     display_name: WhatsApp Business

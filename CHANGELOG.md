@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.44] - 2026-03-13
+
+### Added
+
+- *(cli)* Build and send json-schema per function (#5572) by @kaposke
+- *(lambda)* Add lifecycle to zod schema (#5596) by @TBonnin
+- Add variants_per_sync_max to plan (#5607) by @TBonnin
+- *(webhooks)* Store emailAddress on Gmail/Calendar connection config for webhook routing (#5600) by @agusayerza
+- *(integrations)* Add support for google tasks (#5611) by @hassan254-prog
+- *(integrations)* Add support for avanan (#5553) by @hassan254-prog
+- *(cli)* Drop `nango.yaml` support in CLI commands (#5604) by @kaposke
+- *(cli)* Clear mocks in generated sync tests (#5605) by @marcindobry
+- *(integrations)* Add support for telegram (#5606) by @hassan254-prog
+- *(integrations)* Add support for trigify io mcp (#5612) by @hassan254-prog
+- New free accounts default to lambda runtime for syncs (#5599) by @TBonnin
+- *(integrations)* Add support for provenexpert (#5545) by @alex-onepage
+- *(integrations)* Add support for webinarjam (#5514) by @alex-onepage
+- *(webhooks)* Add webhook support for ms client credentials (#5602) by @hassan254-prog
+
+### Changed
+
+- Add gmail webhooks documentation (#5610) by @agusayerza
+- Enable records autodelete (#5616) by @TBonnin
+- *(plans)* Nan 4966 enable sync variants and fast syncing for all accounts (#5608) by @rbwest
+- Drop plan has_sync_variants (#5609) by @TBonnin
+- Google Calendar webhook setup (#5620) by @rbwest
+
+### Fixed
+
+- *(auth)* Restore self-close fallback in OAuth callback popup (#5452 regression) (#5618) by @agusayerza
+- Hash emails on connection config for gmail and google calendar (#5622) by @agusayerza
+- *(lambda)* Support large payloads in Lambda (#5601) by @rossmcewan
+
 ## [v0.69.43] - 2026-03-11
 
 ### Fixed
@@ -6108,6 +6141,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.44]: https://github.com/NangoHQ/nango/compare/v0.69.43..v0.69.44
 [v0.69.43]: https://github.com/NangoHQ/nango/compare/v0.69.42..v0.69.43
 [v0.69.42]: https://github.com/NangoHQ/nango/compare/v0.69.41..v0.69.42
 [v0.69.41]: https://github.com/NangoHQ/nango/compare/v0.69.40..v0.69.41

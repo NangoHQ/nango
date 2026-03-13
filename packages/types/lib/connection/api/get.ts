@@ -96,6 +96,7 @@ export type PostPublicConnection = Endpoint<{
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
     };
+    Error: ApiError<'connection_test_failed'> | ApiError<'connection_validation_failed'>;
     Success: ApiPublicConnectionFull;
 }>;
 

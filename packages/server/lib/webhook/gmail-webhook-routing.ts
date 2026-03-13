@@ -4,6 +4,7 @@ import { NangoError, environmentService, getGlobalWebhookReceiveUrl } from '@nan
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { getGoogleJWKS } from './cache.js';
+import { hashEmailAddress } from '../utils/pii.js';
 
 import type { WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
@@ -105,13 +106,19 @@ const route: WebhookHandler = async (nango, headers, body) => {
         logger.error('Failed to parse webhook body:', err);
         return Err(new NangoError('webhook_invalid_body'));
     }
-    const editedBodyWithCatchAll = { ...body, type: '*', emailAddress: decodedBody?.emailAddress };
+    const emailAddress = decodedBody?.emailAddress;
+    const editedBodyWithCatchAll = {
+        ...body,
+        type: '*',
+        emailAddress,
+        emailAddressHash: emailAddress ? hashEmailAddress(emailAddress) : undefined
+    };
 
     let response = await nango.executeScriptForWebhooks({
         body: editedBodyWithCatchAll,
         webhookType: 'type',
-        connectionIdentifier: 'emailAddress',
-        propName: 'emailAddress'
+        connectionIdentifier: 'emailAddressHash',
+        propName: 'emailAddressHash'
     });
 
     if (response.connectionIds.length === 0) {
