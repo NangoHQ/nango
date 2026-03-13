@@ -53,6 +53,7 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
+    FUNCTION_EXECUTIONS_CONCURRENCY = 'nango.jobs.function.executions.concurrency',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
