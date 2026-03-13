@@ -3,6 +3,7 @@ import tracer from 'dd-trace';
 import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
 import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 
+import { concurrencyMonitor } from './monitor.js';
 import { getRuntimeAdapter } from '../../runtime/runtimes.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -66,6 +67,7 @@ export async function startScript({
         }
 
         await connectionService.trackExecution(nangoProps.nangoConnectionId);
+        concurrencyMonitor.start({ type: nangoProps.scriptType, accountId: nangoProps.team.id });
         return Ok(undefined);
     } catch (err) {
         span.setTag('error', err);

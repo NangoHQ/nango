@@ -18,7 +18,7 @@ export const General: React.FC = () => {
 
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
-    const { mutate: mutateMeta } = useMeta();
+    const { refetch: refetchMeta } = useMeta();
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const { toast } = useToast();
@@ -29,7 +29,7 @@ export const General: React.FC = () => {
             setShowDeleteAlert(false);
             // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
             navigate(`/${PROD_ENVIRONMENT_NAME}/environment-settings`);
-            await mutateMeta();
+            await refetchMeta();
             setEnv(PROD_ENVIRONMENT_NAME);
         } else {
             toast({
@@ -49,7 +49,7 @@ export const General: React.FC = () => {
                     onSuccess={async (newName) => {
                         // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
                         navigate(`/${newName}/environment-settings`);
-                        await mutateMeta();
+                        await refetchMeta();
                         setEnv(newName);
                     }}
                     blocked={env === PROD_ENVIRONMENT_NAME}
