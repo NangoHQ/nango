@@ -1,10 +1,10 @@
 ---
-title: 'Integration Functions - Overview'
-sidebarTitle: 'Overview'
-description: 'Build custom integrations with serverless functions.'
+title: 'Functions - Overview'
+sidebarTitle: 'Functions - Overview'
+description: 'Call external APIs on behalf of your users using Functions or the Proxy.'
 ---
 
-## Overview
+## Integration Functions
 
 **Functions** are Nango's TypeScript runtime for building custom integrations.
 
@@ -12,21 +12,21 @@ You write integration logic in TypeScript and deploy it to Nango. Functions exec
 
 Functions are a flexible primitive that you can use to build any [integration use-case](#use-cases), from simple API actions to complex data syncs, RAG pipelines & real-time webhook ingestion.
 
-Pair Functions with the [AI integration builder](/guides/platform/ai-integration-builder) to generate and maintain integration code faster: Combine the speed of AI with human-reviewable code you fully control.
+Pair Functions with the [AI integration builder](/implementation-guides/platform/functions/leverage-ai-agents) to generate and maintain integration code faster: combine the speed of AI with human-reviewable code you fully control.
 
-## How it works
+### How it works
 
 **1. Define a function**
 
 ```typescript
 export default async function run(nango: Nango) {
     const { owner, repo, title, body } = nango.input;
-    
+
     const response = await nango.post({
         endpoint: `/repos/${owner}/${repo}/issues`,
         data: { title, body }
     });
-    
+
     return response.data;
 }
 ```
@@ -90,41 +90,41 @@ const result = await nango.trigger({
   ![](/images/diagrams/nango-functions-diagram.png)
 </Frame>
 
-## Capabilities
+### Capabilities
 
-### Runtime and execution
+#### Runtime and execution
 - Runs inside Nango
 - Isolated execution per customer and per run
 - Elastic scaling & fast startup time (less than 100ms)
 - Flexible use-cases: long-running syncs, rapid-fire actions, etc.
 - Triggered by API calls, schedules, webhooks, or life-cycle events
 
-### Developer experience
+#### Developer experience
 - TypeScript-first, but compatible with any code base (HTTP API)
 - Generate & maintain integration code with your favorite AI models
 - Local development, local dry runs & testing framework
 - CLI-based workflow & CI/CD integration
 - Code lives in your own Git repository
 
-### Runtime SDK
+#### Runtime SDK
 - Authenticated API requests
 - Retries & rate-limit handling
 - Sync engine with caching & checkpointing for ETL & RAG
 - Data transformation utilities
 - Runtime and compile-time data validation & auto-completion
 
-### State and configuration
+#### State and configuration
 - Per-customer configuration & logical branching
 - Per-customer key-value storage
 - Compose functions into workflows
 
-### Observability
+#### Observability
 - Execution & custom logs
 - Metrics and monitoring
 - Debuggable failures
 - OpenTelemetry export
 
-## Use cases
+### Use cases
 
 Functions are a powerful & flexible primitive to support any complex integration use-case:
 
@@ -134,12 +134,26 @@ Functions are a powerful & flexible primitive to support any complex integration
 - **[Triggers and change detection](/implementation-guides/use-cases/syncs/implement-a-sync)**
 - **[Webhook ingestion and processing](/implementation-guides/use-cases/webhooks-from-external-apis)**
 - **[Per-customer integration logic](/implementation-guides/use-cases/customer-configuration)**
-- **[API unification](/implementation-guides/use-cases/unified-apis)** 
+- **[API unification](/implementation-guides/use-cases/unified-apis)**
+
+## Proxy
+
+The Nango Proxy is an alternative to Functions for ad-hoc, real-time API requests. Instead of deploying integration logic, you send requests directly to Nango — same HTTP method, path, parameters, and body as the target API — and Nango injects credentials and forwards the request.
+
+**When to use the Proxy:**
+- You need a quick, one-off API call without deploying a Function
+- Your integration logic lives in your application code rather than Nango
+- You want authenticated passthrough with centralized logging and retries
+
+See the [Proxy implementation guide](/implementation-guides/platform/proxy/implement-requests-proxy) for details.
 
 ## Next step
 
 <CardGroup cols={2}>
     <Card title="Set up functions" icon="function" href="/implementation-guides/platform/functions/functions-setup">
         Learn how to set up and deploy Nango Functions.
+    </Card>
+    <Card title="Implement a proxy request" icon="network-wired" href="/implementation-guides/platform/proxy/implement-requests-proxy">
+        Learn how to implement a proxy request using Nango.
     </Card>
 </CardGroup>

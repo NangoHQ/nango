@@ -78,6 +78,10 @@
     {
       "source": "/guides/use-cases/mcp-server",
       "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    },
+    {
+      "source": "/guides/primitives/proxy",
+      "destination": "/guides/primitives/functions"
     }
   ],
   "navigation": {
@@ -113,13 +117,6 @@
           {
             "group": "Call APIs",
             "pages": [
-              "guides/primitives/proxy",
-              "implementation-guides/platform/proxy/implement-requests-proxy"
-            ]
-          },
-          {
-            "group": "Integration Functions",
-            "pages": [
               "guides/primitives/functions",
               "implementation-guides/platform/functions/leverage-ai-agents",
               {
@@ -130,7 +127,8 @@
                   "implementation-guides/platform/functions/rate-limits",
                   "implementation-guides/platform/functions/data-validation",
                   "implementation-guides/platform/functions/testing",
-                  "implementation-guides/platform/functions/ci-cd"
+                  "implementation-guides/platform/functions/ci-cd",
+                  "implementation-guides/platform/proxy/implement-requests-proxy"
                 ]
               }
             ]
@@ -211,15 +209,10 @@
         "tab": "APIs & Integrations",
         "groups": [
           {
-            "group": "API Guides",
+            "group": "700+ APIs & Integrations",
             "pages": [
               "integrations/overview",
-              "integrations/google-security-review"
-            ]
-          },
-          {
-            "group": "APIs & Integrations",
-            "pages": [
+              "integrations/google-security-review",
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
@@ -931,15 +924,14 @@
         "tab": "Reference",
         "groups": [
           {
-            "group": "Reference",
+            "group": "Frontend",
             "pages": [
-              "reference/overview"
+              "reference/sdks/frontend"
             ]
           },
           {
-            "group": "Use Integrations - Reference",
+            "group": "Backend",
             "pages": [
-              "reference/sdks/frontend",
               {
                 "group": "HTTP API",
                 "icon": "cloud",
@@ -1052,10 +1044,15 @@
             ]
           },
           {
-            "group": "Build Integrations - Reference",
+            "group": "Functions",
             "pages": [
               "reference/cli",
-              "reference/functions",
+              "reference/functions"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
               "reference/api-configuration"
             ]
           }
