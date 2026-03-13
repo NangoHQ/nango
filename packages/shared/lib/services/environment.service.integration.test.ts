@@ -29,6 +29,7 @@ describe('Environment service', () => {
             hmac_enabled: false,
             hmac_key: null,
             id: expect.any(Number),
+            is_production: false,
             name: envName,
             pending_public_key: null,
             pending_secret_key: null,
