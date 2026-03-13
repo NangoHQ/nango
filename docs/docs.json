@@ -181,7 +181,6 @@
           {
             "group": "Platform",
             "pages": [
-              "guides/platform/ai-integration-builder",
               "guides/platform/observability",
               "guides/platform/environments",
               "guides/platform/limits",
