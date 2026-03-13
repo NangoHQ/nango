@@ -9,11 +9,4 @@ exports.up = async function (knex) {
     `);
 };
 
-/**
- * @param {import('knex').Knex} knex
- */
-exports.down = async function (knex) {
-    await knex.raw(`
-        UPDATE _nango_environments SET is_production = false WHERE name = 'prod'
-    `);
-};
+exports.down = function () {};
