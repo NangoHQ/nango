@@ -11,7 +11,7 @@ import ejs from 'ejs';
 
 import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
-import { compileAll } from '../zeroYaml/compile.js';
+import { compileAllFunctions } from '../zeroYaml/compile.js';
 import { buildDefinitions } from '../zeroYaml/definitions.js';
 
 const execAsync = promisify(exec);
@@ -492,7 +492,7 @@ export async function generateTests({
         }
 
         // compile then use js definitions
-        const compileResult = await compileAll({ fullPath: absolutePath, debug, interactive });
+        const compileResult = await compileAllFunctions({ fullPath: absolutePath, debug, interactive });
         if (compileResult.isErr()) {
             console.error(chalk.red(`Failed to compile TypeScript: ${compileResult.error}`));
             return { success: false, generatedFiles: [] };

@@ -1,0 +1,108 @@
+---
+title: 'Supabase (MCP)'
+sidebarTitle: 'Supabase (MCP)'
+description: 'Connect your application to the Supabase MCP server using a Personal Access Token (PAT)'
+---
+
+## 🚀 Quickstart
+
+Connect to the Supabase MCP server with Nango using a **Personal Access Token (PAT)** and your **project reference**. This is useful for CI or when your MCP client does not support OAuth.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _Supabase (MCP)_.
+    </Step>
+    <Step title="Add a connection">
+    Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Supabase (MCP)_. Enter your **project reference** and **Personal Access Token** (from [Supabase Access tokens](https://supabase.com/dashboard/account/tokens)). See the [connect guide](/api-integrations/supabase-mcp/connect) for step-by-step instructions.
+    </Step>
+    <Step title="Call the Supabase MCP server">
+    Make your first MCP request (e.g. initialize). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+    Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+    To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Supabase (MCP) guides
+
+Nango-maintained guides for common use cases.
+
+- [Connect Supabase (MCP)](/api-integrations/supabase-mcp/connect) — Find your project reference and obtain a Personal Access Token.
+
+Official docs: [Supabase (MCP) API Documentation](https://supabase.com/docs/guides/getting-started/mcp)
+
+## 🧩 Pre-built syncs & actions for Supabase (MCP)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/supabase-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

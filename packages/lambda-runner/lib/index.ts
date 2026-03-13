@@ -1,3 +1,7 @@
+import { gunzipSync } from 'node:zlib';
+
+import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+
 import { getKVStore, getLocking } from '@nangohq/kvstore';
 import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
 import { getLogger } from '@nangohq/utils';
@@ -10,6 +14,7 @@ import type { Context } from 'aws-lambda';
 import type * as zod from 'zod';
 
 const logger = getLogger('lambda-function-runner');
+const s3 = new S3Client();
 
 interface GatePass {
     lock?: Lock;
@@ -44,6 +49,59 @@ class Gate {
 
 function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
+}
+
+async function getCode(request: zod.infer<typeof requestSchema>): Promise<string> {
+    if ('code' in request && request.code) {
+        return request.code;
+    }
+    if ('codeRef' in request && request.codeRef) {
+        const response = await s3.send(
+            new GetObjectCommand({
+                Bucket: request.codeRef.bucket,
+                Key: request.codeRef.key
+            })
+        );
+        if (!response.Body) return '';
+        const bytes = await response.Body.transformToByteArray();
+        return gunzipSync(Buffer.from(bytes)).toString('utf8');
+    }
+    return '';
+}
+
+async function deleteCodeParams(request: zod.infer<typeof requestSchema>): Promise<void> {
+    try {
+        if ('codeParamsRef' in request && request.codeParamsRef) {
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: request.codeParamsRef.bucket,
+                    Key: request.codeParamsRef.key
+                })
+            );
+        }
+    } catch (err) {
+        logger.error('Error deleting code params', { error: err });
+        //ignore error - the payload will be deleted by the bucket lifecycle policy
+    }
+}
+
+async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<object> {
+    if ('codeParams' in request && request.codeParams) {
+        return request.codeParams;
+    }
+    if ('codeParamsRef' in request && request.codeParamsRef) {
+        const response = await s3.send(
+            new GetObjectCommand({
+                Bucket: request.codeParamsRef.bucket,
+                Key: request.codeParamsRef.key
+            })
+        );
+        if (!response.Body) return {};
+        const bytes = await response.Body.transformToByteArray();
+        const json = gunzipSync(Buffer.from(bytes)).toString('utf8');
+        return JSON.parse(json || '{}');
+    }
+    return {};
 }
 
 export const handler = async (event: zod.infer<typeof requestSchema>, context: Context) => {
@@ -92,27 +150,34 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         }
     }, heartbeatIntervalMs);
     try {
+        const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
+        if (code === '') {
+            throw new Error('No code found');
+        }
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },
-            code: request.code,
-            codeParams: request.codeParams,
+            code,
+            codeParams,
             locks,
             abortController: abortController
         };
         const execRes = await exec(payload);
         const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
+        const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
         telemetryBag.durationMs = Date.now() - startTime;
         await jobsClient.putTask({
             taskId: request.taskId,
             nangoProps: request.nangoProps as unknown as NangoProps,
-            ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
-            functionRuntime: 'lambda'
+            functionRuntime: 'lambda',
+            telemetryBag,
+            checkpoints,
+            ...(execRes.isErr() ? { error: execRes.error.toJSON() } : { output: execRes.value.output as any })
         });
     } catch (err: any) {
         await jobsClient.putTask({
             taskId: request.taskId,
             error: {
-                type: 'lambda_error',
+                type: 'function_internal_error',
                 payload: {
                     message: err.message as string
                 },
@@ -131,6 +196,7 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         if (pass.lock) {
             await gate.exit(pass.lock);
         }
+        await deleteCodeParams(request);
         logger.info(`Task ${request.taskId} completed`);
     }
 };

@@ -11,6 +11,7 @@ import {
     DeleteFunctionCommand,
     LambdaClient,
     PublishVersionCommand,
+    PutFunctionEventInvokeConfigCommand,
     waitUntilFunctionActive,
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
@@ -104,6 +105,20 @@ class Lambda {
                         FunctionVersion: pvResult.Version
                     })
                 );
+                if (envs.LAMBDA_FAILURE_DESTINATION) {
+                    await lambdaClient.send(
+                        new PutFunctionEventInvokeConfigCommand({
+                            FunctionName: pvResult.FunctionName,
+                            Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
+                            MaximumRetryAttempts: 0,
+                            DestinationConfig: {
+                                OnFailure: {
+                                    Destination: envs.LAMBDA_FAILURE_DESTINATION
+                                }
+                            }
+                        })
+                    );
+                }
                 const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
                 await applicationAutoScalingClient.send(
                     new RegisterScalableTargetCommand({
@@ -160,7 +175,9 @@ class Lambda {
                 DD_PROFILING_ENABLED: String(node.isProfilingEnabled),
                 DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
                 DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
-                DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || ''
+                DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || '',
+                ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
+                ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }
         };
     }
@@ -209,7 +226,8 @@ export const lambdaNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 0,
         executionTimeoutSecs: 900,
-        provisionedConcurrency: 1
+        provisionedConcurrency: 1,
+        replicas: 1
     },
     start: async (node: Node) => {
         return Lambda.getInstance().createFunction(node);

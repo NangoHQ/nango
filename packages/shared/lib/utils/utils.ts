@@ -2,6 +2,8 @@ import crypto, { createPrivateKey, createPublicKey } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import get from 'lodash-es/get.js';
 
 import { isEnterprise, localhostUrl } from '@nangohq/utils';
@@ -13,6 +15,8 @@ export enum NodeEnv {
     Staging = 'staging',
     Prod = 'production'
 }
+
+dayjs.extend(utc);
 
 export function getPort() {
     if (process.env['SERVER_PORT']) {
@@ -194,38 +198,50 @@ export function getWebsocketsPath(): string {
     return process.env['NANGO_SERVER_WEBSOCKETS_PATH'] || '/';
 }
 
+function replaceBase64Expression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${base64\((.*?)\)}/g, (_, inner) => Buffer.from(resolveInner(inner)).toString('base64'));
+}
+
+function replaceSha256HexExpression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${sha256Hex\((.*?)\)}/g, (_, inner) => crypto.createHash('sha256').update(resolveInner(inner), 'utf8').digest('hex'));
+}
+
 /**
  * A helper function to interpolate a string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
  *
+ * @param optionalReplacers - Optional extra replacers (e.g. stable random/now) merged on top of replacers; avoids mutating the main replacers object.
+ *
  * @remarks
  * Copied from https://stackoverflow.com/a/1408373/250880
  */
-export function interpolateString(str: string, replacers: Record<string, any>): string {
-    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateString(inner, replacers);
-        return Buffer.from(resolvedInner).toString('base64');
-    });
+export function interpolateString(str: string, replacers: Record<string, any>, optionalReplacers?: Record<string, any>): string {
+    const effective = optionalReplacers ? { ...replacers, ...optionalReplacers } : replacers;
+
+    str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
 
     str = str.replace(/\${fingerprint\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateString(inner, replacers);
+        const resolvedInner = interpolateString(inner, effective);
         return getFingerprint(resolvedInner);
     });
 
+    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, effective));
+
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        if (b === 'now') {
-            return new Date().toISOString();
+        const nowValue = resolveNowExpression(b, effective);
+        if (nowValue !== null) {
+            return nowValue;
         }
         if (b === 'random') {
-            return crypto.randomUUID();
+            return (effective['random'] as string | undefined) ?? crypto.randomUUID();
         }
         if (b.startsWith('base64(')) {
             return a;
         }
-        if (b in replacers && replacers[b] != null) {
-            return `${replacers[b]}`;
+        if (b in effective && effective[b] != null) {
+            return `${effective[b]}`;
         }
-        const r = resolveKey(b, replacers);
+        const r = resolveKey(b, effective);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
 
@@ -250,10 +266,8 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
     return value;
 }
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
-    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateStringFromObject(inner, replacers);
-        return Buffer.from(resolvedInner).toString('base64');
-    });
+    str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
+    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
 
     if (str.includes('||')) {
         const [left, right = ''] = str.split('||').map((part) => part.trim());
@@ -267,6 +281,16 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
+        const nowValue = resolveNowExpression(b, replacers);
+        if (nowValue !== null) {
+            return nowValue;
+        }
+        if (b === 'random') {
+            return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
+        }
+        if (b === 'endpoint') {
+            return (replacers['endpoint'] as string | undefined) ?? '';
+        }
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
@@ -285,20 +309,30 @@ export function interpolateObjectValues(obj: Record<string, string | undefined>,
     return interpolated;
 }
 
-export function interpolateObject(obj: Record<string, any>, dynamicValues: Record<string, any>): Record<string, any> {
+export function interpolateObject(obj: Record<string, any>, dynamicValues: Record<string, any>, optionalReplacers?: Record<string, any>): Record<string, any> {
+    const effective = optionalReplacers ? { ...dynamicValues, ...optionalReplacers } : dynamicValues;
     const interpolated: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'string') {
-            interpolated[key] = interpolateString(value, dynamicValues);
+            interpolated[key] = interpolateString(value, effective);
         } else if (typeof value === 'object' && value !== null) {
-            interpolated[key] = interpolateObject(value, dynamicValues);
+            interpolated[key] = interpolateObject(value, effective);
         } else {
             interpolated[key] = value;
         }
     }
 
     return interpolated;
+}
+
+export function getStableInterpolationReplacers(values: string[]): Record<string, string> {
+    const has = (pattern: string) => values.some((v) => v.includes(pattern));
+
+    return {
+        ...(has('${random}') && { random: crypto.randomUUID() }),
+        ...((has('${now}') || has('${now:')) && { now: new Date().toISOString() })
+    };
 }
 
 export function stripCredential(obj: any): any {
@@ -451,7 +485,7 @@ export function getConnectionMetadata(
 }
 
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
-    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const cleanTemplate = template.replace(/connectionConfig\./g, '').replace(/credentials\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
     const interpolatedUrl = interpolateStringFromObject(cleanTemplate, removeEmptyValues(encodedParams));
 
@@ -521,4 +555,23 @@ function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
         }
     }
     return cleaned;
+}
+function resolveNowExpression(expression: string, replacers: Record<string, any>): string | null {
+    if (expression === 'now') {
+        const isoNow = replacers['now'] as string | undefined;
+        return isoNow ?? new Date().toISOString();
+    }
+
+    const formatMatch = expression.match(/^now:(.+)$/);
+    if (formatMatch) {
+        const format = formatMatch[1];
+        return format ? dayjs.utc(getNowDate(replacers)).format(format) : null;
+    }
+
+    return null;
+}
+
+function getNowDate(replacers: Record<string, any>): Date {
+    const isoNow = replacers['now'] as string | undefined;
+    return isoNow ? new Date(isoNow) : new Date();
 }

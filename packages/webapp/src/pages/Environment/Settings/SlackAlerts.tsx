@@ -32,11 +32,18 @@ export const SlackAlertsSettings: React.FC = () => {
         const onFailure = () => {
             setSlackIsConnecting(false);
         };
-        await connectSlack({ accountUUID: environmentAndAccount.uuid, env, hostUrl: globalEnv.apiUrl, onFinish, onFailure });
+        await connectSlack({
+            accountUUID: environmentAndAccount.uuid,
+            envId: environmentAndAccount.environment.id,
+            env,
+            hostUrl: globalEnv.apiUrl,
+            onFinish,
+            onFailure
+        });
     };
 
     const slackDisconnect = async () => {
-        const res = await apiFetch(`/api/v1/connections/admin/account-${environmentAndAccount?.uuid}-${env}?env=${env}`, {
+        const res = await apiFetch(`/api/v1/connections/admin/account-${environmentAndAccount?.uuid}-${environmentAndAccount?.environment.id}?env=${env}`, {
             method: 'DELETE'
         });
 

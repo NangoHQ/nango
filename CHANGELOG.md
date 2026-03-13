@@ -2,6 +2,127 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.43] - 2026-03-11
+
+### Fixed
+
+- *(webapp)* Long wait time after Sign in (#5592) by @kaposke
+- *(webapp)* SignIn autoComplete (#5598) by @kaposke
+- Build lambda on arm64 github runner (#5597) by @TBonnin
+- *(sdk)* Add checkpoint methods to mock classes (#5603) by @marcindobry
+
+## [v0.69.42] - 2026-03-10
+
+### Added
+
+- Resume sync immediately when interrupted gracefully (#5591) by @TBonnin
+
+### Fixed
+
+- *(docs)* Replace while loop with nango.paginate in checkpoints doc (#5587) by @TBonnin
+- *(runner)* Correct env var name for conflict resolution mode (#5593) by @rossmcewan
+- *(runner)* Pass redis url (#5595) by @rossmcewan
+- *(runner-lambda)* Return checkpoints (#5589) by @TBonnin
+- *(cli)* Ignore axios default urlencoded Content-Type in unified mocks (#5590) by @marcindobry
+
+## [v0.69.41] - 2026-03-09
+
+### Added
+
+- *(integrations)* Migrate asana-mcp to v2 (#5547) by @hassan254-prog
+- *(webhooks)* Add na, eu, au to trusted ConnectWise PSA subdomains (#5557) by @mayankj
+- *(integrations)* Add support for axiom (#5558) by @hassan254-prog
+- *(webhooks)* Add support for ms teams bot webhooks (#5560) by @hassan254-prog
+- *(runner-sdk)* Add execution lifecycle with interrupt and kill timeouts (#5555) by @TBonnin
+- *(server)* Support flow-level json-schema (#5561) by @kaposke
+- *(integrations)* Add support for supabase mcp (#5569) by @hassan254-prog
+- *(integrations)* Add support for circleback mcp (#5571) by @hassan254-prog
+- *(integrations)* Add support for amplitude mcp (#5568) by @hassan254-prog
+- Expose function checkpoints (from/to) in Nango logs (#5565) by @TBonnin
+- *(orch)* Allow overriding next execution when completing a task (#5566) by @TBonnin
+- *(integrations)* Add support for quentn (#5470) by @alex-onepage
+- *(migrations)* Increase `oauth_client_id` size limit (#5573) by @hassan254-prog
+- *(providers)* Allow for interpolation of hostnames for dayforce (#5539) by @hassan254-prog
+- *(integrations)* Add support for klicktipp (#5473) by @alex-onepage
+- *(db)* Migrate Slack connection IDs from env name to env id (#5564) by @pfreixes
+- *(webapp)* Redesign auth pages (#5518) by @kaposke
+- *(integrations)* Add support for cleverreach (#5480) by @alex-onepage
+- *(integrations)* Add support for mailjet (#5583) by @alex-onepage
+- *(fleet)* Add support for runner replicas (#5579) by @TBonnin
+
+### Changed
+
+- Reposition intro + update API count to 700+ (#5562) by @bastienbeurier
+- Changelog and Dev update for February 2026 (#5556) by @SapneshNaik
+- Update README.md (#5574) by @bastienbeurier
+- *(slack)* Remove legacy name-based connection ID fallback (#5586) by @pfreixes
+
+### Fixed
+
+- *(proxy)* Properly send error responses (#5551) by @hassan254-prog
+- *(vulns)* Npm audit fix and some upgrades (#5563) by @rossmcewan
+- *(deps)* Upgrades and vuln fixes (#5570) by @rossmcewan
+- *(providers)* Fix supabase apikey interpolation (#5575) by @hassan254-prog
+- *(orchestrator)* Enforce group max concurrency when dequeuing with wildcard pattern (#5578) by @TBonnin
+- *(slack)* Use environment id for slack connection id with legacy fallback (#5559) by @pfreixes
+- *(runner)* Distributed conflict tracking (#5580) by @rossmcewan
+- *(cli)* Restore pagination logging after dryrun (#5588) by @agusayerza
+
+## [v0.69.40] - 2026-03-03
+
+### Added
+
+- *(lambda)* Add lambda destination for failures (#5503) by @rossmcewan
+- Make track deletes work across execution (#5517) by @TBonnin
+
+### Changed
+
+- Add Share Connect link docs (#5549) by @agusayerza
+
+### Fixed
+
+- *(runner-sdk)* TriggerSync to support new opts param (#5550) by @TBonnin
+
+## [v0.69.39] - 2026-03-02
+
+### Added
+
+- *(integrations)* Add support for granola-mcp (#5511) by @hassan254-prog
+- *(integrations)* Add support for ukg pro hcm client credentials (#5523) by @hassan254-prog
+- *(webapp)* Redesign connection page (#5438) by @kaposke
+- *(webapp)* Redesign toasts (#5498) by @kaposke
+- *(integrations)* Add support for google forms (#5528) by @hassan254-prog
+- *(integrations)* Add support for Google BigQuery (#5529) by @hassan254-prog
+- *(integrations)* Add support for gamma (#5530) by @hassan254-prog
+- *(integrations)* Add support for mercury (#5532) by @hassan254-prog
+- *(integrations)* Add support for heygen (#5533) by @hassan254-prog
+
+### Changed
+
+- *(runner)* Expose error.cause in http client (#5513) by @TBonnin
+- Migrate builder-io docs (#5501) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Migrate salesforce docs to use eca instead of connected apps (#5507) by @hassan254-prog
+- Move slack user tokens docs to a separate docs section (#5534) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Improve CLI dependency management guidance for CI and monorepos (#5524) by @agusayerza
+- Removed unused docs pages (#5548) by @bastienbeurier
+- CON-6/backfill-product-updates - October, November, December 25 and January 26 (#5520) by @SapneshNaik
+
+### Fixed
+
+- *(server)* Early exit on failing refresh token connections (#5505) by @agusayerza
+- *(docker)* Upgrade npm version and fix vulns (#5522) by @rossmcewan
+- *(webapp)* Integrations cache invalidation (#5496) by @kaposke
+- *(lambda)* Better logging and error message (#5525) by @rossmcewan
+- *(integrations)* Okta-cc connect guide, hide client_secret in Connect UI (#5526) by @agusayerza
+- *(webapp)* Support JWT privateKey as pem string on connection page (#5537) by @hassan254-prog
+- *(runner)* Use undici default agent in http client (#5515) by @TBonnin
+- *(server)* Set qs array limit to 100 (#5543) by @hassan254-prog
+- *(webapp)* Overflowing models cause sync table to be scrollable (#5542) by @kaposke
+- *(webapp)* Invalidate flows when toggling function (#5541) by @kaposke
+- *(cli)* Smart filtering in dryrun interactive mode (#5519) by @agusayerza
+
 ## [v0.69.38] - 2026-02-24
 
 ### Added
@@ -5987,6 +6108,11 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.43]: https://github.com/NangoHQ/nango/compare/v0.69.42..v0.69.43
+[v0.69.42]: https://github.com/NangoHQ/nango/compare/v0.69.41..v0.69.42
+[v0.69.41]: https://github.com/NangoHQ/nango/compare/v0.69.40..v0.69.41
+[v0.69.40]: https://github.com/NangoHQ/nango/compare/v0.69.39..v0.69.40
+[v0.69.39]: https://github.com/NangoHQ/nango/compare/v0.69.38..v0.69.39
 [v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
 [v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
 [v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35

@@ -9,11 +9,12 @@ import { SWRConfig } from 'swr';
 
 import { PrivateRoute } from './components/PrivateRoute';
 import { useMeta } from './hooks/useMeta';
+import { useUser } from './hooks/useUser';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
 import { InviteSignup } from './pages/Account/InviteSignup';
 import ResetPassword from './pages/Account/ResetPassword';
-import Signin from './pages/Account/Signin';
+import { Signin } from './pages/Account/Signin';
 import { Signup } from './pages/Account/Signup';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
@@ -286,7 +287,9 @@ const App = () => {
     const signout = useSignout();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
-    const { meta } = useMeta();
+    const { user } = useUser();
+    const { data: metaData } = useMeta(!!user);
+    const meta = metaData?.data;
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);

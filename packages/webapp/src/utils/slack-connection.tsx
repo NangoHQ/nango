@@ -5,18 +5,20 @@ import { apiPatchEnvironment } from '../hooks/useEnvironment';
 
 export const connectSlack = async ({
     accountUUID,
+    envId,
     env,
     hostUrl,
     onFinish,
     onFailure
 }: {
     accountUUID: string;
+    envId: number;
     env: string;
     hostUrl: string;
     onFinish: () => void;
     onFailure: () => void;
 }) => {
-    const connectionId = `account-${accountUUID}-${env}`;
+    const connectionId = `account-${accountUUID}-${envId}`;
 
     const res = await apiFetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
         method: 'GET'

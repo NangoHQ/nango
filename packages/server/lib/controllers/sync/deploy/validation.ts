@@ -81,7 +81,12 @@ export const flowConfig = z
         version: z.string().optional(),
         track_deletes: z.boolean().optional().default(false),
         sync_type: z.enum(['incremental', 'full']).optional(),
-        webhookSubscriptions: z.array(z.string().max(255)).optional()
+        webhookSubscriptions: z.array(z.string().max(255)).optional(),
+        models_json_schema: z
+            .object({
+                definitions: z.record(z.string(), z.looseObject({}))
+            })
+            .optional()
     })
     .refine(
         (data) => {
@@ -91,6 +96,15 @@ export const flowConfig = z
             return true;
         },
         { message: 'Track deletes is not supported for incremental syncs', path: ['track_deletes'] }
+    )
+    .refine(
+        (data) => {
+            if (!data.models_json_schema) return true;
+            const definitions = data.models_json_schema.definitions;
+            const topLevelModels = [...data.models, ...(typeof data.input === 'string' ? [data.input] : [])];
+            return topLevelModels.every((model) => model in definitions);
+        },
+        { message: 'models_json_schema is missing definitions for some models or input', path: ['models_json_schema'] }
     )
     .strict();
 const flowConfigs = z.array(flowConfig);

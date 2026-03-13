@@ -100,7 +100,6 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         monthly_active_records_max: null,
         sync_frequency_secs_min: 3600,
         auto_idle: false,
-        has_sync_variants: false,
         has_otel: false,
         has_webhooks_forward: false,
         has_webhooks_script: false,
@@ -120,6 +119,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
         has_records_autopruning: true,
+        variants_per_sync_max: 100,
         ...defaultPlanDefinition,
         ...flagOverrides
     };

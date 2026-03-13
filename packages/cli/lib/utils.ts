@@ -6,14 +6,15 @@ import os from 'os';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 import npa from 'npm-package-arg';
 import promptly from 'promptly';
 import semver from 'semver';
+import { serializeError } from 'serialize-error';
 
-import { cloudHost } from './constants.js';
+import { cloudHost, localhostUrl } from './constants.js';
 import { state } from './state.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -31,13 +32,41 @@ export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCAT
 export const isCI = process.env['CI'];
 const IGNORE_UPGRADE_FOR = 86400 * 1000;
 
-let parsedHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
+const PROVIDER_ERROR_MESSAGE_FIELDS = ['message', 'error', 'error_description', 'error_message', 'detail', 'details', 'reason', 'description'];
 
-if (parsedHostport.slice(-1) === '/') {
-    parsedHostport = parsedHostport.slice(0, -1);
+function stringifyError(err: unknown): string {
+    const serialized = serializeError(err);
+    const enriched: Record<string, unknown> = { ...(serialized && typeof serialized === 'object' ? serialized : {}) };
+
+    if (typeof err === 'object' && err != null) {
+        const anyErr = err as any;
+        if (anyErr.response?.data?.error && typeof anyErr.response.data.error === 'object') {
+            const filteredError: Record<string, unknown> = {};
+            for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
+                if (field in anyErr.response.data.error) {
+                    filteredError[field] = anyErr.response.data.error[field];
+                }
+            }
+            if (Object.keys(filteredError).length > 0) {
+                enriched['provider_error_payload'] = filteredError;
+            }
+        }
+    }
+
+    const allowed = new Set(['name', 'message', 'provider_error_payload']);
+    return JSON.stringify(Object.fromEntries(Object.entries(enriched).filter(([k]) => allowed.has(k))));
 }
 
-export const hostport = parsedHostport;
+const rawHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
+const resolvedHostport = rawHostport.endsWith('/') ? rawHostport.slice(0, -1) : rawHostport;
+const isHostportFromEnv = Boolean(process.env['NANGO_HOSTPORT']);
+
+export function resolveHostport(env?: string): string {
+    if (!isHostportFromEnv && env === 'local') {
+        return localhostUrl;
+    }
+    return resolvedHostport;
+}
 
 export function printDebug(message: string, debug?: boolean) {
     if (debug === true || debug === undefined) {
@@ -185,7 +214,7 @@ export async function getConnection(
     setHeaders?: Record<string, string | boolean>,
     debug = false
 ): Promise<GetPublicConnection['Success'] | undefined> {
-    const url = process.env['NANGO_HOSTPORT'] + `/connection/${connectionId}`;
+    const url = resolveHostport() + `/connection/${connectionId}`;
     const headers = enrichHeaders(setHeaders);
     if (debug) {
         printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
@@ -195,13 +224,13 @@ export async function getConnection(
         const res = await http.get(url, { params: { provider_config_key: providerConfigKey }, headers });
         return res.data as GetPublicConnection['Success'];
     } catch (err) {
-        console.log(`❌ ${err instanceof AxiosError ? JSON.stringify(err.response?.data.error) : JSON.stringify(err, ['message'])}`);
+        console.log(`❌ ${stringifyError(err)}`);
         return;
     }
 }
 
 export async function getConfig(providerConfigKey: string, debug = false): Promise<GetPublicIntegration['Success'] | undefined> {
-    const url = process.env['NANGO_HOSTPORT'] + `/integrations/${providerConfigKey}`;
+    const url = resolveHostport() + `/integrations/${providerConfigKey}`;
     const headers = enrichHeaders();
     if (debug) {
         printDebug(`getConfig endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
@@ -211,13 +240,18 @@ export async function getConfig(providerConfigKey: string, debug = false): Promi
         const res = await http.get(url, { headers });
         return res.data as GetPublicIntegration['Success'];
     } catch (err) {
-        console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+        console.log(`❌ ${stringifyError(err)}`);
         return;
     }
 }
 
 export async function getEnvironments(debug = false): Promise<GetEnvironments['Success'] | undefined> {
-    const url = process.env['NANGO_HOSTPORT'] + `/api/v1/environments`;
+    if (!process.env['NANGO_SECRET_KEY']) {
+        console.warn(chalk.yellow('Warning: NANGO_SECRET_KEY is not set, skipping environment fetch.'));
+        return;
+    }
+
+    const url = resolveHostport() + `/api/v1/environments`;
     const headers = enrichHeaders();
     if (debug) {
         printDebug(`getEnvironments endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
@@ -227,7 +261,7 @@ export async function getEnvironments(debug = false): Promise<GetEnvironments['S
         const res = await http.get(url, { headers });
         return res.data as GetEnvironments['Success'];
     } catch (err) {
-        console.log(`❌ ${err instanceof AxiosError ? err.response?.data.error : JSON.stringify(err, ['message'])}`);
+        console.log(`❌ ${stringifyError(err)}`);
         return;
     }
 }

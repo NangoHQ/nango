@@ -539,6 +539,26 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Environment does not have a default API secret';
                 break;
 
+            case 'function_runtime_out_of_memory':
+                this.status = 500;
+                this.message = 'The function runtime ran out of memory';
+                break;
+
+            case 'function_runtime_timed_out':
+                this.status = 500;
+                this.message = 'The function runtime timed out';
+                break;
+
+            case 'function_runtime_other':
+                this.status = 500;
+                this.message = 'An unknown error occurred with the function runtime';
+                break;
+
+            case 'execution_timeout':
+                this.status = 500;
+                this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
