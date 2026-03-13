@@ -78,6 +78,14 @@
     {
       "source": "/guides/use-cases/mcp-server",
       "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    },
+    {
+      "source": "/guides/primitives/proxy",
+      "destination": "/implementation-guides/platform/proxy/implement-requests-proxy"
+    },
+    {
+      "source": "/guides/platform/ai-integration-builder",
+      "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
     }
   ],
   "navigation": {
@@ -89,37 +97,49 @@
             "group": "Getting Started",
             "pages": [
               "getting-started/intro-to-nango",
-              "getting-started/quickstart"
+              "getting-started/quickstart",
+              "getting-started/sample-app"
             ]
           },
           {
-            "group": "Integration Primitives",
+            "group": "Connect APIs",
             "pages": [
               "guides/primitives/auth",
-              "guides/primitives/proxy",
-              "guides/primitives/functions"
+              "implementation-guides/platform/auth/implement-api-auth",
+              {
+                "group": "Other guides",
+                "pages": [
+                  "implementation-guides/platform/auth/configure-integration",
+                  "implementation-guides/platform/auth/share-connect-link",
+                  "implementation-guides/platform/auth/connection-tags",
+                  "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/contribute-new-api"
+                ]
+              }
             ]
           },
           {
-            "group": "Platform",
+            "group": "Call APIs",
             "pages": [
-              "guides/platform/ai-integration-builder",
-              "guides/platform/observability",
-              "guides/platform/environments",
-              "guides/platform/limits",
-              "guides/platform/security",
-              "guides/platform/self-hosting"
+              "guides/primitives/functions",
+              "implementation-guides/platform/functions/leverage-ai-agents",
+              {
+                "group": "Other guides",
+                "pages": [
+                  "implementation-guides/platform/functions/functions-setup",
+                  "implementation-guides/platform/functions/customize-template",
+                  "implementation-guides/platform/functions/rate-limits",
+                  "implementation-guides/platform/functions/data-validation",
+                  "implementation-guides/platform/functions/testing",
+                  "implementation-guides/platform/functions/ci-cd",
+                  "implementation-guides/platform/proxy/implement-requests-proxy"
+                ]
+              }
             ]
-          }
-        ]
-      },
-      {
-        "tab": "Implementation Guides",
-        "groups": [
+          },
           {
             "group": "Use Cases",
             "pages": [
-              "implementation-guides/use-cases/sample-app",
               {
                 "group": "AI tool calling & MCP",
                 "pages": [
@@ -163,47 +183,28 @@
           {
             "group": "Platform",
             "pages": [
+              "guides/platform/observability",
+              "guides/platform/environments",
+              "guides/platform/limits",
+              "guides/platform/security",
+              "guides/platform/self-hosting",
               {
-                "group": "Auth",
+                "group": "Other guides",
                 "pages": [
-                  "implementation-guides/platform/auth/configure-integration",
-                  "implementation-guides/platform/auth/implement-api-auth",
-                  "implementation-guides/platform/auth/share-connect-link",
-                  "implementation-guides/platform/auth/connection-tags",
-                  "implementation-guides/platform/auth/customize-connect-ui",
-                  "implementation-guides/platform/auth/contribute-new-api"
+                  "implementation-guides/platform/webhooks-from-nango",
+                  "implementation-guides/platform/open-telemetry-export",
+                  {
+                    "group": "Migrations",
+                    "pages": [
+                      "implementation-guides/platform/migrations/migrate-to-checkpoints",
+                      "implementation-guides/platform/migrations/migrate-from-end-user",
+                      "implementation-guides/platform/migrations/migrate-from-public-key",
+                      "implementation-guides/platform/migrations/migrate-to-zero-yaml"
+                    ]
+                  },
+                  "implementation-guides/platform/common-issues"
                 ]
-              },
-              {
-                "group": "Proxy",
-                "pages": [
-                  "implementation-guides/platform/proxy/implement-requests-proxy"
-                ]
-              },
-              {
-                "group": "Functions",
-                "pages": [
-                  "implementation-guides/platform/functions/functions-setup",
-                  "implementation-guides/platform/functions/leverage-ai-agents",
-                  "implementation-guides/platform/functions/customize-template",
-                  "implementation-guides/platform/functions/rate-limits",
-                  "implementation-guides/platform/functions/data-validation",
-                  "implementation-guides/platform/functions/testing",
-                  "implementation-guides/platform/functions/ci-cd"
-                ]
-              },
-              "implementation-guides/platform/webhooks-from-nango",
-              "implementation-guides/platform/open-telemetry-export",
-              {
-                "group": "Migrations",
-                "pages": [
-                  "implementation-guides/platform/migrations/migrate-to-checkpoints",
-                  "implementation-guides/platform/migrations/migrate-from-end-user",
-                  "implementation-guides/platform/migrations/migrate-from-public-key",
-                  "implementation-guides/platform/migrations/migrate-to-zero-yaml"
-                ]
-              },
-              "implementation-guides/platform/common-issues"
+              }
             ]
           }
         ]
@@ -212,15 +213,10 @@
         "tab": "APIs & Integrations",
         "groups": [
           {
-            "group": "API Guides",
+            "group": "700+ APIs & Integrations",
             "pages": [
               "integrations/overview",
-              "integrations/google-security-review"
-            ]
-          },
-          {
-            "group": "APIs & Integrations",
-            "pages": [
+              "integrations/google-security-review",
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
@@ -937,15 +933,14 @@
         "tab": "Reference",
         "groups": [
           {
-            "group": "Reference",
+            "group": "Frontend",
             "pages": [
-              "reference/overview"
+              "reference/sdks/frontend"
             ]
           },
           {
-            "group": "Use Integrations - Reference",
+            "group": "Backend",
             "pages": [
-              "reference/sdks/frontend",
               {
                 "group": "HTTP API",
                 "icon": "cloud",
@@ -1058,10 +1053,15 @@
             ]
           },
           {
-            "group": "Build Integrations - Reference",
+            "group": "Functions",
             "pages": [
               "reference/cli",
-              "reference/functions",
+              "reference/functions"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
               "reference/api-configuration"
             ]
           }
