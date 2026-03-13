@@ -174,7 +174,7 @@ For **new connections** (created after 2026-03-11), no action is needed. Nango a
 
 For **existing connections** created before this feature was available, you have two options:
 
-- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email address automatically
+- **Re-authorize** the connection so Nango's post-connection hook runs and persists the email hash automatically
 - **Set the metadata manually** via the API:
 
 ```bash
@@ -191,7 +191,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
 
 <Warning>
-If Nango cannot match the incoming webhook to a connection (because neither `connection_config` nor `metadata` contains the email address), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
+If Nango cannot match the incoming webhook to a connection (because it can't find a matching hash/email in `connection_config` or `metadata`), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
 </Warning>
 
 ## Stop notifications
