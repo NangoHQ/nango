@@ -84,7 +84,9 @@ class EnvironmentService {
 
     async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
         return trx.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
+            const [environment] = await trx<DBEnvironment>(TABLE)
+                .insert({ account_id: accountId, name, is_production: name === PROD_ENVIRONMENT_NAME })
+                .returning('*');
             if (!environment) {
                 trx.rollback();
                 return null;

@@ -86,6 +86,20 @@ describe('Environment service', () => {
         expect(secret3.secret).toEqual(env3.secret_key);
     });
 
+    it('should set is_production = true when name is prod', async () => {
+        const account = await createAccount();
+        const env = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'prod' });
+        expect(env).not.toBeNull();
+        expect(env!.is_production).toBe(true);
+    });
+
+    it('should set is_production = false for non-prod environments', async () => {
+        const account = await createAccount();
+        const env = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'dev' });
+        expect(env).not.toBeNull();
+        expect(env!.is_production).toBe(false);
+    });
+
     describe('environment variables', () => {
         it('should store and retrieve environment variables', async () => {
             const account = await createAccount();
