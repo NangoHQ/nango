@@ -32,11 +32,11 @@ Microsoft Graph lets you pass a `clientState` value in each subscription. Nango 
 
 1. In the Nango dashboard, go to the **Settings** sub-tab for your integration
 2. Under **Webhook Configuration**, enter a secret string in the **Webhook Secret** field
-3. Click **Save** — you'll use this same value as `clientState` when creating subscriptions
+3. Click **Save**, you'll use this same value as `clientState` when creating subscriptions
 
 ### 3. Create a Microsoft Graph subscription
 
-Create a subscription via the Nango proxy. Set `notificationUrl` to your Nango webhook URL (copied from the **Settings** tab) and `clientState` to the secret you configured in step 2:
+Create a subscription via the Nango proxy. Set `notificationUrl` to your Nango webhook URL (copied from the **Settings** tab) and `clientState` to the secret you configured in step 2. See the [Subscription lifetime](https://learn.microsoft.com/en-us/graph/change-notifications-overview#subscription-lifetime) docs for maximum expiration limits per resource type:
 
 <Tabs>
   <Tab title="cURL">
@@ -51,7 +51,7 @@ curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
     "changeType": "created,updated",
     "notificationUrl": "https://api.nango.dev/webhook/<ENV-UUID>/<INTEGRATION-ID>",
     "resource": "users",
-    "expirationDateTime": "2025-03-15T18:23:45.9354328Z",
+    "expirationDateTime": "", // your expected expirationDateTime based on the resource
     "clientState": "<YOUR-WEBHOOK-SECRET>"
   }'
 ```
@@ -64,7 +64,6 @@ import { Nango } from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
-// See [Subscription lifetime](https://learn.microsoft.com/en-us/graph/change-notifications-overview#subscription-lifetime) docs for maximum expiration limits per resource type
 const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
 const res = await nango.post({
@@ -86,7 +85,7 @@ console.log(res.data); // { id: '...', expirationDateTime: '...', ... }
   </Tab>
 </Tabs>
 
-Microsoft will immediately send a validation request to your Nango webhook URL with a `validationToken` query parameter. Nango responds automatically — no action required on your part.
+Microsoft will immediately send a validation request to your Nango webhook URL with a `validationToken` query parameter. Nango responds automatically, no action required on your part.
 
 
 You can automate subscription creation for new connections using a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
@@ -98,7 +97,9 @@ export default createOnEvent({
     event: 'post-connection-creation',
     description: 'Create a Microsoft Graph subscription for new connections',
     exec: async (nango) => {
-        const metadata = await nango.getMetadata();
+        const integration = await nango.getIntegration({include: ['webhook', 'credentials']});
+        const webhookUrl = integration.data.webhook_url;
+        const webhookSecret = integration.data.credentials?.webhook_secret;
 
         const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -106,22 +107,22 @@ export default createOnEvent({
             endpoint: '/v1.0/subscriptions',
             data: {
                 changeType: 'created,updated',
-                notificationUrl: metadata['nangoWebhookUrl'],
-                resource: ,// build you resource
+                notificationUrl: webhookUrl,
+                resource: ,// build your own resource
                 expirationDateTime,
-                clientState: metadata['webhookSecret'],
+                clientState: webhookSecret,
             },
         };
 
         const response = await nango.post(config);
-        await nango.updateMetadata({ subscriptionId: response.data.id });
+        await nango.updateConnectionConfig({ subscriptionId: response.data.id });
     }
 });
 ```
 
 ### 4. Renew subscriptions before they expire
 
-Microsoft Graph subscriptions expire and must be renewed before they do. Use a Nango sync with a `1d` frequency to renew them automatically:
+Microsoft Graph subscriptions expire and must be renewed before expiry. Use a Nango sync to renew them automatically — adjust the frequency to match the expiration window of the resource you are subscribing to:
 
 ```typescript
 import { createSync, ProxyConfiguration } from 'nango';
@@ -137,8 +138,8 @@ export default createSync({
     syncType: 'full',
     frequency: '1d',
     exec: async (nango) => {
-        const metadata = await nango.getMetadata();
-        const subscriptionId = metadata['subscriptionId'];
+        const connection = await nango.getConnection();
+        const subscriptionId = connection.connection_config['subscriptionId'];
 
         if (!subscriptionId) {
             await nango.log('No subscription ID found in metadata, skipping renewal');
