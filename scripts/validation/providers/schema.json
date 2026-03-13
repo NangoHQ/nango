@@ -604,6 +604,12 @@
                 "authorization_url_fragment": {
                     "type": "string"
                 },
+                "webhook_allowed_query_params": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "connection_config": {
                     "type": "object",
                     "additionalProperties": false,

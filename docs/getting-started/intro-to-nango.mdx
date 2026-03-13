@@ -16,21 +16,18 @@ Nango handles auth, execution, scaling, and observability so you ship integratio
   <Card title="Quickstart" icon="bolt" href="/getting-started/quickstart">
     Authorize an API and make your first request in under 5 minutes.
   </Card>
-  <Card title="Try the AI Builder" icon="wand-magic-sparkles" href="/guides/platform/ai-integration-builder">
+  <Card title="Try the AI Builder" icon="wand-magic-sparkles" href="/implementation-guides/platform/functions/leverage-ai-agents">
     Describe what you need and get production-ready integration code.
   </Card>
 </CardGroup>
 
 ## How it works
 
-Nango gives you 3 primitives that cover every integration pattern:
+Nango gives you 2 primitives that cover every integration pattern:
 
 <Steps>
   <Step title="Auth">
     Embed a white label, managed auth flow in your app. Nango handles OAuth, API keys, token refresh, and credential storage for 700+ APIs. Never deal with auth plumbing again.
-  </Step>
-  <Step title="Proxy">
-    Make authenticated API requests on behalf of your users. Send requests through Nango's proxy gateway and it resolves the provider, injects credentials, handles retries and rate limits, and returns the response. No credential management in your codebase.
   </Step>
   <Step title="Functions">
     Write integration logic as TypeScript functions and deploy them to Nango. Functions execute on a production runtime with built-in API access, retries, storage, and observability. Use the AI builder to generate them from a description of your use case.

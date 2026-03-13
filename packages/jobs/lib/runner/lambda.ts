@@ -175,7 +175,9 @@ class Lambda {
                 DD_PROFILING_ENABLED: String(node.isProfilingEnabled),
                 DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
                 DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
-                DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || ''
+                DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || '',
+                ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
+                ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }
         };
     }

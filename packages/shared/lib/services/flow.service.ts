@@ -24,9 +24,14 @@ class FlowService {
             };
 
             for (const item of integration.syncs) {
-                const jsonSchema = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
-                if (jsonSchema.isErr()) {
-                    throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchema.error });
+                // Prioritize function-level json-schema. Temporary fallback to top-level json-schema for smooth migration
+                let jsonSchema = item.json_schema || null;
+                if (!jsonSchema) {
+                    const jsonSchemaResult = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
+                    if (jsonSchemaResult.isErr()) {
+                        throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchemaResult.error });
+                    }
+                    jsonSchema = jsonSchemaResult.value;
                 }
 
                 std.syncs.push({
@@ -48,16 +53,21 @@ class FlowService {
                     enabled: false,
                     last_deployed: null,
                     webhookSubscriptions: [],
-                    json_schema: jsonSchema.value,
+                    json_schema: jsonSchema,
                     metadata: { description: item.description, scopes: item.scopes },
                     sdk_version: `${integration.sdkVersion}-zero`,
                     is_zero_yaml: true
                 });
             }
             for (const item of integration.actions) {
-                const jsonSchema = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
-                if (jsonSchema.isErr()) {
-                    throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchema.error });
+                // Prioritize function-level json-schema. Temporary fallback to top-level json-schema for smooth migration
+                let jsonSchema = item.json_schema || null;
+                if (!jsonSchema) {
+                    const jsonSchemaResult = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
+                    if (jsonSchemaResult.isErr()) {
+                        throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchemaResult.error });
+                    }
+                    jsonSchema = jsonSchemaResult.value;
                 }
 
                 std.actions.push({
@@ -75,7 +85,7 @@ class FlowService {
                     enabled: false,
                     last_deployed: null,
                     webhookSubscriptions: [],
-                    json_schema: jsonSchema.value,
+                    json_schema: jsonSchema,
                     metadata: { description: item.description, scopes: item.scopes },
                     sdk_version: `${integration.sdkVersion}-zero`,
                     is_zero_yaml: true
