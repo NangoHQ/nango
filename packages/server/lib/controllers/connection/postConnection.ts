@@ -146,15 +146,13 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         {
             operation: { type: 'auth', action: 'create_connection' },
             meta: { authType: 'connection_api' },
-            expiresAt: defaultOperationExpiration.auth()
+            expiresAt: defaultOperationExpiration.auth(),
+            integrationId: integration.id!,
+            integrationName: integration.unique_key,
+            providerName
         },
         { account, environment }
     );
-    await logCtx.enrichOperation({
-        integrationId: integration.id!,
-        integrationName: integration.unique_key,
-        providerName
-    });
 
     let updatedConnection: ConnectionUpsertResponse | undefined;
 
