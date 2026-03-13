@@ -164,12 +164,12 @@ export const onEventScriptService = {
     diffChanges: async ({
         environmentId,
         onEventScriptsByProvider,
-        singleDeployMode = false,
+        deployMode = 'all',
         sdkVersion
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
         sdkVersion: string | undefined;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
@@ -186,10 +186,16 @@ export const onEventScriptService = {
 
         const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
-        // Filter existing scripts to only include those from providers being deployed when in single deploy mode
-        const relevantExistingScripts = singleDeployMode
-            ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
-            : existingScripts;
+        // Filter existing scripts to only include those from providers being deployed when not in all-providers deploy mode.
+        // For 'integration' mode, infer the scoped provider from the incoming scripts (or fall back to deployingProviders[0])
+        // so stale scripts are detected even when no scripts are incoming.
+        const integrationScopeKey = deployMode === 'integration' ? (onEventScriptsByProvider[0]?.providerConfigKey ?? deployingProviders[0]) : undefined;
+        const relevantExistingScripts =
+            deployMode === 'integration' && integrationScopeKey
+                ? existingScripts.filter((script) => script.providerConfigKey === integrationScopeKey)
+                : deployMode === 'single'
+                  ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
+                  : existingScripts;
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));

@@ -34,7 +34,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         flows: body.flowConfigs,
         performAction: false,
         debug: body.debug,
-        singleDeployMode: body.singleDeployMode,
+        deployMode: body.deployMode,
         logContextGetter,
         orchestrator
     });
@@ -48,7 +48,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         const diff = await onEventScriptService.diffChanges({
             environmentId,
             onEventScriptsByProvider: body.onEventScriptsByProvider,
-            singleDeployMode: body.singleDeployMode || false,
+            deployMode: body.deployMode ?? 'all',
             sdkVersion: body.sdkVersion
         });
         result = {

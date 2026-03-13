@@ -352,7 +352,7 @@ export const getAndReconcileDifferences = async ({
     flows,
     performAction,
     debug = false,
-    singleDeployMode = false,
+    deployMode = 'all',
     logCtx,
     logContextGetter,
     orchestrator
@@ -361,7 +361,7 @@ export const getAndReconcileDifferences = async ({
     flows: CLIDeployFlowConfig[];
     performAction: boolean;
     debug?: boolean | undefined;
-    singleDeployMode?: boolean | undefined;
+    deployMode?: 'all' | 'single' | 'integration' | undefined;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -483,9 +483,16 @@ export const getAndReconcileDifferences = async ({
     const deletedActions: SlimAction[] = [];
     const deletedModels: string[] = [];
 
-    if (!singleDeployMode) {
+    if (deployMode !== 'single') {
+        const integrationScopeKey = deployMode === 'integration' ? flows[0]?.providerConfigKey : undefined;
         for (const existingSync of existingSyncs) {
-            const flow = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            if (integrationScopeKey && integrationScopeKey !== existingSync.unique_key) {
+                continue;
+            }
+
+            const flow = flows.find(
+                (sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key && sync.type === existingSync.type
+            );
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
 
             if (!flow) {
