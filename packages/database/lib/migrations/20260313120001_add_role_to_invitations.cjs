@@ -7,11 +7,7 @@ exports.up = async function (knex) {
     await knex.raw(`
         ALTER TABLE _nango_invited_users
         ADD COLUMN IF NOT EXISTS role VARCHAR(50) NOT NULL DEFAULT 'administrator'
-    `);
-
-    await knex.raw(`
-        ALTER TABLE _nango_invited_users
-        ADD CONSTRAINT check_invited_users_role CHECK (role IN ('administrator', 'production_support', 'development_full_access'))
+        CONSTRAINT check_invited_users_role CHECK (role IN ('administrator', 'production_support', 'development_full_access'))
     `);
 };
 
