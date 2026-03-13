@@ -27,6 +27,55 @@ Copy the webhook URL from your Google Calendar integration page in the Nango das
 
 Create a notification channel for the calendar you want to watch by sending a `POST` request to the appropriate `watch` endpoint. See the [API reference](https://developers.google.com/workspace/calendar/api/guides/push#create-notification-channels) for the exact URI.
 
+You can automate creating the channel for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+import { randomUUID } from 'crypto';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Create a Google Calendar notification channel for events on the primary calendar',
+    metadata: z.object({
+        googleCalendarChannelId: z.string().optional(),
+        googleCalendarResourceId: z.string().optional(),
+    }),
+    exec: async (nango) => {
+        const calResponse = await nango.get({
+            baseUrlOverride: 'https://www.googleapis.com/calendar',
+            endpoint: '/v3/users/me/calendarList/primary' 
+        });
+
+        const calendarEmail = calResponse.data.id; 
+        const channelId = randomUUID();
+        const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+        const webhookUrl = await nango.getWebhookURL();
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/calendar',
+            endpoint: `/v3/calendars/${encodeURIComponent(calendarEmail)}/events/watch`,
+            data: {
+                id: channelId,
+                type: 'webhook',
+                // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-calendar (your integration settings page)
+                address: webhookUrl,
+                expiration: expiration,
+            },
+        };
+
+        const response = await nango.post(config);
+
+        // Store channel info so it can be used to stop notifications later (step 4)
+        await nango.updateMetadata({
+            googleCalendarChannelId: channelId,
+            googleCalendarResourceId: response.data.resourceId,
+        });
+    }
+});
+```
+
+You can also do this manually:
 Example: watch the **events** collection on a calendar:
 
 ```bash
@@ -36,7 +85,7 @@ curl -X POST "https://www.googleapis.com/calendar/v3/calendars/<CALENDAR_ID>/eve
   -d '{
     "id": "01234567-89ab-cdef-0123456789ab",
     "type": "web_hook",
-    "address": "https://api.nango.dev/webhook/...",
+    "address": "<REPLACE_WITH_NANGO_WEBHOOK_URL>",
     "expiration": 1426325213000
   }'
 ```
@@ -49,36 +98,6 @@ Replace:
 - **id** — A unique string (e.g. UUID) identifying this channel; max 64 characters. It is echoed in `X-Goog-Channel-ID` on every notification.
 - **expiration** — (Optional) Unix timestamp in **milliseconds** when the channel should stop sending notifications. If omitted, Google applies a default; channels must be renewed before they expire.
 
-You can automate creating the channel for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
-
-```typescript
-import { createOnEvent, ProxyConfiguration } from 'nango';
-import { randomUUID } from 'crypto';
-
-export default createOnEvent({
-    event: 'post-connection-creation',
-    description: 'Create a Google Calendar notification channel for events on the primary calendar',
-    exec: async (nango) => {
-        const channelId = randomUUID();
-        const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
-
-        const config: ProxyConfiguration = {
-            baseUrlOverride: 'https://www.googleapis.com/calendar',
-            endpoint: '/v3/calendars/primary/events/watch',
-            data: {
-                id: channelId,
-                type: 'web_hook',
-                address: 'https://api.nango.dev/webhook/...',
-                expiration,
-            },
-        };
-
-        const response = await nango.post(config);
-        await nango.log(response.data);
-    }
-});
-```
-
 ### 3. Renew the notification channel
 
 Google does **not** renew channels automatically. When a channel is close to its expiration, you must create a new channel by calling the `watch` endpoint again with a **new** unique `id`. See [Renew notification channels](https://developers.google.com/workspace/calendar/api/guides/push#renew-notification-channels).
@@ -88,36 +107,93 @@ You can use a Nango sync with a suitable frequency (e.g. every few days) to rene
 ```typescript
 import { createSync, ProxyConfiguration } from 'nango';
 import { randomUUID } from 'crypto';
-import { Empty } from '../../models.js';
+import z from 'zod';
 
 export default createSync({
     description: 'Renew the Google Calendar events watch channel before it expires',
-    models: { Empty },
-    endpoints: [{ method: 'POST', path: '/v3/calendars/primary/events/watch' }],
+    models: {},
+    metadata: z.object({
+        googleCalendarChannelId: z.string().optional(),
+        googleCalendarResourceId: z.string().optional(),
+    }),
+    endpoints: [{ method: 'GET', path: '/google-calendar/watch-renewal' }],
     syncType: 'full',
-    frequency: '5d',
+    frequency: '1d',
     exec: async (nango) => {
+        const calResponse = await nango.get({
+            baseUrlOverride: 'https://www.googleapis.com/calendar',
+            endpoint: '/v3/users/me/calendarList/primary' 
+        });
+
+        const calendarEmail = calResponse.data.id; // This will be "user@company.com"
         const channelId = randomUUID();
-        const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+        const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+        const webhookUrl = await nango.getWebhookURL();
 
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/calendar',
-            endpoint: '/v3/calendars/primary/events/watch',
+            endpoint: `/v3/calendars/${encodeURIComponent(calendarEmail)}/events/watch`,
             data: {
                 id: channelId,
-                type: 'web_hook',
-                address: 'https://api.nango.dev/webhook/...',
-                expiration,
+                type: 'webhook',
+                // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-calendar (your integration settings page)
+                address: webhookUrl,
+                expiration: expiration,
             },
         };
 
         const response = await nango.post(config);
-        await nango.log(response.data);
+
+        // Update stored channel info for use in stop notifications (step 4)
+        await nango.updateMetadata({
+            googleCalendarChannelId: channelId,
+            googleCalendarResourceId: response.data.resourceId,
+        });
     }
 });
 ```
 
-### 4. Handle forwarded webhooks
+### 4. Stop notifications on connection deletion
+
+If a connection is deleted in Nango but the channel remains active, Google may continue sending notifications until the channel expires. To stop notifications immediately for a deleted connection, call `channels.stop` before deletion.
+
+You can automate this with a `pre-connection-deletion` lifecycle event. This uses the `googleCalendarChannelId` and `googleCalendarResourceId` stored in metadata during channel creation (step 2) and renewal (step 3):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Stop Google Calendar notification channel before connection deletion',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const channelId = metadata['googleCalendarChannelId'];
+        const resourceId = metadata['googleCalendarResourceId'];
+
+        if (!channelId || !resourceId) {
+            return;
+        }
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/calendar',
+            endpoint: '/v3/channels/stop',
+            data: {
+                id: channelId,
+                resourceId
+            }
+        };
+
+        try {
+            await nango.post(config);
+        } catch (err) {
+            // Avoid blocking connection deletion if stop fails.
+            await nango.log(`Failed to stop Calendar channel: ${String(err)}`);
+        }
+    }
+});
+```
+
+### 5. Handle forwarded webhooks
 
 When a Calendar notification arrives, Nango matches it to the correct connection and forwards it to your system. Notification messages have **no body**; Google sends only HTTP headers. Nango forwards those headers in the payload. Example structure:
 
@@ -137,12 +213,12 @@ When a Calendar notification arrives, Nango matches it to the correct connection
 }
 ```
 
-Relevant headers (see [Google’s documentation](https://developers.google.com/workspace/calendar/api/guides/push#interpret-the-notification-message-format)):
+Relevant headers (see [Google's documentation](https://developers.google.com/workspace/calendar/api/guides/push#interpret-the-notification-message-format)):
 
 | Header | Description |
 |--------|-------------|
 | `x-goog-resource-state` | `sync` = channel created; `exists` = resource changed (create/update/delete). |
-| `x-goog-resource-uri` | The watched resource (e.g. which calendar’s events). |
+| `x-goog-resource-uri` | The watched resource (e.g. which calendar's events). |
 | `x-goog-channel-id` | The channel `id` you sent when creating the channel. |
 | `x-goog-message-number` | Incrementing message number for this channel. |
 
@@ -199,60 +275,6 @@ To do this in bulk, iterate over the [list connections](/reference/api/connectio
 <Warning>
 If Nango cannot match the incoming webhook to a connection (because it can't find a matching hash/email in `connection_config` or `metadata`), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
 </Warning>
-
-## Stop notifications
-
-If a connection is deleted in Nango but the channel remains active, Google may continue sending notifications until the channel expires. To stop notifications immediately for a deleted connection, call `channels.stop` before deletion.
-
-You can automate this with a `pre-connection-deletion` lifecycle event (this expects `googleCalendarChannelId` and `googleCalendarResourceId` to be present in connection metadata):
-
-```typescript
-import { createOnEvent, ProxyConfiguration } from 'nango';
-
-export default createOnEvent({
-    event: 'pre-connection-deletion',
-    description: 'Stop Google Calendar notification channel before connection deletion',
-    exec: async (nango) => {
-        const metadata = await nango.getMetadata();
-        const channelId = metadata['googleCalendarChannelId'];
-        const resourceId = metadata['googleCalendarResourceId'];
-
-        if (!channelId || !resourceId) {
-            return;
-        }
-
-        const config: ProxyConfiguration = {
-            baseUrlOverride: 'https://www.googleapis.com/calendar',
-            endpoint: '/v3/channels/stop',
-            data: {
-                id: channelId,
-                resourceId
-            }
-        };
-
-        try {
-            await nango.post(config);
-        } catch (err) {
-            // Avoid blocking connection deletion if stop fails.
-            await nango.log(`Failed to stop Calendar channel: ${String(err)}`);
-        }
-    }
-});
-```
-
-To stop receiving notifications before the channel expires, call the [channels.stop](https://developers.google.com/workspace/calendar/api/guides/push#stop-notifications) method with the channel `id` and `resourceId` returned when you created the channel:
-
-```bash
-curl -X POST "https://www.googleapis.com/calendar/v3/channels/stop" \
-  -H "Authorization: Bearer <AUTH_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "id": "01234567-89ab-cdef-0123456789ab",
-    "resourceId": "o3hgv1538sdjfh"
-  }'
-```
-
-Channels must be stopped by the same client that created them.
 
 ## Rollback strategy
 

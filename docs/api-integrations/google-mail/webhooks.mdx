@@ -1,10 +1,10 @@
 ---
 title: 'How to setup webhooks with Gmail on Nango'
 sidebarTitle: 'Webhooks'
-description: 'Learn how to set up Gmail push notifications with Google Pub/Sub and Nango'
+description: 'Learn how to set up Gmail webhooks with Google Pub/Sub and Nango'
 ---
 
-This guide shows you how to receive real-time Gmail push notifications in Nango using [Google Pub/Sub](https://developers.google.com/workspace/gmail/api/guides/push).
+This guide shows you how to receive real-time Gmail webhooks in Nango using [Google Pub/Sub](https://developers.google.com/workspace/gmail/api/guides/push).
 
 ## How it works
 
@@ -26,7 +26,15 @@ Create a topic in the [Google Cloud Console](https://console.cloud.google.com/cl
 
 ### 2. Grant Gmail publish rights
 
-Gmail needs permission to publish to your topic. Run this with the [gcloud CLI](https://cloud.google.com/sdk/docs/install):
+Gmail needs permission to publish to your topic. You can do this in the [Google Cloud Console](https://console.cloud.google.com/cloudpubsub/topic/list) or with the gcloud CLI.
+
+**Option A — Google Cloud Console:**
+
+1. Open [Pub/Sub Topics](https://console.cloud.google.com/cloudpubsub/topic/list) in the Google Cloud Console.
+2. Click on your topic, then go to the **Permissions** tab.
+3. Click **Add principal**. Set the principal to `gmail-api-push@system.gserviceaccount.com` and assign the **Pub/Sub Publisher** role.
+
+**Option B — gcloud CLI:**
 
 ```bash
 gcloud pubsub topics add-iam-policy-binding <TOPIC_ID> \
@@ -41,10 +49,12 @@ The **topic ID** is the short name (e.g. `my-gmail-topic`), while the **topic na
 
 ### 3. Create a push subscription
 
-Click on the default subscription for your topic (if one was created) or create a new one. Set the delivery type to **Push** and configure it as follows:
+Click on the default subscription for your topic (if one was created) or create a new one. Select *Edit* and configure it as follows:
 
-1. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
-2. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+1. **Delivery type**: Set as push
+2. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
+3. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+4. **Save the changes**
 
 ### 4. Activate the watch subscription
 
@@ -70,14 +80,14 @@ export default createOnEvent({
     event: 'post-connection-creation',
     description: 'Activate the Gmail watch webhook subscription for new connections',
     exec: async (nango) => {
-        const metadata = await nango.getMetadata();
-
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/gmail',
             endpoint: '/v1/users/me/watch',
             data: {
                 labelIds: ['INBOX'],
-                topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
+                // Replace with your full topic name from the Pub/Sub setup (step 1)
+                // Ideally, you should set the value to be read from the Nango env variables (https://nango.dev/docs/reference/functions#environment-variables)
+                topicName: 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
                 labelFilterBehavior: 'INCLUDE',
             },
         };
@@ -93,26 +103,25 @@ Google [recommends](https://developers.google.com/workspace/gmail/api/guides/pus
 
 ```typescript
 import { createSync, ProxyConfiguration } from 'nango';
-import { Empty } from '../../models.js';
 
 export default createSync({
     description: 'Calls the watch endpoint daily to keep a Gmail webhook subscription active',
-    models: { Empty },
+    models: { Empty: z.object({}) },
     endpoints: [{
         method: 'GET',
-        path: '/watch',
+        path: '/gmail/watch-renewal',
     }],
     syncType: 'full',
     frequency: '1d',
     exec: async (nango) => {
-        const metadata = await nango.getMetadata();
-
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/gmail',
             endpoint: '/v1/users/me/watch',
             data: {
                 labelIds: ['INBOX'],
-                topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
+                // Replace with your full topic name from the Pub/Sub setup (step 1)
+                // Ideally, you should set the value to be read from the Nango env variables (https://nango.dev/docs/reference/functions#environment-variables)
+                topicName: 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
                 labelFilterBehavior: 'INCLUDE',
             },
         };
