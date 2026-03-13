@@ -10,12 +10,4 @@ exports.up = async function (knex) {
     `);
 };
 
-/**
- * @param {import('knex').Knex} knex
- */
-exports.down = async function (knex) {
-    await knex.raw(`
-        ALTER TABLE _nango_environments
-        DROP COLUMN IF EXISTS is_production
-    `);
-};
+exports.down = function () {};
