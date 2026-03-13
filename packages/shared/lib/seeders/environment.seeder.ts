@@ -25,6 +25,7 @@ export function getTestEnvironment(data?: Partial<DBEnvironment>): DBEnvironment
         hmac_key: null,
         name: 'test',
         otlp_settings: null,
+        is_production: false,
         pending_public_key: null,
         pending_secret_key: null,
         public_key: '',

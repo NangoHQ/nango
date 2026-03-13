@@ -10,6 +10,8 @@ If any of your sync functions read `nango.lastSyncDate` to determine where to re
 
 To check, search your sync files for `lastSyncDate`. If you find references like `nango.lastSyncDate` or destructured equivalents, those syncs should be migrated to use checkpoints.
 
+If you want your syncs to be resilient to failures, ensuring that a failed run resumes from where it left off instead of starting over, you should also migrate any sync that paginates through large datasets, even if it doesn't currently use `lastSyncDate`.
+
 # What is changing
 
 `nango.lastSyncDate` is deprecated and replaced by checkpoints — a more flexible and resilient way to track sync progress.
@@ -24,7 +26,7 @@ With `lastSyncDate`, Nango automatically tracked the timestamp of the last compl
 | **Resilience** | If a run fails, no progress is saved | Progress is saved incrementally — the next run resumes from the last checkpoint |
 
 <Note>
-Checkpoints also replace the `syncType: 'incremental'` field in your sync declaration. If your sync has a `checkpoint` schema, Nango treats it as incremental. If it doesn't, Nango treats it as a full sync.
+Checkpoints also replace the `syncType: 'incremental'` field in your sync declaration. Whether the dataset is fetched from scratch or incrementally depends on how you use the checkpoint in your function code, not just whether you declared a checkpoint schema.
 </Note>
 
 # Why this deprecation
