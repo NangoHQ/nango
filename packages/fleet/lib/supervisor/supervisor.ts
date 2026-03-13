@@ -212,6 +212,12 @@ export class Supervisor {
                     if (configOverride.replicas !== null && configOverride.replicas !== node.replicas) {
                         return true;
                     }
+                    if (configOverride.executionTimeoutSecs && configOverride.executionTimeoutSecs !== node.executionTimeoutSecs) {
+                        return true;
+                    }
+                    if (configOverride.provisionedConcurrency && configOverride.provisionedConcurrency !== node.provisionedConcurrency) {
+                        return true;
+                    }
                     return false;
                 };
                 plan.push(
