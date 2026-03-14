@@ -35,6 +35,14 @@ Different function types have varying execution and enqueuing time limits:
 | [Actions](/implementation-guides/use-cases/actions/implement-an-action) | 15 minutes |
 | [External webhooks](/implementation-guides/use-cases/webhooks-from-external-apis) | 1 hour |
 
+### Concurrency limits
+
+Function executions have a default concurrency limit of **100**. Beyond this limit, executions are queued. For larger workloads, reach outto increase this limit.
+
+### Sync variant limits
+
+Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/implementation-guides/use-cases/syncs/sync-partitioning) for more details.
+
 ### Action output limits
 
 Actions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/primitives/proxy) instead.
