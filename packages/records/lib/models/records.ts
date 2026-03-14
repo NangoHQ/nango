@@ -1182,7 +1182,6 @@ export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: nu
             .from(RECORD_COUNTS_TABLE)
             .select<RecordCount[]>('*')
             .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
-            .where('count', '>', 0)
             .orderByRaw('RANDOM()')
             .limit(1);
 
