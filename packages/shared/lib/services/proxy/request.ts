@@ -10,10 +10,13 @@ import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, Inte
 import type { Result, RetryAttemptArgument } from '@nangohq/utils';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
+const MAX_REFRESH_TOKEN_ATTEMPTS = 2;
+
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     logger: (msg: MessageRowInsert) => MaybePromise<void>;
     onError?: (args: { err: unknown; max: number; attempt: number; retry: RetryReason }) => RetryReason;
+    onRefreshToken?: () => Promise<void>;
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
 }
@@ -45,6 +48,11 @@ export class ProxyRequest {
     onError?: Props['onError'];
 
     /**
+     * Called when retry reason is refresh_token; use to refresh credentials before the next attempt.
+     */
+    onRefreshToken?: Props['onRefreshToken'];
+
+    /**
      * Build at each iteration
      */
     axiosConfig?: AxiosRequestConfig;
@@ -63,6 +71,7 @@ export class ProxyRequest {
         this.config = props.proxyConfig;
         this.logger = props.logger;
         this.onError = props.onError;
+        this.onRefreshToken = props.onRefreshToken;
         this.getConnection = props.getConnection;
         this.getIntegrationConfig = props.getIntegrationConfig;
     }
@@ -71,6 +80,12 @@ export class ProxyRequest {
      * Send a request to the third-party with retry.
      */
     public async request(): Promise<Result<AxiosResponse>> {
+        let refreshTokenAttempts = 0;
+
+        // when refresh-on-error is enabled we need enough attempt slots: 1 initial try + up to MAX_REFRESH_TOKEN_ATTEMPTS refresh-and-retry cycles
+        const minAttemptSlotsForRefresh = this.config.refreshTokenOn?.length && this.onRefreshToken ? MAX_REFRESH_TOKEN_ATTEMPTS + 1 : 0;
+        const maxRetries = Math.max(this.config.retries ?? 0, minAttemptSlotsForRefresh);
+
         try {
             const response = await retryFlexible<Promise<AxiosResponse>>(
                 async (retryAttempt) => {
@@ -99,9 +114,18 @@ export class ProxyRequest {
                     }
                 },
                 {
-                    max: this.config.retries || 0,
+                    max: maxRetries,
                     onError: async ({ err, nextWait, max, attempt }) => {
                         let retry = getProxyRetryFromErr({ err, proxyConfig: this.config });
+
+                        if (retry.retry && retry.reason === 'refresh_token') {
+                            if (refreshTokenAttempts >= MAX_REFRESH_TOKEN_ATTEMPTS) {
+                                retry = { retry: false, reason: 'refresh_token_max_attempts' };
+                            } else if (this.onRefreshToken) {
+                                await this.onRefreshToken();
+                                refreshTokenAttempts++;
+                            }
+                        }
 
                         // Only call onError if it's an actionable error
                         if (retry.reason !== 'unknown_error' && this.onError) {

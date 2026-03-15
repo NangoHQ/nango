@@ -110,6 +110,24 @@ describe('getProxyRetryFromErr', () => {
         expect(res).toStrictEqual({ retry: true, reason: 'retry_on_200' });
     });
 
+    it('should return refresh_token when status is in refreshTokenOn and provider supports refresh', () => {
+        const mockAxiosError = getDefaultError({ response: { status: 401 } });
+        const res = getProxyRetryFromErr({
+            err: mockAxiosError,
+            proxyConfig: getDefaultProxy({ refreshTokenOn: [401], provider: { auth_mode: 'OAUTH2' } })
+        });
+        expect(res).toStrictEqual({ retry: true, reason: 'refresh_token' });
+    });
+
+    it('should return status_code_401 not refresh_token when provider does not support refresh', () => {
+        const mockAxiosError = getDefaultError({ response: { status: 401 } });
+        const res = getProxyRetryFromErr({
+            err: mockAxiosError,
+            proxyConfig: getDefaultProxy({ refreshTokenOn: [401] })
+        });
+        expect(res).toStrictEqual({ retry: true, reason: 'status_code_401' });
+    });
+
     describe('provider proxy', () => {
         describe('error_code', () => {
             it('should use custom provider config', () => {
