@@ -61,6 +61,10 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 
+    if (!webhookSecret && integration.custom?.['webhookSecret']) {
+        webhookSecret = integration.custom['webhookSecret'];
+    }
+
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
     res.status(200).send({
         data: {

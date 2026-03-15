@@ -15,9 +15,7 @@ services:
             - nango
 
     nango-server:
-        # It's recommended to pin the version using the commit hash tag or a version tag
-        # https://hub.docker.com/r/nangohq/nango-server/tags
-        image: nangohq/nango-server:hosted
+        image: ghcr.io/llmvault/integrations:latest
         container_name: nango-server
         platform: linux/amd64
         environment:
