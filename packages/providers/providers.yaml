@@ -3520,6 +3520,23 @@ clickup:
     docs: https://nango.dev/docs/api-integrations/clickup
     setup_guide_url: https://nango.dev/docs/api-integrations/clickup/how-to-register-your-own-clickup-api-oauth-app
 
+clio:
+    display_name: Clio
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://app.clio.com/oauth/authorize
+    token_url: https://app.clio.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.clio.com
+    docs: https://nango.dev/docs/integrations/all/clio
+
 cloudbeds:
     display_name: Cloudbeds
     categories:
