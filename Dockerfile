@@ -110,3 +110,14 @@ ENV GIT_HASH=$git_hash
 ENV SERVER_RUN_MODE=DOCKERIZED
 
 EXPOSE 8080
+
+# ---- Self-hosted ----
+# Minimal image for self-hosted deployment (server only)
+FROM web AS self-hosted
+
+RUN true \
+  && rm -rf packages/jobs \
+  && rm -rf packages/runner \
+  && rm -rf packages/persist
+
+CMD ["packages/server/entrypoint.sh"]

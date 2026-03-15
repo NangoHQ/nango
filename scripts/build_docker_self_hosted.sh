@@ -25,11 +25,12 @@ echo -e "Building self-hosted $SELF_HOSTED_IMAGE"
 
 docker buildx build \
   --platform linux/amd64 \
-  --build-arg BASE_IMAGE_HASH="$GIT_HASH" \
+  --build-arg git_hash="$GIT_HASH" \
+  --target self-hosted \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
   -t "$SELF_HOSTED_IMAGE" \
-  --file ../Dockerfile.self_hosted \
+  --file ../Dockerfile \
   --output=type=docker \
   ../
 
