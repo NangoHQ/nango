@@ -21,7 +21,7 @@ export interface ApiPublicIntegrationInclude {
               scopes: string | null;
               webhook_secret: string | null;
           }
-        | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null }
+        | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null; webhook_secret: string | null }
         | null;
 }
 
