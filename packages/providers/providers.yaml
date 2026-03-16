@@ -3535,7 +3535,8 @@ clio:
         grant_type: refresh_token
     proxy:
         base_url: https://app.clio.com
-    docs: https://nango.dev/docs/integrations/all/clio
+    docs: https://nango.dev/docs/api-integrations/clio
+    setup_guide_url: https://nango.dev/docs/api-integrations/clio/how-to-register-your-own-clio-api-oauth-app
 
 cloudbeds:
     display_name: Cloudbeds
