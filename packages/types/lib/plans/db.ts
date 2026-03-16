@@ -179,4 +179,10 @@ export interface DBPlan extends Timestamps {
      * @default 100
      */
     variants_per_sync_max: number;
+
+    /**
+     * Override the prefix for the function routing
+     * @default null
+     */
+    node_routing_override: string | null;
 }

@@ -291,6 +291,10 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 }
                 break;
             }
+            case 'node_routing_override': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
+                break;
+            }
             default:
                 ((_exhaustiveCheck: never) => {
                     throw new Error(`Unhandled plan flag key in mergeFlags: ${key}`);

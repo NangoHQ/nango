@@ -59,7 +59,8 @@ export async function startScript({
             taskId,
             nangoProps,
             code: script,
-            codeParams: (input as object) || {}
+            codeParams: (input as object) || {},
+            runtimeContext
         });
 
         if (res.isErr()) {

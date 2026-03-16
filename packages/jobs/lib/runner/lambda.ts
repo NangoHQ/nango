@@ -20,7 +20,6 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
-import { getSizeFromRoutingId } from '../utils/lambda.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -33,10 +32,6 @@ const applicationAutoScalingClient = new ApplicationAutoScalingClient();
 
 export function getFunctionName(node: Node): string {
     return `${node.routingId}-${node.id}`;
-}
-
-function getSize(node: Node): number {
-    return getSizeFromRoutingId(node.routingId);
 }
 
 export function getFunctionQualifier(node: Node): string {
@@ -72,8 +67,11 @@ class Lambda {
                     },
                     PackageType: 'Image',
                     Architectures: [envs.LAMBDA_ARCHITECTURE],
-                    MemorySize: getSize(node),
-                    Timeout: node.executionTimeoutSecs || envs.LAMBDA_EXECUTION_TIMEOUT_SECS,
+                    MemorySize: Math.min(10240, node.memoryMb), //max 10GB allowed by Lambda
+                    EphemeralStorage: {
+                        Size: Math.min(10240, node.storageMb) //max 10GB allowed by Lambda
+                    },
+                    Timeout: Math.min(900, node.executionTimeoutSecs || envs.LAMBDA_EXECUTION_TIMEOUT_SECS), //max 15 minutes allowed by Lambda
                     Environment: this.getEnvironmentVariables(node),
                     VpcConfig: {
                         SubnetIds: envs.LAMBDA_SUBNET_IDS,
@@ -209,7 +207,7 @@ class Lambda {
     }
 
     async verifyUrl(_url: string): Promise<Result<void>> {
-        const regex = /^arn:aws:lambda:.*:function:nango-runner-function-\d+-[a-f0-9-]+:.*$/;
+        const regex = /^arn:aws:lambda:.*:function:.*/;
         if (!regex.test(_url)) {
             return Err('Invalid URL');
         }
@@ -221,12 +219,12 @@ export const lambdaNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
         memoryMb: 512,
-        storageMb: 20000,
+        storageMb: 10240,
         isTracingEnabled: false,
         isProfilingEnabled: false,
         idleMaxDurationMs: 0,
-        executionTimeoutSecs: 900,
-        provisionedConcurrency: 1,
+        executionTimeoutSecs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS,
+        provisionedConcurrency: envs.LAMBDA_PROVISIONED_CONCURRENCY,
         replicas: 1
     },
     start: async (node: Node) => {

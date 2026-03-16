@@ -382,6 +382,7 @@ export const ENVS = z.object({
 
     // Lambda
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_PREFIX: z.string().optional().default('nango-function'),
     LAMBDA_DEFAULT_SIZE: z.coerce.number().default(512),
     LAMBDA_ECR_REGISTRY: z.string().optional(),
     LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
