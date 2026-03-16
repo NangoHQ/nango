@@ -37,6 +37,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
      * You can call this endpoint to fetch records synced by the sync.
      * You need one endpoint per model.
      *
+     * @deprecated Endpoints are no longer required. This field will be removed in a future version.
      * @example
      * ```ts
      * endpoints: [{ method: 'GET', path: '/github/issues' }],
@@ -45,7 +46,7 @@ export interface CreateSyncProps<TModels extends Record<string, ZodModel>, TMeta
      * const res = await fetch('https://api.nango.dev/github/issues');
      * ```
      */
-    endpoints: NangoSyncEndpointV2[];
+    endpoints?: NangoSyncEndpointV2[];
 
     /**
      * The frequency of the sync.
@@ -225,6 +226,7 @@ export interface CreateActionProps<
      * The endpoint of the action.
      * You can call this endpoint to trigger the action.
      *
+     * @deprecated Endpoints are no longer required. This field will be removed in a future version.
      * @example
      * ```ts
      * endpoint: { method: 'POST', path: '/github/issues' },
@@ -238,7 +240,7 @@ export interface CreateActionProps<
      * });
      * ```
      */
-    endpoint: NangoSyncEndpointV2;
+    endpoint?: NangoSyncEndpointV2;
 
     /**
      * The input required by the action when triggering it.

@@ -38,6 +38,23 @@ const actionParams = {
 };
 
 describe('parseSync', () => {
+    it('should return the parsed sync without endpoints', () => {
+        const { endpoints, ...syncParamsWithoutEndpoints } = syncParams;
+        const res = parseSync({
+            filePath: './fetchIssues.ts',
+            params: syncParamsWithoutEndpoints,
+            basename: 'fetchIssues',
+            basenameClean: 'fetchIssues',
+            integrationIdClean: 'github'
+        });
+
+        expect(res.unwrap()).toMatchObject({
+            type: 'sync',
+            name: 'fetchIssues',
+            endpoints: []
+        });
+    });
+
     it('should return the parsed sync', () => {
         const res = parseSync({
             filePath: './fetchIssues.ts',
@@ -103,6 +120,22 @@ describe('buildNangoModelsForSync', () => {
 });
 
 describe('parseAction', () => {
+    it('should return the parsed action without endpoint', () => {
+        const { endpoint, ...actionParamsWithoutEndpoint } = actionParams;
+        const action = parseAction({
+            params: actionParamsWithoutEndpoint,
+            basename: 'createIssue',
+            basenameClean: 'createIssue',
+            integrationIdClean: 'github'
+        });
+
+        expect(action).toMatchObject({
+            type: 'action',
+            name: 'createIssue',
+            endpoint: null
+        });
+    });
+
     it('should return the parsed action', () => {
         const action = parseAction({
             params: actionParams,

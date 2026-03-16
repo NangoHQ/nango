@@ -15,12 +15,16 @@ const schemaHeaders = z.object({
     'connection-id': connectionIdSchema
 });
 
+/** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
 export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
         return;
     }
+
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Sunset', 'true');
 
     // Can have query params and body depending on if it's an action or a model
 

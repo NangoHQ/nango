@@ -33,6 +33,7 @@ export type PostPublicTriggerAction = Endpoint<{
     Success: any;
 }>;
 
+/** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
 export type GetPublicV1 = Endpoint<{
     Method: 'GET';
     Path: `/v1/:path`;
