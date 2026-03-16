@@ -15,12 +15,40 @@ The validation is available during development and does not require any configur
 
 ## Available schema files
 
-When you use Nango CLI, it automatically generates two schema files in the `.nango` folder:
+When you run `nango compile` or `nango deploy`, Nango generates a `nango.json` file in the `.nango` folder. This file contains a list of integrations with their syncs, actions, and on-event-scripts. Each entry includes a `json_schema` property with the JSON Schema for its models.
 
-- `schema.ts` a TypeScript file that contains all your models
-- `schema.json` a JSON Schema file that is used for automatic data validation
+```json
+// .nango/nango.json (simplified)
+[
+  {
+    "providerConfigKey": "github",
+    "syncs": [
+      {
+        "name": "fetchIssues",
+        "output": ["GithubIssue"],
+        "json_schema": {
+          "definitions": {
+            "GithubIssue": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "state": { "type": "string" }
+              },
+              "required": ["id", "title", "state"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    ]
+  }
+]
+```
 
-These files can be versioned and integrated into your own codebase, ensuring consistency and reliability across different environments.
+<Warning>
+  `schema.ts` and `schema.json` are deprecated and will no longer be generated after **April 16, 2026**. See the [dev updates](/updates/dev) for migration details.
+</Warning>
 
 
 ## Validating integration outputs in your app
@@ -47,117 +75,34 @@ export default createSync({
 });
 ```
 
-### Using `schema.json` in your codebase
+### Using JSON Schema from `nango.json`
 
-JSON Schema is supported in most of the main software languages. Here is a non-exhaustive list of how you can directly use this file to validate the records you receive from Nango.
+The generated `.nango/nango.json` file contains JSON schemas per sync/action via the `json_schema` property. You can extract the `json_schema` object for a given sync or action and use it with any JSON Schema validator in your language of choice (e.g., `ajv` in TypeScript, `jsonschema` in Python, `jsonschema` in Rust, `santhosh-tekuri/jsonschema` in Go).
 
-<Tabs>
+### Generating JSON Schema from Zod
 
-<Tab title="Typescript">
+Zod v4 supports JSON Schema conversion natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema). Export your Zod schemas from your sync/action files and convert them as needed:
 
 ```ts
-import { Ajv } from 'ajv';
-import addFormats from 'ajv-formats';
-import jsonSchema from '.nango/schema.json';
+import { z } from 'zod';
+import { issueSchema } from './nango-integrations/github/syncs/fetchIssues';
 
-// Initiate AJV
-const ajv = new Ajv({ allErrors: true, discriminator: true });
-addFormats(ajv);
-
-const modelToValidate = 'MyModelName';
-const myData = {"id": "hello-word"};
-
-// Compile the JSON schema
-const validate = ajv.compile({
-  ...jsonSchema,
-  ...jsonSchema['definitions'][modelToValidate]
-});
-
-// Validate your data
-validate(myData);
-```
-</Tab>
-
-
-<Tab title="Golang">
-```go
-package main
-
-import (
-	"fmt"
-	"log"
-	"github.com/santhosh-tekuri/jsonschema/v5"
-)
-
-func main() {
-  sch, err := jsonschema.Compile(".nango/schema.json")
-  if err != nil {
-    log.Fatalf("%#v", err)
-  }
-
-  myData := map[string]interface{}{
-		"id": "hello-word",
-	}
-  if err = sch.Validate(v); err != nil {
-    log.Fatalf("%#v", err)
-  }
-}
-```
-</Tab>
-
-<Tab title="Rust">
-```rust
-use jsonschema::{Draft, JSONSchema};
-use serde_json::json;
-
-let data = fs::read_to_string(".nango/schema.json").expect("Unable to read file");
-let schema: serde_json::Value = serde_json::from_str(&data).expect("Unable to parse");
-
-let instance = json!("{'id': 'hello-word'}");
-let compiled = JSONSchema::compile(&schema).expect("A valid schema");
-let result = compiled.validate(&instance);
-```
-</Tab>
-
-
-<Tab title="Python">
-```py
-import json
-from jsonschema import validate
-
-with open('.nango/schema.json') as file:
-    schema = json.load(file)
-    print(schema)
-
-    validate(instance={"id": "hello-word"}, schema=schema)
-```
-</Tab>
-</Tabs>
-
-
-### Custom validation
-
-For more advanced use cases, you can generate your own validation schemas using the available files with the tool of your choice.
-
-<Tabs>
-
-
-<Tab title="Golang">
-You can use the [`go-jsonschema` golang package](https://github.com/omissis/go-jsonschema). This tool converts JSON Schema definitions into Golang structs. Note that some syntax is not supported by this package.
-
-```bash
-go-jsonschema -p main .nango/schema.json > test.go
+const jsonSchema = z.toJSONSchema(issueSchema);
 ```
 
-</Tab>
+### Exporting TypeScript types
 
+Use `z.infer` to derive TypeScript types from your Zod schemas and export them from your sync/action files:
 
-<Tab title="Rust">
-
-You can use the [`typify` rust package](https://github.com/oxidecomputer/typify). This tool converts JSON Schema definitions into Rust types. Note that some syntax is not supported by this package.
-
-```bash
-cargo typify .nango/schema.json
+```ts
+// In: github/syncs/fetchIssues.ts
+export type GithubIssue = z.infer<typeof issueSchema>;
 ```
-</Tab>
-</Tabs>
+
+Then import the types in your application code:
+
+```ts
+import type { GithubIssue } from './nango-integrations/github/syncs/fetchIssues';
+
+const issues = await nango.listRecords<GithubIssue>({ ... });
+```
