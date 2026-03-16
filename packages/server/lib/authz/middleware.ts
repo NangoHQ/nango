@@ -11,7 +11,8 @@ export const authzMiddleware: RequestHandler = (req, res, next) => {
         res.locals['authz'] = {
             canReadCredentials: true,
             canReadProdSecrets: true,
-            canAccessProdEnvironments: true
+            canAccessProdEnvironments: true,
+            canToggleIsProduction: true
         };
         next();
         return;
@@ -24,7 +25,8 @@ export const authzMiddleware: RequestHandler = (req, res, next) => {
         res.locals['authz'] = {
             canReadCredentials: true,
             canReadProdSecrets: true,
-            canAccessProdEnvironments: true
+            canAccessProdEnvironments: true,
+            canToggleIsProduction: true
         };
         next();
         return;
@@ -52,7 +54,8 @@ export const authzMiddleware: RequestHandler = (req, res, next) => {
     res.locals['authz'] = {
         canReadCredentials: isProduction ? evaluator.evaluate({ role }, { action: 'read', resource: 'connection_credential', isProduction: true }) : true,
         canReadProdSecrets: isProduction ? evaluator.evaluate({ role }, { action: 'read', resource: 'secret_key', isProduction: true }) : true,
-        canAccessProdEnvironments: evaluator.evaluate({ role }, { action: 'read', resource: 'environment', isProduction: true })
+        canAccessProdEnvironments: evaluator.evaluate({ role }, { action: 'read', resource: 'environment', isProduction: true }),
+        canToggleIsProduction: evaluator.evaluate({ role }, { action: 'write', resource: 'environment_production_flag', isProduction: null })
     };
 
     next();

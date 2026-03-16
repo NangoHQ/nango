@@ -67,12 +67,10 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const includeCredentials = authz?.canReadCredentials ?? true;
     const connectionRes = await connectionService.getConnectionForPrivateApi({
         connectionId,
         providerConfigKey,
-        environmentId: environment.id,
-        includeCredentials
+        environmentId: environment.id
     });
     if (connectionRes.isErr()) {
         res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
@@ -96,6 +94,13 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     if (credentialResponse.isOk()) {
         connection = credentialResponse.value;
     }
+
+    // Strip credentials from response if the user doesn't have permission to view them
+    const canReadCredentials = authz?.canReadCredentials ?? true;
+    if (!canReadCredentials) {
+        connection = { ...connection, credentials: {} };
+    }
+
     const errorLog = await errorNotificationService.auth.get(connection.id);
 
     res.status(200).send({
