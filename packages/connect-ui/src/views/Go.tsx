@@ -178,19 +178,32 @@ export const Go: React.FC = () => {
         if (!awsExternalId) {
             return;
         }
+        const onSuccess = () => {
+            setExternalIdCopied(true);
+            if (externalIdCopyTimeout.current) {
+                clearTimeout(externalIdCopyTimeout.current);
+            }
+            externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
+        };
         if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-            navigator.clipboard
-                .writeText(awsExternalId)
-                .then(() => {
-                    setExternalIdCopied(true);
-                    if (externalIdCopyTimeout.current) {
-                        clearTimeout(externalIdCopyTimeout.current);
-                    }
-                    externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
-                })
-                .catch((err) => {
-                    console.error('Failed to copy to clipboard:', err);
-                });
+            navigator.clipboard.writeText(awsExternalId).then(onSuccess).catch((err) => {
+                console.error('Failed to copy to clipboard:', err);
+            });
+        } else {
+            // Fallback for iframes or older browsers where Clipboard API is unavailable
+            const textarea = document.createElement('textarea');
+            textarea.value = awsExternalId;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                onSuccess();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textarea);
         }
     }, [awsExternalId]);
 
