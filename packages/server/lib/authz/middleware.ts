@@ -52,10 +52,12 @@ export const authzMiddleware: RequestHandler = async (req, res, next) => {
     // Populate authz locals for Category 3 (service-layer) enforcement
     const isProduction = res.locals['environment']?.is_production ?? false;
     res.locals['authz'] = {
-        canReadCredentials: isProduction ? await evaluator.evaluate({ role }, { action: 'read', resource: 'connection_credential', isProduction: true }) : true,
-        canReadProdSecrets: isProduction ? await evaluator.evaluate({ role }, { action: 'read', resource: 'secret_key', isProduction: true }) : true,
-        canAccessProdEnvironments: await evaluator.evaluate({ role }, { action: 'read', resource: 'environment', isProduction: true }),
-        canToggleIsProduction: await evaluator.evaluate({ role }, { action: 'write', resource: 'environment_production_flag', isProduction: null })
+        canReadCredentials: isProduction
+            ? await evaluator.evaluate({ role }, { action: 'read', resource: 'connection_credential', scope: 'production' })
+            : true,
+        canReadProdSecrets: isProduction ? await evaluator.evaluate({ role }, { action: 'read', resource: 'secret_key', scope: 'production' }) : true,
+        canAccessProdEnvironments: await evaluator.evaluate({ role }, { action: 'read', resource: 'environment', scope: 'production' }),
+        canToggleIsProduction: await evaluator.evaluate({ role }, { action: 'write', resource: 'environment_production_flag', scope: 'global' })
     };
 
     next();

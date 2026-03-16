@@ -6,29 +6,29 @@ import type { Permission } from './types.js';
 import type { Role } from '@nangohq/types';
 
 export const CAPABILITIES: Record<string, Permission> = {
-    // team management (not environment-scoped)
-    canManageTeam: { action: 'write', resource: 'team', isProduction: null },
-    canRemoveTeamMember: { action: 'delete', resource: 'team_member', isProduction: null },
-    canInviteMember: { action: 'write', resource: 'invite', isProduction: null },
-    canCancelInvitation: { action: 'delete', resource: 'invite', isProduction: null },
-    canManageConnectUI: { action: 'write', resource: 'connect_ui_settings', isProduction: null },
-    canManageBilling: { action: '*', resource: 'billing', isProduction: null },
-    canChangePlan: { action: 'write', resource: 'plan', isProduction: null },
-    canToggleIsProduction: { action: 'write', resource: 'environment_production_flag', isProduction: null },
-    canCreateEnvironment: { action: 'create', resource: 'environment', isProduction: null },
+    // team management (global scope)
+    canManageTeam: { action: 'write', resource: 'team', scope: 'global' },
+    canRemoveTeamMember: { action: 'delete', resource: 'team_member', scope: 'global' },
+    canInviteMember: { action: 'write', resource: 'invite', scope: 'global' },
+    canCancelInvitation: { action: 'delete', resource: 'invite', scope: 'global' },
+    canManageConnectUI: { action: 'write', resource: 'connect_ui_settings', scope: 'global' },
+    canManageBilling: { action: '*', resource: 'billing', scope: 'global' },
+    canChangePlan: { action: 'write', resource: 'plan', scope: 'global' },
+    canToggleIsProduction: { action: 'write', resource: 'environment_production_flag', scope: 'global' },
+    canCreateEnvironment: { action: 'create', resource: 'environment', scope: 'global' },
 
     // production environment access
-    canAccessProdEnvironment: { action: 'read', resource: 'environment', isProduction: true },
-    canWriteProdIntegrations: { action: 'write', resource: 'integration', isProduction: true },
-    canWriteProdConnections: { action: 'write', resource: 'connection', isProduction: true },
-    canWriteProdFlows: { action: 'write', resource: 'flow', isProduction: true },
-    canWriteProdEnvironment: { action: 'write', resource: 'environment', isProduction: true },
-    canWriteProdEnvironmentKeys: { action: 'write', resource: 'environment_key', isProduction: true },
-    canDeleteProdEnvironment: { action: 'delete', resource: 'environment', isProduction: true },
+    canAccessProdEnvironment: { action: 'read', resource: 'environment', scope: 'production' },
+    canWriteProdIntegrations: { action: 'write', resource: 'integration', scope: 'production' },
+    canWriteProdConnections: { action: 'write', resource: 'connection', scope: 'production' },
+    canWriteProdFlows: { action: 'write', resource: 'flow', scope: 'production' },
+    canWriteProdEnvironment: { action: 'write', resource: 'environment', scope: 'production' },
+    canWriteProdEnvironmentKeys: { action: 'write', resource: 'environment_key', scope: 'production' },
+    canDeleteProdEnvironment: { action: 'delete', resource: 'environment', scope: 'production' },
 
     // production secrets/credentials
-    canReadProdSecretKey: { action: 'read', resource: 'secret_key', isProduction: true },
-    canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', isProduction: true }
+    canReadProdSecretKey: { action: 'read', resource: 'secret_key', scope: 'production' },
+    canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', scope: 'production' }
 };
 
 export async function buildPermissions(role: Role): Promise<Record<string, boolean>> {

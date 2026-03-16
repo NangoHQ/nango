@@ -1,19 +1,17 @@
 import { ROLE_DENY_MAP } from './deny-map.js';
 
-import type { Permission, PermissionEvaluator } from './types.js';
+import type { Action, Permission, PermissionEvaluator, Resource, Scope } from './types.js';
 import type { Role } from '@nangohq/types';
 
-function matchesAction(rule: string, actual: string): boolean {
+function matchesAction(rule: Action, actual: Action): boolean {
     return rule === '*' || rule === actual;
 }
 
-function matchesResource(rule: string, actual: string): boolean {
+function matchesResource(rule: Resource, actual: Resource): boolean {
     return rule === '*' || rule === actual;
 }
 
-function matchesProduction(rule: boolean | null, actual: boolean | null): boolean {
-    if (rule === null && actual === null) return true; // both non-environment-scoped
-    if (rule === null || actual === null) return false; // one scoped, one not
+function matchesScope(rule: Scope, actual: Scope): boolean {
     return rule === actual;
 }
 
@@ -28,7 +26,7 @@ export class StaticEvaluator implements PermissionEvaluator {
             (rule) =>
                 matchesAction(rule.action, permission.action) &&
                 matchesResource(rule.resource, permission.resource) &&
-                matchesProduction(rule.isProduction, permission.isProduction)
+                matchesScope(rule.scope, permission.scope)
         );
     }
 }

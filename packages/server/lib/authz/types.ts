@@ -1,9 +1,32 @@
 import type { Role } from '@nangohq/types';
 
+export type Action = 'create' | 'delete' | 'write' | 'read' | '*';
+export type Resource =
+    | 'team'
+    | 'team_member'
+    | 'invite'
+    | 'connect_ui_settings'
+    | 'billing'
+    | 'plan'
+    | 'environment'
+    | 'environment_production_flag'
+    | 'environment_key'
+    | 'environment_variable'
+    | 'webhook'
+    | 'integration'
+    | 'connection'
+    | 'flow'
+    | 'sync_command'
+    | 'secret_key'
+    | 'connection_credential'
+    | 'log'
+    | '*';
+export type Scope = 'production' | 'non-production' | 'global';
+
 export interface Permission {
-    action: string; // 'create' | 'delete' | 'write' | 'read' | '*'
-    resource: string; // 'environment' | 'integration' | 'team' | '*'
-    isProduction: boolean | null; // true = production env, false = non-production, null = not environment-scoped
+    action: Action;
+    resource: Resource;
+    scope: Scope;
 }
 
 export interface PermissionEvaluator {
