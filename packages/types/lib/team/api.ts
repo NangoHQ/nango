@@ -2,6 +2,7 @@ import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
 import type { DBTeam } from './db.js';
 import type { DBInvitation } from '../invitations/db.js';
 import type { ApiUser } from '../user/api.js';
+import type { Role } from '../user/db.js';
 import type { Merge } from 'type-fest';
 
 export type GetTeam = Endpoint<{
@@ -37,6 +38,18 @@ export type DeleteTeamUser = Endpoint<{
     Querystring: { env: string };
     Params: { id: number };
     Error: ApiError<'user_not_found'> | ApiError<'forbidden_self_delete'>;
+    Success: {
+        data: { success: true };
+    };
+}>;
+
+export type PatchTeamUser = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/team/users/:id';
+    Querystring: { env: string };
+    Params: { id: number };
+    Body: { role: Role };
+    Error: ApiError<'user_not_found'> | ApiError<'forbidden_last_admin'>;
     Success: {
         data: { success: true };
     };
