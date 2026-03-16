@@ -55,8 +55,7 @@ class FlowService {
                     webhookSubscriptions: [],
                     json_schema: jsonSchema,
                     metadata: { description: item.description, scopes: item.scopes },
-                    sdk_version: `${integration.sdkVersion}-zero`,
-                    is_zero_yaml: true
+                    sdk_version: `${integration.sdkVersion}-zero`
                 });
             }
             for (const item of integration.actions) {
@@ -87,8 +86,7 @@ class FlowService {
                     webhookSubscriptions: [],
                     json_schema: jsonSchema,
                     metadata: { description: item.description, scopes: item.scopes },
-                    sdk_version: `${integration.sdkVersion}-zero`,
-                    is_zero_yaml: true
+                    sdk_version: `${integration.sdkVersion}-zero`
                 });
             }
 
