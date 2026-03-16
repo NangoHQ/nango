@@ -50,6 +50,12 @@ export async function deployTemplate({
         return Err(new NangoError('template_already_deployed'));
     }
 
+    if (!template.json_schema) {
+        void logCtx.error('Template missing json schema');
+        await logCtx.failed();
+        return Err(new NangoError('deploy_missing_json_schema_model'));
+    }
+
     const version = template.version || '0.0.1';
 
     void logCtx.info(`Uploading ${deployInfo.integrationId} -> ${template.name}@${version}`);
