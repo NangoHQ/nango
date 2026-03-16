@@ -24,7 +24,7 @@ import type * as z from 'zod';
 
 const allowed = ['action', 'sync', 'onEvent'];
 
-export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
+export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     printDebug('Rebuilding parsed from js files', debug);
