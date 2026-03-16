@@ -18,7 +18,6 @@ description: "Full reference of the SDK available in Nango Functions."
     export default createSync({
       description: `Fetches the Github issues from all a user's repositories.`,
       version: '1.0.0',
-      endpoints: [{ method: 'GET', path: '/example/github/issues', group: 'Issues' }],
       frequency: 'every hour',
       autoStart: true,
       metadata: z.void(),
@@ -57,8 +56,6 @@ description: "Full reference of the SDK available in Nango Functions."
     export default createAction({
       description: `Create an issue in GitHub`,
       version: '1.0.0',
-      endpoint: { method: 'POST', path: '/example/github/issues', group: 'Issues' },
-
       input: GithubCreateIssueInput,
       output: GithubCreateIssueResult,
 
@@ -89,22 +86,6 @@ Read more about [integration functions](/guides/primitives/functions) to underst
 
 <ResponseField name="description" type="string" required>
   The description of the sync.
-</ResponseField>
-
-<ResponseField name="endpoints" type="object[]" required>
-  The endpoints of the sync.
-  You can call this endpoint to fetch records synced by the sync.
-  You need one endpoint per model.
-
-  ```ts
-  endpoints: [{ method: 'GET', path: '/github/issues' }],
-  ```
-
-  Which you can then call like this:
-
-  ```ts
-  const res = await fetch('https://api.nango.dev/github/issues');
-  ```
 </ResponseField>
 
 <ResponseField name="exec" type="function" required>
@@ -199,21 +180,17 @@ Read more about [integration functions](/guides/primitives/functions) to underst
   ```
 </ResponseField>
 
+<ResponseField name="endpoints" type="object[]" optional deprecated>
+  [DEPRECATED] Use the [`GET /records`](api/sync/records-list) API endpoint to fetch records.
+</ResponseField>
+
 ### `createAction`
 
 <ResponseField name="description" type="string" required>
   The description of the sync.
 </ResponseField>
 
-<ResponseField name="endpoint" type="object" required>
-  The endpoints of the sync.
-  You can call this endpoint to fetch records synced by the sync.
-  You need one endpoint per model.
 
-  ```ts
-  endpoint: { method: 'POST', path: '/github/issues' },
-  ```
-</ResponseField>
 
 <ResponseField name="exec" type="function" required>
   The function that will be called when the action is triggered.
@@ -261,6 +238,10 @@ Read more about [integration functions](/guides/primitives/functions) to underst
   ```ts
   scopes: ['read:user', 'write:user'],
   ```
+</ResponseField>
+
+<ResponseField name="endpoint" type="object" optional deprecated>
+  [DEPRECATED] Use the [`POST /action/trigger`](/reference/api/action/trigger) API endpoint to trigger actions.
 </ResponseField>
 
 ### `createOnEvent`
