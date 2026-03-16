@@ -23,9 +23,6 @@ export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
         return;
     }
 
-    res.setHeader('Deprecation', 'true');
-    res.setHeader('Sunset', 'true');
-
     // Can have query params and body depending on if it's an action or a model
 
     const { environment } = res.locals;
