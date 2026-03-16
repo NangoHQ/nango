@@ -16536,6 +16536,35 @@ trigify-io-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
 
+triple-whale:
+    display_name: Triple Whale
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.triplewhale.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                content-type: application/json
+            endpoints:
+                - /api/v2/users/api-keys/me
+    docs: https://nango.dev/docs/api-integrations/triple-whale
+    docs_connect: https://nango.dev/docs/api-integrations/triple-whale/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Triple Whale API key.
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key'
+
 tsheetsteam:
     display_name: TSheets
     categories:
