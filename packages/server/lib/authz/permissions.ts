@@ -31,9 +31,10 @@ export const CAPABILITIES: Record<string, Permission> = {
     canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', isProduction: true }
 };
 
-export function buildPermissions(role: Role): Record<string, boolean> {
+export async function buildPermissions(role: Role): Promise<Record<string, boolean>> {
     if (!flags.hasAuthRoles) {
         return Object.fromEntries(Object.keys(CAPABILITIES).map((key) => [key, true]));
     }
-    return Object.fromEntries(Object.entries(CAPABILITIES).map(([key, permission]) => [key, evaluator.evaluate({ role }, permission)]));
+    const entries = await Promise.all(Object.entries(CAPABILITIES).map(async ([key, permission]) => [key, await evaluator.evaluate({ role }, permission)]));
+    return Object.fromEntries(entries);
 }

@@ -118,7 +118,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             name,
             account_id: account.id,
             email_verified: true,
-            role: invitation ? invitation.role : 'administrator'
+            role: invitation ? invitation.role : envs.DEFAULT_USER_ROLE
         });
         if (!user) {
             res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });

@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { isEnterprise } from '@nangohq/utils';
+import { ROLES, isEnterprise } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
 import type { DBInvitation } from '@nangohq/types';
@@ -28,7 +28,7 @@ export async function inviteEmail({
     name,
     accountId,
     invitedByUserId,
-    role = 'administrator',
+    role = ROLES.ADMINISTRATOR,
     trx
 }: {
     email: string;
@@ -99,7 +99,7 @@ export async function getInvitation(token: string): Promise<DBInvitation | null>
             accepted: true,
             created_at: now,
             updated_at: now,
-            role: 'administrator'
+            role: ROLES.ADMINISTRATOR
         };
     }
 

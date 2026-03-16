@@ -1,4 +1,4 @@
-import { flags } from '@nangohq/utils';
+import { ROLES, flags } from '@nangohq/utils';
 
 import { authorize } from './authorize.js';
 import { evaluator } from './evaluator.js';
@@ -6,7 +6,7 @@ import { evaluator } from './evaluator.js';
 import type { Role } from '@nangohq/types';
 import type { RequestHandler } from 'express';
 
-export const authzMiddleware: RequestHandler = (req, res, next) => {
+export const authzMiddleware: RequestHandler = async (req, res, next) => {
     if (!flags.hasAuthRoles) {
         res.locals['authz'] = {
             canReadCredentials: true,
@@ -32,7 +32,7 @@ export const authzMiddleware: RequestHandler = (req, res, next) => {
         return;
     }
 
-    const role: Role = user.role ?? 'administrator';
+    const role: Role = user.role ?? ROLES.ADMINISTRATOR;
 
     // Resolve the Express route pattern (e.g., /team/users/123 → /team/users/:id)
     const routePath = req.route?.path as string | undefined;
@@ -42,7 +42,7 @@ export const authzMiddleware: RequestHandler = (req, res, next) => {
     }
 
     const method = req.method.toUpperCase();
-    const allowed = authorize(method, routePath, role, res.locals);
+    const allowed = await authorize(method, routePath, role, res.locals);
 
     if (!allowed) {
         res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
@@ -52,10 +52,10 @@ export const authzMiddleware: RequestHandler = (req, res, next) => {
     // Populate authz locals for Category 3 (service-layer) enforcement
     const isProduction = res.locals['environment']?.is_production ?? false;
     res.locals['authz'] = {
-        canReadCredentials: isProduction ? evaluator.evaluate({ role }, { action: 'read', resource: 'connection_credential', isProduction: true }) : true,
-        canReadProdSecrets: isProduction ? evaluator.evaluate({ role }, { action: 'read', resource: 'secret_key', isProduction: true }) : true,
-        canAccessProdEnvironments: evaluator.evaluate({ role }, { action: 'read', resource: 'environment', isProduction: true }),
-        canToggleIsProduction: evaluator.evaluate({ role }, { action: 'write', resource: 'environment_production_flag', isProduction: null })
+        canReadCredentials: isProduction ? await evaluator.evaluate({ role }, { action: 'read', resource: 'connection_credential', isProduction: true }) : true,
+        canReadProdSecrets: isProduction ? await evaluator.evaluate({ role }, { action: 'read', resource: 'secret_key', isProduction: true }) : true,
+        canAccessProdEnvironments: await evaluator.evaluate({ role }, { action: 'read', resource: 'environment', isProduction: true }),
+        canToggleIsProduction: await evaluator.evaluate({ role }, { action: 'write', resource: 'environment_production_flag', isProduction: null })
     };
 
     next();

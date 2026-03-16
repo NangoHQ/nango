@@ -12,15 +12,15 @@ describe('buildPermissions', () => {
     afterAll(() => {
         flags.hasAuthRoles = originalFlag;
     });
-    it('administrator should have all permissions true', () => {
-        const perms = buildPermissions('administrator');
+    it('administrator should have all permissions true', async () => {
+        const perms = await buildPermissions('administrator');
         for (const [key, value] of Object.entries(perms)) {
             expect(value, `Expected ${key} to be true for administrator`).toBe(true);
         }
     });
 
-    it('production_support should deny team/billing/prod writes, allow prod reads', () => {
-        const perms = buildPermissions('production_support');
+    it('production_support should deny team/billing/prod writes, allow prod reads', async () => {
+        const perms = await buildPermissions('production_support');
         expect(perms['canManageTeam']).toBe(false);
         expect(perms['canManageBilling']).toBe(false);
         expect(perms['canCreateEnvironment']).toBe(false);
@@ -34,8 +34,8 @@ describe('buildPermissions', () => {
         expect(perms['canAccessProdEnvironment']).toBe(true);
     });
 
-    it('development_full_access should deny all prod access', () => {
-        const perms = buildPermissions('development_full_access');
+    it('development_full_access should deny all prod access', async () => {
+        const perms = await buildPermissions('development_full_access');
         expect(perms['canManageTeam']).toBe(false);
         expect(perms['canAccessProdEnvironment']).toBe(false);
         expect(perms['canWriteProdIntegrations']).toBe(false);

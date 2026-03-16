@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { ROLES } from './detection.js';
+
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -17,6 +19,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
+    DEFAULT_USER_ROLE: z.enum([ROLES.ADMINISTRATOR, ROLES.PRODUCTION_SUPPORT, ROLES.DEVELOPMENT_FULL_ACCESS]).optional().default(ROLES.ADMINISTRATOR),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?

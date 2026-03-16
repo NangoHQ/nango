@@ -1,16 +1,18 @@
+import { ROLES } from '@nangohq/utils';
+
 import type { Permission } from './types.js';
 import type { Role } from '@nangohq/types';
 
 export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
     // ─── Administrator ───────────────────────────────────────
     // No restrictions
-    administrator: [],
+    [ROLES.ADMINISTRATOR]: [],
 
     // ─── Production Support (Support) ────────────────────────
     // Read access + sync commands on production environments.
     // Denied: team/billing management, environment creation, all production write ops
     // (except sync commands), and production secrets/credentials.
-    production_support: [
+    [ROLES.PRODUCTION_SUPPORT]: [
         // admin-only operations (not environment-scoped)
         { action: 'write', resource: 'team', isProduction: null },
         { action: 'delete', resource: 'team_member', isProduction: null },
@@ -40,7 +42,7 @@ export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
     // ─── Development Full Access (Contributor) ───────────────
     // No access to production environments at all.
     // Denied: everything production_support is denied, plus all production read ops.
-    development_full_access: [
+    [ROLES.DEVELOPMENT_FULL_ACCESS]: [
         // admin-only operations (not environment-scoped)
         { action: 'write', resource: 'team', isProduction: null },
         { action: 'delete', resource: 'team_member', isProduction: null },

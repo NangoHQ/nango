@@ -69,7 +69,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     let account: DBTeam | null;
-    let invitationRole: Role = 'administrator';
+    let invitationRole: Role = envs.DEFAULT_USER_ROLE;
     if (token) {
         // Invitation signup
         const validToken = await getInvitation(token);
@@ -112,7 +112,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         salt,
         account_id: account.id,
         email_verified: token ? true : false,
-        role: token ? invitationRole : 'administrator'
+        role: token ? invitationRole : envs.DEFAULT_USER_ROLE
     });
     if (!user) {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });

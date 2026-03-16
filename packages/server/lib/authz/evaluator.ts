@@ -18,9 +18,11 @@ function matchesProduction(rule: boolean | null, actual: boolean | null): boolea
 }
 
 export class StaticEvaluator implements PermissionEvaluator {
-    evaluate(subject: { role: Role }, permission: Permission): boolean {
+    // eslint-disable-next-line @typescript-eslint/require-await -- async for interface contract, static impl is sync
+    async evaluate(subject: { role: Role }, permission: Permission): Promise<boolean> {
         const denyList = ROLE_DENY_MAP[subject.role];
         if (!denyList) return false; // unknown role → deny
+        if (denyList.length === 0) return true; // no restrictions (e.g. administrator)
 
         return !denyList.some(
             (rule) =>

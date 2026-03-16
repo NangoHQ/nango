@@ -7,5 +7,5 @@ export interface Permission {
 }
 
 export interface PermissionEvaluator {
-    evaluate(subject: { role: Role }, permission: Permission): boolean;
+    evaluate(subject: { role: Role }, permission: Permission): Promise<boolean>;
 }
