@@ -49,13 +49,15 @@ description: "Updates and breaking changes for developers."
 
   **If you use `schema.json` for JSON Schema:**
 
-  Use a library like [`zod-to-json-schema`](https://github.com/StefanTerdell/zod-to-json-schema) to generate JSON Schema from your Zod models directly.
+  JSON schemas are now available per sync/action inside `.nango/nango.json` via the `json_schema` property. This replaces the top-level `schema.json` (which had naming conflicts when models across integrations shared the same name).
+
+  If you need to generate JSON Schema programmatically, Zod v4 supports this natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
 
   ```ts
-  import { zodToJsonSchema } from 'zod-to-json-schema';
+  import { z } from 'zod';
   import { issueSchema } from './nango-integrations/github/syncs/fetchIssues';
 
-  const jsonSchema = zodToJsonSchema(issueSchema, 'GithubIssue');
+  const jsonSchema = z.toJSONSchema(issueSchema);
   ```
 
   See the [data validation guide](/implementation-guides/platform/functions/data-validation) for more details on working with Zod schemas in Nango.
