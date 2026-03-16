@@ -15,8 +15,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@google-cloud/bigquery": "8.1.1",
-        "@nangohq/utils": "file:../utils"
-    },
-    "devDependencies": {}
+        "@google-cloud/bigquery": "^7.9.4",
+        "@nangohq/utils": "file:../utils",
+        "qs": "6.15.0",
+        "serve": "14.2.6",
+        "undici": "6.24.1"
+    }
 }
