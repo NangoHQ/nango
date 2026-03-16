@@ -9,6 +9,14 @@ on:
             - docs/integrations/all/*.md
             - packages/shared/flows.yaml
     workflow_dispatch:
+        inputs:
+            force_update:
+                description: 'Force update all providers regardless of changes'
+                required: false
+                default: 'false'
+                type: boolean
+    schedule:
+        - cron: '0 0 1 * *'
 
 concurrency:
     group: webflow-sync
@@ -31,3 +39,4 @@ jobs:
             - run: npx tsx scripts/webflow-api-sync.ts
               env:
                   WEBFLOW_CMS_API_TOKEN: ${{ secrets.WEBFLOW_CMS_API_TOKEN }}
+                  FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update == 'true' }}
