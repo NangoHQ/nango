@@ -48,7 +48,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment, account, authz } = res.locals;
 
     const queryParams: GetConnection['Querystring'] = queryParamValues.data;
     const params: GetConnection['Params'] = paramValue.data;
@@ -67,7 +67,13 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const connectionRes = await connectionService.getConnectionForPrivateApi({ connectionId, providerConfigKey, environmentId: environment.id });
+    const includeCredentials = authz?.canReadCredentials ?? true;
+    const connectionRes = await connectionService.getConnectionForPrivateApi({
+        connectionId,
+        providerConfigKey,
+        environmentId: environment.id,
+        includeCredentials
+    });
     if (connectionRes.isErr()) {
         res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
         return;

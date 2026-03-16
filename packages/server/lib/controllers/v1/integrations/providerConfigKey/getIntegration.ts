@@ -32,7 +32,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, authz } = res.locals;
     const params: GetIntegration['Params'] = valParams.data;
 
     const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
@@ -61,10 +61,15 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 
+    const includeCredentials = authz?.canReadCredentials ?? true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
+    const apiIntegration = integrationToApi(integration);
+    if (!includeCredentials) {
+        delete (apiIntegration as any).oauth_client_secret;
+    }
     res.status(200).send({
         data: {
-            integration: integrationToApi(integration),
+            integration: apiIntegration,
             template: provider, // TODO: fix this naming
             meta: {
                 connectionsCount: count,

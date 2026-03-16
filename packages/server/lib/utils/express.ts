@@ -21,6 +21,13 @@ import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser
 //           user: Pick<DBUser, 'id' | 'email' | 'name'>;
 //       };
 
+export interface AuthzLocals {
+    canReadCredentials: boolean;
+    canReadProdSecrets: boolean;
+    canAccessProdEnvironments: boolean;
+    canToggleIsProduction: boolean;
+}
+
 export interface RequestLocals {
     authType?: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession';
     user?: DBUser;
@@ -31,4 +38,5 @@ export interface RequestLocals {
     plan?: DBPlan | null;
     lang?: string;
     secret?: DBAPISecret;
+    authz?: AuthzLocals;
 }

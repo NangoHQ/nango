@@ -5,6 +5,7 @@ import passport from 'passport';
 
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
+import { authzMiddleware } from './authz/index.js';
 import { setupAuth } from './clients/auth.client.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
@@ -93,14 +94,19 @@ import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import type { Request, RequestHandler, Response } from 'express';
 
 let webAuth: RequestHandler[] = flagHasAuth
-    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware, authzMiddleware]
     : isBasicAuthEnabled
-      ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
-      : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
+      ? [
+            passport.authenticate('basic', { session: false }) as RequestHandler,
+            authMiddleware.basicAuth.bind(authMiddleware),
+            rateLimiterMiddleware,
+            authzMiddleware
+        ]
+      : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware, authzMiddleware];
 
 // For integration test, we want to bypass session auth
 if (isTest) {
-    webAuth = [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware];
+    webAuth = [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware, authzMiddleware];
 }
 
 const web = express.Router();

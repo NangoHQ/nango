@@ -4,7 +4,7 @@ export type GetUser = Endpoint<{
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
-        data: ApiUser;
+        data: ApiUserWithPermissions;
     };
 }>;
 
@@ -37,6 +37,11 @@ export interface ApiUser {
     uuid: string;
     gettingStartedClosed: boolean;
 }
+
+export type ApiUserWithPermissions = ApiUser & {
+    role: string;
+    permissions: Record<string, boolean>;
+};
 
 export type PutUserPassword = Endpoint<{
     Method: 'PUT';

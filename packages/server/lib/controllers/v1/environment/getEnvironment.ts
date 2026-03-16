@@ -24,7 +24,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
         return;
     }
 
-    const { environment, account, user, plan } = res.locals;
+    const { environment, account, user, plan, authz } = res.locals;
 
     if (!isCloud) {
         environment.websockets_path = getWebsocketsPath();
@@ -37,6 +37,12 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
             environment.public_key_rotatable = false;
         }
+    }
+
+    // Remove secret key if user doesn't have permission to read production secrets
+    if (!(authz?.canReadProdSecrets ?? true)) {
+        delete (environment as any).secret_key;
+        delete (environment as any).pending_secret_key;
     }
 
     environment.callback_url = await environmentService.getOauthCallbackUrl(environment.id);

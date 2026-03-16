@@ -1,9 +1,10 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { buildPermissions } from '../../../authz/permissions.js';
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { GetUser } from '@nangohq/types';
+import type { DBUser, GetUser } from '@nangohq/types';
 
 export const getUser = asyncWrapper<GetUser, never>((req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -12,7 +13,8 @@ export const getUser = asyncWrapper<GetUser, never>((req, res) => {
         return;
     }
 
+    const user = res.locals['user'] as DBUser;
     res.status(200).send({
-        data: userToAPI(res.locals['user'])
+        data: { ...userToAPI(user), role: user.role, permissions: buildPermissions(user.role) }
     });
 });

@@ -441,11 +441,13 @@ class ConnectionService {
     public async getConnectionForPrivateApi({
         connectionId,
         providerConfigKey,
-        environmentId
+        environmentId,
+        includeCredentials = true
     }: {
         connectionId: string;
         providerConfigKey: string;
         environmentId: number;
+        includeCredentials?: boolean;
     }): Promise<Result<{ connection: DBConnectionDecrypted; end_user: DBEndUser }>> {
         const result = await db.knex
             .select<{
@@ -460,7 +462,13 @@ class ConnectionService {
             return Err('failed_to_fetch_connection');
         }
 
-        return Ok({ connection: encryptionManager.decryptConnection(result.connection), end_user: result.end_user });
+        // decryptConnection is always needed: it also converts date strings to Date objects.
+        const connection = encryptionManager.decryptConnection(result.connection);
+        if (!includeCredentials) {
+            connection.credentials = {};
+        }
+
+        return Ok({ connection, end_user: result.end_user });
     }
 
     public async updateConnection(connection: DBConnectionDecrypted) {
