@@ -218,8 +218,8 @@ class Lambda {
 export const lambdaNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
-        memoryMb: 512,
-        storageMb: 512,
+        memoryMb: envs.LAMBDA_DEFAULT_MEMORY_MB,
+        storageMb: envs.LAMBDA_DEFAULT_STORAGE_MB,
         isTracingEnabled: false,
         isProfilingEnabled: false,
         idleMaxDurationMs: 0,

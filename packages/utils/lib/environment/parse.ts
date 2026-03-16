@@ -383,7 +383,6 @@ export const ENVS = z.object({
     // Lambda
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
     LAMBDA_PREFIX: z.string().optional().default('nango-function'),
-    LAMBDA_DEFAULT_SIZE: z.coerce.number().default(512),
     LAMBDA_ECR_REGISTRY: z.string().optional(),
     LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
     LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),
@@ -417,6 +416,8 @@ export const ENVS = z.object({
     LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
     LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
     LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
+    LAMBDA_DEFAULT_MEMORY_MB: z.coerce.number().optional().default(512),
+    LAMBDA_DEFAULT_STORAGE_MB: z.coerce.number().optional().default(512),
     LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.8), // interrupt execution after 80% of the timeout, to leave time for checkpointing and graceful shutdown
     LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.95), // force kill the lambda after 95% of the timeout, to allow for runner-controlled shutdown
     LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),

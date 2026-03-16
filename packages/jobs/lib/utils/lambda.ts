@@ -4,7 +4,7 @@ import type { NangoProps, RuntimeContext } from '@nangohq/types';
 
 export function getSizeFromProps(_nangoProps: NangoProps): number {
     //based on available props return a memory size compatible with lambda - will use rules for this
-    return envs.LAMBDA_DEFAULT_SIZE;
+    return envs.LAMBDA_DEFAULT_MEMORY_MB;
 }
 
 export function getRoutingId(params: { nangoProps: NangoProps; runtimeContext?: RuntimeContext | undefined }): string {
