@@ -16932,6 +16932,36 @@ typefully:
             title: API Key
             description: The API key for your Typefully account
 
+typefully-v2:
+    display_name: Typefully (API v2)
+    categories:
+        - analytics
+        - communication
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.typefully.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+        retry:
+            at:
+                - 'x-ratelimit-user-reset'
+                - 'x-ratelimit-socialset-reset'
+    docs: https://nango.dev/docs/api-integrations/typefully-v2
+    docs_connect: https://nango.dev/docs/api-integrations/typefully-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Typefully v2 API key.
+            example: 'aNVlyR********************YxeIDz'
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 uber:
     display_name: Uber
     auth_mode: OAUTH2
