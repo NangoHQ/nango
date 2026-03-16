@@ -11,7 +11,6 @@ export interface ComboboxOption<TValue extends string = string> {
     filterValue?: string;
     disabled?: boolean;
 }
-
 export interface ComboboxProps<TValue extends string = string> {
     value: TValue | '';
     onValueChange: (value: TValue) => void;
@@ -28,6 +27,7 @@ export interface ComboboxProps<TValue extends string = string> {
     contentClassName?: string;
     searchValue?: string;
     onSearchValueChange?: (value: string) => void;
+    showCheckbox?: boolean;
 }
 
 export function Combobox<TValue extends string = string>({
@@ -45,7 +45,8 @@ export function Combobox<TValue extends string = string>({
     className,
     contentClassName,
     searchValue,
-    onSearchValueChange
+    onSearchValueChange,
+    showCheckbox = true
 }: ComboboxProps<TValue>) {
     const [open, setOpen] = React.useState(false);
     const [internalSearch, setInternalSearch] = React.useState('');
@@ -88,7 +89,7 @@ export function Combobox<TValue extends string = string>({
                     type="button"
                     disabled={disabled}
                     className={cn(
-                        'cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-1.5 text-body-medium-regular leading-[160%] tracking-normal text-text-secondary outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
+                        'text-[14px] cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-1.5 text-body-medium-regular leading-[160%] tracking-normal text-text-secondary outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
                         className
                     )}
                 >
@@ -148,15 +149,17 @@ export function Combobox<TValue extends string = string>({
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <span
-                                            className={cn(
-                                                'flex size-5 shrink-0 items-center justify-center rounded-sm border',
-                                                selected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
-                                            )}
-                                        >
-                                            {selected ? <Check className="size-3.5" /> : null}
-                                        </span>
-                                        <div className="flex min-w-0 items-center gap-2 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal text-text-secondary">
+                                        {showCheckbox ? (
+                                            <span
+                                                className={cn(
+                                                    'flex size-5 shrink-0 items-center justify-center rounded-sm border',
+                                                    selected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                                )}
+                                            >
+                                                {selected ? <Check className="size-3.5" /> : null}
+                                            </span>
+                                        ) : null}
+                                        <div className="flex min-w-0 items-center gap-1 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal text-text-secondary">
                                             {renderOption ? renderOption(opt, selected) : <span className="truncate">{opt.label}</span>}
                                         </div>
                                     </div>

@@ -88,6 +88,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, code, language, ico
                         language={language}
                         colorScheme="dark"
                         noCopy={true}
+                        styles={{ code: { fontSize: '12px' } }}
                         highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
                     >
                         {code}
