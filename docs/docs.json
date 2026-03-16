@@ -860,6 +860,7 @@
               "api-integrations/twitter-v2",
               "integrations/all/typeform",
               "integrations/all/typefully",
+              "api-integrations/typefully-v2",
               "integrations/all/uber",
               "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
