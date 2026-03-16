@@ -13,7 +13,7 @@ export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { KVStore } from './KVStore.js';
-export { type Lock, Locking } from './Locking.js';
+export { type Lock, LockTimeoutError, Locking } from './Locking.js';
 
 type KvBoundary = 'system' | 'customer';
 

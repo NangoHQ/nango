@@ -276,7 +276,7 @@ export class NangoError extends NangoInternalError {
 
             case 'refresh_token_lock_timeout':
                 this.status = 503;
-                this.message = `A token refresh is already in progress for this connection. Please retry.`;
+                this.message = `Could not acquire the refresh lock for this connection. Please retry.`;
                 break;
 
             case 'request_token_external_error':

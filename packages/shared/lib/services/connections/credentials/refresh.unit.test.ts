@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as kvstoreModule from '@nangohq/kvstore';
+import { LockTimeoutError } from '@nangohq/kvstore';
 
 import { refreshCredentialsIfNeeded, shouldRefreshCredentials } from './refresh.js';
 import { getTestConnection } from '../../../seeders/connection.seeder.js';
@@ -183,7 +184,7 @@ describe('refreshCredentialsIfNeeded', () => {
         } as any);
 
         vi.spyOn(kvstoreModule, 'getLocking').mockResolvedValue({
-            tryAcquire: vi.fn().mockRejectedValue(new Error('Acquiring lock for key: lock:refresh:42:airtable:test-conn timed out after 12000ms')),
+            tryAcquire: vi.fn().mockRejectedValue(new LockTimeoutError('lock:refresh:42:airtable:test-conn', 12000)),
             release: vi.fn().mockResolvedValue(undefined)
         } as any);
 

@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { getLocking } from '@nangohq/kvstore';
+import { LockTimeoutError, getLocking } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
 import { Err, FixedSizeMap, Ok, getLogger, metrics } from '@nangohq/utils';
 
@@ -519,8 +519,7 @@ export async function refreshCredentialsIfNeeded({
                 credentials: newCredentials as RefreshableCredentials
             });
         } catch (err) {
-            const isLockTimeout = err instanceof Error && err.message.startsWith('Acquiring lock for key:');
-            const error = new NangoError(isLockTimeout ? 'refresh_token_lock_timeout' : 'refresh_token_external_error', {
+            const error = new NangoError(err instanceof LockTimeoutError ? 'refresh_token_lock_timeout' : 'refresh_token_external_error', {
                 message: err instanceof Error ? err.message : 'unknown error'
             });
 
