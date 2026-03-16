@@ -26,7 +26,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
     const onSaveCredentials = async (field: { clientId?: string; clientSecret?: string }) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+                authType: template.auth_mode,
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });
@@ -40,7 +40,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
     const handleScopesChange = async (scopes: string, countDifference: number) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+                authType: template.auth_mode,
                 scopes
             });
             if (countDifference > 0) {
@@ -94,7 +94,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
             </div>
 
             {/* Client Secret (only when user provides credentials) */}
-            {useUserCredentials && (
+            {useUserCredentials && 'oauth_client_secret' in integration && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="client_secret">Client Secret</Label>
                     <EditableInput

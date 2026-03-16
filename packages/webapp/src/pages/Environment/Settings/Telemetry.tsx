@@ -11,12 +11,17 @@ import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironme
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { Button } from '@/components-v2/ui/button';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { environmentAndAccount, mutate } = useEnvironment(env);
+    const permissions = usePermissions();
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
 
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);
@@ -126,6 +131,8 @@ export const Telemetry: React.FC = () => {
                         apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
                         onSuccess={() => void mutate()}
                         placeholder="https://my.otlp.commector:4318"
+                        blocked={!canWriteEnvironment}
+                        blockedTooltip="You do not have permission to edit this environment"
                     />
                     <fieldset className="flex flex-col gap-4">
                         <label htmlFor="otlp_headers" className="text-sm">
@@ -173,11 +180,18 @@ export const Telemetry: React.FC = () => {
                             })}
                         </div>
                         <div className="flex justify-start gap-3 mt-1.5">
-                            {!editHeaders && (
-                                <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
-                                    Edit
-                                </Button>
-                            )}
+                            {!editHeaders &&
+                                (canWriteEnvironment ? (
+                                    <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
+                                        Edit
+                                    </Button>
+                                ) : (
+                                    <SimpleTooltip tooltipContent="You do not have permission to edit this environment">
+                                        <Button variant={'secondary'} disabled>
+                                            Edit
+                                        </Button>
+                                    </SimpleTooltip>
+                                ))}
                             {editHeaders && (
                                 <>
                                     <Button variant="tertiary" onClick={onCancelHeaders}>

@@ -6,14 +6,16 @@ import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 import { IntegrationSideInfo } from './components/IntegrationSideInfo';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
@@ -22,7 +24,10 @@ export const ShowIntegration: React.FC = () => {
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
+    const permissions = usePermissions();
     const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canWriteConnections = !isProduction || permissions['canWriteProdConnections'];
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 
@@ -69,9 +74,20 @@ export const ShowIntegration: React.FC = () => {
                             {integration.integration.display_name ?? integration.template.display_name}
                         </span>
                     </div>
-                    <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg">
-                        Add test connection
-                    </ButtonLink>
+                    {canWriteConnections ? (
+                        <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg">
+                            Add test connection
+                        </ButtonLink>
+                    ) : (
+                        <SimpleTooltip
+                            tooltipContent="You do not have permission to create connections in this environment"
+                            className="text-text-light-gray pointer-events-none"
+                        >
+                            <Button size="lg" disabled>
+                                Add test connection
+                            </Button>
+                        </SimpleTooltip>
+                    )}
                 </div>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>

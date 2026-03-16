@@ -11,12 +11,16 @@ import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironme
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { Switch } from '@/components-v2/ui/switch';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
+    const permissions = usePermissions();
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
 
     const [loading, setLoading] = useState(false);
 
@@ -91,6 +95,7 @@ export const DeprecatedSettings: React.FC = () => {
                                 name="hmac_enabled"
                                 checked={environmentAndAccount.environment.hmac_enabled}
                                 onCheckedChange={(checked) => onHmacEnabled(!!checked)}
+                                disabled={!canWriteEnvironment}
                             />
                         </div>
                     </div>
@@ -104,6 +109,8 @@ export const DeprecatedSettings: React.FC = () => {
                         originalValue={environmentAndAccount.environment.hmac_key || ''}
                         apiCall={(value) => apiPatchEnvironment(env, { hmac_key: value })}
                         onSuccess={() => void mutate()}
+                        blocked={!canWriteEnvironment}
+                        blockedTooltip="You do not have permission to edit this environment"
                     />
                 </div>
             </SettingsGroup>

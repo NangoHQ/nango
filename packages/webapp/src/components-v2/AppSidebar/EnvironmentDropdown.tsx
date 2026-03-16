@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Lock } from 'lucide-react';
+import { Check, ChevronsUpDown, Lock, Shield } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 
 export const EnvironmentDropdown: React.FC = () => {
@@ -20,11 +21,14 @@ export const EnvironmentDropdown: React.FC = () => {
     const environment = useEnvironment(env);
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
+    const permissions = usePermissions();
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
 
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
+    const canCreateEnvironment = permissions['canCreateEnvironment'];
+    const canAccessProd = permissions['canAccessProdEnvironment'];
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -69,54 +73,62 @@ export const EnvironmentDropdown: React.FC = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
                         <div className="flex flex-col">
-                            {meta?.environments.map((environment) => (
-                                <DropdownMenuItem
-                                    key={environment.name}
-                                    onSelect={() => onSelect(environment.name)}
-                                    data-active={env === environment.name}
-                                    className="flex flex-row items-center gap-2 cursor-pointer data-[active=true]:text-text-primary"
-                                >
-                                    <Check
-                                        className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                            {meta?.environments.map((environment) => {
+                                const isDisabled = environment.is_production && !canAccessProd;
+                                return (
+                                    <DropdownMenuItem
+                                        key={environment.name}
+                                        onSelect={() => !isDisabled && onSelect(environment.name)}
                                         data-active={env === environment.name}
-                                    />
-                                    <span>{environment.name}</span>
-                                </DropdownMenuItem>
-                            ))}
-                        </div>
-                        <Tooltip delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <span tabIndex={0} className="w-full">
-                                    <Button
-                                        variant="primary"
-                                        onClick={() => {
-                                            // Managed control because Dialogs within DropdownMenus behave weirdly
-                                            setEnvironmentDialogOpen(true);
-                                        }}
-                                        disabled={!!isMaxEnvironmentsReached}
-                                        className="w-full"
+                                        disabled={isDisabled}
+                                        className="flex flex-row items-center gap-2 cursor-pointer data-[active=true]:text-text-primary"
                                     >
-                                        {!!isMaxEnvironmentsReached && <Lock className="size-4" />}
-                                        Create Environment
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            {isMaxEnvironmentsReached && (
-                                <TooltipContent side="right" align="center">
-                                    Max number of environments reached.{' '}
-                                    {environment?.plan?.name.includes('legacy') ? (
-                                        <>Contact Nango to add more</>
-                                    ) : (
-                                        <>
-                                            <StyledLink to={`/${env}/team/billing`} className="text-s">
-                                                Upgrade
-                                            </StyledLink>{' '}
-                                            to add more
-                                        </>
-                                    )}
-                                </TooltipContent>
-                            )}
-                        </Tooltip>
+                                        <Check
+                                            className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                                            data-active={env === environment.name}
+                                        />
+                                        <span>{environment.name}</span>
+                                        {environment.is_production && <Shield className="w-3.5 h-3.5 text-text-secondary" />}
+                                        {isDisabled && <Lock className="w-3.5 h-3.5 text-text-secondary" />}
+                                    </DropdownMenuItem>
+                                );
+                            })}
+                        </div>
+                        {canCreateEnvironment && (
+                            <Tooltip delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                    <span tabIndex={0} className="w-full">
+                                        <Button
+                                            variant="primary"
+                                            onClick={() => {
+                                                // Managed control because Dialogs within DropdownMenus behave weirdly
+                                                setEnvironmentDialogOpen(true);
+                                            }}
+                                            disabled={!!isMaxEnvironmentsReached}
+                                            className="w-full"
+                                        >
+                                            {!!isMaxEnvironmentsReached && <Lock className="size-4" />}
+                                            Create Environment
+                                        </Button>
+                                    </span>
+                                </TooltipTrigger>
+                                {isMaxEnvironmentsReached && (
+                                    <TooltipContent side="right" align="center">
+                                        Max number of environments reached.{' '}
+                                        {environment?.plan?.name.includes('legacy') ? (
+                                            <>Contact Nango to add more</>
+                                        ) : (
+                                            <>
+                                                <StyledLink to={`/${env}/team/billing`} className="text-s">
+                                                    Upgrade
+                                                </StyledLink>{' '}
+                                                to add more
+                                            </>
+                                        )}
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />

@@ -34,7 +34,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const onSave = async (field: Partial<PatchIntegration['Body']>, supressToast = false) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
+                authType: template.auth_mode,
                 ...field
             });
             if (!supressToast) {
@@ -127,19 +127,21 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             </div>
 
             {/* Client Secret */}
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="client_secret">Client Secret</Label>
-                {isSharedCredentials ? (
-                    <NangoProvidedInput fakeValueSize={48} />
-                ) : (
-                    <EditableInput
-                        secret
-                        initialValue={integration.oauth_client_secret || ''}
-                        onSave={(value) => onSave({ clientSecret: value })}
-                        validate={validateNotEmpty}
-                    />
-                )}
-            </div>
+            {'oauth_client_secret' in integration && (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="client_secret">Client Secret</Label>
+                    {isSharedCredentials ? (
+                        <NangoProvidedInput fakeValueSize={48} />
+                    ) : (
+                        <EditableInput
+                            secret
+                            initialValue={integration.oauth_client_secret || ''}
+                            onSave={(value) => onSave({ clientSecret: value })}
+                            validate={validateNotEmpty}
+                        />
+                    )}
+                </div>
+            )}
 
             {/* Scopes */}
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (

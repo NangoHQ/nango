@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
@@ -19,6 +20,7 @@ export const ProfileDropdown: React.FC = () => {
     const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();
+    const permissions = usePermissions();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     const items = useMemo(() => {
@@ -43,7 +45,7 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (globalEnv.features.plan) {
+        if (globalEnv.features.plan && permissions['canManageBilling']) {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,
@@ -52,7 +54,7 @@ export const ProfileDropdown: React.FC = () => {
         }
 
         return list;
-    }, [meta, showGettingStarted, env]);
+    }, [meta, showGettingStarted, env, permissions]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

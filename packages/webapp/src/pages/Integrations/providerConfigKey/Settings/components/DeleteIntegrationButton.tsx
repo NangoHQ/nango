@@ -6,12 +6,18 @@ import { useSWRConfig } from 'swr';
 import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
 import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
 import { useToast } from '../../../../../hooks/useToast.js';
+import { SimpleTooltip } from '@/components/SimpleTooltip.js';
 import { Button } from '@/components-v2/ui/button.js';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog.js';
 
 import type { ApiIntegration } from '@nangohq/types';
 
-export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration; className?: string }> = ({ env, integration, className = '' }) => {
+export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration; className?: string; disabled?: boolean }> = ({
+    env,
+    integration,
+    className = '',
+    disabled = false
+}) => {
     const { toast } = useToast();
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
@@ -28,6 +34,20 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
             toast({ title: 'Failed to delete integration', variant: 'error' });
         }
     };
+
+    if (disabled) {
+        return (
+            <SimpleTooltip
+                tooltipContent="You do not have permission to delete integrations in this environment"
+                className="text-text-light-gray pointer-events-none"
+            >
+                <Button variant="destructive" size="lg" disabled className={className}>
+                    <Trash2 />
+                    Delete integration
+                </Button>
+            </SimpleTooltip>
+        );
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

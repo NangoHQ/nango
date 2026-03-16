@@ -2,9 +2,12 @@ import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { ConnectionSideInfo } from './ConnectionSideInfo';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 
@@ -17,6 +20,10 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
     const env = useStore((state) => state.env);
     const { connection } = connectionData;
     const navigate = useNavigate();
+    const permissions = usePermissions();
+    const { environmentAndAccount } = useEnvironment(env);
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canWriteConnections = !isProduction || permissions['canWriteProdConnections'];
 
     const { toast } = useToast();
     const { mutateAsync: deleteConnection, isPending: isDeletingConnection } = useDeleteConnection();
@@ -40,23 +47,35 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
             <div className="flex justify-between items-start gap-11">
                 <div className="w-full flex items-center justify-between">
                     <span className="text-body-medium-semi text-text-primary">Connection deletion</span>
-                    <Button
-                        variant="destructive"
-                        size="lg"
-                        loading={isDeletingConnection}
-                        onClick={() =>
-                            confirm({
-                                title: 'Delete connection?',
-                                description: 'All credentials & synced data associated with this connection will be deleted.',
-                                confirmButtonText: 'Delete connection',
-                                confirmVariant: 'destructive',
-                                onConfirm: onDelete
-                            })
-                        }
-                    >
-                        <Trash2 />
-                        Delete connection
-                    </Button>
+                    {canWriteConnections ? (
+                        <Button
+                            variant="destructive"
+                            size="lg"
+                            loading={isDeletingConnection}
+                            onClick={() =>
+                                confirm({
+                                    title: 'Delete connection?',
+                                    description: 'All credentials & synced data associated with this connection will be deleted.',
+                                    confirmButtonText: 'Delete connection',
+                                    confirmVariant: 'destructive',
+                                    onConfirm: onDelete
+                                })
+                            }
+                        >
+                            <Trash2 />
+                            Delete connection
+                        </Button>
+                    ) : (
+                        <SimpleTooltip
+                            tooltipContent="You do not have permission to delete connections in this environment"
+                            className="text-text-light-gray pointer-events-none"
+                        >
+                            <Button variant="destructive" size="lg" disabled>
+                                <Trash2 />
+                                Delete connection
+                            </Button>
+                        </SimpleTooltip>
+                    )}
                 </div>
 
                 <ConnectionSideInfo connectionData={connectionData} />

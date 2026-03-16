@@ -8,6 +8,7 @@ import { useDebounce } from 'react-use';
 
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { Avatar } from '@/components-v2/Avatar';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
@@ -19,7 +20,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { useConnections } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -143,6 +146,10 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
     const navigate = useNavigate();
+    const permissions = usePermissions();
+    const { environmentAndAccount } = useEnvironment(env);
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canWriteConnections = !isProduction || permissions['canWriteProdConnections'];
 
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -220,11 +227,21 @@ export const ConnectionList = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h2 className="text-title-subsection text-text-primary">Connections</h2>
-                    {(hasConnections || hasFiltered) && (
-                        <ButtonLink to={`/${env}/connections/create`} size="lg">
-                            Add Test Connection
-                        </ButtonLink>
-                    )}
+                    {(hasConnections || hasFiltered) &&
+                        (canWriteConnections ? (
+                            <ButtonLink to={`/${env}/connections/create`} size="lg">
+                                Add Test Connection
+                            </ButtonLink>
+                        ) : (
+                            <SimpleTooltip
+                                tooltipContent="You do not have permission to create connections in this environment"
+                                className="text-text-light-gray pointer-events-none"
+                            >
+                                <Button size="lg" disabled>
+                                    Add Test Connection
+                                </Button>
+                            </SimpleTooltip>
+                        ))}
                 </div>
 
                 {/* Content */}
@@ -339,9 +356,20 @@ export const ConnectionList = () => {
                                 </StyledLink>
                                 , or manually here.
                             </p>
-                            <ButtonLink to={`/${env}/connections/create`} size="lg">
-                                Add test connection
-                            </ButtonLink>
+                            {canWriteConnections ? (
+                                <ButtonLink to={`/${env}/connections/create`} size="lg">
+                                    Add test connection
+                                </ButtonLink>
+                            ) : (
+                                <SimpleTooltip
+                                    tooltipContent="You do not have permission to create connections in this environment"
+                                    className="text-text-light-gray pointer-events-none"
+                                >
+                                    <Button size="lg" disabled>
+                                        Add test connection
+                                    </Button>
+                                </SimpleTooltip>
+                            )}
                         </div>
                     )}
 

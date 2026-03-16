@@ -9,10 +9,12 @@ import { connectSlack } from '../../../utils/slack-connection';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { Button } from '@/components-v2/ui/button';
 import { apiPatchEnvironment, useEnvironment } from '@/hooks/useEnvironment';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 
 export const SlackAlertsSettings: React.FC = () => {
     const env = useStore((state) => state.env);
+    const permissions = usePermissions();
     const { environmentAndAccount, mutate } = useEnvironment(env);
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const { toast } = useToast();
@@ -21,6 +23,8 @@ export const SlackAlertsSettings: React.FC = () => {
         return null;
     }
     const isConnected = environmentAndAccount.environment.slack_notifications;
+    const isProduction = environmentAndAccount.environment.is_production ?? false;
+    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
 
     const slackConnect = async () => {
         setSlackIsConnecting(true);
@@ -67,9 +71,10 @@ export const SlackAlertsSettings: React.FC = () => {
                 <div className="flex justify-end">
                     <Button
                         className="px-4"
-                        disabled={slackIsConnecting}
-                        variant={isConnected ? 'tertiary' : 'primary'}
+                        disabled={!canWriteEnvironment || slackIsConnecting}
+                        variant={!canWriteEnvironment ? 'secondary' : isConnected ? 'tertiary' : 'primary'}
                         onClick={isConnected ? slackDisconnect : slackConnect}
+                        title={!canWriteEnvironment ? 'You do not have permission to perform this action' : undefined}
                     >
                         <SlackIcon className="w-5 h-5" />
                         {isConnected ? `Disconnect from Slack` : 'Connect to Slack'}

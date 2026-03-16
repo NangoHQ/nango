@@ -11,6 +11,18 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
         return <PageNotFound />;
     }
 
+    if (error?.error.code === 'forbidden') {
+        return (
+            <DashboardLayout>
+                <Helmet>
+                    <title>Access Denied - Nango</title>
+                </Helmet>
+                <h2 className="text-3xl font-semibold text-white mb-16">{title}</h2>
+                <Info variant={'destructive'}>You do not have permission to access this environment. Please contact your administrator.</Info>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout>
             <Helmet>

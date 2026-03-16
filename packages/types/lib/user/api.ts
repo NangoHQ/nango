@@ -36,6 +36,8 @@ export interface ApiUser {
     name: string;
     uuid: string;
     gettingStartedClosed: boolean;
+    role: string;
+    permissions: Record<string, boolean>;
 }
 
 export type PutUserPassword = Endpoint<{

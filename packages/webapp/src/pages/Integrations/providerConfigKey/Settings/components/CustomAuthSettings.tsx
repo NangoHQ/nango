@@ -123,15 +123,17 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
             </div>
 
             {/* Client Secret */}
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="client_secret">Client Secret</Label>
-                <EditableInput
-                    secret
-                    initialValue={integration.oauth_client_secret || ''}
-                    onSave={(value) => onSave({ clientSecret: value })}
-                    validate={validateNotEmpty}
-                />
-            </div>
+            {'oauth_client_secret' in integration && (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="client_secret">Client Secret</Label>
+                    <EditableInput
+                        secret
+                        initialValue={integration.oauth_client_secret || ''}
+                        onSave={(value) => onSave({ clientSecret: value })}
+                        validate={validateNotEmpty}
+                    />
+                </div>
+            )}
 
             {/* App Private Key */}
             <AppPrivateKeyInput initialValue={integration.custom?.private_key || ''} onSave={(value) => onSave({ privateKey: value })} />

@@ -25,7 +25,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'APP'>,
+                authType: template.auth_mode,
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });
@@ -74,7 +74,9 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             </div>
 
             {/* App Private Key */}
-            <AppPrivateKeyInput initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ privateKey: value })} />
+            {'oauth_client_secret' in integration && (
+                <AppPrivateKeyInput initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ privateKey: value })} />
+            )}
         </div>
     );
 };

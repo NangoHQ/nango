@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { AddTeamMember } from './components/AddTeamMember';
 import { Admin } from './components/Admin';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { usePermissions } from '../../hooks/usePermissions';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
@@ -14,6 +15,7 @@ export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);
 
     const { error, team, isAdminTeam, loading } = useTeam(env);
+    const permissions = usePermissions();
 
     if (loading) {
         return (
@@ -41,10 +43,10 @@ export const TeamSettings: React.FC = () => {
             </Helmet>
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white">Team Settings</h2>
-                <AddTeamMember team={team!} />
+                {permissions['canInviteMember'] && <AddTeamMember team={team} />}
             </div>
             <div className="flex flex-col gap-12 mt-16">
-                <TeamInfo />
+                {permissions['canManageTeam'] && <TeamInfo />}
                 <TeamUsers />
                 {isAdminTeam && <Admin />}
             </div>

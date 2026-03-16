@@ -6,11 +6,14 @@ import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
-import { apiDeleteEnvironment, apiPatchEnvironment } from '../../../hooks/useEnvironment';
+import { apiDeleteEnvironment, apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { AlertDescription } from '@/components/ui/Alert';
 import { Alert } from '@/components-v2/ui/alert';
+import { Switch } from '@/components-v2/ui/switch';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 
 export const General: React.FC = () => {
@@ -18,10 +21,26 @@ export const General: React.FC = () => {
 
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
+    const permissions = usePermissions();
     const { refetch: refetchMeta } = useMeta();
+    const { environmentAndAccount, mutate: mutateEnvironment } = useEnvironment(env);
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const isProdEnv = env === PROD_ENVIRONMENT_NAME;
+    const canToggleProduction = !isProdEnv && permissions['canToggleIsProduction'];
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const { toast } = useToast();
+
+    const handleToggleProduction = async (checked: boolean) => {
+        const { res } = await apiPatchEnvironment(env, { is_production: checked });
+        if (res.status >= 200 && res.status < 300) {
+            await mutateEnvironment();
+            await refetchMeta();
+            toast({ title: checked ? 'Environment marked as production' : 'Environment unmarked as production', variant: 'success' });
+        } else {
+            toast({ title: 'Failed to update production flag', variant: 'error' });
+        }
+    };
 
     const handleDelete = async () => {
         const { res } = await apiDeleteEnvironment(env);
@@ -52,8 +71,10 @@ export const General: React.FC = () => {
                         await refetchMeta();
                         setEnv(newName);
                     }}
-                    blocked={env === PROD_ENVIRONMENT_NAME}
-                    blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
+                    blocked={isProdEnv || (isProduction && !permissions['canWriteProdEnvironment'])}
+                    blockedTooltip={
+                        isProdEnv ? `You cannot rename the ${PROD_ENVIRONMENT_NAME} environment` : 'You do not have permission to edit this environment'
+                    }
                     editInfo={
                         <>
                             <span className="text-text-tertiary text-s -mt-2.5">&#42;Must be lowercase letters, numbers, underscores and/or dashes.</span>
@@ -73,6 +94,26 @@ export const General: React.FC = () => {
                     }
                 />
             </SettingsGroup>
+            <SettingsGroup label="Production environment" className="items-center">
+                <div className="flex items-center gap-3">
+                    <SimpleTooltip
+                        tooltipContent={
+                            isProdEnv
+                                ? `The ${PROD_ENVIRONMENT_NAME} environment is always a production environment`
+                                : !permissions['canToggleIsProduction']
+                                  ? 'You do not have permission to toggle the production flag'
+                                  : ''
+                        }
+                    >
+                        <Switch checked={isProduction} onCheckedChange={handleToggleProduction} disabled={!canToggleProduction} />
+                    </SimpleTooltip>
+                    <span className="text-text-secondary text-body-medium-regular">
+                        {isProduction
+                            ? 'This environment is marked as production'
+                            : 'Mark this environment as production to enable production-level protections'}
+                    </span>
+                </div>
+            </SettingsGroup>
             <SettingsGroup label="Environment suppression" className="items-center">
                 <div>
                     <DeleteButton
@@ -80,8 +121,12 @@ export const General: React.FC = () => {
                         onDelete={handleDelete}
                         open={showDeleteAlert}
                         onOpenChange={setShowDeleteAlert}
-                        disabled={env === PROD_ENVIRONMENT_NAME}
-                        disabledTooltip={`You cannot delete the ${PROD_ENVIRONMENT_NAME} environment`}
+                        disabled={isProdEnv || (isProduction && !permissions['canDeleteProdEnvironment'])}
+                        disabledTooltip={
+                            isProdEnv
+                                ? `You cannot delete the ${PROD_ENVIRONMENT_NAME} environment`
+                                : 'You do not have permission to delete production environments'
+                        }
                     />
                 </div>
             </SettingsGroup>

@@ -10,6 +10,13 @@ import { useStore } from '../../../store';
 import type { ApiInvitation, ApiUser } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
+const roleLabels: Record<string, string> = {
+    administrator: 'Full access',
+    production_support: 'Support',
+    development_full_access: 'Contributor'
+};
+
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
     {
         accessorKey: 'name',
@@ -29,6 +36,16 @@ export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
         size: 180,
         cell: ({ row }) => {
             return <div className="truncate text-sm">{row.original.email || '-'}</div>;
+        }
+    },
+    {
+        accessorKey: 'role',
+        header: 'Role',
+        size: 120,
+        cell: ({ row }) => {
+            const role = 'role' in row.original ? row.original.role : undefined;
+            if (!role) return '-';
+            return <div className="text-sm">{roleLabels[role] ?? role}</div>;
         }
     },
     {

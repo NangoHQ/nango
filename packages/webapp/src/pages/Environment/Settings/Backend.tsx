@@ -14,12 +14,17 @@ import { apiFetch } from '../../../utils/api';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
+    const permissions = usePermissions();
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canReadSecretKey = !isProduction || permissions['canReadProdSecretKey'];
+    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
 
     const [loading, setLoading] = useState(false);
 
@@ -78,106 +83,108 @@ export const BackendSettings: React.FC = () => {
     const hasNewSecretKey = environmentAndAccount.environment.pending_secret_key;
     return (
         <SettingsContent title="Backend">
-            <SettingsGroup label="Secret key">
-                <fieldset className="flex flex-col gap-3.5">
-                    <div className="flex flex-col gap-2">
-                        {hasNewSecretKey && (
-                            <label htmlFor="secretKey" className="text-sm">
-                                Current secret
-                            </label>
-                        )}
-                        <div className="flex gap-2">
-                            <SecretInput
-                                view={false}
-                                inputSize={'lg'}
-                                copy={true}
-                                variant={'black'}
-                                name="secretKey"
-                                value={environmentAndAccount.environment.secret_key}
-                            />
-                        </div>
-                    </div>
-                    {!hasNewSecretKey && (
-                        <div className="flex justify-start">
-                            <Button variant={'secondary'} onClick={onGenerate} loading={loading}>
-                                <>
-                                    <IconKey stroke={1} size={18} />
-                                    Generate new secret key
-                                </>
-                            </Button>
-                        </div>
-                    )}
-                    {hasNewSecretKey && (
+            {canReadSecretKey && (
+                <SettingsGroup label="Secret key">
+                    <fieldset className="flex flex-col gap-3.5">
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="secretKey" className="text-sm">
-                                New secret
-                            </label>
-                            <SecretInput
-                                view={false}
-                                inputSize={'lg'}
-                                copy={true}
-                                variant={'black'}
-                                name="pendingSecretKey"
-                                value={environmentAndAccount.environment.pending_secret_key!}
-                            />
+                            {hasNewSecretKey && (
+                                <label htmlFor="secretKey" className="text-sm">
+                                    Current secret
+                                </label>
+                            )}
+                            <div className="flex gap-2">
+                                <SecretInput
+                                    view={false}
+                                    inputSize={'lg'}
+                                    copy={true}
+                                    variant={'black'}
+                                    name="secretKey"
+                                    value={environmentAndAccount.environment.secret_key}
+                                />
+                            </div>
                         </div>
-                    )}
-                    {hasNewSecretKey && (
-                        <Alert variant="info">
-                            <AlertDescription>
-                                The current secret is still active, the new secret is not. Confirm key rotation to activate new secret and deactivate current
-                                secret.
-                            </AlertDescription>
-                        </Alert>
-                    )}
+                        {!hasNewSecretKey && (
+                            <div className="flex justify-start">
+                                <Button variant={'secondary'} onClick={onGenerate} loading={loading}>
+                                    <>
+                                        <IconKey stroke={1} size={18} />
+                                        Generate new secret key
+                                    </>
+                                </Button>
+                            </div>
+                        )}
+                        {hasNewSecretKey && (
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="secretKey" className="text-sm">
+                                    New secret
+                                </label>
+                                <SecretInput
+                                    view={false}
+                                    inputSize={'lg'}
+                                    copy={true}
+                                    variant={'black'}
+                                    name="pendingSecretKey"
+                                    value={environmentAndAccount.environment.pending_secret_key}
+                                />
+                            </div>
+                        )}
+                        {hasNewSecretKey && (
+                            <Alert variant="info">
+                                <AlertDescription>
+                                    The current secret is still active, the new secret is not. Confirm key rotation to activate new secret and deactivate
+                                    current secret.
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                    {hasNewSecretKey && (
-                        <div className="flex gap-3 justify-start">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant={'tertiary'}>Cancel key rotation</Button>
-                                </DialogTrigger>
+                        {hasNewSecretKey && (
+                            <div className="flex gap-3 justify-start">
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant={'tertiary'}>Cancel key rotation</Button>
+                                    </DialogTrigger>
 
-                                <DialogContent>
-                                    <DialogTitle>Cancel key rotation?</DialogTitle>
-                                    <DialogDescription>
-                                        The new key will be deactivated. Only do this when the old key is used in production. This is not reversible.
-                                    </DialogDescription>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant="tertiary">Dismiss</Button>
-                                        </DialogClose>
-                                        <Button variant="destructive" onClick={onRevert} loading={loading}>
-                                            Cancel
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                                    <DialogContent>
+                                        <DialogTitle>Cancel key rotation?</DialogTitle>
+                                        <DialogDescription>
+                                            The new key will be deactivated. Only do this when the old key is used in production. This is not reversible.
+                                        </DialogDescription>
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button variant="tertiary">Dismiss</Button>
+                                            </DialogClose>
+                                            <Button variant="destructive" onClick={onRevert} loading={loading}>
+                                                Cancel
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
 
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant={'primary'}>Confirm key rotation</Button>
-                                </DialogTrigger>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant={'primary'}>Confirm key rotation</Button>
+                                    </DialogTrigger>
 
-                                <DialogContent>
-                                    <DialogTitle>Confirm key rotation?</DialogTitle>
-                                    <DialogDescription>
-                                        The old key will be deactivated. Only do this when the new key is used in production. This is not reversible.
-                                    </DialogDescription>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant={'tertiary'}>Dismiss</Button>
-                                        </DialogClose>
-                                        <Button variant="destructive" onClick={onRotate} loading={loading}>
-                                            Confirm key rotation
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                    )}
-                </fieldset>
-            </SettingsGroup>
+                                    <DialogContent>
+                                        <DialogTitle>Confirm key rotation?</DialogTitle>
+                                        <DialogDescription>
+                                            The old key will be deactivated. Only do this when the new key is used in production. This is not reversible.
+                                        </DialogDescription>
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button variant={'tertiary'}>Dismiss</Button>
+                                            </DialogClose>
+                                            <Button variant="destructive" onClick={onRotate} loading={loading}>
+                                                Confirm key rotation
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        )}
+                    </fieldset>
+                </SettingsGroup>
+            )}
             <SettingsGroup
                 label={
                     <>
@@ -198,6 +205,8 @@ export const BackendSettings: React.FC = () => {
                     name="callback_url"
                     placeholder="https://api.nango.dev/oauth/callback"
                     originalValue={environmentAndAccount.environment.callback_url}
+                    blocked={!canWriteEnvironment}
+                    blockedTooltip="You do not have permission to edit this environment"
                     editInfo={
                         <Alert variant="info">
                             <AlertDescription>

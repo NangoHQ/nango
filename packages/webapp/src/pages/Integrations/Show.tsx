@@ -8,13 +8,16 @@ import { useNavigate } from 'react-router-dom';
 import { AuthBadge } from './components/AuthBadge';
 import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
+import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
@@ -24,6 +27,10 @@ export const IntegrationsList = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
+    const permissions = usePermissions();
+    const { environmentAndAccount } = useEnvironment(env);
+    const isProduction = environmentAndAccount?.environment.is_production ?? false;
+    const canWriteIntegrations = !isProduction || permissions['canWriteProdIntegrations'];
     const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
 
@@ -97,9 +104,20 @@ export const IntegrationsList = () => {
             </Helmet>
             <header className="flex justify-between items-center">
                 <h2 className="text-text-primary text-title-subsection">Integrations</h2>
-                <ButtonLink to={`/${env}/integrations/create`} size="lg">
-                    Set up new integration
-                </ButtonLink>
+                {canWriteIntegrations ? (
+                    <ButtonLink to={`/${env}/integrations/create`} size="lg">
+                        Set up new integration
+                    </ButtonLink>
+                ) : (
+                    <SimpleTooltip
+                        tooltipContent="You do not have permission to create integrations in this environment"
+                        className="text-text-light-gray pointer-events-none"
+                    >
+                        <Button size="lg" disabled>
+                            Set up new integration
+                        </Button>
+                    </SimpleTooltip>
+                )}
             </header>
 
             <InputGroup className="bg-bg-subtle">
@@ -124,9 +142,20 @@ export const IntegrationsList = () => {
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No available integrations</h3>
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
-                    <ButtonLink to={`/${env}/integrations/create`} size="lg">
-                        Set up new integration
-                    </ButtonLink>
+                    {canWriteIntegrations ? (
+                        <ButtonLink to={`/${env}/integrations/create`} size="lg">
+                            Set up new integration
+                        </ButtonLink>
+                    ) : (
+                        <SimpleTooltip
+                            tooltipContent="You do not have permission to create integrations in this environment"
+                            className="text-text-light-gray pointer-events-none"
+                        >
+                            <Button size="lg" disabled>
+                                Set up new integration
+                            </Button>
+                        </SimpleTooltip>
+                    )}
                 </div>
             )}
 
@@ -134,9 +163,20 @@ export const IntegrationsList = () => {
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
-                    <ButtonLink to={`/${env}/integrations/create`} size="lg">
-                        Set up new integration
-                    </ButtonLink>
+                    {canWriteIntegrations ? (
+                        <ButtonLink to={`/${env}/integrations/create`} size="lg">
+                            Set up new integration
+                        </ButtonLink>
+                    ) : (
+                        <SimpleTooltip
+                            tooltipContent="You do not have permission to create integrations in this environment"
+                            className="text-text-light-gray pointer-events-none"
+                        >
+                            <Button size="lg" disabled>
+                                Set up new integration
+                            </Button>
+                        </SimpleTooltip>
+                    )}
                 </div>
             )}
 

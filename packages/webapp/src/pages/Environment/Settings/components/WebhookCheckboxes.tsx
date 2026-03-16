@@ -45,9 +45,10 @@ interface CheckboxFormProps {
     env: string;
     mutate: () => void;
     checkboxState: ApiWebhooks;
+    disabled?: boolean;
 }
 
-export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState, mutate }) => {
+export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState, mutate, disabled = false }) => {
     const { toast } = useToast();
 
     const [loading, setLoading] = useState<string | false>();
@@ -90,6 +91,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
                             name="hmac_enabled"
                             checked={checkboxState[stateKey] as boolean}
                             onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
+                            disabled={disabled}
                         />
                     </div>
                 </div>
