@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
 
-import { bundleFile, compileAllFunctions } from './compile.js';
+import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
 import { CompileError } from './utils.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 
@@ -65,5 +65,20 @@ describe('edge cases', () => {
         assert(result.error instanceof CompileError, 'Should be an error');
 
         expect(result.error.toText().replaceAll('\\', '/')).toMatchSnapshot();
+    });
+});
+
+describe('detectFeatures', () => {
+    it('should fail if entrypoint does not exists', async () => {
+        const res = await detectFeatures({ entryPoint: path.join(fixturesPath, 'does/not/exist.ts') });
+        expect(res.isErr()).toBe(true);
+    });
+    it('should detect features', async () => {
+        const features = (await detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.ts') })).unwrap();
+        expect(features).toEqual(['checkpoints']);
+    });
+    it('should not detect features if none', async () => {
+        const features = (await detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') })).unwrap();
+        expect(features).toEqual([]);
     });
 });

@@ -3,6 +3,8 @@ import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incom
 import type { NangoModel, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { JSONSchema7 } from 'json-schema';
 
+export type Feature = 'checkpoints';
+
 export interface DBSyncConfig extends TimestampsAndDeleted {
     id: number;
     sync_name: string;
@@ -28,5 +30,6 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     enabled: boolean;
     models_json_schema: JSONSchema7 | null;
     sdk_version: string | null;
+    features: Feature[];
 }
 export type DBSyncConfigInsert = Omit<DBSyncConfig, 'id'>;

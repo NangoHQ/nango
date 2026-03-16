@@ -16,7 +16,7 @@ import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
 
 // import type { BabelErrorType } from './constants.js';
-import type { Result } from '@nangohq/types';
+import type { Feature, Result } from '@nangohq/types';
 
 /**
  * This function is used to compile the code in the integration.
@@ -406,6 +406,29 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
+/**
+ * Detects which features are used in a function
+ */
+export async function detectFeatures({ entryPoint }: { entryPoint: string }): Promise<Result<Feature[]>> {
+    try {
+        const source = await fs.promises.readFile(entryPoint, 'utf8');
+        const { plugin, bag } = nangoPlugin({ entryPoint });
+        await babel.transformAsync(source, {
+            filename: entryPoint,
+            plugins: [plugin],
+            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+            generatorOpts: { decoratorsBeforeExport: true }
+        });
+        const features: Feature[] = [];
+        if (bag.checkpointsLines.length > 0) {
+            features.push('checkpoints');
+        }
+        return Ok(features);
+    } catch (err) {
+        return Err(new Error('failed_to_detect_features', { cause: err }));
+    }
+}
+
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 
@@ -422,12 +445,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
+    const checkpointsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
         deleteRecordsFromPreviousExecutionsLines,
-        trackDeletesByModel
+        trackDeletesByModel,
+        checkpointsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -583,6 +608,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     }
                                 }
                             }
+                        }
+
+                        if (['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint'].includes(callee.property.name)) {
+                            checkpointsLines.push(lineNumber);
                         }
                     },
 

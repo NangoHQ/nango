@@ -1,5 +1,6 @@
 import type { NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { Feature } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 import type { Merge } from 'type-fest';
 
@@ -91,6 +92,7 @@ export interface CLIDeployFlowConfig {
     webhookSubscriptions?: string[] | undefined;
     // TODO: make non-optional when nango-yaml and `schema.ts` are fully removed
     models_json_schema?: JSONSchema7 | undefined;
+    features?: Feature[] | undefined;
 }
 
 /**

@@ -223,7 +223,8 @@ async function createDeployConfirmationPackage({
                     fileBody: files,
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions,
-                    models_json_schema: sync.json_schema
+                    models_json_schema: sync.json_schema,
+                    features: features.isErr() ? [] : features.value
                 };
 
                 postData.push(body);
@@ -261,7 +262,8 @@ async function createDeployConfirmationPackage({
                     fileBody: files,
                     endpoints: action.endpoint ? [action.endpoint] : [],
                     track_deletes: false,
-                    models_json_schema: action.json_schema
+                    models_json_schema: action.json_schema,
+                    features: features.isErr() ? [] : features.value
                 };
 
                 postData.push(body);

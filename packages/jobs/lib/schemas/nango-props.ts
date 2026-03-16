@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { operationIdRegex } from '@nangohq/logs';
 
+import type { Feature } from '@nangohq/types';
+
 export const nangoPropsSchema = z.looseObject({
     scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
     connectionId: z.string().min(1),
@@ -40,7 +42,8 @@ export const nangoPropsSchema = z.looseObject({
         input: z.string().nullable(),
         sync_type: z.enum(['full', 'incremental']).nullable(),
         metadata: z.record(z.string(), z.any()),
-        sdk_version: z.string().nullable()
+        sdk_version: z.string().nullable(),
+        features: z.array(z.enum(['checkpoints'] satisfies Feature[])).default([])
         // TODO: fix this missing fields
         // deleted: z.boolean().optional(),
         // deleted_at: z.coerce.date().optional().nullable(),

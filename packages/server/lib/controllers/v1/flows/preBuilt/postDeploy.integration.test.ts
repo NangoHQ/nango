@@ -159,11 +159,13 @@ describe(`POST ${endpoint}`, () => {
             pre_built: true,
             runs: 'every day',
             sdk_version: expect.any(String),
+            features: expect.any(Array),
             sync_type: 'full',
             track_deletes: false,
             updated_at: expect.any(Date),
             version: '1.0.0',
-            webhook_subscriptions: null
+            webhook_subscriptions: null,
+            features: []
         });
     });
 });
