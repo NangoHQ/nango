@@ -219,7 +219,7 @@ export const lambdaNodeProvider: NodeProvider = {
     defaultNodeConfig: {
         cpuMilli: 500,
         memoryMb: 512,
-        storageMb: 10240,
+        storageMb: 512,
         isTracingEnabled: false,
         isProfilingEnabled: false,
         idleMaxDurationMs: 0,
