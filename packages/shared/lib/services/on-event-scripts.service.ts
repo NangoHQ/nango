@@ -189,13 +189,13 @@ export const onEventScriptService = {
         // Filter existing scripts to only include those from providers being deployed when not in all-providers deploy mode.
         // For 'integration' mode, infer the scoped provider from the incoming scripts (or fall back to deployingProviders[0])
         // so stale scripts are detected even when no scripts are incoming.
-        const integrationScopeKey = deployMode === 'integration' ? (onEventScriptsByProvider[0]?.providerConfigKey ?? deployingProviders[0]) : undefined;
-        const relevantExistingScripts =
-            deployMode === 'integration' && integrationScopeKey
-                ? existingScripts.filter((script) => script.providerConfigKey === integrationScopeKey)
-                : deployMode === 'single'
-                  ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
-                  : existingScripts;
+        const integrationScopeKey = onEventScriptsByProvider[0]?.providerConfigKey ?? deployingProviders[0];
+        const filters: Record<'integration' | 'single' | 'all', (s: OnEventScript) => boolean> = {
+            integration: (s) => s.providerConfigKey === integrationScopeKey,
+            single: (s) => deployingProviders.includes(s.providerConfigKey),
+            all: () => true
+        };
+        const relevantExistingScripts = existingScripts.filter(filters[deployMode]);
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
