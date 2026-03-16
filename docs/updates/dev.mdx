@@ -24,12 +24,20 @@ description: "Updates and breaking changes for developers."
 
   ### 💡 What should I do?
 
-  **If you use `schema.ts` for types:**
+  #### If you use `schema.ts` for types:
 
   Export the types directly from your sync/action files using `z.infer`, then import them in your application code.
 
-  {/* 📌 Suggested: code snippet showing before/after — importing from `.nango/schema` vs. exporting `z.infer` type from a sync file and importing it in app code */}
+  **Before:**
+  ```ts
+  import type { GithubIssue } from './nango-integrations/.nango/schema';
+  import Nango from '@nangohq/node';
 
+  const nango = new Nango({ secretKey: '...' });
+  const issues = await nango.listRecords<GithubIssue>({ ... });
+  ```
+
+  **After:**
   1. In your sync/action file, export the inferred type:
 
   ```ts
@@ -45,9 +53,9 @@ description: "Updates and breaking changes for developers."
   const issues = await nango.listRecords<GithubIssue>({ ... });
   ```
 
-  Note: if your types are already defined with `z.infer` but not exported, you only need to add the `export` keyword.
+  Note: If your types are already defined with `z.infer` but not exported, you only need to add the `export` keyword.
 
-  **If you use `schema.json` for JSON Schema:**
+  #### If you use `schema.json` for JSON Schema:
 
   JSON schemas are now available per sync/action inside `.nango/nango.json` via the `json_schema` property. This replaces the top-level `schema.json` (which had naming conflicts when models across integrations shared the same name).
 
