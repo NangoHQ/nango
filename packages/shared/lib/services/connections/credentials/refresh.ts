@@ -519,7 +519,10 @@ export async function refreshCredentialsIfNeeded({
                 credentials: newCredentials as RefreshableCredentials
             });
         } catch (err) {
-            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            const isLockTimeout = err instanceof Error && err.message.startsWith('Acquiring lock for key:');
+            const error = new NangoError(isLockTimeout ? 'refresh_token_lock_timeout' : 'refresh_token_external_error', {
+                message: err instanceof Error ? err.message : 'unknown error'
+            });
 
             return Err(error);
         } finally {
