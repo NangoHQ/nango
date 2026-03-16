@@ -873,7 +873,7 @@
               "integrations/all/valley-api-key",
               "api-integrations/vanta",
               "api-integrations/veeva-vault",
-              "integrations/all/vercel",
+              "api-integrations/vercel",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",

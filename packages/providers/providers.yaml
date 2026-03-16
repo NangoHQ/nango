@@ -1644,7 +1644,7 @@ avanan:
         x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
     token_response:
         token: ''
-    token_expires_in_ms: 86400000
+    token_expires_in_ms: 3_600_000
     proxy:
         base_url: https://${connectionConfig.subdomain}.avanan.net
         headers:
@@ -17214,16 +17214,16 @@ vercel:
                 content-type: application/json
             endpoints:
                 - /v2/user
-    docs: https://nango.dev/docs/integrations/all/vercel
-    docs_connect: https://nango.dev/docs/integrations/all/vercel
+    docs: https://nango.dev/docs/api-integrations/vercel
+    docs_connect: https://nango.dev/docs/api-integrations/vercel/connect
     credentials:
         apiKey:
             type: string
             title: Token
-            description: The Token for your Vercel account
-            pattern: '^[A-Za-z0-9]{24}$'
-            example: 'oo7W9rGs3liLWhTwmERWrsFs'
-            doc_section: '#step-1-finding-your-api-key'
+            description: The Token for your Vercel account.
+            pattern: '^vcp_[A-Za-z0-9]+$'
+            example: 'vcp_6ppUxFRd****r1sc53a'
+            doc_section: '#step-1-finding-your-token'
 
 vimeo:
     display_name: Vimeo (OAuth)
