@@ -20,14 +20,13 @@
     "dependencies": {
         "@nangohq/database": "file:../database",
         "@nangohq/logs": "file:../logs",
-        "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
+        "@nangohq/pubsub": "file:../pubsub",
         "dd-trace": "5.52.0",
         "express": "5.1.0",
-        "qs": "^6.15.0",
-        "serve": "14.2.6",
+        "qs": "6.14.1",
         "zod": "4.0.5"
     },
     "devDependencies": {

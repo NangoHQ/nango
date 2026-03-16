@@ -2,8 +2,8 @@
     "name": "@nangohq/scripts",
     "type": "module",
     "devDependencies": {
-        "@apidevtools/swagger-cli": "4.0.4",
         "@isaacs/brace-expansion": "5.0.1",
+        "@apidevtools/swagger-cli": "4.0.4",
         "@redocly/cli": "2.19.1",
         "ajv": "8.17.1",
         "chalk": "5.4.1",
@@ -11,13 +11,7 @@
         "git-cliff": "2.10.0",
         "js-yaml": "4.1.1",
         "semver": "^7.7.2",
-        "webflow-api": "^3.1.0",
+        "webflow-api": "3.2.1",
         "zx": "8.8.5"
-    },
-    "dependencies": {
-        "@google-cloud/bigquery": "7.9.4",
-        "qs": "6.15.0",
-        "serve": "^14.2.6",
-        "undici": "6.24.1"
     }
 }
