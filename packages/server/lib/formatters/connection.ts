@@ -42,7 +42,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted, options?:
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         connection_config: connection.connection_config,
-        credentials: options?.includeCredentials === false ? ({} as DBConnectionDecrypted['credentials']) : connection.credentials,
+        credentials: options?.includeCredentials ? connection.credentials : ({} as DBConnectionDecrypted['credentials']),
         metadata: connection.metadata,
         tags: connection.tags,
         last_fetched_at: connection.last_fetched_at ? String(connection.last_fetched_at) : null,

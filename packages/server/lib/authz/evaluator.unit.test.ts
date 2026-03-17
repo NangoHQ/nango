@@ -30,7 +30,7 @@ describe('StaticEvaluator', () => {
         it('should deny team management', async () => {
             await expect(evaluator.evaluate('production_support', { action: 'update', resource: 'team', scope: 'global' })).resolves.toBe(false);
             await expect(evaluator.evaluate('production_support', { action: 'delete', resource: 'team_member', scope: 'global' })).resolves.toBe(false);
-            await expect(evaluator.evaluate('production_support', { action: 'update', resource: 'invite', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate('production_support', { action: 'create', resource: 'invite', scope: 'global' })).resolves.toBe(false);
         });
 
         it('should deny billing', async () => {
@@ -101,7 +101,7 @@ describe('StaticEvaluator', () => {
 
         it('should deny team management', async () => {
             await expect(evaluator.evaluate('development_full_access', { action: 'update', resource: 'team', scope: 'global' })).resolves.toBe(false);
-            await expect(evaluator.evaluate('development_full_access', { action: 'update', resource: 'invite', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate('development_full_access', { action: 'create', resource: 'invite', scope: 'global' })).resolves.toBe(false);
         });
 
         it('should deny environment creation', async () => {

@@ -4,7 +4,7 @@ export const permissions = {
     // team management (global scope)
     canManageTeam: { action: 'update', resource: 'team', scope: 'global' },
     canRemoveTeamMember: { action: 'delete', resource: 'team_member', scope: 'global' },
-    canInviteMember: { action: 'update', resource: 'invite', scope: 'global' },
+    canInviteMember: { action: 'create', resource: 'invite', scope: 'global' },
     canCancelInvitation: { action: 'delete', resource: 'invite', scope: 'global' },
     canManageConnectUI: { action: 'update', resource: 'connect_ui_settings', scope: 'global' },
     canManageBilling: { action: '*', resource: 'billing', scope: 'global' },

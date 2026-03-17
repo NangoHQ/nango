@@ -8,7 +8,9 @@ import type { RequestHandler } from 'express';
 
 export const envScope = (l: RequestLocals): Scope => (l.environment?.is_production ? 'production' : 'non-production');
 
-export function can(permission: Permission | ((locals: RequestLocals) => Permission)): RequestHandler {
+type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: RequestLocals) => Scope };
+
+export function can(permission: Permission | ScopedPermission): RequestHandler {
     return async (_req, res, next) => {
         if (!flags.hasAuthRoles) {
             next();
@@ -21,7 +23,10 @@ export function can(permission: Permission | ((locals: RequestLocals) => Permiss
             return;
         }
 
-        const perm = typeof permission === 'function' ? permission(res.locals as RequestLocals) : permission;
+        const perm: Permission =
+            'scopedBy' in permission
+                ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(res.locals as RequestLocals) }
+                : permission;
         const allowed = await evaluator.evaluate(user.role, perm);
 
         if (!allowed) {

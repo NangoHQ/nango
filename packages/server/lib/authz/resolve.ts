@@ -20,11 +20,17 @@ export async function resolve(locals: { user?: { role: Role } }, permission: Per
 export async function buildPermissions(role: Role): Promise<AllowedPermissions> {
     const result: AllowedPermissions = {};
     for (const perm of Object.values(permissions)) {
-        const allowed = flags.hasAuthRoles ? await evaluator.evaluate(role, perm) : true;
+        const allowed = !flags.hasAuthRoles || (await evaluator.evaluate(role, perm));
         if (!allowed) continue;
-        const byScope = result[perm.resource] ?? (result[perm.resource] = {});
-        const actions = byScope[perm.scope] ?? (byScope[perm.scope] = []);
-        actions.push(perm.action);
+
+        if (!result[perm.resource]) {
+            result[perm.resource] = {};
+        }
+        const byScope = result[perm.resource]!;
+        if (!byScope[perm.scope]) {
+            byScope[perm.scope] = [];
+        }
+        byScope[perm.scope]!.push(perm.action);
     }
     return result;
 }

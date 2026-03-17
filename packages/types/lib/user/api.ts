@@ -1,4 +1,5 @@
 import type { Endpoint } from '../api.js';
+import type { Role } from './db.js';
 
 export type GetUser = Endpoint<{
     Method: 'GET';
@@ -43,7 +44,7 @@ export type AllowedPermissions = Partial<
 >;
 
 export type ApiUserWithPermissions = ApiUser & {
-    role: string;
+    role: Role;
     permissions: AllowedPermissions;
 };
 
