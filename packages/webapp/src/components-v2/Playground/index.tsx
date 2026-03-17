@@ -78,6 +78,7 @@ export const Playground: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const showRecordsButton: boolean = false;
     // Auto-close the sheet when the route changes (e.g. user clicks a navigation link inside the sheet)
     useEffect(() => {
         if (playgroundOpen) {
@@ -925,7 +926,7 @@ export const Playground: React.FC = () => {
                                                       : `Failed after ${(result.durationMs / 1000).toFixed(1)}s`}
                                         </AlertDescription>
                                         <AlertActions>
-                                            {isSync && playgroundIntegration && playgroundConnection && (
+                                            {isSync && playgroundIntegration && playgroundConnection && showRecordsButton && (
                                                 <AlertButtonLink
                                                     to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}`}
                                                     variant={result.success ? 'success-secondary' : 'error-secondary'}
@@ -936,16 +937,14 @@ export const Playground: React.FC = () => {
                                             )}
                                             {playgroundIntegration && playgroundConnection && playgroundFunction && (
                                                 <AlertButtonLink
-                                                    to={
-                                                        result.operationId
-                                                            ? getLogsUrl({ env, operationId: result.operationId })
-                                                            : getLogsUrl({
-                                                                  env,
-                                                                  integrations: playgroundIntegration,
-                                                                  connections: playgroundConnection,
-                                                                  syncs: playgroundFunction
-                                                              })
-                                                    }
+                                                    to={getLogsUrl({
+                                                        env,
+                                                        ...(result.operationId ? { operationId: result.operationId } : {}),
+                                                        integrations: playgroundIntegration,
+                                                        connections: playgroundConnection,
+                                                        syncs: playgroundFunction,
+                                                        live: true
+                                                    })}
                                                     variant={result.success ? 'success' : 'error'}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
