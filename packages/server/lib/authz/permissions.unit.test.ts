@@ -6,7 +6,10 @@ import { buildPermissions } from './resolve.js';
 
 import type { AllowedPermissions } from '@nangohq/types';
 
-function hasPermission(perms: AllowedPermissions, resource: string, scope: 'production' | 'non-production' | 'global', action: string): boolean {
+type Action = 'create' | 'read' | 'update' | 'delete' | '*';
+type Scope = 'production' | 'non-production' | 'global';
+
+function hasPermission(perms: AllowedPermissions, resource: string, scope: Scope, action: Action): boolean {
     return perms[resource]?.[scope]?.includes(action) ?? false;
 }
 
