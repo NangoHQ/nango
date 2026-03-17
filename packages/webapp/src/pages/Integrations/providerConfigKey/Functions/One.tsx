@@ -1,5 +1,5 @@
-import { ExternalLink, Info } from 'lucide-react';
-import { useMemo } from 'react';
+import { Download, ExternalLink, Info } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -16,9 +16,10 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
+import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -31,6 +32,7 @@ export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
 
     const env = useStore((state) => state.env);
+    const debugMode = useStore((state) => state.debugMode);
     const { data: integrationResponse, isLoading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const integrationData = integrationResponse?.data;
     const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
@@ -72,6 +74,13 @@ export const FunctionsOne: React.FC = () => {
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
     const isLoading = integrationLoading || flowsLoading;
+
+    const downloadCode = useCallback(async () => {
+        if (!func || !func.enabled || !func.id) {
+            return;
+        }
+        await apiFlowDownload(env, { id: func.id }, func.name);
+    }, [func, env]);
 
     if (isLoading) {
         return (
@@ -127,7 +136,14 @@ export const FunctionsOne: React.FC = () => {
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
-                        <FunctionSwitch flow={func} integration={integrationData.integration} />
+                        <div className="inline-flex items-center gap-2">
+                            {func.enabled && debugMode && (
+                                <Button onClick={downloadCode} variant="ghost" size="icon">
+                                    <Download />
+                                </Button>
+                            )}
+                            <FunctionSwitch flow={func} integration={integrationData.integration} />
+                        </div>
                     </div>
 
                     <span className="text-text-secondary text-body-medium-medium">{func.description}</span>
