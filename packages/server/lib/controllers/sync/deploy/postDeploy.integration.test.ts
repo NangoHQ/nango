@@ -213,7 +213,6 @@ describe(`POST ${endpoint}`, () => {
                             enabled: true,
                             endpoints: [{ method: 'GET', path: '/path', group: null }],
                             input: 'Input',
-                            is_zero_yaml: false,
                             sdk_version: expect.any(String),
                             is_public: false,
                             last_deployed: expect.toBeIsoDate(),

@@ -1,6 +1,5 @@
 import db from '@nangohq/database';
-import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { Err, Ok, env, filterJsonSchemaForModels } from '@nangohq/utils';
+import { Err, Ok, env } from '@nangohq/utils';
 
 import { switchActiveSyncConfig } from './utils.js';
 import { NangoError } from '../../utils/error.js';
@@ -21,7 +20,6 @@ import type {
     Result,
     SyncDeploymentResult
 } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
 
 /**
  * Deploy a template from the S3 public folder, to the database and S3
@@ -52,38 +50,21 @@ export async function deployTemplate({
         return Err(new NangoError('template_already_deployed'));
     }
 
+    if (!template.json_schema) {
+        void logCtx.error('Template missing json schema');
+        await logCtx.failed();
+        return Err(new NangoError('deploy_missing_json_schema_model'));
+    }
+
     const version = template.version || '0.0.1';
 
     void logCtx.info(`Uploading ${deployInfo.integrationId} -> ${template.name}@${version}`);
 
-    if (!template.is_zero_yaml) {
-        // Copy nango.yaml
-        // this is a public template so copy it from the public location
-        // We might not want to do this as it just overrides the root nango.yaml
-        // which means we overwrite any custom nango.yaml that the user has
-        const copy = await remoteFileService.copy({
-            sourcePath: `${publicRoute}/${nangoConfigFile}`,
-            destinationPath: `${remoteBasePath}/${nangoConfigFile}`,
-            destinationLocalPath: nangoConfigFile,
-            isZeroYaml: false
-        });
-        if (!copy) {
-            void logCtx.error('There was an error uploading the nango.yaml file');
-            await logCtx.failed();
-            return Err(new NangoError('failed_to_copy_yaml'));
-        }
-    }
-
     // Copy the main js file
     const copyJs = await remoteFileService.copy({
-        sourcePath: template.is_zero_yaml
-            ? `${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`
-            : `${publicRoute}/dist/${template.name}-${deployInfo.provider}.js`,
+        sourcePath: `${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`,
         destinationPath: `${remoteBasePathConfig}/${template.name}-v${version}.js`,
-        destinationLocalPath: template.is_zero_yaml
-            ? `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
-            : `dist/${template.name}-${deployInfo.integrationId}.js`,
-        isZeroYaml: template.is_zero_yaml
+        destinationLocalPath: `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
     });
     if (!copyJs) {
         void logCtx.error('There was an error uploading the main js file');
@@ -94,10 +75,9 @@ export async function deployTemplate({
 
     // Copy the typescript source file
     const copyTs = await remoteFileService.copy({
-        sourcePath: template.is_zero_yaml ? `${publicRoute}/${template.type}s/${template.name}.ts` : `${publicRoute}/${template.type}s/${template.name}.ts`,
+        sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
         destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
-        destinationLocalPath: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`,
-        isZeroYaml: template.is_zero_yaml
+        destinationLocalPath: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`
     });
     if (!copyTs) {
         void logCtx.error('There was an error uploading the source file');
@@ -106,31 +86,6 @@ export async function deployTemplate({
     }
 
     const modelsNames = [...template.returns, template.input].filter(Boolean) as string[];
-    // If it's a zero yaml template json schema is pre-bundled
-    // otherwise fetch it from the public folder
-    let models_json_schema: JSONSchema7 | null = null;
-    if (template.json_schema) {
-        models_json_schema = template.json_schema;
-    } else {
-        // fetch the json schema so we have type checking
-        const jsonSchemaString = await remoteFileService.getPublicTemplateJsonSchemaFile(publicRoute);
-        if (!jsonSchemaString) {
-            void logCtx.error('There was an error getting the json schema');
-            await logCtx.failed();
-            return Err(new NangoError('source_copy_error'));
-        }
-
-        if (jsonSchemaString) {
-            const jsonSchema = JSON.parse(jsonSchemaString) as JSONSchema7;
-            const result = filterJsonSchemaForModels(jsonSchema, modelsNames);
-            if (result.isErr()) {
-                void logCtx.error('There was an error parsing the json schema', { error: result.error });
-                await logCtx.failed();
-                return Err(new NangoError('deploy_missing_json_schema_model', result.error));
-            }
-            models_json_schema = result.value;
-        }
-    }
 
     const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, integration.id!, template.name);
     if (oldConfigs.length > 0) {
@@ -162,7 +117,7 @@ export async function deployTemplate({
         is_public: true,
         enabled: true,
         webhook_subscriptions: null,
-        models_json_schema,
+        models_json_schema: template.json_schema,
         sdk_version: template.sdk_version,
         updated_at: new Date(),
         sync_type: 'sync_type' in template ? template.sync_type : null
@@ -258,14 +213,9 @@ export async function upgradeTemplate({
 
     // Copy the main js file
     const copyJs = await remoteFileService.copy({
-        sourcePath: template.is_zero_yaml
-            ? `${publicRoute}/build/${provider}_${template.type}s_${template.name}.cjs`
-            : `${publicRoute}/dist/${template.name}-${provider}.js`,
+        sourcePath: `${publicRoute}/build/${provider}_${template.type}s_${template.name}.cjs`,
         destinationPath: `${remoteBasePathConfig}/${template.name}-v${template.version}.js`,
-        destinationLocalPath: template.is_zero_yaml
-            ? `build/${provider}-${template.type}s-${template.name}.cjs`
-            : `dist/${template.name}-${provider_config_key}.js`,
-        isZeroYaml: template.is_zero_yaml
+        destinationLocalPath: `build/${provider}-${template.type}s-${template.name}.cjs`
     });
     if (!copyJs) {
         void logCtx.error('There was an error uploading the main js file');
@@ -276,10 +226,9 @@ export async function upgradeTemplate({
 
     // Copy the typescript source file
     const copyTs = await remoteFileService.copy({
-        sourcePath: template.is_zero_yaml ? `${publicRoute}/${template.type}s/${template.name}.ts` : `${publicRoute}/${template.type}s/${template.name}.ts`,
+        sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
         destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
-        destinationLocalPath: `${provider_config_key}/${template.type}s/${template.name}.ts`,
-        isZeroYaml: template.is_zero_yaml
+        destinationLocalPath: `${provider_config_key}/${template.type}s/${template.name}.ts`
     });
     if (!copyTs) {
         void logCtx.error('There was an error uploading the source file');

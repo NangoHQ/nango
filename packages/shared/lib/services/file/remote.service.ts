@@ -98,12 +98,10 @@ class RemoteFileService {
     async copy({
         sourcePath,
         destinationPath,
-        destinationLocalPath,
-        isZeroYaml
+        destinationLocalPath
     }: {
         sourcePath: string;
         destinationPath: string;
-        isZeroYaml: boolean;
         /**
          * sic
          * Destination when not uploading to S3
@@ -112,7 +110,7 @@ class RemoteFileService {
          */
         destinationLocalPath: string;
     }): Promise<string | null> {
-        const s3FilePath = `${isZeroYaml ? this.publicZeroYamlRoute : this.publicRoute}/${sourcePath}`;
+        const s3FilePath = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
             if (isCloud) {
                 await this.client.send(
