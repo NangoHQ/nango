@@ -5,7 +5,8 @@ import passport from 'passport';
 
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
-import { authzMiddleware, envScope, registerPermission } from './authz/index.js';
+import { can, envScope } from './authz/index.js';
+import { permissions as p } from './authz/permissions.js';
 import { setupAuth } from './clients/auth.client.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
@@ -91,25 +92,17 @@ import authMiddleware from './middleware/access.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
-import type { Permission } from './authz/index.js';
-import type { ResolverFn } from './authz/resolvers.js';
-import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler, Response } from 'express';
 
 let webAuth: RequestHandler[] = flagHasAuth
-    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware, authzMiddleware]
+    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
-      ? [
-            passport.authenticate('basic', { session: false }) as RequestHandler,
-            authMiddleware.basicAuth.bind(authMiddleware),
-            rateLimiterMiddleware,
-            authzMiddleware
-        ]
-      : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware, authzMiddleware];
+      ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
+      : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 // For integration test, we want to bypass session auth
 if (isTest) {
-    webAuth = [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware, authzMiddleware];
+    webAuth = [authMiddleware.testAuth.bind(authMiddleware), rateLimiterMiddleware];
 }
 
 const web = express.Router();
@@ -140,25 +133,6 @@ web.use(
 web.use(bodyParser.raw({ limit: bodyLimit }));
 web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
-// --- Route helpers
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
-function protectedRoute<L extends Record<string, any>>(
-    method: HttpMethod,
-    path: string,
-    handler: RequestHandler<any, any, any, any, L>,
-    permission: Permission | ResolverFn
-): void {
-    const m = method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
-    web.route(path)[m](...webAuth, handler);
-    registerPermission(method, path, permission);
-}
-
-function openRoute<L extends Record<string, any>>(method: HttpMethod, path: string, handler: RequestHandler<any, any, any, any, L>): void {
-    const m = method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
-    web.route(path)[m](...webAuth, handler);
-}
-
 // --- No auth
 if (flagHasAuth) {
     web.route('/account/signup').post(rateLimiterMiddleware, signup);
@@ -180,149 +154,225 @@ if (flagHasManagedAuth) {
     web.route('/login/callback').get(rateLimiterMiddleware, getManagedCallback);
 }
 
-// --- Protected (open = no authz restriction, protected = authz enforced)
-openRoute('GET', '/meta', getMeta);
-openRoute('GET', '/account/onboarding/hear-about-us', getOnboardingHearAboutUs);
-openRoute('POST', '/account/onboarding/hear-about-us', postOnboardingHearAboutUs);
+// --- Protected
+web.route('/meta').get(webAuth, getMeta);
+web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
+web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
 
 // Team
-openRoute('GET', '/team', getTeam);
-protectedRoute('PUT', '/team', putTeam, { action: 'write', resource: 'team', scope: 'global' });
-protectedRoute('DELETE', '/team/users/:id', deleteTeamUser, { action: 'delete', resource: 'team_member', scope: 'global' });
+web.route('/team').get(webAuth, getTeam);
+web.route('/team').put(webAuth, can(p.canManageTeam), putTeam);
+web.route('/team/users/:id').delete(webAuth, can(p.canRemoveTeamMember), deleteTeamUser);
 
 // Invitations
-protectedRoute('POST', '/invite', postInvite, { action: 'write', resource: 'invite', scope: 'global' });
-protectedRoute('DELETE', '/invite', deleteInvite, { action: 'delete', resource: 'invite', scope: 'global' });
+web.route('/invite').post(webAuth, can(p.canInviteMember), postInvite);
+web.route('/invite').delete(webAuth, can(p.canCancelInvitation), deleteInvite);
 web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
-openRoute('POST', '/invite/:id', acceptInvite);
-openRoute('DELETE', '/invite/:id', declineInvite);
+web.route('/invite/:id').post(webAuth, acceptInvite);
+web.route('/invite/:id').delete(webAuth, declineInvite);
 
 // Plans
-openRoute('GET', '/plans', getPlans);
-openRoute('GET', '/plans/current', getCurrentPlan);
-protectedRoute('POST', '/plans/trial/extension', postPlanExtendTrial, { action: 'write', resource: 'plan', scope: 'global' });
-openRoute('GET', '/plans/usage', getUsage);
-openRoute('GET', '/plans/billing-usage', getBillingUsage);
-protectedRoute('POST', '/plans/change', postPlanChange, { action: 'write', resource: 'plan', scope: 'global' });
+web.route('/plans').get(webAuth, getPlans);
+web.route('/plans/current').get(webAuth, getCurrentPlan);
+web.route('/plans/trial/extension').post(webAuth, can(p.canChangePlan), postPlanExtendTrial);
+web.route('/plans/usage').get(webAuth, getUsage);
+web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
+web.route('/plans/change').post(webAuth, can(p.canChangePlan), postPlanChange);
 
 // Environments
-openRoute('GET', '/environments', getEnvironments);
-protectedRoute('POST', '/environments', postEnvironment, { action: 'create', resource: 'environment', scope: 'global' });
-protectedRoute('PATCH', '/environments/', patchEnvironment, (l: RequestLocals) => ({ action: 'write', resource: 'environment', scope: envScope(l) }));
-protectedRoute('DELETE', '/environments/', deleteEnvironment, (l: RequestLocals) => ({ action: 'delete', resource: 'environment', scope: envScope(l) }));
-protectedRoute('GET', '/environments/current', getEnvironment, (l: RequestLocals) => ({ action: 'read', resource: 'environment', scope: envScope(l) }));
-protectedRoute('PATCH', '/environments/webhook', patchWebhook, (l: RequestLocals) => ({ action: 'write', resource: 'webhook', scope: envScope(l) }));
-protectedRoute('POST', '/environments/variables', postEnvironmentVariables, (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'environment_variable',
-    scope: envScope(l)
-}));
+web.route('/environments').get(webAuth, getEnvironments);
+web.route('/environments').post(webAuth, can(p.canCreateEnvironment), postEnvironment);
+web.route('/environments/').patch(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'environment', scope: envScope(l) })),
+    patchEnvironment
+);
+web.route('/environments/').delete(
+    webAuth,
+    can((l) => ({ action: 'delete', resource: 'environment', scope: envScope(l) })),
+    deleteEnvironment
+);
+web.route('/environments/current').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'environment', scope: envScope(l) })),
+    getEnvironment
+);
+web.route('/environments/webhook').patch(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'webhook', scope: envScope(l) })),
+    patchWebhook
+);
+web.route('/environments/variables').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'environment_variable', scope: envScope(l) })),
+    postEnvironmentVariables
+);
 
-openRoute('GET', '/environment/hmac', environmentController.getHmacDigest.bind(environmentController));
-protectedRoute('POST', '/environment/rotate-key', environmentController.rotateKey.bind(environmentController), (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'environment_key',
-    scope: envScope(l)
-}));
-protectedRoute('POST', '/environment/revert-key', environmentController.revertKey.bind(environmentController), (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'environment_key',
-    scope: envScope(l)
-}));
-protectedRoute('POST', '/environment/activate-key', environmentController.activateKey.bind(environmentController), (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'environment_key',
-    scope: envScope(l)
-}));
-openRoute('GET', '/environment/admin-auth', environmentController.getAdminAuthInfo.bind(environmentController));
+web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
+web.route('/environment/rotate-key').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'environment_key', scope: envScope(l) })),
+    environmentController.rotateKey.bind(environmentController)
+);
+web.route('/environment/revert-key').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'environment_key', scope: envScope(l) })),
+    environmentController.revertKey.bind(environmentController)
+);
+web.route('/environment/activate-key').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'environment_key', scope: envScope(l) })),
+    environmentController.activateKey.bind(environmentController)
+);
+web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 // Connect
-protectedRoute('POST', '/connect/sessions', postInternalConnectSessions, (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'connection',
-    scope: envScope(l)
-}));
+web.route('/connect/sessions').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'connection', scope: envScope(l) })),
+    postInternalConnectSessions
+);
 
 // Connect UI settings
-openRoute('GET', '/connect-ui-settings', getConnectUISettings);
-protectedRoute('PUT', '/connect-ui-settings', putConnectUISettings, { action: 'write', resource: 'connect_ui_settings', scope: 'global' });
+web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
+web.route('/connect-ui-settings').put(webAuth, can(p.canManageConnectUI), putConnectUISettings);
 
 // Integrations
-protectedRoute('GET', '/integrations', getIntegrations, (l: RequestLocals) => ({ action: 'read', resource: 'integration', scope: envScope(l) }));
-protectedRoute('POST', '/integrations', postIntegration, (l: RequestLocals) => ({ action: 'write', resource: 'integration', scope: envScope(l) }));
-protectedRoute('GET', '/integrations/:providerConfigKey', getIntegration, (l: RequestLocals) => ({
-    action: 'read',
-    resource: 'integration',
-    scope: envScope(l)
-}));
-protectedRoute('PATCH', '/integrations/:providerConfigKey', patchIntegration, (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'integration',
-    scope: envScope(l)
-}));
-protectedRoute('DELETE', '/integrations/:providerConfigKey', deleteIntegration, (l: RequestLocals) => ({
-    action: 'delete',
-    resource: 'integration',
-    scope: envScope(l)
-}));
-openRoute('GET', '/integrations/:providerConfigKey/flows', getIntegrationFlows);
+web.route('/integrations').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'integration', scope: envScope(l) })),
+    getIntegrations
+);
+web.route('/integrations').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'integration', scope: envScope(l) })),
+    postIntegration
+);
+web.route('/integrations/:providerConfigKey').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'integration', scope: envScope(l) })),
+    getIntegration
+);
+web.route('/integrations/:providerConfigKey').patch(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'integration', scope: envScope(l) })),
+    patchIntegration
+);
+web.route('/integrations/:providerConfigKey').delete(
+    webAuth,
+    can((l) => ({ action: 'delete', resource: 'integration', scope: envScope(l) })),
+    deleteIntegration
+);
+web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 
 // Providers
-openRoute('GET', '/providers', getProvidersList);
-openRoute('GET', '/providers/:providerConfigKey', getProviderItem);
+web.route('/providers').get(webAuth, getProvidersList);
+web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 
 // Connections
-protectedRoute('GET', '/connections', getConnections, (l: RequestLocals) => ({ action: 'read', resource: 'connection', scope: envScope(l) }));
-protectedRoute('GET', '/connections/count', getConnectionsCount, (l: RequestLocals) => ({ action: 'read', resource: 'connection', scope: envScope(l) }));
-protectedRoute('GET', '/connections/:connectionId', getConnectionWeb, (l: RequestLocals) => ({ action: 'read', resource: 'connection', scope: envScope(l) }));
-protectedRoute('POST', '/connections/:connectionId/refresh', getConnectionRefresh, (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'connection',
-    scope: envScope(l)
-}));
-protectedRoute('DELETE', '/connections/:connectionId', deleteConnection, (l: RequestLocals) => ({
-    action: 'delete',
-    resource: 'connection',
-    scope: envScope(l)
-}));
-openRoute('DELETE', '/connections/admin/:connectionId', connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/connections').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'connection', scope: envScope(l) })),
+    getConnections
+);
+web.route('/connections/count').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'connection', scope: envScope(l) })),
+    getConnectionsCount
+);
+web.route('/connections/:connectionId').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'connection', scope: envScope(l) })),
+    getConnectionWeb
+);
+web.route('/connections/:connectionId/refresh').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'connection', scope: envScope(l) })),
+    getConnectionRefresh
+);
+web.route('/connections/:connectionId').delete(
+    webAuth,
+    can((l) => ({ action: 'delete', resource: 'connection', scope: envScope(l) })),
+    deleteConnection
+);
+web.route('/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
 // User
-openRoute('GET', '/user', getUser);
-openRoute('PATCH', '/user', patchUser);
-openRoute('PUT', '/user/password', putUserPassword);
+web.route('/user').get(webAuth, getUser);
+web.route('/user').patch(webAuth, patchUser);
+web.route('/user/password').put(webAuth, putUserPassword);
 
 // Sync / Flows
-openRoute('GET', '/sync', syncController.getSyncsByParams.bind(syncController));
-protectedRoute('POST', '/sync/command', syncController.syncCommand.bind(syncController), (l: RequestLocals) => ({
-    action: 'write',
-    resource: 'sync_command',
-    scope: envScope(l)
-}));
-protectedRoute('POST', '/flows/pre-built/deploy', postPreBuiltDeploy, (l: RequestLocals) => ({ action: 'write', resource: 'flow', scope: envScope(l) }));
-protectedRoute('PUT', '/flows/pre-built/upgrade', putUpgradePreBuilt, (l: RequestLocals) => ({ action: 'write', resource: 'flow', scope: envScope(l) }));
-openRoute('POST', '/flow/download', flowController.downloadFlow.bind(flowController));
-protectedRoute('PATCH', '/flows/:id/disable', patchFlowDisable, (l: RequestLocals) => ({ action: 'write', resource: 'flow', scope: envScope(l) }));
-protectedRoute('PATCH', '/flows/:id/enable', patchFlowEnable, (l: RequestLocals) => ({ action: 'write', resource: 'flow', scope: envScope(l) }));
-protectedRoute('PATCH', '/flows/:id/frequency', patchFlowFrequency, (l: RequestLocals) => ({ action: 'write', resource: 'flow', scope: envScope(l) }));
-openRoute('GET', '/flow/:flowName', flowController.getFlow.bind(syncController));
+web.route('/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
+web.route('/sync/command').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'sync_command', scope: envScope(l) })),
+    syncController.syncCommand.bind(syncController)
+);
+web.route('/flows/pre-built/deploy').post(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'flow', scope: envScope(l) })),
+    postPreBuiltDeploy
+);
+web.route('/flows/pre-built/upgrade').put(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'flow', scope: envScope(l) })),
+    putUpgradePreBuilt
+);
+web.route('/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
+web.route('/flows/:id/disable').patch(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'flow', scope: envScope(l) })),
+    patchFlowDisable
+);
+web.route('/flows/:id/enable').patch(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'flow', scope: envScope(l) })),
+    patchFlowEnable
+);
+web.route('/flows/:id/frequency').patch(
+    webAuth,
+    can((l) => ({ action: 'write', resource: 'flow', scope: envScope(l) })),
+    patchFlowFrequency
+);
+web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 // Getting Started
-openRoute('GET', '/getting-started', getGettingStarted);
-openRoute('PATCH', '/getting-started', patchGettingStarted);
+web.route('/getting-started').get(webAuth, getGettingStarted);
+web.route('/getting-started').patch(webAuth, patchGettingStarted);
 
 // Logs
-protectedRoute('POST', '/logs/operations', searchOperations, (l: RequestLocals) => ({ action: 'read', resource: 'log', scope: envScope(l) }));
-protectedRoute('POST', '/logs/messages', searchMessages, (l: RequestLocals) => ({ action: 'read', resource: 'log', scope: envScope(l) }));
-protectedRoute('POST', '/logs/filters', searchFilters, (l: RequestLocals) => ({ action: 'read', resource: 'log', scope: envScope(l) }));
-protectedRoute('GET', '/logs/operations/:operationId', getOperation, (l: RequestLocals) => ({ action: 'read', resource: 'log', scope: envScope(l) }));
-protectedRoute('POST', '/logs/insights', postInsights, (l: RequestLocals) => ({ action: 'read', resource: 'log', scope: envScope(l) }));
+web.route('/logs/operations').post(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'log', scope: envScope(l) })),
+    searchOperations
+);
+web.route('/logs/messages').post(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'log', scope: envScope(l) })),
+    searchMessages
+);
+web.route('/logs/filters').post(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'log', scope: envScope(l) })),
+    searchFilters
+);
+web.route('/logs/operations/:operationId').get(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'log', scope: envScope(l) })),
+    getOperation
+);
+web.route('/logs/insights').post(
+    webAuth,
+    can((l) => ({ action: 'read', resource: 'log', scope: envScope(l) })),
+    postInsights
+);
 
 // Stripe / Billing
 if (flagHasUsage) {
-    protectedRoute('GET', '/stripe/payment_methods', getStripePaymentMethods, { action: '*', resource: 'billing', scope: 'global' });
-    protectedRoute('POST', '/stripe/payment_methods', postStripeCollectPayment, { action: '*', resource: 'billing', scope: 'global' });
-    protectedRoute('DELETE', '/stripe/payment_methods', deleteStripePaymentMethod, { action: '*', resource: 'billing', scope: 'global' });
+    web.route('/stripe/payment_methods').get(webAuth, can(p.canManageBilling), getStripePaymentMethods);
+    web.route('/stripe/payment_methods').post(webAuth, can(p.canManageBilling), postStripeCollectPayment);
+    web.route('/stripe/payment_methods').delete(webAuth, can(p.canManageBilling), deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
     web.route('/orb/webhooks').post((_req, _res, next) => {
@@ -332,9 +382,9 @@ if (flagHasUsage) {
     }, postOrbWebhooks);
 }
 
-openRoute('POST', '/admin/impersonate', postImpersonate);
+web.route('/admin/impersonate').post(webAuth, postImpersonate);
 
-openRoute('GET', '/api-status/:service', getApiStatus);
+web.route('/api-status/:service').get(webAuth, getApiStatus);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

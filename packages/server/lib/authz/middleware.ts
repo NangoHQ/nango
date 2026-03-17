@@ -1,40 +1,34 @@
 import { flags } from '@nangohq/utils';
 
-import { authorize } from './authorize.js';
+import { evaluator } from './evaluator.js';
 
-import type { Role } from '@nangohq/types';
+import type { Permission, Scope } from './types.js';
+import type { RequestLocals } from '../utils/express.js';
 import type { RequestHandler } from 'express';
 
-export const authzMiddleware: RequestHandler = async (req, res, next) => {
-    if (!flags.hasAuthRoles) {
+export const envScope = (l: RequestLocals): Scope => (l.environment?.is_production ? 'production' : 'non-production');
+
+export function can(permission: Permission | ((locals: RequestLocals) => Permission)): RequestHandler {
+    return async (_req, res, next) => {
+        if (!flags.hasAuthRoles) {
+            next();
+            return;
+        }
+
+        const user = res.locals['user'];
+        if (!user) {
+            next();
+            return;
+        }
+
+        const perm = typeof permission === 'function' ? permission(res.locals as RequestLocals) : permission;
+        const allowed = await evaluator.evaluate({ role: user.role }, perm);
+
+        if (!allowed) {
+            res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
+            return;
+        }
+
         next();
-        return;
-    }
-
-    // Authz only applies to session-authenticated (dashboard) users.
-    // API key consumers have no user/role — skip enforcement.
-    const user = res.locals['user'];
-    if (!user) {
-        next();
-        return;
-    }
-
-    const role: Role = user.role;
-
-    // Resolve the Express route pattern (e.g., /team/users/123 → /team/users/:id)
-    const routePath = req.route?.path as string | undefined;
-    if (!routePath) {
-        next();
-        return;
-    }
-
-    const method = req.method.toUpperCase();
-    const allowed = await authorize(method, routePath, role, res.locals);
-
-    if (!allowed) {
-        res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
-        return;
-    }
-
-    next();
-};
+    };
+}
