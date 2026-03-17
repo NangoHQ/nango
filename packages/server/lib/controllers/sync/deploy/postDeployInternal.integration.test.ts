@@ -45,7 +45,7 @@ describe(`POST ${endpoint}`, () => {
                 flowConfigs: [],
                 nangoYamlBody: '',
                 reconcile: false,
-                singleDeployMode: false
+                deployMode: 'all'
             }
         });
 
@@ -98,7 +98,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: '',
                     onEventScriptsByProvider: [],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });
@@ -164,7 +164,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: '',
                     onEventScriptsByProvider: [],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });

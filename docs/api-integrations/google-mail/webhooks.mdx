@@ -1,10 +1,10 @@
 ---
 title: 'How to setup webhooks with Gmail on Nango'
 sidebarTitle: 'Webhooks'
-description: 'Learn how to set up Gmail push notifications with Google Pub/Sub and Nango'
+description: 'Learn how to set up Gmail webhooks with Google Pub/Sub and Nango'
 ---
 
-This guide shows you how to receive real-time Gmail push notifications in Nango using [Google Pub/Sub](https://developers.google.com/workspace/gmail/api/guides/push).
+This guide shows you how to receive real-time Gmail webhooks in Nango using [Google Pub/Sub](https://developers.google.com/workspace/gmail/api/guides/push).
 
 ## How it works
 
@@ -26,7 +26,15 @@ Create a topic in the [Google Cloud Console](https://console.cloud.google.com/cl
 
 ### 2. Grant Gmail publish rights
 
-Gmail needs permission to publish to your topic. Run this with the [gcloud CLI](https://cloud.google.com/sdk/docs/install):
+Gmail needs permission to publish to your topic. You can do this in the [Google Cloud Console](https://console.cloud.google.com/cloudpubsub/topic/list) or with the gcloud CLI.
+
+**Option A — Google Cloud Console:**
+
+1. Open [Pub/Sub Topics](https://console.cloud.google.com/cloudpubsub/topic/list) in the Google Cloud Console.
+2. Click on your topic, then go to the **Permissions** tab.
+3. Click **Add principal**. Set the principal to `gmail-api-push@system.gserviceaccount.com` and assign the **Pub/Sub Publisher** role.
+
+**Option B — gcloud CLI:**
 
 ```bash
 gcloud pubsub topics add-iam-policy-binding <TOPIC_ID> \
@@ -41,10 +49,12 @@ The **topic ID** is the short name (e.g. `my-gmail-topic`), while the **topic na
 
 ### 3. Create a push subscription
 
-Click on the default subscription for your topic (if one was created) or create a new one. Set the delivery type to **Push** and configure it as follows:
+Click on the default subscription for your topic (if one was created) or create a new one. Select *Edit* and configure it as follows:
 
-1. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
-2. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+1. **Delivery type**: Set as push
+2. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
+3. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+4. **Save the changes**
 
 ### 4. Activate the watch subscription
 
@@ -70,14 +80,14 @@ export default createOnEvent({
     event: 'post-connection-creation',
     description: 'Activate the Gmail watch webhook subscription for new connections',
     exec: async (nango) => {
-        const metadata = await nango.getMetadata();
-
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/gmail',
             endpoint: '/v1/users/me/watch',
             data: {
                 labelIds: ['INBOX'],
-                topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
+                // Replace with your full topic name from the Pub/Sub setup (step 1)
+                // Ideally, you should set the value to be read from the Nango env variables (https://nango.dev/docs/reference/functions#environment-variables)
+                topicName: 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
                 labelFilterBehavior: 'INCLUDE',
             },
         };
@@ -89,30 +99,30 @@ export default createOnEvent({
 
 ### 5. Renew the watch subscription daily
 
-Google [recommends](https://developers.google.com/workspace/gmail/api/guides/push#renewing_mailbox_watch) calling the `watch` endpoint at least once a day to keep the subscription active. You can use a Nango sync with a `1d` frequency for this:
+Google [recommends](https://developers.google.com/workspace/gmail/api/guides/push#renewing_mailbox_watch) calling the `watch` endpoint at least once a day to keep the subscription active. Each call replaces any existing watch for the user, so no separate cleanup is needed. You can use a Nango sync with a `1d` frequency for this:
 
 ```typescript
 import { createSync, ProxyConfiguration } from 'nango';
-import { Empty } from '../../models.js';
+import { z } from 'zod';
 
 export default createSync({
     description: 'Calls the watch endpoint daily to keep a Gmail webhook subscription active',
-    models: { Empty },
+    models: { Empty: z.object({}) },
     endpoints: [{
         method: 'GET',
-        path: '/watch',
+        path: '/gmail/watch-renewal',
     }],
     syncType: 'full',
     frequency: '1d',
     exec: async (nango) => {
-        const metadata = await nango.getMetadata();
-
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/gmail',
             endpoint: '/v1/users/me/watch',
             data: {
                 labelIds: ['INBOX'],
-                topicName: metadata['topicName'] ?? 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
+                // Replace with your full topic name from the Pub/Sub setup (step 1)
+                // Ideally, you should set the value to be read from the Nango env variables (https://nango.dev/docs/reference/functions#environment-variables)
+                topicName: 'projects/<PROJECT_ID>/topics/<TOPIC_ID>',
                 labelFilterBehavior: 'INCLUDE',
             },
         };
@@ -123,7 +133,35 @@ export default createSync({
 });
 ```
 
-### 6. Handle forwarded webhooks
+### 6. Stop the watch subscription on connection deletion
+
+If a connection is deleted in Nango but the Gmail watch remains active, Google may continue sending notifications for that mailbox until the watch expires. To stop notifications immediately for a deleted connection, call Gmail's [`users.stop`](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users/stop) endpoint before deletion.
+
+You can automate this with a `pre-connection-deletion` lifecycle event:
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Stop Gmail watch subscription before connection deletion',
+    exec: async (nango) => {
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/gmail',
+            endpoint: '/v1/users/me/stop'
+        };
+
+        try {
+            await nango.post(config);
+        } catch (err) {
+            // Avoid blocking connection deletion if stop fails.
+            await nango.log(`Failed to stop Gmail watch subscription: ${String(err)}`, { level: 'error' });
+        }
+    }
+});
+```
+
+### 7. Handle forwarded webhooks
 
 When a Gmail notification arrives, Nango matches it to the correct connection and forwards it to your system. The forwarded payload looks like this:
 
@@ -165,6 +203,12 @@ curl -X POST "https://api.nango.dev/sync/trigger" \
 ```
 
 With webhooks triggering syncs in real time, you can reduce your sync frequency to a lower value (`1d`/`1h`) just to act as a safety net for any missed webhooks.
+
+<Note>
+If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`. For Gmail, subscribe to `'*'` and decode `payload.message.data` to get `historyId`.
+
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+</Note>
 
 ## Connection matching
 

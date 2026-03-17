@@ -1,87 +1,147 @@
+### Account
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `fetch-account-information` | Retrieve portal account details, currency settings, timezone, and hosting region | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-account-information.ts) |
+
+### Associations
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-association` | Associate two records together | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-association.ts) |
+
+### CRM
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `fetch-custom-objects` | Retrieve HubSpot custom object schemas for enterprise accounts | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-custom-objects.ts) |
+| `fetch-properties` | List CRM property metadata for a specified HubSpot object type | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-properties.ts) |
+
 ### Companies
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-company` | Create a single company in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.ts) |
-| `delete-company` | Deletes a company in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-company.ts) |
-| `update-company` | Update a single company in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-company.ts) |
-| `companies` | Fetches a list of companies from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/companies.ts) |
+| `batch-create-companies` | Create multiple companies at once | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/batch-create-companies.ts) |
+| `batch-update-companies` | Update multiple companies at once | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/batch-update-companies.ts) |
+| `create-company` | Create a company record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.ts) |
+| `delete-company` | Delete a company record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-company.ts) |
+| `get-company` | Get a company by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/get-company.ts) |
+| `list-companies` | List company records | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/list-companies.ts) |
+| `search-companies` | Search companies by criteria | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/search-companies.ts) |
+| `update-company` | Update a company record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-company.ts) |
+| `sync-companies` | Sync companies from HubSpot CRM | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-companies.ts) |
 
 ### Contacts
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-contact` | Create a single contact in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-contact.ts) |
-| `delete-contact` | Deletes a contact in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-contact.ts) |
-| `update-contact` | Updates a single contact in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-contact.ts) |
-| `contacts` | Fetches a list of contacts from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/contacts.ts) |
+| `create-contact` | Create a contact record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-contact.ts) |
+| `delete-contact` | Delete a contact record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-contact.ts) |
+| `get-contact` | Get a contact by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/get-contact.ts) |
+| `list-contacts` | List contact records | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/list-contacts.ts) |
+| `update-contact` | Update a contact record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-contact.ts) |
+| `sync-contacts` | Sync contacts | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-contacts.ts) |
 
 ### Deals
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-deal` | Creates a single deal in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-deal.ts) |
-| `delete-deal` | Deletes a deal in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-deal.ts) |
-| `update-deal` | Updates a single deal in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-deal.ts) |
-| `deals` | Fetches a list of deals from Hubspot with their associated companies and contacts | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/deals.ts) |
+| `create-deal` | Create a deal record in HubSpot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-deal.ts) |
+| `delete-deal` | Delete a deal record | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-deal.ts) |
+| `get-deal` | Get a deal by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/get-deal.ts) |
+| `list-deals` | List deal records from HubSpot CRM | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/list-deals.ts) |
+| `search-deals` | Search deals by criteria | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/search-deals.ts) |
+| `update-deal` | Update a deal record in HubSpot CRM | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-deal.ts) |
+| `sync-deals` | Sync deals with amount, close date, stage, owner, description, and associated companies and contacts | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-deals.ts) |
+
+### Forms
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-forms` | List forms | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/list-forms.ts) |
+
+### Marketing
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-marketing-email` | Get a marketing email by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/get-marketing-email.ts) |
+| `list-marketing-emails` | List marketing emails | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/list-marketing-emails.ts) |
+
+### Marketing Emails
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `clone-marketing-email` | Clone an existing marketing email | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/clone-marketing-email.ts) |
+| `create-marketing-email` | Create a marketing email in HubSpot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-marketing-email.ts) |
+| `delete-marketing-email` | Delete a marketing email | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-marketing-email.ts) |
+| `update-marketing-email` | Update a marketing email | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-marketing-email.ts) |
+| `sync-marketing-emails` | Sync marketing emails from HubSpot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-marketing-emails.ts) |
+
+### Notes
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-note` | Create a HubSpot note with body, timestamp, owner, optional attachments, and an explicit association to a contact, company, deal, or ticket. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-note.ts) |
 
 ### Owners
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `owners` | Fetches a list of owners from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/owners.ts) |
+| `get-owner` | Get an owner by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/get-owner.ts) |
+| `sync-owners` | Sync HubSpot owners with names, email, user IDs, and archive status | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-owners.ts) |
 
 ### Pipelines
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-pipelines` | Fetch all pipelines for an object type. Defaults to deals | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-pipelines.ts) |
+| `fetch-pipelines` | List pipelines and stages for an object type, defaulting to deals | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-pipelines.ts) |
 
 ### Products
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `products` | Fetches a list of products from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/products.ts) |
+| `sync-products` | Sync product records with pricing, SKU, quantity, and billing details | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-products.ts) |
 
 ### Properties
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-property` | Create a property in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-property.ts) |
-| `fetch-properties` | Fetch the properties of a specified object | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-properties.ts) |
-
-### Roles
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `change-user-role` | Change a user role. Requires an enterprise account. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/change-user-role.ts) |
-| `fetch-roles` | Fetch the roles on an account. Requires an enterprise account. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-roles.ts) |
+| `create-property` | Create a custom CRM property for a specified HubSpot object type | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-property.ts) |
 
 ### Tasks
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-task` | Creates a single task in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-task.ts) |
-| `delete-task` | Deletes a task in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-task.ts) |
-| `update-task` | Updates a single company in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-task.ts) |
-| `tasks` | Fetches a list of tasks from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/tasks.ts) |
+| `create-task` | Create a HubSpot task with type, title, priority, assignee, due date, notes, and optional associations to contacts, companies, or deals | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-task.ts) |
+| `delete-task` | Delete a HubSpot task by record ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-task.ts) |
+| `update-task` | Update a HubSpot task's fields, owner, due date, and associations | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-task.ts) |
+| `sync-tasks` | Sync tasks with type, title, priority, assignee, due date, notes, and related contacts, companies, and deals | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-tasks.ts) |
+
+### Tickets
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-ticket` | Create a support ticket in HubSpot CRM | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-ticket.ts) |
+| `delete-ticket` | Delete a support ticket | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-ticket.ts) |
+| `get-ticket` | Get a ticket by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/get-ticket.ts) |
+| `list-tickets` | List support tickets | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/list-tickets.ts) |
+| `search-tickets` | Search tickets by criteria | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/search-tickets.ts) |
+| `update-ticket` | Update a support ticket | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-ticket.ts) |
+| `sync-tickets` | Sync service tickets with subject, content, owner, pipeline, stage, category, and priority | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-tickets.ts) |
 
 ### Users
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-user` | Creates a single user in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-user.ts) |
-| `delete-user` | Deletes a user in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-user.ts) |
-| `whoami` | Fetch current user information | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/whoami.ts) |
-| `users` | Fetches a list of users from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/users.ts) |
+| `change-user-role` | Update a HubSpot user's role and team assignments | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/change-user-role.ts) |
+| `create-user` | Provision a HubSpot user with email, role, and team assignments | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-user.ts) |
+| `delete-user` | Delete a HubSpot provisioned user by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-user.ts) |
+| `fetch-roles` | List available user roles for a HubSpot enterprise account | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-roles.ts) |
+| `whoami` | Retrieve the current authenticated HubSpot user's ID and email | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/whoami.ts) |
+| `sync-users` | Sync provisioned users with role IDs, primary team, and admin status | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/sync-users.ts) |
 
-### Others
+### Workflows
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-note` | Creates a single note in Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-note.ts) |
-| `fetch-account-information` | Fetch the account information from Hubspot | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-account-information.ts) |
-| `fetch-custom-objects` | Fetch custom objects in Hubspot. Requires Hubspot enterprise | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-custom-objects.ts) |
-| `currency-codes` | Fetch hubspot deals | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/currency-codes.ts) |
-| `knowledge-base` | Fetches a list of knowledge base from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/knowledge-base.ts) |
-| `service-tickets` | Fetches a list of service tickets from Hubspot | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/service-tickets.ts) |
+| `delete-a-workflow` | Delete an automation workflow | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-a-workflow.ts) |

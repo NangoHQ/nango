@@ -85,7 +85,7 @@ describe(`POST ${endpoint}`, () => {
                 ],
                 nangoYamlBody: '',
                 reconcile: false,
-                singleDeployMode: false
+                deployMode: 'all'
             }
         });
 
@@ -116,7 +116,7 @@ describe(`POST ${endpoint}`, () => {
                 nangoYamlBody: '',
                 onEventScriptsByProvider: [],
                 reconcile: false,
-                singleDeployMode: false,
+                deployMode: 'all',
                 jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
             }
         });
@@ -182,7 +182,7 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });
@@ -256,26 +256,45 @@ describe(`POST ${endpoint}`, () => {
                 token: secret.secret,
                 body: {
                     debug: false,
-                    jsonSchema: {
-                        $comment: '',
-                        $schema: 'http://json-schema.org/draft-07/schema#',
-                        definitions: {}
-                    },
-                    flowConfigs: [],
+                    flowConfigs: [
+                        {
+                            syncName: 'test2',
+                            fileBody: { js: 'js file', ts: 'ts file' },
+                            providerConfigKey: 'unauthenticated',
+                            endpoints: [{ method: 'GET', path: '/path2' }],
+                            runs: 'every day',
+                            type: 'sync',
+                            attributes: {},
+                            auto_start: false,
+                            metadata: { description: 'b' },
+                            sync_type: 'full',
+                            track_deletes: false,
+                            models: ['Output'],
+                            models_json_schema: {
+                                definitions: {
+                                    Output: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false }
+                                }
+                            }
+                        }
+                    ],
                     nangoYamlBody: ``,
                     onEventScriptsByProvider: [],
                     reconcile: true,
-                    singleDeployMode: false
+                    deployMode: 'all',
+                    sdkVersion: '0.61.3-yaml'
                 }
             });
             isSuccess(res.json);
 
-            expect(res.json).toStrictEqual<typeof res.json>([]);
+            expect(res.json).toStrictEqual<typeof res.json>([
+                { models: ['Output'], name: 'test2', providerConfigKey: 'unauthenticated', type: 'sync', version: '1' }
+            ]);
             expect(res.res.status).toBe(200);
 
-            // Check that everything was inserted in DB
+            // 'test' sync should have been removed, only 'test2' remains
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
-            expect(syncConfigs).toBeNull();
+            expect(syncConfigs).toHaveLength(1);
+            expect(syncConfigs![0]!.syncs[0]!.name).toBe('test2');
         });
     });
 
@@ -321,7 +340,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: '',
                     onEventScriptsByProvider: [],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });
@@ -385,7 +404,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: '',
                     onEventScriptsByProvider: [],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });

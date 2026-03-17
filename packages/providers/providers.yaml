@@ -1644,7 +1644,7 @@ avanan:
         x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
     token_response:
         token: ''
-    token_expires_in_ms: 86400000
+    token_expires_in_ms: 3_600_000
     proxy:
         base_url: https://${connectionConfig.subdomain}.avanan.net
         headers:
@@ -16536,6 +16536,35 @@ trigify-io-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
 
+triple-whale:
+    display_name: Triple Whale
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.triplewhale.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                content-type: application/json
+            endpoints:
+                - /api/v2/users/api-keys/me
+    docs: https://nango.dev/docs/api-integrations/triple-whale
+    docs_connect: https://nango.dev/docs/api-integrations/triple-whale/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Triple Whale API key.
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key'
+
 tsheetsteam:
     display_name: TSheets
     categories:
@@ -16903,6 +16932,36 @@ typefully:
             title: API Key
             description: The API key for your Typefully account
 
+typefully-v2:
+    display_name: Typefully (API v2)
+    categories:
+        - analytics
+        - communication
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.typefully.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+        retry:
+            at:
+                - 'x-ratelimit-user-reset'
+                - 'x-ratelimit-socialset-reset'
+    docs: https://nango.dev/docs/api-integrations/typefully-v2
+    docs_connect: https://nango.dev/docs/api-integrations/typefully-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Typefully v2 API key.
+            example: 'aNVlyR********************YxeIDz'
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 uber:
     display_name: Uber
     auth_mode: OAUTH2
@@ -17214,16 +17273,16 @@ vercel:
                 content-type: application/json
             endpoints:
                 - /v2/user
-    docs: https://nango.dev/docs/integrations/all/vercel
-    docs_connect: https://nango.dev/docs/integrations/all/vercel
+    docs: https://nango.dev/docs/api-integrations/vercel
+    docs_connect: https://nango.dev/docs/api-integrations/vercel/connect
     credentials:
         apiKey:
             type: string
             title: Token
-            description: The Token for your Vercel account
-            pattern: '^[A-Za-z0-9]{24}$'
-            example: 'oo7W9rGs3liLWhTwmERWrsFs'
-            doc_section: '#step-1-finding-your-api-key'
+            description: The Token for your Vercel account.
+            pattern: '^vcp_[A-Za-z0-9]+$'
+            example: 'vcp_6ppUxFRd****r1sc53a'
+            doc_section: '#step-1-finding-your-token'
 
 vimeo:
     display_name: Vimeo (OAuth)

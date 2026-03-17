@@ -12,7 +12,7 @@ export type PostDeployConfirmation = Endpoint<{
         onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
@@ -29,7 +29,7 @@ export type PostDeploy = Endpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
@@ -49,7 +49,7 @@ export type PostDeployInternal = Endpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
         /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;

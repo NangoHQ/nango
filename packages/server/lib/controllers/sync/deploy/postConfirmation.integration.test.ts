@@ -60,7 +60,7 @@ describe(`POST ${endpoint}`, () => {
                 flowConfigs: [],
                 onEventScriptsByProvider: [],
                 reconcile: false,
-                singleDeployMode: false
+                deployMode: 'all'
             }
         });
 
