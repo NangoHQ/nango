@@ -17,15 +17,15 @@ const ADMIN_ONLY: Permission[] = [
 
 const PROD_WRITES: Permission[] = [
     p.canWriteProdIntegrations,
-    { action: 'delete', resource: 'integration', scope: 'production' },
+    p.canDeleteProdIntegrations,
     p.canWriteProdConnections,
-    { action: 'delete', resource: 'connection', scope: 'production' },
+    p.canDeleteProdConnections,
     p.canWriteProdFlows,
     p.canDeleteProdEnvironment,
     p.canWriteProdEnvironment,
     p.canWriteProdEnvironmentKeys,
-    { action: 'write', resource: 'environment_variable', scope: 'production' },
-    { action: 'write', resource: 'webhook', scope: 'production' }
+    p.canWriteProdEnvironmentVariables,
+    p.canWriteProdWebhooks
 ];
 
 const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials];

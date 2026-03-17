@@ -15,10 +15,14 @@ export const permissions = {
     // production environment access
     canAccessProdEnvironment: { action: 'read', resource: 'environment', scope: 'production' },
     canWriteProdIntegrations: { action: 'write', resource: 'integration', scope: 'production' },
+    canDeleteProdIntegrations: { action: 'delete', resource: 'integration', scope: 'production' },
     canWriteProdConnections: { action: 'write', resource: 'connection', scope: 'production' },
+    canDeleteProdConnections: { action: 'delete', resource: 'connection', scope: 'production' },
     canWriteProdFlows: { action: 'write', resource: 'flow', scope: 'production' },
     canWriteProdEnvironment: { action: 'write', resource: 'environment', scope: 'production' },
     canWriteProdEnvironmentKeys: { action: 'write', resource: 'environment_key', scope: 'production' },
+    canWriteProdEnvironmentVariables: { action: 'write', resource: 'environment_variable', scope: 'production' },
+    canWriteProdWebhooks: { action: 'write', resource: 'webhook', scope: 'production' },
     canDeleteProdEnvironment: { action: 'delete', resource: 'environment', scope: 'production' },
 
     // production secrets/credentials
