@@ -4,7 +4,7 @@ import type { NangoProps, RoutingContext } from '@nangohq/types';
 
 export function getRoutingId(params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): string {
     const tshirtSize = getTShirtSize(params.nangoProps);
-    const prefix = params.routingContext?.plan?.node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
+    const prefix = params.routingContext?.plan?.fleet_node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
     return `${prefix}-${tshirtSize}`;
 }
 

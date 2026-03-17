@@ -120,7 +120,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         on_event_function_runtime: 'runner',
         has_records_autopruning: true,
         variants_per_sync_max: 100,
-        node_routing_override: null,
+        fleet_node_routing_override: null,
         ...defaultPlanDefinition,
         ...flagOverrides
     };

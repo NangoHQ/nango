@@ -6,7 +6,7 @@ exports.config = { transaction: true };
 exports.up = async function (knex) {
     await knex.raw(`
         ALTER TABLE plans
-        ADD COLUMN IF NOT EXISTS node_routing_override varchar(255) DEFAULT NULL;
+        ADD COLUMN IF NOT EXISTS fleet_node_routing_override varchar(255) DEFAULT NULL;
     `);
 };
 

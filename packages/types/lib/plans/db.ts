@@ -184,5 +184,5 @@ export interface DBPlan extends Timestamps {
      * Override the prefix for the function routing
      * @default null
      */
-    node_routing_override: string | null;
+    fleet_node_routing_override: string | null;
 }
