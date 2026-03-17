@@ -95,3 +95,18 @@ export type PatchFlowFrequency = Endpoint<{
         };
     };
 }>;
+
+export type PostFlowDownload = Endpoint<{
+    Method: 'POST';
+    Path: '/flow/download';
+    Body: {
+        id?: number | undefined;
+        name: string;
+        provider: string;
+        is_public: boolean;
+        providerConfigKey: string;
+        flowType: ScriptTypeLiteral;
+    };
+    Error: ApiError<'invalid_query'> | ApiError<'invalid_file_reference'>;
+    Success: never;
+}>;

@@ -45,6 +45,7 @@ import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
+import { postFlowDownload } from './controllers/v1/flow/postDownload.js';
 import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
 import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
