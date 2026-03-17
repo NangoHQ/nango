@@ -26,7 +26,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode'>;
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
 
 export async function deploy({
     fullPath,
@@ -161,7 +161,8 @@ async function createDeployConfirmationPackage({
 
     const postData: CLIDeployFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
-    const singleDeployMode = Boolean(optionalSyncName || optionalActionName || optionalIntegrationId);
+    const hasSingleScript = Boolean(optionalSyncName || optionalActionName);
+    const deployMode: 'all' | 'single' | 'integration' = hasSingleScript ? 'single' : optionalIntegrationId ? 'integration' : 'all';
 
     for (const integration of parsed.integrations) {
         const { providerConfigKey, onEventScripts } = integration;
@@ -275,7 +276,7 @@ async function createDeployConfirmationPackage({
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        singleDeployMode
+        deployMode
     });
 }
 
