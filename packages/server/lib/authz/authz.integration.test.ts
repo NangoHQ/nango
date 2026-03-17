@@ -367,8 +367,8 @@ describe('authz integration', () => {
             const devUser = await createUserWithRole(account.id, 'development_full_access');
             const session = await authenticateUser(api, devUser);
 
+            // @ts-expect-error authz test — /sync not in endpoint types
             const res = await api.fetch('/api/v1/sync', {
-                // @ts-expect-error authz test — GET /sync not in endpoint types
                 method: 'GET',
                 query: { env: 'prod' },
                 session
