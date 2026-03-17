@@ -26,7 +26,7 @@ class FlowService {
             for (const item of integration.syncs) {
                 // Prioritize function-level json-schema. Temporary fallback to top-level json-schema for smooth migration
                 let jsonSchema = item.json_schema || null;
-                if (!jsonSchema) {
+                if (!jsonSchema && integration.jsonSchema) {
                     const jsonSchemaResult = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
                     if (jsonSchemaResult.isErr()) {
                         throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchemaResult.error });
@@ -62,7 +62,7 @@ class FlowService {
             for (const item of integration.actions) {
                 // Prioritize function-level json-schema. Temporary fallback to top-level json-schema for smooth migration
                 let jsonSchema = item.json_schema || null;
-                if (!jsonSchema) {
+                if (!jsonSchema && integration.jsonSchema) {
                     const jsonSchemaResult = filterJsonSchemaForModels(integration.jsonSchema, item.usedModels);
                     if (jsonSchemaResult.isErr()) {
                         throw new Error(`failed_to_filter_json_schema`, { cause: jsonSchemaResult.error });

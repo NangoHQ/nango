@@ -172,5 +172,5 @@ export interface FlowsYaml {
 }
 
 // --- flows.zero.json is a parsed nango.yaml
-export type FlowZeroJson = NangoYamlParsedIntegration & { jsonSchema: JSONSchema7; sdkVersion: string };
+export type FlowZeroJson = NangoYamlParsedIntegration & { jsonSchema?: JSONSchema7; sdkVersion: string };
 export type FlowsZeroJson = FlowZeroJson[];
