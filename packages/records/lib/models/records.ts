@@ -891,7 +891,7 @@ export async function deleteOutdatedRecords({
     connectionId,
     model,
     generation,
-    batchSize = 5000
+    batchSize = 1000
 }: {
     environmentId: number;
     connectionId: number;
@@ -906,67 +906,89 @@ export async function deleteOutdatedRecords({
     });
     let partition: string | undefined = undefined;
     try {
-        const now = db.fn.now(6);
-        return await db.transaction(async (trx) => {
-            const deletedIds: string[] = [];
-            let hasMore = true;
-            while (hasMore) {
-                const res: { external_id: string; size_bytes: number; partition: string }[] = await trx
-                    .from<FormattedRecord>(RECORDS_TABLE)
-                    .whereIn('id', function (sub) {
-                        sub.select('id')
-                            .from(RECORDS_TABLE)
+        const deletedIds: string[] = [];
+        let hasMore = true;
+        while (hasMore) {
+            const batchResult = await retry(
+                () => {
+                    return db.transaction(async (trx) => {
+                        const now = trx.fn.now(6);
+                        // Lock to prevent concurrent modifications with upserts and deletes
+                        await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_outdated`, [newLockId(connectionId, model)]);
+
+                        const res: { external_id: string; size_bytes: number; partition: string }[] = await trx
+                            .from<FormattedRecord>(RECORDS_TABLE)
+                            .whereIn('id', function (sub) {
+                                sub.select('id')
+                                    .from(RECORDS_TABLE)
+                                    .where({
+                                        connection_id: connectionId,
+                                        model,
+                                        deleted_at: null
+                                        // NOTE: not emptying the record payload so we don't introduce a breaking change
+                                    })
+                                    .where('sync_job_id', '<', generation)
+                                    .limit(batchSize);
+                            })
+                            .update({
+                                deleted_at: now,
+                                updated_at: now,
+                                sync_job_id: generation
+                            })
+                            // records table is partitioned by connection_id and model
+                            // to avoid table scan, we must always filter by connection_id and model
                             .where({
                                 connection_id: connectionId,
-                                model,
-                                deleted_at: null
-                                // NOTE: not emptying the record payload so we don't introduce a breaking change
+                                model
                             })
-                            .where('sync_job_id', '<', generation)
-                            .limit(batchSize);
-                    })
-                    .update({
-                        deleted_at: now,
-                        updated_at: now,
-                        sync_job_id: generation
-                    })
-                    // records table is partitioned by connection_id and model
-                    // to avoid table scan, we must always filter by connection_id and model
-                    .where({
-                        connection_id: connectionId,
-                        model
-                    })
-                    .returning(['external_id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
+                            .returning(['external_id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
 
-                if (res.length < batchSize) {
-                    hasMore = false;
-                }
+                        // update records count and size
+                        const deleted = res.length;
+                        const sizeInBytes = res.reduce((acc, r) => acc + r.size_bytes, 0);
+                        if (deleted > 0) {
+                            await incrCount(trx, {
+                                connectionId,
+                                environmentId,
+                                model,
+                                delta: -deleted,
+                                deltaSizeInBytes: -sizeInBytes
+                            });
+                        }
 
-                if (!partition && res[0]?.partition) {
-                    partition = res[0].partition;
-                }
-
-                deletedIds.push(...res.map((r) => r.external_id));
-
-                // update records count and size
-                const deleted = res.length;
-                const sizeInBytes = res.reduce((acc, r) => acc + r.size_bytes, 0);
-                if (deleted > 0) {
-                    await incrCount(trx, {
-                        connectionId,
-                        environmentId,
-                        model,
-                        delta: -deleted,
-                        deltaSizeInBytes: -sizeInBytes
+                        return res;
                     });
+                },
+                // Retry if deadlock detected
+                // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
+                {
+                    maxAttempts: 3,
+                    delayMs: 500,
+                    retryOnError: (err) => {
+                        if ('code' in err) {
+                            const errorCode = (err as { code: string }).code;
+                            return errorCode === '40P01'; // deadlock_detected
+                        }
+                        return false;
+                    }
                 }
+            );
+
+            if (batchResult.length < batchSize) {
+                hasMore = false;
             }
 
-            if (partition) {
-                span.setTag('nango.partition', partition);
+            if (!partition && batchResult[0]?.partition) {
+                partition = batchResult[0].partition;
             }
-            return Ok(deletedIds);
-        });
+
+            deletedIds.push(...batchResult.map((r) => r.external_id));
+        }
+
+        if (partition) {
+            span.setTag('nango.partition', partition);
+        }
+        return Ok(deletedIds);
     } catch (err) {
         const e = new Error(`Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, generation ${generation}`, {
             cause: err
