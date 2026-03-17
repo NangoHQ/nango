@@ -3,7 +3,8 @@ import * as z from 'zod';
 import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions, resolve } from '../../../authz/permissions.js';
+import { permissions } from '../../../authz/permissions.js';
+import { resolve } from '../../../authz/resolve.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { envSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';

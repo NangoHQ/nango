@@ -9,7 +9,8 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions, resolve } from '../../../authz/permissions.js';
+import { permissions } from '../../../authz/permissions.js';
+import { resolve } from '../../../authz/resolve.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';

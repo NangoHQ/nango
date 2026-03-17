@@ -4,7 +4,8 @@ import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions, resolve } from '../../../../authz/permissions.js';
+import { permissions } from '../../../../authz/permissions.js';
+import { resolve } from '../../../../authz/resolve.js';
 import { connectionFullToApi } from '../../../../formatters/connection.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';

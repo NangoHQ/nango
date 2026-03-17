@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { buildPermissions } from './permissions.js';
+import { buildPermissions } from './resolve.js';
 
 describe('buildPermissions', () => {
     const originalFlag = flags.hasAuthRoles;

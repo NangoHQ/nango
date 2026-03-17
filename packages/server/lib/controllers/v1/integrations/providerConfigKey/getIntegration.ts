@@ -5,7 +5,8 @@ import * as z from 'zod';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions, resolve } from '../../../../authz/permissions.js';
+import { permissions } from '../../../../authz/permissions.js';
+import { resolve } from '../../../../authz/resolve.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';

@@ -1,6 +1,6 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { buildPermissions } from '../../../authz/permissions.js';
+import { buildPermissions } from '../../../authz/resolve.js';
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
