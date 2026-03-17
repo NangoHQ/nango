@@ -4,7 +4,7 @@ import { evaluator } from './evaluator.js';
 import { permissions } from './permissions.js';
 
 import type { Permission } from './types.js';
-import type { Role } from '@nangohq/types';
+import type { AllowedPermissions, Role } from '@nangohq/types';
 
 /**
  * Resolve a permission for the current request.
@@ -17,10 +17,14 @@ export async function resolve(locals: { user?: { role: Role } }, permission: Per
     return evaluator.evaluate(user.role, permission);
 }
 
-export async function buildPermissions(role: Role): Promise<Record<string, boolean>> {
-    if (!flags.hasAuthRoles) {
-        return Object.fromEntries(Object.keys(permissions).map((key) => [key, true]));
+export async function buildPermissions(role: Role): Promise<AllowedPermissions> {
+    const result: AllowedPermissions = {};
+    for (const perm of Object.values(permissions)) {
+        const allowed = flags.hasAuthRoles ? await evaluator.evaluate(role, perm) : true;
+        if (!allowed) continue;
+        const byScope = result[perm.resource] ?? (result[perm.resource] = {});
+        const actions = byScope[perm.scope] ?? (byScope[perm.scope] = []);
+        actions.push(perm.action);
     }
-    const entries = await Promise.all(Object.entries(permissions).map(async ([key, perm]) => [key, await evaluator.evaluate(role, perm)]));
-    return Object.fromEntries(entries);
+    return result;
 }

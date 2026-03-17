@@ -4,6 +4,12 @@ import { flags } from '@nangohq/utils';
 
 import { buildPermissions } from './resolve.js';
 
+import type { AllowedPermissions } from '@nangohq/types';
+
+function hasPermission(perms: AllowedPermissions, resource: string, scope: string, action: string): boolean {
+    return perms[resource]?.[scope]?.includes(action) ?? false;
+}
+
 describe('buildPermissions', () => {
     const originalFlag = flags.hasAuthRoles;
     beforeAll(() => {
@@ -12,35 +18,41 @@ describe('buildPermissions', () => {
     afterAll(() => {
         flags.hasAuthRoles = originalFlag;
     });
-    it('administrator should have all permissions true', async () => {
+
+    it('administrator should have all permissions', async () => {
         const perms = await buildPermissions('administrator');
-        for (const [key, value] of Object.entries(perms)) {
-            expect(value, `Expected ${key} to be true for administrator`).toBe(true);
-        }
+        expect(hasPermission(perms, 'team', 'global', 'update')).toBe(true);
+        expect(hasPermission(perms, 'billing', 'global', '*')).toBe(true);
+        expect(hasPermission(perms, 'integration', 'production', 'update')).toBe(true);
+        expect(hasPermission(perms, 'secret_key', 'production', 'read')).toBe(true);
+        expect(hasPermission(perms, 'connection_credential', 'production', 'read')).toBe(true);
+        expect(hasPermission(perms, 'environment', 'global', 'create')).toBe(true);
     });
 
     it('production_support should deny team/billing/prod writes, allow prod reads', async () => {
         const perms = await buildPermissions('production_support');
-        expect(perms['canManageTeam']).toBe(false);
-        expect(perms['canManageBilling']).toBe(false);
-        expect(perms['canCreateEnvironment']).toBe(false);
-        expect(perms['canToggleIsProduction']).toBe(false);
+        // admin-only denied
+        expect(hasPermission(perms, 'team', 'global', 'update')).toBe(false);
+        expect(hasPermission(perms, 'billing', 'global', '*')).toBe(false);
+        expect(hasPermission(perms, 'environment', 'global', 'create')).toBe(false);
+        expect(hasPermission(perms, 'environment_production_flag', 'global', 'update')).toBe(false);
         // prod writes denied
-        expect(perms['canWriteProdIntegrations']).toBe(false);
-        expect(perms['canWriteProdConnections']).toBe(false);
-        expect(perms['canReadProdSecretKey']).toBe(false);
-        expect(perms['canReadProdConnectionCredentials']).toBe(false);
+        expect(hasPermission(perms, 'integration', 'production', 'update')).toBe(false);
+        expect(hasPermission(perms, 'connection', 'production', 'update')).toBe(false);
+        // prod secrets denied
+        expect(hasPermission(perms, 'secret_key', 'production', 'read')).toBe(false);
+        expect(hasPermission(perms, 'connection_credential', 'production', 'read')).toBe(false);
         // prod read allowed
-        expect(perms['canAccessProdEnvironment']).toBe(true);
+        expect(hasPermission(perms, 'environment', 'production', 'read')).toBe(true);
     });
 
     it('development_full_access should deny all prod access', async () => {
         const perms = await buildPermissions('development_full_access');
-        expect(perms['canManageTeam']).toBe(false);
-        expect(perms['canAccessProdEnvironment']).toBe(false);
-        expect(perms['canWriteProdIntegrations']).toBe(false);
-        expect(perms['canReadProdSecretKey']).toBe(false);
-        expect(perms['canReadProdConnectionCredentials']).toBe(false);
-        expect(perms['canCreateEnvironment']).toBe(false);
+        expect(hasPermission(perms, 'team', 'global', 'update')).toBe(false);
+        expect(hasPermission(perms, 'environment', 'production', 'read')).toBe(false);
+        expect(hasPermission(perms, 'integration', 'production', 'update')).toBe(false);
+        expect(hasPermission(perms, 'secret_key', 'production', 'read')).toBe(false);
+        expect(hasPermission(perms, 'connection_credential', 'production', 'read')).toBe(false);
+        expect(hasPermission(perms, 'environment', 'global', 'create')).toBe(false);
     });
 });
