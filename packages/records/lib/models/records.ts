@@ -905,8 +905,8 @@ export async function deleteOutdatedRecords({
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
     let partition: string | undefined = undefined;
+    const deletedIds: string[] = [];
     try {
-        const deletedIds: string[] = [];
         let hasMore = true;
         while (hasMore) {
             const batchResult = await retry(
@@ -925,7 +925,6 @@ export async function deleteOutdatedRecords({
                                         connection_id: connectionId,
                                         model,
                                         deleted_at: null
-                                        // NOTE: not emptying the record payload so we don't introduce a breaking change
                                     })
                                     .where('sync_job_id', '<', generation)
                                     .limit(batchSize);
@@ -994,6 +993,10 @@ export async function deleteOutdatedRecords({
             cause: err
         });
         span.setTag('error', err);
+        if (deletedIds.length > 0) {
+            logger.error(`${e.message}. Partial progress: ${deletedIds.length} records deleted before failure.`);
+            return Ok(deletedIds);
+        }
         return Err(e);
     } finally {
         span.finish();
