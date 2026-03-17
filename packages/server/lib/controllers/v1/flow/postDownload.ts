@@ -1,57 +1,47 @@
 import * as z from 'zod';
 
-import { flowService, getSyncConfigById, remoteFileService } from '@nangohq/shared';
+import { configService, getSyncConfigById, remoteFileService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { flowConfig } from '../../sync/deploy/validation.js';
 
 import type { PostFlowDownload } from '@nangohq/types';
 
-const validation = z
+export const validationParams = z
     .object({
-        id: z.number().optional(),
-        name: scriptNameSchema,
-        provider: providerSchema,
-        is_public: z.boolean(),
-        providerConfigKey: providerConfigKeySchema,
-        flowType: flowConfig.shape.type
+        id: z.coerce.number().positive()
     })
     .strict();
 
 export const postFlowDownload = asyncWrapper<PostFlowDownload>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
+    const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
-    const val = validation.safeParse(req.body);
-    if (!val.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+    const valParams = validationParams.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({
+            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) }
+        });
         return;
     }
 
-    const body: PostFlowDownload['Body'] = val.data;
     const { environment } = res.locals;
-    const { id, name, provider, is_public, providerConfigKey, flowType } = body;
+    const { id } = valParams.data;
 
-    if (!id && is_public) {
-        const flow = flowService.getFlowByIntegrationAndName({ provider, type: flowType, scriptName: name });
-        if (!flow) {
-            res.status(400).send({ error: { code: 'invalid_query' } });
-            return;
-        }
-        await remoteFileService.zipAndSendPublicFiles({ res, scriptName: name, providerPath: provider, flowType });
-        return;
-    }
-
-    const syncConfig = await getSyncConfigById(environment.id, id as number);
+    const syncConfig = await getSyncConfigById(environment.id, id);
     if (!syncConfig) {
-        res.status(400).send({ error: { code: 'invalid_file_reference' } });
+        res.status(400).send({ error: { code: 'not_found' } });
         return;
     }
 
-    await remoteFileService.zipAndSendFiles({ res, scriptName: name, syncConfig, providerConfigKey });
+    const providerConfigKey = await configService.getProviderConfigKeyById(environment.id, syncConfig.nango_config_id);
+    if (!providerConfigKey) {
+        res.status(400).send({ error: { code: 'not_found' } });
+        return;
+    }
+
+    await remoteFileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
 });

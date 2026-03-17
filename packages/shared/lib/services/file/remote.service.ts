@@ -237,19 +237,9 @@ class RemoteFileService {
         await this.zipAndSend({ res, files });
     }
 
-    async zipAndSendFiles({
-        res,
-        scriptName,
-        providerConfigKey,
-        syncConfig
-    }: {
-        res: Response;
-        scriptName: string;
-        providerConfigKey: string;
-        syncConfig: DBSyncConfig;
-    }): Promise<void> {
+    async zipAndSendFlow({ res, syncConfig, providerConfigKey }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<void> {
         if (!isCloud && !this.useS3) {
-            return localFileService.zipAndSendFiles({ res, scriptName, providerConfigKey, syncConfig });
+            return localFileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
         } else {
             const files: { name: string; content: Readable }[] = [];
             if (!syncConfig.sdk_version?.includes('-zero')) {
@@ -261,6 +251,8 @@ class RemoteFileService {
                 }
                 files.push({ name: 'nango.yaml', content: resGet.response });
             }
+
+            const scriptName = syncConfig.sync_name;
 
             const integrationFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
             const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${scriptName}.ts`);

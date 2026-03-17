@@ -3,10 +3,10 @@ import { isCloud, nanoid } from '@nangohq/utils';
 
 import { getProvider } from './providers.js';
 import { gettingStartedService } from '../index.js';
-import encryptionManager from '../utils/encryption.manager.js';
-import { NangoError } from '../utils/error.js';
 import syncManager from './sync/manager.service.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
+import encryptionManager from '../utils/encryption.manager.js';
+import { NangoError } from '../utils/error.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -32,6 +32,16 @@ class ConfigService {
         }
 
         return result.id;
+    }
+
+    async getProviderConfigKeyById(environment_id: number, id: number): Promise<string | null> {
+        const result = await db.knex.select('unique_key').from<ProviderConfig>(`_nango_configs`).where({ id, environment_id, deleted: false }).first();
+
+        if (!result) {
+            return null;
+        }
+
+        return result.unique_key;
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {

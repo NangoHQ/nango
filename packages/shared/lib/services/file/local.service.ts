@@ -102,17 +102,7 @@ class LocalFileService {
      * @desc grab the files locally from the integrations path, zip and send
      * the archive
      */
-    public async zipAndSendFiles({
-        res,
-        scriptName,
-        providerConfigKey,
-        syncConfig
-    }: {
-        res: Response;
-        scriptName: string;
-        providerConfigKey: string;
-        syncConfig: DBSyncConfig;
-    }) {
+    public async zipAndSendFlow({ res, syncConfig, providerConfigKey }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }) {
         const files: string[] = [];
         if (!syncConfig.sdk_version?.includes('-zero')) {
             const yamlPath = path.resolve(basePath, nangoConfigFile);
@@ -123,6 +113,8 @@ class LocalFileService {
             }
             files.push(yamlPath);
         }
+
+        const scriptName = syncConfig.sync_name;
 
         const tsFilePath = this.resolveTsFile({ scriptName, providerConfigKey, syncConfig });
         if (!tsFilePath) {

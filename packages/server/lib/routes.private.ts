@@ -248,10 +248,10 @@ web.route('/sync/command').post(
 );
 web.route('/flows/pre-built/deploy').post(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), postPreBuiltDeploy);
 web.route('/flows/pre-built/upgrade').put(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), putUpgradePreBuilt);
-web.route('/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 web.route('/flows/:id/disable').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowDisable);
 web.route('/flows/:id/enable').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowFrequency);
+web.route('/flows/:id/download').post(webAuth, postFlowDownload);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 // Getting Started
