@@ -29,15 +29,21 @@ export const postFlowDownload = asyncWrapper<PostFlowDownload>(async (req, res) 
     }
 
     const { environment } = res.locals;
-    const { id } = valParams.data;
+    const { id: syncConfigId } = valParams.data;
 
-    const syncConfig = await getSyncConfigById(environment.id, id);
+    const syncConfig = await getSyncConfigById(environment.id, syncConfigId);
     if (!syncConfig) {
         res.status(400).send({ error: { code: 'not_found' } });
         return;
     }
 
-    const providerConfigKey = await configService.getProviderConfigKeyById(environment.id, syncConfig.nango_config_id);
+    const providerConfigKeyResult = await configService.getProviderConfigKeyById(environment.id, syncConfig.nango_config_id);
+    if (providerConfigKeyResult.isErr()) {
+        res.status(500).send({ error: { code: 'failed_to_download_flow' } });
+        return;
+    }
+
+    const providerConfigKey = providerConfigKeyResult.value;
     if (!providerConfigKey) {
         res.status(400).send({ error: { code: 'not_found' } });
         return;

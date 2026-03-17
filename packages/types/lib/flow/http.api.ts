@@ -102,4 +102,5 @@ export type PostFlowDownload = Endpoint<{
     Querystring: { env: string };
     Params: { id: number };
     Success: never;
+    Error: ApiError<'failed_to_download_flow'>;
 }>;

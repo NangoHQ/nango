@@ -116,6 +116,13 @@ class LocalFileService {
 
         const scriptName = syncConfig.sync_name;
 
+        const jsFilePath = this.resolveIntegrationFile({ scriptType: 'sync', syncConfig, providerConfigKey });
+        if (!jsFilePath) {
+            errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
+            return;
+        }
+        files.push(jsFilePath);
+
         const tsFilePath = this.resolveTsFile({ scriptName, providerConfigKey, syncConfig });
         if (!tsFilePath) {
             errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));

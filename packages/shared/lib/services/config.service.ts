@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { isCloud, nanoid } from '@nangohq/utils';
+import { Err, Ok, isCloud, nanoid } from '@nangohq/utils';
 
 import { getProvider } from './providers.js';
 import { gettingStartedService } from '../index.js';
@@ -11,7 +11,16 @@ import { NangoError } from '../utils/error.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Knex } from '@nangohq/database';
-import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider, SharedCredentials } from '@nangohq/types';
+import type {
+    AuthModeType,
+    DBConnection,
+    DBCreateIntegration,
+    DBIntegrationCrypted,
+    IntegrationConfig,
+    Provider,
+    Result,
+    SharedCredentials
+} from '@nangohq/types';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -34,14 +43,18 @@ class ConfigService {
         return result.id;
     }
 
-    async getProviderConfigKeyById(environment_id: number, id: number): Promise<string | null> {
-        const result = await db.knex.select('unique_key').from<ProviderConfig>(`_nango_configs`).where({ id, environment_id, deleted: false }).first();
+    async getProviderConfigKeyById(environment_id: number, id: number): Promise<Result<string | null>> {
+        try {
+            const result = await db.knex.select('unique_key').from<ProviderConfig>(`_nango_configs`).where({ id, environment_id, deleted: false }).first();
 
-        if (!result) {
-            return null;
+            if (!result) {
+                return Ok(null);
+            }
+
+            return Ok(result.unique_key);
+        } catch (err) {
+            return Err(new Error('failed_to_get_provider_config', { cause: err }));
         }
-
-        return result.unique_key;
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {

@@ -254,8 +254,16 @@ class RemoteFileService {
 
             const scriptName = syncConfig.sync_name;
 
-            const integrationFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
-            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${scriptName}.ts`);
+            const jsFileLocation = syncConfig.file_location;
+            const { success: jsSuccess, error: jsError, response: jsFile } = await this.getStream(jsFileLocation);
+            if (!jsSuccess || jsFile === null) {
+                errorManager.errResFromNangoErr(res, jsError);
+                return;
+            }
+            files.push({ name: `${scriptName}.js`, content: jsFile });
+
+            const tsFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
+            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${tsFileLocation}/${scriptName}.ts`);
             if (!tsSuccess || tsFile === null) {
                 errorManager.errResFromNangoErr(res, tsError);
                 return;
