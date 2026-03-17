@@ -85,7 +85,7 @@ describe(`POST ${endpoint}`, () => {
                 ],
                 nangoYamlBody: '',
                 reconcile: false,
-                singleDeployMode: false
+                deployMode: 'all'
             }
         });
 
@@ -116,7 +116,7 @@ describe(`POST ${endpoint}`, () => {
                 nangoYamlBody: '',
                 onEventScriptsByProvider: [],
                 reconcile: false,
-                singleDeployMode: false,
+                deployMode: 'all',
                 jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
             }
         });
@@ -182,7 +182,7 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });
@@ -265,7 +265,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: ``,
                     onEventScriptsByProvider: [],
                     reconcile: true,
-                    singleDeployMode: false
+                    deployMode: 'all'
                 }
             });
             isSuccess(res.json);
@@ -321,7 +321,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: '',
                     onEventScriptsByProvider: [],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });
@@ -385,7 +385,7 @@ describe(`POST ${endpoint}`, () => {
                     nangoYamlBody: '',
                     onEventScriptsByProvider: [],
                     reconcile: false,
-                    singleDeployMode: false,
+                    deployMode: 'all',
                     sdkVersion: '0.61.3-yaml'
                 }
             });
