@@ -88,7 +88,7 @@ const TicketSchema = z.object({
   id: z.string(),
   title: z.string(),
   status: z.enum(['open', 'closed']),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 
 export default createSync({

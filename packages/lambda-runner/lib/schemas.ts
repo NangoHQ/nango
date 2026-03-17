@@ -21,7 +21,7 @@ export const nangoPropsSchema = z.object({
     providerConfigKey: z.string().min(1),
     provider: z.string().min(1),
     lastSyncDate: z.coerce.date().optional(),
-    syncId: z.string().uuid().optional(),
+    syncId: z.uuid().optional(),
     syncVariant: z.string().optional(),
     nangoConnectionId: z.number(),
     syncJobId: z.number().optional(),

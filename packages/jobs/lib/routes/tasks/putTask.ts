@@ -32,7 +32,7 @@ const bodySchema = z.object({
         .nullable()
         .default(null)
 });
-const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
+const paramsSchema = z.object({ taskId: z.uuid() }).strict();
 
 const validate = validateRequest<PutTask>({
     parseBody: (data) => bodySchema.parse(data),
