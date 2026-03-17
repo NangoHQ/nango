@@ -14,13 +14,13 @@ export async function resolve(locals: { user?: { role: Role } }, permission: Per
     if (!flags.hasAuthRoles) return true;
     const user = locals.user;
     if (!user) return true;
-    return evaluator.evaluate({ role: user.role }, permission);
+    return evaluator.evaluate(user.role, permission);
 }
 
 export async function buildPermissions(role: Role): Promise<Record<string, boolean>> {
     if (!flags.hasAuthRoles) {
         return Object.fromEntries(Object.keys(permissions).map((key) => [key, true]));
     }
-    const entries = await Promise.all(Object.entries(permissions).map(async ([key, perm]) => [key, await evaluator.evaluate({ role }, perm)]));
+    const entries = await Promise.all(Object.entries(permissions).map(async ([key, perm]) => [key, await evaluator.evaluate(role, perm)]));
     return Object.fromEntries(entries);
 }

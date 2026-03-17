@@ -22,7 +22,7 @@ export function can(permission: Permission | ((locals: RequestLocals) => Permiss
         }
 
         const perm = typeof permission === 'function' ? permission(res.locals as RequestLocals) : permission;
-        const allowed = await evaluator.evaluate({ role: user.role }, perm);
+        const allowed = await evaluator.evaluate(user.role, perm);
 
         if (!allowed) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });

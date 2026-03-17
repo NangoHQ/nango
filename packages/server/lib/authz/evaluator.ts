@@ -17,8 +17,8 @@ function matchesScope(rule: Scope, actual: Scope): boolean {
 
 export class StaticEvaluator implements PermissionEvaluator {
     // eslint-disable-next-line @typescript-eslint/require-await -- async for interface contract, static impl is sync
-    async evaluate(subject: { role: Role }, permission: Permission): Promise<boolean> {
-        const denyList = ROLE_DENY_MAP[subject.role];
+    async evaluate(role: Role, permission: Permission): Promise<boolean> {
+        const denyList = ROLE_DENY_MAP[role];
         if (!denyList) return false; // unknown role → deny
         if (denyList.length === 0) return true; // no restrictions (e.g. administrator)
 
