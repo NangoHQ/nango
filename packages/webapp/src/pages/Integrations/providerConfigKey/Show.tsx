@@ -27,7 +27,7 @@ export const ShowIntegration: React.FC = () => {
     const { can } = usePermissions();
     const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteConnections = !isProduction || can('connection', 'update', 'production');
+    const canWriteConnections = !isProduction || can('update', 'production', 'connection');
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 

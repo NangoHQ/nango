@@ -20,7 +20,7 @@ export const DeprecatedSettings: React.FC = () => {
     const { environmentAndAccount, mutate } = useEnvironment(env);
     const { can } = usePermissions();
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteEnvironment = !isProduction || can('environment', 'update', 'production');
+    const canWriteEnvironment = !isProduction || can('update', 'production', 'environment');
 
     const [loading, setLoading] = useState(false);
 

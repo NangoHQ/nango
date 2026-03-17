@@ -5,11 +5,11 @@ import type { AllowedPermissions } from '@nangohq/types';
 type Action = 'create' | 'read' | 'update' | 'delete' | '*';
 type Scope = 'production' | 'non-production' | 'global';
 
-export function usePermissions(): { can: (resource: string, action: Action, scope: Scope) => boolean; permissions: AllowedPermissions } {
+export function usePermissions(): { can: (action: Action, scope: Scope, resource: string) => boolean; permissions: AllowedPermissions } {
     const { user } = useUser();
     const permissions = user?.permissions ?? {};
     return {
         permissions,
-        can: (resource: string, action: Action, scope: Scope) => permissions[resource]?.[scope]?.includes(action) ?? false
+        can: (action: Action, scope: Scope, resource: string) => permissions[resource]?.[scope]?.includes(action) ?? false
     };
 }

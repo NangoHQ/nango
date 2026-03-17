@@ -30,7 +30,7 @@ export const IntegrationsList = () => {
     const { can } = usePermissions();
     const { environmentAndAccount } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteIntegrations = !isProduction || can('integration', 'update', 'production');
+    const canWriteIntegrations = !isProduction || can('update', 'production', 'integration');
     const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
 

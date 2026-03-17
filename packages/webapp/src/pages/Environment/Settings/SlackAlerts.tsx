@@ -24,7 +24,7 @@ export const SlackAlertsSettings: React.FC = () => {
     }
     const isConnected = environmentAndAccount.environment.slack_notifications;
     const isProduction = environmentAndAccount.environment.is_production ?? false;
-    const canWriteEnvironment = !isProduction || can('environment', 'update', 'production');
+    const canWriteEnvironment = !isProduction || can('update', 'production', 'environment');
 
     const slackConnect = async () => {
         setSlackIsConnecting(true);

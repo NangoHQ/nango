@@ -149,7 +149,7 @@ export const ConnectionList = () => {
     const { can } = usePermissions();
     const { environmentAndAccount } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteConnections = !isProduction || can('connection', 'update', 'production');
+    const canWriteConnections = !isProduction || can('update', 'production', 'connection');
 
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');

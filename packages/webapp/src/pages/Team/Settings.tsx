@@ -43,10 +43,10 @@ export const TeamSettings: React.FC = () => {
             </Helmet>
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white">Team Settings</h2>
-                {can('invite', 'create', 'global') && <AddTeamMember team={team} />}
+                {can('create', 'global', 'invite') && <AddTeamMember team={team} />}
             </div>
             <div className="flex flex-col gap-12 mt-16">
-                {can('team', 'update', 'global') && <TeamInfo />}
+                {can('update', 'global', 'team') && <TeamInfo />}
                 <TeamUsers />
                 {isAdminTeam && <Admin />}
             </div>

@@ -45,7 +45,7 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (globalEnv.features.plan && can('billing', '*', 'global')) {
+        if (globalEnv.features.plan && can('*', 'global', 'billing')) {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,

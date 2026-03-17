@@ -14,7 +14,7 @@ export const Notifications: React.FC = () => {
     const { environmentAndAccount, mutate } = useEnvironment(env);
     const { can } = usePermissions();
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteWebhook = !isProduction || can('environment', 'update', 'production');
+    const canWriteWebhook = !isProduction || can('update', 'production', 'environment');
 
     if (!environmentAndAccount) {
         return null;

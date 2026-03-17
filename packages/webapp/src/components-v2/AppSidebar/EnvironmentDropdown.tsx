@@ -27,8 +27,8 @@ export const EnvironmentDropdown: React.FC = () => {
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
-    const canCreateEnvironment = can('environment', 'create', 'global');
-    const canAccessProd = can('environment', 'read', 'production');
+    const canCreateEnvironment = can('create', 'global', 'environment');
+    const canAccessProd = can('read', 'production', 'environment');
 
     const onSelect = (selected: string) => {
         if (selected === env) {
