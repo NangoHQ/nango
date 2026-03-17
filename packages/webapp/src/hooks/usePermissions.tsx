@@ -1,6 +1,12 @@
 import { useUser } from './useUser';
 
-export function usePermissions() {
+import type { AllowedPermissions } from '@nangohq/types';
+
+export function usePermissions(): { can: (resource: string, action: string, scope: string) => boolean; permissions: AllowedPermissions } {
     const { user } = useUser();
-    return user?.permissions ?? {};
+    const permissions = user?.permissions ?? {};
+    return {
+        permissions,
+        can: (resource: string, action: string, scope: string) => permissions[resource]?.[scope]?.includes(action) ?? false
+    };
 }

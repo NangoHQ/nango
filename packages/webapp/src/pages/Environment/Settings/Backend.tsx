@@ -21,10 +21,10 @@ export const BackendSettings: React.FC = () => {
 
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canReadSecretKey = !isProduction || permissions['canReadProdSecretKey'];
-    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
+    const canReadSecretKey = !isProduction || can('secret_key', 'read', 'production');
+    const canWriteEnvironment = !isProduction || can('environment', 'update', 'production');
 
     const [loading, setLoading] = useState(false);
 

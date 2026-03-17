@@ -27,10 +27,10 @@ export const IntegrationsList = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const { environmentAndAccount } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteIntegrations = !isProduction || permissions['canWriteProdIntegrations'];
+    const canWriteIntegrations = !isProduction || can('integration', 'update', 'production');
     const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
 

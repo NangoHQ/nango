@@ -6,9 +6,9 @@ import { usePermissions } from '@/hooks/usePermissions';
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
 export const SettingsTab: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const isProduction = environment.is_production ?? false;
-    const canWriteIntegrations = !isProduction || permissions['canWriteProdIntegrations'];
+    const canWriteIntegrations = !isProduction || can('integration', 'update', 'production');
     return (
         <div className="flex-1 flex flex-col gap-10">
             <GeneralSettings data={data} environment={environment} />

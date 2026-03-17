@@ -4,12 +4,12 @@ import { usePermissions } from '../hooks/usePermissions';
 import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 
-export const PermissionRoute: React.FC<{ can: string }> = ({ can }) => {
-    const permissions = usePermissions();
+export const PermissionRoute: React.FC<{ resource: string; action: string; scope: string }> = ({ resource, action, scope }) => {
+    const { can } = usePermissions();
     const { loading } = useUser();
     const env = useStore((state) => state.env);
 
     if (loading) return null;
-    if (!permissions[can]) return <Navigate to={`/${env}`} replace />;
+    if (!can(resource, action, scope)) return <Navigate to={`/${env}`} replace />;
     return <Outlet />;
 };

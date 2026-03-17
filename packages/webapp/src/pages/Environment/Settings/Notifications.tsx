@@ -12,9 +12,9 @@ import { usePermissions } from '@/hooks/usePermissions';
 export const Notifications: React.FC = () => {
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteWebhook = !isProduction || permissions['canWriteProdEnvironment'];
+    const canWriteWebhook = !isProduction || can('environment', 'update', 'production');
 
     if (!environmentAndAccount) {
         return null;

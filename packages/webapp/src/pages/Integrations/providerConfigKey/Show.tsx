@@ -24,10 +24,10 @@ export const ShowIntegration: React.FC = () => {
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteConnections = !isProduction || permissions['canWriteProdConnections'];
+    const canWriteConnections = !isProduction || can('connection', 'update', 'production');
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 

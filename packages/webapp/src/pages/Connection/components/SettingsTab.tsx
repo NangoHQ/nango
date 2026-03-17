@@ -20,10 +20,10 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
     const env = useStore((state) => state.env);
     const { connection } = connectionData;
     const navigate = useNavigate();
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const { environmentAndAccount } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteConnections = !isProduction || permissions['canWriteProdConnections'];
+    const canWriteConnections = !isProduction || can('connection', 'update', 'production');
 
     const { toast } = useToast();
     const { mutateAsync: deleteConnection, isPending: isDeletingConnection } = useDeleteConnection();

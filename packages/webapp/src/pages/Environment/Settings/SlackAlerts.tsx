@@ -14,7 +14,7 @@ import { useStore } from '@/store';
 
 export const SlackAlertsSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const { environmentAndAccount, mutate } = useEnvironment(env);
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const { toast } = useToast();
@@ -24,7 +24,7 @@ export const SlackAlertsSettings: React.FC = () => {
     }
     const isConnected = environmentAndAccount.environment.slack_notifications;
     const isProduction = environmentAndAccount.environment.is_production ?? false;
-    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
+    const canWriteEnvironment = !isProduction || can('environment', 'update', 'production');
 
     const slackConnect = async () => {
         setSlackIsConnecting(true);

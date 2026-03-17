@@ -21,14 +21,14 @@ export const EnvironmentDropdown: React.FC = () => {
     const environment = useEnvironment(env);
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
 
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
-    const canCreateEnvironment = permissions['canCreateEnvironment'];
-    const canAccessProd = permissions['canAccessProdEnvironment'];
+    const canCreateEnvironment = can('environment', 'create', 'global');
+    const canAccessProd = can('environment', 'read', 'production');
 
     const onSelect = (selected: string) => {
         if (selected === env) {

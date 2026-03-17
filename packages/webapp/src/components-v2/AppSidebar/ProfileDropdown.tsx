@@ -20,7 +20,7 @@ export const ProfileDropdown: React.FC = () => {
     const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     const items = useMemo(() => {
@@ -45,7 +45,7 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (globalEnv.features.plan && permissions['canManageBilling']) {
+        if (globalEnv.features.plan && can('billing', '*', 'global')) {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,
@@ -54,7 +54,7 @@ export const ProfileDropdown: React.FC = () => {
         }
 
         return list;
-    }, [meta, showGettingStarted, env, permissions]);
+    }, [meta, showGettingStarted, env, can]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

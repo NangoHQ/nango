@@ -15,7 +15,7 @@ export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);
 
     const { error, team, isAdminTeam, loading } = useTeam(env);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
 
     if (loading) {
         return (
@@ -43,10 +43,10 @@ export const TeamSettings: React.FC = () => {
             </Helmet>
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white">Team Settings</h2>
-                {permissions['canInviteMember'] && <AddTeamMember team={team} />}
+                {can('invite', 'update', 'global') && <AddTeamMember team={team} />}
             </div>
             <div className="flex flex-col gap-12 mt-16">
-                {permissions['canManageTeam'] && <TeamInfo />}
+                {can('team', 'update', 'global') && <TeamInfo />}
                 <TeamUsers />
                 {isAdminTeam && <Admin />}
             </div>

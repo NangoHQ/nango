@@ -208,7 +208,7 @@ const router = sentryCreateBrowserRouter([
                         handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
                     },
                     {
-                        element: <PermissionRoute can="canManageBilling" />,
+                        element: <PermissionRoute resource="billing" action="*" scope="global" />,
                         children: [
                             {
                                 path: 'team/billing',

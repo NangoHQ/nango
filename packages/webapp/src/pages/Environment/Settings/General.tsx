@@ -21,12 +21,12 @@ export const General: React.FC = () => {
 
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const { refetch: refetchMeta } = useMeta();
     const { environmentAndAccount, mutate: mutateEnvironment } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
     const isProdEnv = env === PROD_ENVIRONMENT_NAME;
-    const canToggleProduction = !isProdEnv && permissions['canToggleIsProduction'];
+    const canToggleProduction = !isProdEnv && can('environment_production_flag', 'update', 'global');
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const { toast } = useToast();
@@ -71,7 +71,7 @@ export const General: React.FC = () => {
                         await refetchMeta();
                         setEnv(newName);
                     }}
-                    blocked={isProdEnv || (isProduction && !permissions['canWriteProdEnvironment'])}
+                    blocked={isProdEnv || (isProduction && !can('environment', 'update', 'production'))}
                     blockedTooltip={
                         isProdEnv ? `You cannot rename the ${PROD_ENVIRONMENT_NAME} environment` : 'You do not have permission to edit this environment'
                     }
@@ -100,7 +100,7 @@ export const General: React.FC = () => {
                         tooltipContent={
                             isProdEnv
                                 ? `The ${PROD_ENVIRONMENT_NAME} environment is always a production environment`
-                                : !permissions['canToggleIsProduction']
+                                : !can('environment_production_flag', 'update', 'global')
                                   ? 'You do not have permission to toggle the production flag'
                                   : ''
                         }
@@ -121,7 +121,7 @@ export const General: React.FC = () => {
                         onDelete={handleDelete}
                         open={showDeleteAlert}
                         onOpenChange={setShowDeleteAlert}
-                        disabled={isProdEnv || (isProduction && !permissions['canDeleteProdEnvironment'])}
+                        disabled={isProdEnv || (isProduction && !can('environment', 'delete', 'production'))}
                         disabledTooltip={
                             isProdEnv
                                 ? `You cannot delete the ${PROD_ENVIRONMENT_NAME} environment`

@@ -146,10 +146,10 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
     const navigate = useNavigate();
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const { environmentAndAccount } = useEnvironment(env);
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteConnections = !isProduction || permissions['canWriteProdConnections'];
+    const canWriteConnections = !isProduction || can('connection', 'update', 'production');
 
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');

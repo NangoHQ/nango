@@ -19,9 +19,9 @@ export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { environmentAndAccount, mutate } = useEnvironment(env);
-    const permissions = usePermissions();
+    const { can } = usePermissions();
     const isProduction = environmentAndAccount?.environment.is_production ?? false;
-    const canWriteEnvironment = !isProduction || permissions['canWriteProdEnvironment'];
+    const canWriteEnvironment = !isProduction || can('environment', 'update', 'production');
 
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);

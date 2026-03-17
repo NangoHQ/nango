@@ -29,6 +29,10 @@ export type PatchUser = Endpoint<{
     };
 }>;
 
+export type AllowedPermissions = Partial<
+    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | '*')[]>>>
+>;
+
 export interface ApiUser {
     id: number;
     accountId: number;
@@ -37,7 +41,7 @@ export interface ApiUser {
     uuid: string;
     gettingStartedClosed: boolean;
     role: string;
-    permissions: Record<string, boolean>;
+    permissions: AllowedPermissions;
 }
 
 export type PutUserPassword = Endpoint<{
