@@ -1,23 +1,18 @@
 import { envs } from '../env.js';
 
-import type { NangoProps, RuntimeContext } from '@nangohq/types';
+import type { NangoProps, RoutingContext } from '@nangohq/types';
 
-export function getSizeFromProps(_nangoProps: NangoProps): number {
-    //based on available props return a memory size compatible with lambda - will use rules for this
-    return envs.LAMBDA_DEFAULT_MEMORY_MB;
-}
-
-export function getRoutingId(params: { nangoProps: NangoProps; runtimeContext?: RuntimeContext | undefined }): string {
-    const size = getSizeFromProps(params.nangoProps);
-    const tshirtSize = getTShirtSize(size);
-    const prefix = params.runtimeContext?.plan?.node_routing_override || envs.LAMBDA_PREFIX;
+export function getRoutingId(params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): string {
+    const tshirtSize = getTShirtSize(params.nangoProps);
+    const prefix = params.routingContext?.plan?.node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
     return `${prefix}-${tshirtSize}`;
 }
 
-function getTShirtSize(size: number): string {
-    if (size <= 1024) return 'S';
-    if (size <= 2048) return 'M';
-    if (size <= 4096) return 'L';
-    if (size <= 8192) return 'XL';
+function getTShirtSize(_nangoProps: NangoProps): string {
+    const memoryMb = envs.LAMBDA_DEFAULT_MEMORY_MB;
+    if (memoryMb < 1024) return 'S';
+    if (memoryMb < 2048) return 'M';
+    if (memoryMb < 4096) return 'L';
+    if (memoryMb < 8192) return 'XL';
     return 'XXL';
 }

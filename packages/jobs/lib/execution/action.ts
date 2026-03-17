@@ -36,7 +36,7 @@ import type {
     DBTeam,
     FunctionRuntime,
     NangoProps,
-    RuntimeContext,
+    RoutingContext,
     SdkLogger,
     TelemetryBag
 } from '@nangohq/types';
@@ -160,14 +160,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             }
         };
 
-        const runtimeContext: RuntimeContext = {
+        const routingContext: RoutingContext = {
             plan: plan
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx,
             input: task.input
         });

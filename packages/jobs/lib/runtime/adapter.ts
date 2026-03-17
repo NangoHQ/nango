@@ -1,4 +1,4 @@
-import type { NangoProps, RuntimeContext } from '@nangohq/types';
+import type { NangoProps, RoutingContext } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface RuntimeAdapter {
@@ -7,7 +7,7 @@ export interface RuntimeAdapter {
         nangoProps: NangoProps;
         code: string;
         codeParams: object;
-        runtimeContext?: RuntimeContext | undefined;
+        routingContext?: RoutingContext | undefined;
     }): Promise<Result<boolean>>;
     cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>>;
 }

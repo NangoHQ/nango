@@ -25,6 +25,6 @@ export interface RunnerFlags {
     validateSyncMetadata: boolean;
 }
 
-export interface RuntimeContext {
+export interface RoutingContext {
     plan: DBPlan | null;
 }

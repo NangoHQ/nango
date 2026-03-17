@@ -210,6 +210,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'trial_extension_count':
             case 'trial_end_notified_at':
             case 'trial_expired':
+            case 'node_routing_override':
             case 'created_at':
             case 'updated_at':
                 break;
@@ -289,10 +290,6 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 if (currentIndex > newIndex) {
                     overrides[key] = currentPlan[key];
                 }
-                break;
-            }
-            case 'node_routing_override': {
-                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
             default:

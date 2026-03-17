@@ -31,8 +31,7 @@ export const freePlan: PlanDefinition = {
         sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
         webhook_function_runtime: 'lambda',
-        on_event_function_runtime: 'lambda',
-        node_routing_override: null
+        on_event_function_runtime: 'lambda'
     }
 };
 
