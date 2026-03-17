@@ -95,18 +95,14 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         connection = credentialResponse.value;
     }
 
-    // Strip credentials from response if the user doesn't have permission to view them
-    const canReadCredentials = authz?.canReadCredentials ?? true;
-    if (!canReadCredentials) {
-        connection = { ...connection, credentials: {} };
-    }
+    const includeCredentials = authz?.canReadCredentials ?? true;
 
     const errorLog = await errorNotificationService.auth.get(connection.id);
 
     res.status(200).send({
         data: {
             provider: integration.provider,
-            connection: connectionFullToApi(connection),
+            connection: connectionFullToApi(connection, { includeCredentials }),
             endUser: endUserToApi(endUser),
             errorLog
         }

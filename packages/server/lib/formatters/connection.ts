@@ -34,7 +34,7 @@ export function connectionSimpleToApi({
         updated_at: String(data.updated_at)
     };
 }
-export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConnectionFull {
+export function connectionFullToApi(connection: DBConnectionDecrypted, options?: { includeCredentials?: boolean }): ApiConnectionFull {
     return {
         id: connection.id,
         config_id: connection.config_id,
@@ -42,7 +42,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConne
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         connection_config: connection.connection_config,
-        credentials: connection.credentials,
+        credentials: options?.includeCredentials === false ? ({} as DBConnectionDecrypted['credentials']) : connection.credentials,
         metadata: connection.metadata,
         tags: connection.tags,
         last_fetched_at: connection.last_fetched_at ? String(connection.last_fetched_at) : null,
