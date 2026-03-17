@@ -279,7 +279,6 @@ describe('authz integration', () => {
 
             const res = await api.fetch('/api/v1/connections/:connectionId', {
                 method: 'GET',
-                // @ts-expect-error authz test — extra query params
                 query: { env: 'prod', provider_config_key: 'github-conn' },
                 params: { connectionId: 'conn-prod-1' },
                 session

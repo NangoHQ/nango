@@ -143,13 +143,18 @@ web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 // --- Route helpers
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-function protectedRoute(method: HttpMethod, path: string, handler: RequestHandler, permission: Permission | ResolverFn): void {
+function protectedRoute<L extends Record<string, any>>(
+    method: HttpMethod,
+    path: string,
+    handler: RequestHandler<any, any, any, any, L>,
+    permission: Permission | ResolverFn
+): void {
     const m = method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
     web.route(path)[m](...webAuth, handler);
     registerPermission(method, path, permission);
 }
 
-function openRoute(method: HttpMethod, path: string, handler: RequestHandler): void {
+function openRoute<L extends Record<string, any>>(method: HttpMethod, path: string, handler: RequestHandler<any, any, any, any, L>): void {
     const m = method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
     web.route(path)[m](...webAuth, handler);
 }
