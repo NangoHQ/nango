@@ -66,6 +66,14 @@ export abstract class NangoSyncBase<
         model: TModelName
     ): MaybePromise<Map<TKey, TModel>>;
 
+    public abstract listRecords<TModel extends RawModel = z.infer<TModels[TModelName]>>(
+        model: TModelName,
+        options?: {
+            cursor?: string;
+            limit?: number;
+        }
+    ): MaybePromise<{ records: TModel[]; next_cursor: string | null }>; // 2. Expose listRecords in Runner SDK
+
     /**
      * @deprecated please use trackDeletesStart and trackDeletesEnd
      */

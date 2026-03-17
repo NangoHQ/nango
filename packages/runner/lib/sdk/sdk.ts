@@ -613,6 +613,37 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
+    /**
+     * Shared helper for getRecordsByIds and listRecords. Fetches one page of records from the persist layer.
+     * Normalizes response to { records, next_cursor } (persist may return nextCursor or next_cursor).
+     */
+    private async fetchRecordsPage<T = any>(
+        model: string,
+        options?: {
+            cursor?: string;
+            externalIds?: string[];
+            limit?: number;
+        }
+    ): Promise<{ records: T[]; next_cursor: string | null }> {
+        const res = await this.persistClient.getRecords({
+            model: this.modelFullName(model),
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            cursor: options?.cursor,
+            externalIds: options?.externalIds,
+            limit: options?.limit
+        });
+
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        const raw = res.unwrap();
+        const rawWithCursor = raw as { next_cursor?: string | null; nextCursor?: string };
+        const nextCursor: string | null = rawWithCursor.next_cursor ?? rawWithCursor.nextCursor ?? null;
+        return { records: raw.records as T[], next_cursor: nextCursor };
+    }
+
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         this.throwIfAbortedOrKilled();
 
@@ -626,31 +657,39 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
-            const res = await this.persistClient.getRecords({
-                model: this.modelFullName(model),
-                externalIds: Array.from(externalIdMap.keys()),
-                environmentId: this.environmentId,
-                nangoConnectionId: this.nangoConnectionId!,
-                cursor
-            });
-
-            if (res.isErr()) {
-                throw res.error;
+            const pageOptions: { cursor?: string; externalIds: string[] } = {
+                externalIds: Array.from(externalIdMap.keys())
+            };
+            if (cursor !== undefined) {
+                pageOptions.cursor = cursor;
             }
 
-            const { nextCursor, records } = res.unwrap();
-            cursor = nextCursor;
+            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
+            cursor = next_cursor ?? undefined;
 
             for (const record of records) {
-                const stringId = String(record.id);
+                const stringId = String((record as Record<string, unknown>)['id']);
                 const realId = externalIdMap.get(stringId);
                 if (realId !== undefined) {
-                    objects.set(realId, record as T);
+                    objects.set(realId, record);
                 }
             }
         }
 
         return objects;
+    }
+
+    public async listRecords<T = any>(model: string, options?: { cursor?: string; limit?: number }): Promise<{ records: T[]; next_cursor: string | null }> {
+        this.throwIfAbortedOrKilled();
+
+        const pageOptions: { cursor?: string; limit?: number } = {};
+        if (options?.cursor !== undefined) {
+            pageOptions.cursor = options.cursor;
+        }
+        if (options?.limit !== undefined) {
+            pageOptions.limit = options.limit;
+        }
+        return this.fetchRecordsPage<T>(model, Object.keys(pageOptions).length > 0 ? pageOptions : undefined);
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
@@ -734,6 +773,7 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncRunner | keyof NangoActionRunne
     'batchUpdate',
     'batchSend',
     'getRecordsByIds',
+    'listRecords',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',

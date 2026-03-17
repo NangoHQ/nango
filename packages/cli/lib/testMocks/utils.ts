@@ -1138,6 +1138,7 @@ class NangoSyncMock extends NangoActionMock {
     getCheckpoint: ReturnType<typeof vi.fn>;
     saveCheckpoint: ReturnType<typeof vi.fn>;
     clearCheckpoint: ReturnType<typeof vi.fn>;
+    listRecords: ReturnType<typeof vi.fn>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         super({ dirname, name, Model });
@@ -1146,6 +1147,7 @@ class NangoSyncMock extends NangoActionMock {
         this.getCheckpoint = vi.fn(this.getCheckpointData.bind(this));
         this.saveCheckpoint = vi.fn(this.saveCheckpointData.bind(this));
         this.clearCheckpoint = vi.fn(this.clearCheckpointData.bind(this));
+        this.listRecords = vi.fn().mockResolvedValue({ records: [], next_cursor: null });
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await

@@ -534,3 +534,63 @@ describe('getRecordsById', () => {
         expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
     });
 });
+
+describe('listRecords', () => {
+    it('should throw if aborted', async () => {
+        const ac = new AbortController();
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
+        ac.abort();
+        await expect(nango.listRecords('SomeModel')).rejects.toThrowError(new ExecutionAbortedSDKError());
+    });
+
+    it('should return records and next_cursor from a single page', async () => {
+        const records = [
+            { id: '1', name: 'a' },
+            { id: '2', name: 'b' }
+        ];
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.listRecords('SomeModel');
+
+        expect(result).toEqual({ records, next_cursor: null });
+        expect(mockPersistClient.getRecords).toHaveBeenCalledOnce();
+        expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: undefined,
+            externalIds: undefined,
+            limit: undefined
+        });
+    });
+
+    it('should pass cursor and limit to getRecords when provided', async () => {
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        await nango.listRecords('SomeModel', { cursor: 'cursor123', limit: 500 });
+
+        expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: 'cursor123',
+            externalIds: undefined,
+            limit: 500
+        });
+    });
+
+    it('should normalize next_cursor from response (next_cursor or nextCursor)', async () => {
+        const records = [{ id: '1' }];
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, next_cursor: 'next-page' }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.listRecords('M');
+
+        expect(result.next_cursor).toBe('next-page');
+    });
+});

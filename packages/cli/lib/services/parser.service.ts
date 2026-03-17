@@ -54,27 +54,28 @@ class ParserService {
             console.log(chalk.red(`nango.${call}() calls are not allowed in an action script. Please remove it at "${filePath}:${lineNumber}".`));
 
         const nangoCalls = [
-            'batchSend',
-            'batchSave',
             'batchDelete',
-            'log',
-            'getFieldMapping',
-            'setFieldMapping',
-            'getMetadata',
-            'setMetadata',
-            'proxy',
-            'get',
-            'post',
-            'put',
-            'patch',
+            'batchSave',
+            'batchSend',
             'delete',
+            'deleteRecordsFromPreviousExecutions',
+            'get',
             'getConnection',
             'getEnvironmentVariables',
-            'triggerAction',
+            'getFieldMapping',
+            'getMetadata',
+            'listRecords', // 1. Allow await nango.listRecords() at compile time
+            'log',
+            'patch',
+            'post',
+            'proxy',
+            'put',
+            'setFieldMapping',
             'setMergingStrategy',
-            'deleteRecordsFromPreviousExecutions',
+            'setMetadata',
+            'trackDeletesEnd',
             'trackDeletesStart',
-            'trackDeletesEnd'
+            'triggerAction'
         ];
 
         const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
@@ -89,11 +90,12 @@ class ParserService {
         const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
         const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
         const callsReferencingModelsToCheck = callsBatchingRecords.concat(
-            'setMergingStrategy',
             'deleteRecordsFromPreviousExecutions',
-            'trackDeletesStart',
+            'getRecordsByIds',
+            'listRecords', // 1. Allow await nango.listRecords() at compile time
+            'setMergingStrategy',
             'trackDeletesEnd',
-            'getRecordsByIds'
+            'trackDeletesStart'
         );
         const proxyLines: number[] = [];
         const batchingRecordsLines: number[] = [];

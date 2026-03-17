@@ -436,27 +436,28 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
     const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
     const needsAwait = [
-        'batchSend',
-        'batchSave',
         'batchDelete',
-        'log',
-        'getFieldMapping',
-        'setFieldMapping',
-        'getMetadata',
-        'setMetadata',
-        'proxy',
-        'get',
-        'post',
-        'put',
-        'patch',
+        'batchSave',
+        'batchSend',
         'delete',
+        'deleteRecordsFromPreviousExecutions',
+        'get',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction',
+        'getFieldMapping',
+        'getMetadata',
+        'listRecords', // 1. Allow await nango.listRecords() at compile time
+        'log',
+        'patch',
+        'post',
+        'proxy',
+        'put',
+        'setFieldMapping',
         'setMergingStrategy',
-        'deleteRecordsFromPreviousExecutions',
+        'setMetadata',
+        'trackDeletesEnd',
         'trackDeletesStart',
-        'trackDeletesEnd'
+        'triggerAction'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];

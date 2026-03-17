@@ -375,6 +375,24 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         return objects;
     }
 
+    // 1. Implement listRecords in CLI SDK for dry run?
+    public override async listRecords<T extends Record<string, any> = Record<string, any>>(
+        model: string,
+        options?: { cursor?: string; limit?: number }
+    ): Promise<{ records: T[]; next_cursor: string | null }> {
+        const config: ListRecordsRequestConfig = {
+            providerConfigKey: this.providerConfigKey,
+            connectionId: this.connectionId,
+            model: this.modelFullName(model),
+            limit: options?.limit ?? 100
+        };
+        if (options?.cursor !== undefined && options.cursor !== null) {
+            config.cursor = options.cursor;
+        }
+        const response = await this.nango.listRecords<T>(config);
+        return { records: response.records, next_cursor: response.next_cursor };
+    }
+
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {
         // Not applicable to CLI
         return Promise.resolve();
