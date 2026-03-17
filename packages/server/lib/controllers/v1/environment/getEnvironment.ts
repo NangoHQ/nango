@@ -9,6 +9,7 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { permissions, resolve } from '../../../authz/permissions.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
@@ -24,7 +25,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
         return;
     }
 
-    const { environment, account, user, plan, authz } = res.locals;
+    const { environment, account, user, plan } = res.locals;
 
     if (!isCloud) {
         environment.websockets_path = getWebsocketsPath();
@@ -40,7 +41,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
     }
 
     // Remove secret key if user doesn't have permission to read production secrets
-    if (!(authz?.canReadProdSecrets ?? true)) {
+    if (environment.is_production && !(await resolve(res.locals, permissions.canReadProdSecretKey))) {
         delete (environment as any).secret_key;
         delete (environment as any).pending_secret_key;
     }

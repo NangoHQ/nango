@@ -1,35 +1,34 @@
+import { permissions as p } from './permissions.js';
+
 import type { Permission } from './types.js';
 import type { Role } from '@nangohq/types';
 
 const ADMIN_ONLY: Permission[] = [
-    { action: 'write', resource: 'team', scope: 'global' },
-    { action: 'delete', resource: 'team_member', scope: 'global' },
-    { action: 'write', resource: 'invite', scope: 'global' },
-    { action: 'delete', resource: 'invite', scope: 'global' },
-    { action: 'write', resource: 'connect_ui_settings', scope: 'global' },
-    { action: '*', resource: 'billing', scope: 'global' },
-    { action: 'write', resource: 'plan', scope: 'global' },
-    { action: 'write', resource: 'environment_production_flag', scope: 'global' },
-    { action: 'create', resource: 'environment', scope: 'global' }
+    p.canManageTeam,
+    p.canRemoveTeamMember,
+    p.canInviteMember,
+    p.canCancelInvitation,
+    p.canManageConnectUI,
+    p.canManageBilling,
+    p.canChangePlan,
+    p.canToggleIsProduction,
+    p.canCreateEnvironment
 ];
 
 const PROD_WRITES: Permission[] = [
-    { action: 'write', resource: 'integration', scope: 'production' },
+    p.canWriteProdIntegrations,
     { action: 'delete', resource: 'integration', scope: 'production' },
-    { action: 'write', resource: 'connection', scope: 'production' },
+    p.canWriteProdConnections,
     { action: 'delete', resource: 'connection', scope: 'production' },
-    { action: 'write', resource: 'flow', scope: 'production' },
-    { action: 'delete', resource: 'environment', scope: 'production' },
-    { action: 'write', resource: 'environment', scope: 'production' },
-    { action: 'write', resource: 'environment_key', scope: 'production' },
+    p.canWriteProdFlows,
+    p.canDeleteProdEnvironment,
+    p.canWriteProdEnvironment,
+    p.canWriteProdEnvironmentKeys,
     { action: 'write', resource: 'environment_variable', scope: 'production' },
     { action: 'write', resource: 'webhook', scope: 'production' }
 ];
 
-const PROD_SECRETS: Permission[] = [
-    { action: 'read', resource: 'secret_key', scope: 'production' },
-    { action: 'read', resource: 'connection_credential', scope: 'production' }
-];
+const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials];
 
 export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
     administrator: [],

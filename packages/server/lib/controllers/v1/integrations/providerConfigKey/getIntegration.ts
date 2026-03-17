@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { permissions, resolve } from '../../../../authz/permissions.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -32,7 +33,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         return;
     }
 
-    const { environment, authz } = res.locals;
+    const { environment } = res.locals;
     const params: GetIntegration['Params'] = valParams.data;
 
     const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
@@ -61,7 +62,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 
-    const includeCredentials = authz?.canReadCredentials ?? true;
+    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
     const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({

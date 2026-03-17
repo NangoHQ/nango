@@ -3,6 +3,7 @@ import * as z from 'zod';
 import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { permissions, resolve } from '../../../authz/permissions.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { envSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -58,8 +59,7 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
             });
             return;
         }
-        const authz = res.locals['authz'];
-        if (!(authz?.canToggleIsProduction ?? true)) {
+        if (!(await resolve(res.locals, permissions.canToggleIsProduction))) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to toggle the production flag' } });
             return;
         }
