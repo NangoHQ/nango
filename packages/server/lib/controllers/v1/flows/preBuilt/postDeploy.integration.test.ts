@@ -82,6 +82,7 @@ describe(`POST ${endpoint}`, () => {
                 definitions: {
                     SyncMetadata_airtable_tables: {
                         additionalProperties: false,
+                        properties: {},
                         type: 'object'
                     },
                     Table: {
@@ -107,7 +108,8 @@ describe(`POST ${endpoint}`, () => {
                                             type: 'string'
                                         },
                                         options: {
-                                            additionalProperties: false,
+                                            additionalProperties: {},
+                                            properties: {},
                                             type: 'object'
                                         },
                                         type: {
