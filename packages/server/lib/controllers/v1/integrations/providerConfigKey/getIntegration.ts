@@ -63,10 +63,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
 
     const includeCredentials = authz?.canReadCredentials ?? true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
-    const apiIntegration = integrationToApi(integration);
-    if (!includeCredentials) {
-        delete (apiIntegration as any).oauth_client_secret;
-    }
+    const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({
         data: {
             integration: apiIntegration,

@@ -1,5 +1,3 @@
-import { ROLES } from '@nangohq/utils';
-
 import type { Permission } from './types.js';
 import type { Role } from '@nangohq/types';
 
@@ -34,7 +32,7 @@ const PROD_SECRETS: Permission[] = [
 ];
 
 export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
-    [ROLES.ADMINISTRATOR]: [],
-    [ROLES.PRODUCTION_SUPPORT]: [...ADMIN_ONLY, ...PROD_WRITES, ...PROD_SECRETS],
-    [ROLES.DEVELOPMENT_FULL_ACCESS]: [...ADMIN_ONLY, { action: '*', resource: '*', scope: 'production' }]
+    administrator: [],
+    production_support: [...ADMIN_ONLY, ...PROD_WRITES, ...PROD_SECRETS],
+    development_full_access: [...ADMIN_ONLY, { action: '*', resource: '*', scope: 'production' }]
 };

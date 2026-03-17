@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { authorize } from './authorize.js';
+import { envScope, registerPermission } from './resolvers.js';
 
 import type { RequestLocals } from '../utils/express.js';
 
@@ -36,6 +37,27 @@ function makeLocals(overrides: Partial<RequestLocals> = {}): RequestLocals {
 }
 
 describe('authorize', () => {
+    beforeAll(() => {
+        // Register the same permissions that routes.private.ts would register at boot
+        registerPermission('PUT', '/team', { action: 'write', resource: 'team', scope: 'global' });
+        registerPermission('DELETE', '/team/users/:id', { action: 'delete', resource: 'team_member', scope: 'global' });
+        registerPermission('POST', '/invite', { action: 'write', resource: 'invite', scope: 'global' });
+        registerPermission('DELETE', '/invite', { action: 'delete', resource: 'invite', scope: 'global' });
+        registerPermission('GET', '/stripe/payment_methods', { action: '*', resource: 'billing', scope: 'global' });
+        registerPermission('POST', '/stripe/payment_methods', { action: '*', resource: 'billing', scope: 'global' });
+        registerPermission('DELETE', '/stripe/payment_methods', { action: '*', resource: 'billing', scope: 'global' });
+        registerPermission('POST', '/plans/change', { action: 'write', resource: 'plan', scope: 'global' });
+        registerPermission('POST', '/environments', { action: 'create', resource: 'environment', scope: 'global' });
+        registerPermission('DELETE', '/environments', (l) => ({ action: 'delete', resource: 'environment', scope: envScope(l) }));
+        registerPermission('GET', '/integrations', (l) => ({ action: 'read', resource: 'integration', scope: envScope(l) }));
+        registerPermission('POST', '/integrations', (l) => ({ action: 'write', resource: 'integration', scope: envScope(l) }));
+        registerPermission('GET', '/connections', (l) => ({ action: 'read', resource: 'connection', scope: envScope(l) }));
+        registerPermission('GET', '/connections/:connectionId', (l) => ({ action: 'read', resource: 'connection', scope: envScope(l) }));
+        registerPermission('DELETE', '/connections/:connectionId', (l) => ({ action: 'delete', resource: 'connection', scope: envScope(l) }));
+        registerPermission('POST', '/flows/pre-built/deploy', (l) => ({ action: 'write', resource: 'flow', scope: envScope(l) }));
+        registerPermission('POST', '/sync/command', (l) => ({ action: 'write', resource: 'sync_command', scope: envScope(l) }));
+    });
+
     it('should always allow administrator', async () => {
         await expect(authorize('PUT', '/team', 'administrator', makeLocals())).resolves.toBe(true);
         await expect(authorize('DELETE', '/environments', 'administrator', makeLocals())).resolves.toBe(true);

@@ -217,22 +217,77 @@ describe('authz integration', () => {
         });
 
         it('should strip oauth_client_secret from prod integration response', async () => {
-            const { account } = await seedAccountWithProdEnv();
+            const { account, prodEnv } = await seedAccountWithProdEnv();
+            await seeders.createConfigSeed(prodEnv, 'github-prod', 'github', {
+                oauth_client_id: 'test-id',
+                oauth_client_secret: 'test-secret',
+                oauth_scopes: 'repo'
+            });
             const supportUser = await createUserWithRole(account.id, 'production_support');
             const session = await authenticateUser(api, supportUser);
 
             const res = await api.fetch('/api/v1/integrations/:providerConfigKey', {
                 method: 'GET',
                 query: { env: 'prod' },
-                params: { providerConfigKey: 'some-key' },
+                params: { providerConfigKey: 'github-prod' },
                 session
             });
 
-            // May be 404 (no integration exists), but if 200 it should not contain oauth_client_secret
-            if (res.res.status === 200) {
-                const data = (res.json as any).data;
-                expect(data.integration).not.toHaveProperty('oauth_client_secret');
+            expect(res.res.status).toBe(200);
+            const integration = (res.json as any).data.integration;
+            expect(integration.oauth_client_id).toBe('');
+            expect(integration.oauth_client_secret).toBe('');
+        });
+
+        it('should strip oauth_client_secret from prod integrations list response', async () => {
+            const { account, prodEnv } = await seedAccountWithProdEnv();
+            await seeders.createConfigSeed(prodEnv, 'github-list', 'github', {
+                oauth_client_id: 'test-id',
+                oauth_client_secret: 'test-secret',
+                oauth_scopes: 'repo'
+            });
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/integrations', {
+                // @ts-expect-error authz test — GET not in endpoint type
+                method: 'GET',
+                query: { env: 'prod' },
+                session
+            });
+
+            expect(res.res.status).toBe(200);
+            const integrations = (res.json as any).data;
+            expect(integrations.length).toBeGreaterThan(0);
+            for (const integration of integrations) {
+                expect(integration.oauth_client_id).toBe('');
+                expect(integration.oauth_client_secret).toBe('');
             }
+        });
+
+        it('should strip credentials from prod connection response', async () => {
+            const { account, prodEnv } = await seedAccountWithProdEnv();
+            await seeders.createConfigSeed(prodEnv, 'github-conn', 'github');
+            await seeders.createConnectionSeed({
+                env: prodEnv,
+                provider: 'github-conn',
+                connectionId: 'conn-prod-1',
+                rawCredentials: { type: 'API_KEY', apiKey: 'super-secret-key' }
+            });
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/connections/:connectionId', {
+                method: 'GET',
+                // @ts-expect-error authz test — extra query params
+                query: { env: 'prod', provider_config_key: 'github-conn' },
+                params: { connectionId: 'conn-prod-1' },
+                session
+            });
+
+            expect(res.res.status).toBe(200);
+            const connection = (res.json as any).data.connection;
+            expect(connection.credentials).toEqual({});
         });
 
         it('should strip secret_key from prod environment response', async () => {
@@ -251,6 +306,29 @@ describe('authz integration', () => {
             const env = (res.json as any).environmentAndAccount.environment;
             expect(env).not.toHaveProperty('secret_key');
             expect(env).not.toHaveProperty('pending_secret_key');
+        });
+
+        it('should NOT strip credentials from non-prod integration response', async () => {
+            const { account, devEnv } = await seedAccountWithProdEnv();
+            await seeders.createConfigSeed(devEnv, 'github-dev', 'github', {
+                oauth_client_id: 'dev-id',
+                oauth_client_secret: 'dev-secret',
+                oauth_scopes: 'repo'
+            });
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/integrations/:providerConfigKey', {
+                method: 'GET',
+                query: { env: 'dev' },
+                params: { providerConfigKey: 'github-dev' },
+                session
+            });
+
+            expect(res.res.status).toBe(200);
+            const integration = (res.json as any).data.integration;
+            expect(integration.oauth_client_id).toBe('dev-id');
+            expect(integration.oauth_client_secret).toBe('dev-secret');
         });
     });
 

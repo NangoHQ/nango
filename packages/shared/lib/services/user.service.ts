@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { Err, Ok, ROLES } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -106,7 +106,7 @@ class UserService {
         salt = '',
         account_id,
         email_verified,
-        role = ROLES.ADMINISTRATOR
+        role = 'administrator'
     }: {
         email: string;
         name: string;

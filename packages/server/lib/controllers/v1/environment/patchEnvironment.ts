@@ -59,7 +59,7 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
             return;
         }
         const authz = res.locals['authz'];
-        if (!authz?.canToggleIsProduction) {
+        if (!(authz?.canToggleIsProduction ?? true)) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to toggle the production flag' } });
             return;
         }

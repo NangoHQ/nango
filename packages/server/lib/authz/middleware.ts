@@ -1,4 +1,4 @@
-import { ROLES, flags } from '@nangohq/utils';
+import { flags } from '@nangohq/utils';
 
 import { authorize } from './authorize.js';
 import { evaluator } from './evaluator.js';
@@ -32,7 +32,7 @@ export const authzMiddleware: RequestHandler = async (req, res, next) => {
         return;
     }
 
-    const role: Role = user.role ?? ROLES.ADMINISTRATOR;
+    const role: Role = user.role;
 
     // Resolve the Express route pattern (e.g., /team/users/123 → /team/users/:id)
     const routePath = req.route?.path as string | undefined;

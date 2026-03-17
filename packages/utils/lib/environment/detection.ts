@@ -37,9 +37,3 @@ export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
     hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true'
 };
-
-export const ROLES = {
-    ADMINISTRATOR: 'administrator',
-    PRODUCTION_SUPPORT: 'production_support',
-    DEVELOPMENT_FULL_ACCESS: 'development_full_access'
-} as const;

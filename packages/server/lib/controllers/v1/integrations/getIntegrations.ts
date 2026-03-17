@@ -14,7 +14,8 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, authz } = res.locals;
+    const includeCredentials = authz?.canReadCredentials ?? true;
 
     const integrations = await configService.listIntegrationForApi(environment.id);
     const rawSyncConfig = await countSyncConfigByConfigId(environment.id);
@@ -27,7 +28,7 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
         const provider = getProvider(integration.provider)!;
 
         const formatted: ApiIntegrationList = {
-            ...integrationToApi(integration),
+            ...integrationToApi(integration, { includeCredentials }),
             meta: {
                 authMode: provider.auth_mode,
                 scriptsCount: activeSyncConfig.get(integration.id!) || 0,
