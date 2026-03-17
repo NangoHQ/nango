@@ -37,9 +37,9 @@ describe('getRoutingId', () => {
         mockEnvs.LAMBDA_DEFAULT_MEMORY_MB = 512;
     });
 
-    it('uses node_routing_override when provided in routingContext.plan', () => {
+    it('uses fleet_node_routing_override when provided in routingContext.plan', () => {
         const routingContext: RoutingContext = {
-            plan: { node_routing_override: 'custom-override' } as RoutingContext['plan']
+            plan: { fleet_node_routing_override: 'custom-override' } as RoutingContext['plan']
         };
         const result = getRoutingId({
             nangoProps: minimalNangoProps(),
@@ -61,9 +61,9 @@ describe('getRoutingId', () => {
         expect(result).toBe('default-prefix-S');
     });
 
-    it('uses LAMBDA_DEFAULT_PREFIX when plan.node_routing_override is null', () => {
+    it('uses LAMBDA_DEFAULT_PREFIX when plan.fleet_node_routing_override is null', () => {
         const routingContext: RoutingContext = {
-            plan: { node_routing_override: null } as RoutingContext['plan']
+            plan: { fleet_node_routing_override: null } as RoutingContext['plan']
         };
         const result = getRoutingId({
             nangoProps: minimalNangoProps(),
