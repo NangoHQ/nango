@@ -3525,8 +3525,8 @@ clio:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: https://app.clio.com/oauth/authorize
-    token_url: https://app.clio.com/oauth/token
+    authorization_url: https://${connectionConfig.hostname}/oauth/authorize
+    token_url: https://${connectionConfig.hostname}/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -3534,9 +3534,20 @@ clio:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://app.clio.com
+        base_url: https://${connectionConfig.hostname}
     docs: https://nango.dev/docs/api-integrations/clio
     setup_guide_url: https://nango.dev/docs/api-integrations/clio/how-to-register-your-own-clio-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname for your Clio region (e.g. app.clio.com for US, eu.app.clio.com for EU, ca.app.clio.com for CA, au.app.clio.com for AU)
+            example: app.clio.com
+            default_value: app.clio.com
+            format: hostname
+            pattern: '^(app\.clio\.com|eu\.app\.clio\.com|ca\.app\.clio\.com|au\.app\.clio\.com)$'
+            prefix: https://
+            order: 1
 
 cloudbeds:
     display_name: Cloudbeds
