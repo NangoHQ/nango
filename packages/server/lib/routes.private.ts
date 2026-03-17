@@ -239,7 +239,7 @@ web.route('/user').patch(webAuth, patchUser);
 web.route('/user/password').put(webAuth, putUserPassword);
 
 // Sync / Flows
-web.route('/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
+web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(
     webAuth,
     can({ action: 'update', resource: 'sync_command', scopedBy: envScope }),
