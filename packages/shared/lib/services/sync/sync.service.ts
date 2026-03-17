@@ -483,7 +483,7 @@ export const getAndReconcileDifferences = async ({
     const deletedActions: SlimAction[] = [];
     const deletedModels: string[] = [];
 
-    if (deployMode !== 'single') {
+    if (deployMode !== 'single' && flows.length > 0) {
         const integrationScopeKey = deployMode === 'integration' ? flows[0]?.providerConfigKey : undefined;
         for (const existingSync of existingSyncs) {
             if (integrationScopeKey && integrationScopeKey !== existingSync.unique_key) {
