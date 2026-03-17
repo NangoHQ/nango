@@ -1,6 +1,6 @@
 import type { Role } from '@nangohq/types';
 
-export type Action = 'create' | 'delete' | 'write' | 'read' | '*';
+export type Action = 'create' | 'read' | 'update' | 'delete' | '*';
 export type Resource =
     | 'team'
     | 'team_member'

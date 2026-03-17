@@ -10,9 +10,9 @@ describe('StaticEvaluator', () => {
     describe('administrator', () => {
         it('should allow everything', async () => {
             const perms: Permission[] = [
-                { action: 'write', resource: 'team', scope: 'global' },
+                { action: 'update', resource: 'team', scope: 'global' },
                 { action: '*', resource: 'billing', scope: 'global' },
-                { action: 'write', resource: 'integration', scope: 'production' },
+                { action: 'update', resource: 'integration', scope: 'production' },
                 { action: 'read', resource: 'connection', scope: 'production' },
                 { action: 'read', resource: 'secret_key', scope: 'production' },
                 { action: 'read', resource: 'connection_credential', scope: 'production' },
@@ -28,16 +28,16 @@ describe('StaticEvaluator', () => {
 
     describe('production_support', () => {
         it('should deny team management', async () => {
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'team', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'team', scope: 'global' })).resolves.toBe(false);
             await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'delete', resource: 'team_member', scope: 'global' })).resolves.toBe(
                 false
             );
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'invite', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'invite', scope: 'global' })).resolves.toBe(false);
         });
 
         it('should deny billing', async () => {
             await expect(evaluator.evaluate({ role: 'production_support' }, { action: '*', resource: 'billing', scope: 'global' })).resolves.toBe(false);
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'plan', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'plan', scope: 'global' })).resolves.toBe(false);
         });
 
         it('should deny environment creation', async () => {
@@ -48,18 +48,18 @@ describe('StaticEvaluator', () => {
 
         it('should deny is_production toggle', async () => {
             await expect(
-                evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'environment_production_flag', scope: 'global' })
+                evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'environment_production_flag', scope: 'global' })
             ).resolves.toBe(false);
         });
 
         it('should deny production write operations', async () => {
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'integration', scope: 'production' })).resolves.toBe(
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'integration', scope: 'production' })).resolves.toBe(
                 false
             );
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'connection', scope: 'production' })).resolves.toBe(
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'connection', scope: 'production' })).resolves.toBe(
                 false
             );
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'flow', scope: 'production' })).resolves.toBe(false);
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'flow', scope: 'production' })).resolves.toBe(false);
         });
 
         it('should deny production secrets/credentials', async () => {
@@ -85,14 +85,14 @@ describe('StaticEvaluator', () => {
         });
 
         it('should allow production sync commands', async () => {
-            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'sync_command', scope: 'production' })).resolves.toBe(
+            await expect(evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'sync_command', scope: 'production' })).resolves.toBe(
                 true
             );
         });
 
         it('should allow non-prod everything', async () => {
             await expect(
-                evaluator.evaluate({ role: 'production_support' }, { action: 'write', resource: 'integration', scope: 'non-production' })
+                evaluator.evaluate({ role: 'production_support' }, { action: 'update', resource: 'integration', scope: 'non-production' })
             ).resolves.toBe(true);
             await expect(
                 evaluator.evaluate({ role: 'production_support' }, { action: 'delete', resource: 'connection', scope: 'non-production' })
@@ -112,7 +112,7 @@ describe('StaticEvaluator', () => {
                 evaluator.evaluate({ role: 'development_full_access' }, { action: 'read', resource: 'connection', scope: 'production' })
             ).resolves.toBe(false);
             await expect(
-                evaluator.evaluate({ role: 'development_full_access' }, { action: 'write', resource: 'integration', scope: 'production' })
+                evaluator.evaluate({ role: 'development_full_access' }, { action: 'update', resource: 'integration', scope: 'production' })
             ).resolves.toBe(false);
             await expect(
                 evaluator.evaluate({ role: 'development_full_access' }, { action: 'read', resource: 'environment', scope: 'production' })
@@ -127,13 +127,13 @@ describe('StaticEvaluator', () => {
 
         it('should deny production sync commands', async () => {
             await expect(
-                evaluator.evaluate({ role: 'development_full_access' }, { action: 'write', resource: 'sync_command', scope: 'production' })
+                evaluator.evaluate({ role: 'development_full_access' }, { action: 'update', resource: 'sync_command', scope: 'production' })
             ).resolves.toBe(false);
         });
 
         it('should deny team management', async () => {
-            await expect(evaluator.evaluate({ role: 'development_full_access' }, { action: 'write', resource: 'team', scope: 'global' })).resolves.toBe(false);
-            await expect(evaluator.evaluate({ role: 'development_full_access' }, { action: 'write', resource: 'invite', scope: 'global' })).resolves.toBe(
+            await expect(evaluator.evaluate({ role: 'development_full_access' }, { action: 'update', resource: 'team', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate({ role: 'development_full_access' }, { action: 'update', resource: 'invite', scope: 'global' })).resolves.toBe(
                 false
             );
         });
@@ -146,7 +146,7 @@ describe('StaticEvaluator', () => {
 
         it('should allow non-prod everything', async () => {
             await expect(
-                evaluator.evaluate({ role: 'development_full_access' }, { action: 'write', resource: 'integration', scope: 'non-production' })
+                evaluator.evaluate({ role: 'development_full_access' }, { action: 'update', resource: 'integration', scope: 'non-production' })
             ).resolves.toBe(true);
             await expect(
                 evaluator.evaluate({ role: 'development_full_access' }, { action: 'delete', resource: 'connection', scope: 'non-production' })
@@ -161,7 +161,7 @@ describe('StaticEvaluator', () => {
 
         it('should allow non-prod sync commands', async () => {
             await expect(
-                evaluator.evaluate({ role: 'development_full_access' }, { action: 'write', resource: 'sync_command', scope: 'non-production' })
+                evaluator.evaluate({ role: 'development_full_access' }, { action: 'update', resource: 'sync_command', scope: 'non-production' })
             ).resolves.toBe(true);
         });
 

@@ -2,27 +2,27 @@ import type { Permission } from './types.js';
 
 export const permissions = {
     // team management (global scope)
-    canManageTeam: { action: 'write', resource: 'team', scope: 'global' },
+    canManageTeam: { action: 'update', resource: 'team', scope: 'global' },
     canRemoveTeamMember: { action: 'delete', resource: 'team_member', scope: 'global' },
-    canInviteMember: { action: 'write', resource: 'invite', scope: 'global' },
+    canInviteMember: { action: 'update', resource: 'invite', scope: 'global' },
     canCancelInvitation: { action: 'delete', resource: 'invite', scope: 'global' },
-    canManageConnectUI: { action: 'write', resource: 'connect_ui_settings', scope: 'global' },
+    canManageConnectUI: { action: 'update', resource: 'connect_ui_settings', scope: 'global' },
     canManageBilling: { action: '*', resource: 'billing', scope: 'global' },
-    canChangePlan: { action: 'write', resource: 'plan', scope: 'global' },
-    canToggleIsProduction: { action: 'write', resource: 'environment_production_flag', scope: 'global' },
+    canChangePlan: { action: 'update', resource: 'plan', scope: 'global' },
+    canToggleIsProduction: { action: 'update', resource: 'environment_production_flag', scope: 'global' },
     canCreateEnvironment: { action: 'create', resource: 'environment', scope: 'global' },
 
     // production environment access
     canAccessProdEnvironment: { action: 'read', resource: 'environment', scope: 'production' },
-    canWriteProdIntegrations: { action: 'write', resource: 'integration', scope: 'production' },
+    canWriteProdIntegrations: { action: 'update', resource: 'integration', scope: 'production' },
     canDeleteProdIntegrations: { action: 'delete', resource: 'integration', scope: 'production' },
-    canWriteProdConnections: { action: 'write', resource: 'connection', scope: 'production' },
+    canWriteProdConnections: { action: 'update', resource: 'connection', scope: 'production' },
     canDeleteProdConnections: { action: 'delete', resource: 'connection', scope: 'production' },
-    canWriteProdFlows: { action: 'write', resource: 'flow', scope: 'production' },
-    canWriteProdEnvironment: { action: 'write', resource: 'environment', scope: 'production' },
-    canWriteProdEnvironmentKeys: { action: 'write', resource: 'environment_key', scope: 'production' },
-    canWriteProdEnvironmentVariables: { action: 'write', resource: 'environment_variable', scope: 'production' },
-    canWriteProdWebhooks: { action: 'write', resource: 'webhook', scope: 'production' },
+    canWriteProdFlows: { action: 'update', resource: 'flow', scope: 'production' },
+    canWriteProdEnvironment: { action: 'update', resource: 'environment', scope: 'production' },
+    canWriteProdEnvironmentKeys: { action: 'update', resource: 'environment_key', scope: 'production' },
+    canWriteProdEnvironmentVariables: { action: 'update', resource: 'environment_variable', scope: 'production' },
+    canWriteProdWebhooks: { action: 'update', resource: 'webhook', scope: 'production' },
     canDeleteProdEnvironment: { action: 'delete', resource: 'environment', scope: 'production' },
 
     // production secrets/credentials
