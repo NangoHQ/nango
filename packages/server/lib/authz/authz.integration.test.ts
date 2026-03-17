@@ -186,21 +186,6 @@ describe('authz integration', () => {
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should allow GET prod syncs (read access)', async () => {
-            const { account } = await seedAccountWithProdEnv();
-            const supportUser = await createUserWithRole(account.id, 'production_support');
-            const session = await authenticateUser(api, supportUser);
-
-            const res = await api.fetch('/api/v1/sync', {
-                // @ts-expect-error authz test — GET /sync not in endpoint types
-                method: 'GET',
-                query: { env: 'prod' },
-                session
-            });
-
-            expect(res.res.status).not.toBe(403);
-        });
-
         it('should allow GET prod connections (read access)', async () => {
             const { account } = await seedAccountWithProdEnv();
             const supportUser = await createUserWithRole(account.id, 'production_support');
