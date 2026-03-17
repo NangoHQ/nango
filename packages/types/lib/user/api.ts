@@ -1,4 +1,5 @@
 import type { Endpoint } from '../api.js';
+import type { Role } from './db.js';
 
 export type GetUser = Endpoint<{
     Method: 'GET';
@@ -40,7 +41,7 @@ export interface ApiUser {
     name: string;
     uuid: string;
     gettingStartedClosed: boolean;
-    role: string;
+    role: Role;
     permissions: AllowedPermissions;
 }
 
