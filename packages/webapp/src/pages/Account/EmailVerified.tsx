@@ -60,7 +60,7 @@ export const EmailVerified: React.FC = () => {
                 });
 
                 signin(user);
-                await mutate<GetUser['Success']>('/api/v1/user', { data: user }, { revalidate: false });
+                await mutate<GetUser['Success']>('/api/v1/user', { data: user as GetUser['Success']['data'] }, { revalidate: false });
                 sessionStorage.setItem('show-email-verified-toast', 'true');
 
                 const redirectPath = showHearAboutUs ? '/onboarding/hear-about-us' : `/${env}/getting-started`;

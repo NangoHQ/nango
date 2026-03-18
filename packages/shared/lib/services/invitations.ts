@@ -28,12 +28,14 @@ export async function inviteEmail({
     name,
     accountId,
     invitedByUserId,
+    role = 'administrator',
     trx
 }: {
     email: string;
     name: string;
     accountId: number;
     invitedByUserId: number;
+    role?: DBInvitation['role'];
     trx: Knex;
 }) {
     const token = uuid.v4();
@@ -47,7 +49,8 @@ export async function inviteEmail({
             account_id: accountId,
             invited_by: invitedByUserId,
             token,
-            expires_at
+            expires_at,
+            role
         })
         .returning('*');
 
@@ -95,7 +98,8 @@ export async function getInvitation(token: string): Promise<DBInvitation | null>
             expires_at: now,
             accepted: true,
             created_at: now,
-            updated_at: now
+            updated_at: now,
+            role: 'administrator'
         };
     }
 

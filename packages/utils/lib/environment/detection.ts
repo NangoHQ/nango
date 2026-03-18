@@ -34,5 +34,6 @@ export const flagHasUsage = process.env['FLAG_USAGE_ENABLED'] === 'true';
 export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] === 'true';
 // It's an object because we want to be able to mock it in tests
 export const flags = {
-    hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID'])
+    hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
+    hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true'
 };

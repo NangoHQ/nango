@@ -17,6 +17,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
+    DEFAULT_USER_ROLE: z.enum(['administrator', 'production_support', 'development_full_access']).optional().default('administrator'),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -261,6 +262,7 @@ export const ENVS = z.object({
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
+    FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
