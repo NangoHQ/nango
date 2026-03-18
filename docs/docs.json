@@ -876,6 +876,7 @@
               "api-integrations/vanta",
               "api-integrations/veeva-vault",
               "api-integrations/vercel",
+              "api-integrations/vercel-mcp",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",
