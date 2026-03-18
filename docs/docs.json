@@ -792,6 +792,7 @@
               "integrations/all/skio",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/slack-mcp",
               "api-integrations/tally",
               "api-integrations/telegram",
               "api-integrations/timify",

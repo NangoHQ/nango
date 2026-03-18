@@ -15302,6 +15302,30 @@ slack:
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 
+slack-mcp:
+    display_name: Slack (MCP)
+    categories:
+        - popular
+        - productivity
+        - communication
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: static
+    authorization_url: https://slack.com/oauth/v2_user/authorize
+    token_url: https://slack.com/api/oauth.v2.user.access
+    scope_separator: ','
+    alternate_access_token_response_path: authed_user.access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://mcp.slack.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/slack-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/slack-mcp/how-to-register-your-own-slack-mcp-oauth-app
+
 smartlead-ai:
     display_name: Smartlead.ai
     categories:
