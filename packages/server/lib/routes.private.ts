@@ -251,7 +251,7 @@ web.route('/flows/pre-built/upgrade').put(webAuth, can({ action: 'update', resou
 web.route('/flows/:id/disable').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowDisable);
 web.route('/flows/:id/enable').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowFrequency);
-web.route('/flows/:id/download').get(webAuth, getFlowDownload);
+web.route('/flows/:id/download').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowDownload);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 // Getting Started
