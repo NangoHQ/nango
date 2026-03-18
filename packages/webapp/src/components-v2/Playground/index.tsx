@@ -1,4 +1,4 @@
-import { Braces, CheckCircle2, ExternalLink, Info, Play, Plus, RotateCcw, X, XCircle } from 'lucide-react';
+import { Braces, CheckCircle2, ExternalLink, Info, Play, Plus, RotateCcw, Trash2, X, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -21,14 +21,6 @@ import { cn } from '@/utils/utils';
 
 import type { GetOperation, NangoSyncConfig, SearchOperations } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
-
-interface RunResult {
-    success: boolean;
-    data: unknown;
-    durationMs: number;
-    operationId?: string;
-    state?: string;
-}
 
 interface InputField {
     name: string;
@@ -74,6 +66,9 @@ export const Playground: React.FC = () => {
     const setPlaygroundFunction = useStore((s) => s.setPlaygroundFunction);
     const inputValues = useStore((s) => s.playground.inputValues);
     const setPlaygroundInputValue = useStore((s) => s.setPlaygroundInputValue);
+    const result = useStore((s) => s.playground.result);
+    const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
+    const resetPlayground = useStore((s) => s.resetPlayground);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -179,7 +174,6 @@ export const Playground: React.FC = () => {
 
     const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
     const [running, setRunning] = useState(false);
-    const [result, setResult] = useState<RunResult | null>(null);
     const [inputErrors, setInputErrors] = useState<Record<string, string>>({});
     const abortRef = useRef<AbortController | null>(null);
 
@@ -207,17 +201,17 @@ export const Playground: React.FC = () => {
         (val: string) => {
             setPlaygroundIntegration(val);
             setInputErrors({});
-            setResult(null);
+            setPlaygroundResult(null);
         },
-        [setPlaygroundIntegration]
+        [setPlaygroundIntegration, setPlaygroundResult]
     );
 
     const handleConnectionChange = useCallback(
         (val: string) => {
             setPlaygroundConnection(val);
-            setResult(null);
+            setPlaygroundResult(null);
         },
-        [setPlaygroundConnection]
+        [setPlaygroundConnection, setPlaygroundResult]
     );
 
     const handleFunctionChange = useCallback(
@@ -227,9 +221,9 @@ export const Playground: React.FC = () => {
                 setPlaygroundFunction(val, flow.resolvedType);
             }
             setInputErrors({});
-            setResult(null);
+            setPlaygroundResult(null);
         },
-        [allFlows, setPlaygroundFunction]
+        [allFlows, setPlaygroundFunction, setPlaygroundResult]
     );
 
     const clearInputError = useCallback((name: string) => {
@@ -250,7 +244,7 @@ export const Playground: React.FC = () => {
         const controller = new AbortController();
         abortRef.current = controller;
         setRunning(true);
-        setResult(null);
+        setPlaygroundResult(null);
         setInputErrors({});
 
         const runStartTime = Date.now();
@@ -328,7 +322,7 @@ export const Playground: React.FC = () => {
 
                 if (Object.keys(errors).length > 0) {
                     setInputErrors(errors);
-                    setResult({ success: false, state: 'invalid_input', data: { error: 'Invalid input', fields: errors }, durationMs: 0 });
+                    setPlaygroundResult({ success: false, state: 'invalid_input', data: { error: 'Invalid input', fields: errors }, durationMs: 0 });
                     return;
                 }
                 response = await fetch(`${baseUrl}/action/trigger`, {
@@ -440,6 +434,12 @@ export const Playground: React.FC = () => {
                 return json.data;
             };
 
+            // If the trigger failed immediately (non-2xx), skip polling and surface the error right away.
+            if (!response.ok) {
+                setPlaygroundResult({ success: false, data: triggerData, durationMs: triggerDurationMs });
+                return;
+            }
+
             // If logs are enabled, prefer showing the actual operation logs/results.
             let operation = null as SearchOperations['Success']['data'][number] | null;
             const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
@@ -451,11 +451,7 @@ export const Playground: React.FC = () => {
             }
 
             if (!operation) {
-                // The trigger API can return HTTP 200 with { success: true } even when the sync
-                // failed to start (e.g. another run is already in progress). Surface the real error.
-                const triggerObj = triggerData && typeof triggerData === 'object' ? (triggerData as Record<string, unknown>) : null;
-                const triggerSuccess = response.ok && triggerObj?.['error'] == null;
-                setResult({ success: triggerSuccess, data: triggerData, durationMs: triggerDurationMs });
+                setPlaygroundResult({ success: false, data: triggerData, durationMs: triggerDurationMs });
                 return;
             }
 
@@ -503,13 +499,13 @@ export const Playground: React.FC = () => {
                 resultData = pl;
             }
 
-            setResult({ success, state, data: resultData, durationMs, operationId });
+            setPlaygroundResult({ success, state, data: resultData, durationMs, operationId });
         } catch (err: unknown) {
             if (err instanceof Error && err.name === 'AbortError') {
-                setResult(null);
+                setPlaygroundResult(null);
             } else {
                 const durationMs = Date.now() - runStartTime;
-                setResult({ success: false, data: { error: 'Network error' }, durationMs });
+                setPlaygroundResult({ success: false, data: { error: 'Network error' }, durationMs });
             }
         } finally {
             setRunning(false);
@@ -524,7 +520,8 @@ export const Playground: React.FC = () => {
         baseUrl,
         env,
         inputFields,
-        inputValues
+        inputValues,
+        setPlaygroundResult
     ]);
 
     const handleCancel = useCallback(() => {
@@ -584,9 +581,14 @@ export const Playground: React.FC = () => {
                                 Quickly run any function.
                             </p>
                         </div>
-                        <Button variant="ghost" size="icon" className="size-7 mt-0.5" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
-                            <X className="size-4" />
-                        </Button>
+                        <div className="flex items-center gap-1 mt-0.5">
+                            <Button variant="ghost" size="icon" className="size-7" onClick={resetPlayground} aria-label="Reset playground">
+                                <Trash2 className="size-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="size-7" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                                <X className="size-4" />
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Content — scroll is handled by SheetContent scrollable wrapper */}

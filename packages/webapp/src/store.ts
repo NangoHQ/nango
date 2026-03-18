@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 import { PROD_ENVIRONMENT_NAME } from './constants';
 import storage, { LocalStorageKeys } from './utils/local-storage';
@@ -10,6 +11,14 @@ interface Env {
 
 export type PlaygroundFunctionType = 'action' | 'sync' | null;
 
+export interface PlaygroundResult {
+    success: boolean;
+    data: unknown;
+    durationMs: number;
+    operationId?: string;
+    state?: string;
+}
+
 export interface PlaygroundState {
     isOpen: boolean;
     integration: string | null;
@@ -17,6 +26,7 @@ export interface PlaygroundState {
     function: string | null;
     functionType: PlaygroundFunctionType;
     inputValues: Record<string, string>;
+    result: PlaygroundResult | null;
 }
 
 interface State {
@@ -37,92 +47,114 @@ interface State {
     setPlaygroundFunction: (name: string | null, type: PlaygroundFunctionType) => void;
     setPlaygroundInputValues: (values: Record<string, string>) => void;
     setPlaygroundInputValue: (name: string, value: string) => void;
+    setPlaygroundResult: (result: PlaygroundResult | null) => void;
+    resetPlayground: () => void;
     setPlaygroundState: (value: PlaygroundState) => void;
 }
 
-export const useStore = create<State>((set, get) => ({
-    env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
-    envs: [{ name: 'dev' }, { name: PROD_ENVIRONMENT_NAME }],
-    baseUrl: 'https://api.nango.dev',
-    showGettingStarted: true,
-    debugMode: false,
-    playground: {
-        isOpen: false,
-        integration: null,
-        connection: null,
-        function: null,
-        functionType: null,
-        inputValues: {}
-    },
+const defaultPlayground: PlaygroundState = {
+    isOpen: false,
+    integration: null,
+    connection: null,
+    function: null,
+    functionType: null,
+    inputValues: {},
+    result: null
+};
 
-    setEnv: (value) => {
-        set({ env: value });
-    },
+export const useStore = create<State>()(
+    persist(
+        (set, get) => ({
+            env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
+            envs: [{ name: 'dev' }, { name: PROD_ENVIRONMENT_NAME }],
+            baseUrl: 'https://api.nango.dev',
+            showGettingStarted: true,
+            debugMode: false,
+            playground: defaultPlayground,
 
-    setEnvs: (envs: Env[]) => {
-        set({ envs });
-    },
+            setEnv: (value) => {
+                set({ env: value });
+            },
 
-    getEnvs: () => {
-        return get().envs;
-    },
+            setEnvs: (envs: Env[]) => {
+                set({ envs });
+            },
 
-    setBaseUrl: (value) => {
-        set({ baseUrl: value });
-    },
+            getEnvs: () => {
+                return get().envs;
+            },
 
-    setShowGettingStarted: (value) => {
-        set({ showGettingStarted: value });
-    },
+            setBaseUrl: (value) => {
+                set({ baseUrl: value });
+            },
 
-    setDebugMode: (value) => {
-        set({ debugMode: value });
-    },
+            setShowGettingStarted: (value) => {
+                set({ showGettingStarted: value });
+            },
 
-    setPlaygroundOpen: (value) => {
-        set((s) => ({ playground: { ...s.playground, isOpen: value } }));
-    },
+            setDebugMode: (value) => {
+                set({ debugMode: value });
+            },
 
-    setPlaygroundIntegration: (value) => {
-        set((s) => ({
-            playground: {
-                ...s.playground,
-                integration: value,
-                connection: null,
-                function: null,
-                functionType: null,
-                inputValues: {}
+            setPlaygroundOpen: (value) => {
+                set((s) => ({ playground: { ...s.playground, isOpen: value } }));
+            },
+
+            setPlaygroundIntegration: (value) => {
+                set((s) => ({
+                    playground: {
+                        ...s.playground,
+                        integration: value,
+                        connection: null,
+                        function: null,
+                        functionType: null,
+                        inputValues: {}
+                    }
+                }));
+            },
+
+            setPlaygroundConnection: (value) => {
+                set((s) => ({ playground: { ...s.playground, connection: value } }));
+            },
+
+            setPlaygroundFunction: (name, type) => {
+                set((s) => ({
+                    playground: {
+                        ...s.playground,
+                        function: name,
+                        functionType: type,
+                        inputValues: {}
+                    }
+                }));
+            },
+
+            setPlaygroundInputValues: (values) => {
+                set((s) => ({ playground: { ...s.playground, inputValues: values } }));
+            },
+
+            setPlaygroundInputValue: (name, value) => {
+                set((s) => ({ playground: { ...s.playground, inputValues: { ...s.playground.inputValues, [name]: value } } }));
+            },
+
+            setPlaygroundResult: (result) => {
+                set((s) => ({ playground: { ...s.playground, result } }));
+            },
+
+            resetPlayground: () => {
+                set((s) => ({ playground: { ...defaultPlayground, isOpen: s.playground.isOpen } }));
+            },
+
+            setPlaygroundState: (value) => {
+                set({ playground: value });
             }
-        }));
-    },
-
-    setPlaygroundConnection: (value) => {
-        set((s) => ({ playground: { ...s.playground, connection: value } }));
-    },
-
-    setPlaygroundFunction: (name, type) => {
-        set((s) => ({
-            playground: {
-                ...s.playground,
-                function: name,
-                functionType: type,
-                inputValues: {}
-            }
-        }));
-    },
-
-    setPlaygroundInputValues: (values) => {
-        set((s) => ({ playground: { ...s.playground, inputValues: values } }));
-    },
-
-    setPlaygroundInputValue: (name, value) => {
-        set((s) => ({ playground: { ...s.playground, inputValues: { ...s.playground.inputValues, [name]: value } } }));
-    },
-
-    setPlaygroundState: (value) => {
-        set({ playground: value });
-    }
-}));
+        }),
+        {
+            name: LocalStorageKeys.Playground,
+            // Only persist the playground slice; skip transient UI state like envs/baseUrl
+            partialize: (s) => ({ playground: { ...s.playground, isOpen: false } })
+        }
+    )
+);
 
 export const queryClient = new QueryClient({
     defaultOptions: {

@@ -23,7 +23,8 @@ export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
         connection: override.connection ?? null,
         function: override.functionName ?? null,
         functionType: override.functionType ?? null,
-        inputValues: override.inputValues ?? {}
+        inputValues: override.inputValues ?? {},
+        result: null
     };
 
     useStore.getState().setPlaygroundState(next);
