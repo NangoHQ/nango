@@ -6,20 +6,20 @@ import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@na
 import { getRuntimeAdapter } from '../../runtime/runtimes.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { NangoProps, RuntimeContext } from '@nangohq/types';
+import type { NangoProps, RoutingContext } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 export async function startScript({
     taskId,
     nangoProps,
-    runtimeContext,
+    routingContext,
     input,
     logCtx
 }: {
     taskId: string;
     nangoProps: NangoProps;
-    runtimeContext: RuntimeContext;
+    routingContext: RoutingContext;
     input?: JsonValue | undefined;
     logCtx: LogContext;
 }): Promise<Result<void>> {
@@ -50,7 +50,7 @@ export async function startScript({
             throw new Error(`No team provided (instead ${nangoProps.team})`);
         }
 
-        const runtimeAdapter = await getRuntimeAdapter({ nangoProps, runtimeContext });
+        const runtimeAdapter = await getRuntimeAdapter({ nangoProps, routingContext });
         if (runtimeAdapter.isErr()) {
             throw runtimeAdapter.error;
         }
@@ -58,7 +58,8 @@ export async function startScript({
             taskId,
             nangoProps,
             code: script,
-            codeParams: (input as object) || {}
+            codeParams: (input as object) || {},
+            routingContext
         });
 
         if (res.isErr()) {
