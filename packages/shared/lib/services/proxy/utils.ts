@@ -71,16 +71,19 @@ export function getAxiosConfiguration({
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
         url,
-        headers,
-        beforeRedirect: (options: Record<string, any>) => {
+        headers
+    };
+
+    if (!proxyConfig.disableHeaderForwarding) {
+        axiosConfig.beforeRedirect = (options: Record<string, any>) => {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
                     options['headers'][key] = headers[key];
                 }
             });
-        }
-    };
+        };
+    }
 
     if (proxyConfig.responseType) {
         axiosConfig.responseType = proxyConfig.responseType;
@@ -139,7 +142,7 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
+    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, disableHeaderForwarding = false } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -204,7 +207,8 @@ export function getProxyConfiguration({
         decompress: externalConfig.decompress === 'true' || externalConfig.decompress === true,
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
-        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+        disableHeaderForwarding
     };
 
     return Ok(configBody);

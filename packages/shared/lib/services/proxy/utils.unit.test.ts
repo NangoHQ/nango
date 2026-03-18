@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ProxyError, buildProxyHeaders, buildProxyURL, getProxyConfiguration } from './utils.js';
+import { ProxyError, buildProxyHeaders, buildProxyURL, getAxiosConfiguration, getProxyConfiguration } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
@@ -975,6 +975,41 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe('https://my-secret-key.example.com/api/test');
+    });
+});
+
+describe('getAxiosConfiguration', () => {
+    it('should set beforeRedirect by default', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
+    });
+
+    it('should not set beforeRedirect when disableHeaderForwarding is true', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            disableHeaderForwarding: true
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeUndefined();
     });
 });
 

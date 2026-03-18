@@ -62,7 +62,8 @@ export const FILTER_HEADERS: string[] = [
     'content-length',
     'accept',
     'base-url-override',
-    'retry-on'
+    'retry-on',
+    'disable-header-forwarding'
 ];
 
 export function isAxiosDefaultContentTypeForMockIdentity(headerKey: string, headerValue: unknown): boolean {
