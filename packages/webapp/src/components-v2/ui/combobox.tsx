@@ -89,7 +89,9 @@ export function Combobox<TValue extends string = string>({
                     type="button"
                     disabled={disabled}
                     className={cn(
-                        'text-[14px] cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-1.5 text-body-medium-regular leading-[160%] tracking-normal text-text-secondary outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
+                        'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
+                        selectedOption ? 'text-text-primary' : 'text-text-secondary',
+                        'hover:text-text-primary',
                         className
                     )}
                 >
@@ -144,8 +146,9 @@ export function Combobox<TValue extends string = string>({
                                     disabled={opt.disabled}
                                     onSelect={() => onValueChange(opt.value)}
                                     className={cn(
-                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary',
-                                        selected && 'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated'
+                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-primary',
+                                        selected &&
+                                            'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated text-text-secondary hover:text-text-primary'
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-2">
@@ -159,7 +162,7 @@ export function Combobox<TValue extends string = string>({
                                                 {selected ? <Check className="size-3.5" /> : null}
                                             </span>
                                         ) : null}
-                                        <div className="flex min-w-0 items-center gap-1 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal text-text-secondary">
+                                        <div className="flex min-w-0 items-center gap-1 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal">
                                             {renderOption ? renderOption(opt, selected) : <span className="truncate">{opt.label}</span>}
                                         </div>
                                     </div>

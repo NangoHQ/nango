@@ -19,7 +19,7 @@ import { apiFetch } from '@/utils/api';
 import { getLogsUrl } from '@/utils/logs';
 import { cn } from '@/utils/utils';
 
-import type { GetOperation, NangoSyncConfig, SearchMessages, SearchOperations } from '@nangohq/types';
+import type { GetOperation, NangoSyncConfig, SearchOperations } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 interface RunResult {
@@ -78,7 +78,9 @@ export const Playground: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const showRecordsButton: boolean = false;
+    // TODO: set to true once the records list page is ready
+    const showRecordsButton = false;
+
     // Auto-close the sheet when the route changes (e.g. user clicks a navigation link inside the sheet)
     useEffect(() => {
         if (playgroundOpen) {
@@ -438,20 +440,6 @@ export const Playground: React.FC = () => {
                 return json.data;
             };
 
-            const fetchMessages = async (operationId: string) => {
-                const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
-                    method: 'POST',
-                    body: JSON.stringify({ operationId, limit: 100 } satisfies SearchMessages['Body']),
-                    signal: controller.signal
-                });
-
-                if (!res.ok) {
-                    return null;
-                }
-
-                return (await res.json()) as SearchMessages['Success'];
-            };
-
             // If logs are enabled, prefer showing the actual operation logs/results.
             let operation = null as SearchOperations['Success']['data'][number] | null;
             const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
@@ -463,7 +451,11 @@ export const Playground: React.FC = () => {
             }
 
             if (!operation) {
-                setResult({ success: response.ok, data: triggerData, durationMs: triggerDurationMs });
+                // The trigger API can return HTTP 200 with { success: true } even when the sync
+                // failed to start (e.g. another run is already in progress). Surface the real error.
+                const triggerObj = triggerData && typeof triggerData === 'object' ? (triggerData as Record<string, unknown>) : null;
+                const triggerSuccess = response.ok && triggerObj?.['error'] == null;
+                setResult({ success: triggerSuccess, data: triggerData, durationMs: triggerDurationMs });
                 return;
             }
 
@@ -481,8 +473,6 @@ export const Playground: React.FC = () => {
                 operationDetails = await fetchOperation(operationId);
             }
 
-            const messages = await fetchMessages(operationId);
-
             const opDurationMs =
                 operationDetails?.durationMs ??
                 (operationDetails?.startedAt && operationDetails.endedAt
@@ -499,28 +489,21 @@ export const Playground: React.FC = () => {
                 : // best-effort runtime when still running / timing out
                   Date.now() - triggerStartTime;
 
-            const logsPayload = {
-                operationId,
-                state,
-                durationMs,
-                // For actions the trigger response is the return value; keep it for convenience.
-                ...(playgroundFunctionType === 'action' ? { response: triggerData } : {}),
-                messages: (messages?.data ?? []).map((m) => {
-                    return {
-                        level: m.level,
-                        type: m.type,
-                        message: m.message,
-                        createdAt: m.createdAt,
-                        ...(m.error ? { error: m.error } : {}),
-                        ...(m.persistResults ? { persistResults: m.persistResults } : {}),
-                        ...(m.meta ? { meta: m.meta } : {}),
-                        ...(m.request ? { request: m.request } : {}),
-                        ...(m.response ? { response: m.response } : {})
-                    };
-                })
-            };
+            // Mirror the payload assembly from Logs/Operation/Show.tsx
+            // Fall back to the found operation row if details fetch failed
+            const op = operationDetails ?? operation;
+            let resultData: unknown = null;
+            if (op?.meta || op?.request || op?.response || op?.error) {
+                const pl: Record<string, unknown> = op.meta ? { ...op.meta } : {};
+                if (op.request) pl.request = op.request;
+                if (op.response) pl.response = op.response;
+                if (op.error) {
+                    pl.error = { message: op.error.message, ...(op.error.payload ? { payload: op.error.payload } : {}) };
+                }
+                resultData = pl;
+            }
 
-            setResult({ success, state, data: logsPayload, durationMs, operationId });
+            setResult({ success, state, data: resultData, durationMs, operationId });
         } catch (err: unknown) {
             if (err instanceof Error && err.name === 'AbortError') {
                 setResult(null);
@@ -579,13 +562,16 @@ export const Playground: React.FC = () => {
                 <SheetContent
                     side="right"
                     overlayClassName="hidden"
+                    insetTop={108}
+                    insetBottom={44}
+                    insetRight={24}
                     onInteractOutside={(e) => e.preventDefault()}
                     onPointerDownOutside={(e) => e.preventDefault()}
                     onFocusOutside={(e) => e.preventDefault()}
                     className={cn(
                         'bg-bg-elevated dark:bg-bg-elevated text-text-primary [border:0.5px_solid_var(--colors-border-border-muted,#2A2B2F)] rounded-[4px] [box-shadow:0_8px_24px_0_rgba(0,0,0,0.16)] p-6',
                         'flex flex-col items-start gap-[10px]',
-                        'inset-y-auto bottom-auto top-20 right-6 h-[748px] w-[537px] max-w-none sm:max-w-none',
+                        'w-[537px] max-w-none sm:max-w-none',
                         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
                         '[&>button]:hidden'
                     )}
@@ -593,7 +579,7 @@ export const Playground: React.FC = () => {
                     {/* Header */}
                     <div className="flex w-full shrink-0 items-start justify-between pb-8">
                         <div className="min-w-0">
-                            <h2 className="text-text-primary text-heading-medium font-medium text-[20px] pb-4">Playground</h2>
+                            <h2 className="text-text-primary text-heading-medium font-medium text-[20px] pb-2">Playground</h2>
                             <p className="text-body-regular-medium text-text-secondary text-body-medium-medium text-[14px] font-400 line-height-[160%]">
                                 Quickly run any function.
                             </p>
@@ -603,8 +589,8 @@ export const Playground: React.FC = () => {
                         </Button>
                     </div>
 
-                    {/* Content */}
-                    <div className="flex min-h-0 w-full flex-1 flex-col gap-6 overflow-y-auto">
+                    {/* Content — scroll is handled by SheetContent scrollable wrapper */}
+                    <div className="flex w-full flex-col gap-6">
                         {/* Select rows */}
                         <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-6">
                             <label className="text-text-primary text-label-large">Integration</label>
@@ -625,7 +611,7 @@ export const Playground: React.FC = () => {
                                         <>
                                             <IntegrationLogo
                                                 provider={integration.provider}
-                                                className="size-7 rounded-[3.7px] p-[3.48px] !bg-transparent !border-transparent"
+                                                className="p-0 size-6 rounded-[3.7px] !bg-transparent !border-transparent"
                                             />
                                             <span className="truncate">{integration.display_name || integration.unique_key}</span>
                                         </>
@@ -773,7 +759,7 @@ export const Playground: React.FC = () => {
                                             <Alert variant="info" className="px-3 py-2" actionsBelow>
                                                 <Info className="size-4" />
                                                 <AlertDescription className="text-body-small-regular">
-                                                    Sync inputs are read from connection metadata. Playground is read-only.
+                                                    Sync inputs are read from the connection metadata, edited via the Nango API.
                                                 </AlertDescription>
                                                 <AlertActions>
                                                     {playgroundIntegration && playgroundConnection && (
@@ -826,6 +812,7 @@ export const Playground: React.FC = () => {
                                                                             ? JSON.stringify(rawValue, null, 2)
                                                                             : 'Value too large to display'
                                                                     }
+                                                                    constrainHeight={false}
                                                                 />
                                                             ) : (
                                                                 <p className="text-text-tertiary text-[12px]">
@@ -838,7 +825,7 @@ export const Playground: React.FC = () => {
                                             ) : !playgroundIntegration || !playgroundConnection ? (
                                                 <div className="text-text-tertiary text-body-small-regular">Select a connection to view its metadata.</div>
                                             ) : (
-                                                <div className="text-text-tertiary text-body-small-regular">No metadata fields defined.</div>
+                                                <div className="text-text-tertiary text-body-small-regular">This sync doesn&apos;t take inputs.</div>
                                             )}
                                         </>
                                     ) : (
@@ -955,7 +942,7 @@ export const Playground: React.FC = () => {
                                         </AlertActions>
                                     </Alert>
 
-                                    <CodeBlock language="json" displayLanguage="JSON" icon={<Braces />} code={resultJson} />
+                                    <CodeBlock language="json" displayLanguage="JSON" icon={<Braces />} code={resultJson} constrainHeight={false} />
                                 </div>
                             </>
                         )}
