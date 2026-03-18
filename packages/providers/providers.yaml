@@ -17308,6 +17308,30 @@ vercel:
             example: 'vcp_6ppUxFRd****r1sc53a'
             doc_section: '#step-1-finding-your-token'
 
+vercel-mcp:
+    display_name: Vercel (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: static
+    authorization_url: https://vercel.com/oauth/authorize
+    token_url: https://vercel.com/api/login/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.vercel.com
+    docs: https://nango.dev/docs/api-integrations/vercel-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/vercel-mcp/how-to-register-your-own-vercel-mcp-oauth-app
+
 vimeo:
     display_name: Vimeo (OAuth)
     categories:
