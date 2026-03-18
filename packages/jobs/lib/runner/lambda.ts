@@ -5,6 +5,7 @@ import {
     PutScalingPolicyCommand,
     RegisterScalableTargetCommand
 } from '@aws-sdk/client-application-auto-scaling';
+import { CloudWatchLogsClient, CreateLogGroupCommand, PutRetentionPolicyCommand } from '@aws-sdk/client-cloudwatch-logs';
 import {
     CreateAliasCommand,
     CreateFunctionCommand,
@@ -29,6 +30,7 @@ export const logger = getLogger('Lambda');
 
 const lambdaClient = new LambdaClient();
 const applicationAutoScalingClient = new ApplicationAutoScalingClient();
+const cloudwatchLogsClient = new CloudWatchLogsClient();
 
 export function getFunctionName(node: Node): string {
     return `${node.routingId}-${node.id}`;
@@ -59,6 +61,16 @@ class Lambda {
         setImmediate(async () => {
             const name = getFunctionName(node);
             try {
+                const logGroupName = `/aws/lambda/${name}`; //this is the default log group name for Lambda
+                const createLogGroupCommand = new CreateLogGroupCommand({
+                    logGroupName
+                });
+                await cloudwatchLogsClient.send(createLogGroupCommand);
+                const putRetentionPolicyCommand = new PutRetentionPolicyCommand({
+                    logGroupName,
+                    retentionInDays: envs.LAMBDA_DEFAULT_LOG_RETENTION_DAYS
+                });
+                await cloudwatchLogsClient.send(putRetentionPolicyCommand);
                 const createFunctionCommand = new CreateFunctionCommand({
                     FunctionName: name,
                     Role: envs.LAMBDA_EXECUTION_ROLE_ARN,
