@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.46] - 2026-03-18
+
+### Added
+
+- *(runner-sdk)* Deprecate `endpoints` in functions (#5647) by @kaposke
+- *(server)* NAN-2184 role-based authorization system (#5644) by @pfreixes
+- *(integrations)* Add support for slack mcp (#5655) by @hassan254-prog
+- *(integrations)* Add support for vercel mcp (#5660) by @hassan254-prog
+- *(integrations)* Add support for ms word and powerpoint (#5661) by @hassan254-prog
+- *(integrations)* Add support for pleo (#5662) by @hassan254-prog
+- *(integrations)* Add support for shopworks (#5665) by @hassan254-prog
+- Add features to sync config table (#5652) by @TBonnin
+- Detect features in CLI and pass to /deploy endpoint   (#5653) by @TBonnin
+
+### Changed
+
+- Dev update - deprecation notice for `schema.ts` and `schema.json` (#5650) by @SapneshNaik
+- Update data validation guide for `schema.ts`/`schema.json` deprecation (#5651) by @SapneshNaik
+- Document function concurrency and sync variant limits (#5613) by @bastienbeurier
+- Increase max concurrency limits (#5667) by @TBonnin
+
+### Fixed
+
+- *(autodelete)* Don't filter out entries with count=0 (#5635) by @TBonnin
+- Revert function concurrency metric (#5638) by @TBonnin
+- *(lambda)* Node routing overrides (#5649) by @rossmcewan
+- *(lambda)* Set log group retention (#5659) by @rossmcewan
+- *(query)* `deleteOutdatedRecords` transaction handling (#5656) by @agusayerza
+
 ## [v0.69.45] - 2026-03-17
 
 ### Added
@@ -6172,6 +6201,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.46]: https://github.com/NangoHQ/nango/compare/v0.69.45..v0.69.46
 [v0.69.45]: https://github.com/NangoHQ/nango/compare/v0.69.44..v0.69.45
 [v0.69.44]: https://github.com/NangoHQ/nango/compare/v0.69.43..v0.69.44
 [v0.69.43]: https://github.com/NangoHQ/nango/compare/v0.69.42..v0.69.43
