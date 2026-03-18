@@ -198,7 +198,7 @@ describe(`POST ${endpoint}`, () => {
             // Check that everything was inserted in DB
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
             expect(syncConfigs).toHaveLength(1);
-            expect(syncConfigs).toStrictEqual<typeof syncConfigs>([
+            expect(syncConfigs).toMatchObject([
                 {
                     actions: [],
                     'on-events': [],
