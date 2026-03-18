@@ -2,8 +2,8 @@ import { useUser } from './useUser';
 
 import type { AllowedPermissions } from '@nangohq/types';
 
-type Action = 'create' | 'read' | 'update' | 'delete' | '*';
-type Scope = 'production' | 'non-production' | 'global';
+export type Action = 'create' | 'read' | 'update' | 'delete' | '*';
+export type Scope = 'production' | 'non-production' | 'global';
 
 export function usePermissions(): { can: (action: Action, scope: Scope, resource: string) => boolean; permissions: AllowedPermissions } {
     const { user } = useUser();
