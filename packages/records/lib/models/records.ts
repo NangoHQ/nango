@@ -905,8 +905,8 @@ export async function deleteOutdatedRecords({
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
     let partition: string | undefined = undefined;
-    const deletedIds: string[] = [];
     try {
+        const deletedIds: string[] = [];
         let hasMore = true;
         while (hasMore) {
             const batchResult = await retry(
@@ -964,7 +964,7 @@ export async function deleteOutdatedRecords({
                     maxAttempts: 3,
                     delayMs: 500,
                     retryOnError: (err) => {
-                        if ('code' in err) {
+                        if (err !== null && typeof err === 'object' && 'code' in err) {
                             const errorCode = (err as { code: string }).code;
                             return errorCode === '40P01'; // deadlock_detected
                         }
@@ -992,11 +992,7 @@ export async function deleteOutdatedRecords({
         const e = new Error(`Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, generation ${generation}`, {
             cause: err
         });
-        span.setTag('error', err);
-        if (deletedIds.length > 0) {
-            logger.error(`${e.message}. Partial progress: ${deletedIds.length} records deleted before failure.`);
-            return Ok(deletedIds);
-        }
+        span.setTag('error', e);
         return Err(e);
     } finally {
         span.finish();
