@@ -374,7 +374,8 @@ async function verifyAwsCredentials({
             connection_config,
             credentials: credentialsForVerification,
             metadata: {}
-        })
+        }),
+        getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
     });
 
     const result = await proxy.request();

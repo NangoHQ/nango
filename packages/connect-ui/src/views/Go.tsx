@@ -141,6 +141,7 @@ export const Go: React.FC = () => {
 
     const preconfiguredCredentials = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.credentials || {} : {};
     const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+    const preconfigured = { ...preconfiguredCredentials, ...preconfiguredParams };
     const initialExternalId = useMemo(() => {
         const value = (preconfiguredParams['external_id'] as string | undefined) || (preconfiguredCredentials['external_id'] as string | undefined);
         return value && value.length > 0 ? value : generateExternalId();
@@ -186,9 +187,12 @@ export const Go: React.FC = () => {
             externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
         };
         if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-            navigator.clipboard.writeText(awsExternalId).then(onSuccess).catch((err) => {
-                console.error('Failed to copy to clipboard:', err);
-            });
+            navigator.clipboard
+                .writeText(awsExternalId)
+                .then(onSuccess)
+                .catch((err: unknown) => {
+                    console.error('Failed to copy to clipboard:', err);
+                });
         } else {
             // Fallback for iframes or older browsers where Clipboard API is unavailable
             const textarea = document.createElement('textarea');
