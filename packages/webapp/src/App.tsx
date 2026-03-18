@@ -7,6 +7,7 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
+import { PermissionRoute } from './components/PermissionRoute';
 import { PrivateRoute } from './components/PrivateRoute';
 import { useMeta } from './hooks/useMeta';
 import { useUser } from './hooks/useUser';
@@ -207,14 +208,19 @@ const router = sentryCreateBrowserRouter([
                         handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
                     },
                     {
-                        path: 'team/billing',
-                        element: <TeamBilling />,
-                        handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
-                    },
-                    {
                         path: 'user-settings',
                         element: <UserSettings />,
                         handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+                    },
+                    {
+                        element: <PermissionRoute action="*" scope="global" resource="billing" />,
+                        children: [
+                            {
+                                path: 'team/billing',
+                                element: <TeamBilling />,
+                                handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+                            }
+                        ]
                     }
                 ]
             }
