@@ -440,12 +440,6 @@ export const Playground: React.FC = () => {
                 return json.data;
             };
 
-            // If the trigger failed immediately (non-2xx), skip polling and surface the error right away.
-            if (!response.ok) {
-                setResult({ success: false, data: triggerData, durationMs: triggerDurationMs });
-                return;
-            }
-
             // If logs are enabled, prefer showing the actual operation logs/results.
             let operation = null as SearchOperations['Success']['data'][number] | null;
             const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
@@ -457,7 +451,11 @@ export const Playground: React.FC = () => {
             }
 
             if (!operation) {
-                setResult({ success: false, data: triggerData, durationMs: triggerDurationMs });
+                // The trigger API can return HTTP 200 with { success: true } even when the sync
+                // failed to start (e.g. another run is already in progress). Surface the real error.
+                const triggerObj = triggerData && typeof triggerData === 'object' ? (triggerData as Record<string, unknown>) : null;
+                const triggerSuccess = response.ok && triggerObj?.['error'] == null;
+                setResult({ success: triggerSuccess, data: triggerData, durationMs: triggerDurationMs });
                 return;
             }
 
