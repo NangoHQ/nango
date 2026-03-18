@@ -15,6 +15,6 @@ export default createSync({
         GithubIssue: issueSchema
     },
     exec: async (nango) => {
-        await nango.get({ endpoint: `/nangohq/nango/issues?${from}` });
+        await nango.get({ endpoint: `/nangohq/nango/issues` });
     }
 });

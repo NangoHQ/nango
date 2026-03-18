@@ -19,7 +19,7 @@ export default createSync({
     }),
     exec: async (nango) => {
         const checkpoint = await nango.getCheckpoint();
-        const from = checkpoint ? `from=checkpoint.lastSyncedIssueId` : '';
+        const from = checkpoint ? `from=${checkpoint.lastSyncedIssueId}` : '';
         await nango.get({ endpoint: `/nangohq/nango/issues?${from}` });
         await nango.saveCheckpoint({ lastSyncedIssueId: '123' });
     }
