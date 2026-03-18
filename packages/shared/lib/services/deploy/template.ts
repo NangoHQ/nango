@@ -119,6 +119,7 @@ export async function deployTemplate({
         webhook_subscriptions: null,
         models_json_schema: template.json_schema,
         sdk_version: template.sdk_version,
+        features: template.features,
         updated_at: new Date(),
         sync_type: 'sync_type' in template ? template.sync_type : null
     };
@@ -251,6 +252,7 @@ export async function upgradeTemplate({
         track_deletes: template.track_deletes === true,
         models: template.returns,
         sdk_version: template.sdk_version,
+        features: template.features,
         models_json_schema: template.json_schema,
         input: template.input || null,
         runs: template.type === 'sync' ? template.runs! : null

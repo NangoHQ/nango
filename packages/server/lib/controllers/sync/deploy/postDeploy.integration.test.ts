@@ -226,6 +226,7 @@ describe(`POST ${endpoint}`, () => {
                             type: 'sync',
                             version: '1',
                             webhookSubscriptions: [],
+                            features: [],
                             json_schema: {
                                 definitions: {
                                     Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },

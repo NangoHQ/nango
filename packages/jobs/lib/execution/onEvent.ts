@@ -96,6 +96,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             pre_built: false,
             sync_type: null,
             sdk_version: task.sdkVersion,
+            features: [],
             created_at: new Date(),
             updated_at: new Date()
         };
