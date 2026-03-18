@@ -22,14 +22,17 @@ import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
 
 import type { JSONSchema7 } from 'json-schema';
 
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
+    const { toast } = useToast();
 
     const env = useStore((state) => state.env);
     const debugMode = useStore((state) => state.debugMode);
@@ -79,8 +82,21 @@ export const FunctionsOne: React.FC = () => {
         if (!func || !func.enabled || !func.id) {
             return;
         }
-        await apiFlowDownload(env, { id: func.id }, func.name);
-    }, [func, env]);
+        try {
+            await apiFlowDownload(env, { id: func.id }, func.name);
+            toast({
+                title: 'Downloading function code',
+                variant: 'success'
+            });
+        } catch (err) {
+            const errorCode = err instanceof APIError ? err.json?.error?.code : undefined;
+            toast({
+                title: 'Failed to download function code',
+                description: errorCode ? `Error code: ${errorCode}` : undefined,
+                variant: 'error'
+            });
+        }
+    }, [func, env, toast]);
 
     if (isLoading) {
         return (
