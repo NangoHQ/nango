@@ -315,7 +315,7 @@ export class SyncManagerService {
                     return { success: false, error: new NangoError('no_syncs_found'), response: false };
                 }
 
-                await orchestrator.runSyncCommand({
+                const res = await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
                     syncName: sync.name,
@@ -327,6 +327,11 @@ export class SyncManagerService {
                     initiator,
                     delete_records: deleteRecords
                 });
+                if (res.isErr()) {
+                    const error = new NangoError('sync_trigger_failed', { syncName, orchestratorError: res.error.message });
+                    await logCtx.failed();
+                    return { success: false, error, response: false };
+                }
             }
         } else {
             logCtx = await logContextGetter.create(
@@ -349,7 +354,7 @@ export class SyncManagerService {
                     continue;
                 }
 
-                await orchestrator.runSyncCommand({
+                const res = await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
                     syncName: sync.name,
@@ -361,6 +366,11 @@ export class SyncManagerService {
                     initiator,
                     delete_records: deleteRecords
                 });
+                if (res.isErr()) {
+                    const error = new NangoError('sync_trigger_failed', { syncName: sync.name, orchestratorError: res.error.message });
+                    await logCtx.failed();
+                    return { success: false, error, response: false };
+                }
             }
         }
 

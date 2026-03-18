@@ -216,6 +216,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `No syncs found given the inputs.`;
                 break;
 
+            case 'sync_trigger_failed':
+                this.status = 500;
+                this.message = (this.payload['orchestratorError'] as string | undefined) || `Failed to trigger sync.`;
+                break;
+
             case 'missing_client_id':
                 this.status = 400;
                 this.message = `Missing param 'oauth_client_id'.`;

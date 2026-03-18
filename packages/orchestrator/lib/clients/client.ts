@@ -149,9 +149,13 @@ export class OrchestratorClient {
             }
         });
         if ('error' in res) {
+            // Prefer the inner error message from the orchestrator's JSON response when available,
+            // since res.error.message is a generic HTTP-level string like "POST ... failed with status code 500"
+            const innerError = (res.error.payload as any)?.error;
+            const message = innerError?.message || res.error.message || `Error creating recurring schedule`;
             return Err({
-                name: res.error.code,
-                message: res.error.message || `Error creating recurring schedule`,
+                name: innerError?.code || res.error.code,
+                message,
                 payload: { ...props, response: res.error.payload as any }
             });
         } else {
