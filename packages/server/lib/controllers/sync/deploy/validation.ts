@@ -151,7 +151,9 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        singleDeployMode: z.boolean().optional().default(false),
+        deployMode: z.enum(['all', 'single', 'integration']).optional(),
+        // singleDeployMode is deprecated in favour of deployMode — kept for older CLI versions
+        singleDeployMode: z.boolean().optional(),
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
@@ -159,20 +161,17 @@ const commonValidation = z
     })
     .strict();
 
-export const validation = commonValidation.transform((data) => {
-    return {
-        ...data
-        // onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-    };
-});
+export const validation = commonValidation.transform((data) => ({
+    ...data,
+    deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all')
+}));
 
 export const validationWithNangoYaml = commonValidation
     .extend({
         nangoYamlBody: z.string()
     })
-    .transform((data) => {
-        return {
-            ...data,
-            onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-        };
-    });
+    .transform((data) => ({
+        ...data,
+        deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all'),
+        onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
+    }));

@@ -210,6 +210,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'trial_extension_count':
             case 'trial_end_notified_at':
             case 'trial_expired':
+            case 'fleet_node_routing_override':
             case 'created_at':
             case 'updated_at':
                 break;

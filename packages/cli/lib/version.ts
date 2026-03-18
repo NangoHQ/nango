@@ -1,1 +1,1 @@
-export const NANGO_VERSION = '0.69.43';
+export const NANGO_VERSION = '0.69.45';

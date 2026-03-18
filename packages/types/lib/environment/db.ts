@@ -53,6 +53,7 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
 
     webhook_receive_url: string | null;
     otlp_settings: { endpoint: string; headers: Record<string, string> } | null;
+    is_production: boolean;
 }
 
 export interface DBExternalWebhook extends Timestamps {

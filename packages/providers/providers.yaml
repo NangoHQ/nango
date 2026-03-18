@@ -1630,6 +1630,59 @@ auvik:
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
+avanan:
+    display_name: Avanan
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://${connectionConfig.subdomain}.avanan.net/v1.0/auth
+    token_headers:
+        x-av-app-id: ${credentials.appId}
+        x-av-req-id: ${random}
+        x-av-date: '${now:YYYY-MM-DDTHH:mm:ss}'
+        x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
+    token_response:
+        token: ''
+    token_expires_in_ms: 3_600_000
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.avanan.net
+        headers:
+            x-av-app-id: ${credentials.appId}
+            x-av-token: ${accessToken}
+            x-av-req-id: ${random}
+            x-av-date: '${now:YYYY-MM-DDTHH:mm:ss}'
+            x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${endpoint}${credentials.secretKey})})}'
+    docs: https://nango.dev/docs/api-integrations/avanan
+    docs_connect: https://nango.dev/docs/api-integrations/avanan/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The Avanan API subdomain for your region.
+            example: smart-api-production-1-us
+            suffix: .avanan.net
+            prefix: https://
+            pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        appId:
+            type: string
+            title: Client ID
+            description: Your Avanan Client ID from Avanan Support.
+            example: 9k8m****************ht3w
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-getting-your-client-id-and-secret-key'
+        secretKey:
+            type: string
+            title: Secret Key
+            description: Your Avanan Secret Key from Avanan Support.
+            example: 3k9t****************************0uj5gtrpqlz8x2nvy
+            pattern: '^[a-z0-9]+$'
+            secret: true
+            doc_section: '#step-2-getting-your-client-id-and-secret-key'
+
 availity:
     display_name: Availity
     categories:
@@ -10128,6 +10181,10 @@ microsoft-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
+    webhook_routing_script: microsoftClientCredentialsWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc/connect
     connection_config:
@@ -12843,6 +12900,36 @@ procore:
             optional: true
             example: '598134325779301'
             pattern: '^[0-9]+$'
+
+provenexpert:
+    display_name: ProvenExpert
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.provenexpert.com/api/
+        verification:
+            method: POST
+            endpoints:
+                - v1/rating/summary/get
+    docs: https://nango.dev/docs/api-integrations/provenexpert
+    docs_connect: https://nango.dev/docs/api-integrations/provenexpert/connect
+    credentials:
+        username:
+            type: string
+            title: API ID
+            description: Your ProvenExpert API ID.
+            pattern: '^[A-Za-z0-9]{32}$'
+            example: '3yxp1qwZl5UAmyHZ5qRC2Sbpk5KAlEDZ'
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: API Key
+            description: Your ProvenExpert API Key.
+            secret: true
+            pattern: '^[A-Za-z0-9]{43}$'
+            example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
+            doc_section: '#step-1-getting-your-credentials'
 
 qualtrics:
     display_name: Qualtrics
@@ -16094,6 +16181,30 @@ teamwork:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://nango.dev/docs/integrations/all/teamwork
 
+telegram:
+    display_name: Telegram
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.telegram.org/bot${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /getMe
+    docs: https://nango.dev/docs/api-integrations/telegram
+    docs_connect: https://nango.dev/docs/api-integrations/telegram/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Bot Token
+            description: Your Telegram Bot token from @BotFather.
+            example: 1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ1234567
+            pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-creating-your-telegram-bot'
+
 terraform:
     display_name: Terraform
     categories:
@@ -16400,6 +16511,59 @@ tldv:
             title: API Key
             description: The API key for your tl;dv account
             doc_section: '#step-1-finding-your-api-key'
+
+trigify-io-mcp:
+    display_name: Trigify IO (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://clerk.trigify.io/oauth/authorize
+    token_url: https://clerk.trigify.io/oauth/token
+    registration_url: https://clerk.trigify.io/oauth/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.trigify.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
+
+triple-whale:
+    display_name: Triple Whale
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.triplewhale.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                content-type: application/json
+            endpoints:
+                - /api/v2/users/api-keys/me
+    docs: https://nango.dev/docs/api-integrations/triple-whale
+    docs_connect: https://nango.dev/docs/api-integrations/triple-whale/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Triple Whale API key.
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key'
 
 tsheetsteam:
     display_name: TSheets
@@ -16768,6 +16932,36 @@ typefully:
             title: API Key
             description: The API key for your Typefully account
 
+typefully-v2:
+    display_name: Typefully (API v2)
+    categories:
+        - analytics
+        - communication
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.typefully.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+        retry:
+            at:
+                - 'x-ratelimit-user-reset'
+                - 'x-ratelimit-socialset-reset'
+    docs: https://nango.dev/docs/api-integrations/typefully-v2
+    docs_connect: https://nango.dev/docs/api-integrations/typefully-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Typefully v2 API key.
+            example: 'aNVlyR********************YxeIDz'
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 uber:
     display_name: Uber
     auth_mode: OAUTH2
@@ -17079,16 +17273,16 @@ vercel:
                 content-type: application/json
             endpoints:
                 - /v2/user
-    docs: https://nango.dev/docs/integrations/all/vercel
-    docs_connect: https://nango.dev/docs/integrations/all/vercel
+    docs: https://nango.dev/docs/api-integrations/vercel
+    docs_connect: https://nango.dev/docs/api-integrations/vercel/connect
     credentials:
         apiKey:
             type: string
             title: Token
-            description: The Token for your Vercel account
-            pattern: '^[A-Za-z0-9]{24}$'
-            example: 'oo7W9rGs3liLWhTwmERWrsFs'
-            doc_section: '#step-1-finding-your-api-key'
+            description: The Token for your Vercel account.
+            pattern: '^vcp_[A-Za-z0-9]+$'
+            example: 'vcp_6ppUxFRd****r1sc53a'
+            doc_section: '#step-1-finding-your-token'
 
 vimeo:
     display_name: Vimeo (OAuth)
@@ -17333,6 +17527,32 @@ webex:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/webex
+
+webinarjam:
+    display_name: WebinarJam
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.webinarjam.com/webinarjam
+        query:
+            api_key: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/x-www-form-urlencoded
+            endpoints:
+                - /webinars
+    docs: https://nango.dev/docs/api-integrations/webinarjam
+    docs_connect: https://nango.dev/docs/api-integrations/webinarjam/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your WebinarJam API key.
+            example: b7e2d4f1-8a3c-4e6b-9d5f-1a2b3c4d5e6f
+            format: uuid
+            doc_section: '#step-1-getting-your-api-key'
 
 whatsapp-business:
     display_name: WhatsApp Business

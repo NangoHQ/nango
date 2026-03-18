@@ -3,8 +3,6 @@ import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
-import { Err, Ok } from '../utils/result.js';
-import { printDebug } from '../utils.js';
 import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
 import {
@@ -16,6 +14,8 @@ import {
     TrackDeletesDefinitionError
 } from './utils.js';
 import { zodToNangoModelField } from './zodToNango.js';
+import { Err, Ok } from '../utils/result.js';
+import { printDebug } from '../utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
@@ -24,7 +24,7 @@ import type * as z from 'zod';
 
 const allowed = ['action', 'sync', 'onEvent'];
 
-export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
+export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     printDebug('Rebuilding parsed from js files', debug);
@@ -147,20 +147,22 @@ export function parseSync({
     if (interval instanceof Error) {
         return Err(new InvalidIntervalDefinitionError(filePath, ['createSync', 'frequency']));
     }
-    if (Object.keys(params.models).length !== params.endpoints.length) {
+    if (params.endpoints && Object.keys(params.models).length !== params.endpoints.length) {
         return Err(new EndpointMismatchDefinitionError(filePath, ['createSync', 'endpoints']));
     }
     if (params.syncType === 'incremental' && params.trackDeletes) {
         return Err(new TrackDeletesDefinitionError(filePath, ['createSync', 'trackDeletes']));
     }
 
-    const seen = new Set();
-    for (const endpoint of params.endpoints) {
-        const key = `${endpoint.method} ${endpoint.path}`;
-        if (seen.has(key)) {
-            return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+    if (params.endpoints) {
+        const seen = new Set();
+        for (const endpoint of params.endpoints) {
+            const key = `${endpoint.method} ${endpoint.path}`;
+            if (seen.has(key)) {
+                return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+            }
+            seen.add(key);
         }
-        seen.add(key);
     }
 
     for (const modelName of Object.keys(params.models)) {
@@ -182,7 +184,7 @@ export function parseSync({
         type: 'sync',
         description: params.description,
         auto_start: params.autoStart === true,
-        endpoints: params.endpoints,
+        endpoints: params.endpoints ?? [],
         input: metadataModelName,
         name: basename,
         output: outputNames,
@@ -223,7 +225,7 @@ export function parseAction({
     return {
         type: 'action' as const,
         description: params.description,
-        endpoint: params.endpoint,
+        endpoint: params.endpoint ?? null,
         input: inputName,
         name: basename,
         output: [outputName],

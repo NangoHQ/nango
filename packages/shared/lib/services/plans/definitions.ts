@@ -12,7 +12,6 @@ export const freePlan: PlanDefinition = {
         api_rate_limit_size: 'm',
         environments_max: 2,
         has_otel: false,
-
         connections_max: 10,
         records_max: 100_000,
         proxy_max: 100_000,
@@ -20,7 +19,7 @@ export const freePlan: PlanDefinition = {
         function_compute_gbms_max: 50_000_000,
         webhook_forwards_max: 100_000,
         function_logs_max: 100_000,
-        sync_frequency_secs_min: 3600,
+        sync_frequency_secs_min: 30,
         auto_idle: true,
         monthly_actions_max: 1000,
         monthly_active_records_max: 5000,
@@ -29,8 +28,10 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
-        webhook_function_runtime: 'lambda'
+        webhook_function_runtime: 'lambda',
+        on_event_function_runtime: 'lambda'
     }
 };
 
@@ -47,8 +48,7 @@ export const starterV1Plan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-
-        sync_frequency_secs_min: 3600,
+        sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,

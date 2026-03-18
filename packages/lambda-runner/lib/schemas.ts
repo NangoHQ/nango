@@ -86,9 +86,27 @@ export const nangoPropsSchema = z.object({
         .optional()
 });
 
-export const requestSchema = z.object({
-    taskId: z.string(),
-    codeParams: z.any().optional(),
-    code: z.string(),
-    nangoProps: nangoPropsSchema
+const s3RefSchema = z.object({
+    kind: z.literal('s3'),
+    bucket: z.string(),
+    key: z.string(),
+    versionId: z.string().optional(),
+    etag: z.string().optional()
 });
+
+const inlineCodeSchema = z.object({
+    code: z.string(),
+    codeParams: z.any().optional()
+});
+
+const refCodeSchema = z.object({
+    codeRef: s3RefSchema,
+    codeParamsRef: s3RefSchema.optional()
+});
+
+export const requestSchema = z
+    .object({
+        taskId: z.string(),
+        nangoProps: nangoPropsSchema
+    })
+    .and(z.union([inlineCodeSchema, refCodeSchema]));

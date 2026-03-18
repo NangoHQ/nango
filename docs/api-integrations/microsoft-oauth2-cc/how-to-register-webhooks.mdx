@@ -1,0 +1,229 @@
+---
+title: 'How to set up webhooks with Microsoft (Client Credentials) on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to subscribe to Microsoft Graph change notifications with Nango'
+---
+
+This guide shows you how to receive real-time Microsoft Graph change notifications in Nango using [Microsoft Graph subscriptions](https://learn.microsoft.com/en-us/graph/change-notifications-overview).
+
+## How it works
+
+Microsoft Graph delivers change notifications by sending HTTP POST requests to your endpoint when a subscribed resource changes. The flow is:
+
+1. You create a Microsoft Graph subscription with your Nango webhook URL as the `notificationUrl`
+2. Microsoft sends a one-time validation request to confirm ownership of the URL — Nango handles this automatically
+3. When a subscribed resource changes (e.g. a user is updated, a message is received), Microsoft POSTs a notification to your Nango webhook URL
+4. Nango validates the notification using the `clientState` secret, matches it to the correct connection using the `tenantId`, and forwards it to your app
+
+Nango automatically identifies which connection a webhook belongs to using the `tenantId` from the notification payload, matched against the `tenantId` stored in each connection's config.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+1. Go to the Nango dashboard and navigate to the **Integrations** tab
+2. Select your Microsoft (Client Credentials) integration
+3. Go to the **Settings** sub-tab
+4. Copy the **Webhook URL** — it will look like `https://api.nango.dev/webhook/<ENV-UUID>/microsoft-oauth2-cc`
+
+### 2. Set a webhook secret in Nango
+
+Microsoft Graph lets you pass a `clientState` value in each subscription. Nango uses this to validate incoming notifications.
+
+1. In the Nango dashboard, go to the **Settings** sub-tab for your integration
+2. Under **Webhook Configuration**, enter a secret string in the **Webhook Secret** field
+3. Click **Save**, you'll use this same value as `clientState` when creating subscriptions
+
+### 3. Create a Microsoft Graph subscription
+
+Create a subscription via the Nango proxy. Set `notificationUrl` to your Nango webhook URL (copied from the **Settings** tab) and `clientState` to the secret you configured in step 2. See the [Subscription lifetime](https://learn.microsoft.com/en-us/graph/change-notifications-overview#subscription-lifetime) docs for maximum expiration limits per resource type:
+
+<Tabs>
+  <Tab title="cURL">
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
+  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "changeType": "created,updated",
+    "notificationUrl": "https://api.nango.dev/webhook/<ENV-UUID>/<INTEGRATION-ID>",
+    "resource": '<RESOURCE>', // build your own resource
+    "expirationDateTime": "<expirationDateTime>", // replace with your actual expected expirationDateTime based on the resource
+    "clientState": "<YOUR-WEBHOOK-SECRET>"
+  }'
+```
+
+  </Tab>
+  <Tab title="Node">
+
+```typescript
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+const res = await nango.post({
+    endpoint: '/v1.0/subscriptions',
+    providerConfigKey: '<INTEGRATION-ID>',
+    connectionId: '<CONNECTION-ID>',
+    data: {
+        changeType: 'created,updated',
+        notificationUrl: 'https://api.nango.dev/webhook/<ENV-UUID>/<INTEGRATION-ID>',
+        resource: '<RESOURCE>', // build your own resource
+        expirationDateTime,
+        clientState: '<YOUR-WEBHOOK-SECRET>',
+    },
+});
+
+console.log(res.data); // { id: '...', expirationDateTime: '...', ... }
+```
+
+  </Tab>
+</Tabs>
+
+Microsoft will immediately send a validation request to your Nango webhook URL with a `validationToken` query parameter. Nango responds automatically, no action required on your part.
+
+
+You can automate subscription creation for new connections using a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Create a Microsoft Graph subscription for new connections',
+    exec: async (nango) => {
+        const integration = await nango.getIntegration({include: ['webhook', 'credentials']});
+        const webhookUrl = integration.data.webhook_url;
+        const webhookSecret = integration.data.credentials?.webhook_secret;
+
+        const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+        const config: ProxyConfiguration = {
+            endpoint: '/v1.0/subscriptions',
+            data: {
+                changeType: 'created,updated',
+                notificationUrl: webhookUrl,
+                resource: '<RESOURCE>', // build your own resource
+                expirationDateTime,
+                clientState: webhookSecret,
+            },
+        };
+
+        const response = await nango.post(config);
+        await nango.updateConnectionConfig({ subscriptionId: response.data.id });
+    }
+});
+```
+
+### 4. Renew subscriptions before they expire
+
+Microsoft Graph subscriptions expire and must be renewed before expiry. Use a Nango sync to renew them automatically — adjust the frequency to match the expiration window of the resource you are subscribing to:
+
+```typescript
+import { createSync, ProxyConfiguration } from 'nango';
+import { Empty } from '../../models.js';
+
+export default createSync({
+    description: 'Renews the Microsoft Graph webhook subscription daily to keep it active',
+    models: { Empty },
+    endpoints: [{
+        method: 'GET',
+        path: '/subscription/renew',
+    }],
+    syncType: 'full',
+    frequency: '1d',
+    exec: async (nango) => {
+        const connection = await nango.getConnection();
+        const subscriptionId = connection.connection_config['subscriptionId'];
+
+        if (!subscriptionId) {
+            await nango.log('No subscription ID found in metadata, skipping renewal');
+            return;
+        }
+
+        const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+        const config: ProxyConfiguration = {
+            endpoint: `/v1.0/subscriptions/${subscriptionId}`,
+            data: { expirationDateTime },
+        };
+
+        const response = await nango.patch(config);
+        await nango.log(`Subscription renewed until ${response.data.expirationDateTime}`);
+    }
+});
+```
+
+### 5. Handle forwarded webhooks
+
+When a Microsoft Graph notification arrives, Nango validates the `clientState`, matches the notification to the correct connection via `tenantId`, and forwards the payload to your app. The forwarded payload looks like this:
+
+```json
+{
+  "from": "microsoft-oauth2-cc",
+  "providerConfigKey": "microsoft-oauth2-cc",
+  "type": "forward",
+  "connectionId": "connection-123",
+  "payload": {
+    "value": [
+      {
+        "subscriptionId": "87654321-...",
+        "tenantId": "a1b2c3d4-...",
+        "changeType": "updated",
+        "resource": "users/00000000-...",
+        "resourceData": {
+          "@odata.type": "#Microsoft.Graph.User",
+          "@odata.id": "Users/00000000-...",
+          "id": "00000000-..."
+        },
+        "subscriptionExpirationDateTime": "2025-03-15T18:23:45.000Z",
+        "clientState": "your-webhook-secret"
+      }
+    ]
+  }
+}
+```
+
+Once you receive the webhook, you can trigger a sync for that connection to fetch the latest data:
+
+```bash
+curl -X POST "https://api.nango.dev/sync/trigger" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sync_mode": "incremental",
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "microsoft-oauth2-cc",
+    "syncs": ["users"]
+  }'
+```
+
+With webhooks triggering syncs in real time, you can reduce your sync frequency to a lower value (`1d`) as a safety net for any missed notifications.
+
+## Connection matching
+
+Nango uses the `tenantId` from the notification payload to find the matching connection. The `tenantId` is automatically stored in each connection's config when the connection is created.
+
+## Supported resources
+
+Microsoft Graph supports subscriptions for a wide range of resources. Common examples:
+
+| Resource | changeType values |
+|---|---|
+| `users` | `created`, `updated`, `deleted` |
+| `groups` | `created`, `updated`, `deleted` |
+| `users/{id}/messages` | `created`, `updated`, `deleted` |
+| `users/{id}/events` | `created`, `updated`, `deleted` |
+| `users/{id}/drive/root` | `updated` |
+| `/teams/{id}/channels` | `created`, `deleted` |
+
+For the full list, see [Microsoft's supported resources documentation](https://learn.microsoft.com/en-us/graph/change-notifications-overview#supported-resources).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---
