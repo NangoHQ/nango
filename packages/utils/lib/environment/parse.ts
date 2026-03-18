@@ -124,10 +124,10 @@ export const ENVS = z.object({
                 maxConcurrency: 50
             }
         ]),
-    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
+    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
+    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
+    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
 
     // Runner
     RUNNER_SECRET_KEY: z.string().optional(),
