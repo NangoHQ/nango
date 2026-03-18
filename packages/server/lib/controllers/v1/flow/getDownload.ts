@@ -5,7 +5,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { PostFlowDownload } from '@nangohq/types';
+import type { GetFlowDownload } from '@nangohq/types';
 
 export const validationParams = z
     .object({
@@ -13,7 +13,7 @@ export const validationParams = z
     })
     .strict();
 
-export const postFlowDownload = asyncWrapper<PostFlowDownload>(async (req, res) => {
+export const getFlowDownload = asyncWrapper<GetFlowDownload>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

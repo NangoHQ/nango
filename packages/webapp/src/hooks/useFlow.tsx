@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostFlowDownload, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
+import type { GetFlowDownload, PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 export function usePreBuiltDeployFlow(env: string, integrationId: string) {
     const queryClient = useQueryClient();
@@ -88,12 +88,12 @@ export async function apiFlowUpdateFrequency(env: string, params: PatchFlowFrequ
     };
 }
 
-export async function apiFlowDownload(env: string, params: PostFlowDownload['Params'], flowName = 'flow') {
+export async function apiFlowDownload(env: string, params: GetFlowDownload['Params'], flowName = 'flow') {
     const res = await apiFetch(`/api/v1/flows/${params.id}/download?env=${env}`, {
-        method: 'POST'
+        method: 'GET'
     });
     if (!res.ok) {
-        const json = (await res.json()) as PostFlowDownload['Errors'];
+        const json = (await res.json()) as GetFlowDownload['Errors'];
         throw new APIError({ res, json });
     }
     const blob = await res.blob();

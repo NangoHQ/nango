@@ -96,8 +96,8 @@ export type PatchFlowFrequency = Endpoint<{
     };
 }>;
 
-export type PostFlowDownload = Endpoint<{
-    Method: 'POST';
+export type GetFlowDownload = Endpoint<{
+    Method: 'GET';
     Path: '/api/v1/flows/:id/download';
     Querystring: { env: string };
     Params: { id: number };
