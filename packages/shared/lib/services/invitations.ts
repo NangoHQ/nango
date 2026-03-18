@@ -28,14 +28,14 @@ export async function inviteEmail({
     name,
     accountId,
     invitedByUserId,
-    role = 'administrator',
+    role,
     trx
 }: {
     email: string;
     name: string;
     accountId: number;
     invitedByUserId: number;
-    role?: DBInvitation['role'];
+    role: DBInvitation['role'];
     trx: Knex;
 }) {
     const token = uuid.v4();

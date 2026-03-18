@@ -1,13 +1,11 @@
 import * as z from 'zod';
 
 import { userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PatchTeamUser } from '@nangohq/types';
-
-const VALID_ROLES = ['administrator', 'production_support', 'development_full_access'] as const;
 
 const paramValidation = z
     .object({
@@ -17,7 +15,7 @@ const paramValidation = z
 
 const bodyValidation = z
     .object({
-        role: z.enum(VALID_ROLES)
+        role: z.enum(roles)
     })
     .strict();
 
@@ -40,7 +38,7 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
         return;
     }
 
-    const { account } = res.locals;
+    const { account, user: me } = res.locals;
     const params: PatchTeamUser['Params'] = paramVal.data;
     const body: PatchTeamUser['Body'] = bodyVal.data;
 
@@ -50,14 +48,11 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
         return;
     }
 
-    // Prevent demoting the last administrator
-    if (user.role === 'administrator' && body.role !== 'administrator') {
-        const admins = await userService.getUsersByAccountId(account.id);
-        const adminCount = admins.filter((u) => u.role === 'administrator').length;
-        if (adminCount <= 1) {
-            res.status(400).send({ error: { code: 'forbidden_last_admin', message: 'Cannot change the role of the last administrator' } });
-            return;
-        }
+    // Prevent self-demotion — since only admins can change roles,
+    // blocking self-change guarantees at least one admin remains.
+    if (user.id === me.id) {
+        res.status(400).send({ error: { code: 'forbidden_self_demotion', message: 'You cannot change your own role' } });
+        return;
     }
 
     const updated = await userService.update({ id: user.id, role: body.role });

@@ -49,7 +49,7 @@ export type PatchTeamUser = Endpoint<{
     Querystring: { env: string };
     Params: { id: number };
     Body: { role: Role };
-    Error: ApiError<'user_not_found'> | ApiError<'forbidden_last_admin'>;
+    Error: ApiError<'user_not_found'> | ApiError<'forbidden_self_demotion'>;
     Success: {
         data: { success: true };
     };
