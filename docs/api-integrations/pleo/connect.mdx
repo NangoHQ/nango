@@ -1,0 +1,40 @@
+---
+title: Pleo - How do I link my account?
+sidebarTitle: Pleo
+---
+
+# Overview
+
+To authenticate with Pleo, you need:
+1. **OAuth Subdomain** - The subdomain used for Pleo's OAuth authorization flow.
+2. **API Subdomain** - The subdomain used for Pleo API requests.
+
+This guide will walk you through entering the correct values for your Pleo environment.
+
+### Prerequisites:
+
+- You must have a Pleo account with API access.
+
+### Instructions:
+
+#### Step 1: Identify your environment
+
+Use the following values depending on your Pleo environment:
+
+| Environment | OAuth Subdomain | API Subdomain |
+|-------------|-----------------|---------------|
+| Production  | `auth`          | `external`    |
+| Staging     | `auth.staging`  | `external.staging` |
+
+#### Step 2: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Pleo.
+2. Enter both **OAuth Subdomain** and **API Subdomain** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/api-integrations/pleo/fom.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Pleo.
+
+---
