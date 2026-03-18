@@ -10206,6 +10206,14 @@ microsoft-planner:
     docs: https://nango.dev/docs/api-integrations/microsoft-planner
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app
 
+microsoft-powerpoint:
+    display_name: Microsoft PowerPoint
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-powerpoint
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-powerpoint/how-to-register-your-own-microsoft-powerpoint-api-oauth-app
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
@@ -10217,6 +10225,14 @@ microsoft-teams:
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
+
+microsoft-word:
+    display_name: Microsoft Word
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-word
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-word/how-to-register-your-own-microsoft-word-api-oauth-app
 
 microsoft-tenant-specific:
     display_name: Microsoft (Tenant)
