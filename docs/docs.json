@@ -699,6 +699,7 @@
               "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
+              "api-integrations/pleo",
               "integrations/all/podium",
               "api-integrations/posthog",
               "api-integrations/practicefusion",

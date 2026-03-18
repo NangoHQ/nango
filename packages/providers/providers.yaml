@@ -12641,6 +12641,44 @@ plain:
             description: The API key for your Plain account
             doc_section: '#step-1-generating-your-api-key'
 
+pleo:
+    display_name: Pleo
+    categories:
+        - payment
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.pleo.io/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.pleo.io/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.pleo.io
+    docs: https://nango.dev/docs/api-integrations/pleo
+    docs_connect: https://nango.dev/docs/api-integrations/pleo/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pleo/how-to-register-your-own-pleo-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: OAuth Subdomain
+            description: The auth subdomain of your Pleo environment.
+            example: auth
+            pattern: '^auth(\.staging)?$'
+            suffix: .pleo.io
+            prefix: https://
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain of your Pleo environment.
+            example: external
+            pattern: '^external(\.staging)?$'
+            suffix: .pleo.io
+            prefix: https://
+
 podium:
     display_name: Podium
     categories:
