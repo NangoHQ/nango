@@ -15228,6 +15228,48 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopworks:
+    display_name: ShopWorks
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.hostname}/signin
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: id_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/shopworks
+    docs_connect: https://nango.dev/docs/api-integrations/shopworks/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            prefix: https://
+            suffix: /signin
+            description: The hostname of the API you want to connect to.
+            example: manageordersapi.com/onsite
+            doc_section: '#step-1-find-your-hostname'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username for your ShopWorks account.
+            doc_section: '#step-2-find-your-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: The password for your ShopWorks account.
+            doc_section: '#step-2-find-your-credentials'
+
 slab:
     display_name: Slab
     categories:

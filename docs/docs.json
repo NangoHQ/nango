@@ -786,6 +786,7 @@
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
+              "api-integrations/shopworks",
               "integrations/all/shortcut",
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
