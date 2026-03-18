@@ -3536,6 +3536,7 @@ clio:
     proxy:
         base_url: https://${connectionConfig.hostname}
     docs: https://nango.dev/docs/api-integrations/clio
+    docs_connect: https://nango.dev/docs/api-integrations/clio/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/clio/how-to-register-your-own-clio-api-oauth-app
     connection_config:
         hostname:
@@ -3548,6 +3549,7 @@ clio:
             pattern: '^(app\.clio\.com|eu\.app\.clio\.com|ca\.app\.clio\.com|au\.app\.clio\.com)$'
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-hostname'
 
 cloudbeds:
     display_name: Cloudbeds
