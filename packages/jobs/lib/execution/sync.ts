@@ -51,7 +51,7 @@ import type {
     DBTeam,
     FunctionRuntime,
     NangoProps,
-    RuntimeContext,
+    RoutingContext,
     SdkLogger,
     SyncResult,
     SyncTypeLiteral,
@@ -215,7 +215,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 : {}) // non-lambda runtimes do not need interrupting/resuming long-running executions
         };
 
-        const runtimeContext: RuntimeContext = {
+        const routingContext: RoutingContext = {
             plan: plan
         };
 
@@ -226,7 +226,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const res = await startScriptFn({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx
         });
 

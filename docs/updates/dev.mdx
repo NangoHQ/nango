@@ -4,6 +4,75 @@ sidebarTitle: "Dev Updates"
 description: "Updates and breaking changes for developers."
 ---
 
+<Update label="March 16, 2026">
+  ## Deprecation of `schema.ts` and `schema.json` generation
+
+  ### ✨ What's changing
+
+  Running `nango compile` or `nango deploy` currently generates three files under `.nango/`: `schema.ts`, `schema.json`, and `nango.json`.
+
+  We will stop generating `schema.ts` and `schema.json`. The `nango.json` file remains unchanged.
+
+  ### 🗓️ Timeline
+
+  - **April 16, 2026**: `schema.ts` and `schema.json` will no longer be generated.
+
+  ### 🧐 Am I impacted?
+
+  - If you import TypeScript types from `.nango/schema.ts` in your application code (e.g., to type SDK calls like `nango.listRecords<MyModel>(...)`)
+  - If you consume `.nango/schema.json` for runtime data validation or code generation
+
+  ### 💡 What should I do?
+
+  #### If you use `schema.ts` for types:
+
+  Export the types directly from your sync/action files using `z.infer`, then import them in your application code.
+
+  **Before:**
+  ```ts
+  import type { GithubIssue } from './nango-integrations/.nango/schema';
+  import Nango from '@nangohq/node';
+
+  const nango = new Nango({ secretKey: '...' });
+  const issues = await nango.listRecords<GithubIssue>({ ... });
+  ```
+
+  **After:**
+  1. In your sync/action file, export the inferred type:
+
+  ```ts
+  // In: github/syncs/fetchIssues.ts
+  export type GithubIssue = z.infer<typeof issueSchema>;
+  ```
+
+  2. Import it in your application code:
+
+  ```ts
+  import type { GithubIssue } from './nango-integrations/github/syncs/fetchIssues';
+
+  const issues = await nango.listRecords<GithubIssue>({ ... });
+  ```
+
+  Note: If your types are already defined with `z.infer` but not exported, you only need to add the `export` keyword.
+
+  #### If you use `schema.json` for JSON Schema:
+
+  JSON schemas are now available per sync/action inside `.nango/nango.json` via the `json_schema` property. This replaces the top-level `schema.json` (which had naming conflicts when models across integrations shared the same name).
+
+  If you need to generate JSON Schema programmatically, Zod v4 supports this natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
+
+  ```ts
+  import { z } from 'zod';
+  import { issueSchema } from './nango-integrations/github/syncs/fetchIssues';
+
+  const jsonSchema = z.toJSONSchema(issueSchema);
+  ```
+
+  See the [data validation guide](/implementation-guides/platform/functions/data-validation) for more details on working with Zod schemas in Nango.
+
+  ---
+</Update>
+
 <Update label="February 5, 2026">
   ## Better incremental syncing with checkpoints
 

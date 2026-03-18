@@ -44,6 +44,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         on_event_function_runtime: 'runner',
         has_records_autopruning: true,
         variants_per_sync_max: 100,
+        fleet_node_routing_override: null,
         ...override
     };
 }

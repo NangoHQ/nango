@@ -1,10 +1,11 @@
 import type { Endpoint } from '../api.js';
+import type { Role } from './db.js';
 
 export type GetUser = Endpoint<{
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
-        data: ApiUser;
+        data: ApiUserWithPermissions;
     };
 }>;
 
@@ -37,6 +38,15 @@ export interface ApiUser {
     uuid: string;
     gettingStartedClosed: boolean;
 }
+
+export type AllowedPermissions = Partial<
+    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | '*')[]>>>
+>;
+
+export type ApiUserWithPermissions = ApiUser & {
+    role: Role;
+    permissions: AllowedPermissions;
+};
 
 export type PutUserPassword = Endpoint<{
     Method: 'PUT';

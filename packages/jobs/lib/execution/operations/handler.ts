@@ -3,7 +3,6 @@ import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
-import { concurrencyMonitor } from './monitor.js';
 import { toNangoError } from './utils/errors.js';
 
 import type { CheckpointRange, FunctionRuntime, NangoProps, RunnerOutputError, TelemetryBag } from '@nangohq/types';
@@ -20,14 +19,10 @@ type SuccessPayload = Payload & { output: JsonValue };
 type ErrorPayload = Payload & { error: RunnerOutputError };
 
 export async function handle(payload: SuccessPayload | ErrorPayload): Promise<void> {
-    try {
-        if ('error' in payload) {
-            await handleError(payload);
-        } else {
-            await handleSuccess(payload);
-        }
-    } finally {
-        concurrencyMonitor.end({ type: payload.nangoProps.scriptType, accountId: payload.nangoProps.team.id });
+    if ('error' in payload) {
+        await handleError(payload);
+    } else {
+        await handleSuccess(payload);
     }
 }
 

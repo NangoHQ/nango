@@ -97,6 +97,8 @@ export async function upsert(
             ...(props.isProfilingEnabled !== undefined ? { is_profiling_enabled: props.isProfilingEnabled } : {}),
             ...(props.idleMaxDurationMs !== undefined ? { idle_max_duration_ms: props.idleMaxDurationMs } : {}),
             ...(props.replicas !== undefined ? { replicas: props.replicas } : {}),
+            ...(props.executionTimeoutSecs !== undefined ? { execution_timeout_secs: props.executionTimeoutSecs } : {}),
+            ...(props.provisionedConcurrency !== undefined ? { provisioned_concurrency: props.provisionedConcurrency } : {}),
             updated_at: now
         };
 

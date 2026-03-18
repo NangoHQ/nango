@@ -17,6 +17,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
+    DEFAULT_USER_ROLE: z.enum(['administrator', 'production_support', 'development_full_access']).optional().default('administrator'),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -261,6 +262,7 @@ export const ENVS = z.object({
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
+    FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -382,10 +384,11 @@ export const ENVS = z.object({
 
     // Lambda
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
-    LAMBDA_DEFAULT_SIZE: z.coerce.number().default(512),
+    LAMBDA_DEFAULT_PREFIX: z.string().optional().default('nango-runner-function'),
     LAMBDA_ECR_REGISTRY: z.string().optional(),
     LAMBDA_RUNTIME: z.enum(['nodejs22.x', 'nodejs24.x']).optional().default('nodejs22.x'),
     LAMBDA_EXECUTION_ROLE_ARN: z.string().optional(),
+    LAMBDA_DEFAULT_LOG_RETENTION_DAYS: z.coerce.number().optional().default(7),
     LAMBDA_PERSIST_SERVICE_URL: z.url().optional(),
     LAMBDA_JOBS_SERVICE_URL: z.url().optional(),
     LAMBDA_PROVIDERS_URL: z.url().optional(),
@@ -416,6 +419,8 @@ export const ENVS = z.object({
     LAMBDA_ARCHITECTURE: z.enum(['arm64', 'x86_64']).optional().default('arm64'),
     LAMBDA_CREATE_TIMEOUT_SECS: z.coerce.number().optional().default(120),
     LAMBDA_EXECUTION_TIMEOUT_SECS: z.coerce.number().optional().default(900),
+    LAMBDA_DEFAULT_MEMORY_MB: z.coerce.number().optional().default(512),
+    LAMBDA_DEFAULT_STORAGE_MB: z.coerce.number().optional().default(512),
     LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.8), // interrupt execution after 80% of the timeout, to leave time for checkpointing and graceful shutdown
     LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.95), // force kill the lambda after 95% of the timeout, to allow for runner-controlled shutdown
     LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),

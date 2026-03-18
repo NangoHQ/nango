@@ -1644,7 +1644,7 @@ avanan:
         x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
     token_response:
         token: ''
-    token_expires_in_ms: 86400000
+    token_expires_in_ms: 3_600_000
     proxy:
         base_url: https://${connectionConfig.subdomain}.avanan.net
         headers:
@@ -10237,6 +10237,14 @@ microsoft-planner:
     docs: https://nango.dev/docs/api-integrations/microsoft-planner
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app
 
+microsoft-powerpoint:
+    display_name: Microsoft PowerPoint
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-powerpoint
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-powerpoint/how-to-register-your-own-microsoft-powerpoint-api-oauth-app
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
@@ -10248,6 +10256,14 @@ microsoft-teams:
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
+
+microsoft-word:
+    display_name: Microsoft Word
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-word
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-word/how-to-register-your-own-microsoft-word-api-oauth-app
 
 microsoft-tenant-specific:
     display_name: Microsoft (Tenant)
@@ -12655,6 +12671,44 @@ plain:
             title: API Key
             description: The API key for your Plain account
             doc_section: '#step-1-generating-your-api-key'
+
+pleo:
+    display_name: Pleo
+    categories:
+        - payment
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.pleo.io/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.pleo.io/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.pleo.io
+    docs: https://nango.dev/docs/api-integrations/pleo
+    docs_connect: https://nango.dev/docs/api-integrations/pleo/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pleo/how-to-register-your-own-pleo-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: OAuth Subdomain
+            description: The auth subdomain of your Pleo environment.
+            example: auth
+            pattern: '^auth(\.staging)?$'
+            suffix: .pleo.io
+            prefix: https://
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain of your Pleo environment.
+            example: external
+            pattern: '^external(\.staging)?$'
+            suffix: .pleo.io
+            prefix: https://
 
 podium:
     display_name: Podium
@@ -15259,6 +15313,48 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopworks:
+    display_name: ShopWorks
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.hostname}/signin
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: id_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/shopworks
+    docs_connect: https://nango.dev/docs/api-integrations/shopworks/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            prefix: https://
+            suffix: /signin
+            description: The hostname of the API you want to connect to.
+            example: manageordersapi.com/onsite
+            doc_section: '#step-1-find-your-hostname'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username for your ShopWorks account.
+            doc_section: '#step-2-find-your-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: The password for your ShopWorks account.
+            doc_section: '#step-2-find-your-credentials'
+
 slab:
     display_name: Slab
     categories:
@@ -15332,6 +15428,30 @@ slack:
     webhook_routing_script: slackWebhookRouting
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
+
+slack-mcp:
+    display_name: Slack (MCP)
+    categories:
+        - popular
+        - productivity
+        - communication
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: static
+    authorization_url: https://slack.com/oauth/v2_user/authorize
+    token_url: https://slack.com/api/oauth.v2.user.access
+    scope_separator: ','
+    alternate_access_token_response_path: authed_user.access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://mcp.slack.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/slack-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/slack-mcp/how-to-register-your-own-slack-mcp-oauth-app
 
 smartlead-ai:
     display_name: Smartlead.ai
@@ -16567,6 +16687,35 @@ trigify-io-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
 
+triple-whale:
+    display_name: Triple Whale
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.triplewhale.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                content-type: application/json
+            endpoints:
+                - /api/v2/users/api-keys/me
+    docs: https://nango.dev/docs/api-integrations/triple-whale
+    docs_connect: https://nango.dev/docs/api-integrations/triple-whale/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Triple Whale API key.
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            format: uuid
+            doc_section: '#step-1-generating-your-api-key'
+
 tsheetsteam:
     display_name: TSheets
     categories:
@@ -16934,6 +17083,36 @@ typefully:
             title: API Key
             description: The API key for your Typefully account
 
+typefully-v2:
+    display_name: Typefully (API v2)
+    categories:
+        - analytics
+        - communication
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.typefully.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+        retry:
+            at:
+                - 'x-ratelimit-user-reset'
+                - 'x-ratelimit-socialset-reset'
+    docs: https://nango.dev/docs/api-integrations/typefully-v2
+    docs_connect: https://nango.dev/docs/api-integrations/typefully-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Typefully v2 API key.
+            example: 'aNVlyR********************YxeIDz'
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 uber:
     display_name: Uber
     auth_mode: OAUTH2
@@ -17245,16 +17424,40 @@ vercel:
                 content-type: application/json
             endpoints:
                 - /v2/user
-    docs: https://nango.dev/docs/integrations/all/vercel
-    docs_connect: https://nango.dev/docs/integrations/all/vercel
+    docs: https://nango.dev/docs/api-integrations/vercel
+    docs_connect: https://nango.dev/docs/api-integrations/vercel/connect
     credentials:
         apiKey:
             type: string
             title: Token
-            description: The Token for your Vercel account
-            pattern: '^[A-Za-z0-9]{24}$'
-            example: 'oo7W9rGs3liLWhTwmERWrsFs'
-            doc_section: '#step-1-finding-your-api-key'
+            description: The Token for your Vercel account.
+            pattern: '^vcp_[A-Za-z0-9]+$'
+            example: 'vcp_6ppUxFRd****r1sc53a'
+            doc_section: '#step-1-finding-your-token'
+
+vercel-mcp:
+    display_name: Vercel (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: static
+    authorization_url: https://vercel.com/oauth/authorize
+    token_url: https://vercel.com/api/login/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.vercel.com
+    docs: https://nango.dev/docs/api-integrations/vercel-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/vercel-mcp/how-to-register-your-own-vercel-mcp-oauth-app
 
 vimeo:
     display_name: Vimeo (OAuth)

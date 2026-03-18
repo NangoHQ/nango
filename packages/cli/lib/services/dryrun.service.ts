@@ -28,7 +28,7 @@ import * as nangoScript from '../sdkScripts.js';
 import { displayValidationError } from '../utils/errors.js';
 import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
-import { buildDefinitions } from '../zeroYaml/definitions.js';
+import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
 
 import type { GlobalOptions } from '../types.js';
@@ -149,7 +149,7 @@ export class DryRunService {
             return;
         }
 
-        const def = await buildDefinitions({ fullPath: this.fullPath, debug });
+        const def = await parseIntegrationDefinitions({ fullPath: this.fullPath, debug });
         if (def.isErr()) {
             console.log('');
             console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
