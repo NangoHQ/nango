@@ -28,7 +28,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicPosthogKey: envs.PUBLIC_POSTHOG_KEY || '',
         publicPosthogHost: envs.PUBLIC_POSTHOG_HOST || '',
         publicLogoDevKey: envs.PUBLIC_LOGODEV_KEY || '',
-        publicStripeKey: envs.PUBLIC_STRIPE_KEY || '',
+        publicStripeKey: envs.PUBLIC_STRIPE_KEY || undefined,
         isCloud,
         isHosted,
         isEnterprise,

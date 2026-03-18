@@ -242,7 +242,13 @@ const PlanChangeDialog: React.FC<{
         if ('paymentIntent' in res.json.data) {
             res.json.data.paymentIntent;
             const stripe = await stripePromise;
-            const result = await stripe!.confirmCardPayment(res.json.data.paymentIntent.client_secret);
+            if (!stripe) {
+                setLoading(false);
+                toast({ title: 'Stripe is not configured for this deployment', variant: 'error' });
+                return;
+            }
+
+            const result = await stripe.confirmCardPayment(res.json.data.paymentIntent.client_secret);
 
             if (result.error) {
                 console.error({ error: result.error });
