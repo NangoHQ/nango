@@ -407,13 +407,13 @@ export function tsToJsPath(filePath: string) {
 }
 
 /**
- * Detects which features are used in a function
+ * Detects which features are used in function code
  */
-export async function detectFeatures({ entryPoint }: { entryPoint: string }): Promise<Result<Feature[]>> {
+export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
     try {
-        const source = await fs.promises.readFile(entryPoint, 'utf8');
+        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
         const { plugin, bag } = nangoPlugin({ entryPoint });
-        await babel.transformAsync(source, {
+        babel.transformSync(source, {
             filename: entryPoint,
             plugins: [plugin],
             parserOpts: { sourceType: 'module', plugins: ['typescript'] },

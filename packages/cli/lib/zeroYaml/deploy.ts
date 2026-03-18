@@ -224,7 +224,7 @@ async function createDeployConfirmationPackage({
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions,
                     models_json_schema: sync.json_schema,
-                    features: features.isErr() ? [] : features.value
+                    features: sync.features
                 };
 
                 postData.push(body);
@@ -263,7 +263,7 @@ async function createDeployConfirmationPackage({
                     endpoints: action.endpoint ? [action.endpoint] : [],
                     track_deletes: false,
                     models_json_schema: action.json_schema,
-                    features: features.isErr() ? [] : features.value
+                    features: action.features
                 };
 
                 postData.push(body);

@@ -164,8 +164,7 @@ describe(`POST ${endpoint}`, () => {
             track_deletes: false,
             updated_at: expect.any(Date),
             version: '1.0.0',
-            webhook_subscriptions: null,
-            features: []
+            webhook_subscriptions: null
         });
     });
 });

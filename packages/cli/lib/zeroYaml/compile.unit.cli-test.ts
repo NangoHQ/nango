@@ -69,16 +69,16 @@ describe('edge cases', () => {
 });
 
 describe('detectFeatures', () => {
-    it('should fail if entrypoint does not exists', async () => {
-        const res = await detectFeatures({ entryPoint: path.join(fixturesPath, 'does/not/exist.ts') });
+    it('should fail if entrypoint does not exists', () => {
+        const res = detectFeatures({ entryPoint: path.join(fixturesPath, 'does/not/exist.ts') });
         expect(res.isErr()).toBe(true);
     });
-    it('should detect features', async () => {
-        const features = (await detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.ts') })).unwrap();
+    it('should detect features', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.ts') }).unwrap();
         expect(features).toEqual(['checkpoints']);
     });
-    it('should not detect features if none', async () => {
-        const features = (await detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') })).unwrap();
+    it('should not detect features if none', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') }).unwrap();
         expect(features).toEqual([]);
     });
 });
