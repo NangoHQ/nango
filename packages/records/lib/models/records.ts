@@ -908,6 +908,12 @@ export async function deleteOutdatedRecords({
     try {
         const deletedIds: string[] = [];
         let hasMore = true;
+        // NOTE: deletion is intentionally not atomic. Each batch is its own transaction so that
+        // long-running deletes (e.g. millions of records) don't hold a single DB connection and
+        // row locks for the entire duration, which was causing timeouts and stalling other queries.
+        // The tradeoff is that a failure mid-way leaves the dataset in a partially deleted state.
+        // This is acceptable because: (1) the sync fails and the user is notified, (2) the next
+        // sync run will call deleteOutdatedRecords again and clean up whatever was missed.
         while (hasMore) {
             const batchResult = await retry(
                 () => {
