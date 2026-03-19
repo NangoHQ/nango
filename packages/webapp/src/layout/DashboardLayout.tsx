@@ -22,11 +22,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
                         fullWidth ? 'p-0' : 'p-11'
                     )}
                 >
-                    <div
-                        ref={ref}
-                        className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}
-                        {...props}
-                    >
+                    <div ref={ref} className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)} {...props}>
                         {children}
                     </div>
                     <Playground />

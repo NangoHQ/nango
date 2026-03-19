@@ -1,4 +1,4 @@
-import { Braces, CheckCircle2, ExternalLink, Info, Play, Plus, RotateCcw, Trash2, X, XCircle } from 'lucide-react';
+import { Braces, CheckCircle2, ExternalLink, Info, Play, Plus, RotateCcw, X, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -68,7 +68,6 @@ export const Playground: React.FC = () => {
     const setPlaygroundInputValue = useStore((s) => s.setPlaygroundInputValue);
     const result = useStore((s) => s.playground.result);
     const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
-    const resetPlayground = useStore((s) => s.resetPlayground);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -581,14 +580,9 @@ export const Playground: React.FC = () => {
                                 Quickly run any function.
                             </p>
                         </div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                            <Button variant="ghost" size="icon" className="size-7" onClick={resetPlayground} aria-label="Reset playground">
-                                <Trash2 className="size-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="size-7" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
-                                <X className="size-4" />
-                            </Button>
-                        </div>
+                        <Button variant="ghost" size="icon" className="size-7 mt-0.5" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                            <X className="size-4" />
+                        </Button>
                     </div>
 
                     {/* Content — scroll is handled by SheetContent scrollable wrapper */}
