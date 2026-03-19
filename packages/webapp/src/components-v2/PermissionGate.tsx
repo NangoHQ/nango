@@ -9,22 +9,36 @@ interface PermissionGateProps {
     bypass?: boolean;
     permission?: { action: Action; scope: Scope; resource: string };
     children: (allowed: boolean) => React.ReactNode;
+    asChild?: boolean;
     tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
 }
 
-export const PermissionGate: React.FC<PermissionGateProps> = ({ permission, children, bypass = false, tooltipSide = 'right' }) => {
+export const PermissionGate: React.FC<PermissionGateProps> = ({ permission, children, bypass = false, tooltipSide = 'right', asChild = false }) => {
     const { can } = usePermissions();
-    if (!permission || bypass) {
+
+    return (
+        <PermissionCondition asChild={asChild} condition={bypass || (permission ? can(permission) : true)} tooltipSide={tooltipSide}>
+            {children}
+        </PermissionCondition>
+    );
+};
+
+interface PermissionConditionProps {
+    condition?: boolean;
+    children: (allowed: boolean) => React.ReactNode;
+    asChild?: boolean;
+    tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
+}
+
+export const PermissionCondition = ({ condition, children, asChild, tooltipSide = 'right' }: PermissionConditionProps) => {
+    if (condition) {
         return <>{children(true)}</>;
     }
 
-    const { action, scope, resource } = permission;
-    const allowed = can(action, scope, resource);
-
     return (
         <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>{children(allowed)}</TooltipTrigger>
-            {!allowed && <TooltipContent side={tooltipSide}>This action is not permitted for your role.</TooltipContent>}
+            <TooltipTrigger asChild={asChild}>{children(false)}</TooltipTrigger>
+            {!condition && <TooltipContent side={tooltipSide}>This action is not permitted for your role.</TooltipContent>}
         </Tooltip>
     );
 };

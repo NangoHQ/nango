@@ -6,7 +6,7 @@ import type { AllowedPermissions } from '@nangohq/types';
 export type Action = 'create' | 'read' | 'update' | 'delete' | '*';
 export type Scope = 'production' | 'non-production' | 'global';
 
-interface Permission {
+export interface Permission {
     action: Action;
     resource: string;
     scope: Scope;
@@ -43,11 +43,11 @@ export const permissions = {
     canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', scope: 'production' }
 } as const satisfies Record<string, Permission>;
 
-export function usePermissions(): { can: (action: Action, scope: Scope, resource: string) => boolean; permissions: AllowedPermissions } {
+export function usePermissions(): { can: (permission: Permission) => boolean; permissions: AllowedPermissions } {
     const { user } = useUser();
     const permissions = user?.permissions ?? {};
     return {
         permissions,
-        can: (action: Action, scope: Scope, resource: string) => permissions[resource]?.[scope]?.includes(action) ?? false
+        can: (permission: Permission) => permissions[permission.resource]?.[permission.scope]?.includes(permission.action) ?? false
     };
 }
