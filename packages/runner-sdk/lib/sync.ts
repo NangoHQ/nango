@@ -67,11 +67,9 @@ export abstract class NangoSyncBase<
     ): MaybePromise<Map<TKey, TModel>>;
 
     public abstract listRecords<TModel extends RawModel = z.infer<TModels[TModelName]>>(
-        model: TModelName,
-        options?: {
-            cursor?: string;
-            limit?: number;
-        }
+        cursor: string | undefined,
+        limit: number | undefined,
+        model: TModelName
     ): MaybePromise<{ records: TModel[]; next_cursor: string | null }>;
 
     /**

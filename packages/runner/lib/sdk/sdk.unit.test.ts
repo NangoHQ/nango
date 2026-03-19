@@ -540,7 +540,7 @@ describe('listRecords', () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
-        await expect(nango.listRecords('SomeModel')).rejects.toThrowError(new ExecutionAbortedSDKError());
+        await expect(nango.listRecords(undefined, undefined, 'SomeModel')).rejects.toThrowError(new ExecutionAbortedSDKError());
     });
 
     it('should return records and next_cursor from a single page', async () => {
@@ -552,7 +552,7 @@ describe('listRecords', () => {
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
-        const result = await nango.listRecords('SomeModel');
+        const result = await nango.listRecords(undefined, undefined, 'SomeModel');
 
         expect(result).toEqual({ records, next_cursor: null });
         expect(mockPersistClient.getRecords).toHaveBeenCalledOnce();
@@ -571,7 +571,7 @@ describe('listRecords', () => {
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
-        await nango.listRecords('SomeModel', { cursor: 'cursor123', limit: 500 });
+        await nango.listRecords('cursor123', 500, 'SomeModel');
 
         expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
             model: 'SomeModel',
@@ -581,16 +581,5 @@ describe('listRecords', () => {
             externalIds: undefined,
             limit: 500
         });
-    });
-
-    it('should normalize next_cursor from response (next_cursor or nextCursor)', async () => {
-        const records = [{ id: '1' }];
-        const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, next_cursor: 'next-page' }));
-
-        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
-        const result = await nango.listRecords('M');
-
-        expect(result.next_cursor).toBe('next-page');
     });
 });

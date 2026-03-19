@@ -376,18 +376,17 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
     }
 
     public override async listRecords<T extends Record<string, any> = Record<string, any>>(
-        model: string,
-        options?: { cursor?: string; limit?: number }
+        cursor: string | undefined,
+        limit: number | undefined,
+        model: string
     ): Promise<{ records: T[]; next_cursor: string | null }> {
         const config: ListRecordsRequestConfig = {
             providerConfigKey: this.providerConfigKey,
             connectionId: this.connectionId,
             model: this.modelFullName(model),
-            limit: options?.limit ?? 100
+            limit: limit ?? 100,
+            cursor: cursor ?? null
         };
-        if (options?.cursor !== undefined && options.cursor !== null) {
-            config.cursor = options.cursor;
-        }
         const response = await this.nango.listRecords<T>(config);
         return { records: response.records, next_cursor: response.next_cursor };
     }

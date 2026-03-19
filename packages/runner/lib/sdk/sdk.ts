@@ -613,10 +613,6 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
-    /**
-     * Shared helper for getRecordsByIds and listRecords. Fetches one page of records from the persist layer.
-     * Normalizes response to { records, next_cursor } (persist may return nextCursor or next_cursor).
-     */
     private async fetchRecordsPage<T = any>(
         model: string,
         options?: {
@@ -639,9 +635,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         }
 
         const raw = res.unwrap();
-        const rawWithCursor = raw as { next_cursor?: string | null; nextCursor?: string };
-        const nextCursor: string | null = rawWithCursor.next_cursor ?? rawWithCursor.nextCursor ?? null;
-        return { records: raw.records as T[], next_cursor: nextCursor };
+        return { records: raw.records as T[], next_cursor: raw.nextCursor ?? null };
     }
 
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
@@ -679,16 +673,21 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return objects;
     }
 
-    public async listRecords<T = any>(model: string, options?: { cursor?: string; limit?: number }): Promise<{ records: T[]; next_cursor: string | null }> {
+    public async listRecords<T = any>(
+        cursor: string | undefined,
+        limit: number | undefined,
+        model: string
+    ): Promise<{ records: T[]; next_cursor: string | null }> {
         this.throwIfAbortedOrKilled();
 
         const pageOptions: { cursor?: string; limit?: number } = {};
-        if (options?.cursor !== undefined) {
-            pageOptions.cursor = options.cursor;
+        if (cursor !== undefined) {
+            pageOptions.cursor = cursor;
         }
-        if (options?.limit !== undefined) {
-            pageOptions.limit = options.limit;
+        if (limit !== undefined) {
+            pageOptions.limit = limit;
         }
+
         return this.fetchRecordsPage<T>(model, pageOptions);
     }
 
