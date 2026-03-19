@@ -85,6 +85,7 @@ import { postStripeWebhooks } from './controllers/v1/stripe/postWebhooks.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
+import { patchTeamUser } from './controllers/v1/team/users/patchTeamUser.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
@@ -163,6 +164,7 @@ web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearA
 web.route('/team').get(webAuth, getTeam);
 web.route('/team').put(webAuth, can(p.canManageTeam), putTeam);
 web.route('/team/users/:id').delete(webAuth, can(p.canRemoveTeamMember), deleteTeamUser);
+web.route('/team/users/:id').patch(webAuth, can(p.canUpdateTeamMember), patchTeamUser);
 
 // Invitations
 web.route('/invite').post(webAuth, can(p.canInviteMember), postInvite);

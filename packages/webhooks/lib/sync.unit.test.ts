@@ -69,6 +69,7 @@ const syncConfig: DBSyncConfig = {
     enabled: true,
     models_json_schema: null,
     sdk_version: null,
+    features: [],
     created_at: new Date(),
     updated_at: new Date()
 };

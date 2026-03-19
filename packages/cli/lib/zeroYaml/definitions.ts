@@ -3,7 +3,7 @@ import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
-import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
+import { detectFeatures, getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
 import {
     DuplicateEndpointDefinitionError,
@@ -90,7 +90,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'action': {
-                const action = parseAction({ params: script, integrationIdClean, basename, basenameClean });
+                const action = parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
                 integration.actions.push(action);
 
                 const models = buildNangoModelsForAction(script, integrationIdClean, basenameClean);
@@ -180,6 +180,8 @@ export function parseSync({
     const outputNames = Object.keys(params.models);
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
+    const features = detectFeatures({ entryPoint: filePath });
+
     const sync: ParsedNangoSync = {
         type: 'sync',
         description: params.description,
@@ -195,18 +197,21 @@ export function parseSync({
         usedModels: Object.keys(allZodModels),
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
-        json_schema: jsonSchema
+        json_schema: jsonSchema,
+        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
     };
 
     return Ok(sync);
 }
 
 export function parseAction({
+    filePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
+    filePath: string;
     params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
@@ -222,6 +227,8 @@ export function parseAction({
 
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
+    const features = detectFeatures({ entryPoint: filePath });
+
     return {
         type: 'action' as const,
         description: params.description,
@@ -232,7 +239,8 @@ export function parseAction({
         scopes: params.scopes || [],
         usedModels: [inputName, outputName],
         version: params.version || '',
-        json_schema: jsonSchema
+        json_schema: jsonSchema,
+        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
     };
 }
 

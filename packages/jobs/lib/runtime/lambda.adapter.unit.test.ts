@@ -82,7 +82,8 @@ function minimalNangoProps(overrides: { environmentId?: number } = {}) {
             input: null,
             sync_type: null,
             metadata: {},
-            sdk_version: null
+            sdk_version: null,
+            features: []
         },
         activityLogId: 'log-1',
         secretKey: 'sk',

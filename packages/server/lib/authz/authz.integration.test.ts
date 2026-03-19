@@ -171,6 +171,67 @@ describe('authz integration', () => {
             expect(res.res.status).toBe(403);
         });
 
+        it('should deny DELETE invite', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/invite', {
+                method: 'DELETE',
+                query: { env: 'dev' },
+                body: { email: 'test@example.com' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny PUT team', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/team', {
+                method: 'PUT',
+                query: { env: 'dev' },
+                body: { name: 'New Name' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny DELETE team/users/:id', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'DELETE',
+                query: { env: 'dev' },
+                params: { id: 9999 },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny PATCH team/users/:id', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'PATCH',
+                query: { env: 'dev' },
+                params: { id: 9999 },
+                body: { role: 'production_support' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
         it('should allow GET prod integrations (read access)', async () => {
             const { account } = await seedAccountWithProdEnv();
             const supportUser = await createUserWithRole(account.id, 'production_support');
@@ -417,6 +478,67 @@ describe('authz integration', () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 body: { emails: ['test@example.com'] },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny DELETE invite', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/invite', {
+                method: 'DELETE',
+                query: { env: 'dev' },
+                body: { email: 'test@example.com' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny PUT team', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/team', {
+                method: 'PUT',
+                query: { env: 'dev' },
+                body: { name: 'New Name' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny DELETE team/users/:id', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'DELETE',
+                query: { env: 'dev' },
+                params: { id: 9999 },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny PATCH team/users/:id', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'PATCH',
+                query: { env: 'dev' },
+                params: { id: 9999 },
+                body: { role: 'production_support' },
                 session
             });
 
