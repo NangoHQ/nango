@@ -27,6 +27,10 @@ export interface PlaygroundState {
     functionType: PlaygroundFunctionType;
     inputValues: Record<string, string>;
     result: PlaygroundResult | null;
+    // Transient — not persisted to localStorage
+    running: boolean;
+    inputErrors: Record<string, string>;
+    connectionSearch: string;
 }
 
 interface State {
@@ -48,6 +52,11 @@ interface State {
     setPlaygroundInputValues: (values: Record<string, string>) => void;
     setPlaygroundInputValue: (name: string, value: string) => void;
     setPlaygroundResult: (result: PlaygroundResult | null) => void;
+    setPlaygroundRunning: (running: boolean) => void;
+    setPlaygroundInputErrors: (errors: Record<string, string>) => void;
+    setPlaygroundInputError: (name: string, message: string) => void;
+    clearPlaygroundInputError: (name: string) => void;
+    setPlaygroundConnectionSearch: (search: string) => void;
     resetPlayground: () => void;
     setPlaygroundState: (value: PlaygroundState) => void;
 }
@@ -59,7 +68,10 @@ const defaultPlayground: PlaygroundState = {
     function: null,
     functionType: null,
     inputValues: {},
-    result: null
+    result: null,
+    running: false,
+    inputErrors: {},
+    connectionSearch: ''
 };
 
 export const useStore = create<State>()(
@@ -140,6 +152,29 @@ export const useStore = create<State>()(
                 set((s) => ({ playground: { ...s.playground, result } }));
             },
 
+            setPlaygroundRunning: (running) => {
+                set((s) => ({ playground: { ...s.playground, running } }));
+            },
+
+            setPlaygroundInputErrors: (inputErrors) => {
+                set((s) => ({ playground: { ...s.playground, inputErrors } }));
+            },
+
+            setPlaygroundInputError: (name, message) => {
+                set((s) => ({ playground: { ...s.playground, inputErrors: { ...s.playground.inputErrors, [name]: message } } }));
+            },
+
+            clearPlaygroundInputError: (name) => {
+                set((s) => {
+                    const { [name]: _ignored, ...rest } = s.playground.inputErrors;
+                    return { playground: { ...s.playground, inputErrors: rest } };
+                });
+            },
+
+            setPlaygroundConnectionSearch: (connectionSearch) => {
+                set((s) => ({ playground: { ...s.playground, connectionSearch } }));
+            },
+
             resetPlayground: () => {
                 set((s) => ({ playground: { ...defaultPlayground, isOpen: s.playground.isOpen } }));
             },
@@ -150,8 +185,21 @@ export const useStore = create<State>()(
         }),
         {
             name: LocalStorageKeys.Playground,
-            // Only persist the playground slice; skip transient UI state like envs/baseUrl
-            partialize: (s) => ({ playground: { ...s.playground, isOpen: false } })
+            // Persist selection + result; exclude transient UI state
+            partialize: (s) => ({
+                playground: {
+                    isOpen: false,
+                    integration: s.playground.integration,
+                    connection: s.playground.connection,
+                    function: s.playground.function,
+                    functionType: s.playground.functionType,
+                    inputValues: s.playground.inputValues,
+                    result: s.playground.result,
+                    running: false,
+                    inputErrors: {},
+                    connectionSearch: ''
+                }
+            })
         }
     )
 );
