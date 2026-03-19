@@ -130,13 +130,15 @@ class Lambda {
                     );
                 }
                 const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
+                const minCapacity = envs.LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY;
+                const maxCapacity = Math.max(minCapacity, node.provisionedConcurrency || envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY);
                 await applicationAutoScalingClient.send(
                     new RegisterScalableTargetCommand({
                         ServiceNamespace: 'lambda',
                         ScalableDimension: 'lambda:function:ProvisionedConcurrency',
                         ResourceId: resourceId,
-                        MinCapacity: envs.LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY,
-                        MaxCapacity: node.provisionedConcurrency || envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY
+                        MinCapacity: minCapacity,
+                        MaxCapacity: maxCapacity
                     })
                 );
                 await applicationAutoScalingClient.send(
