@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { roles } from '../roles.js';
+
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -17,7 +19,7 @@ export const ENVS = z.object({
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
-    DEFAULT_USER_ROLE: z.enum(['administrator', 'production_support', 'development_full_access']).optional().default('administrator'),
+    DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -124,10 +126,10 @@ export const ENVS = z.object({
                 maxConcurrency: 50
             }
         ]),
-    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(200),
-    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(50),
+    SYNC_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
+    ACTION_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
+    WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(500),
+    ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY: z.coerce.number().optional().default(100),
 
     // Runner
     RUNNER_SECRET_KEY: z.string().optional(),

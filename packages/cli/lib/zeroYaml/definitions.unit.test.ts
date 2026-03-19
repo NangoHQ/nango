@@ -123,6 +123,7 @@ describe('parseAction', () => {
     it('should return the parsed action without endpoint', () => {
         const { endpoint, ...actionParamsWithoutEndpoint } = actionParams;
         const action = parseAction({
+            filePath: './createIssue.ts',
             params: actionParamsWithoutEndpoint,
             basename: 'createIssue',
             basenameClean: 'createIssue',
@@ -138,6 +139,7 @@ describe('parseAction', () => {
 
     it('should return the parsed action', () => {
         const action = parseAction({
+            filePath: './createIssue.ts',
             params: actionParams,
             basename: 'createIssue',
             basenameClean: 'createIssue',

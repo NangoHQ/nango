@@ -52,7 +52,8 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             json_schema: syncConfig.models_json_schema || null,
             sdk_version: syncConfig.sdk_version,
             // Temporary regression
-            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema)
+            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema),
+            features: syncConfig.features
         };
 
         if (syncConfig.type === 'sync') {

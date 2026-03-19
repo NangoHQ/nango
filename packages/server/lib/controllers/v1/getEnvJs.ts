@@ -8,6 +8,7 @@ import {
     flagHasPlan,
     flagHasScripts,
     flagHasSlack,
+    flags,
     isCloud,
     isEnterprise,
     isHosted
@@ -40,7 +41,8 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             managedAuth: flagHasManagedAuth,
             gettingStarted: true,
             slack: flagHasSlack,
-            plan: flagHasPlan
+            plan: flagHasPlan,
+            authRoles: flags.hasAuthRoles
         }
     };
     res.setHeader('content-type', 'text/javascript');

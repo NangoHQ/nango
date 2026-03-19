@@ -37,7 +37,7 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
     }
 
     await acceptInvitation(data.id);
-    const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
+    const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role: invitation.role });
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;

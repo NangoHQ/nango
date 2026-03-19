@@ -21,5 +21,6 @@ export interface WindowEnv {
         gettingStarted: boolean;
         slack: boolean;
         plan: boolean;
+        authRoles: boolean;
     };
 }

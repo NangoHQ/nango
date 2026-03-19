@@ -1,4 +1,5 @@
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { Feature } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -119,6 +120,7 @@ export interface ParsedNangoSync {
     version: string;
     // TODO: make non-optional when nango-yaml is fully removed
     json_schema?: JSONSchema7 | undefined;
+    features?: Feature[] | undefined;
 }
 
 export interface ParsedNangoAction {
@@ -133,6 +135,7 @@ export interface ParsedNangoAction {
     version: string;
     // TODO: make non-optional when nango-yaml is fully removed
     json_schema?: JSONSchema7 | undefined;
+    features?: Feature[] | undefined;
 }
 
 export type LayoutMode = 'root' | 'nested';
