@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
+import { permissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 
 export const EnvironmentDropdown: React.FC = () => {
@@ -72,11 +73,7 @@ export const EnvironmentDropdown: React.FC = () => {
                     <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
                         <div className="flex flex-col">
                             {meta?.environments.map((environment) => (
-                                <PermissionGate
-                                    key={environment.name}
-                                    bypass={!environment.is_production}
-                                    permission={{ action: 'read', resource: 'environment', scope: 'production' }}
-                                >
+                                <PermissionGate key={environment.name} bypass={!environment.is_production} permission={permissions.canAccessProdEnvironment}>
                                     {(allowed) => (
                                         <DropdownMenuItem
                                             disabled={!allowed}
@@ -94,7 +91,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                 </PermissionGate>
                             ))}
                         </div>
-                        <PermissionGate permission={{ action: 'create', resource: 'environment', scope: 'global' }}>
+                        <PermissionGate permission={permissions.canCreateEnvironment}>
                             {(allowed) =>
                                 allowed ? (
                                     <Tooltip delayDuration={0}>
