@@ -34,6 +34,7 @@ export function usePlaygroundRun(inputFields: InputField[]) {
         setPlaygroundInputErrors({});
 
         const runStartTime = Date.now();
+        let isRunning = false;
         try {
             let response: Response;
             let triggerData: unknown = null;
@@ -222,6 +223,7 @@ export function usePlaygroundRun(inputFields: InputField[]) {
             let operationDetails = await fetchOperation(operationId);
 
             // Poll until the operation is terminal (best-effort, don't block too long).
+            // usePlaygroundReattach takes over if it's still running after this window.
             const maxPollMs = playgroundFunctionType === 'sync' ? 30_000 : 15_000;
             const pollStart = Date.now();
             while (operationDetails && (operationDetails.state === 'waiting' || operationDetails.state === 'running')) {
@@ -237,7 +239,7 @@ export function usePlaygroundRun(inputFields: InputField[]) {
                     : undefined);
 
             const state = (operationDetails?.state ?? operation.state) as string | undefined;
-            const isRunning = state === 'waiting' || state === 'running';
+            isRunning = state === 'waiting' || state === 'running';
             const success = !isRunning && state === 'success';
             const durationMs = !isRunning ? (opDurationMs && !Number.isNaN(opDurationMs) ? opDurationMs : triggerDurationMs) : Date.now() - triggerStartTime;
 
@@ -254,9 +256,14 @@ export function usePlaygroundRun(inputFields: InputField[]) {
                 resultData = pl;
             }
 
-            setPlaygroundPendingOperationId(null);
-            setPlaygroundResult({ success, state, data: resultData, durationMs, operationId });
+            if (!isRunning) {
+                setPlaygroundPendingOperationId(null);
+                setPlaygroundResult({ success, state, data: resultData, durationMs, operationId });
+            }
+            // If still running, leave pendingOperationId set and running=true —
+            // usePlaygroundReattach picks up from here without interrupting the spinner.
         } catch (err: unknown) {
+            isRunning = false; // ensure we always release running on error
             if (err instanceof Error && err.name === 'AbortError') {
                 setPlaygroundPendingOperationId(null);
                 setPlaygroundResult(null);
@@ -265,7 +272,10 @@ export function usePlaygroundRun(inputFields: InputField[]) {
                 setPlaygroundResult({ success: false, data: { error: 'Network error' }, durationMs: Date.now() - runStartTime });
             }
         } finally {
-            setPlaygroundRunning(false);
+            // Only release running if we're not handing off to usePlaygroundReattach.
+            if (!isRunning) {
+                setPlaygroundRunning(false);
+            }
             abortRef.current = null;
         }
     }, [
@@ -288,7 +298,8 @@ export function usePlaygroundRun(inputFields: InputField[]) {
         abortRef.current?.abort();
         setPlaygroundPendingOperationId(null);
         setPlaygroundRunning(false);
-    }, [setPlaygroundPendingOperationId, setPlaygroundRunning]);
+        setPlaygroundResult(null);
+    }, [setPlaygroundPendingOperationId, setPlaygroundRunning, setPlaygroundResult]);
 
     return { handleRun, handleCancel };
 }

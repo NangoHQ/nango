@@ -197,7 +197,8 @@ export const useStore = create<State>()(
         }),
         {
             name: LocalStorageKeys.Playground,
-            // Persist selection + result; exclude transient UI state
+            // Persist selection and pendingOperationId for re-attach; exclude result
+            // (can be large) and all transient UI state.
             partialize: (s) => ({
                 playground: {
                     isOpen: false,
@@ -206,7 +207,7 @@ export const useStore = create<State>()(
                     function: s.playground.function,
                     functionType: s.playground.functionType,
                     inputValues: s.playground.inputValues,
-                    result: s.playground.result,
+                    result: null,
                     pendingOperationId: s.playground.pendingOperationId,
                     running: false,
                     inputErrors: {},

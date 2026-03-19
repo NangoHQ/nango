@@ -58,7 +58,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    Docs <ExternalLink />
+                                    Docs <ExternalLink className="size-4" />
                                 </a>
                             </AlertButton>
                         </AlertActions>
@@ -86,7 +86,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                         <CodeBlock
                                             language="json"
                                             displayLanguage="JSON"
-                                            icon={<Braces />}
+                                            icon={<Braces className="size-4" />}
                                             code={
                                                 JSON.stringify(rawValue, null, 2).length < JSON_DISPLAY_LIMIT
                                                     ? JSON.stringify(rawValue, null, 2)
@@ -95,7 +95,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                             constrainHeight={false}
                                         />
                                     ) : (
-                                        <p className="text-text-tertiary text-[12px]">
+                                        <p className="text-text-tertiary text-body-small-regular">
                                             {rawValue !== undefined && rawValue !== null ? JSON.stringify(rawValue, null, 2) : '—'}
                                         </p>
                                     )}
@@ -127,7 +127,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                 {field.type}
                             </Badge>
                         </div>
-                        {field.description && <p className="text-text-tertiary text-xs">{field.description}</p>}
+                        {field.description && <p className="text-text-tertiary text-body-small-regular">{field.description}</p>}
                         <Input
                             value={inputValues[field.name] || ''}
                             aria-invalid={Boolean(inputErrors[field.name])}
@@ -137,7 +137,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                 clearInputError(field.name);
                             }}
                         />
-                        {inputErrors[field.name] && <p className="text-feedback-error-fg text-xs">{inputErrors[field.name]}</p>}
+                        {inputErrors[field.name] && <p className="text-feedback-error-fg text-body-small-regular">{inputErrors[field.name]}</p>}
                     </div>
                 ))}
             </div>

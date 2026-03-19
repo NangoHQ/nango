@@ -31,6 +31,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
     const setPlaygroundInputErrors = useStore((s) => s.setPlaygroundInputErrors);
     const setPlaygroundConnectionSearch = useStore((s) => s.setPlaygroundConnectionSearch);
+    const setPlaygroundPendingOperationId = useStore((s) => s.setPlaygroundPendingOperationId);
+    const setPlaygroundRunning = useStore((s) => s.setPlaygroundRunning);
 
     const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
 
@@ -102,16 +104,20 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
             setPlaygroundIntegration(val);
             setPlaygroundInputErrors({});
             setPlaygroundResult(null);
+            setPlaygroundPendingOperationId(null);
+            setPlaygroundRunning(false);
         },
-        [setPlaygroundIntegration, setPlaygroundInputErrors, setPlaygroundResult]
+        [setPlaygroundIntegration, setPlaygroundInputErrors, setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning]
     );
 
     const handleConnectionChange = useCallback(
         (val: string) => {
             setPlaygroundConnection(val);
             setPlaygroundResult(null);
+            setPlaygroundPendingOperationId(null);
+            setPlaygroundRunning(false);
         },
-        [setPlaygroundConnection, setPlaygroundResult]
+        [setPlaygroundConnection, setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning]
     );
 
     const handleFunctionChange = useCallback(
@@ -120,8 +126,10 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
             if (flow) setPlaygroundFunction(val, flow.resolvedType);
             setPlaygroundInputErrors({});
             setPlaygroundResult(null);
+            setPlaygroundPendingOperationId(null);
+            setPlaygroundRunning(false);
         },
-        [allFlows, setPlaygroundFunction, setPlaygroundInputErrors, setPlaygroundResult]
+        [allFlows, setPlaygroundFunction, setPlaygroundInputErrors, setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning]
     );
 
     return (
@@ -164,13 +172,13 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             type="button"
                             variant="secondary"
                             size="sm"
-                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-xs gap-0.5 justify-center items-center"
+                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/integrations/create`);
                             }}
                         >
-                            <Plus className="size-3" /> Add
+                            <Plus className="size-4" /> Add
                         </Button>
                     </div>
                 }
@@ -194,13 +202,13 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             type="button"
                             variant="secondary"
                             size="sm"
-                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-xs gap-0.5 justify-center items-center"
+                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/connections/create${playgroundIntegration ? `?integration_id=${playgroundIntegration}` : ''}`);
                             }}
                         >
-                            <Plus className="size-3" /> Add
+                            <Plus className="size-4" /> Add
                         </Button>
                     </div>
                 }
@@ -246,13 +254,13 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                                 type="button"
                                 variant="secondary"
                                 size="sm"
-                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-xs gap-0.5 justify-center items-center"
+                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center"
                                 onClick={() => {
                                     setPlaygroundOpen(false);
                                     navigate(`/${env}/integrations/${playgroundIntegration}`);
                                 }}
                             >
-                                Activate <ExternalLink className="size-3" />
+                                Activate <ExternalLink className="size-4" />
                             </Button>
                         </div>
                     ) : undefined

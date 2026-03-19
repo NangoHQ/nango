@@ -17,14 +17,16 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
             <SidebarInset className="max-h-screen overflow-hidden">
                 <AppHeader />
                 <div
+                    ref={ref}
                     className={cn(
                         'relative w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl',
                         fullWidth ? 'p-0' : 'p-11'
                     )}
+                    {...props}
                 >
-                    <div ref={ref} className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)} {...props}>
-                        {children}
-                    </div>
+                    <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
+                    {/* Playground renders a position:fixed sheet — it's unaffected by this
+                        overflow-auto container and positions relative to the viewport. */}
                     <Playground />
                 </div>
             </SidebarInset>

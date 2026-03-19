@@ -27,7 +27,7 @@ export const AppHeader: React.FC = () => {
                                 : '[background:linear-gradient(var(--color-bg-surface),var(--color-bg-surface))_padding-box,linear-gradient(90deg,var(--color-brand-500)_0%,var(--color-border-default)_100%)_border-box]'
                         )}
                     >
-                        <Box />
+                        <Box className="size-4" />
                         Playground
                     </Button>
                 </div>

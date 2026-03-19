@@ -5,119 +5,148 @@ import { apiFetch } from '@/utils/api';
 
 import type { GetOperation } from '@nangohq/types';
 
+const POLL_INITIAL_INTERVAL_MS = 1500;
+const POLL_MAX_INTERVAL_MS = 10_000;
+const POLL_BACKOFF_AFTER_MS = 30_000;
+
 /**
  * When the playground opens and a pendingOperationId is stored, re-attaches to
- * that operation and polls until it's terminal. Sets running=true during the
- * wait so the UI shows the running state just as if the run were live.
+ * that operation and polls until it reaches a terminal state. Sets running=true
+ * during the wait so the UI shows the running state just as if the run were live.
+ *
+ * Polling backs off from 1.5s to 10s after the first 30s to reduce server load
+ * for long-running syncs.
  *
  * Called lazily — only activates when the sheet is open.
  */
 export function usePlaygroundReattach() {
-    const env = useStore((s) => s.env);
-    const playgroundOpen = useStore((s) => s.playground.isOpen);
-    const pendingOperationId = useStore((s) => s.playground.pendingOperationId);
-    const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
-    const setPlaygroundPendingOperationId = useStore((s) => s.setPlaygroundPendingOperationId);
-    const setPlaygroundRunning = useStore((s) => s.setPlaygroundRunning);
-
+    // Tracks whether a reattach loop is already running. Using a ref (not state)
+    // so flipping it never triggers re-renders or effect re-runs.
+    const reattachingRef = useRef(false);
     const abortRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
-        // Only activate when the sheet is open and there's a pending operation.
-        if (!playgroundOpen || !pendingOperationId) return;
+        const startPolling = (pendingOperationId: string, env: string) => {
+            if (reattachingRef.current) return;
 
-        const controller = new AbortController();
-        abortRef.current = controller;
+            reattachingRef.current = true;
+            const controller = new AbortController();
+            abortRef.current = controller;
 
-        setPlaygroundRunning(true);
+            const { setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning } = useStore.getState();
+            setPlaygroundRunning(true);
 
-        const fetchOperation = async (operationId: string) => {
-            const res = await apiFetch(`/api/v1/logs/operations/${encodeURIComponent(operationId)}?env=${env}`, {
-                method: 'GET',
-                signal: controller.signal
-            });
-            if (!res.ok) return null;
-            const json = (await res.json()) as GetOperation['Success'];
-            return json.data;
+            const fetchOperation = async (operationId: string) => {
+                const res = await apiFetch(`/api/v1/logs/operations/${encodeURIComponent(operationId)}?env=${env}`, {
+                    method: 'GET',
+                    signal: controller.signal
+                });
+                if (!res.ok) return null;
+                const json = (await res.json()) as GetOperation['Success'];
+                return json.data;
+            };
+
+            const sleep = (ms: number) =>
+                new Promise<void>((resolve, reject) => {
+                    const t = window.setTimeout(resolve, ms);
+                    const onAbort = () => {
+                        window.clearTimeout(t);
+                        reject(new DOMException('Aborted', 'AbortError'));
+                    };
+                    if (controller.signal.aborted) {
+                        onAbort();
+                        return;
+                    }
+                    controller.signal.addEventListener('abort', onAbort, { once: true });
+                });
+
+            void (async () => {
+                try {
+                    let operationDetails = await fetchOperation(pendingOperationId);
+
+                    // Poll until terminal — no timeout. Stale operations will always be in
+                    // a terminal state already, so this loop exits immediately for them.
+                    // Interval backs off from 1.5s to 10s after 30s to reduce server load
+                    // for long-running syncs.
+                    const pollStart = Date.now();
+                    while (operationDetails && (operationDetails.state === 'waiting' || operationDetails.state === 'running')) {
+                        const elapsed = Date.now() - pollStart;
+                        const interval = elapsed >= POLL_BACKOFF_AFTER_MS ? POLL_MAX_INTERVAL_MS : POLL_INITIAL_INTERVAL_MS;
+                        await sleep(interval);
+                        operationDetails = await fetchOperation(pendingOperationId);
+                    }
+
+                    if (!operationDetails) {
+                        // Operation not found — stale ID, clear it silently.
+                        setPlaygroundPendingOperationId(null);
+                        setPlaygroundResult(null);
+                        return;
+                    }
+
+                    const state = operationDetails.state as string | undefined;
+                    const isRunning = state === 'waiting' || state === 'running';
+                    const success = !isRunning && state === 'success';
+
+                    const durationMs =
+                        operationDetails.durationMs ??
+                        (operationDetails.startedAt && operationDetails.endedAt
+                            ? new Date(operationDetails.endedAt).getTime() - new Date(operationDetails.startedAt).getTime()
+                            : 0);
+
+                    // Mirror the payload assembly from Logs/Operation/Show.tsx
+                    const op = operationDetails;
+                    let resultData: unknown = null;
+                    if (op.meta || op.request || op.response || op.error) {
+                        const pl: Record<string, unknown> = op.meta ? { ...op.meta } : {};
+                        if (op.request) pl.request = op.request;
+                        if (op.response) pl.response = op.response;
+                        if (op.error) {
+                            pl.error = { message: op.error.message, ...(op.error.payload ? { payload: op.error.payload } : {}) };
+                        }
+                        resultData = pl;
+                    }
+
+                    setPlaygroundPendingOperationId(null);
+                    setPlaygroundResult({ success, state, data: resultData, durationMs, operationId: pendingOperationId });
+                } catch (err) {
+                    if (err instanceof Error && err.name === 'AbortError') {
+                        // Sheet closed or component unmounted — leave pendingOperationId in
+                        // place so reattach fires again when the sheet reopens.
+                    } else {
+                        setPlaygroundPendingOperationId(null);
+                        setPlaygroundResult({ success: false, data: { error: 'Failed to re-attach to operation' }, durationMs: 0 });
+                    }
+                } finally {
+                    reattachingRef.current = false;
+                    useStore.getState().setPlaygroundRunning(false);
+                    abortRef.current = null;
+                }
+            })();
         };
 
-        const sleep = (ms: number) =>
-            new Promise<void>((resolve, reject) => {
-                const t = window.setTimeout(resolve, ms);
-                const onAbort = () => {
-                    window.clearTimeout(t);
-                    reject(new DOMException('Aborted', 'AbortError'));
-                };
-                if (controller.signal.aborted) {
-                    onAbort();
-                    return;
-                }
-                controller.signal.addEventListener('abort', onAbort, { once: true });
-            });
+        // Check immediately on mount in case the store already satisfies the condition
+        // (e.g. opened with a pendingOperationId already persisted and running=false).
+        const initial = useStore.getState();
+        if (initial.playground.isOpen && initial.playground.pendingOperationId && !initial.playground.running) {
+            startPolling(initial.playground.pendingOperationId, initial.env);
+        }
 
-        void (async () => {
-            try {
-                let operationDetails = await fetchOperation(pendingOperationId);
-
-                // Poll until terminal or we give up (5 min max — long running syncs).
-                const maxPollMs = 5 * 60_000;
-                const pollStart = Date.now();
-                while (operationDetails && (operationDetails.state === 'waiting' || operationDetails.state === 'running')) {
-                    if (Date.now() - pollStart > maxPollMs) break;
-                    await sleep(1500);
-                    operationDetails = await fetchOperation(pendingOperationId);
-                }
-
-                if (!operationDetails) {
-                    // Operation not found — stale ID, clear it silently.
-                    setPlaygroundPendingOperationId(null);
-                    setPlaygroundResult(null);
-                    return;
-                }
-
-                const state = operationDetails.state as string | undefined;
-                const isRunning = state === 'waiting' || state === 'running';
-                const success = !isRunning && state === 'success';
-
-                const durationMs =
-                    operationDetails.durationMs ??
-                    (operationDetails.startedAt && operationDetails.endedAt
-                        ? new Date(operationDetails.endedAt).getTime() - new Date(operationDetails.startedAt).getTime()
-                        : 0);
-
-                // Mirror the payload assembly from Logs/Operation/Show.tsx
-                const op = operationDetails;
-                let resultData: unknown = null;
-                if (op.meta || op.request || op.response || op.error) {
-                    const pl: Record<string, unknown> = op.meta ? { ...op.meta } : {};
-                    if (op.request) pl.request = op.request;
-                    if (op.response) pl.response = op.response;
-                    if (op.error) {
-                        pl.error = { message: op.error.message, ...(op.error.payload ? { payload: op.error.payload } : {}) };
-                    }
-                    resultData = pl;
-                }
-
-                setPlaygroundPendingOperationId(null);
-                setPlaygroundResult({ success, state, data: resultData, durationMs, operationId: pendingOperationId });
-            } catch (err) {
-                if (err instanceof Error && err.name === 'AbortError') {
-                    // Sheet closed or env changed — leave pendingOperationId in place so
-                    // it can re-attach next time the sheet opens.
-                } else {
-                    setPlaygroundPendingOperationId(null);
-                    setPlaygroundResult({ success: false, data: { error: 'Failed to re-attach to operation' }, durationMs: 0 });
-                }
-            } finally {
-                setPlaygroundRunning(false);
-                abortRef.current = null;
+        // Subscribe to subsequent store changes — handles:
+        //   - sheet open with a persisted pendingOperationId (running=false)
+        //   - handoff from usePlaygroundRun after it times out (pendingOperationId set,
+        //     running stays true — reattachingRef guards against double-start)
+        // Note: we check reattachingRef inside startPolling, so it's safe to call on
+        // every store update without debouncing.
+        const unsubscribe = useStore.subscribe((state) => {
+            const { isOpen, pendingOperationId } = state.playground;
+            if (isOpen && pendingOperationId) {
+                startPolling(pendingOperationId, state.env);
             }
-        })();
+        });
 
         return () => {
-            controller.abort();
+            unsubscribe();
+            abortRef.current?.abort();
         };
-        // Re-run only when the sheet opens or a new pendingOperationId appears.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playgroundOpen, pendingOperationId]);
+    }, []);
 }

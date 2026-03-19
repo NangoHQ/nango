@@ -89,7 +89,7 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
                     </AlertActions>
                 </Alert>
 
-                <CodeBlock language="json" displayLanguage="JSON" icon={<Braces />} code={resultJson} constrainHeight={false} />
+                <CodeBlock language="json" displayLanguage="JSON" icon={<Braces className="size-4" />} code={resultJson} constrainHeight={false} />
             </div>
         </>
     );

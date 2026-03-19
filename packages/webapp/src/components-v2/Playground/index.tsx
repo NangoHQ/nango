@@ -1,6 +1,6 @@
 import { Play, RotateCcw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { PlaygroundInputs } from './PlaygroundInputs';
 import { PlaygroundResult } from './PlaygroundResult';
@@ -30,7 +30,6 @@ export const Playground: React.FC = () => {
     const clearPlaygroundInputError = useStore((s) => s.clearPlaygroundInputError);
 
     const location = useLocation();
-    useNavigate(); // keep router context alive for sub-components
 
     // Auto-close the sheet when the route changes
     useEffect(() => {
@@ -70,7 +69,8 @@ export const Playground: React.FC = () => {
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
-    const canRun = Boolean(playgroundIntegration && useStore.getState().playground.connection && playgroundFunction);
+    const playgroundConnection = useStore((s) => s.playground.connection);
+    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunction);
     const isSync = playgroundFunctionType === 'sync';
     const showInputs = Boolean(selectedFlow && (isSync || inputFields.length > 0));
 
