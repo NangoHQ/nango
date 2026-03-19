@@ -170,7 +170,8 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         };
 
         const routingContext: RoutingContext = {
-            plan: plan
+            plan: plan,
+            features: []
         };
 
         const res = await startScript({
