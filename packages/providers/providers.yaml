@@ -9468,7 +9468,6 @@ lightspeed-retail:
                 - 'x-ratelimit-reset'
     docs: https://nango.dev/docs/api-integrations/lightspeed-retail
     setup_guide_url: https://nango.dev/docs/api-integrations/lightspeed-retail/how-to-register-your-own-lightspeed-retail-api-oauth-app
-    docs_connect: https://nango.dev/docs/api-integrations/lightspeed-retail/connect
     connection_config:
         domain_prefix:
             type: string
