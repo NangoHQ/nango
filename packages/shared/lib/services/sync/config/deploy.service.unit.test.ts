@@ -171,6 +171,7 @@ describe('Sync config create', () => {
                     sync_type: 'full',
                     models_json_schema: null,
                     sdk_version: null,
+                    features: [],
                     created_at: new Date(),
                     updated_at: new Date()
                 }
@@ -202,6 +203,7 @@ describe('Sync config create', () => {
                 sync_type: 'full',
                 models_json_schema: null,
                 sdk_version: null,
+                features: [],
                 created_at: new Date(),
                 updated_at: new Date()
             });
@@ -232,6 +234,7 @@ describe('Sync config create', () => {
                 sync_type: 'full',
                 models_json_schema: null,
                 sdk_version: null,
+                features: [],
                 created_at: new Date(),
                 updated_at: new Date()
             });

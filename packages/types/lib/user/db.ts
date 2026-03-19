@@ -1,5 +1,7 @@
 import type { Timestamps } from '../db.js';
 
+export type Role = 'administrator' | 'production_support' | 'development_full_access';
+
 export interface DBUser extends Timestamps {
     id: number;
     email: string;
@@ -15,4 +17,5 @@ export interface DBUser extends Timestamps {
     email_verification_token_expires_at: Date | null;
     uuid: string;
     getting_started_closed: boolean;
+    role: Role;
 }

@@ -30,7 +30,6 @@ const issueSchema = z.object({
 
 const sync = createSync({
     description: 'Fetches GitHub issues',
-    endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
     frequency: 'every hour',
     models: { GithubIssue: issueSchema },
     exec: async (nango) => {
@@ -126,7 +125,6 @@ models:
 const sync = createSync({
     description: 'Fetches GitHub issues',
     frequency: 'every hour',
-    endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
     models: { GithubIssue: issueSchema }
 });
 ```
@@ -189,7 +187,6 @@ const issueSchema = z.object({
 const sync = createSync({
     description: 'Fetches GitHub issues',
     frequency: 'every hour',
-    endpoints: [{ method: 'GET', path: '/issues', group: 'Issues' }],
     models: { GithubIssue: issueSchema },
     exec: async (nango) => {
         // Your existing sync logic here
@@ -221,7 +218,6 @@ const inputSchema = z.object({
 
 const action = createAction({
     description: 'Create a GitHub issue',
-    endpoint: { method: 'POST', path: '/issues', group: 'Issues' },
     input: inputSchema,
     output: z.void(),
     exec: async (nango, input) => {

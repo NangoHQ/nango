@@ -38,7 +38,7 @@ import type {
     DBTeam,
     FunctionRuntime,
     NangoProps,
-    RuntimeContext,
+    RoutingContext,
     SdkLogger,
     TelemetryBag
 } from '@nangohq/types';
@@ -169,14 +169,15 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
-        const runtimeContext: RuntimeContext = {
-            plan: plan
+        const routingContext: RoutingContext = {
+            plan: plan,
+            features: []
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx,
             input: task.input
         });

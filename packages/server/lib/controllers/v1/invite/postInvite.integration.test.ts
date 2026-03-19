@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+
+import type { DBInvitation } from '@nangohq/types';
 
 const route = '/api/v1/invite';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -70,5 +73,28 @@ describe(`POST ${route}`, () => {
                 invited: ['foo@example.com']
             }
         });
+    });
+
+    it('should invite a user with a specific role', async () => {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const email = 'role-test@example.com';
+        const res = await api.fetch(route, {
+            method: 'POST',
+            query: { env: 'dev' },
+            body: { emails: [email], role: 'production_support' },
+            session
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+
+        const invitation = await db.knex
+            .select('*')
+            .from<DBInvitation>('_nango_invited_users')
+            .where({ email, account_id: account.id, accepted: false })
+            .first();
+        expect(invitation?.role).toBe('production_support');
     });
 });

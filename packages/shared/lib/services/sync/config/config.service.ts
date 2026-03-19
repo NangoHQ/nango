@@ -51,9 +51,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null,
             sdk_version: syncConfig.sdk_version,
-            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false,
             // Temporary regression
-            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema)
+            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema),
+            features: syncConfig.features
         };
 
         if (syncConfig.type === 'sync') {

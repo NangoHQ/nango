@@ -105,7 +105,8 @@ class UserService {
         hashed_password = '',
         salt = '',
         account_id,
-        email_verified
+        email_verified,
+        role = 'administrator'
     }: {
         email: string;
         name: string;
@@ -113,6 +114,7 @@ class UserService {
         salt?: string;
         account_id: number;
         email_verified: boolean;
+        role?: DBUser['role'];
     }): Promise<DBUser | null> {
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
         const result: Pick<DBUser, 'id'>[] = await db.knex
@@ -125,7 +127,8 @@ class UserService {
                 account_id,
                 email_verified,
                 email_verification_token: email_verified ? null : uuid.v4(),
-                email_verification_token_expires_at: email_verified ? null : expires_at
+                email_verification_token_expires_at: email_verified ? null : expires_at,
+                role
             })
             .returning('id');
 

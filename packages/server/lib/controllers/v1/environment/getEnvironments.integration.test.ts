@@ -40,13 +40,16 @@ describe(`GET ${route}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [
                 {
-                    name: 'dev'
+                    name: 'dev',
+                    is_production: false
                 },
                 {
-                    name: 'prod'
+                    name: 'prod',
+                    is_production: true
                 },
                 {
-                    name: 'test'
+                    name: 'test',
+                    is_production: false
                 }
             ]
         });
@@ -70,10 +73,12 @@ describe(`GET ${route}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [
                 {
-                    name: 'dev'
+                    name: 'dev',
+                    is_production: false
                 },
                 {
-                    name: 'test'
+                    name: 'test',
+                    is_production: false
                 }
             ]
         });

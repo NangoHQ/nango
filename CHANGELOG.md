@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.46] - 2026-03-18
+
+### Added
+
+- *(runner-sdk)* Deprecate `endpoints` in functions (#5647) by @kaposke
+- *(server)* NAN-2184 role-based authorization system (#5644) by @pfreixes
+- *(integrations)* Add support for slack mcp (#5655) by @hassan254-prog
+- *(integrations)* Add support for vercel mcp (#5660) by @hassan254-prog
+- *(integrations)* Add support for ms word and powerpoint (#5661) by @hassan254-prog
+- *(integrations)* Add support for pleo (#5662) by @hassan254-prog
+- *(integrations)* Add support for shopworks (#5665) by @hassan254-prog
+- Add features to sync config table (#5652) by @TBonnin
+- Detect features in CLI and pass to /deploy endpoint   (#5653) by @TBonnin
+
+### Changed
+
+- Dev update - deprecation notice for `schema.ts` and `schema.json` (#5650) by @SapneshNaik
+- Update data validation guide for `schema.ts`/`schema.json` deprecation (#5651) by @SapneshNaik
+- Document function concurrency and sync variant limits (#5613) by @bastienbeurier
+- Increase max concurrency limits (#5667) by @TBonnin
+
+### Fixed
+
+- *(autodelete)* Don't filter out entries with count=0 (#5635) by @TBonnin
+- Revert function concurrency metric (#5638) by @TBonnin
+- *(lambda)* Node routing overrides (#5649) by @rossmcewan
+- *(lambda)* Set log group retention (#5659) by @rossmcewan
+- *(query)* `deleteOutdatedRecords` transaction handling (#5656) by @agusayerza
+
+## [v0.69.45] - 2026-03-17
+
+### Added
+
+- *(server)* Run credentials verification on the connection import endpoint (#5538) by @hassan254-prog
+- *(database)* Add role column to users/invitations and is_production to environments (#5629) by @pfreixes
+- *(shared)* Set is_production flag when creating prod environments (#5631) by @pfreixes
+- *(database)* Backfill is_production for existing prod environments (#5632) by @pfreixes
+- Add stop listening on connection deletion and real-time sync concept for gmail and google calendar webhooks (#5624) by @agusayerza
+- *(integrations)* Add support for triple whale (#5643) by @hassan254-prog
+- *(integrations)* Add support for typefully v2 (#5646) by @hassan254-prog
+
+### Changed
+
+- Iterate on the docs navigation (#5628) by @bastienbeurier
+- Track functions concurrency in metrics (#5623) by @TBonnin
+- Clarify checkpoint docs for incremental and full syncs (#5621) by @TBonnin
+- Document implementation on microsoft client credentials webhooks (#5619) by @hassan254-prog
+- *(cli)* Light refac on build and deploy  (#5627) by @kaposke
+- Remove AGENTS.md (#5617) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4c31ea1df4bcb1c0a4a6c9b32dfdd2cd6cb720f1 by Marcin Dobrowolski by @github-actions[bot]
+- *(server)* Remove nango yaml logic from `POST /flows/pre-built/deploy` (#5637) by @kaposke
+
+### Fixed
+
+- *(providers)* Fix vercel api key pattern (#5645) by @hassan254-prog
+- *(vulns)* Npm audit fix (#5633) by @rossmcewan
+- *(fleet)* Fix node config override checks (#5630) by @rossmcewan
+- *(deploy)* Detect deleted syncs when deploying (#5614) by @hassan254-prog
+- *(connect-ui)* Pass authorization params during reconnect (#5654) by @hassan254-prog
+
 ## [v0.69.44] - 2026-03-13
 
 ### Added
@@ -6141,6 +6201,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.46]: https://github.com/NangoHQ/nango/compare/v0.69.45..v0.69.46
+[v0.69.45]: https://github.com/NangoHQ/nango/compare/v0.69.44..v0.69.45
 [v0.69.44]: https://github.com/NangoHQ/nango/compare/v0.69.43..v0.69.44
 [v0.69.43]: https://github.com/NangoHQ/nango/compare/v0.69.42..v0.69.43
 [v0.69.42]: https://github.com/NangoHQ/nango/compare/v0.69.41..v0.69.42

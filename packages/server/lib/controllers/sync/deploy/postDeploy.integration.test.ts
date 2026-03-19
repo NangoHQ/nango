@@ -198,7 +198,7 @@ describe(`POST ${endpoint}`, () => {
             // Check that everything was inserted in DB
             const syncConfigs = await getSyncConfigsAsStandardConfig(env!.id);
             expect(syncConfigs).toHaveLength(1);
-            expect(syncConfigs).toStrictEqual<typeof syncConfigs>([
+            expect(syncConfigs).toMatchObject([
                 {
                     actions: [],
                     'on-events': [],
@@ -213,7 +213,6 @@ describe(`POST ${endpoint}`, () => {
                             enabled: true,
                             endpoints: [{ method: 'GET', path: '/path', group: null }],
                             input: 'Input',
-                            is_zero_yaml: false,
                             sdk_version: expect.any(String),
                             is_public: false,
                             last_deployed: expect.toBeIsoDate(),
@@ -227,6 +226,7 @@ describe(`POST ${endpoint}`, () => {
                             type: 'sync',
                             version: '1',
                             webhookSubscriptions: [],
+                            features: [],
                             json_schema: {
                                 definitions: {
                                     Input: { type: 'object', properties: { id: { type: 'number' } }, required: ['id'], additionalProperties: false },

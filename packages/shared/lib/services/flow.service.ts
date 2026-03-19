@@ -56,7 +56,7 @@ class FlowService {
                     json_schema: jsonSchema,
                     metadata: { description: item.description, scopes: item.scopes },
                     sdk_version: `${integration.sdkVersion}-zero`,
-                    is_zero_yaml: true
+                    features: item.features || []
                 });
             }
             for (const item of integration.actions) {
@@ -88,7 +88,7 @@ class FlowService {
                     json_schema: jsonSchema,
                     metadata: { description: item.description, scopes: item.scopes },
                     sdk_version: `${integration.sdkVersion}-zero`,
-                    is_zero_yaml: true
+                    features: item.features || []
                 });
             }
 
