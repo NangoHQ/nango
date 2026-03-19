@@ -5,6 +5,7 @@ import type { Role } from '@nangohq/types';
 
 const ADMIN_ONLY: Permission[] = [
     p.canManageTeam,
+    p.canUpdateTeamMember,
     p.canRemoveTeamMember,
     p.canInviteMember,
     p.canCancelInvitation,

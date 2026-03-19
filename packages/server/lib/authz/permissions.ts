@@ -3,6 +3,7 @@ import type { Permission } from './types.js';
 export const permissions = {
     // team management (global scope)
     canManageTeam: { action: 'update', resource: 'team', scope: 'global' },
+    canUpdateTeamMember: { action: 'update', resource: 'team_member', scope: 'global' },
     canRemoveTeamMember: { action: 'delete', resource: 'team_member', scope: 'global' },
     canInviteMember: { action: 'create', resource: 'invite', scope: 'global' },
     canCancelInvitation: { action: 'delete', resource: 'invite', scope: 'global' },
