@@ -35,53 +35,62 @@ export function usePlaygroundReattach() {
             const { setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning } = useStore.getState();
             setPlaygroundRunning(true);
 
-            const fetchOperation = async (operationId: string) => {
+            const fetchOperation = async (operationId: string): Promise<{ data: GetOperation['Success']['data'] | null; notFound: boolean }> => {
                 const res = await apiFetch(`/api/v1/logs/operations/${encodeURIComponent(operationId)}?env=${env}`, {
                     method: 'GET',
                     signal: controller.signal
                 });
-                if (!res.ok) return null;
+                if (res.status === 404) return { data: null, notFound: true };
+                if (!res.ok) return { data: null, notFound: false };
                 const json = (await res.json()) as GetOperation['Success'];
-                return json.data;
+                return { data: json.data, notFound: false };
             };
 
             const sleep = (ms: number) =>
                 new Promise<void>((resolve, reject) => {
-                    const t = window.setTimeout(resolve, ms);
                     const onAbort = () => {
                         window.clearTimeout(t);
                         reject(new DOMException('Aborted', 'AbortError'));
                     };
+                    const t = window.setTimeout(() => {
+                        controller.signal.removeEventListener('abort', onAbort);
+                        resolve();
+                    }, ms);
                     if (controller.signal.aborted) {
                         onAbort();
                         return;
                     }
-                    controller.signal.addEventListener('abort', onAbort, { once: true });
+                    controller.signal.addEventListener('abort', onAbort);
                 });
 
             void (async () => {
                 try {
-                    let operationDetails = await fetchOperation(pendingOperationId);
+                    let result = await fetchOperation(pendingOperationId);
 
                     // Poll until terminal with no timeout. Stale operations will always be in
                     // a terminal state already, so this loop exits immediately for them.
                     // Interval backs off from 1.5s to 10s after 30s to reduce server load
                     // for long-running syncs.
                     const pollStart = Date.now();
-                    while (operationDetails && (operationDetails.state === 'waiting' || operationDetails.state === 'running')) {
+                    while (result.data && (result.data.state === 'waiting' || result.data.state === 'running')) {
                         const elapsed = Date.now() - pollStart;
                         const interval = elapsed >= POLL_BACKOFF_AFTER_MS ? POLL_MAX_INTERVAL_MS : POLL_INITIAL_INTERVAL_MS;
                         await sleep(interval);
-                        operationDetails = await fetchOperation(pendingOperationId);
+                        result = await fetchOperation(pendingOperationId);
                     }
 
-                    if (!operationDetails) {
-                        // Operation not found — stale ID, clear it silently.
-                        setPlaygroundPendingOperationId(null);
-                        setPlaygroundResult(null);
+                    if (!result.data) {
+                        if (result.notFound) {
+                            // Definitive 404 — stale ID, clear it silently.
+                            setPlaygroundPendingOperationId(null);
+                            setPlaygroundResult(null);
+                        }
+                        // Transient error (5xx, network hiccup) — leave pendingOperationId in
+                        // place so reattach retries when the sheet reopens or the next subscribe fires.
                         return;
                     }
 
+                    const operationDetails = result.data;
                     const state = operationDetails.state as string | undefined;
                     const isRunning = state === 'waiting' || state === 'running';
                     const success = !isRunning && state === 'success';
