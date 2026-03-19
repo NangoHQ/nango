@@ -92,7 +92,7 @@ class ParserService {
         const callsReferencingModelsToCheck = callsBatchingRecords.concat(
             'deleteRecordsFromPreviousExecutions',
             'getRecordsByIds',
-            'listRecords', // 1. Allow await nango.listRecords() at compile time
+            'listRecords',
             'setMergingStrategy',
             'trackDeletesEnd',
             'trackDeletesStart'

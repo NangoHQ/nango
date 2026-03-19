@@ -689,7 +689,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (options?.limit !== undefined) {
             pageOptions.limit = options.limit;
         }
-        return this.fetchRecordsPage<T>(model, Object.keys(pageOptions).length > 0 ? pageOptions : undefined);
+        return this.fetchRecordsPage<T>(model, pageOptions);
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {

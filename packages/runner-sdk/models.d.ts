@@ -441,7 +441,7 @@ export declare class NangoSync<TCheckpoint = Checkpoint> extends NangoAction {
     listRecords<T extends object = any>(
         model: string,
         options?: { cursor?: string; limit?: number }
-    ): Promise<{ records: T[]; next_cursor: string | null }>; // 2. Expose listRecords in Runner SDK
+    ): Promise<{ records: T[]; next_cursor: string | null }>;
     getCheckpoint(): Promise<TCheckpoint | null>;
     saveCheckpoint(checkpoint: TCheckpoint): Promise<void>;
     clearCheckpoint(): Promise<void>;

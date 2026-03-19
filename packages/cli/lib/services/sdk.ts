@@ -375,7 +375,6 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         return objects;
     }
 
-    // 1. Implement listRecords in CLI SDK for dry run?
     public override async listRecords<T extends Record<string, any> = Record<string, any>>(
         model: string,
         options?: { cursor?: string; limit?: number }

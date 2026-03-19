@@ -72,7 +72,7 @@ export abstract class NangoSyncBase<
             cursor?: string;
             limit?: number;
         }
-    ): MaybePromise<{ records: TModel[]; next_cursor: string | null }>; // 2. Expose listRecords in Runner SDK
+    ): MaybePromise<{ records: TModel[]; next_cursor: string | null }>;
 
     /**
      * @deprecated please use trackDeletesStart and trackDeletesEnd
