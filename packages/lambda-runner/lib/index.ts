@@ -155,7 +155,11 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         if (code === '') {
             throw new Error('No code found');
         }
-        await loadProviders();
+        try {
+            await loadProviders();
+        } catch (err) {
+            logger.error('Error loading providers', { error: err });
+        }
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },
             code,
