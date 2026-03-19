@@ -135,8 +135,8 @@ class Lambda {
                         ServiceNamespace: 'lambda',
                         ScalableDimension: 'lambda:function:ProvisionedConcurrency',
                         ResourceId: resourceId,
-                        MinCapacity: node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY,
-                        MaxCapacity: (node.provisionedConcurrency || envs.LAMBDA_PROVISIONED_CONCURRENCY) * 10
+                        MinCapacity: envs.LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY,
+                        MaxCapacity: node.provisionedConcurrency || envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY
                     })
                 );
                 await applicationAutoScalingClient.send(
@@ -236,7 +236,7 @@ export const lambdaNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 0,
         executionTimeoutSecs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS,
-        provisionedConcurrency: envs.LAMBDA_PROVISIONED_CONCURRENCY,
+        provisionedConcurrency: envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY,
         replicas: 1
     },
     start: async (node: Node) => {
