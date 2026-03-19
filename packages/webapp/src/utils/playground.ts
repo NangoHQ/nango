@@ -25,6 +25,7 @@ export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
         functionType: override.functionType ?? null,
         inputValues: override.inputValues ?? {},
         result: null,
+        pendingOperationId: null,
         running: false,
         inputErrors: {},
         connectionSearch: ''

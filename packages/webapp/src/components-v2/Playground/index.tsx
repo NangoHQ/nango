@@ -6,6 +6,7 @@ import { PlaygroundInputs } from './PlaygroundInputs';
 import { PlaygroundResult } from './PlaygroundResult';
 import { PlaygroundSelectors } from './PlaygroundSelectors';
 import { getInputFields } from './types';
+import { usePlaygroundReattach } from './usePlaygroundReattach';
 import { usePlaygroundRun } from './usePlaygroundRun';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent } from '../ui/sheet';
@@ -65,6 +66,7 @@ export const Playground: React.FC = () => {
     const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
 
     const { handleRun, handleCancel } = usePlaygroundRun(inputFields);
+    usePlaygroundReattach();
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 

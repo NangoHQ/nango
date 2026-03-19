@@ -16,6 +16,7 @@ export function usePlaygroundRun(inputFields: InputField[]) {
     const playgroundFunctionType = useStore((s) => s.playground.functionType);
     const inputValues = useStore((s) => s.playground.inputValues);
     const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
+    const setPlaygroundPendingOperationId = useStore((s) => s.setPlaygroundPendingOperationId);
     const setPlaygroundRunning = useStore((s) => s.setPlaygroundRunning);
     const setPlaygroundInputErrors = useStore((s) => s.setPlaygroundInputErrors);
 
@@ -216,6 +217,8 @@ export function usePlaygroundRun(inputFields: InputField[]) {
             }
 
             const operationId = operation.id;
+            // Persist so re-attach can resume if the user navigates/refreshes mid-run.
+            setPlaygroundPendingOperationId(operationId);
             let operationDetails = await fetchOperation(operationId);
 
             // Poll until the operation is terminal (best-effort, don't block too long).
@@ -251,11 +254,14 @@ export function usePlaygroundRun(inputFields: InputField[]) {
                 resultData = pl;
             }
 
+            setPlaygroundPendingOperationId(null);
             setPlaygroundResult({ success, state, data: resultData, durationMs, operationId });
         } catch (err: unknown) {
             if (err instanceof Error && err.name === 'AbortError') {
+                setPlaygroundPendingOperationId(null);
                 setPlaygroundResult(null);
             } else {
+                setPlaygroundPendingOperationId(null);
                 setPlaygroundResult({ success: false, data: { error: 'Network error' }, durationMs: Date.now() - runStartTime });
             }
         } finally {
@@ -273,14 +279,16 @@ export function usePlaygroundRun(inputFields: InputField[]) {
         inputFields,
         inputValues,
         setPlaygroundResult,
+        setPlaygroundPendingOperationId,
         setPlaygroundRunning,
         setPlaygroundInputErrors
     ]);
 
     const handleCancel = useCallback(() => {
         abortRef.current?.abort();
+        setPlaygroundPendingOperationId(null);
         setPlaygroundRunning(false);
-    }, [setPlaygroundRunning]);
+    }, [setPlaygroundPendingOperationId, setPlaygroundRunning]);
 
     return { handleRun, handleCancel };
 }

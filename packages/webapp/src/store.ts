@@ -27,6 +27,8 @@ export interface PlaygroundState {
     functionType: PlaygroundFunctionType;
     inputValues: Record<string, string>;
     result: PlaygroundResult | null;
+    // Persisted — used to re-attach to an in-flight operation after navigation/refresh
+    pendingOperationId: string | null;
     // Transient — not persisted to localStorage
     running: boolean;
     inputErrors: Record<string, string>;
@@ -52,6 +54,7 @@ interface State {
     setPlaygroundInputValues: (values: Record<string, string>) => void;
     setPlaygroundInputValue: (name: string, value: string) => void;
     setPlaygroundResult: (result: PlaygroundResult | null) => void;
+    setPlaygroundPendingOperationId: (operationId: string | null) => void;
     setPlaygroundRunning: (running: boolean) => void;
     setPlaygroundInputErrors: (errors: Record<string, string>) => void;
     setPlaygroundInputError: (name: string, message: string) => void;
@@ -69,6 +72,7 @@ const defaultPlayground: PlaygroundState = {
     functionType: null,
     inputValues: {},
     result: null,
+    pendingOperationId: null,
     running: false,
     inputErrors: {},
     connectionSearch: ''
@@ -85,7 +89,11 @@ export const useStore = create<State>()(
             playground: defaultPlayground,
 
             setEnv: (value) => {
-                set({ env: value });
+                set((s) => ({
+                    env: value,
+                    // Clear playground state when switching environments to avoid stale results
+                    playground: s.env !== value ? { ...defaultPlayground, isOpen: s.playground.isOpen } : s.playground
+                }));
             },
 
             setEnvs: (envs: Env[]) => {
@@ -152,6 +160,10 @@ export const useStore = create<State>()(
                 set((s) => ({ playground: { ...s.playground, result } }));
             },
 
+            setPlaygroundPendingOperationId: (pendingOperationId) => {
+                set((s) => ({ playground: { ...s.playground, pendingOperationId } }));
+            },
+
             setPlaygroundRunning: (running) => {
                 set((s) => ({ playground: { ...s.playground, running } }));
             },
@@ -195,6 +207,7 @@ export const useStore = create<State>()(
                     functionType: s.playground.functionType,
                     inputValues: s.playground.inputValues,
                     result: s.playground.result,
+                    pendingOperationId: s.playground.pendingOperationId,
                     running: false,
                     inputErrors: {},
                     connectionSearch: ''
