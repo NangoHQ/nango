@@ -426,7 +426,8 @@ export const ENVS = z.object({
     LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.8), // interrupt execution after 80% of the timeout, to leave time for checkpointing and graceful shutdown
     LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.95), // force kill the lambda after 95% of the timeout, to allow for runner-controlled shutdown
     LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
-    LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
+    LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
+    LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(50),
     LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET: z.coerce.number().optional().default(0.7),
     LAMBDA_FAILURE_DESTINATION: z.string().optional(),
     LAMBDA_PAYLOADS_BUCKET_NAME: z.string().optional(),
