@@ -145,8 +145,8 @@ export function usePlaygroundReattach() {
         // Note: we check reattachingRef inside startPolling, so it's safe to call on
         // every store update without debouncing.
         const unsubscribe = useStore.subscribe((state) => {
-            const { isOpen, pendingOperationId } = state.playground;
-            if (isOpen && pendingOperationId) {
+            const { isOpen, pendingOperationId, running } = state.playground;
+            if (isOpen && pendingOperationId && !running) {
                 startPolling(pendingOperationId, state.env);
             }
         });

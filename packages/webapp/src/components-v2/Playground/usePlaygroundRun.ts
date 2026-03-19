@@ -5,6 +5,7 @@ import { useStore } from '@/store';
 import { apiFetch } from '@/utils/api';
 
 import type { InputField } from './types';
+import type { SyncResponse } from '@/types';
 import type { GetOperation, SearchOperations } from '@nangohq/types';
 
 export function usePlaygroundRun(inputFields: InputField[]) {
@@ -296,12 +297,51 @@ export function usePlaygroundRun(inputFields: InputField[]) {
         setPlaygroundInputErrors
     ]);
 
-    const handleCancel = useCallback(() => {
+    const handleCancel = useCallback(async () => {
+        // Abort local polling immediately
         abortRef.current?.abort();
         setPlaygroundPendingOperationId(null);
         setPlaygroundRunning(false);
         setPlaygroundResult(null);
-    }, [setPlaygroundPendingOperationId, setPlaygroundRunning, setPlaygroundResult]);
+
+        // For syncs, also cancel the backend operation (best-effort)
+        if (playgroundFunctionType === 'sync' && playgroundIntegration && playgroundConnection && playgroundFunction) {
+            try {
+                const res = await apiFetch(
+                    `/api/v1/sync?env=${env}&connection_id=${encodeURIComponent(playgroundConnection)}&provider_config_key=${encodeURIComponent(playgroundIntegration)}`
+                );
+                if (res.ok) {
+                    const syncs = (await res.json()) as SyncResponse[];
+                    const sync = syncs.find((s) => s.name === playgroundFunction);
+                    if (sync) {
+                        await apiFetch(`/api/v1/sync/command?env=${env}`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                command: 'CANCEL',
+                                schedule_id: sync.schedule_id,
+                                nango_connection_id: sync.nango_connection_id,
+                                sync_id: sync.id,
+                                sync_name: sync.name,
+                                sync_variant: sync.variant,
+                                provider: playgroundIntegration
+                            })
+                        });
+                    }
+                }
+            } catch {
+                // Best-effort: local state already cleared
+            }
+        }
+    }, [
+        env,
+        playgroundIntegration,
+        playgroundConnection,
+        playgroundFunction,
+        playgroundFunctionType,
+        setPlaygroundPendingOperationId,
+        setPlaygroundRunning,
+        setPlaygroundResult
+    ]);
 
     return { handleRun, handleCancel };
 }

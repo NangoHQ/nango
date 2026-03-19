@@ -71,7 +71,7 @@ export const Playground: React.FC = () => {
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
     const playgroundConnection = useStore((s) => s.playground.connection);
-    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName);
+    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName && playgroundFunctionType);
     const isSync = playgroundFunctionType === 'sync';
     const showInputs = Boolean(playgroundFunction && (isSync || inputFields.length > 0));
 
@@ -138,10 +138,12 @@ export const Playground: React.FC = () => {
                                     <Button variant="primary" disabled loading={true} size="sm">
                                         Running
                                     </Button>
-                                    <Button variant="destructive" size="sm" onClick={handleCancel}>
-                                        <X className="size-4" />
-                                        Cancel run
-                                    </Button>
+                                    {isSync && (
+                                        <Button variant="destructive" size="sm" onClick={handleCancel}>
+                                            <X className="size-4" />
+                                            Cancel run
+                                        </Button>
+                                    )}
                                 </>
                             ) : result ? (
                                 <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
