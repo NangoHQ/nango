@@ -25,8 +25,6 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
                     {...props}
                 >
                     <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
-                    {/* Playground renders a position:fixed sheet — it's unaffected by this
-                        overflow-auto container and positions relative to the viewport. */}
                     <Playground />
                 </div>
             </SidebarInset>

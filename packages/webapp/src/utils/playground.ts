@@ -14,7 +14,7 @@ export interface PlaygroundContextOverride {
  * Opens the Playground and overwrites its selection state.
  *
  * Intended for future contextual "Open Playground" buttons on
- * integration/connection/sync/action pages (header button should not use this).
+ * integration/connection/sync/action pages
  */
 export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
     const next: PlaygroundState = {

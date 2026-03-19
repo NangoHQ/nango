@@ -24,7 +24,7 @@ export function usePlaygroundRun(inputFields: InputField[]) {
     const abortRef = useRef<AbortController | null>(null);
 
     const handleRun = useCallback(async () => {
-        if (!playgroundIntegration || !playgroundConnection || !playgroundFunction || !environmentAndAccount) return;
+        if (!playgroundIntegration || !playgroundConnection || !playgroundFunction || !playgroundFunctionType || !environmentAndAccount) return;
 
         const secretKey = environmentAndAccount.environment.secret_key;
         const controller = new AbortController();
@@ -137,16 +137,19 @@ export function usePlaygroundRun(inputFields: InputField[]) {
 
             const sleep = (ms: number) =>
                 new Promise<void>((resolve, reject) => {
-                    const t = window.setTimeout(resolve, ms);
                     const onAbort = () => {
                         window.clearTimeout(t);
                         reject(new DOMException('Aborted', 'AbortError'));
                     };
+                    const t = window.setTimeout(() => {
+                        controller.signal.removeEventListener('abort', onAbort);
+                        resolve();
+                    }, ms);
                     if (controller.signal.aborted) {
                         onAbort();
                         return;
                     }
-                    controller.signal.addEventListener('abort', onAbort, { once: true });
+                    controller.signal.addEventListener('abort', onAbort);
                 });
 
             const findOperation = async () => {
@@ -243,7 +246,6 @@ export function usePlaygroundRun(inputFields: InputField[]) {
             const success = !isRunning && state === 'success';
             const durationMs = !isRunning ? (opDurationMs && !Number.isNaN(opDurationMs) ? opDurationMs : triggerDurationMs) : Date.now() - triggerStartTime;
 
-            // Mirror the payload assembly from Logs/Operation/Show.tsx
             const op = operationDetails ?? operation;
             let resultData: unknown = null;
             if (op?.meta || op?.request || op?.response || op?.error) {
@@ -263,7 +265,7 @@ export function usePlaygroundRun(inputFields: InputField[]) {
             // If still running, leave pendingOperationId set and running=true —
             // usePlaygroundReattach picks up from here without interrupting the spinner.
         } catch (err: unknown) {
-            isRunning = false; // ensure we always release running on error
+            isRunning = false;
             if (err instanceof Error && err.name === 'AbortError') {
                 setPlaygroundPendingOperationId(null);
                 setPlaygroundResult(null);

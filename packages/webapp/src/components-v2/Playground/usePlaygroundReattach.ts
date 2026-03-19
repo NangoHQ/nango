@@ -20,8 +20,7 @@ const POLL_BACKOFF_AFTER_MS = 30_000;
  * Called lazily — only activates when the sheet is open.
  */
 export function usePlaygroundReattach() {
-    // Tracks whether a reattach loop is already running. Using a ref (not state)
-    // so flipping it never triggers re-renders or effect re-runs.
+    // Tracks whether a reattach loop is already running
     const reattachingRef = useRef(false);
     const abortRef = useRef<AbortController | null>(null);
 
@@ -64,7 +63,7 @@ export function usePlaygroundReattach() {
                 try {
                     let operationDetails = await fetchOperation(pendingOperationId);
 
-                    // Poll until terminal — no timeout. Stale operations will always be in
+                    // Poll until terminal with no timeout. Stale operations will always be in
                     // a terminal state already, so this loop exits immediately for them.
                     // Interval backs off from 1.5s to 10s after 30s to reduce server load
                     // for long-running syncs.
@@ -93,7 +92,6 @@ export function usePlaygroundReattach() {
                             ? new Date(operationDetails.endedAt).getTime() - new Date(operationDetails.startedAt).getTime()
                             : 0);
 
-                    // Mirror the payload assembly from Logs/Operation/Show.tsx
                     const op = operationDetails;
                     let resultData: unknown = null;
                     if (op.meta || op.request || op.response || op.error) {
@@ -110,7 +108,7 @@ export function usePlaygroundReattach() {
                     setPlaygroundResult({ success, state, data: resultData, durationMs, operationId: pendingOperationId });
                 } catch (err) {
                     if (err instanceof Error && err.name === 'AbortError') {
-                        // Sheet closed or component unmounted — leave pendingOperationId in
+                        // Sheet closed or component unmounted. Leave pendingOperationId in
                         // place so reattach fires again when the sheet reopens.
                     } else {
                         setPlaygroundPendingOperationId(null);

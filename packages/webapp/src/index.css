@@ -709,7 +709,6 @@
     background-color: var(--color-bg-surface) !important;
 }
 
-/* Scrollbar styling used in Connect UI and app scroll areas */
 .scrollbar-app {
     scrollbar-gutter: stable;
     scrollbar-width: thin;

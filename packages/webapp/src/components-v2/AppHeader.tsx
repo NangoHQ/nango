@@ -11,7 +11,7 @@ export const AppHeader: React.FC = () => {
     const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
 
     return (
-        <header className="relative z-[60] h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
+        <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
             <Breadcrumbs />
             <div className="flex gap-1.5 justify-end">
                 <div className="relative">

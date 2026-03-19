@@ -21,7 +21,7 @@ export const Playground: React.FC = () => {
     const env = useStore((s) => s.env);
     const playgroundOpen = useStore((s) => s.playground.isOpen);
     const playgroundIntegration = useStore((s) => s.playground.integration);
-    const playgroundFunction = useStore((s) => s.playground.function);
+    const playgroundFunctionName = useStore((s) => s.playground.function);
     const playgroundFunctionType = useStore((s) => s.playground.functionType);
     const result = useStore((s) => s.playground.result);
     const running = useStore((s) => s.playground.running);
@@ -31,12 +31,12 @@ export const Playground: React.FC = () => {
 
     const location = useLocation();
 
-    // Auto-close the sheet when the route changes
     useEffect(() => {
+        // Auto-close the sheet when the route changes
         if (playgroundOpen) {
             setPlaygroundOpen(false);
         }
-    }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
 
     const queryEnv = playgroundOpen ? env : '';
 
@@ -47,20 +47,21 @@ export const Playground: React.FC = () => {
         return flowsData.data.flows.filter((f) => f.type === 'action' || f.type === 'sync').map((f) => ({ ...f, resolvedType: f.type as 'action' | 'sync' }));
     }, [flowsData]);
 
-    const selectedFlow = useMemo(() => {
-        if (!playgroundFunction) return undefined;
-        return allFlows.find((f) => f.name === playgroundFunction);
-    }, [allFlows, playgroundFunction]);
+    const playgroundFunction = useMemo(() => {
+        if (!playgroundFunctionName) return undefined;
+        return allFlows.find((f) => f.name === playgroundFunctionName);
+    }, [allFlows, playgroundFunctionName]);
 
     const inputSchema = useMemo((): JSONSchema7 | null => {
-        if (!selectedFlow || !selectedFlow.json_schema || typeof selectedFlow.json_schema !== 'object') return null;
-        const defKey = selectedFlow.input;
-        const schema = (defKey ? (selectedFlow.json_schema.definitions?.[defKey] as JSONSchema7 | undefined) : undefined) || selectedFlow.json_schema;
+        if (!playgroundFunction || !playgroundFunction.json_schema || typeof playgroundFunction.json_schema !== 'object') return null;
+        const defKey = playgroundFunction.input;
+        const schema =
+            (defKey ? (playgroundFunction.json_schema.definitions?.[defKey] as JSONSchema7 | undefined) : undefined) || playgroundFunction.json_schema;
         if (!schema || typeof schema !== 'object') return null;
         const props = schema.properties;
         if (!props || Object.keys(props).length === 0) return null;
         return schema;
-    }, [selectedFlow]);
+    }, [playgroundFunction]);
 
     const inputFields = useMemo(() => getInputFields(inputSchema), [inputSchema]);
 
@@ -70,9 +71,9 @@ export const Playground: React.FC = () => {
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
     const playgroundConnection = useStore((s) => s.playground.connection);
-    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunction);
+    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName);
     const isSync = playgroundFunctionType === 'sync';
-    const showInputs = Boolean(selectedFlow && (isSync || inputFields.length > 0));
+    const showInputs = Boolean(playgroundFunction && (isSync || inputFields.length > 0));
 
     return (
         <>
@@ -95,7 +96,7 @@ export const Playground: React.FC = () => {
                     onPointerDownOutside={(e) => e.preventDefault()}
                     onFocusOutside={(e) => e.preventDefault()}
                     className={cn(
-                        'bg-bg-elevated dark:bg-bg-elevated text-text-primary [border:0.5px_solid_var(--colors-border-border-muted,#2A2B2F)] rounded-[4px] [box-shadow:0_8px_24px_0_rgba(0,0,0,0.16)] p-6',
+                        'dark:bg-bg-elevated text-text-primary rounded-lg border border-border-muted shadow-lg p-6',
                         'flex flex-col items-start gap-[10px]',
                         'w-[537px] max-w-none sm:max-w-none',
                         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
@@ -103,7 +104,7 @@ export const Playground: React.FC = () => {
                     )}
                 >
                     {/* Header */}
-                    <div className="flex w-full shrink-0 items-start justify-between pb-8">
+                    <div className="flex w-full items-start justify-between pb-8">
                         <div className="min-w-0">
                             <h2 className="text-text-primary text-heading-medium font-medium text-[20px] pb-2">Playground</h2>
                             <p className="text-body-regular-medium text-text-secondary text-body-medium-medium text-[14px] font-400 line-height-[160%]">
