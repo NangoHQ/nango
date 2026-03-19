@@ -272,19 +272,27 @@ export class SyncManagerService {
         deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
+        if (!provider) {
+            return { success: false, error: new NangoError('unknown_provider_config'), response: false };
+        }
+
         const account = (await accountService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: syncCommandToOperation[command] } },
-            { account, environment, integration: { id: provider!.id!, name: provider!.unique_key, provider: provider!.provider } }
+            { account, environment, integration: { id: provider.id!, name: provider.unique_key, provider: provider.provider } }
         );
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (!success || !connection) {
+                void logCtx.error(error?.message || 'Connection not found', { error });
+                await logCtx.failed();
                 return { success: false, error, response: false };
             }
+
+            await logCtx.enrichOperation({ connectionId: connection.id, connectionName: connection.connection_id });
 
             let syncs = syncIdentifiers;
 
@@ -299,7 +307,9 @@ export class SyncManagerService {
             for (const { syncName, syncVariant } of syncs) {
                 const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
-                    throw new Error(`Sync "${syncName}" doesn't exists.`); // Todo: return this error instead of throwing
+                    void logCtx.error(`Sync "${syncName}" doesn't exist.`);
+                    await logCtx.failed();
+                    return { success: false, error: new NangoError('no_syncs_found'), response: false };
                 }
 
                 await orchestrator.runSyncCommand({
@@ -320,7 +330,8 @@ export class SyncManagerService {
 
             if (!syncs || syncs.length === 0) {
                 const error = new NangoError('no_syncs_found');
-
+                void logCtx.error('No syncs found for the provided params', { error });
+                await logCtx.failed();
                 return { success: false, error, response: false };
             }
 
