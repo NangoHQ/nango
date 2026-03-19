@@ -131,7 +131,8 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         };
 
         const routingContext: RoutingContext = {
-            plan: plan
+            plan: plan,
+            features: []
         };
 
         const res = await startScript({

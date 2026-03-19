@@ -216,7 +216,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         };
 
         const routingContext: RoutingContext = {
-            plan: plan
+            plan: plan,
+            features: syncConfig.features
         };
 
         if (task.debug) {
