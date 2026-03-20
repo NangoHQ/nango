@@ -7,16 +7,19 @@ import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { Input } from '../../../components/ui/input/Input';
 import SecretInput from '../../../components/ui/input/SecretInput';
-import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
 import { cn } from '../../../utils/utils';
 import { Button } from '@/components-v2/ui/button';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
-    const { environmentAndAccount, mutate } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);
@@ -48,31 +51,26 @@ export const Telemetry: React.FC = () => {
 
     const onSaveHeaders = async () => {
         setLoading(true);
-        const res = await apiPatchEnvironment(env, {
-            otlp_headers: headers.filter((v) => v.name !== '' || v.value !== '')
-        });
-        setLoading(false);
-
-        if ('error' in res.json) {
+        try {
+            await patchEnvironmentAsync({ otlp_headers: headers.filter((v) => v.name !== '' || v.value !== '') });
+            setEditHeaders(false);
+            setHeaders((prev) => (prev.length > 1 ? prev.filter((v) => v.name !== '' || v.value !== '') : prev));
+            setErrors([]);
+        } catch (err) {
             toast({ title: 'There was an issue updating the OTLP Headers', variant: 'error' });
-            if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
+            if (err instanceof APIError && 'error' in err.json && err.json.error.code === 'invalid_body' && err.json.error.errors) {
                 setErrors(
-                    res.json.error.errors.map((err) => {
-                        if (err.path[0] !== 'otlp_headers') {
+                    err.json.error.errors.map((e: any) => {
+                        if (e.path[0] !== 'otlp_headers') {
                             return null as any;
                         }
-                        return { index: err.path[1], key: err.path[2], error: err.message };
+                        return { index: e.path[1], key: e.path[2], error: e.message };
                     })
                 );
             }
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        void mutate();
-
-        setEditHeaders(false);
-        setHeaders((prev) => (prev.length > 1 ? prev.filter((v) => v.name !== '' || v.value !== '') : prev));
-        setErrors([]);
     };
 
     const onRemove = (index: number) => {
@@ -123,8 +121,16 @@ export const Telemetry: React.FC = () => {
                         title="Endpoint"
                         subTitle
                         originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
-                        apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
-                        onSuccess={() => void mutate()}
+                        apiCall={async (value) => {
+                            try {
+                                const res = await patchEnvironmentAsync({ otlp_endpoint: value });
+                                return { json: res };
+                            } catch (err) {
+                                if (err instanceof APIError) return { json: err.json };
+                                throw err;
+                            }
+                        }}
+                        onSuccess={() => {}}
                         placeholder="https://my.otlp.commector:4318"
                     />
                     <fieldset className="flex flex-col gap-4">

@@ -24,7 +24,8 @@ import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 export const Plans: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { plan: currentPlan } = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const currentPlan = environmentData?.plan;
     const { data: plansList } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
 

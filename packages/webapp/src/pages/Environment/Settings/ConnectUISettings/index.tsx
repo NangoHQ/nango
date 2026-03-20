@@ -112,15 +112,16 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
 export const ConnectUISettings = () => {
     const toast = useToast();
     const env = useStore((state) => state.env);
-    const environment = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const plan = environmentData?.plan;
 
     const { data: connectUISettings } = useConnectUISettings(env);
     const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
 
-    const noPlanAvailable = !globalEnv.features.plan || !environment.plan;
-    const canCustomizeTheme = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : environment.plan!.can_customize_connect_ui_theme;
-    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : environment.plan!.can_disable_connect_ui_watermark;
+    const noPlanAvailable = !globalEnv.features.plan || !plan;
+    const canCustomizeTheme = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (plan?.can_customize_connect_ui_theme ?? false);
+    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (plan?.can_disable_connect_ui_watermark ?? false);
 
     const form = useForm({
         defaultValues: connectUISettings?.data,

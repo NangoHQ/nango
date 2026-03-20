@@ -7,10 +7,10 @@ import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import SecretInput from '../../../components/ui/input/SecretInput';
-import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { apiFetch } from '../../../utils/api';
+import { APIError, apiFetch } from '../../../utils/api';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
@@ -19,7 +19,9 @@ export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { environmentAndAccount, mutate } = useEnvironment(env);
+    const { data, refetch } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
     const [loading, setLoading] = useState(false);
 
@@ -36,7 +38,7 @@ export const BackendSettings: React.FC = () => {
             return;
         }
 
-        void mutate();
+        void refetch();
     };
 
     const onRevert = async () => {
@@ -52,7 +54,7 @@ export const BackendSettings: React.FC = () => {
             return;
         }
 
-        void mutate();
+        void refetch();
     };
 
     const onRotate = async () => {
@@ -68,7 +70,7 @@ export const BackendSettings: React.FC = () => {
             return;
         }
 
-        void mutate();
+        void refetch();
     };
 
     if (!environmentAndAccount) {
@@ -216,8 +218,16 @@ export const BackendSettings: React.FC = () => {
                             </AlertDescription>
                         </Alert>
                     }
-                    apiCall={(value) => apiPatchEnvironment(env, { callback_url: value })}
-                    onSuccess={() => void mutate()}
+                    apiCall={async (value) => {
+                        try {
+                            const res = await patchEnvironmentAsync({ callback_url: value });
+                            return { json: res };
+                        } catch (err) {
+                            if (err instanceof APIError) return { json: err.json };
+                            throw err;
+                        }
+                    }}
+                    onSuccess={() => {}}
                 />
             </SettingsGroup>
         </SettingsContent>

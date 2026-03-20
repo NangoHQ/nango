@@ -8,12 +8,14 @@ import { globalEnv } from '../../../utils/env';
 import { connectSlack } from '../../../utils/slack-connection';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { Button } from '@/components-v2/ui/button';
-import { apiPatchEnvironment, useEnvironment } from '@/hooks/useEnvironment';
+import { useEnvironment, usePatchEnvironment } from '@/hooks/useEnvironment';
 import { useStore } from '@/store';
 
 export const SlackAlertsSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount, mutate } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const { toast } = useToast();
 
@@ -25,7 +27,6 @@ export const SlackAlertsSettings: React.FC = () => {
     const slackConnect = async () => {
         setSlackIsConnecting(true);
         const onFinish = () => {
-            void mutate();
             setSlackIsConnecting(false);
         };
 
@@ -52,13 +53,11 @@ export const SlackAlertsSettings: React.FC = () => {
             return;
         }
 
-        const resPatch = await apiPatchEnvironment(env, { slack_notifications: false });
-        if ('error' in resPatch.json) {
+        try {
+            await patchEnvironmentAsync({ slack_notifications: false });
+        } catch {
             toast({ title: 'There was a problem when disconnecting Slack', variant: 'error' });
-            return;
         }
-
-        void mutate();
     };
 
     return (

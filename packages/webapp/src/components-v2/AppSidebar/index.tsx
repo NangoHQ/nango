@@ -36,7 +36,8 @@ export const AppSidebar: React.FC = () => {
     const { data: metaData, refetch: refetchMeta } = useMeta();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const { plan } = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const plan = environmentData?.plan;
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {

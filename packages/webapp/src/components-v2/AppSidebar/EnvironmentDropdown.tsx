@@ -17,7 +17,8 @@ export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
     const envs = useStore((state) => state.envs);
-    const environment = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const environment = { plan: environmentData?.plan };
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);

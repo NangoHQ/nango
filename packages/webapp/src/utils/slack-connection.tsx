@@ -1,7 +1,6 @@
 import Nango from '@nangohq/frontend';
 
 import { apiFetch } from './api';
-import { apiPatchEnvironment } from '../hooks/useEnvironment';
 
 export const connectSlack = async ({
     accountUUID,
@@ -41,7 +40,7 @@ export const connectSlack = async ({
             detectClosedAuthWindow: true
         })
         .then(async () => {
-            await apiPatchEnvironment(env, { slack_notifications: true });
+            await apiFetch(`/api/v1/environments?env=${env}`, { method: 'PATCH', body: JSON.stringify({ slack_notifications: true }) });
             onFinish();
         })
         .catch((err: unknown) => {
