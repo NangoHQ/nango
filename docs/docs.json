@@ -342,6 +342,7 @@
               "integrations/all/circle-so",
               "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
+              "api-integrations/clay",
               "api-integrations/cleverreach",
               "integrations/all/clicksend",
               "api-integrations/clickup",

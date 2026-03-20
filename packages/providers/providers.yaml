@@ -3460,6 +3460,41 @@ clari-copilot:
             title: API Key
             description: The API key for your Clari Copilot account
 
+clay:
+    display_name: Clay
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clay.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/my-workspaces
+        connection_config:
+            workspaceId: ${connectionConfig.workspaceId}
+    docs: https://nango.dev/docs/api-integrations/clay
+    docs_connect: https://nango.dev/docs/api-integrations/clay/connect
+    connection_config:
+        workspaceId:
+            type: string
+            title: Workspace ID
+            description: The ID of your Clay workspace.
+            example: '10608232'
+            pattern: '^\d+$'
+            doc_section: '#step-2-finding-your-workspace-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Clay account.
+            example: 7de4ba****e439d39****
+            pattern: '^[a-f0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 cleverreach:
     display_name: CleverReach
     categories:
