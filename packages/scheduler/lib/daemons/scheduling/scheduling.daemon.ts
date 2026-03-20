@@ -56,7 +56,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                         if (getDueSchedules.isErr()) {
                             throw new Error(`Failed to get due schedules: ${stringifyError(getDueSchedules.error)}`);
                         } else {
-                            await tracer.trace('scheduler.scheduling.tasks_creation', async () => {
+                            await tracer.trace('scheduler.scheduling.tasks_creation', async (span) => {
                                 const now = new Date();
                                 const taskProps = getDueSchedules.value.map((schedule) => ({
                                     scheduleId: schedule.id,
@@ -94,6 +94,10 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                 if (scheduleRes.isErr()) {
                                     logger.error(`Error updating schedules with last scheduled task: ${stringifyError(scheduleRes.error)}`);
                                 }
+
+                                span.addTags({
+                                    'scheduling.scheduled': scheduledTasks.length
+                                });
 
                                 // Notify the listeners about the scheduled tasks
                                 scheduledTasks.forEach((task) => this.onScheduling(task));
