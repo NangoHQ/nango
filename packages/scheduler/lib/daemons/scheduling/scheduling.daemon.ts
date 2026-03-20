@@ -58,37 +58,35 @@ export class SchedulingDaemon extends SchedulerDaemon {
                         } else {
                             await tracer.trace('scheduler.scheduling.tasks_creation', async () => {
                                 const now = new Date();
-                                const createTasks = getDueSchedules.value.map((schedule) =>
-                                    tasks.create(trx, {
-                                        scheduleId: schedule.id,
-                                        startsAfter: now,
-                                        name: `${schedule.name}:${now.toISOString()}`,
-                                        payload: schedule.payload,
-                                        groupKey: schedule.groupKey,
-                                        groupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY,
-                                        retryCount: 0,
-                                        retryMax: schedule.retryMax,
-                                        createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                                        startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                                        heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
-                                        ownerKey: null
-                                    })
-                                );
-                                const res = await Promise.allSettled(createTasks);
+                                const taskProps = getDueSchedules.value.map((schedule) => ({
+                                    scheduleId: schedule.id,
+                                    startsAfter: now,
+                                    name: `${schedule.name}:${now.toISOString()}`,
+                                    payload: schedule.payload,
+                                    groupKey: schedule.groupKey,
+                                    groupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY,
+                                    retryCount: 0,
+                                    retryMax: schedule.retryMax,
+                                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                                    ownerKey: null
+                                }));
+                                const createRes = await tasks.create(trx, taskProps);
+                                if (createRes.isErr()) {
+                                    throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
+                                }
+                                const skipped = taskProps.length - createRes.value.length;
+                                if (skipped > 0) {
+                                    logger.warn(`${skipped} task(s) were not scheduled.`);
+                                }
                                 const scheduleUpdates = [];
                                 const scheduledTasks = [];
-                                for (const taskRes of res) {
-                                    if (taskRes.status === 'rejected') {
-                                        logger.error(`Failed to schedule task: ${taskRes.reason}`);
-                                    } else if (taskRes.value.isErr()) {
-                                        logger.error(`Failed to schedule task: ${stringifyError(taskRes.value.error)}`);
-                                    } else {
-                                        const task = taskRes.value.value;
-                                        if (task.scheduleId) {
-                                            scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
-                                        }
-                                        scheduledTasks.push(task);
+                                for (const task of createRes.value) {
+                                    if (task.scheduleId) {
+                                        scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
                                     }
+                                    scheduledTasks.push(task);
                                 }
 
                                 // Update the last scheduled task for each schedule

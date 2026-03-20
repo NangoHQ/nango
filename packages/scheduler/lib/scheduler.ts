@@ -197,18 +197,22 @@ export class Scheduler {
                 };
             }
 
-            const created = await tasks.create(trx, taskProps);
-            if (created.isOk()) {
-                const task = created.value;
-                if (task.scheduleId) {
-                    const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
-                    if (scheduleRes.isErr()) {
-                        return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
-                    }
-                }
-                this.onCallbacks[task.state](task);
+            const created = await tasks.create(trx, [taskProps]);
+            if (created.isErr()) {
+                return Err(created.error);
             }
-            return created;
+            const task = created.value[0];
+            if (!task) {
+                return Err(`Failed to create task '${taskProps.name}'`);
+            }
+            if (task.scheduleId) {
+                const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
+                if (scheduleRes.isErr()) {
+                    return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
+                }
+            }
+            this.onCallbacks[task.state](task);
+            return Ok(task);
         });
     }
 
