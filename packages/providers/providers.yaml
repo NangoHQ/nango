@@ -8097,6 +8097,53 @@ heygen:
     docs: https://nango.dev/docs/api-integrations/heygen
     setup_guide_url: https://nango.dev/docs/api-integrations/heygen/how-to-register-your-own-heygen-oauth-app
 
+heymarket:
+    display_name: Heymarket
+    categories:
+        - communication
+        - marketing
+    auth_mode: JWT
+    signature:
+        protocol: HMAC
+        hmac_secret_encoding: utf8
+    token:
+        signing_key: ${credentials.apiSecretId}||${credentials.apiSecretKey}
+        expires_in_ms: 300000
+        header:
+            alg: HS256
+            typ: JWT
+        payload:
+            iss: ${credentials.apiSecretId}
+    proxy:
+        base_url: https://api.heymarket.com
+        headers:
+            accept: application/json
+            authorization: Bearer ${accessToken}
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /v1/team
+    docs: https://nango.dev/docs/api-integrations/heymarket
+    docs_connect: https://nango.dev/docs/api-integrations/heymarket/connect
+    credentials:
+        apiSecretId:
+            type: string
+            title: API Secret ID
+            description: Your Heymarket API Secret ID.
+            example: a0ee0000-0000-4000-8000-00000000abcd
+            format: uuid
+            doc_section: '#step-1-finding-your-api-secret-id-and-secret-key'
+        apiSecretKey:
+            type: string
+            title: API Secret Key
+            description: Your Heymarket API Secret Key.
+            secret: true
+            example: Aa0***Cc2***Ee4***Gg6***Ii8***Kk0
+            pattern: ^[A-Za-z0-9]+$
+            doc_section: '#step-1-finding-your-api-secret-id-and-secret-key'
+
 highlevel:
     display_name: HighLevel
     categories:

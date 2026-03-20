@@ -451,6 +451,10 @@
                         "protocol": {
                             "type": "string",
                             "enum": ["WSSE", "RSA", "HMAC"]
+                        },
+                        "hmac_secret_encoding": {
+                            "type": "string",
+                            "enum": ["hex", "utf8"]
                         }
                     },
                     "required": ["protocol"]
