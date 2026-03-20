@@ -1,8 +1,10 @@
+import { TooltipTrigger } from '@radix-ui/react-tooltip';
 import { Check, Edit, Loader2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { CopyButton } from './CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './ui/input-group';
+import { Tooltip, TooltipContent } from './ui/tooltip';
 
 export interface EditableInputProps {
     initialValue: string;
@@ -14,6 +16,7 @@ export interface EditableInputProps {
     validate?: (value: string) => string | null; // Returns error message or null
     onValidationChange?: (error: string | null) => void; // Called when validation state changes
     hintText?: string; // Hint text to display when editing (shown when no error, or as fallback)
+    disabled?: boolean | string;
 }
 
 export const EditableInput: React.FC<EditableInputProps> = ({
@@ -25,7 +28,8 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     onEditingChange,
     validate,
     onValidationChange,
-    hintText
+    hintText,
+    disabled
 }) => {
     const [editing, setEditing] = useState(false);
     const [referenceValue, setReferenceValue] = useState(initialValue);
@@ -133,9 +137,14 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     </InputGroupAddon>
                 ) : !editing ? (
                     <>
-                        <InputGroupButton onClick={onEditClicked} size="icon-sm">
-                            <Edit />
-                        </InputGroupButton>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <InputGroupButton disabled={!!disabled} onClick={onEditClicked} size="icon-sm">
+                                    <Edit />
+                                </InputGroupButton>
+                            </TooltipTrigger>
+                            {typeof disabled === 'string' && <TooltipContent>{disabled}</TooltipContent>}
+                        </Tooltip>
                         <InputGroupAddon align="inline-end">
                             <CopyButton text={value} />
                         </InputGroupAddon>

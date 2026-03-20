@@ -1,27 +1,28 @@
 import { IconTrash } from '@tabler/icons-react';
 
-import { DestructiveActionModal } from '@/components/DestructiveActionModal';
-import { SimpleTooltip } from '@/components/SimpleTooltip';
+import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
 import { Button } from '@/components-v2/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 
 interface DeleteButtonProps {
     environmentName: string;
     onDelete: () => void;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    disabled?: boolean;
-    disabledTooltip?: string;
+    disabled?: boolean | string;
 }
 
-export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled, disabledTooltip }) => {
-    const tooltipContent = disabled ? disabledTooltip : '';
+export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled }) => {
     const trigger = (
-        <SimpleTooltip tooltipContent={tooltipContent} className="text-text-light-gray pointer-events-none">
-            <Button variant="destructive" disabled={disabled}>
-                <IconTrash stroke={1} size={18} />
-                <span>Delete environment</span>
-            </Button>
-        </SimpleTooltip>
+        <Tooltip>
+            <TooltipTrigger>
+                <Button variant="destructive" disabled={!!disabled}>
+                    <IconTrash stroke={1} size={18} />
+                    <span>Delete environment</span>
+                </Button>
+            </TooltipTrigger>
+            {typeof disabled === 'string' && <TooltipContent>{disabled}</TooltipContent>}
+        </Tooltip>
     );
 
     return (
