@@ -651,11 +651,9 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
             const pageOptions: { cursor?: string; externalIds: string[] } = {
-                externalIds: Array.from(externalIdMap.keys())
+                externalIds: Array.from(externalIdMap.keys()),
+                ...(cursor ? { cursor } : {})
             };
-            if (cursor !== undefined) {
-                pageOptions.cursor = cursor;
-            }
 
             const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
             cursor = next_cursor ?? undefined;
@@ -679,13 +677,10 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     ): Promise<{ records: T[]; next_cursor: string | null }> {
         this.throwIfAbortedOrKilled();
 
-        const pageOptions: { cursor?: string; limit?: number } = {};
-        if (cursor !== undefined) {
-            pageOptions.cursor = cursor;
-        }
-        if (limit !== undefined) {
-            pageOptions.limit = limit;
-        }
+        const pageOptions: { cursor?: string; limit?: number } = {
+            ...(cursor ? { cursor } : {}),
+            ...(limit ? { limit } : {})
+        };
 
         return this.fetchRecordsPage<T>(model, pageOptions);
     }
