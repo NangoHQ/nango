@@ -95,3 +95,12 @@ export type PatchFlowFrequency = Endpoint<{
         };
     };
 }>;
+
+export type GetFlowDownload = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/flows/:id/download';
+    Querystring: { env: string };
+    Params: { id: number };
+    Success: never;
+    Error: ApiError<'failed_to_download_flow'>;
+}>;
