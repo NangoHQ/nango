@@ -28,7 +28,7 @@ export interface BaseProxyConfiguration {
     responseType?: ResponseType | undefined;
     retryHeader?: RetryHeaderConfig;
     retryOn?: number[] | null;
-    disableHeaderForwarding?: boolean;
+    enableHeaderForwarding?: boolean;
 }
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {

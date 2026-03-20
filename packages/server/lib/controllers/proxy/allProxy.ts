@@ -47,7 +47,7 @@ const schemaHeaders = z.object({
         .string()
         .regex(/^\d+(,\d+)*$/)
         .optional(),
-    'disable-header-forwarding': z.enum(['true', 'false']).optional(),
+    'enable-header-forwarding': z.enum(['true', 'false']).optional(),
     'nango-activity-log-id': z.string().max(255).optional(),
     'nango-is-sync': z.enum(['true', 'false']).optional(),
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
@@ -72,7 +72,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const baseUrlOverride = parsedHeaders['base-url-override'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
-    const disableHeaderForwarding = parsedHeaders['disable-header-forwarding'] === 'true';
+    const enableHeaderForwarding = parsedHeaders['enable-header-forwarding'] === 'true';
     const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
     const isSync = parsedHeaders['nango-is-sync'] === 'true';
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
@@ -190,7 +190,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     method,
                     retryOn,
                     responseType: 'stream',
-                    disableHeaderForwarding
+                    enableHeaderForwarding
                 },
                 internalConfig
             }).unwrap(),

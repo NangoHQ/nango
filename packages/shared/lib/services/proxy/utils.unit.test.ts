@@ -979,7 +979,7 @@ describe('buildProxyURL', () => {
 });
 
 describe('getAxiosConfiguration', () => {
-    it('should set beforeRedirect by default', () => {
+    it('should not set beforeRedirect by default', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
@@ -992,16 +992,16 @@ describe('getAxiosConfiguration', () => {
             connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
         });
 
-        expect(axiosConfig.beforeRedirect).toBeDefined();
+        expect(axiosConfig.beforeRedirect).toBeUndefined();
     });
 
-    it('should not set beforeRedirect when disableHeaderForwarding is true', () => {
+    it('should set beforeRedirect when enableHeaderForwarding is true', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: { base_url: 'https://api.example.com' }
             },
-            disableHeaderForwarding: true
+            enableHeaderForwarding: true
         });
 
         const axiosConfig = getAxiosConfiguration({
@@ -1009,7 +1009,7 @@ describe('getAxiosConfiguration', () => {
             connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
         });
 
-        expect(axiosConfig.beforeRedirect).toBeUndefined();
+        expect(axiosConfig.beforeRedirect).toBeDefined();
     });
 });
 
