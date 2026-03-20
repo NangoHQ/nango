@@ -1,6 +1,5 @@
-import { IconExternalLink } from '@tabler/icons-react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
@@ -10,7 +9,7 @@ import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
-import { Button } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
 
 export const Telemetry: React.FC = () => {
@@ -68,15 +67,16 @@ export const Telemetry: React.FC = () => {
         <SettingsContent title="Telemetry">
             <SettingsGroup
                 label={
-                    <div className="flex gap-1.5">
+                    <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <Link
-                            className="flex gap-2 items-center"
+                        <ButtonLink
                             target="_blank"
                             to="https://nango.dev/docs/implementation-guides/platform/open-telemetry-export"
+                            variant="ghost"
+                            size="icon"
                         >
-                            <IconExternalLink stroke={1} size={18} />
-                        </Link>
+                            <ExternalLink />
+                        </ButtonLink>
                     </div>
                 }
             >
@@ -90,8 +90,9 @@ export const Telemetry: React.FC = () => {
                                 try {
                                     await patchEnvironmentAsync({ otlp_endpoint: value });
                                     toast({ title: 'Successfully updated', variant: 'success' });
-                                } catch {
+                                } catch (err) {
                                     toast({ title: 'Failed to update', variant: 'error' });
+                                    throw err;
                                 }
                             }}
                             placeholder="https://my.otlp.commector:4318"
