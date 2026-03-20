@@ -74,7 +74,8 @@ export function getAxiosConfiguration({
         headers
     };
 
-    if (proxyConfig.enableHeaderForwarding || proxyConfig.provider.proxy?.enable_header_forwarding) {
+    const shouldForward = proxyConfig.enableHeaderForwarding ?? proxyConfig.provider.proxy?.enable_header_forwarding;
+    if (shouldForward) {
         axiosConfig.beforeRedirect = (options: Record<string, any>) => {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
@@ -142,7 +143,7 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, enableHeaderForwarding = false } = externalConfig;
+    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, enableHeaderForwarding } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -208,7 +209,7 @@ export function getProxyConfiguration({
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
-        enableHeaderForwarding
+        ...(enableHeaderForwarding !== undefined ? { enableHeaderForwarding } : {})
     };
 
     return Ok(configBody);

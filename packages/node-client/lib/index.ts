@@ -1136,8 +1136,8 @@ export class Nango {
             headers['Retry-On'] = retryOn.join(',');
         }
 
-        if (enableHeaderForwarding) {
-            headers['Enable-Header-Forwarding'] = true;
+        if (enableHeaderForwarding !== undefined) {
+            headers['Enable-Header-Forwarding'] = enableHeaderForwarding;
         }
 
         const options: AxiosRequestConfig = {

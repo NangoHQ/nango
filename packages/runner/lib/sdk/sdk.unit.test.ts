@@ -186,8 +186,7 @@ describe('Pagination', () => {
                 headers: {
                     authorization: 'Bearer token',
                     'user-agent': expect.any(String)
-                },
-                beforeRedirect: expect.any(Function)
+                }
             })
         );
     });
@@ -221,8 +220,7 @@ describe('Pagination', () => {
                 headers: {
                     authorization: 'Bearer token',
                     'user-agent': expect.any(String)
-                },
-                beforeRedirect: expect.any(Function)
+                }
             })
         );
     });
@@ -356,8 +354,7 @@ describe('Pagination', () => {
             expect.objectContaining({
                 method: 'GET',
                 url: 'https://api.github.com/issues',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
-                beforeRedirect: expect.any(Function)
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             })
         );
         expect(spy).toHaveBeenNthCalledWith(
@@ -365,8 +362,7 @@ describe('Pagination', () => {
             expect.objectContaining({
                 method: 'GET',
                 url: 'https://api.github.com/issues?page=2',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
-                beforeRedirect: expect.any(Function)
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             })
         );
         expect(spy).toHaveBeenNthCalledWith(
@@ -374,8 +370,7 @@ describe('Pagination', () => {
             expect.objectContaining({
                 method: 'GET',
                 url: 'https://api.github.com/issues?page=3',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
-                beforeRedirect: expect.any(Function)
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             })
         );
         expect(spy).toHaveBeenCalledTimes(3);
