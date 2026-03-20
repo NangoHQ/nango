@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent } from './ui/tooltip';
 export interface EditableInputProps {
     id?: string;
     initialValue: string;
-    onSave?: (value: string) => Promise<void>;
+    onSave?: (value: string) => Promise<unknown>;
     secret?: boolean;
     textArea?: boolean;
     placeholder?: string;
