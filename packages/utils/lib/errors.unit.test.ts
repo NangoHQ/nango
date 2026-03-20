@@ -48,8 +48,14 @@ describe('stringifyError', () => {
             expect(parsed).not.toHaveProperty('provider_error_payload');
         });
 
+        it('should set provider_error_payload to the string directly when response.data is a string', () => {
+            const err: any = { response: { data: 'Unauthorized User' } };
+            const parsed = JSON.parse(stringifyError(err));
+            expect(parsed.provider_error_payload).toEqual('Unauthorized User');
+        });
+
         it('should not extract provider_error_payload for invalid response.data structures', () => {
-            const cases = [{ response: { data: null } }, { response: { data: 'string response' } }, { response: { data: { error: {} } } }];
+            const cases = [{ response: { data: null } }, { response: { data: { error: {} } } }];
 
             cases.forEach((err) => {
                 expect(JSON.parse(stringifyError(err))).not.toHaveProperty('provider_error_payload');
@@ -115,7 +121,7 @@ describe('stringifyError', () => {
             });
         });
 
-        it('should skip object values in response.data and only extract primitive whitelisted fields', () => {
+        it('should extract whitelisted fields from nested error object and top-level primitive fields', () => {
             const err: any = {
                 response: {
                     data: {
@@ -126,9 +132,28 @@ describe('stringifyError', () => {
             };
 
             const parsed = JSON.parse(stringifyError(err));
-            // 'error' is an object so it's skipped, only the primitive field is extracted
+            // 'message' extracted from nested error object, 'error_description' from top-level
             expect(parsed.provider_error_payload).toEqual({
+                message: 'Nested error message',
                 error_description: 'Top-level description'
+            });
+        });
+
+        it('should allow top-level fields to override same fields from nested error object', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        error: { message: 'Nested message', description: 'Nested description' },
+                        message: 'Top-level message'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            // top-level 'message' overrides the same field from nested error object
+            expect(parsed.provider_error_payload).toEqual({
+                message: 'Top-level message',
+                description: 'Nested description'
             });
         });
 

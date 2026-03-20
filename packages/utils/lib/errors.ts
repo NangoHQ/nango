@@ -41,8 +41,23 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
         if (anyErr.response?.data) {
             const responseData = anyErr.response.data;
 
-            if (typeof responseData === 'object' && responseData !== null) {
+            // mip returns errors as string, i.e in a sentence format
+            if (typeof responseData === 'string') {
+                enriched['provider_error_payload'] = responseData;
+            } else if (typeof responseData === 'object' && responseData !== null) {
                 const filteredError: Record<string, unknown> = {};
+
+                if (responseData.error && typeof responseData.error === 'object') {
+                    for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
+                        if (field in responseData.error) {
+                            const value = (responseData.error as Record<string, unknown>)[field];
+                            if (typeof value !== 'object' || value === null) {
+                                filteredError[field] = value;
+                            }
+                        }
+                    }
+                }
+                // check top-level responseData for primitive whitelisted fields (overrides nested)
                 for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
                     if (!(field in responseData)) {
                         continue;
