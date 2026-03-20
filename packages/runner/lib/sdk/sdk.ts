@@ -634,8 +634,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             throw res.error;
         }
 
-        const raw = res.unwrap();
-        return { records: raw.records as T[], next_cursor: raw.nextCursor ?? null };
+        return { records: res.value.records as T[], next_cursor: res.value.nextCursor ?? null };
     }
 
     public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
