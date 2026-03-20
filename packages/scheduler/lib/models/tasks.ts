@@ -134,7 +134,7 @@ export async function create(
         // safeguard to prevent creating an unbounded number of tasks for the same group
         // Note: check and insertion are not atomic so creating more tasks than the limit is still possible but this is a safeguard, not a strict limit
         const groupKeys = [...new Set(taskProps.map((p) => p.groupKey))];
-        const sizes = await queueSizes(db, groupKeys);
+        const sizes = await queueSizes(db, { groupKeys });
         if (sizes.isErr()) {
             return Err(sizes.error);
         }
@@ -173,15 +173,13 @@ export async function create(
     }
 }
 
-export async function queueSizes(db: knex.Knex, groupKeys: string[]): Promise<Result<Map<string, number>>> {
+export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
     try {
-        const rows = await db
-            .from(TASKS_TABLE)
-            .select('group_key as groupKey')
-            .count('id as count')
-            .where('state', 'CREATED')
-            .whereIn('group_key', groupKeys)
-            .groupBy('group_key');
+        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('id as count').where('state', 'CREATED').groupBy('group_key');
+        if (opts.groupKeys && opts.groupKeys.length > 0) {
+            q.whereIn('group_key', opts.groupKeys);
+        }
+        const rows = await q;
         return Ok(new Map(rows.map((r) => [r.groupKey as string, Number(r.count)])));
     } catch (err) {
         return Err(new Error(`Error fetching queue sizes: ${stringifyError(err)}`));
