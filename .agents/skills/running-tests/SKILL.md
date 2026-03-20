@@ -11,24 +11,24 @@ Nango uses Vitest with three separate configs for unit, integration, and CLI tes
 
 ## Quick Reference
 
-| Type | Command | Config | File pattern |
-|------|---------|--------|-------------|
-| Unit | `npx vitest run` | `vite.config.ts` | `*.unit.test.ts` |
-| Integration | `npx vitest run --config ./vite.integration.config.ts` | `vite.integration.config.ts` | `*.integration.test.ts` |
-| CLI | `npx vitest run --config ./vite.cli.config.ts` | `vite.cli.config.ts` | `*.unit.cli-test.ts` |
-| All | `npm run test` | all three | all patterns |
+| Type | Command | File pattern |
+|------|---------|-------------|
+| Unit | `npm run test:unit` | `*.unit.test.ts` |
+| Integration | `npm run test:integration` | `*.integration.test.ts` |
+| CLI | `npm run test:cli` | `*.unit.cli-test.ts` |
+| All | `npm run test` | all patterns |
 
 ## Running Specific Tests
 
 ```bash
 # Single integration test file
-npx vitest run --config ./vite.integration.config.ts packages/server/lib/controllers/v1/team/getTeam.integration.test.ts
+npm run test:integration -- packages/server/lib/controllers/v1/team/getTeam.integration.test.ts
 
 # Single unit test file
-npx vitest run packages/server/lib/authz/permissions.unit.test.ts
+npm run test:unit -- packages/server/lib/authz/permissions.unit.test.ts
 
 # Pattern match
-npx vitest run --config ./vite.integration.config.ts -t "should be protected"
+npm run test:integration -- -t "should be protected"
 ```
 
 All commands run from the **repo root**.
@@ -87,7 +87,7 @@ Available in all tests via `tests/setupFiles.ts`:
 
 | Mistake | Symptom | Fix |
 |---------|---------|-----|
-| Wrong config for integration tests | 0 tests found | Use `--config ./vite.integration.config.ts` |
+| Wrong config for integration tests | 0 tests found | Use `npm run test:integration` not `npm run test:unit` |
 | Using bearer token for session endpoints | 401 errors | Use `authenticateUser()` + session cookie |
 | Running from package dir | Config not found | Always run from repo root |
 | Docker not running | Connection refused | Integration tests need Docker for testcontainers |
