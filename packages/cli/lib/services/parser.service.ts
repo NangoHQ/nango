@@ -64,7 +64,7 @@ class ParserService {
             'getEnvironmentVariables',
             'getFieldMapping',
             'getMetadata',
-            'listRecords', // 1. Allow await nango.listRecords() at compile time
+            'listRecords',
             'log',
             'patch',
             'post',
@@ -78,7 +78,7 @@ class ParserService {
             'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate', 'listRecords'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
