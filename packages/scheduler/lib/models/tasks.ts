@@ -4,6 +4,7 @@ import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
 
 import { taskStates } from '../types.js';
 import { SCHEDULES_TABLE } from './schedules.js';
+import { envs } from '../env.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
 import type { Result } from '@nangohq/utils';
@@ -120,13 +121,18 @@ export const DbTask = {
     }
 };
 
-export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Result<Task>> {
+export async function create(
+    db: knex.Knex,
+    taskProps: TaskProps,
+    opts: { groupTaskCap: number } = { groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX }
+): Promise<Result<Task>> {
     const now = new Date();
+    const state = 'CREATED';
     const newTask: Task = {
         ...taskProps,
         id: uuidv7(),
+        state,
         createdAt: now,
-        state: 'CREATED',
         lastStateTransitionAt: now,
         lastHeartbeatAt: now,
         terminated: false,
@@ -135,6 +141,13 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
         retryKey: taskProps.retryKey || uuidv4()
     };
     try {
+        // safeguard to prevent creating an unbounded number of tasks for the same group
+        // Note: check and insertion are not atomic so creating more tasks than the limit is still possible but this is a safeguard, not a strict limit
+        const [{ count }] = await db.from(TASKS_TABLE).where({ state, group_key: taskProps.groupKey }).count();
+        if (Number(count) >= opts.groupTaskCap) {
+            return Err(new Error(`Error creating task '${taskProps.name}': already ${opts.groupTaskCap} ${state} tasks for group key '${taskProps.groupKey}'`));
+        }
+
         const inserted = await db.from<DBTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
         if (!inserted?.[0]) {
             return Err(new Error(`Error: no task '${taskProps.name}' created`));
