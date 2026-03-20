@@ -9444,6 +9444,37 @@ lever-basic-sandbox:
             default_value: ''
             hidden: true
 
+lightspeed-retail:
+    display_name: Lightspeed Retail (X-Series)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://secure.retail.lightspeed.app/connect
+    token_url: https://${connectionConfig.domain_prefix}.retail.lightspeed.app/api/1.0/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    redirect_uri_metadata:
+        - domain_prefix
+    disable_pkce: true
+    proxy:
+        base_url: https://${connectionConfig.domain_prefix}.retail.lightspeed.app
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/lightspeed-retail
+    setup_guide_url: https://nango.dev/docs/api-integrations/lightspeed-retail/how-to-register-your-own-lightspeed-retail-api-oauth-app
+    connection_config:
+        domain_prefix:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 linear:
     display_name: Linear
     categories:

@@ -579,6 +579,7 @@
               "integrations/all/lever-basic",
               "integrations/all/lever-basic-sandbox",
               "integrations/all/lever-sandbox",
+              "api-integrations/lightspeed-retail",
               "api-integrations/linear",
               "api-integrations/linkedin",
               "integrations/all/linkhut",
