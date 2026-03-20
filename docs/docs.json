@@ -527,6 +527,7 @@
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
               "api-integrations/heygen",
+              "api-integrations/heymarket",
               "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
