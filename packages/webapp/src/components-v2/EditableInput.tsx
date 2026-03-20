@@ -147,7 +147,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                                     <Edit />
                                 </InputGroupButton>
                             </TooltipTrigger>
-                            {typeof disabled === 'string' && <TooltipContent>{disabled}</TooltipContent>}
+                            {typeof disabled === 'string' && <TooltipContent side="bottom">{disabled}</TooltipContent>}
                         </Tooltip>
                         <InputGroupAddon align="inline-end">
                             <CopyButton text={value} />
