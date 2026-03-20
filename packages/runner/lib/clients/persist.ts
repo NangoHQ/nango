@@ -299,7 +299,7 @@ export class PersistClient {
                 model,
                 ...(cursor && { cursor }),
                 ...(externalIds && { externalIds }),
-                ...(limit && { limit: String(limit) })
+                ...(limit !== undefined && { limit: String(limit) })
             }
         });
         if (res.isErr()) {
