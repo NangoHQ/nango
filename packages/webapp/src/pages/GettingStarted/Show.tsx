@@ -135,7 +135,7 @@ export const GettingStarted: React.FC = () => {
 
                     <div className="flex flex-col gap-5">
                         <DocCard
-                            to="https://nango.dev/docs/getting-started/quickstart/embed-in-your-app"
+                            to="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth"
                             icon={CodeXml}
                             title="Embed in your app"
                             description="Let your users authorize 3rd-party APIs seamlessly."
