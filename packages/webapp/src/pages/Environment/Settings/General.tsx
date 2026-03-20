@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +12,7 @@ import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { useToast } from '@/hooks/useToast';
+import { APIError } from '@/utils/api';
 
 export const General: React.FC = () => {
     const navigate = useNavigate();
@@ -47,10 +49,21 @@ export const General: React.FC = () => {
                     <EditableInput
                         initialValue={env}
                         onSave={async (name) => {
-                            await patchEnvironmentAsync({ name });
-                            navigate(`/${name}/environment-settings`);
-                            await refetchMeta();
-                            setEnv(name);
+                            try {
+                                await patchEnvironmentAsync({ name });
+                                navigate(`/${name}/environment-settings`);
+                                await refetchMeta();
+                                setEnv(name);
+                                toast({ title: 'Successfully updated', variant: 'success' });
+                            } catch (err: unknown) {
+                                if (err instanceof APIError) {
+                                    toast({ title: err.json.error?.message ?? 'Failed to update', variant: 'error' });
+                                } else {
+                                    toast({ title: 'Failed to update', variant: 'error' });
+                                }
+                                // Throw for EditableInput
+                                throw err;
+                            }
                         }}
                         disabled={env === PROD_ENVIRONMENT_NAME ? `You cannot rename the ${PROD_ENVIRONMENT_NAME} environment` : false}
                         hintText="Must be lowercase letters, numbers, underscores and/or dashes."
@@ -58,6 +71,7 @@ export const General: React.FC = () => {
 
                     {env !== PROD_ENVIRONMENT_NAME && (
                         <Alert variant="info">
+                            <Info />
                             <AlertDescription>
                                 <span>
                                     When using the CLI for custom functions, add this to your .env:{' '}

@@ -1,18 +1,20 @@
 import { IconExternalLink, IconKey } from '@tabler/icons-react';
+import { Info } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { useActivateKey, useEnvironment, usePatchEnvironment, useRevertKey, useRotateKey } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
+import { EditableInput } from '@/components-v2/EditableInput';
 import { SecretInput } from '@/components-v2/SecretInput';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { APIError } from '@/utils/api';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
@@ -26,6 +28,8 @@ export const BackendSettings: React.FC = () => {
     const { mutateAsync: activateKeyAsync, isPending: isActivating } = useActivateKey(env);
 
     const { confirm, DialogComponent } = useConfirmDialog();
+
+    const [isEditingCallbackUrl, setIsEditingCallbackUrl] = useState(false);
 
     const onGenerate = async () => {
         try {
@@ -154,12 +158,30 @@ export const BackendSettings: React.FC = () => {
                     </>
                 }
             >
-                <EditableInput
-                    name="callback_url"
-                    placeholder="https://api.nango.dev/oauth/callback"
-                    originalValue={environmentAndAccount.environment.callback_url}
-                    editInfo={
+                <div className="flex flex-col gap-2">
+                    <EditableInput
+                        id="callback_url"
+                        placeholder="https://api.nango.dev/oauth/callback"
+                        initialValue={environmentAndAccount.environment.callback_url}
+                        onEditingChange={setIsEditingCallbackUrl}
+                        onSave={async (value) => {
+                            try {
+                                await patchEnvironmentAsync({ callback_url: value });
+                                toast({ title: 'Successfully updated', variant: 'success' });
+                            } catch (err) {
+                                if (err instanceof APIError) {
+                                    toast({ title: err.json.error?.message ?? 'Failed to update', variant: 'error' });
+                                } else {
+                                    toast({ title: 'Failed to update', variant: 'error' });
+                                }
+                                // Throw for EditableInput
+                                throw err;
+                            }
+                        }}
+                    />
+                    {isEditingCallbackUrl && (
                         <Alert variant="info">
+                            <Info />
                             <AlertDescription>
                                 <span>
                                     Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
@@ -175,18 +197,8 @@ export const BackendSettings: React.FC = () => {
                                 </span>
                             </AlertDescription>
                         </Alert>
-                    }
-                    apiCall={async (value) => {
-                        try {
-                            const res = await patchEnvironmentAsync({ callback_url: value });
-                            return { json: res };
-                        } catch (err) {
-                            if (err instanceof APIError) return { json: err.json };
-                            throw err;
-                        }
-                    }}
-                    onSuccess={() => {}}
-                />
+                    )}
+                </div>
             </SettingsGroup>
             {DialogComponent}
         </SettingsContent>
