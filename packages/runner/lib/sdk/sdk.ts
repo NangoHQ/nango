@@ -27,6 +27,7 @@ import type {
     MergingStrategy,
     MessageRowInsert,
     NangoProps,
+    NangoRecord,
     PostPublicTrigger,
     UserLogParameters
 } from '@nangohq/types';
@@ -613,14 +614,14 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
-    private async fetchRecordsPage<T = any>(
+    private async fetchRecordsPage<T extends Record<string, any>>(
         model: string,
         options?: {
             cursor?: string;
             externalIds?: string[];
             limit?: number;
         }
-    ): Promise<{ records: T[]; next_cursor: string | null }> {
+    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
         const res = await this.persistClient.getRecords({
             model: this.modelFullName(model),
             environmentId: this.environmentId,
@@ -634,10 +635,10 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             throw res.error;
         }
 
-        return { records: res.value.records as T[], next_cursor: res.value.nextCursor ?? null };
+        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };
     }
 
-    public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+    public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {
         this.throwIfAbortedOrKilled();
 
         const objects = new Map<K, T>();
@@ -659,7 +660,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             cursor = next_cursor ?? undefined;
 
             for (const record of records) {
-                const stringId = String((record as Record<string, unknown>)['id']);
+                const stringId = String(record.id);
                 const realId = externalIdMap.get(stringId);
                 if (realId !== undefined) {
                     objects.set(realId, record);
@@ -670,11 +671,11 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return objects;
     }
 
-    public async listRecords<T = any>(
+    public async listRecords<T extends Record<string, any>>(
         cursor: string | undefined,
         limit: number | undefined,
         model: string
-    ): Promise<{ records: T[]; next_cursor: string | null }> {
+    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
         this.throwIfAbortedOrKilled();
 
         const pageOptions: { cursor?: string; limit?: number } = {
