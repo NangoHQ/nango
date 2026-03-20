@@ -9,11 +9,13 @@ import { useActivateKey, useEnvironment, usePatchEnvironment, useRevertKey, useR
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
+import { PermissionCondition } from '@/components-v2/PermissionGate';
 import { SecretInput } from '@/components-v2/SecretInput';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 
 export const BackendSettings: React.FC = () => {
@@ -26,6 +28,11 @@ export const BackendSettings: React.FC = () => {
     const { mutateAsync: rotateKeyAsync, isPending: isRotating } = useRotateKey(env);
     const { mutateAsync: revertKeyAsync, isPending: isReverting } = useRevertKey(env);
     const { mutateAsync: activateKeyAsync, isPending: isActivating } = useActivateKey(env);
+
+    const isProdEnv = environmentAndAccount?.environment.is_production || false;
+    const { can } = usePermissions();
+    const canReadSecretKey = can(permissions.canReadProdSecretKey) || !isProdEnv;
+    const canGenerateNewSecretKey = canReadSecretKey;
 
     const { confirm, DialogComponent } = useConfirmDialog();
 
@@ -71,17 +78,26 @@ export const BackendSettings: React.FC = () => {
                             </label>
                         )}
                         <div className="flex gap-2">
-                            <SecretInput copy name="secretKey" value={environmentAndAccount.environment.secret_key} />
+                            <SecretInput
+                                name="secretKey"
+                                value={environmentAndAccount.environment.secret_key}
+                                copy={canReadSecretKey}
+                                canRead={canReadSecretKey}
+                            />
                         </div>
                     </div>
                     {!hasNewSecretKey && (
                         <div className="flex justify-start">
-                            <Button variant={'secondary'} onClick={onGenerate} loading={isRotating}>
-                                <>
-                                    <IconKey stroke={1} size={18} />
-                                    Generate new secret key
-                                </>
-                            </Button>
+                            <PermissionCondition condition={canGenerateNewSecretKey}>
+                                {(allowed) => (
+                                    <Button disabled={!allowed} variant={'secondary'} onClick={onGenerate} loading={isRotating}>
+                                        <>
+                                            <IconKey stroke={1} size={18} />
+                                            Generate new secret key
+                                        </>
+                                    </Button>
+                                )}
+                            </PermissionCondition>
                         </div>
                     )}
                     {hasNewSecretKey && (
@@ -89,7 +105,12 @@ export const BackendSettings: React.FC = () => {
                             <label htmlFor="secretKey" className="text-sm">
                                 New secret
                             </label>
-                            <SecretInput copy name="pendingSecretKey" value={environmentAndAccount.environment.pending_secret_key!} />
+                            <SecretInput
+                                name="pendingSecretKey"
+                                value={environmentAndAccount.environment.pending_secret_key!}
+                                copy={canReadSecretKey}
+                                canRead={canReadSecretKey}
+                            />
                         </div>
                     )}
                     {hasNewSecretKey && (
