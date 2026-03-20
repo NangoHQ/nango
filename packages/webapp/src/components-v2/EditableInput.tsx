@@ -7,6 +7,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 import { Tooltip, TooltipContent } from './ui/tooltip';
 
 export interface EditableInputProps {
+    id?: string;
     initialValue: string;
     onSave?: (value: string) => Promise<void>;
     secret?: boolean;
@@ -20,6 +21,7 @@ export interface EditableInputProps {
 }
 
 export const EditableInput: React.FC<EditableInputProps> = ({
+    id,
     initialValue,
     onSave,
     secret,
@@ -107,6 +109,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 {textArea && (!secret || editing) ? (
                     <InputGroupTextarea
                         ref={textareaRef}
+                        id={id}
                         value={value}
                         onChange={handleChange}
                         className="h-36"
@@ -119,6 +122,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 ) : (
                     <InputGroupInput
                         ref={inputRef}
+                        id={id}
                         value={value}
                         placeholder={editing ? placeHolder : undefined}
                         onChange={handleChange}
