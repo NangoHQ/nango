@@ -8,20 +8,35 @@ This guide shows you how to register your own app with Conta Azul to obtain your
 
 <Steps>
   <Step title="Create a developer account">
-    Go to the [Conta Azul Developer Portal](https://developers.contaazul.com/) and sign up for a developer account.
+    Go to the [Conta Azul Developer Portal](https://developers-portal.contaazul.com/) and sign up for a developer account.
   </Step>
   <Step title="Create a new application">
-    1. Navigate to your applications dashboard
-    2. Click "Create New App" or similar
-    3. Fill in the required details (app name, description)
+    1. In the **Minhas aplicações** (My applications) dashboard, click **Criar uma aplicação** (Create an application)
+    2. On the **Introdução** (Introduction) step, review the terms and click **Continuar** (Continue)
+    3. On the **Sobre** (About) step, fill in the required details:
+        - **Nome da aplicação** (Application name): choose a name that clearly identifies your company or solution
+        - **Objetivo da aplicação** (Application objective): briefly describe what your app does
+        - **CNPJ**: your company's CNPJ (use the primary one if you have multiple)
+        - **Funcionalidades principais** (Main features): select the areas your application covers
   </Step>
-  <Step title="Configure OAuth settings">
-    1. In your app settings, find OAuth or authentication settings
-    2. Add the Nango callback URL: `https://api.nango.dev/oauth/callback`
-    3. Select the scopes your application needs
+  <Step title="Configure the OAuth redirect URL">
+    On the **URL OAuth 2.0** step, enter the Nango callback URL as the redirect URL:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    The redirect URL must use HTTPS. This is where the authorization server sends the response after the user authorizes or denies access.
+
+    The default scopes (`openid`, `profile`, `aws.cognito.signin.user.admin`) are fixed and automatically included in the authorization flow.
   </Step>
   <Step title="Get your credentials">
-    Copy your **Client ID** and **Client Secret** from the app settings. You'll need these when configuring the integration in Nango.
+    On the **Credenciais** (Credentials) step, you will be presented with:
+    - **Client ID**
+    - **Client Secret**
+    - A pre-filled **authorization URL** with the required parameters
+
+    Copy your **Client ID** and **Client Secret**. You'll need these when configuring the integration in Nango.
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
