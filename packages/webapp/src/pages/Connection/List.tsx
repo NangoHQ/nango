@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Lock, RefreshCcw, Search } from 'lucide-react';
+import { Lock, Plus, RefreshCcw, Search } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -11,10 +11,10 @@ import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Avatar } from '@/components-v2/Avatar';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { MultiSelect } from '@/components-v2/MultiSelect';
 import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { Combobox } from '@/components-v2/ui/combobox';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
@@ -28,14 +28,18 @@ import { formatDateToInternationalFormat } from '@/utils/utils';
 import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-const errorOptions = [
-    { name: 'OK', value: 'ok' },
-    { name: 'Error', value: 'error' }
+interface StatusFilter {
+    label: string;
+    withErrors: boolean;
+    value: string;
+}
+const statusOptions: StatusFilter[] = [
+    { label: 'OK', withErrors: false, value: 'ok' },
+    { label: 'Error', withErrors: true, value: 'error' }
 ];
 
 const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
-const parseErrors = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
 const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
@@ -68,7 +72,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 
             return (
                 <div className="flex gap-1.5 items-center">
-                    <IntegrationLogo provider={row.original.provider} className="size-8" />
+                    <IntegrationLogo provider={row.original.provider} className="size-8 bg-transparent" />
                     <span className="text-body-small-semi text-text-primary">{provider}</span>
                 </div>
             );
@@ -104,8 +108,8 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         }
     },
     {
-        accessorKey: 'errors',
-        header: 'Errors',
+        accessorKey: 'status',
+        header: '',
         size: 80,
         cell: ({ row }) => {
             const { errors } = row.original;
@@ -147,18 +151,18 @@ export const ConnectionList = () => {
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
-    const [selectedErrors, setSelectedErrors] = useQueryState('errors', parseErrors);
+    const [selectedStatusFilter, setSelectedStatusFilter] = useState<StatusFilter[]>([]);
 
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
     const { data: listIntegrationData, isLoading: integrationsLoading } = useListIntegrations(env);
 
     const withError = useMemo(() => {
-        if (selectedErrors && selectedErrors.length === 1) {
-            return selectedErrors[0] === 'error';
+        if (selectedStatusFilter && selectedStatusFilter.length != 0) {
+            return selectedStatusFilter.some((v) => v.withErrors);
         }
         return undefined;
-    }, [selectedErrors]);
+    }, [selectedStatusFilter]);
 
     const integrationIds = useMemo(() => {
         if (!selectedIntegrations || selectedIntegrations.length === 0) return undefined;
@@ -183,7 +187,8 @@ export const ConnectionList = () => {
         return connectionsData?.pages.flatMap((page) => page.data) || [];
     }, [connectionsData]);
 
-    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedErrors && selectedErrors.length > 0);
+    const hasFiltered =
+        debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedStatusFilter && selectedStatusFilter.length > 0);
 
     const connectionCount = connections.length;
     const hasConnections = connectionCount > 0;
@@ -201,9 +206,11 @@ export const ConnectionList = () => {
         if (!list) {
             return [];
         }
-        return list.map((integration) => {
-            return { name: integration.unique_key, value: integration.unique_key };
-        });
+        return list.map((integration) => ({
+            label: integration.display_name || integration.unique_key,
+            value: integration.unique_key,
+            icon: <IntegrationLogo provider={integration.provider} className="size-7 rounded-[3.7px] p-[3.48px] bg-transparent border-transparent" />
+        }));
     }, [listIntegrationData?.data]);
 
     if (connectionsError) {
@@ -216,7 +223,7 @@ export const ConnectionList = () => {
                 <title>Connections - Nango</title>
             </Helmet>
 
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-3">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h2 className="text-title-subsection text-text-primary">Connections</h2>
@@ -228,31 +235,58 @@ export const ConnectionList = () => {
                 </div>
 
                 {/* Content */}
-                <div className="flex flex-col gap-3.5">
+                <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
                         <>
                             {/* Connection count */}
                             <ConnectionCount className="self-end" />
                             {/* Filters */}
-                            <div className="flex items-center gap-3.5">
-                                <InputGroup className="bg-bg-subtle h-10">
-                                    <InputGroupInput type="text" placeholder="Search" value={search || ''} onChange={(e) => setSearch(e.target.value)} />
-                                    <InputGroupAddon>
+                            <div className="flex items-center gap-1.5">
+                                <InputGroup className="bg-bg-surface h-10">
+                                    <InputGroupInput
+                                        className="pr-2.5"
+                                        type="text"
+                                        placeholder="Search connections"
+                                        value={search || ''}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                    <InputGroupAddon className="pl-2.5">
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
-                                <MultiSelect
+                                <Combobox
+                                    allowMultiple
                                     label={selectedIntegrations && selectedIntegrations.length > 0 ? `Integrations` : 'All integrations'}
                                     options={integrationsOptions}
                                     loading={integrationsLoading}
                                     selected={selectedIntegrations || []}
-                                    onChange={(selected) => setSelectedIntegrations(selected as string[])}
+                                    onSelectedChange={(selected) => setSelectedIntegrations(selected)}
+                                    emptyText="No integrations found"
+                                    footer={
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                                Need a new integration?
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                size="sm"
+                                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
+                                                onClick={() => {
+                                                    navigate(`/${env}/integrations/create`);
+                                                }}
+                                            >
+                                                <Plus className="size-4" /> Add
+                                            </Button>
+                                        </div>
+                                    }
                                 />
-                                <MultiSelect
-                                    label="Filter errors"
-                                    options={errorOptions}
-                                    selected={selectedErrors || []}
-                                    onChange={(selected) => setSelectedErrors(selected as string[])}
+                                <Combobox
+                                    allowMultiple
+                                    label="Status"
+                                    options={statusOptions}
+                                    selected={selectedStatusFilter.map((v) => v.value) || []}
+                                    onSelectedChange={(selected) => setSelectedStatusFilter(statusOptions.filter((v) => selected.some((s) => s === v.value)))}
                                 />
                             </div>
 
