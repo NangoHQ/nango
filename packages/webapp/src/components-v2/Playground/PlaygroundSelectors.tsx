@@ -10,6 +10,7 @@ import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
 
+import type { ComboboxOption } from '../ui/combobox';
 import type { NangoSyncConfig } from '@nangohq/types';
 
 interface Props {
@@ -71,27 +72,32 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
         return flowsData.data.flows.filter((f) => f.type === 'action' || f.type === 'sync').map((f) => ({ ...f, resolvedType: f.type as 'action' | 'sync' }));
     }, [flowsData]);
 
-    const flowByName = useMemo(() => new Map(allFlows.map((f) => [f.name, f] as const)), [allFlows]);
-
     const functionOptions = useMemo(() => {
-        const opts = allFlows.filter((f) => f.enabled === true).map((f) => ({ value: f.name, label: f.name, filterValue: `${f.name} ${f.resolvedType}` }));
+        const opts: ComboboxOption[] = allFlows
+            .filter((f) => f.enabled === true)
+            .map((f) => ({
+                value: f.name,
+                label: f.name,
+                filterValue: `${f.name} ${f.resolvedType}`,
+                tag: (
+                    <Badge variant="gray" size="xs" className="capitalize font-mono">
+                        {f.resolvedType}
+                    </Badge>
+                )
+            }));
         if (playgroundFunction && !opts.some((o) => o.value === playgroundFunction)) {
             opts.unshift({ value: playgroundFunction, label: playgroundFunction, filterValue: playgroundFunction });
         }
         return opts;
     }, [allFlows, playgroundFunction]);
 
-    const integrationByKey = useMemo(() => {
-        const list = integrations?.data ?? [];
-        return new Map(list.map((i) => [i.unique_key, i] as const));
-    }, [integrations]);
-
     const integrationOptions = useMemo(() => {
         const list = integrations?.data ?? [];
-        const opts = list.map((i) => ({
+        const opts: ComboboxOption[] = list.map((i) => ({
             value: i.unique_key,
             label: i.display_name || i.unique_key,
-            filterValue: `${i.display_name ?? ''} ${i.unique_key ?? ''} ${i.provider ?? ''}`
+            filterValue: `${i.display_name ?? ''} ${i.unique_key ?? ''} ${i.provider ?? ''}`,
+            icon: <IntegrationLogo provider={i.provider} className="size-7 rounded-[3.7px] p-[3.48px] bg-transparent border-transparent" />
         }));
         if (playgroundIntegration && !opts.some((o) => o.value === playgroundIntegration)) {
             opts.unshift({ value: playgroundIntegration, label: playgroundIntegration, filterValue: playgroundIntegration });
@@ -143,26 +149,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 searchPlaceholder="Search integrations"
                 showCheckbox={false}
                 emptyText="No integrations found"
-                renderValue={(opt) => {
-                    const integration = integrationByKey.get(opt.value);
-                    if (!integration) return <span className="truncate">{opt.label}</span>;
-                    return (
-                        <>
-                            <IntegrationLogo provider={integration.provider} className="p-0 size-6 rounded-[3.7px] bg-transparent border-transparent" />
-                            <span className="truncate">{integration.display_name || integration.unique_key}</span>
-                        </>
-                    );
-                }}
-                renderOption={(opt) => {
-                    const integration = integrationByKey.get(opt.value);
-                    if (!integration) return <span className="truncate">{opt.label}</span>;
-                    return (
-                        <>
-                            <IntegrationLogo provider={integration.provider} className="size-7 rounded-[3.7px] p-[3.48px] bg-transparent border-transparent" />
-                            <span className="truncate">{integration.display_name || integration.unique_key}</span>
-                        </>
-                    );
-                }}
                 footer={
                     <div className="flex items-center justify-between gap-3">
                         <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">Need a new integration?</span>
@@ -170,7 +156,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             type="button"
                             variant="secondary"
                             size="sm"
-                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center"
+                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/integrations/create`);
@@ -201,7 +187,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             type="button"
                             variant="secondary"
                             size="sm"
-                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center"
+                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/connections/create${playgroundIntegration ? `?integration_id=${playgroundIntegration}` : ''}`);
@@ -223,29 +209,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 searchPlaceholder="Search functions"
                 showCheckbox={false}
                 emptyText="No functions found"
-                renderValue={(opt) => {
-                    const flow = flowByName.get(opt.value);
-                    return (
-                        <>
-                            <span className="truncate">{opt.label}</span>
-                            {flow && (
-                                <Badge variant="gray" size="xs" className="capitalize font-mono">
-                                    {flow.resolvedType}
-                                </Badge>
-                            )}
-                        </>
-                    );
-                }}
-                renderOption={(opt) => <span className="truncate">{opt.label}</span>}
-                renderOptionRight={(opt) => {
-                    const flow = flowByName.get(opt.value);
-                    if (!flow) return null;
-                    return (
-                        <span className="flex h-5 min-w-5 items-center justify-center gap-1 rounded-[4px] bg-bg-elevated px-1 text-body-small-regular text-text-primary capitalize">
-                            {flow.resolvedType}
-                        </span>
-                    );
-                }}
                 footer={
                     playgroundIntegration ? (
                         <div className="flex items-center justify-between gap-3">
@@ -254,7 +217,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                                 type="button"
                                 variant="secondary"
                                 size="sm"
-                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center"
+                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                                 onClick={() => {
                                     setPlaygroundOpen(false);
                                     navigate(`/${env}/integrations/${playgroundIntegration}`);

@@ -2,8 +2,8 @@ import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import * as React from 'react';
 
 import { Button } from './button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { cn } from '@/utils/utils';
 
 export interface ComboboxOption<TValue extends string = string> {
@@ -11,117 +11,184 @@ export interface ComboboxOption<TValue extends string = string> {
     label: string;
     filterValue?: string;
     disabled?: boolean;
+    icon?: React.ReactNode;
+    tag?: React.ReactNode;
 }
-export interface ComboboxProps<TValue extends string = string> {
-    value: TValue | '';
-    onValueChange: (value: TValue) => void;
-    placeholder: string;
+
+interface ComboboxBaseProps<T extends string = string> {
+    options: ComboboxOption<T>[];
     disabled?: boolean;
-    options: ComboboxOption<TValue>[];
     searchPlaceholder?: string;
     emptyText?: string;
-    renderValue?: (option: ComboboxOption<TValue>) => React.ReactNode;
-    renderOption?: (option: ComboboxOption<TValue>, selected: boolean) => React.ReactNode;
-    renderOptionRight?: (option: ComboboxOption<TValue>, selected: boolean) => React.ReactNode;
     footer?: React.ReactNode;
     className?: string;
     contentClassName?: string;
-    searchValue?: string;
-    onSearchValueChange?: (value: string) => void;
-    showCheckbox?: boolean;
 }
 
-export function Combobox<TValue extends string = string>({
-    value,
-    onValueChange,
-    placeholder,
-    disabled,
-    options,
-    searchPlaceholder = 'Search',
-    emptyText,
-    renderValue,
-    renderOption,
-    renderOptionRight,
-    footer,
-    className,
-    contentClassName,
-    searchValue,
-    onSearchValueChange,
-    showCheckbox = true
-}: ComboboxProps<TValue>) {
+interface SingleProps<T extends string = string> extends ComboboxBaseProps<T> {
+    allowMultiple?: false;
+    value: T | '';
+    onValueChange: (value: T) => void;
+    placeholder: string;
+    showCheckbox?: boolean;
+    searchValue?: string;
+    onSearchValueChange?: (value: string) => void;
+    selected?: never;
+    label?: never;
+    defaultSelect?: never;
+    loading?: never;
+    onSelectedChange?: never;
+}
+
+interface MultiProps<T extends string = string> extends ComboboxBaseProps<T> {
+    allowMultiple: true;
+    selected: T[];
+    onSelectedChange: (selected: T[]) => void;
+    label: string;
+    defaultSelect?: T[];
+    loading?: boolean;
+    value?: never;
+    onValueChange?: never;
+    placeholder?: never;
+    showCheckbox?: never;
+    searchValue?: never;
+    onSearchValueChange?: never;
+}
+
+export type ComboboxProps<T extends string = string> = SingleProps<T> | MultiProps<T>;
+
+function ItemLabel<T extends string>({ opt }: { opt: ComboboxOption<T> }) {
+    return (
+        <>
+            {opt.icon}
+            <span className="truncate">{opt.label}</span>
+        </>
+    );
+}
+
+export function Combobox<T extends string = string>(props: ComboboxProps<T>) {
+    const { options, disabled, searchPlaceholder = 'Search', emptyText = 'No results found.', footer, className, contentClassName } = props;
+
     const [open, setOpen] = React.useState(false);
     const [internalSearch, setInternalSearch] = React.useState('');
-    const search = searchValue !== undefined ? searchValue : internalSearch;
 
-    const selectedOption = React.useMemo(() => {
-        if (!value) return undefined;
-        return options.find((opt) => opt.value === value);
-    }, [options, value]);
+    const controlledSearch = !props.allowMultiple ? props.searchValue : undefined;
+    const search = controlledSearch !== undefined ? controlledSearch : internalSearch;
+
+    const setSearch = React.useCallback(
+        (next: string) => {
+            if (!props.allowMultiple && props.onSearchValueChange) {
+                props.onSearchValueChange(next);
+            } else {
+                setInternalSearch(next);
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [props.allowMultiple, !props.allowMultiple ? props.onSearchValueChange : null]
+    );
+
+    React.useEffect(() => {
+        if (!open) setSearch('');
+    }, [open, setSearch]);
 
     const filteredOptions = React.useMemo(() => {
         const q = search.trim().toLowerCase();
-        if (!q) return options;
-        return options.filter((opt) => {
-            const haystack = (opt.filterValue ?? opt.label).toLowerCase();
-            return haystack.includes(q);
-        });
-    }, [options, search]);
+        const filtered = q ? options.filter((opt) => (opt.filterValue ?? opt.label).toLowerCase().includes(q)) : options;
 
-    const setSearch = (next: string) => {
-        if (onSearchValueChange) {
-            onSearchValueChange(next);
-        } else {
-            setInternalSearch(next);
+        if (props.allowMultiple && !q) {
+            const selectedSet = new Set(props.selected);
+            const sel: typeof options = [];
+            const unsel: typeof options = [];
+            filtered.forEach((o) => (selectedSet.has(o.value) ? sel : unsel).push(o));
+            return [...sel, ...unsel];
         }
-    };
+
+        return filtered;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options, search, props.allowMultiple, props.allowMultiple ? props.selected : null]);
+
+    const handleSelect = React.useCallback(
+        (val: T) => {
+            if (props.allowMultiple) {
+                const isSelected = props.selected.includes(val);
+                const next = isSelected ? props.selected.filter((s) => s !== val) : [...props.selected, val];
+                const defaultSelect = props.defaultSelect ?? [];
+                props.onSelectedChange(next.length === 0 ? [...defaultSelect] : next);
+            } else {
+                props.onValueChange(val);
+                setOpen(false);
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [props]
+    );
+
+    const selectedOption = React.useMemo(() => {
+        if (props.allowMultiple) return undefined;
+        return options.find((opt) => opt.value === props.value);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options, props.allowMultiple, !props.allowMultiple ? props.value : null]);
+
+    const isDirty = React.useMemo(() => {
+        if (!props.allowMultiple) return false;
+        const def = props.defaultSelect ?? [];
+        return props.selected.length !== def.length || props.selected.some((s, i) => s !== def[i]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.allowMultiple, props.allowMultiple ? props.selected : null, props.allowMultiple ? props.defaultSelect : null]);
+
+    const showCheckbox = props.allowMultiple ? true : (props.showCheckbox ?? true);
+
+    const trigger = props.allowMultiple ? (
+        <Button
+            loading={props.loading}
+            disabled={disabled || options.length === 0}
+            variant="ghost"
+            size="lg"
+            className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover', className)}
+        >
+            {props.label}{' '}
+            {props.selected.length > 0 && (
+                <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center px-2">
+                    {props.selected.length}
+                </span>
+            )}
+        </Button>
+    ) : (
+        <button
+            type="button"
+            disabled={disabled}
+            className={cn(
+                'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50',
+                selectedOption ? 'text-text-primary' : 'text-text-secondary',
+                open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover',
+                className
+            )}
+        >
+            {selectedOption ? (
+                <span className="flex items-center gap-2 min-w-0">
+                    <ItemLabel opt={selectedOption} />
+                    {selectedOption.tag}
+                </span>
+            ) : (
+                <span className="truncate">{props.placeholder}</span>
+            )}
+            <ChevronsUpDown className="size-3 shrink-0 text-text-secondary" />
+        </button>
+    );
 
     return (
-        <DropdownMenu
-            open={open}
-            onOpenChange={(nextOpen) => {
-                setOpen(nextOpen);
-                if (!nextOpen) {
-                    setSearch('');
-                }
-            }}
-        >
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant={'ghost'}
-                    disabled={disabled}
-                    className={cn(
-                        'text-[14px] h-8 w-full justify-between bg-bg-surface px-2 py-0 text-body-medium-regular',
-                        selectedOption ? 'text-text-primary' : 'text-text-secondary',
-                        open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover',
-                        className
-                    )}
-                >
-                    {selectedOption ? (
-                        <span className="flex items-center gap-2 min-w-0">
-                            {renderValue ? renderValue(selectedOption) : <span className="truncate">{selectedOption.label}</span>}
-                        </span>
-                    ) : (
-                        <span className="truncate">{placeholder}</span>
-                    )}
-                    <ChevronsUpDown className="size-3 shrink-0 text-text-secondary" />
-                </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+            <PopoverContent
+                align={props.allowMultiple ? 'end' : 'start'}
+                sideOffset={0}
                 className={cn(
-                    'z-[70] flex w-[var(--radix-dropdown-menu-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-bg-subtle p-1 pb-0',
+                    'z-[70] flex w-[var(--radix-popover-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-bg-subtle p-1 pb-0',
+                    props.allowMultiple && 'min-w-[312px]',
                     contentClassName
                 )}
-                side="bottom"
-                align="start"
-                sideOffset={0}
             >
-                <div
-                    className="w-full border-b border-border-muted"
-                    onKeyDown={(e) => {
-                        e.stopPropagation();
-                    }}
-                >
+                <div className="w-full border-b border-border-muted" onKeyDown={(e) => e.stopPropagation()}>
                     <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-bg-surface px-2.5 py-1.5">
                         <InputGroupAddon className="p-0 pr-2">
                             <Search className="size-4 text-text-tertiary" />
@@ -139,51 +206,54 @@ export function Combobox<TValue extends string = string>({
                 <div className="max-h-72 w-full overflow-y-auto">
                     {filteredOptions.length > 0 ? (
                         filteredOptions.map((opt) => {
-                            const selected = opt.value === value;
-                            const rightOptionContent = renderOptionRight ? renderOptionRight(opt, selected) : null;
+                            const isSelected = props.allowMultiple ? props.selected.includes(opt.value) : opt.value === props.value;
+
                             return (
-                                <DropdownMenuItem
+                                <div
                                     key={opt.value}
-                                    disabled={opt.disabled}
-                                    onSelect={() => onValueChange(opt.value)}
+                                    role="option"
+                                    aria-selected={isSelected}
+                                    onClick={() => !opt.disabled && handleSelect(opt.value)}
                                     className={cn(
                                         'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-primary',
-                                        selected &&
-                                            'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated text-text-secondary hover:text-text-primary'
+                                        opt.disabled && 'cursor-not-allowed opacity-50 pointer-events-none',
+                                        isSelected &&
+                                            'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated hover:text-text-primary'
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-2">
-                                        {showCheckbox ? (
+                                        {showCheckbox && (
                                             <span
                                                 className={cn(
                                                     'flex size-5 shrink-0 items-center justify-center rounded-sm border',
-                                                    selected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                                    isSelected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
                                                 )}
                                             >
-                                                {selected ? <Check className="size-3.5" /> : null}
+                                                {isSelected ? <Check className="size-3.5" /> : null}
                                             </span>
-                                        ) : null}
+                                        )}
                                         <div className="flex min-w-0 items-center gap-1 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal">
-                                            {renderOption ? renderOption(opt, selected) : <span className="truncate">{opt.label}</span>}
+                                            <ItemLabel opt={opt} />
                                         </div>
                                     </div>
-                                    {rightOptionContent ? (
-                                        <div className="shrink-0">{rightOptionContent}</div>
-                                    ) : selected ? (
+
+                                    {opt.tag ? (
+                                        <div className="shrink-0">{opt.tag}</div>
+                                    ) : isSelected && !showCheckbox ? (
                                         <Check className="size-4 shrink-0 text-text-primary" />
                                     ) : null}
-                                </DropdownMenuItem>
+                                </div>
                             );
                         })
                     ) : (
                         <div className="px-2 py-3 text-center">
-                            <p className="text-text-tertiary text-body-small-regular">{emptyText ? emptyText : 'No results found'}</p>
+                            <p className="text-text-tertiary text-body-small-regular">{emptyText}</p>
                         </div>
                     )}
                 </div>
 
-                {footer ? <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div> : null}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                {footer && <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div>}
+            </PopoverContent>
+        </Popover>
     );
 }
