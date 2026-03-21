@@ -4,7 +4,7 @@ import { CodeBlock } from '../CodeBlock';
 import { JSON_DISPLAY_LIMIT } from './types';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
-import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { getLogsUrl } from '@/utils/logs';
 
 // TODO: set to true once the records list page is ready
@@ -16,11 +16,11 @@ interface Props {
 }
 
 export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
-    const result = useStore((s) => s.playground.result);
-    const playgroundIntegration = useStore((s) => s.playground.integration);
-    const playgroundConnection = useStore((s) => s.playground.connection);
-    const playgroundFunction = useStore((s) => s.playground.function);
-    const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
+    const result = usePlaygroundStore((s) => s.result);
+    const playgroundIntegration = usePlaygroundStore((s) => s.integration);
+    const playgroundConnection = usePlaygroundStore((s) => s.connection);
+    const playgroundFunction = usePlaygroundStore((s) => s.function);
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
 
     if (!result) return null;
 

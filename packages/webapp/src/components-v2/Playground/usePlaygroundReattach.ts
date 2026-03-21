@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { apiFetch } from '@/utils/api';
 
 import type { GetOperation } from '@nangohq/types';
@@ -32,7 +33,11 @@ export function usePlaygroundReattach() {
             const controller = new AbortController();
             abortRef.current = controller;
 
-            const { setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning } = useStore.getState();
+            const {
+                setResult: setPlaygroundResult,
+                setPendingOperationId: setPlaygroundPendingOperationId,
+                setRunning: setPlaygroundRunning
+            } = usePlaygroundStore.getState();
             setPlaygroundRunning(true);
 
             const fetchOperation = async (operationId: string): Promise<{ data: GetOperation['Success']['data'] | null; notFound: boolean }> => {
@@ -125,7 +130,7 @@ export function usePlaygroundReattach() {
                     }
                 } finally {
                     reattachingRef.current = false;
-                    useStore.getState().setPlaygroundRunning(false);
+                    usePlaygroundStore.getState().setRunning(false);
                     abortRef.current = null;
                 }
             })();
@@ -133,9 +138,9 @@ export function usePlaygroundReattach() {
 
         // Check immediately on mount in case the store already satisfies the condition
         // (e.g. opened with a pendingOperationId already persisted and running=false).
-        const initial = useStore.getState();
-        if (initial.playground.isOpen && initial.playground.pendingOperationId && !initial.playground.running) {
-            startPolling(initial.playground.pendingOperationId, initial.env);
+        const initial = usePlaygroundStore.getState();
+        if (initial.isOpen && initial.pendingOperationId && !initial.running) {
+            startPolling(initial.pendingOperationId, useStore.getState().env);
         }
 
         // Subscribe to subsequent store changes — handles:
@@ -144,10 +149,10 @@ export function usePlaygroundReattach() {
         //     running stays true — reattachingRef guards against double-start)
         // Note: we check reattachingRef inside startPolling, so it's safe to call on
         // every store update without debouncing.
-        const unsubscribe = useStore.subscribe((state) => {
-            const { isOpen, pendingOperationId, running } = state.playground;
-            if (isOpen && pendingOperationId && !running) {
-                startPolling(pendingOperationId, state.env);
+        const unsubscribe = usePlaygroundStore.subscribe((state) => {
+            const { isOpen, pendingOperationId } = state;
+            if (isOpen && pendingOperationId) {
+                startPolling(pendingOperationId, useStore.getState().env);
             }
         });
 

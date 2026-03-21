@@ -8,7 +8,7 @@ import { Button } from '../ui/button';
 import { Combobox } from '../ui/combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
-import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 
 import type { ComboboxOption } from '../ui/combobox';
 import type { NangoSyncConfig } from '@nangohq/types';
@@ -21,19 +21,19 @@ interface Props {
 export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     const navigate = useNavigate();
 
-    const playgroundIntegration = useStore((s) => s.playground.integration);
-    const playgroundConnection = useStore((s) => s.playground.connection);
-    const playgroundFunction = useStore((s) => s.playground.function);
-    const connectionSearch = useStore((s) => s.playground.connectionSearch);
-    const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
-    const setPlaygroundIntegration = useStore((s) => s.setPlaygroundIntegration);
-    const setPlaygroundConnection = useStore((s) => s.setPlaygroundConnection);
-    const setPlaygroundFunction = useStore((s) => s.setPlaygroundFunction);
-    const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
-    const setPlaygroundInputErrors = useStore((s) => s.setPlaygroundInputErrors);
-    const setPlaygroundConnectionSearch = useStore((s) => s.setPlaygroundConnectionSearch);
-    const setPlaygroundPendingOperationId = useStore((s) => s.setPlaygroundPendingOperationId);
-    const setPlaygroundRunning = useStore((s) => s.setPlaygroundRunning);
+    const playgroundIntegration = usePlaygroundStore((s) => s.integration);
+    const playgroundConnection = usePlaygroundStore((s) => s.connection);
+    const playgroundFunction = usePlaygroundStore((s) => s.function);
+    const connectionSearch = usePlaygroundStore((s) => s.connectionSearch);
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
+    const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
+    const setPlaygroundConnection = usePlaygroundStore((s) => s.setConnection);
+    const setPlaygroundFunction = usePlaygroundStore((s) => s.setFunction);
+    const setPlaygroundResult = usePlaygroundStore((s) => s.setResult);
+    const setPlaygroundInputErrors = usePlaygroundStore((s) => s.setInputErrors);
+    const setPlaygroundConnectionSearch = usePlaygroundStore((s) => s.setConnectionSearch);
+    const setPlaygroundPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
+    const setPlaygroundRunning = usePlaygroundStore((s) => s.setRunning);
 
     const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
 

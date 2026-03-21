@@ -6,7 +6,7 @@ import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription } f
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { useConnection } from '@/hooks/useConnections';
-import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 
 import type { InputField } from './types';
 
@@ -20,11 +20,11 @@ interface Props {
 }
 
 export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, inputFields, inputErrors, clearInputError }) => {
-    const playgroundIntegration = useStore((s) => s.playground.integration);
-    const playgroundConnection = useStore((s) => s.playground.connection);
-    const inputValues = useStore((s) => s.playground.inputValues);
-    const setPlaygroundInputValue = useStore((s) => s.setPlaygroundInputValue);
-    const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
+    const playgroundIntegration = usePlaygroundStore((s) => s.integration);
+    const playgroundConnection = usePlaygroundStore((s) => s.connection);
+    const inputValues = usePlaygroundStore((s) => s.inputValues);
+    const setPlaygroundInputValue = usePlaygroundStore((s) => s.setInputValue);
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
 
     const connectionDetailsQuery = useConnection(
         { env: queryEnv, provider_config_key: playgroundIntegration || '' },

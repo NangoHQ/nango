@@ -3,12 +3,12 @@ import { BookOpen, Box } from 'lucide-react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { Button, ButtonLink } from './ui/button';
 import { SlackIcon } from '@/assets/SlackIcon';
-import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
 
 export const AppHeader: React.FC = () => {
-    const playgroundOpen = useStore((s) => s.playground.isOpen);
-    const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
+    const playgroundOpen = usePlaygroundStore((s) => s.isOpen);
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
 
     return (
         <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">

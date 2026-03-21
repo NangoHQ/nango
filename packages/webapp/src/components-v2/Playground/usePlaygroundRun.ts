@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { apiFetch } from '@/utils/api';
 
 import type { InputField } from './types';
@@ -11,15 +12,15 @@ import type { GetOperation, SearchOperations } from '@nangohq/types';
 export function usePlaygroundRun(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
     const baseUrl = useStore((s) => s.baseUrl);
-    const playgroundIntegration = useStore((s) => s.playground.integration);
-    const playgroundConnection = useStore((s) => s.playground.connection);
-    const playgroundFunction = useStore((s) => s.playground.function);
-    const playgroundFunctionType = useStore((s) => s.playground.functionType);
-    const inputValues = useStore((s) => s.playground.inputValues);
-    const setPlaygroundResult = useStore((s) => s.setPlaygroundResult);
-    const setPlaygroundPendingOperationId = useStore((s) => s.setPlaygroundPendingOperationId);
-    const setPlaygroundRunning = useStore((s) => s.setPlaygroundRunning);
-    const setPlaygroundInputErrors = useStore((s) => s.setPlaygroundInputErrors);
+    const playgroundIntegration = usePlaygroundStore((s) => s.integration);
+    const playgroundConnection = usePlaygroundStore((s) => s.connection);
+    const playgroundFunction = usePlaygroundStore((s) => s.function);
+    const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
+    const inputValues = usePlaygroundStore((s) => s.inputValues);
+    const setPlaygroundResult = usePlaygroundStore((s) => s.setResult);
+    const setPlaygroundPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
+    const setPlaygroundRunning = usePlaygroundStore((s) => s.setRunning);
+    const setPlaygroundInputErrors = usePlaygroundStore((s) => s.setInputErrors);
 
     const { environmentAndAccount } = useEnvironment(env);
     const abortRef = useRef<AbortController | null>(null);

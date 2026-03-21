@@ -12,6 +12,7 @@ import { Button } from '../ui/button';
 import { Sheet, SheetContent } from '../ui/sheet';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
 
 import type { NangoSyncConfig } from '@nangohq/types';
@@ -19,15 +20,15 @@ import type { JSONSchema7 } from 'json-schema';
 
 export const Playground: React.FC = () => {
     const env = useStore((s) => s.env);
-    const playgroundOpen = useStore((s) => s.playground.isOpen);
-    const playgroundIntegration = useStore((s) => s.playground.integration);
-    const playgroundFunctionName = useStore((s) => s.playground.function);
-    const playgroundFunctionType = useStore((s) => s.playground.functionType);
-    const result = useStore((s) => s.playground.result);
-    const running = useStore((s) => s.playground.running);
-    const inputErrors = useStore((s) => s.playground.inputErrors);
-    const setPlaygroundOpen = useStore((s) => s.setPlaygroundOpen);
-    const clearPlaygroundInputError = useStore((s) => s.clearPlaygroundInputError);
+    const playgroundOpen = usePlaygroundStore((s) => s.isOpen);
+    const playgroundIntegration = usePlaygroundStore((s) => s.integration);
+    const playgroundFunctionName = usePlaygroundStore((s) => s.function);
+    const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
+    const result = usePlaygroundStore((s) => s.result);
+    const running = usePlaygroundStore((s) => s.running);
+    const inputErrors = usePlaygroundStore((s) => s.inputErrors);
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
+    const clearPlaygroundInputError = usePlaygroundStore((s) => s.clearInputError);
 
     const location = useLocation();
 
@@ -70,7 +71,7 @@ export const Playground: React.FC = () => {
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
-    const playgroundConnection = useStore((s) => s.playground.connection);
+    const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName && playgroundFunctionType);
     const isSync = playgroundFunctionType === 'sync';
     const showInputs = Boolean(playgroundFunction && (isSync || inputFields.length > 0));

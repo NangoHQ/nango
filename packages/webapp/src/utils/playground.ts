@@ -1,6 +1,6 @@
-import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 
-import type { PlaygroundFunctionType, PlaygroundState } from '@/store';
+import type { PlaygroundFunctionType, PlaygroundState } from '@/store/playground';
 
 export interface PlaygroundContextOverride {
     integration?: string | null;
@@ -31,5 +31,5 @@ export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
         connectionSearch: ''
     };
 
-    useStore.getState().setPlaygroundState(next);
+    usePlaygroundStore.getState().setState(next);
 }
