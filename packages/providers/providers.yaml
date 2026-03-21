@@ -3460,6 +3460,41 @@ clari-copilot:
             title: API Key
             description: The API key for your Clari Copilot account
 
+clay:
+    display_name: Clay
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clay.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/my-workspaces
+        connection_config:
+            workspaceId: ${connectionConfig.workspaceId}
+    docs: https://nango.dev/docs/api-integrations/clay
+    docs_connect: https://nango.dev/docs/api-integrations/clay/connect
+    connection_config:
+        workspaceId:
+            type: string
+            title: Workspace ID
+            description: The ID of your Clay workspace.
+            example: '10608232'
+            pattern: '^\d+$'
+            doc_section: '#step-2-finding-your-workspace-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Clay account.
+            example: 7de4ba****e439d39****
+            pattern: '^[a-f0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 cleverreach:
     display_name: CleverReach
     categories:
@@ -8097,6 +8132,53 @@ heygen:
     docs: https://nango.dev/docs/api-integrations/heygen
     setup_guide_url: https://nango.dev/docs/api-integrations/heygen/how-to-register-your-own-heygen-oauth-app
 
+heymarket:
+    display_name: Heymarket
+    categories:
+        - communication
+        - marketing
+    auth_mode: JWT
+    signature:
+        protocol: HMAC
+        hmac_secret_encoding: utf8
+    token:
+        signing_key: ${credentials.apiSecretId}||${credentials.apiSecretKey}
+        expires_in_ms: 300000
+        header:
+            alg: HS256
+            typ: JWT
+        payload:
+            iss: ${credentials.apiSecretId}
+    proxy:
+        base_url: https://api.heymarket.com
+        headers:
+            accept: application/json
+            authorization: Bearer ${accessToken}
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /v1/team
+    docs: https://nango.dev/docs/api-integrations/heymarket
+    docs_connect: https://nango.dev/docs/api-integrations/heymarket/connect
+    credentials:
+        apiSecretId:
+            type: string
+            title: API Secret ID
+            description: Your Heymarket API Secret ID.
+            example: a0ee0000-0000-4000-8000-00000000abcd
+            format: uuid
+            doc_section: '#step-1-finding-your-api-secret-id-and-secret-key'
+        apiSecretKey:
+            type: string
+            title: API Secret Key
+            description: Your Heymarket API Secret Key.
+            secret: true
+            example: Aa0***Cc2***Ee4***Gg6***Ii8***Kk0
+            pattern: ^[A-Za-z0-9]+$
+            doc_section: '#step-1-finding-your-api-secret-id-and-secret-key'
+
 highlevel:
     display_name: HighLevel
     categories:
@@ -9443,6 +9525,37 @@ lever-basic-sandbox:
             description: ''
             default_value: ''
             hidden: true
+
+lightspeed-retail:
+    display_name: Lightspeed Retail (X-Series)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://secure.retail.lightspeed.app/connect
+    token_url: https://${connectionConfig.domain_prefix}.retail.lightspeed.app/api/1.0/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    redirect_uri_metadata:
+        - domain_prefix
+    disable_pkce: true
+    proxy:
+        base_url: https://${connectionConfig.domain_prefix}.retail.lightspeed.app
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/lightspeed-retail
+    setup_guide_url: https://nango.dev/docs/api-integrations/lightspeed-retail/how-to-register-your-own-lightspeed-retail-api-oauth-app
+    connection_config:
+        domain_prefix:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 linear:
     display_name: Linear

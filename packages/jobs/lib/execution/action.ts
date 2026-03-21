@@ -161,7 +161,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         };
 
         const routingContext: RoutingContext = {
-            plan: plan
+            plan: plan,
+            features: syncConfig.features
         };
 
         const res = await startScript({

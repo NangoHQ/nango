@@ -153,6 +153,8 @@ export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
         protocol: 'RSA' | 'HMAC';
+        // For HMAC only. `hex` matches legacy providers (e.g. Ghost). `utf8` uses the signing key as a UTF-8 string (e.g. Heymarket). Defaults to `hex`
+        hmac_secret_encoding?: 'hex' | 'utf8';
     };
     token: {
         signing_key: string;
