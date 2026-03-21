@@ -89,9 +89,9 @@ export function Combobox<TValue extends string = string>({
                     type="button"
                     disabled={disabled}
                     className={cn(
-                        'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:bg-dropdown-bg-hover disabled:cursor-not-allowed disabled:opacity-50',
+                        'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50',
                         selectedOption ? 'text-text-primary' : 'text-text-secondary',
-                        'hover:text-text-primary',
+                        open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover',
                         className
                     )}
                 >
@@ -116,7 +116,7 @@ export function Combobox<TValue extends string = string>({
                 sideOffset={0}
             >
                 <div
-                    className="w-full border-b border-border-muted p-2"
+                    className="w-full border-b border-border-muted"
                     onKeyDown={(e) => {
                         e.stopPropagation();
                     }}
@@ -135,7 +135,7 @@ export function Combobox<TValue extends string = string>({
                     </InputGroup>
                 </div>
 
-                <div className="max-h-72 w-full overflow-y-auto p-2">
+                <div className="max-h-72 w-full overflow-y-auto">
                     {filteredOptions.length > 0 ? (
                         filteredOptions.map((opt) => {
                             const selected = opt.value === value;
@@ -181,7 +181,7 @@ export function Combobox<TValue extends string = string>({
                     )}
                 </div>
 
-                {footer ? <div className="w-full border-t border-border-muted px-2 py-2">{footer}</div> : null}
+                {footer ? <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div> : null}
             </DropdownMenuContent>
         </DropdownMenu>
     );

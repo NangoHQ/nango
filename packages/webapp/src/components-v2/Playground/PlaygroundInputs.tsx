@@ -129,6 +129,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                         </div>
                         {field.description && <p className="text-text-tertiary text-body-small-regular">{field.description}</p>}
                         <Input
+                            className="border-border-muted data-[filled=true]:not-aria-invalid:border-border-muted"
                             value={inputValues[field.name] || ''}
                             aria-invalid={Boolean(inputErrors[field.name])}
                             placeholder={field.type === 'object' ? '{}' : field.type === 'array' ? '[]' : undefined}

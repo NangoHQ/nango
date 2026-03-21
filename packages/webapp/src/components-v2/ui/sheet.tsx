@@ -66,16 +66,14 @@ function SheetContent({
                   top: insetTop ?? 0,
                   bottom: insetBottom ?? 0,
                   right: insetRight ?? 24,
-                  height: `calc(100vh - ${insetTop ?? 0}px - ${insetBottom ?? 0}px)`,
-                  minHeight: `800px`
+                  height: `calc(100vh - ${insetTop ?? 0}px - ${insetBottom ?? 0}px)`
               }
             : side === 'left' && (insetTop != null || insetBottom != null)
               ? {
                     top: insetTop ?? 0,
                     bottom: insetBottom ?? 0,
                     left: insetLeft ?? 24,
-                    height: `calc(100vh - ${insetTop ?? 0}px - ${insetBottom ?? 0}px)`,
-                    minHeight: `800px`
+                    height: `calc(100vh - ${insetTop ?? 0}px - ${insetBottom ?? 0}px)`
                 }
               : undefined;
 
