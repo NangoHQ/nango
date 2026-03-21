@@ -142,12 +142,13 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 options={integrationOptions}
                 searchPlaceholder="Search integrations"
                 showCheckbox={false}
+                emptyText="No integrations found"
                 renderValue={(opt) => {
                     const integration = integrationByKey.get(opt.value);
                     if (!integration) return <span className="truncate">{opt.label}</span>;
                     return (
                         <>
-                            <IntegrationLogo provider={integration.provider} className="p-0 size-6 rounded-[3.7px] !bg-transparent !border-transparent" />
+                            <IntegrationLogo provider={integration.provider} className="p-0 size-6 rounded-[3.7px] bg-transparent border-transparent" />
                             <span className="truncate">{integration.display_name || integration.unique_key}</span>
                         </>
                     );
@@ -157,10 +158,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                     if (!integration) return <span className="truncate">{opt.label}</span>;
                     return (
                         <>
-                            <IntegrationLogo
-                                provider={integration.provider}
-                                className="size-7 rounded-[3.7px] p-[3.48px] !bg-transparent !border-transparent"
-                            />
+                            <IntegrationLogo provider={integration.provider} className="size-7 rounded-[3.7px] p-[3.48px] bg-transparent border-transparent" />
                             <span className="truncate">{integration.display_name || integration.unique_key}</span>
                         </>
                     );
@@ -195,6 +193,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 searchValue={connectionSearch}
                 onSearchValueChange={setPlaygroundConnectionSearch}
                 showCheckbox={false}
+                emptyText="No connections found"
                 footer={
                     <div className="flex items-center justify-between gap-3">
                         <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">Need a new connection?</span>
@@ -223,6 +222,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 options={functionOptions}
                 searchPlaceholder="Search functions"
                 showCheckbox={false}
+                emptyText="No functions found"
                 renderValue={(opt) => {
                     const flow = flowByName.get(opt.value);
                     return (

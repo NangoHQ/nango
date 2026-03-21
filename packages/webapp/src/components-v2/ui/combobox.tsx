@@ -1,6 +1,7 @@
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import * as React from 'react';
 
+import { Button } from './button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
 import { cn } from '@/utils/utils';
@@ -37,7 +38,7 @@ export function Combobox<TValue extends string = string>({
     disabled,
     options,
     searchPlaceholder = 'Search',
-    emptyText = 'No results found.',
+    emptyText,
     renderValue,
     renderOption,
     renderOptionRight,
@@ -85,11 +86,11 @@ export function Combobox<TValue extends string = string>({
             }}
         >
             <DropdownMenuTrigger asChild>
-                <button
-                    type="button"
+                <Button
+                    variant={'ghost'}
                     disabled={disabled}
                     className={cn(
-                        'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50',
+                        'text-[14px] h-8 w-full justify-between bg-bg-surface px-2 py-0 text-body-medium-regular',
                         selectedOption ? 'text-text-primary' : 'text-text-secondary',
                         open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover',
                         className
@@ -103,7 +104,7 @@ export function Combobox<TValue extends string = string>({
                         <span className="truncate">{placeholder}</span>
                     )}
                     <ChevronsUpDown className="size-3 shrink-0 text-text-secondary" />
-                </button>
+                </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
@@ -176,7 +177,7 @@ export function Combobox<TValue extends string = string>({
                         })
                     ) : (
                         <div className="px-2 py-3 text-center">
-                            <p className="text-text-tertiary text-body-small-regular">{emptyText}</p>
+                            <p className="text-text-tertiary text-body-small-regular">{emptyText ? emptyText : 'No results found'}</p>
                         </div>
                     )}
                 </div>
