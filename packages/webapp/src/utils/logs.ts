@@ -11,9 +11,10 @@ type LogsUrlOptions = Omit<
 > & { operationId?: string | null | number; env: string; day?: Date | null; live?: boolean };
 
 function setParam(usp: URLSearchParams, key: string, value: string | number | string[] | undefined | null): void {
-    if (value === undefined || value === null) return;
+    if (value === undefined || value === null || value === '') return;
     if (Array.isArray(value)) {
-        if (value.length > 0) usp.set(key, value.join(','));
+        const filtered = value.filter((v) => v !== '');
+        if (filtered.length > 0) usp.set(key, filtered.join(','));
     } else {
         usp.set(key, String(value));
     }

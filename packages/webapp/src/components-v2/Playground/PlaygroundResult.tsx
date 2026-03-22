@@ -76,7 +76,7 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
                                     ...(result.operationId ? { operationId: result.operationId } : {}),
                                     integrations: playgroundIntegration,
                                     connections: playgroundConnection,
-                                    syncs: playgroundFunction,
+                                    syncs: isSync ? playgroundFunction : undefined,
                                     live: true
                                 })}
                                 variant={result.success ? 'success' : 'error'}

@@ -118,6 +118,7 @@ export function usePlaygroundReattach() {
                         resultData = pl;
                     }
 
+                    if (usePlaygroundStore.getState().pendingOperationId !== pendingOperationId) return;
                     setPlaygroundPendingOperationId(null);
                     setPlaygroundResult({ success, state, data: resultData, durationMs, operationId: pendingOperationId });
                 } catch (err) {
@@ -151,7 +152,9 @@ export function usePlaygroundReattach() {
         // every store update without debouncing.
         const unsubscribe = usePlaygroundStore.subscribe((state) => {
             const { isOpen, pendingOperationId } = state;
-            if (isOpen && pendingOperationId) {
+            if (!pendingOperationId && reattachingRef.current) {
+                abortRef.current?.abort();
+            } else if (isOpen && pendingOperationId) {
                 startPolling(pendingOperationId, useStore.getState().env);
             }
         });
