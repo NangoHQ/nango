@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '@/utils/local-storage';
 
@@ -102,6 +102,7 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
         }),
         {
             name: LocalStorageKeys.Playground,
+            storage: createJSONStorage(() => sessionStorage),
             partialize: (s) => ({
                 isOpen: false,
                 integration: s.integration,
