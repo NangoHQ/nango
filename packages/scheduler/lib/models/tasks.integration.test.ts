@@ -262,6 +262,51 @@ describe('Task', () => {
         expect(l5.length).toBe(2);
         expect(l5.map((t) => t.id)).toStrictEqual([t1.id, t2.id]);
     });
+    describe('getQueueDepth', () => {
+        it('should return empty when no tasks exist', async () => {
+            const result = (await tasks.getQueueDepth(db, { topN: 10, threshold: 1, groupKeyPattern: 'sync*' })).unwrap();
+            expect(result).toEqual([{ group_key: 'others', cnt: null }]);
+        });
+        it('should bucket all groups into others when below threshold', async () => {
+            await createTask(db, { groupKey: 'sync:environment:1' });
+            await createTask(db, { groupKey: 'sync:environment:2' });
+            const result = (await tasks.getQueueDepth(db, { topN: 10, threshold: 5, groupKeyPattern: 'sync*' })).unwrap();
+            expect(result).toEqual([{ group_key: 'others', cnt: 2 }]);
+        });
+        it('should return offenders above threshold', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1' });
+            }
+            await createTask(db, { groupKey: 'sync:environment:2' });
+            const result = (await tasks.getQueueDepth(db, { topN: 10, threshold: 3, groupKeyPattern: 'sync*' })).unwrap();
+            expect(result).toEqual(
+                expect.arrayContaining([
+                    { group_key: 'sync:environment:1', cnt: 3 },
+                    { group_key: 'others', cnt: 1 }
+                ])
+            );
+        });
+        it('should limit offenders to topN', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1' });
+                await createTask(db, { groupKey: 'sync:environment:2' });
+                await createTask(db, { groupKey: 'sync:environment:3' });
+            }
+            const result = (await tasks.getQueueDepth(db, { topN: 2, threshold: 3, groupKeyPattern: 'sync*' })).unwrap();
+            const offenders = result.filter((r) => r.group_key !== 'others');
+            const others = result.find((r) => r.group_key === 'others');
+            expect(offenders).toHaveLength(2);
+            expect(others).toEqual({ group_key: 'others', cnt: 3 });
+        });
+        it('should only match the given groupKeyPattern', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1' });
+                await createTask(db, { groupKey: 'action:environment:1' });
+            }
+            const result = (await tasks.getQueueDepth(db, { topN: 10, threshold: 1, groupKeyPattern: 'sync*' })).unwrap();
+            expect(result).toEqual([{ group_key: 'sync:environment:1', cnt: 3 }]);
+        });
+    });
     it('should be successfully saving json output', async () => {
         const outputs = [1, 'one', true, null, ['a', 'b'], { a: 1, b: 2, s: 'two', arr: ['a', 'b'] }, [{ id: 'a' }, { id: 'b' }]];
         for (const output of outputs) {
