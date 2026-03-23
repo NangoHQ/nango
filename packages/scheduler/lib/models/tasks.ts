@@ -411,7 +411,7 @@ export async function getQueueDepth(
             )
             SELECT group_key, cnt FROM offenders
             UNION ALL
-            SELECT 'others', SUM(cnt)::int
+            SELECT 'others', COALESCE(SUM(cnt), 0)::int
             FROM counts
             WHERE group_key NOT IN (SELECT group_key FROM offenders)
             `,

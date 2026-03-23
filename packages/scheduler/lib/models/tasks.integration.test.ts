@@ -265,7 +265,7 @@ describe('Task', () => {
     describe('getQueueDepth', () => {
         it('should return empty when no tasks exist', async () => {
             const result = (await tasks.getQueueDepth(db, { topN: 10, threshold: 1, groupKeyPattern: 'sync*' })).unwrap();
-            expect(result).toEqual([{ group_key: 'others', cnt: null }]);
+            expect(result).toEqual([{ group_key: 'others', cnt: 0 }]);
         });
         it('should bucket all groups into others when below threshold', async () => {
             await createTask(db, { groupKey: 'sync:environment:1' });
