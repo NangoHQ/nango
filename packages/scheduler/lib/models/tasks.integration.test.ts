@@ -304,7 +304,10 @@ describe('Task', () => {
                 await createTask(db, { groupKey: 'action:environment:1' });
             }
             const result = (await tasks.getQueueDepth(db, { topN: 10, threshold: 1, groupKeyPattern: 'sync*' })).unwrap();
-            expect(result).toEqual([{ group_key: 'sync:environment:1', cnt: 3 }]);
+            expect(result).toEqual([
+                { group_key: 'sync:environment:1', cnt: 3 },
+                { group_key: 'others', cnt: 0 }
+            ]);
         });
     });
     it('should be successfully saving json output', async () => {
