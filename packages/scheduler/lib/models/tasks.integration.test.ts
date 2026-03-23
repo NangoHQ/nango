@@ -61,7 +61,7 @@ describe('Task', () => {
         });
     });
     it('should create multiple tasks', async () => {
-        const n = 5;
+        const n = 1200;
         const taskProps = Array.from({ length: n }, (_, i) => ({ ...props, name: `n=${i}` }));
         const res = (await tasks.create(db, taskProps)).unwrap();
         expect(res.tasks).toHaveLength(n);
