@@ -88,6 +88,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_WEBHOOK: z.coerce.number().optional().default(10),
     ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ON_EVENT: z.coerce.number().optional().default(10),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
+    ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
 
     // Jobs
@@ -432,7 +433,8 @@ export const ENVS = z.object({
     LAMBDA_EXECUTION_INTERRUPT_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.8), // interrupt execution after 80% of the timeout, to leave time for checkpointing and graceful shutdown
     LAMBDA_EXECUTION_KILL_AFTER_MULTIPLIER: z.coerce.number().optional().default(0.95), // force kill the lambda after 95% of the timeout, to allow for runner-controlled shutdown
     LAMBDA_FUNCTION_ALIAS: z.string().optional().default('latest'),
-    LAMBDA_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
+    LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(1),
+    LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY: z.coerce.number().optional().default(50),
     LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET: z.coerce.number().optional().default(0.7),
     LAMBDA_FAILURE_DESTINATION: z.string().optional(),
     LAMBDA_PAYLOADS_BUCKET_NAME: z.string().optional(),

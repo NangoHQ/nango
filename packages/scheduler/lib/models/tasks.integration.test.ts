@@ -9,6 +9,22 @@ import { taskStates } from '../types.js';
 import type { Task, TaskState } from '../types.js';
 import type { knex } from 'knex';
 
+const props = {
+    name: 'Test Task',
+    payload: { foo: 'bar' },
+    groupKey: nanoid(),
+    groupMaxConcurrency: 0,
+    retryMax: 3,
+    retryCount: 1,
+    startsAfter: new Date(),
+    createdToStartedTimeoutSecs: 10,
+    startedToCompletedTimeoutSecs: 20,
+    heartbeatTimeoutSecs: 5,
+    scheduleId: null,
+    retryKey: '00000000-0000-0000-0000-000000000000',
+    ownerKey: 'ownerA'
+};
+
 describe('Task', () => {
     const dbClient = getTestDbClient();
     const db = dbClient.db;
@@ -21,21 +37,6 @@ describe('Task', () => {
     });
 
     it('should be successfully created', async () => {
-        const props = {
-            name: 'Test Task',
-            payload: { foo: 'bar' },
-            groupKey: nanoid(),
-            groupMaxConcurrency: 0,
-            retryMax: 3,
-            retryCount: 1,
-            startsAfter: new Date(),
-            createdToStartedTimeoutSecs: 10,
-            startedToCompletedTimeoutSecs: 20,
-            heartbeatTimeoutSecs: 5,
-            scheduleId: null,
-            retryKey: '00000000-0000-0000-0000-000000000000',
-            ownerKey: 'ownerA'
-        };
         const task = (await tasks.create(db, props)).unwrap();
         expect(task).toMatchObject({
             id: expect.any(String),
@@ -58,6 +59,16 @@ describe('Task', () => {
             retryKey: props.retryKey,
             ownerKey: props.ownerKey
         });
+    });
+    it('should fail to create if more than cap', async () => {
+        const groupTaskCap = 1;
+        // first task should be created successfully
+        const t1 = await tasks.create(db, { ...props, name: 'Not capped' }, { groupTaskCap });
+        expect(t1.isOk()).toBe(true);
+
+        // second task with the same group key should fail
+        const t2 = await tasks.create(db, { ...props, name: 'Capped' }, { groupTaskCap });
+        expect(t2.isErr()).toBe(true);
     });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);

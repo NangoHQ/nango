@@ -83,12 +83,16 @@ export const ShowIntegration: React.FC = () => {
                             </Link>
                         </TabsTrigger>
                         <TabsTrigger value="logs" disabled asChild>
+                            <Link to={`/${env}/logs?integrations=${integration.integration.unique_key}`} className="w-fit inline-flex items-center gap-1.5">
+                                Logs <ExternalLink className="size-4" />
+                            </Link>
+                        </TabsTrigger>
+                        <TabsTrigger value="connections" disabled asChild>
                             <Link
-                                to={`/${env}/logs?integrations=${integration.integration.unique_key}`}
-                                target="_blank"
+                                to={`/${env}/connections?integrations=${integration.integration.unique_key}`}
                                 className="w-fit inline-flex items-center gap-1.5"
                             >
-                                Logs <ExternalLink className="size-4" />
+                                Connections <ExternalLink className="size-4" />
                             </Link>
                         </TabsTrigger>
                     </TabsList>

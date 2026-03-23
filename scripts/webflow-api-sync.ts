@@ -27,6 +27,8 @@ if (process.env['DRYRUN']) {
     dryRun = true;
 }
 
+const forceUpdate = process.env['FORCE_UPDATE'] === 'true';
+
 const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TOKEN'] });
 
 const providersPath = 'packages/providers/providers.yaml';
@@ -162,7 +164,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
             }
         };
 
-        if (!util.isDeepStrictEqual(previous, update)) {
+        if (forceUpdate || !util.isDeepStrictEqual(previous, update)) {
             // always update logo, just in case
             (update.fieldData as any).logo = logo;
 

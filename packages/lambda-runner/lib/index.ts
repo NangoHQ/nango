@@ -4,6 +4,7 @@ import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client
 
 import { getKVStore, getLocking } from '@nangohq/kvstore';
 import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { loadProviders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { requestSchema } from './schemas.js';
@@ -153,6 +154,11 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
         if (code === '') {
             throw new Error('No code found');
+        }
+        try {
+            await loadProviders();
+        } catch (err) {
+            logger.error('Error loading providers', { error: err });
         }
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },

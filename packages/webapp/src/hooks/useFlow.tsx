@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
+import type { GetFlowDownload, PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 export function usePreBuiltDeployFlow(env: string, integrationId: string) {
     const queryClient = useQueryClient();
@@ -86,4 +86,23 @@ export async function apiFlowUpdateFrequency(env: string, params: PatchFlowFrequ
         res,
         json: (await res.json()) as PatchFlowFrequency['Reply']
     };
+}
+
+export async function apiFlowDownload(env: string, params: GetFlowDownload['Params'], flowName = 'flow') {
+    const res = await apiFetch(`/api/v1/flows/${params.id}/download?env=${env}`, {
+        method: 'GET'
+    });
+    if (!res.ok) {
+        const json = (await res.json()) as GetFlowDownload['Errors'];
+        throw new APIError({ res, json });
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${flowName}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }

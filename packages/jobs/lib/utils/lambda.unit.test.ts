@@ -39,7 +39,8 @@ describe('getRoutingId', () => {
 
     it('uses fleet_node_routing_override when provided in routingContext.plan', () => {
         const routingContext: RoutingContext = {
-            plan: { fleet_node_routing_override: 'custom-override' } as RoutingContext['plan']
+            plan: { fleet_node_routing_override: 'custom-override' } as RoutingContext['plan'],
+            features: []
         };
         const result = getRoutingId({
             nangoProps: minimalNangoProps(),
@@ -56,14 +57,15 @@ describe('getRoutingId', () => {
     it('uses LAMBDA_DEFAULT_PREFIX when routingContext.plan is null', () => {
         const result = getRoutingId({
             nangoProps: minimalNangoProps(),
-            routingContext: { plan: null }
+            routingContext: { plan: null, features: [] }
         });
         expect(result).toBe('default-prefix-S');
     });
 
     it('uses LAMBDA_DEFAULT_PREFIX when plan.fleet_node_routing_override is null', () => {
         const routingContext: RoutingContext = {
-            plan: { fleet_node_routing_override: null } as RoutingContext['plan']
+            plan: { fleet_node_routing_override: null } as RoutingContext['plan'],
+            features: []
         };
         const result = getRoutingId({
             nangoProps: minimalNangoProps(),
