@@ -351,6 +351,31 @@ describe('interpolateStringFromObject', () => {
         const output = utils.interpolateStringFromObject(input, {});
         expect(output).toBe('Path: ');
     });
+
+    it('resolves flat dot-notation keys (e.g. from webhook_response_metadata)', () => {
+        // getConnectionMetadata extracts dot-notation keys from the webhook payload and stores them
+        // as flat keys with a literal dot in the name, e.g.: webhook_response_metadata: ['installation.uuid']
+        // The template url ${connectionConfig.installation.uuid} needs to resolve
+        // 'installation.uuid' as a flat key lookup when nested traversal finds nothing.
+        const replacers = { 'installation.uuid': 'a87e0eb2-4fb3-4965-9580-6f5bb9ccc5de' };
+        const input = 'https://sentry.io/api/0/sentry-app-installations/${installation.uuid}/authorizations/';
+        const output = utils.interpolateStringFromObject(input, replacers);
+        expect(output).toBe('https://sentry.io/api/0/sentry-app-installations/a87e0eb2-4fb3-4965-9580-6f5bb9ccc5de/authorizations/');
+    });
+
+    it('prefers nested traversal over flat key when both exist', () => {
+        const replacers = {
+            'installation.uuid': 'flat-value',
+            installation: { uuid: 'nested-value' }
+        };
+        const output = utils.interpolateStringFromObject('${installation.uuid}', replacers);
+        expect(output).toBe('nested-value');
+    });
+
+    it('leaves placeholder unchanged when key is missing entirely', () => {
+        const output = utils.interpolateStringFromObject('${missing.key}', {});
+        expect(output).toBe('${missing.key}');
+    });
 });
 
 describe('interpolateObjectValues', () => {
