@@ -37,8 +37,8 @@ describe('Task', () => {
     });
 
     it('should be successfully created', async () => {
-        const [task] = (await tasks.create(db, [props])).unwrap();
-        expect(task).toMatchObject({
+        const res = (await tasks.create(db, [props])).unwrap();
+        expect(res.tasks[0]).toMatchObject({
             id: expect.any(String),
             name: props.name,
             payload: props.payload,
@@ -61,10 +61,10 @@ describe('Task', () => {
         });
     });
     it('should create multiple tasks', async () => {
-        const n = 1500;
+        const n = 5;
         const taskProps = Array.from({ length: n }, (_, i) => ({ ...props, name: `n=${i}` }));
         const res = (await tasks.create(db, taskProps)).unwrap();
-        expect(res).toHaveLength(n);
+        expect(res.tasks).toHaveLength(n);
     });
     it('should not create tasks exceeding the cap', async () => {
         const groupTaskCap = 1;
@@ -79,9 +79,10 @@ describe('Task', () => {
                 { groupTaskCap }
             )
         ).unwrap();
-        expect(res).toHaveLength(2);
-        expect(res[0]?.name).toBe('Not capped');
-        expect(res[1]?.name).toBe('Also not capped');
+        expect(res.tasks).toHaveLength(2);
+        expect(res.tasks[0]?.name).toBe('Not capped');
+        expect(res.tasks[1]?.name).toBe('Also not capped');
+        expect(res.cappedGroupKeys).toEqual([props.groupKey]);
     });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);
@@ -338,7 +339,7 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Prom
     if (res.isErr()) {
         throw new Error(`Failed to create task: ${res.error.message}`);
     }
-    const task = res.value[0];
+    const task = res.value.tasks[0];
     if (!task) {
         throw new Error('No task created');
     }

@@ -126,9 +126,9 @@ export async function create(
     db: knex.Knex,
     taskProps: TaskProps[],
     opts: { groupTaskCap: number } = { groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX }
-): Promise<Result<Task[]>> {
+): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[] }>> {
     if (taskProps.length === 0) {
-        return Ok([]);
+        return Ok({ tasks: [], cappedGroupKeys: [] });
     }
     try {
         // safeguard to prevent creating an unbounded number of tasks for the same group
@@ -141,6 +141,7 @@ export async function create(
 
         const now = new Date();
         const toInsertPerGroup = new Map<string, Task[]>();
+        const cappedGroupKeys = new Set<string>();
         for (const props of taskProps) {
             if (!toInsertPerGroup.has(props.groupKey)) {
                 toInsertPerGroup.set(props.groupKey, []);
@@ -158,6 +159,8 @@ export async function create(
                     output: null,
                     retryKey: props.retryKey || uuidv4()
                 });
+            } else {
+                cappedGroupKeys.add(props.groupKey);
             }
         }
         const toInsert = Array.from(toInsertPerGroup.values()).flat();
@@ -167,7 +170,10 @@ export async function create(
             const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).returning('*');
             inserted.push(...batch.map(DbTask.from));
         }
-        return Ok(inserted);
+        return Ok({
+            tasks: inserted,
+            cappedGroupKeys: Array.from(cappedGroupKeys)
+        });
     } catch (err) {
         return Err(new Error(`Error creating tasks: ${stringifyError(err)}`));
     }

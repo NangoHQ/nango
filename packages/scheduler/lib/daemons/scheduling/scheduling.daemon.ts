@@ -76,13 +76,12 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                 if (createRes.isErr()) {
                                     throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
                                 }
-                                const skipped = taskProps.length - createRes.value.length;
-                                if (skipped > 0) {
-                                    logger.warn(`${skipped} task(s) were not scheduled.`);
+                                if (createRes.value.cappedGroupKeys.length > 0) {
+                                    logger.warn(`Capped scheduling tasks for group keys: ${createRes.value.cappedGroupKeys.join(', ')}`);
                                 }
                                 const scheduleUpdates = [];
                                 const scheduledTasks = [];
-                                for (const task of createRes.value) {
+                                for (const task of createRes.value.tasks) {
                                     if (task.scheduleId) {
                                         scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
                                     }

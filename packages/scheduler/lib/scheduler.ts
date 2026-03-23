@@ -201,7 +201,7 @@ export class Scheduler {
             if (created.isErr()) {
                 return Err(created.error);
             }
-            const task = created.value[0];
+            const task = created.value.tasks[0];
             if (!task) {
                 return Err(`Failed to create task '${taskProps.name}'`);
             }
