@@ -4,9 +4,8 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
-import { QueueDepthMonitoringDaemon } from './daemons/monitoring/queue-depth-monitoring.daemon.js';
+import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
-import { envs } from './env.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger } from './utils/logger.js';
@@ -20,7 +19,7 @@ export class Scheduler {
     private expiring: ExpiringDaemon;
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
-    private queueDepthMonitors: QueueDepthMonitoringDaemon[];
+    private backpressureMonitor: BackpressureMonitoringDaemon;
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -66,9 +65,7 @@ export class Scheduler {
             onError
         });
         this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
-        this.queueDepthMonitors = envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_CONFIG.map(
-            ({ groupKeyPattern, threshold }) => new QueueDepthMonitoringDaemon({ db, abortSignal: this.ac.signal, onError, groupKeyPattern, threshold })
-        );
+        this.backpressureMonitor = new BackpressureMonitoringDaemon({ db, abortSignal: this.ac.signal, onError });
     }
 
     start(): void {
@@ -76,7 +73,7 @@ export class Scheduler {
         void this.expiring.start();
         void this.scheduling.start();
         void this.cleaning.start();
-        this.queueDepthMonitors.forEach((m) => void m.start());
+        void this.backpressureMonitor.start();
     }
 
     async stop(): Promise<void> {
@@ -84,7 +81,7 @@ export class Scheduler {
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();
         await this.scheduling.waitUntilStopped();
-        await Promise.all(this.queueDepthMonitors.map((m) => m.waitUntilStopped()));
+        await this.backpressureMonitor.waitUntilStopped();
     }
 
     /**

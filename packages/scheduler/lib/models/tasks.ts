@@ -395,44 +395,29 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     }
 }
 
-export interface QueueDepthByGroupKey {
+export interface GroupBackpressure {
     group_key: string;
-    cnt: number;
+    queued: number;
 }
 
-export async function getQueueDepth(
-    db: knex.Knex,
-    { topN, threshold, groupKeyPattern }: { topN: number; threshold: number; groupKeyPattern: string }
-): Promise<Result<QueueDepthByGroupKey[]>> {
+export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limit: number }): Promise<Result<GroupBackpressure[]>> {
     try {
-        const groupKeyLikePattern = groupKeyPattern.replace(/\*/g, '%');
-        const { rows } = await db.raw<{ rows: QueueDepthByGroupKey[] }>(
+        const { rows } = await db.raw<{ rows: GroupBackpressure[] }>(
             `
-            WITH counts AS (
-                SELECT group_key, count(*)::int as cnt
-                FROM ${TASKS_TABLE}
-                WHERE state = 'CREATED'
-                AND group_key LIKE ?
-                GROUP BY group_key
-            ),
-            offenders AS (
-                SELECT group_key, cnt
-                FROM counts
-                WHERE cnt >= ?
-                ORDER BY cnt DESC
-                LIMIT ?
-            )
-            SELECT group_key, cnt FROM offenders
-            UNION ALL
-            SELECT 'others', COALESCE(SUM(cnt), 0)::int
-            FROM counts
-            WHERE group_key NOT IN (SELECT group_key FROM offenders)
+            SELECT group_key, count(*)::int as queued
+            FROM ${TASKS_TABLE}
+            WHERE state = 'CREATED'
+              AND group_max_concurrency > 0
+            GROUP BY group_key
+            HAVING count(*) > max(group_max_concurrency)
+            ORDER BY queued DESC
+            LIMIT ?
             `,
-            [groupKeyLikePattern, threshold, topN]
+            [limit]
         );
         return Ok(rows ?? []);
     } catch (err) {
-        return Err(new Error(`Error getting queue depth for '${groupKeyPattern}': ${stringifyError(err)}`));
+        return Err(new Error(`Error getting groups with backpressure: ${stringifyError(err)}`));
     }
 }
 
