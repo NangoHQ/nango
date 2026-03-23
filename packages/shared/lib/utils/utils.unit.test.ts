@@ -353,9 +353,9 @@ describe('interpolateStringFromObject', () => {
     });
 
     it('resolves flat dot-notation keys (e.g. from webhook_response_metadata)', () => {
-        // getConnectionMetadata extracts dot-notation keys from the webhook payload and stores them
+        // getConnectionMetadata extracts dot-notation keys from the payload and stores them
         // as flat keys with a literal dot in the name, e.g.: webhook_response_metadata: ['installation.uuid']
-        // The template url ${connectionConfig.installation.uuid} needs to resolve
+        // The template url ${connectionConfig.installation.uuid} (token or authorization) needs to resolve
         // 'installation.uuid' as a flat key lookup when nested traversal finds nothing.
         const replacers = { 'installation.uuid': 'a87e0eb2-4fb3-4965-9580-6f5bb9ccc5de' };
         const input = 'https://sentry.io/api/0/sentry-app-installations/${installation.uuid}/authorizations/';
