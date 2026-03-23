@@ -50,7 +50,7 @@ export const General: React.FC = () => {
                     apiCall={async (name) => {
                         try {
                             const res = await patchEnvironmentAsync({ name });
-                            return { json: res.data };
+                            return { json: res };
                         } catch (err) {
                             if (err instanceof APIError) {
                                 return { json: err.json };
