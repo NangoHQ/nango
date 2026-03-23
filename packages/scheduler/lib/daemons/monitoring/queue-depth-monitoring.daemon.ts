@@ -50,10 +50,5 @@ export class QueueDepthMonitoringDaemon extends SchedulerDaemon {
         for (const { group_key, cnt } of queueDepth.value) {
             metrics.gauge(metrics.Types.ORCH_QUEUE_DEPTH, cnt, { groupKey: group_key, primitive: this.primitive });
         }
-
-        const offenders = queueDepth.value.filter((r) => r.group_key !== 'others');
-        for (const { group_key, cnt } of offenders) {
-            logger.info(`Queue depth for ${group_key}: ${cnt} tasks in CREATED state`);
-        }
     }
 }
