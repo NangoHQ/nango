@@ -4088,22 +4088,18 @@ conta-azul:
     authorization_url: https://auth.contaazul.com/login
     token_url: https://auth.contaazul.com/oauth2/token
     token_request_auth_method: basic
-    docs: https://nango.dev/docs/api-integrations/conta-azul
-    setup_guide_url: https://nango.dev/docs/api-integrations/conta-azul/how-to-register-your-own-conta-azul-api-oauth-app
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    scope_separator: ' '
-    default_scopes:
-        - openid
-        - profile
-        - aws.cognito.signin.user.admin
+    scope_separator: '+'
     proxy:
         base_url: https://api-v2.contaazul.com
     disable_pkce: true
+    docs: https://nango.dev/docs/api-integrations/conta-azul
+    setup_guide_url: https://nango.dev/docs/api-integrations/conta-azul/how-to-register-your-own-conta-azul-api-oauth-app
 
 confluence:
     display_name: Confluence
