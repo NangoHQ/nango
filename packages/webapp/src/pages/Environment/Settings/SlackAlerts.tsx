@@ -13,7 +13,7 @@ import { useStore } from '@/store';
 
 export const SlackAlertsSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data } = useEnvironment(env);
+    const { data, refetch: refetchEnvironment } = useEnvironment(env);
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
@@ -28,6 +28,7 @@ export const SlackAlertsSettings: React.FC = () => {
         setSlackIsConnecting(true);
         const onFinish = () => {
             setSlackIsConnecting(false);
+            void refetchEnvironment();
         };
 
         const onFailure = () => {
