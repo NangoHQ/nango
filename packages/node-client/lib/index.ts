@@ -1137,7 +1137,7 @@ export class Nango {
         }
 
         if (enableHeaderForwarding !== undefined) {
-            headers['Enable-Header-Forwarding'] = enableHeaderForwarding;
+            headers['Enable-Header-Forwarding'] = String(enableHeaderForwarding);
         }
 
         const options: AxiosRequestConfig = {

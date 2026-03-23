@@ -74,7 +74,9 @@ export function getAxiosConfiguration({
         headers
     };
 
-    const shouldForward = proxyConfig.enableHeaderForwarding ?? proxyConfig.provider.proxy?.enable_header_forwarding;
+    // Provider config takes precedence so integrations like Dayforce can enforce header forwarding
+    // regardless of what the caller passes. Falls back to the caller's header (default: false).
+    const shouldForward = proxyConfig.provider.proxy?.enable_header_forwarding ?? proxyConfig.enableHeaderForwarding;
     if (shouldForward) {
         axiosConfig.beforeRedirect = (options: Record<string, any>) => {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
@@ -209,7 +211,7 @@ export function getProxyConfiguration({
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
-        ...(enableHeaderForwarding !== undefined ? { enableHeaderForwarding } : {})
+        enableHeaderForwarding: enableHeaderForwarding ?? false
     };
 
     return Ok(configBody);
