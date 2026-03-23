@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
@@ -24,6 +24,10 @@ export const Telemetry: React.FC = () => {
     const [headers, setHeaders] = useState<Record<string, string>>(() => environmentAndAccount?.environment.otlp_settings?.headers ?? {});
     const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
 
+    useEffect(() => {
+        setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
+    }, [environmentAndAccount?.environment.otlp_settings?.headers]);
+
     const onSaveHeaders = async () => {
         setLoading(true);
         try {
@@ -36,12 +40,14 @@ export const Telemetry: React.FC = () => {
             if (err instanceof APIError) {
                 if (err.json.error.code === 'invalid_body' && err.json.error.errors) {
                     setErrors(
-                        err.json.error.errors.map((e: any) => {
-                            if (e.path[0] !== 'otlp_headers') {
-                                return null as any;
-                            }
-                            return { index: e.path[1], key: e.path[2], error: e.message };
-                        })
+                        err.json.error.errors
+                            .map((e: any) => {
+                                if (e.path[0] !== 'otlp_headers') {
+                                    return null as any;
+                                }
+                                return { index: e.path[1], key: e.path[2], error: e.message };
+                            })
+                            .filter(Boolean)
                     );
                 } else {
                     message = err.json.error.message ?? message;

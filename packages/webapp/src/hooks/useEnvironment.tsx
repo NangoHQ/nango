@@ -26,7 +26,7 @@ export function useEnvironment(env: string) {
 
 export function usePatchEnvironment(env: string) {
     const queryClient = useQueryClient();
-    return useMutation<PatchEnvironment['Success'], PatchEnvironment['Errors'], PatchEnvironment['Body']>({
+    return useMutation<PatchEnvironment['Success'], APIError, PatchEnvironment['Body']>({
         mutationFn: async (body) => {
             const res = await apiFetch(`/api/v1/environments?env=${env}`, {
                 method: 'PATCH',

@@ -24,10 +24,9 @@ export const Notifications: React.FC = () => {
         try {
             await patchWebhookAsync(body);
             toast({ title: 'Successfully updated', variant: 'success' });
-        } catch {
-            const message = 'Failed to update, an error occurred';
-            toast({ title: message, variant: 'error' });
-            throw new Error(message);
+        } catch (err) {
+            toast({ title: 'Failed to update, an error occurred', variant: 'error' });
+            throw err;
         }
     };
 
@@ -59,7 +58,7 @@ export const Notifications: React.FC = () => {
                         />
                     </div>
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="primary_url">Secondary URL</Label>
+                        <Label htmlFor="secondary_url">Secondary URL</Label>
                         <EditableInput
                             id="secondary_url"
                             placeholder="https://example.com/webhooks_from_nango"
