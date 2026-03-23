@@ -83,10 +83,30 @@ export const ENVS = z.object({
     ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_QUEUE_DEPTH_MONITORING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_QUEUE_DEPTH_MONITORING_TOP_N: z.coerce.number().optional().default(10),
-    ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_SYNC: z.coerce.number().optional().default(500),
-    ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ACTION: z.coerce.number().optional().default(10),
-    ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_WEBHOOK: z.coerce.number().optional().default(10),
-    ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ON_EVENT: z.coerce.number().optional().default(10),
+    ORCHESTRATOR_QUEUE_DEPTH_MONITORING_CONFIG: z
+        .string()
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s);
+            } catch {
+                ctx.addIssue(`Invalid JSON in ORCHESTRATOR_QUEUE_DEPTH_MONITORING_CONFIG`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z.array(
+                z.object({
+                    groupKeyPattern: z.string(),
+                    threshold: z.coerce.number()
+                })
+            )
+        )
+        .default([
+            { groupKeyPattern: 'sync*', threshold: 500 },
+            { groupKeyPattern: 'action*', threshold: 500 },
+            { groupKeyPattern: 'webhook*', threshold: 500 },
+            { groupKeyPattern: 'on-event*', threshold: 100 }
+        ]),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),

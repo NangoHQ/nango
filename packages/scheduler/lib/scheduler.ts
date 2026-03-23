@@ -66,12 +66,9 @@ export class Scheduler {
             onError
         });
         this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
-        this.queueDepthMonitors = [
-            { groupKeyPattern: 'sync*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_SYNC },
-            { groupKeyPattern: 'action*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ACTION },
-            { groupKeyPattern: 'webhook*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_WEBHOOK },
-            { groupKeyPattern: 'on-event*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ON_EVENT }
-        ].map(({ groupKeyPattern, threshold }) => new QueueDepthMonitoringDaemon({ db, abortSignal: this.ac.signal, onError, groupKeyPattern, threshold }));
+        this.queueDepthMonitors = envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_CONFIG.map(
+            ({ groupKeyPattern, threshold }) => new QueueDepthMonitoringDaemon({ db, abortSignal: this.ac.signal, onError, groupKeyPattern, threshold })
+        );
     }
 
     start(): void {
