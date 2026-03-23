@@ -4,7 +4,9 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
+import { QueueDepthMonitoringDaemon } from './daemons/monitoring/queue-depth-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
+import { envs } from './env.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger } from './utils/logger.js';
@@ -18,6 +20,7 @@ export class Scheduler {
     private expiring: ExpiringDaemon;
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
+    private queueDepthMonitors: QueueDepthMonitoringDaemon[];
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -63,6 +66,12 @@ export class Scheduler {
             onError
         });
         this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
+        this.queueDepthMonitors = [
+            { groupKeyPattern: 'sync*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_SYNC },
+            { groupKeyPattern: 'action*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ACTION },
+            { groupKeyPattern: 'webhook*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_WEBHOOK },
+            { groupKeyPattern: 'on-event*', threshold: envs.ORCHESTRATOR_QUEUE_DEPTH_MONITORING_THRESHOLD_ON_EVENT }
+        ].map(({ groupKeyPattern, threshold }) => new QueueDepthMonitoringDaemon({ db, abortSignal: this.ac.signal, onError, groupKeyPattern, threshold }));
     }
 
     start(): void {
@@ -70,6 +79,7 @@ export class Scheduler {
         void this.expiring.start();
         void this.scheduling.start();
         void this.cleaning.start();
+        this.queueDepthMonitors.forEach((m) => void m.start());
     }
 
     async stop(): Promise<void> {
@@ -77,6 +87,7 @@ export class Scheduler {
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();
         await this.scheduling.waitUntilStopped();
+        await Promise.all(this.queueDepthMonitors.map((m) => m.waitUntilStopped()));
     }
 
     /**

@@ -382,6 +382,47 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     }
 }
 
+export interface QueueDepthByGroupKey {
+    group_key: string;
+    cnt: number;
+}
+
+export async function getQueueDepth(
+    db: knex.Knex,
+    { topN, threshold, groupKeyPattern }: { topN: number; threshold: number; groupKeyPattern: string }
+): Promise<Result<QueueDepthByGroupKey[]>> {
+    try {
+        const groupKeyLikePattern = groupKeyPattern.replace(/\*/g, '%');
+        const { rows } = await db.raw<{ rows: QueueDepthByGroupKey[] }>(
+            `
+            WITH counts AS (
+                SELECT group_key, count(*)::int as cnt
+                FROM ${TASKS_TABLE}
+                WHERE state = 'CREATED'
+                AND group_key LIKE ?
+                GROUP BY group_key
+            ),
+            offenders AS (
+                SELECT group_key, cnt
+                FROM counts
+                WHERE cnt >= ?
+                ORDER BY cnt DESC
+                LIMIT ?
+            )
+            SELECT group_key, cnt FROM offenders
+            UNION ALL
+            SELECT 'others', SUM(cnt)::int
+            FROM counts
+            WHERE group_key NOT IN (SELECT group_key FROM offenders)
+            `,
+            [groupKeyLikePattern, threshold, topN]
+        );
+        return Ok(rows ?? []);
+    } catch (err) {
+        return Err(new Error(`Error getting queue depth for '${groupKeyPattern}': ${stringifyError(err)}`));
+    }
+}
+
 export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Promise<Result<Task[]>> {
     try {
         // Delete terminated tasks where lastStateTransitionAt is older than N days
