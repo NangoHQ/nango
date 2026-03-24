@@ -11,6 +11,8 @@
         "directory": "packages/pubsub"
     },
     "dependencies": {
+        "@aws-sdk/client-sns": "3.993.0",
+        "@aws-sdk/client-sqs": "3.993.0",
         "@nangohq/utils": "file:../utils",
         "@stomp/stompjs": "7.1.1",
         "dd-trace": "5.52.0",

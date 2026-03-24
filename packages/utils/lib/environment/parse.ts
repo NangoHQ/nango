@@ -379,7 +379,11 @@ export const ENVS = z.object({
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ActiveMQ
-    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'none']).optional().default('none'),
+    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'none']).optional().default('none'),
+    /** JSON object: event subject → SNS topic ARN (e.g. {"usage":"arn:aws:sns:...","team":"arn:...","user":"arn:..."}) */
+    NANGO_PUBSUB_SNS_TOPIC_ARNS: z.string().optional(),
+    /** JSON object: `consumerGroup:subject` → SQS queue URL (e.g. {"billing:usage":"https://sqs...","team:team":"https://sqs..."}) */
+    NANGO_PUBSUB_SQS_QUEUE_URLS: z.string().optional(),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),

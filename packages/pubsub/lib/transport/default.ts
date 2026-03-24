@@ -2,6 +2,7 @@ import { Ok } from '@nangohq/utils';
 
 import { ActiveMQ } from './activemq.js';
 import { NoOpTransport } from './noop.js';
+import { SnsSqs } from './sns-sqs.js';
 import { envs } from '../env.js';
 
 import type { Event } from '../event.js';
@@ -15,6 +16,8 @@ export class DefaultTransport implements Transport {
     constructor() {
         if (envs.NANGO_PUBSUB_TRANSPORT === 'activemq') {
             this.transport = new ActiveMQ();
+        } else if (envs.NANGO_PUBSUB_TRANSPORT === 'sns-sqs') {
+            this.transport = new SnsSqs();
         } else {
             this.transport = new NoOpTransport();
         }
