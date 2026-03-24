@@ -7,7 +7,7 @@ import { Functions } from './Functions';
 import { General } from './General';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
-import { Notifications } from './Webhooks';
+import { Webhooks } from './Webhooks';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -91,7 +91,7 @@ export const EnvironmentSettings: React.FC = () => {
                         <ConnectUISettings />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'webhooks'}>
-                        <Notifications />
+                        <Webhooks />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'slack-alerts'}>
                         <SlackAlertsSettings />

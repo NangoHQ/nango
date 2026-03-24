@@ -13,7 +13,7 @@ import { validateUrl } from '@/pages/Integrations/utils.js';
 
 import type { PatchWebhook } from '@nangohq/types';
 
-export const Notifications: React.FC = () => {
+export const Webhooks: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
