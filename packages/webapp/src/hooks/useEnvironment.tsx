@@ -1,77 +1,192 @@
-import useSWR from 'swr';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { apiFetch, swrFetcher } from '../utils/api';
+import { metaQueryKey } from './useMeta';
+import { APIError, apiFetch } from '../utils/api';
 
 import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
 
+export const environmentQueryKey = (env: string) => [env, 'environment'] as const;
+
 export function useEnvironment(env: string) {
-    const { data, error, mutate } = useSWR<GetEnvironment['Success'], GetEnvironment['Errors']>(`/api/v1/environments/current?env=${env}`, swrFetcher);
+    return useQuery<GetEnvironment['Success'], APIError>({
+        enabled: Boolean(env),
+        queryKey: environmentQueryKey(env),
+        queryFn: async (): Promise<GetEnvironment['Success']> => {
+            const res = await apiFetch(`/api/v1/environments/current?env=${env}`);
 
-    const loading = !data && !error;
+            const json = (await res.json()) as GetEnvironment['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
 
-    return {
-        loading,
-        error,
-        environmentAndAccount: data?.environmentAndAccount,
-        plan: data?.plan,
-        mutate
-    };
+            return json;
+        }
+    });
 }
 
-export async function apiPostEnvironment(body: PostEnvironment['Body']) {
-    const res = await apiFetch('/api/v1/environments', {
-        method: 'POST',
-        body: JSON.stringify(body)
-    });
+export function usePatchEnvironment(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PatchEnvironment['Success'], APIError, PatchEnvironment['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/environments?env=${env}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostEnvironment['Reply']
-    };
+            const json = (await res.json()) as PatchEnvironment['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
 }
 
-export async function apiPatchEnvironment(env: string, body: PatchEnvironment['Body']) {
-    const res = await apiFetch(`/api/v1/environments?env=${env}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body)
-    });
+export function usePatchWebhook(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PatchWebhook['Success'], APIError, PatchWebhook['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/environments/webhook?env=${env}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PatchEnvironment['Reply']
-    };
+            const json = (await res.json()) as PatchWebhook['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
 }
 
-export async function apiPatchWebhook(env: string, body: PatchWebhook['Body']) {
-    const res = await apiFetch(`/api/v1/environments/webhook?env=${env}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body)
-    });
+export function usePostVariables(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PostEnvironmentVariables['Success'], APIError, PostEnvironmentVariables['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/environments/variables?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostEnvironment['Reply']
-    };
+            const json = (await res.json()) as PostEnvironmentVariables['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
 }
 
-export async function apiPostVariables(env: string, body: PostEnvironmentVariables['Body']) {
-    const res = await apiFetch(`/api/v1/environments/variables?env=${env}`, {
-        method: 'POST',
-        body: JSON.stringify(body)
-    });
+export function usePostEnvironment() {
+    const queryClient = useQueryClient();
+    return useMutation<PostEnvironment['Success'], APIError, PostEnvironment['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch('/api/v1/environments', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostEnvironmentVariables['Reply']
-    };
+            const json = (await res.json()) as PostEnvironment['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: metaQueryKey });
+        }
+    });
 }
 
-export async function apiDeleteEnvironment(env: string) {
-    const res = await apiFetch(`/api/v1/environments?env=${env}`, {
-        method: 'DELETE'
-    });
+export function useRotateKey(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<undefined, APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/environment/rotate-key?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'secret' })
+            });
 
-    return {
-        res
-    };
+            if (!res.ok) {
+                const json = (await res.json()) as Record<string, unknown>;
+                throw new APIError({ res, json });
+            }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
+}
+
+export function useRevertKey(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<undefined, APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/environment/revert-key?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'secret' })
+            });
+
+            if (!res.ok) {
+                const json = (await res.json()) as Record<string, unknown>;
+                throw new APIError({ res, json });
+            }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
+}
+
+export function useActivateKey(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<undefined, APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/environment/activate-key?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'secret' })
+            });
+
+            if (!res.ok) {
+                const json = (await res.json()) as Record<string, unknown>;
+                throw new APIError({ res, json });
+            }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        }
+    });
+}
+
+export function useDeleteEnvironment(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<undefined, APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/environments?env=${env}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) {
+                const json = (await res.json()) as Record<string, unknown>;
+                throw new APIError({ res, json });
+            }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: metaQueryKey });
+        }
+    });
 }

@@ -22,7 +22,8 @@ export const ShowIntegration: React.FC = () => {
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
-    const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const environmentAndAccount = environmentData?.environmentAndAccount;
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 

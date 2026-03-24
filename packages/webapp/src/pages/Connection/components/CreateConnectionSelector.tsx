@@ -64,7 +64,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const { data: listIntegrationData, isLoading: listIntegrationPending } = useListIntegrations(env);
 
     const connectUI = useRef<ConnectUI>();

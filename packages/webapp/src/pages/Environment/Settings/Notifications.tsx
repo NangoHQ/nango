@@ -5,12 +5,15 @@ import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { WebhookCheckboxes } from './components/WebhookCheckboxes';
-import { apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
+import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment';
 import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
 
 export const Notifications: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount, mutate } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
 
     if (!environmentAndAccount) {
         return null;
@@ -39,8 +42,16 @@ export const Notifications: React.FC = () => {
                         placeholder="https://example.com/webhooks_from_nango"
                         subTitle={true}
                         originalValue={environmentAndAccount.webhook_settings.primary_url || ''}
-                        apiCall={(value) => apiPatchWebhook(env, { primary_url: value })}
-                        onSuccess={() => void mutate()}
+                        apiCall={async (value) => {
+                            try {
+                                const res = await patchWebhookAsync({ primary_url: value });
+                                return { json: res };
+                            } catch (err) {
+                                if (err instanceof APIError) return { json: err.json };
+                                throw err;
+                            }
+                        }}
+                        onSuccess={() => {}}
                     />
                     <EditableInput
                         name="secondary_url"
@@ -48,15 +59,23 @@ export const Notifications: React.FC = () => {
                         placeholder="https://example.com/webhooks_from_nango"
                         subTitle={true}
                         originalValue={environmentAndAccount.webhook_settings.secondary_url || ''}
-                        apiCall={(value) => apiPatchWebhook(env, { secondary_url: value })}
-                        onSuccess={() => void mutate()}
+                        apiCall={async (value) => {
+                            try {
+                                const res = await patchWebhookAsync({ secondary_url: value });
+                                return { json: res };
+                            } catch (err) {
+                                if (err instanceof APIError) return { json: err.json };
+                                throw err;
+                            }
+                        }}
+                        onSuccess={() => {}}
                     />
                 </div>
             </SettingsGroup>
             <SettingsGroup label="Subscriptions">
                 <div className="flex flex-col gap-7">
                     <div>
-                        <WebhookCheckboxes env={env} checkboxState={environmentAndAccount.webhook_settings} mutate={mutate} />
+                        <WebhookCheckboxes env={env} checkboxState={environmentAndAccount.webhook_settings} />
                     </div>
                 </div>
             </SettingsGroup>

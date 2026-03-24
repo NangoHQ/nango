@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import Spinner from '../../../../components/ui/Spinner';
-import { apiPatchWebhook } from '../../../../hooks/useEnvironment';
+import { usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
+import Spinner from '@/components/ui/Spinner';
 import { Switch } from '@/components-v2/ui/switch';
 
 import type { ApiWebhooks } from '@nangohq/types';
@@ -43,12 +43,12 @@ const checkboxesConfig: CheckboxConfig[] = [
 
 interface CheckboxFormProps {
     env: string;
-    mutate: () => void;
     checkboxState: ApiWebhooks;
 }
 
-export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState, mutate }) => {
+export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState }) => {
     const { toast } = useToast();
+    const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
 
     const [loading, setLoading] = useState<string | false>();
 
@@ -58,22 +58,20 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
         }
 
         setLoading(name);
-        const res = await apiPatchWebhook(env, {
-            on_auth_creation: checkboxState['on_auth_creation'],
-            on_auth_refresh_error: checkboxState['on_auth_refresh_error'],
-            on_sync_completion_always: checkboxState['on_sync_completion_always'],
-            on_sync_error: checkboxState['on_sync_error'],
-            on_async_action_completion: checkboxState['on_async_action_completion'],
-            [name]: checked
-        });
-        setLoading(false);
-
-        if ('error' in res.json) {
+        try {
+            await patchWebhookAsync({
+                on_auth_creation: checkboxState['on_auth_creation'],
+                on_auth_refresh_error: checkboxState['on_auth_refresh_error'],
+                on_sync_completion_always: checkboxState['on_sync_completion_always'],
+                on_sync_error: checkboxState['on_sync_error'],
+                on_async_action_completion: checkboxState['on_async_action_completion'],
+                [name]: checked
+            });
+        } catch {
             toast({ title: 'There was an issue updating the webhook settings', variant: 'error' });
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        mutate();
     };
 
     return (

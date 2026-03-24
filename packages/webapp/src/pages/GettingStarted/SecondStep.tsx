@@ -49,7 +49,8 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
 
     const [isExecuting, setIsExecuting] = useState(false);
     const [isTooltipOpen, setIsTooltipOpen] = useState(false);
