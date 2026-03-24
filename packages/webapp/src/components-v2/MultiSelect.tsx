@@ -1,26 +1,44 @@
 import debounce from 'lodash/debounce';
-import { Search, Square, SquareCheck } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Check, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from './ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/utils/utils';
 
-interface MultiSelectProps<T> {
+import type { ComboboxOption } from './ui/combobox';
+
+interface MultiSelectProps<T extends string = string> {
     label: string;
-    options: { name: string; value: T }[];
+    options: ComboboxOption<T>[];
     selected: T[];
     defaultSelect?: T[];
     loading?: boolean;
-    onChange: (selected: T[]) => void;
+    searchPlaceholder?: string;
+    onValueChange: (selected: T[]) => void;
+    renderOption?: (option: ComboboxOption<T>, selected: boolean) => React.ReactNode;
+    renderOptionRight?: (option: ComboboxOption<T>, selected: boolean) => React.ReactNode;
+    emptyText?: string;
+    footer?: React.ReactNode;
 }
 
-export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, options, selected, defaultSelect = [], onChange, loading = false }) => {
+export function MultiSelect<T extends string = string>({
+    label,
+    options,
+    selected,
+    defaultSelect = [],
+    onValueChange,
+    loading = false,
+    searchPlaceholder = 'Search',
+    renderOption,
+    renderOptionRight,
+    emptyText = 'No results found.',
+    footer
+}: MultiSelectProps<T>) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [filteredOptions, setFilteredOptions] = useState<typeof options>([]);
-    const [displayOrder, setDisplayOrder] = useState<typeof options>([]);
 
     const initialOptions = useMemo(() => {
         return options ?? [];
@@ -57,7 +75,7 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
                 return;
             }
 
-            const filtered = initialOptions.filter((option) => option.name.toLowerCase().includes(value.toLowerCase()));
+            const filtered = initialOptions.filter((option) => option.label.toLowerCase().includes(value.toLowerCase()));
             setFilteredOptions(filtered);
         },
         [initialOptions]
@@ -78,14 +96,6 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
     }, [open]);
 
     useEffect(() => {
-        // Only update displayOrder when popover transitions from closed to open, or when initialOptions changes
-        const isOpening = open && !prevOpenRef.current;
-        const optionsChanged = initialOptions !== prevInitialOptionsRef.current;
-
-        if ((isOpening || optionsChanged) && initialOptions.length > 0) {
-            const sorted = sortOptionsWithSelectedFirst(initialOptions, selected);
-            setDisplayOrder(sorted);
-        }
         prevOpenRef.current = open;
         prevInitialOptionsRef.current = initialOptions;
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,9 +109,9 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
         [debouncedFilterOptions]
     );
 
-    const select = (val: unknown) => {
+    const select = (val: T) => {
         const isSelected = selected.some((sel) => sel === val);
-        let newSelected: unknown[];
+        let newSelected: T[];
 
         if (isSelected) {
             newSelected = selected.filter((sel) => sel !== val);
@@ -109,7 +119,7 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
             newSelected = [...selected, val];
         }
 
-        onChange(newSelected.length <= 0 ? [...defaultSelect] : newSelected);
+        onValueChange(newSelected.length <= 0 ? [...defaultSelect] : newSelected);
     };
 
     const isDirty = useMemo(() => {
@@ -117,12 +127,16 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
         return selected.some((sel, index) => sel !== defaultSelect[index]);
     }, [selected, defaultSelect]);
 
-    const optionsToRender = search.trim() ? filteredOptions : displayOrder.length > 0 ? displayOrder : initialOptions;
-
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button loading={loading} disabled={options.length === 0} variant="tertiary" size="lg" className={cn(isDirty && 'bg-btn-tertiary-press')}>
+                <Button
+                    loading={loading}
+                    disabled={options.length === 0}
+                    variant="ghost"
+                    size="lg"
+                    className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover')}
+                >
                     {label}{' '}
                     {selected.length > 0 && (
                         <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center px-2">
@@ -131,45 +145,65 @@ export const MultiSelect: React.FC<MultiSelectProps<unknown>> = ({ label, option
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="bg-btn-tertiary-press w-72 rounded border border-border-muted">
-                <div className="border-b border-border-muted">
-                    <InputGroup className="bg-transparent border-none">
-                        <InputGroupInput type="text" placeholder="Search" value={search} onChange={handleInputChange} />
-                        <InputGroupAddon>
-                            <Search />
+            <PopoverContent
+                align="end"
+                className="flex w-[var(--radix-popover-trigger-width)] min-w-[312px] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-bg-subtle p-1 pb-0"
+            >
+                <div className="border-b border-border-muted w-full">
+                    <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-bg-surface px-2.5 py-1.5">
+                        <InputGroupAddon className="p-0 pr-2">
+                            <Search className="size-4 text-text-tertiary" />
                         </InputGroupAddon>
+                        <InputGroupInput
+                            type="text"
+                            placeholder={searchPlaceholder}
+                            value={search}
+                            onChange={handleInputChange}
+                            className="h-auto p-0 text-body-medium-regular text-text-tertiary placeholder:text-text-tertiary"
+                        />
                     </InputGroup>
                 </div>
-                <div className="p-2 max-h-64 overflow-y-auto">
-                    {optionsToRender.length === 0 ? (
-                        <div className="p-2 text-center text-text-tertiary text-body-medium-medium">No options found</div>
-                    ) : (
-                        optionsToRender.map((option) => {
-                            const checked = selected.some((sel) => sel === option.value);
+                <div className="max-h-72 w-full overflow-y-auto">
+                    {filteredOptions.length > 0 ? (
+                        filteredOptions.map((opt) => {
+                            const isSelected = selected.indexOf(opt.value) !== -1;
+                            const rightOptionContent = renderOptionRight ? renderOptionRight(opt, isSelected) : null;
                             return (
                                 <div
-                                    key={String(option.value)}
-                                    className="group w-full p-2 inline-flex items-center gap-2 rounded hover:bg-nav-bg-hover cursor-pointer transition-colors"
-                                    onClick={() => select(option.value)}
-                                >
-                                    {checked ? (
-                                        <SquareCheck className="size-4 text-text-primary transition-colors" />
-                                    ) : (
-                                        <Square className="size-4 text-text-secondary group-hover:text-text-primary transition-colors" />
+                                    key={opt.value}
+                                    onClick={() => select(opt.value)}
+                                    className={cn(
+                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-primary',
+                                        isSelected &&
+                                            'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated text-text-secondary hover:text-text-primary'
                                     )}
-                                    <span
-                                        className={`text-body-medium-medium transition-colors ${
-                                            checked ? 'text-text-primary' : 'text-text-secondary group-hover:text-text-primary'
-                                        }`}
-                                    >
-                                        {option.name}
-                                    </span>
+                                >
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span
+                                            className={cn(
+                                                'flex size-5 shrink-0 items-center justify-center rounded-sm border',
+                                                isSelected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                            )}
+                                        >
+                                            {isSelected ? <Check className="size-3.5" /> : null}
+                                        </span>
+                                        <div className="flex min-w-0 items-center gap-1 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal">
+                                            {renderOption ? renderOption(opt, isSelected) : <span className="truncate">{opt.label}</span>}
+                                        </div>
+                                    </div>
+                                    {rightOptionContent ? <div className="shrink-0">{rightOptionContent}</div> : null}
                                 </div>
                             );
                         })
+                    ) : (
+                        <div className="px-2 py-3 text-center">
+                            <p className="text-text-tertiary text-body-small-regular">{emptyText}</p>
+                        </div>
                     )}
                 </div>
+
+                {footer ? <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div> : null}
             </PopoverContent>
         </Popover>
     );
-};
+}

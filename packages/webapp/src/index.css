@@ -376,6 +376,9 @@
     --color-feedback-error-bg: var(--color-red-100);
     --color-feedback-error-alt: var(--color-red-100);
     --color-feedback-error-border: var(--color-red-300);
+    --color-feedback-neutral-fg: var(--colors-icon-icon-tertiary);
+    --color-feedback-neutral-bg: var(--colors-background-bg-subtle);
+    --color-feedback-neutral-alt: var(--colors-background-bg-subtle);
 
     /* Dropdown */
     --color-dropdown-bg-default: var(--color-gray-75);
@@ -487,6 +490,9 @@
             --color-feedback-error-bg: var(--color-red-900);
             --color-feedback-error-alt: var(--color-red-700);
             --color-feedback-error-border: var(--color-red-500);
+            --color-feedback-neutral-fg: var(--color-gray-600);
+            --color-feedback-neutral-bg: var(--color-gray-825);
+            --color-feedback-neutral-alt: var(--color-gray-825);
 
             /* Dropdown */
             --color-dropdown-bg-default: var(--color-gray-825);
