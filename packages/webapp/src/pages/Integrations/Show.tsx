@@ -27,8 +27,8 @@ export const IntegrationsList = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
-    const { environment } = environmentAndAccount || {};
+    const { data: environmentData } = useEnvironment(env);
+    const { environment } = environmentData?.environmentAndAccount || {};
     const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
 

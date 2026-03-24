@@ -1,6 +1,4 @@
-import { TooltipTrigger } from '@radix-ui/react-tooltip';
-
-import { Tooltip, TooltipContent } from './ui/tooltip';
+import { ConditionalTooltip } from './ConditionalTooltip';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { Action, Scope } from '@/hooks/usePermissions';
@@ -24,21 +22,16 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({ permission, chil
 };
 
 interface PermissionConditionProps {
-    condition?: boolean;
+    condition: boolean;
     children: (allowed: boolean) => React.ReactNode;
     asChild?: boolean;
     tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
 }
 
-export const PermissionCondition = ({ condition, children, asChild, tooltipSide = 'right' }: PermissionConditionProps) => {
-    if (condition) {
-        return <>{children(true)}</>;
-    }
-
+export const PermissionCondition = ({ condition, children, asChild, tooltipSide = 'bottom' }: PermissionConditionProps) => {
     return (
-        <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild={asChild}>{children(false)}</TooltipTrigger>
-            {!condition && <TooltipContent side={tooltipSide}>This action is not permitted for your role.</TooltipContent>}
-        </Tooltip>
+        <ConditionalTooltip condition={!condition} content="This action is not permitted for your role." asChild={asChild} side={tooltipSide} delayDuration={0}>
+            {children(condition)}
+        </ConditionalTooltip>
     );
 };

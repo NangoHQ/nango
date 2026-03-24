@@ -1,8 +1,11 @@
 import { IconTrash } from '@tabler/icons-react';
 
+import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
+import { PermissionCondition } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 
 interface DeleteButtonProps {
     environmentName: string;
@@ -13,16 +16,23 @@ interface DeleteButtonProps {
 }
 
 export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled }) => {
+    const { data } = useEnvironment(environmentName);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const isProdEnv = environmentAndAccount?.environment.is_production;
+    const { can } = usePermissions();
+    const canDeleteEnvironment = !isProdEnv || can(permissions.canDeleteProdEnvironment);
+
     const trigger = (
-        <Tooltip>
-            <TooltipTrigger>
-                <Button variant="destructive" disabled={!!disabled}>
-                    <IconTrash stroke={1} size={18} />
-                    <span>Delete environment</span>
-                </Button>
-            </TooltipTrigger>
-            {typeof disabled === 'string' && <TooltipContent>{disabled}</TooltipContent>}
-        </Tooltip>
+        <ConditionalTooltip condition={typeof disabled === 'string'} content={disabled}>
+            <PermissionCondition condition={canDeleteEnvironment}>
+                {(allowed) => (
+                    <Button variant="destructive" disabled={!!disabled || !allowed}>
+                        <IconTrash stroke={1} size={18} />
+                        <span>Delete environment</span>
+                    </Button>
+                )}
+            </PermissionCondition>
+        </ConditionalTooltip>
     );
 
     return (

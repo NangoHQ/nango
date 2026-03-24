@@ -1,11 +1,10 @@
-import { TooltipTrigger } from '@radix-ui/react-tooltip';
 import { Check, Edit, Loader2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { ConditionalTooltip } from './ConditionalTooltip';
 import { CopyButton } from './CopyButton';
 import { PermissionCondition } from './PermissionGate';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './ui/input-group';
-import { Tooltip, TooltipContent } from './ui/tooltip';
 
 export interface EditableInputProps {
     id?: string;
@@ -146,18 +145,15 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     </InputGroupAddon>
                 ) : !editing ? (
                     <>
-                        <PermissionCondition condition={canEdit} tooltipSide="bottom">
-                            {(allowed) => (
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <InputGroupButton disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
-                                            <Edit />
-                                        </InputGroupButton>
-                                    </TooltipTrigger>
-                                    {typeof disabled === 'string' && <TooltipContent side="bottom">{disabled}</TooltipContent>}
-                                </Tooltip>
-                            )}
-                        </PermissionCondition>
+                        <ConditionalTooltip condition={!!disabled && typeof disabled === 'string'} content={disabled} side="bottom">
+                            <PermissionCondition condition={canEdit} tooltipSide="bottom">
+                                {(allowed) => (
+                                    <InputGroupButton disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
+                                        <Edit />
+                                    </InputGroupButton>
+                                )}
+                            </PermissionCondition>
+                        </ConditionalTooltip>
                         <InputGroupAddon align="inline-end">
                             <PermissionCondition condition={canRead || !secret} tooltipSide="bottom">
                                 {(allowed) => <CopyButton disabled={!allowed} text={value} />}
