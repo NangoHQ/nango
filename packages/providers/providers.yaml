@@ -808,36 +808,45 @@ amazon-selling-partner:
     redirect_uri_metadata:
         - selling_partner_id
     proxy:
-        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        base_url: https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
             x-amz-access-token: ${accessToken}
-    docs: https://nango.dev/docs/integrations/all/amazon-selling-partner
-    docs_connect: https://nango.dev/docs/integrations/all/amazon-selling-partner/connect
+    docs: https://nango.dev/docs/api-integrations/amazon-selling-partner
+    docs_connect: https://nango.dev/docs/api-integrations/amazon-selling-partner/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/amazon-selling-partner/how-to-register-your-own-amazon-selling-partner-api-oauth-app
     connection_config:
         applicationId:
             type: string
             title: Application ID
-            description: The unique identifier for your Amazon Selling Partner application
+            description: The unique identifier for your Amazon Selling Partner application.
             example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
             pattern: '^[a-zA-Z0-9.-]+$'
             doc_section: '#step-1-finding-your-app-id'
             order: 1
         domain:
             type: string
-            title: Domain
-            description: The domain representing the Amazon platform you are integrating with
+            title: Authorization Domain
+            description: The domain representing the Amazon platform you are integrating with.
             example: sellercentral.amazon.com
             pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
-            doc_section: '#step-2-finding-your-domain'
+            doc_section: '#step-2-finding-your-authorization-domain'
             order: 2
+        subdomain:
+            type: string
+            title: Proxy BaseUrl Subdomain
+            description: The subdomain prefix for the Amazon Selling Partner API endpoint.
+            example: sellingpartnerapi
+            pattern: '^(sandbox\.)?sellingpartnerapi$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-subdomain'
+            order: 3
         region:
             type: string
             title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
             example: eu
             pattern: '^[a-z]+$'
-            doc_section: '#step-3-finding-your-proxy-baseurl-region'
-            order: 3
+            doc_section: '#step-4-finding-your-proxy-baseurl-region'
+            order: 4
 
 amazon-selling-partner-beta:
     display_name: Amazon Selling Partner (Beta)
@@ -862,13 +871,14 @@ amazon-selling-partner-beta:
         base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
             x-amz-access-token: ${accessToken}
-    docs: https://nango.dev/docs/integrations/all/amazon-selling-partner-beta
-    docs_connect: https://nango.dev/docs/integrations/all/amazon-selling-partner-beta/connect
+    docs: https://nango.dev/docs/api-integrations/amazon-selling-partner-beta
+    docs_connect: https://nango.dev/docs/api-integrations/amazon-selling-partner-beta/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/amazon-selling-partner-beta/how-to-register-your-own-amazon-selling-partner-beta-api-oauth-app
     connection_config:
         applicationId:
             type: string
             title: Application ID
-            description: The unique identifier for your Amazon Selling Partner application
+            description: The unique identifier for your Amazon Selling Partner application.
             example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
             pattern: '^[a-zA-Z0-9.-]+$'
             doc_section: '#step-1-finding-your-app-id'
@@ -876,10 +886,10 @@ amazon-selling-partner-beta:
         domain:
             type: string
             title: Domain
-            description: The domain representing the Amazon platform you are integrating with
+            description: The domain representing the Amazon platform you are integrating with.
             example: sellercentral.amazon.com
             pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
-            doc_section: '#step-2-finding-your-domain'
+            doc_section: '#step-2-finding-your-authorization-domain'
             order: 2
         region:
             type: string
