@@ -46,6 +46,8 @@ import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { patchPublicPruneRecords } from './controllers/records/patchPruneRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
+import { postSfDeploy } from './controllers/sf/postSfDeploy.js';
+import { postSfRun } from './controllers/sf/postSfRun.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
@@ -208,6 +210,12 @@ publicAPI.route('/sync/start').post(apiAuth, postPublicSyncStart);
 publicAPI.route('/sync/status').get(apiAuth, getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
+
+publicAPI.use('/sf-deploy', jsonContentTypeMiddleware);
+publicAPI.route('/sf-deploy').post(apiAuth, postSfDeploy);
+
+publicAPI.use('/sf-run', jsonContentTypeMiddleware);
+publicAPI.route('/sf-run').post(apiAuth, postSfRun);
 
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/mcp').post(apiAuth, postMcp);
