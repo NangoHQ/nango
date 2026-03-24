@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
-import db from '@nangohq/database';
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { configService, connectionService, getApiUrl, getSyncConfigRaw, localFileService, remoteFileService, secretService } from '@nangohq/shared';
 import { integrationFilesAreRemote, isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendSfStepError } from './helpers.js';
-import { executeDryRun } from '../../services/sf/dryrun.service.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
+import { executeDryRun } from '../../services/sf/dryrun.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { NangoProps, PostSfRun } from '@nangohq/types';
@@ -20,6 +20,7 @@ const schemaBody = z
         function_type: z.enum(['action', 'sync']),
         connection_id: connectionIdSchema,
         environment: z.string().min(1),
+        input: z.unknown().optional(),
         test_input: z.unknown().optional(),
         metadata: z.record(z.string(), z.unknown()).optional(),
         checkpoint: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
@@ -131,12 +132,12 @@ export const postSfRun = asyncWrapper<PostSfRun>(async (req, res) => {
                       providerConfigKey: body.integration_id,
                       scriptType: body.function_type
                   });
-    } catch (error) {
+    } catch (err) {
         sendSfStepError({
             res,
             step: 'lookup',
             status: 500,
-            error
+            error: err
         });
         return;
     }
@@ -204,7 +205,7 @@ export const postSfRun = asyncWrapper<PostSfRun>(async (req, res) => {
         code: scriptCode,
         compiledScriptPath: `build/${body.integration_id}_${body.function_type}s_${body.function_name}.cjs`,
         nangoProps,
-        ...(body.function_type === 'action' ? { testInput: body.test_input } : {}),
+        ...(body.function_type === 'action' ? { testInput: body.test_input ?? body.input } : {}),
         ...(body.function_type === 'sync' ? { metadata: body.metadata as any, checkpoint: body.checkpoint as any } : {})
     });
 

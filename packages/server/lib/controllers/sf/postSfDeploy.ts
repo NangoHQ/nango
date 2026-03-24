@@ -2,13 +2,13 @@ import * as z from 'zod';
 
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, cleanIncomingFlow, deploy } from '@nangohq/shared';
-import { NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { NangoError, cleanIncomingFlow, deploy, localFileService } from '@nangohq/shared';
+import { NANGO_VERSION, integrationFilesAreRemote, isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendSfStepError } from './helpers.js';
+import { providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 import { compileAndBuildFlow } from '../../services/sf/compile.service.js';
 import { cleanupSfWorkspace, createSfWorkspace } from '../../services/sf/workspace.service.js';
-import { providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
@@ -67,7 +67,7 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
         });
         workspacePath = workspace.workspacePath;
 
-        const { flow } = await compileAndBuildFlow({
+        const { flow, bundledJs } = await compileAndBuildFlow({
             workspacePath: workspace.workspacePath,
             entryTsPath: workspace.entryTsPath,
             virtualScriptPath: workspace.virtualScriptPath,
@@ -79,6 +79,18 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
         });
 
         step = 'deployment';
+
+        if (!isCloud && !integrationFilesAreRemote) {
+            const localBuildFile = `build/${body.integration_id}_${body.function_type}s_${body.function_name}.cjs`;
+            const persisted = localFileService.putIntegrationFile({
+                filePath: localBuildFile,
+                fileContent: bundledJs
+            });
+            if (!persisted) {
+                throw new Error(`Failed to persist compiled bundle locally at '${localBuildFile}'`);
+            }
+        }
+
         locking = await getLocking();
 
         const ttlMs = 60 * 1000;
@@ -125,11 +137,11 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
             function_type: body.function_type,
             deployment: deployed
         });
-    } catch (error) {
+    } catch (err) {
         const errorArgs: Parameters<typeof sendSfStepError>[0] = {
             res,
             step,
-            error,
+            error: err,
             ...(step === 'compilation' ? { status: 400 } : {})
         };
         if (workspacePath) {

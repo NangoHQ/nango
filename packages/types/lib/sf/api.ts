@@ -55,6 +55,7 @@ export type PostSfRun = Endpoint<{
         function_type: SfFunctionType;
         connection_id: string;
         environment: string;
+        input?: unknown;
         test_input?: unknown;
         metadata?: unknown;
         checkpoint?: unknown;
