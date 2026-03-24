@@ -296,7 +296,7 @@ export async function remove(db: knex.Knex, id: string): Promise<Result<Schedule
 
 export async function search(
     db: knex.Knex,
-    params: { id?: string; names?: string[]; state?: ScheduleState; limit: number; forUpdate?: boolean }
+    params: { id?: string; names?: string[]; namePrefix?: string; state?: ScheduleState; limit: number; forUpdate?: boolean }
 ): Promise<Result<Schedule[]>> {
     try {
         const query = db.from<DbSchedule>(SCHEDULES_TABLE).limit(params.limit);
@@ -305,6 +305,9 @@ export async function search(
         }
         if (params.names) {
             query.whereIn('name', params.names);
+        }
+        if (params.namePrefix) {
+            query.where('name', 'like', `${params.namePrefix}%`);
         }
         if (params.state) {
             query.where('state', params.state);

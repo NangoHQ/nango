@@ -75,6 +75,15 @@ export interface OrchestratorClientInterface {
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
+    searchSchedulesByPrefix({
+        namePrefix,
+        state,
+        limit
+    }: {
+        namePrefix: string;
+        state: 'STARTED' | 'PAUSED' | 'DELETED';
+        limit: number;
+    }): Promise<SchedulesReturn>;
     getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn>;
 }
 
@@ -112,6 +121,19 @@ export class Orchestrator {
             return map;
         }, new Map<string, OrchestratorSchedule>());
         return Ok(scheduleMap);
+    }
+
+    async getPausedSyncsByEnvironment({ environmentId }: { environmentId: number }): Promise<Result<string[]>> {
+        const namePrefix = `environment:${environmentId}:sync:`;
+        const result = await this.client.searchSchedulesByPrefix({ namePrefix, state: 'PAUSED', limit: 10_000 });
+        if (result.isErr()) {
+            return Err(`Failed to get paused syncs: ${stringifyError(result.error)}`);
+        }
+        const syncIds = result.value.flatMap((schedule) => {
+            const parsed = ScheduleName.parse(schedule.name);
+            return parsed.isOk() ? [parsed.value.syncId] : [];
+        });
+        return Ok(syncIds);
     }
 
     async triggerAction<T = unknown>({

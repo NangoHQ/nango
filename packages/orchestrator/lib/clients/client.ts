@@ -376,6 +376,37 @@ export class OrchestratorClient {
         }
     }
 
+    public async searchSchedulesByPrefix({
+        namePrefix,
+        state,
+        limit
+    }: {
+        namePrefix: string;
+        state: 'STARTED' | 'PAUSED' | 'DELETED';
+        limit: number;
+    }): Promise<SchedulesReturn> {
+        const res = await this.routeFetch(postSchedulesSearchRoute)({
+            body: { namePrefix, state, limit }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error searching schedules by prefix`,
+                payload: { namePrefix, state, response: res.error.payload as any }
+            });
+        } else {
+            const schedules = res.flatMap((schedule) => {
+                const validated = validateSchedule(schedule);
+                if (validated.isErr()) {
+                    logger.error(`searchByPrefix: error validating schedule: ${validated.error.message}`);
+                    return [];
+                }
+                return [validated.value];
+            });
+            return Ok(schedules);
+        }
+    }
+
     public async dequeue({
         groupKeyPattern,
         limit,

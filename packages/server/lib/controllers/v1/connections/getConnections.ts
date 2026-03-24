@@ -1,13 +1,16 @@
 import * as z from 'zod';
 
-import { connectionService } from '@nangohq/shared';
+import { connectionService, getSyncsByIds } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
 import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { GetConnections } from '@nangohq/types';
+
+const orchestrator = getOrchestrator();
 
 const queryStringValidation = z
     .object({
@@ -45,9 +48,24 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
         withError: queryString.withError
     });
 
+    const pausedConnectionIds = new Set<number>();
+    const pausedSyncsResult = await orchestrator.getPausedSyncsByEnvironment({ environmentId: environment.id });
+    if (pausedSyncsResult.isOk() && pausedSyncsResult.value.length > 0) {
+        const syncs = await getSyncsByIds({ syncIds: pausedSyncsResult.value });
+        for (const sync of syncs) {
+            pausedConnectionIds.add(sync.nango_connection_id);
+        }
+    }
+
     res.status(200).send({
         data: connections.map((data) => {
-            return connectionSimpleToApi({ data: data.connection, provider: data.provider, activeLog: data.active_logs, endUser: data.end_user });
+            return connectionSimpleToApi({
+                data: data.connection,
+                provider: data.provider,
+                activeLog: data.active_logs,
+                endUser: data.end_user,
+                hasPausedSyncs: pausedConnectionIds.has(data.connection.id)
+            });
         })
     });
 });
