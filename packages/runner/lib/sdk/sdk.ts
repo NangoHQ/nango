@@ -639,8 +639,6 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {
-        this.throwIfAbortedOrKilled();
-
         const objects = new Map<K, T>();
 
         if (ids.length === 0) {
@@ -649,6 +647,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
         let cursor: string | undefined = undefined;
         for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
+            this.throwIfAbortedOrKilled();
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
             const pageOptions: { cursor?: string; externalIds: string[] } = {
@@ -677,10 +676,9 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             cursor?: string;
         }
     ): AsyncGenerator<NangoRecord<T>> {
-        this.throwIfAbortedOrKilled();
-
         let cursor: string | undefined = options?.cursor ?? undefined;
         do {
+            this.throwIfAbortedOrKilled();
             const pageOptions: { cursor?: string } = {
                 ...(cursor ? { cursor } : {})
             };
