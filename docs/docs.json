@@ -366,6 +366,7 @@
               "integrations/all/connectwise-psa-staging",
               "api-integrations/connectwise-rmm",
               "api-integrations/constant-contact",
+              "api-integrations/conta-azul",
               "integrations/all/contactout",
               "integrations/all/contentful",
               "integrations/all/contentstack",
