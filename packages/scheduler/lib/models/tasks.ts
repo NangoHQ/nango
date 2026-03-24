@@ -12,6 +12,7 @@ import type knex from 'knex';
 import type { JsonValue, SetOptional } from 'type-fest';
 
 export const TASKS_TABLE = 'tasks';
+const TASKS_INSERT_BATCH_SIZE = 1000;
 
 export type TaskProps = SetOptional<
     Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>,
@@ -123,38 +124,71 @@ export const DbTask = {
 
 export async function create(
     db: knex.Knex,
-    taskProps: TaskProps,
+    taskProps: TaskProps[],
     opts: { groupTaskCap: number } = { groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX }
-): Promise<Result<Task>> {
-    const now = new Date();
-    const state = 'CREATED';
-    const newTask: Task = {
-        ...taskProps,
-        id: uuidv7(),
-        state,
-        createdAt: now,
-        lastStateTransitionAt: now,
-        lastHeartbeatAt: now,
-        terminated: false,
-        output: null,
-        scheduleId: taskProps.scheduleId,
-        retryKey: taskProps.retryKey || uuidv4()
-    };
+): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[] }>> {
+    if (taskProps.length === 0) {
+        return Ok({ tasks: [], cappedGroupKeys: [] });
+    }
     try {
         // safeguard to prevent creating an unbounded number of tasks for the same group
         // Note: check and insertion are not atomic so creating more tasks than the limit is still possible but this is a safeguard, not a strict limit
-        const [{ count }] = await db.from(TASKS_TABLE).where({ state, group_key: taskProps.groupKey }).count();
-        if (Number(count) >= opts.groupTaskCap) {
-            return Err(new Error(`Error creating task '${taskProps.name}': already ${opts.groupTaskCap} ${state} tasks for group key '${taskProps.groupKey}'`));
+        const groupKeys = [...new Set(taskProps.map((p) => p.groupKey))];
+        const sizes = await queueSizes(db, { groupKeys });
+        if (sizes.isErr()) {
+            return Err(sizes.error);
         }
 
-        const inserted = await db.from<DBTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
-        if (!inserted?.[0]) {
-            return Err(new Error(`Error: no task '${taskProps.name}' created`));
+        const now = new Date();
+        const toInsertPerGroup = new Map<string, Task[]>();
+        const cappedGroupKeys = new Set<string>();
+        for (const props of taskProps) {
+            if (!toInsertPerGroup.has(props.groupKey)) {
+                toInsertPerGroup.set(props.groupKey, []);
+            }
+            const group = toInsertPerGroup.get(props.groupKey)!;
+            if (group.length < opts.groupTaskCap - (sizes.value.get(props.groupKey) ?? 0)) {
+                group.push({
+                    ...props,
+                    id: uuidv7(),
+                    state: 'CREATED',
+                    createdAt: now,
+                    lastStateTransitionAt: now,
+                    lastHeartbeatAt: now,
+                    terminated: false,
+                    output: null,
+                    retryKey: props.retryKey || uuidv4()
+                });
+            } else {
+                cappedGroupKeys.add(props.groupKey);
+            }
         }
-        return Ok(DbTask.from(inserted[0]));
+        const toInsert = Array.from(toInsertPerGroup.values()).flat();
+        const inserted: Task[] = [];
+        while (toInsert.length) {
+            const chunk = toInsert.splice(0, TASKS_INSERT_BATCH_SIZE);
+            const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).returning('*');
+            inserted.push(...batch.map(DbTask.from));
+        }
+        return Ok({
+            tasks: inserted,
+            cappedGroupKeys: Array.from(cappedGroupKeys)
+        });
     } catch (err) {
-        return Err(new Error(`Error creating task '${taskProps.name}': ${stringifyError(err)}`));
+        return Err(new Error(`Error creating tasks: ${stringifyError(err)}`));
+    }
+}
+
+export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
+    try {
+        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('id as count').where('state', 'CREATED').groupBy('group_key');
+        if (opts.groupKeys && opts.groupKeys.length > 0) {
+            q.whereIn('group_key', opts.groupKeys);
+        }
+        const rows = await q;
+        return Ok(new Map(rows.map((r) => [r.groupKey as string, Number(r.count)])));
+    } catch (err) {
+        return Err(new Error(`Error fetching queue sizes: ${stringifyError(err)}`));
     }
 }
 
