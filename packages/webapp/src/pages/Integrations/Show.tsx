@@ -17,7 +17,7 @@ import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
-import { permissions } from '@/hooks/usePermissions';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
@@ -31,6 +31,9 @@ export const IntegrationsList = () => {
     const { environment } = environmentData?.environmentAndAccount || {};
     const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
+
+    const { can } = usePermissions();
+    const canWriteIntegration = can(permissions.canWriteProdIntegrations) || !environment?.is_production;
 
     const initialIntegrations = useMemo(() => {
         return data?.data ?? null;
@@ -102,7 +105,7 @@ export const IntegrationsList = () => {
             </Helmet>
             <header className="flex justify-between items-center">
                 <h2 className="text-text-primary text-title-subsection">Integrations</h2>
-                <PermissionGate permission={permissions.canWriteProdIntegrations} bypass={!environment?.is_production}>
+                <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
                         <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                             Set up new integration
@@ -133,7 +136,7 @@ export const IntegrationsList = () => {
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No available integrations</h3>
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
-                    <PermissionGate asChild permission={permissions.canWriteProdIntegrations} bypass={!environment?.is_production}>
+                    <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
                             <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration
@@ -147,7 +150,7 @@ export const IntegrationsList = () => {
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
-                    <PermissionGate permission={permissions.canWriteProdIntegrations} bypass={!environment?.is_production}>
+                    <PermissionGate condition={canWriteIntegration}>
                         {(allowed) => (
                             <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration

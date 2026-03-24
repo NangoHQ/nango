@@ -4,15 +4,15 @@ import { useNavigate } from 'react-router-dom';
 
 import { StyledLink } from '../StyledLink.js';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
+import { ConditionalTooltip } from '../ConditionalTooltip.js';
 import { PermissionGate } from '../PermissionGate.js';
 import { Button } from '../ui/button.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
-import { permissions } from '@/hooks/usePermissions.js';
+import { permissions, usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 
 export const EnvironmentDropdown: React.FC = () => {
@@ -24,6 +24,9 @@ export const EnvironmentDropdown: React.FC = () => {
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
+
+    const { can } = usePermissions();
+    const canCreateEnvironment = can(permissions.canCreateEnvironment);
 
     const navigate = useNavigate();
 
@@ -73,7 +76,12 @@ export const EnvironmentDropdown: React.FC = () => {
                     <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
                         <div className="flex flex-col">
                             {meta?.environments.map((environment) => (
-                                <PermissionGate key={environment.name} bypass={!environment.is_production} permission={permissions.canAccessProdEnvironment}>
+                                <PermissionGate
+                                    key={environment.name}
+                                    condition={can(permissions.canAccessProdEnvironment) || !environment.is_production}
+                                    message="Your role does not have access to production environments."
+                                    tooltipSide="right"
+                                >
                                     {(allowed) => (
                                         <DropdownMenuItem
                                             disabled={!allowed}
@@ -91,45 +99,28 @@ export const EnvironmentDropdown: React.FC = () => {
                                 </PermissionGate>
                             ))}
                         </div>
-                        <PermissionGate permission={permissions.canCreateEnvironment}>
-                            {(allowed) =>
-                                allowed ? (
-                                    <Tooltip delayDuration={0}>
-                                        <TooltipTrigger asChild>
-                                            <span tabIndex={0} className="w-full">
-                                                <Button
-                                                    disabled={!!isMaxEnvironmentsReached}
-                                                    variant="primary"
-                                                    onClick={() => {
-                                                        // Managed control because Dialogs within DropdownMenus behave weirdly
-                                                        setEnvironmentDialogOpen(true);
-                                                    }}
-                                                    className="w-full"
-                                                >
-                                                    {!!isMaxEnvironmentsReached && <Lock className="size-4" />}
-                                                    Create Environment
-                                                </Button>
-                                            </span>
-                                        </TooltipTrigger>
-                                        {isMaxEnvironmentsReached && allowed && (
-                                            <TooltipContent side="right" align="center">
-                                                Max number of environments reached.{' '}
-                                                {environment?.plan?.name.includes('legacy') ? (
-                                                    <>Contact Nango to add more</>
-                                                ) : (
-                                                    <>
-                                                        <StyledLink to={`/${env}/team/billing`} className="text-s">
-                                                            Upgrade
-                                                        </StyledLink>{' '}
-                                                        to add more
-                                                    </>
-                                                )}
-                                            </TooltipContent>
-                                        )}
-                                    </Tooltip>
-                                ) : (
+                        <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
+                            {(allowed) => (
+                                <ConditionalTooltip
+                                    condition={!!isMaxEnvironmentsReached}
+                                    content={
+                                        <>
+                                            Max number of environments reached.{' '}
+                                            {environment?.plan?.name.includes('legacy') ? (
+                                                <>Contact Nango to add more</>
+                                            ) : (
+                                                <>
+                                                    <StyledLink to={`/${env}/team/billing`} className="text-s">
+                                                        Upgrade
+                                                    </StyledLink>{' '}
+                                                    to add more
+                                                </>
+                                            )}
+                                        </>
+                                    }
+                                >
                                     <Button
-                                        disabled
+                                        disabled={!!isMaxEnvironmentsReached || !allowed}
                                         variant="primary"
                                         onClick={() => {
                                             // Managed control because Dialogs within DropdownMenus behave weirdly
@@ -137,11 +128,11 @@ export const EnvironmentDropdown: React.FC = () => {
                                         }}
                                         className="w-full"
                                     >
-                                        <Lock className="size-4" />
+                                        {!!isMaxEnvironmentsReached && <Lock />}
                                         Create Environment
                                     </Button>
-                                )
-                            }
+                                </ConditionalTooltip>
+                            )}
                         </PermissionGate>
                     </DropdownMenuContent>
                 </DropdownMenu>

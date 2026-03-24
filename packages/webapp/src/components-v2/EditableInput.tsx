@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ConditionalTooltip } from './ConditionalTooltip';
 import { CopyButton } from './CopyButton';
-import { PermissionCondition } from './PermissionGate';
+import { PermissionGate } from './PermissionGate';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './ui/input-group';
 
 export interface EditableInputProps {
@@ -146,18 +146,18 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 ) : !editing ? (
                     <>
                         <ConditionalTooltip condition={!!disabled && typeof disabled === 'string'} content={disabled} side="bottom">
-                            <PermissionCondition condition={canEdit} tooltipSide="bottom">
+                            <PermissionGate condition={canEdit} tooltipSide="bottom">
                                 {(allowed) => (
                                     <InputGroupButton disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
                                         <Edit />
                                     </InputGroupButton>
                                 )}
-                            </PermissionCondition>
+                            </PermissionGate>
                         </ConditionalTooltip>
                         <InputGroupAddon align="inline-end">
-                            <PermissionCondition condition={canRead || !secret} tooltipSide="bottom">
+                            <PermissionGate condition={canRead || !secret} tooltipSide="bottom">
                                 {(allowed) => <CopyButton disabled={!allowed} text={value} />}
-                            </PermissionCondition>
+                            </PermissionGate>
                         </InputGroupAddon>
                     </>
                 ) : (

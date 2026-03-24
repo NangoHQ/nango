@@ -9,7 +9,7 @@ import { useActivateKey, useEnvironment, usePatchEnvironment, useRevertKey, useR
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
-import { PermissionCondition } from '@/components-v2/PermissionGate';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { SecretInput } from '@/components-v2/SecretInput';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
@@ -30,6 +30,7 @@ export const BackendSettings: React.FC = () => {
     const { mutateAsync: activateKeyAsync, isPending: isActivating } = useActivateKey(env);
 
     const isProdEnv = environmentAndAccount?.environment.is_production || false;
+
     const { can } = usePermissions();
     const canReadSecretKey = can(permissions.canReadProdSecretKey) || !isProdEnv;
     const canGenerateNewSecretKey = canReadSecretKey;
@@ -89,16 +90,14 @@ export const BackendSettings: React.FC = () => {
                     </div>
                     {!hasNewSecretKey && (
                         <div className="flex justify-start">
-                            <PermissionCondition condition={canGenerateNewSecretKey}>
+                            <PermissionGate condition={canGenerateNewSecretKey}>
                                 {(allowed) => (
                                     <Button disabled={!allowed} variant={'secondary'} onClick={onGenerate} loading={isRotating}>
-                                        <>
-                                            <IconKey stroke={1} size={18} />
-                                            Generate new secret key
-                                        </>
+                                        <IconKey stroke={1} size={18} />
+                                        Generate new secret key
                                     </Button>
                                 )}
-                            </PermissionCondition>
+                            </PermissionGate>
                         </div>
                     )}
                     {hasNewSecretKey && (
