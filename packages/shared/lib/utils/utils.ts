@@ -291,6 +291,8 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         if (b === 'endpoint') {
             return (replacers['endpoint'] as string | undefined) ?? '';
         }
+        // try dot-notation path first, fall back to a flat key lookup
+        // for callers that pass top-level keys containing literal dots in their name.
         const r =
             b
                 .split('.')
