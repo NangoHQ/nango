@@ -129,6 +129,7 @@ export class Scheduler {
     public async searchSchedules(params: {
         id?: string;
         names?: string[];
+        namePrefix?: string;
         state?: ScheduleState;
         limit: number;
         forUpdate?: boolean;
