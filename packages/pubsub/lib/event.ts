@@ -98,6 +98,9 @@ export type UsageFunctionExecutionsEvent = UsageEventBase<
             type: 'sync' | 'action' | 'webhook' | 'on-event';
             success: boolean;
             functionName: string;
+            provider?: string | undefined;
+            scriptVersion?: string | undefined;
+            preBuilt?: boolean | undefined;
             telemetryBag:
                 | {
                       durationMs: number;

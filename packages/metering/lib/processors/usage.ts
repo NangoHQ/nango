@@ -127,6 +127,9 @@ export class UsageProcessor {
                         telemetryBag,
                         frequencyMs,
                         success,
+                        provider,
+                        scriptVersion,
+                        preBuilt,
                         functionRuntime = 'runner'
                     } = event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
@@ -204,13 +207,26 @@ export class UsageProcessor {
                             frequencyBucket = 'slow';
                         }
                     }
-                    metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, {
+                    const dimensions: Record<string, string | number> = {
                         type,
                         success: String(success),
                         accountId,
                         frequencyBucket,
                         functionRuntime
-                    });
+                    };
+                    if (functionName) {
+                        dimensions['functionName'] = functionName;
+                    }
+                    if (provider) {
+                        dimensions['provider'] = provider;
+                    }
+                    if (scriptVersion) {
+                        dimensions['scriptVersion'] = scriptVersion;
+                    }
+                    if (preBuilt !== undefined) {
+                        dimensions['preBuilt'] = String(preBuilt);
+                    }
+                    metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, dimensions);
                     return Ok(undefined);
                 }
                 case 'usage.proxy': {
