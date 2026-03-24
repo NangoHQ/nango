@@ -42,7 +42,7 @@ export const connectSlack = async ({
         .then(async () => {
             const res = await apiFetch(`/api/v1/environments?env=${env}`, { method: 'PATCH', body: JSON.stringify({ slack_notifications: true }) });
             if (!res.ok) {
-                throw new APIError({ res, json: res.json() });
+                throw new APIError({ res, json: await res.json() });
             }
             onFinish();
         })
