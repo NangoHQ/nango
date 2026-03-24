@@ -30,6 +30,12 @@ describe('parse', () => {
         }).toThrow('Invalid JSON in JOBS_PROCESSOR_CONFIG');
     });
 
+    it('should throw on invalid JSON in NANGO_PUBSUB_SNS_SQS_CONFIG', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_PUBSUB_SNS_SQS_CONFIG: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_PUBSUB_SNS_SQS_CONFIG');
+    });
+
     it('should parse JOBS_PROCESSOR_CONFIG', () => {
         const res = parseEnvs(ENVS, {
             JOBS_PROCESSOR_CONFIG:

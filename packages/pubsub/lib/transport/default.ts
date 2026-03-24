@@ -17,7 +17,7 @@ export class DefaultTransport implements Transport {
         if (envs.NANGO_PUBSUB_TRANSPORT === 'activemq') {
             this.transport = new ActiveMQ();
         } else if (envs.NANGO_PUBSUB_TRANSPORT === 'sns-sqs') {
-            this.transport = new SnsSqs();
+            this.transport = new SnsSqs({ ...envs.NANGO_PUBSUB_SNS_SQS_CONFIG });
         } else {
             this.transport = new NoOpTransport();
         }

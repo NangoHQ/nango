@@ -380,10 +380,25 @@ export const ENVS = z.object({
 
     // ActiveMQ
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'none']).optional().default('none'),
-    /** JSON object: event subject → SNS topic ARN (e.g. {"usage":"arn:aws:sns:...","team":"arn:...","user":"arn:..."}) */
-    NANGO_PUBSUB_SNS_TOPIC_ARNS: z.string().optional(),
-    /** JSON object: `consumerGroup:subject` → SQS queue URL (e.g. {"billing:usage":"https://sqs...","team:team":"https://sqs..."}) */
-    NANGO_PUBSUB_SQS_QUEUE_URLS: z.string().optional(),
+    /** JSON: `{"topicArns":{"usage":"arn:aws:sns:...","team":"arn:..."},"queueUrls":{"billing:usage":"https://sqs.../q","team:team":"https://..."}}` */
+    NANGO_PUBSUB_SNS_SQS_CONFIG: z
+        .string()
+        .optional()
+        .default('{}')
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in NANGO_PUBSUB_SNS_SQS_CONFIG`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z.object({
+                topicArns: z.record(z.string(), z.string()).optional().default({}),
+                queueUrls: z.record(z.string(), z.string()).optional().default({})
+            })
+        ),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),

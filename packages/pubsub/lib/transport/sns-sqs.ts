@@ -3,7 +3,6 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
-import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';
 
 import type { SubscribeProps, Transport } from './transport.js';
@@ -11,28 +10,6 @@ import type { Event } from '../event.js';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('pubsub.sns-sqs');
-
-function parseStringMap(raw: string | undefined, label: string): Result<Record<string, string>> {
-    if (!raw?.trim()) {
-        return Ok({});
-    }
-    try {
-        const obj = JSON.parse(raw) as unknown;
-        if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-            return Err(new Error(`${label} must be a JSON object`));
-        }
-        const out: Record<string, string> = {};
-        for (const [k, v] of Object.entries(obj)) {
-            if (typeof v !== 'string') {
-                return Err(new Error(`${label} values must be strings`));
-            }
-            out[k] = v;
-        }
-        return Ok(out);
-    } catch (err) {
-        return Err(new Error(`Invalid ${label} JSON`, { cause: err }));
-    }
-}
 
 function subscriptionKey(consumerGroup: string, subject: string): string {
     return `${consumerGroup}:${subject}`;
@@ -52,7 +29,6 @@ function unwrapSqsBody(body: string): string {
 }
 
 export interface SnsSqsProps {
-    region?: string;
     /** Maps event subject (`user`, `team`, `usage`) to SNS topic ARN. */
     topicArns?: Record<string, string>;
     /** Maps `consumerGroup:subject` to SQS queue URL. */
@@ -64,59 +40,28 @@ export interface SnsSqsProps {
 /**
  * Pub/sub transport backed by SNS (fan-out per event subject) and SQS (one queue per consumer group + subject).
  * Mirrors ActiveMQ virtual-topic semantics: publish to a topic per `event.subject`; each consumer uses a dedicated queue
- * subscribed to that topic. Configure topics and queues via env or constructor props (see `SnsSqsProps`).
+ * subscribed to that topic. Pass `topicArns` and `queueUrls` in the constructor (e.g. from `NANGO_PUBSUB_SNS_SQS_CONFIG` via `DefaultTransport`).
  */
 export class SnsSqs implements Transport {
     private readonly sns: SNSClient;
     private readonly sqs: SQSClient;
-    private topicArns: Record<string, string> = {};
-    private queueUrls: Record<string, string> = {};
+    private readonly topicArns: Record<string, string>;
+    private readonly queueUrls: Record<string, string>;
     private isConnected = false;
     private readonly activeSubscriptions = new Map<string, SubscribeProps<any>>();
     private readonly pollerAbort = new Map<string, AbortController>();
-    /** When set, SNS/SQS maps come from the constructor instead of env (tests / custom wiring). */
-    private readonly injectedMaps: { topicArns?: Record<string, string>; queueUrls?: Record<string, string> } | null;
 
     constructor(props?: SnsSqsProps) {
-        const region = props?.region ?? envs.AWS_REGION ?? 'us-west-2';
-        this.sns = props?.snsClient ?? new SNSClient({ region });
-        this.sqs = props?.sqsClient ?? new SQSClient({ region });
-        this.injectedMaps =
-            props && (props.topicArns !== undefined || props.queueUrls !== undefined)
-                ? {
-                      ...(props.topicArns !== undefined ? { topicArns: props.topicArns } : {}),
-                      ...(props.queueUrls !== undefined ? { queueUrls: props.queueUrls } : {})
-                  }
-                : null;
-    }
-
-    private loadConfigFromEnv(): Result<void> {
-        if (this.injectedMaps) {
-            this.topicArns = this.injectedMaps.topicArns ?? {};
-            this.queueUrls = this.injectedMaps.queueUrls ?? {};
-            return Ok(undefined);
-        }
-        const topics = parseStringMap(envs.NANGO_PUBSUB_SNS_TOPIC_ARNS, 'NANGO_PUBSUB_SNS_TOPIC_ARNS');
-        if (topics.isErr()) {
-            return Err(topics.error);
-        }
-        const queues = parseStringMap(envs.NANGO_PUBSUB_SQS_QUEUE_URLS, 'NANGO_PUBSUB_SQS_QUEUE_URLS');
-        if (queues.isErr()) {
-            return Err(queues.error);
-        }
-        this.topicArns = topics.value;
-        this.queueUrls = queues.value;
-        return Ok(undefined);
+        this.sns = props?.snsClient ?? new SNSClient({});
+        this.sqs = props?.sqsClient ?? new SQSClient({});
+        this.topicArns = props?.topicArns ?? {};
+        this.queueUrls = props?.queueUrls ?? {};
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async connect(_props?: { timeoutMs: number }): Promise<Result<void>> {
         if (this.isConnected) {
             return Ok(undefined);
-        }
-        const cfg = this.loadConfigFromEnv();
-        if (cfg.isErr()) {
-            return cfg;
         }
         this.isConnected = true;
         const copy = new Map(this.activeSubscriptions);
