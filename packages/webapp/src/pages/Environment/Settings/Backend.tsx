@@ -33,6 +33,7 @@ export const BackendSettings: React.FC = () => {
     const { can } = usePermissions();
     const canReadSecretKey = can(permissions.canReadProdSecretKey) || !isProdEnv;
     const canGenerateNewSecretKey = canReadSecretKey;
+    const canEditEnv = can(permissions.canWriteProdEnvironment) || !isProdEnv;
 
     const { confirm, DialogComponent } = useConfirmDialog();
 
@@ -199,6 +200,7 @@ export const BackendSettings: React.FC = () => {
                                 throw err;
                             }
                         }}
+                        canEdit={canEditEnv}
                     />
                     {isEditingCallbackUrl && (
                         <Alert variant="info">
