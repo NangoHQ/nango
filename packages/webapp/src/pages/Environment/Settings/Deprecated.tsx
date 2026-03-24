@@ -7,32 +7,31 @@ import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import Spinner from '../../../components/ui/Spinner';
 import SecretInput from '../../../components/ui/input/SecretInput';
-import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
 import { Switch } from '@/components-v2/ui/switch';
 
 export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { environmentAndAccount, mutate } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
     const [loading, setLoading] = useState(false);
 
     const onHmacEnabled = async (isChecked: boolean) => {
         setLoading(true);
-        const res = await apiPatchEnvironment(env, {
-            hmac_enabled: isChecked
-        });
-        setLoading(false);
-
-        if ('error' in res.json) {
+        try {
+            await patchEnvironmentAsync({ hmac_enabled: isChecked });
+        } catch {
             toast({ title: 'There was an issue updating the HMAC', variant: 'error' });
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        void mutate();
     };
 
     if (!environmentAndAccount) {
@@ -102,8 +101,16 @@ export const DeprecatedSettings: React.FC = () => {
                         subTitle
                         secret
                         originalValue={environmentAndAccount.environment.hmac_key || ''}
-                        apiCall={(value) => apiPatchEnvironment(env, { hmac_key: value })}
-                        onSuccess={() => void mutate()}
+                        apiCall={async (value) => {
+                            try {
+                                const res = await patchEnvironmentAsync({ hmac_key: value });
+                                return { json: res };
+                            } catch (err) {
+                                if (err instanceof APIError) return { json: err.json };
+                                throw err;
+                            }
+                        }}
+                        onSuccess={() => {}}
                     />
                 </div>
             </SettingsGroup>
