@@ -52,8 +52,7 @@ import type {
     HTTP_METHOD,
     RunnerFlags,
     PostPublicTrigger,
-    Checkpoint,
-    NangoRecord
+    Checkpoint
 } from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
 
@@ -484,7 +483,9 @@ export declare class NangoSync<TCheckpoint = Checkpoint> extends NangoAction {
     getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
     listRecords<T extends Record<string, any> = Record<string, any>>(
         model: string,
-        options?: { cursor?: string; }
+        options?: {
+            cursor?: string;
+        }
     ): AsyncGenerator<NangoRecord<T>>;
     getCheckpoint(): Promise<TCheckpoint | null>;
     saveCheckpoint(checkpoint: TCheckpoint): Promise<void>;
