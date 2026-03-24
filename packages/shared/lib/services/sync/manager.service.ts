@@ -272,27 +272,30 @@ export class SyncManagerService {
         deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
-        if (!provider) {
+        if (!provider || !provider.id) {
             return { success: false, error: new NangoError('unknown_provider_config'), response: false };
         }
 
         const account = (await accountService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
 
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'sync', action: syncCommandToOperation[command] } },
-            { account, environment, integration: { id: provider.id!, name: provider.unique_key, provider: provider.provider } }
-        );
+        let logCtx: Awaited<ReturnType<LogContextGetter['create']>>;
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (!success || !connection) {
-                void logCtx.error(error?.message || 'Connection not found', { error });
-                await logCtx.failed();
                 return { success: false, error, response: false };
             }
 
-            await logCtx.enrichOperation({ connectionId: connection.id, connectionName: connection.connection_id });
+            logCtx = await logContextGetter.create(
+                { operation: { type: 'sync', action: syncCommandToOperation[command] } },
+                {
+                    account,
+                    environment,
+                    integration: { id: provider.id, name: provider.unique_key, provider: provider.provider },
+                    connection: { id: connection.id, name: connection.connection_id }
+                }
+            );
 
             let syncs = syncIdentifiers;
 
@@ -307,7 +310,7 @@ export class SyncManagerService {
             for (const { syncName, syncVariant } of syncs) {
                 const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
-                    void logCtx.error(`Sync "${syncName}" doesn't exist.`);
+                    void logCtx.error(`Sync "${syncName}" (variant: "${syncVariant}") doesn't exist.`);
                     await logCtx.failed();
                     return { success: false, error: new NangoError('no_syncs_found'), response: false };
                 }
@@ -326,11 +329,16 @@ export class SyncManagerService {
                 });
             }
         } else {
+            logCtx = await logContextGetter.create(
+                { operation: { type: 'sync', action: syncCommandToOperation[command] } },
+                { account, environment, integration: { id: provider.id, name: provider.unique_key, provider: provider.provider } }
+            );
+
             const syncs = await getSyncsByProviderConfigKey({ environmentId: environment.id, providerConfigKey, filter: syncIdentifiers });
 
             if (!syncs || syncs.length === 0) {
                 const error = new NangoError('no_syncs_found');
-                void logCtx.error('No syncs found for the provided params', { error });
+                void logCtx.error('No syncs found', { syncIdentifiers });
                 await logCtx.failed();
                 return { success: false, error, response: false };
             }
