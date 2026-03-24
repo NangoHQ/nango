@@ -21,6 +21,7 @@ export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' 
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
     tags: Tags;
+    hasPausedSyncs: boolean;
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';
@@ -29,6 +30,7 @@ export type GetConnections = Endpoint<{
         integrationIds?: string[] | undefined;
         search?: string | undefined;
         withError?: boolean | undefined;
+        withPausedSyncs?: boolean | undefined;
         page?: number | undefined;
     };
     Path: '/api/v1/connections';

@@ -1,7 +1,7 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Lock, Plus, RefreshCcw, Search } from 'lucide-react';
+import { PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
@@ -11,7 +11,7 @@ import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Avatar } from '@/components-v2/Avatar';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
+import { StatusWithIcon } from '@/components-v2/StatusWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Combobox } from '@/components-v2/ui/combobox';
@@ -25,17 +25,18 @@ import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
 
+import type { ComboboxOption } from '@/components-v2/ui/combobox';
 import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-interface StatusFilter {
-    label: string;
-    withErrors: boolean;
-    value: string;
-}
-const statusOptions: StatusFilter[] = [
-    { label: 'OK', withErrors: false, value: 'ok' },
-    { label: 'Error', withErrors: true, value: 'error' }
+type StatusFilterValue = 'ok' | 'error' | 'auth_error' | 'sync_error' | 'paused';
+
+const statusOptions: ComboboxOption<StatusFilterValue>[] = [
+    { label: 'OK', value: 'ok' },
+    { label: 'Error', value: 'error' },
+    { label: 'Auth error', value: 'auth_error', icon: <span className="w-3 shrink-0" /> },
+    { label: 'Sync error', value: 'sync_error', icon: <span className="w-3 shrink-0" /> },
+    { label: 'Paused syncs', value: 'paused' }
 ];
 
 const parseSearch = parseAsString.withDefault('');
@@ -45,7 +46,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',
-        size: 180,
+        size: 115,
         cell: ({ row }) => {
             const data = row.original;
 
@@ -66,7 +67,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'provider',
         header: 'Integration',
-        size: 180,
+        size: 100,
         cell: ({ row }) => {
             const { provider } = row.original;
 
@@ -110,9 +111,9 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'status',
         header: '',
-        size: 80,
+        size: 25,
         cell: ({ row }) => {
-            const { errors } = row.original;
+            const { errors, hasPausedSyncs } = row.original;
 
             const errorCounts = errors.reduce(
                 (acc, error) => {
@@ -129,14 +130,19 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             return (
                 <div className="flex gap-1 items-center">
                     {errorCounts.auth > 0 && (
-                        <StatusCircleWithIcon tooltipContent="Expired credentials" variant="error">
-                            <Lock />
-                        </StatusCircleWithIcon>
+                        <StatusWithIcon tooltipContent="Expired credentials" variant="warning">
+                            <ShieldAlert />
+                        </StatusWithIcon>
                     )}
                     {errorCounts.sync > 0 && (
-                        <StatusCircleWithIcon tooltipContent="Failed syncs" variant="error">
-                            <RefreshCcw />
-                        </StatusCircleWithIcon>
+                        <StatusWithIcon tooltipContent="Failed syncs" variant="warning">
+                            <TriangleAlert />
+                        </StatusWithIcon>
+                    )}
+                    {hasPausedSyncs && (
+                        <StatusWithIcon tooltipContent="Paused syncs" variant="neutral">
+                            <PauseCircle />
+                        </StatusWithIcon>
                     )}
                 </div>
             );
@@ -151,18 +157,21 @@ export const ConnectionList = () => {
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
-    const [selectedStatusFilter, setSelectedStatusFilter] = useState<StatusFilter[]>([]);
+    const [selectedStatusFilters, setSelectedStatusFilters] = useState<StatusFilterValue[]>([]);
 
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
     const { data: listIntegrationData, isLoading: integrationsLoading } = useListIntegrations(env);
 
     const withError = useMemo(() => {
-        if (selectedStatusFilter && selectedStatusFilter.length != 0) {
-            return selectedStatusFilter.some((v) => v.withErrors);
-        }
+        if (selectedStatusFilters.length === 0) return undefined;
+        const hasOk = selectedStatusFilters.includes('ok');
+        const hasErrorFilter = selectedStatusFilters.some((s) => s === 'error' || s === 'auth_error' || s === 'sync_error');
+        const hasPausedFilter = selectedStatusFilters.includes('paused');
+        if (hasOk && !hasErrorFilter && !hasPausedFilter) return false;
+        if (!hasOk && hasErrorFilter && !hasPausedFilter) return true;
         return undefined;
-    }, [selectedStatusFilter]);
+    }, [selectedStatusFilters]);
 
     const integrationIds = useMemo(() => {
         if (!selectedIntegrations || selectedIntegrations.length === 0) return undefined;
@@ -180,23 +189,50 @@ export const ConnectionList = () => {
         env,
         search: debouncedSearch,
         integrationIds,
-        withError
+        withError,
+        withPausedSyncs: true
     });
 
     const connections = useMemo(() => {
         return connectionsData?.pages.flatMap((page) => page.data) || [];
     }, [connectionsData]);
 
-    const hasFiltered =
-        debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedStatusFilter && selectedStatusFilter.length > 0);
+    const displayedConnections = useMemo(() => {
+        if (selectedStatusFilters.length === 0) return connections;
+        return connections.filter((conn) =>
+            selectedStatusFilters.some((filter) => {
+                switch (filter) {
+                    case 'ok':
+                        return conn.errors.length === 0;
+                    case 'error':
+                        return conn.errors.length > 0;
+                    case 'auth_error':
+                        return conn.errors.some((e) => e.type === 'auth');
+                    case 'sync_error':
+                        return conn.errors.some((e) => e.type === 'sync');
+                    case 'paused':
+                        return conn.hasPausedSyncs;
+                }
+            })
+        );
+    }, [connections, selectedStatusFilters]);
 
-    const connectionCount = connections.length;
+    // When filtering by paused syncs, auto-fetch more pages if visible results are few
+    useEffect(() => {
+        if (selectedStatusFilters.includes('paused') && !isFetchingNextPage && hasNextPage && displayedConnections.length < 10) {
+            void fetchNextPage();
+        }
+    }, [selectedStatusFilters, displayedConnections.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0;
+
+    const connectionCount = displayedConnections.length;
     const hasConnections = connectionCount > 0;
     const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
     const showEmptyStateWithFilters = !loading && connectionCount === 0 && hasFiltered;
 
     const table = useReactTable({
-        data: connections,
+        data: displayedConnections,
         columns,
         getCoreRowModel: getCoreRowModel()
     });
@@ -285,8 +321,8 @@ export const ConnectionList = () => {
                                     allowMultiple
                                     label="Status"
                                     options={statusOptions}
-                                    selected={selectedStatusFilter.map((v) => v.value) || []}
-                                    onSelectedChange={(selected) => setSelectedStatusFilter(statusOptions.filter((v) => selected.some((s) => s === v.value)))}
+                                    selected={selectedStatusFilters}
+                                    onSelectedChange={setSelectedStatusFilters}
                                 />
                             </div>
 
@@ -379,7 +415,7 @@ export const ConnectionList = () => {
                         </div>
                     )}
 
-                    {hasNextPage && (
+                    {hasNextPage && !selectedStatusFilters.includes('paused') && (
                         <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
                             Load More
                         </Button>
