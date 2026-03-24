@@ -291,7 +291,13 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         if (b === 'endpoint') {
             return (replacers['endpoint'] as string | undefined) ?? '';
         }
-        const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
+        // try dot-notation path first, fall back to a flat key lookup
+        // for callers that pass top-level keys containing literal dots in their name.
+        const r =
+            b
+                .split('.')
+                .reduce((o: Record<string, any> | undefined, i: string) => (o != null ? o[i] : undefined), replacers as Record<string, any> | undefined) ??
+            replacers[b];
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
     return interpolated;
