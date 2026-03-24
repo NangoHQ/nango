@@ -395,6 +395,32 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
     }
 }
 
+export interface GroupBackpressure {
+    group_key: string;
+    queued: number;
+}
+
+export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limit: number }): Promise<Result<GroupBackpressure[]>> {
+    try {
+        const { rows } = await db.raw<{ rows: GroupBackpressure[] }>(
+            `
+            SELECT group_key, count(*)::int as queued
+            FROM ${TASKS_TABLE}
+            WHERE state = 'CREATED'
+              AND group_max_concurrency > 0
+            GROUP BY group_key
+            HAVING count(*) > max(group_max_concurrency)
+            ORDER BY queued DESC
+            LIMIT ?
+            `,
+            [limit]
+        );
+        return Ok(rows ?? []);
+    } catch (err) {
+        return Err(new Error(`Error getting groups with backpressure: ${stringifyError(err)}`));
+    }
+}
+
 export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Promise<Result<Task[]>> {
     try {
         // Delete terminated tasks where lastStateTransitionAt is older than N days

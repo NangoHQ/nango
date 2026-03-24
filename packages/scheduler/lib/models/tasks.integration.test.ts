@@ -273,6 +273,42 @@ describe('Task', () => {
         expect(l5.length).toBe(2);
         expect(l5.map((t) => t.id)).toStrictEqual([t1.id, t2.id]);
     });
+    describe('getGroupsWithBackpressure', () => {
+        it('should return empty when no tasks exist', async () => {
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([]);
+        });
+        it('should return empty when no group exceeds its max concurrency', async () => {
+            await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 5 });
+            await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 5 });
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([]);
+        });
+        it('should return groups exceeding their max concurrency', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 2 });
+            }
+            await createTask(db, { groupKey: 'sync:environment:2', groupMaxConcurrency: 5 });
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([{ group_key: 'sync:environment:1', queued: 3 }]);
+        });
+        it('should respect the limit', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 1 });
+                await createTask(db, { groupKey: 'sync:environment:2', groupMaxConcurrency: 1 });
+                await createTask(db, { groupKey: 'sync:environment:3', groupMaxConcurrency: 1 });
+            }
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 2 })).unwrap();
+            expect(result).toHaveLength(2);
+        });
+        it('should ignore groups with group_max_concurrency = 0', async () => {
+            for (let i = 0; i < 5; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 0 });
+            }
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([]);
+        });
+    });
     it('should be successfully saving json output', async () => {
         const outputs = [1, 'one', true, null, ['a', 'b'], { a: 1, b: 2, s: 'two', arr: ['a', 'b'] }, [{ id: 'a' }, { id: 'b' }]];
         for (const output of outputs) {
