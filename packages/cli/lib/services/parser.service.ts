@@ -7,6 +7,9 @@ import chalk from 'chalk';
 
 import type { NodePath } from '@babel/traverse';
 
+/**
+ * @deprecated This service is only used by compile.service.ts, which is only used by the zeroYaml migration.
+ */
 class ParserService {
     public getImportedFiles(filePath: string): string[] {
         const code = fs.readFileSync(filePath, 'utf-8');
@@ -64,7 +67,6 @@ class ParserService {
             'getEnvironmentVariables',
             'getFieldMapping',
             'getMetadata',
-            'listRecords',
             'log',
             'patch',
             'post',

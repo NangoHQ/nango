@@ -536,14 +536,20 @@ describe('getRecordsById', () => {
 });
 
 describe('listRecords', () => {
-    it('should throw if aborted', async () => {
+    it('should throw if aborted while iterating', async () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
-        await expect(nango.listRecords(undefined, undefined, 'SomeModel')).rejects.toThrowError(new ExecutionAbortedSDKError());
+        await expect(
+            (async () => {
+                for await (const _ of nango.listRecords('SomeModel')) {
+                    // empty
+                }
+            })()
+        ).rejects.toThrowError(new ExecutionAbortedSDKError());
     });
 
-    it('should return records and next_cursor from a single page', async () => {
+    it('should yield all records from a single page', async () => {
         const records = [
             { id: '1', name: 'a' },
             { id: '2', name: 'b' }
@@ -552,9 +558,12 @@ describe('listRecords', () => {
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
-        const result = await nango.listRecords(undefined, undefined, 'SomeModel');
+        const out: unknown[] = [];
+        for await (const row of nango.listRecords('SomeModel')) {
+            out.push(row);
+        }
 
-        expect(result).toEqual({ records, next_cursor: null });
+        expect(out).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledOnce();
         expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
             model: 'SomeModel',
@@ -566,12 +575,14 @@ describe('listRecords', () => {
         });
     });
 
-    it('should pass cursor and limit to getRecords when provided', async () => {
+    it('should pass cursor to getRecords when options.cursor is set', async () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
-        await nango.listRecords('cursor123', 500, 'SomeModel');
+        for await (const _ of nango.listRecords('SomeModel', { cursor: 'cursor123' })) {
+            // empty
+        }
 
         expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
             model: 'SomeModel',
@@ -579,7 +590,42 @@ describe('listRecords', () => {
             nangoConnectionId: nangoProps.nangoConnectionId,
             cursor: 'cursor123',
             externalIds: undefined,
-            limit: 500
+            limit: undefined
+        });
+    });
+
+    it('should follow next_cursor and yield records across pages', async () => {
+        const page1 = [{ id: '1' }];
+        const page2 = [{ id: '2' }, { id: '3' }];
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: page1, nextCursor: 'c2' }))
+            .mockResolvedValueOnce(Ok({ records: page2, nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const out: unknown[] = [];
+        for await (const row of nango.listRecords('SomeModel')) {
+            out.push(row);
+        }
+
+        expect(out).toEqual([...page1, ...page2]);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(1, {
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: undefined,
+            externalIds: undefined,
+            limit: undefined
+        });
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(2, {
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: 'c2',
+            externalIds: undefined,
+            limit: undefined
         });
     });
 });

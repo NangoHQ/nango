@@ -671,19 +671,31 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return objects;
     }
 
-    public async listRecords<T extends Record<string, any>>(
-        cursor: string | undefined,
-        limit: number | undefined,
-        model: string
-    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
+    public async *listRecords<T extends Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>> {
         this.throwIfAbortedOrKilled();
 
-        const pageOptions: { cursor?: string; limit?: number } = {
-            ...(cursor ? { cursor } : {}),
-            ...(limit ? { limit } : {})
-        };
+        let cursor: string | undefined = options?.cursor ?? undefined;
+        do {
+            const pageOptions: { cursor?: string } = {
+                ...(cursor ? { cursor } : {})
+            };
+            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
 
-        return this.fetchRecordsPage<T>(model, pageOptions);
+            for (const record of records) {
+                yield record;
+            }
+
+            if (!next_cursor) {
+                break;
+            }
+
+            cursor = next_cursor;
+        } while (cursor);
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {

@@ -1147,7 +1147,7 @@ class NangoSyncMock extends NangoActionMock {
         this.getCheckpoint = vi.fn(this.getCheckpointData.bind(this));
         this.saveCheckpoint = vi.fn(this.saveCheckpointData.bind(this));
         this.clearCheckpoint = vi.fn(this.clearCheckpointData.bind(this));
-        this.listRecords = vi.fn().mockResolvedValue({ records: [], next_cursor: null });
+        this.listRecords = vi.fn(async function* () {});
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await

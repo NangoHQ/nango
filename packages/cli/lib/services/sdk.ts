@@ -7,7 +7,7 @@ import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } f
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
-import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, NangoRecord, UserLogParameters } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
@@ -375,20 +375,32 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         return objects;
     }
 
-    public override async listRecords<T extends Record<string, any> = Record<string, any>>(
-        cursor: string | undefined,
-        limit: number | undefined,
-        model: string
-    ): Promise<{ records: T[]; next_cursor: string | null }> {
-        const config: ListRecordsRequestConfig = {
-            providerConfigKey: this.providerConfigKey,
-            connectionId: this.connectionId,
-            model: this.modelFullName(model),
-            limit: limit ?? 100,
-            cursor: cursor ?? null
-        };
-        const response = await this.nango.listRecords<T>(config);
-        return { records: response.records, next_cursor: response.next_cursor };
+    public override async *listRecords<T extends Record<string, any> = Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>> {
+        let cursor: string | null | undefined = options?.cursor ?? null;
+        do {
+            const props: ListRecordsRequestConfig = {
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                model: this.modelFullName(model),
+                cursor: cursor ?? null
+            };
+
+            const { records, next_cursor } = await this.nango.listRecords<T>(props);
+
+            for (const record of records) {
+                yield record;
+            }
+
+            if (!next_cursor) {
+                break;
+            }
+            cursor = next_cursor;
+        } while (cursor);
     }
 
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {
