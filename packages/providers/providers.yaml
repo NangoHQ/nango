@@ -829,6 +829,8 @@ amazon-selling-partner:
             description: The domain representing the Amazon platform you are integrating with.
             example: sellercentral.amazon.com
             pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            prefix: https://
+            suffix: /apps
             doc_section: '#step-2-finding-your-authorization-domain'
             order: 2
         subdomain:
@@ -837,6 +839,7 @@ amazon-selling-partner:
             description: The subdomain prefix for the Amazon Selling Partner API endpoint.
             example: sellingpartnerapi
             pattern: '^(sandbox\.)?sellingpartnerapi$'
+            prefix: https://
             doc_section: '#step-3-finding-your-proxy-baseurl-subdomain'
             order: 3
         region:
@@ -845,6 +848,7 @@ amazon-selling-partner:
             description: The geographical region associated with the Amazon marketplace.
             example: eu
             pattern: '^[a-z]+$'
+            suffix: .amazon.com
             doc_section: '#step-4-finding-your-proxy-baseurl-region'
             order: 4
 
@@ -889,6 +893,8 @@ amazon-selling-partner-beta:
             description: The domain representing the Amazon platform you are integrating with.
             example: sellercentral.amazon.com
             pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            prefix: https://
+            suffix: /apps
             doc_section: '#step-2-finding-your-authorization-domain'
             order: 2
         region:
@@ -897,6 +903,8 @@ amazon-selling-partner-beta:
             description: The geographical region associated with the Amazon marketplace.
             example: eu
             pattern: '^[a-z]+$'
+            prefix: https://sandbox.sellingpartnerapi-
+            suffix: .amazon.com
             doc_section: '#step-3-finding-your-proxy-baseurl-region'
             order: 3
 
