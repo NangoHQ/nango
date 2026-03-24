@@ -25,8 +25,10 @@ export const Telemetry: React.FC = () => {
     const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
 
     useEffect(() => {
-        setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
-    }, [environmentAndAccount?.environment.otlp_settings?.headers]);
+        if (!editHeaders) {
+            setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
+        }
+    }, [editHeaders, environmentAndAccount?.environment.otlp_settings?.headers]);
 
     const onSaveHeaders = async () => {
         setLoading(true);
