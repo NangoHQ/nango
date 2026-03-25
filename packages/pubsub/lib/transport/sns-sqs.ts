@@ -3,6 +3,7 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';
 
 import type { SubscribeProps, Transport } from './transport.js';
@@ -58,29 +59,12 @@ export class SnsSqs implements Transport {
         this.topicArns = { ...(props?.topicArns ?? {}) };
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async connect(_props?: { timeoutMs: number }): Promise<Result<void>> {
-        if (this.isConnected) {
-            return Ok(undefined);
-        }
         this.isConnected = true;
-        const copy = new Map(this.activeSubscriptions);
-        for (const [key, props] of copy) {
-            this.startPoller(key, props);
-        }
         logger.info('SNS+SQS transport connected');
-        return Ok(undefined);
+        return Promise.resolve(Ok(undefined));
     }
 
-    public unsubscribeAll(): void {
-        for (const ac of this.pollerAbort.values()) {
-            ac.abort();
-        }
-        this.pollerAbort.clear();
-        this.activeSubscriptions.clear();
-    }
-
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async disconnect(): Promise<Result<void>> {
         this.isConnected = false;
         for (const ac of this.pollerAbort.values()) {
@@ -88,7 +72,7 @@ export class SnsSqs implements Transport {
         }
         this.pollerAbort.clear();
         logger.info('SNS+SQS transport disconnected');
-        return Ok(undefined);
+        return Promise.resolve(Ok(undefined));
     }
 
     public async publish(event: Event): Promise<Result<void>> {
@@ -167,9 +151,9 @@ export class SnsSqs implements Transport {
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: queueUrl,
-                        MaxNumberOfMessages: 10,
-                        WaitTimeSeconds: 20,
-                        VisibilityTimeout: 60
+                        MaxNumberOfMessages: envs.NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES,
+                        WaitTimeSeconds: envs.NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS,
+                        VisibilityTimeout: envs.NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS
                     }),
                     { abortSignal: signal }
                 );
