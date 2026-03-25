@@ -1,0 +1,86 @@
+---
+title: 'Amazon Selling Partner'
+sidebarTitle: 'Amazon Selling Partner'
+description: 'Integrate your application with the Amazon Selling Partner API'
+---
+
+## 🚀 Quickstart
+
+Connect to Amazon Selling Partner with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Amazon Selling Partner_.
+    </Step>
+    <Step title="Authorize Amazon Selling Partner">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Amazon Selling Partner. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Amazon Selling Partner API">
+    Let's make your first request to the Amazon Selling Partner API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/orders/v0/orders" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            // https://developer-docs.amazon.com/sp-api/reference/getorders
+            endpoint: '/orders/v0/orders',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Amazon Selling Partner Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Amazon Selling Partner OAuth app](/api-integrations/amazon-selling-partner/how-to-register-your-own-amazon-selling-partner-api-oauth-app)  
+Register an OAuth app with Amazon Selling Partner and obtain credentials to connect it to Nango
+
+- [How do I link my Amazon Selling Partner account?](/api-integrations/amazon-selling-partner/connect)  
+Learn how to authenticate with Amazon Selling Partner and link your account
+
+Official docs: [Amazon Selling Partner API docs](https://developer-docs.amazon.com/sp-api/reference/welcome-to-api-references)
+
+## 🧩 Pre-built syncs & actions for Amazon Selling Partner
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/amazon-selling-partner/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
