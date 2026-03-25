@@ -5,6 +5,7 @@ export function providerListItemToAPI(providerName: string, properties: Provider
         name: providerName,
         displayName: properties.display_name,
         defaultScopes: properties.default_scopes,
+        availableScopes: properties.available_scopes,
         authMode: properties.auth_mode,
         categories: properties.categories,
         docs: properties.docs,

@@ -12,6 +12,11 @@ const __filename = fileURLToPath(import.meta.url);
 const pkgRoot = path.join(__filename, '../../');
 
 let providers: Record<string, Provider> | undefined = undefined;
+let providerScopes: Record<string, string[]> | undefined = undefined;
+
+function isProviderEntry(entry: Provider | ProviderAlias | undefined): entry is Provider {
+    return entry !== undefined && !('alias' in entry);
+}
 
 export function updateProviderCache(update: Record<string, Provider>): void {
     providers = update;
@@ -40,6 +45,7 @@ export function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
         const providersYamlPath = path.join(pkgRoot, 'providers.yaml');
         const fileEntries = yaml.load(fs.readFileSync(providersYamlPath).toString()) as Record<string, Provider | ProviderAlias>;
+        const scopes = loadProviderScopesYaml();
 
         if (fileEntries == null) {
             throw new Error('provider_template_loading_failed');
@@ -60,9 +66,38 @@ export function loadProvidersYaml(): Record<string, Provider> | undefined {
             }
         }
 
+        if (scopes) {
+            for (const [providerName, availableScopes] of Object.entries(scopes)) {
+                const provider = fileEntries[providerName];
+                if (isProviderEntry(provider)) {
+                    provider.available_scopes = availableScopes;
+                }
+            }
+        }
+
         return fileEntries as Record<string, Provider>;
     } catch (err) {
         console.error('Failed to load providers.yaml', err);
     }
     return;
+}
+
+function loadProviderScopesYaml(): Record<string, string[]> | undefined {
+    if (providerScopes) {
+        return providerScopes;
+    }
+
+    try {
+        const providersScopesYamlPath = path.join(pkgRoot, 'providers.scopes.yaml');
+        if (!fs.existsSync(providersScopesYamlPath)) {
+            return undefined;
+        }
+
+        const scopesFileEntries = yaml.load(fs.readFileSync(providersScopesYamlPath).toString()) as Record<string, string[]> | null;
+        providerScopes = scopesFileEntries || {};
+        return providerScopes;
+    } catch (err) {
+        console.error('Failed to load providers.scopes.yaml', err);
+        return undefined;
+    }
 }

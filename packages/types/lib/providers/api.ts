@@ -26,6 +26,7 @@ export interface ApiProviderListItem {
     name: string;
     displayName: string;
     defaultScopes?: string[] | undefined;
+    availableScopes?: string[] | undefined;
     authMode: AuthModeType;
     categories?: string[] | undefined;
     docs: string;
