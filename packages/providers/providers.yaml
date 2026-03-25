@@ -15480,6 +15480,7 @@ shopworks:
         content-type: application/json
     token_response:
         token: id_token
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
@@ -16908,6 +16909,7 @@ timify:
         token_expiration: expires
         token_expiration_strategy: expireIn
         refresh_token: refreshToken
+        refresh_token_introspect_expiry: true
     proxy:
         base_url: https://${connectionConfig.subdomain}.timify.com
         headers:
