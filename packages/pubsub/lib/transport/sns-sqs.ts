@@ -93,10 +93,12 @@ export class SnsSqs implements Transport {
 
     public async publish(event: Event): Promise<Result<void>> {
         if (!this.isConnected) {
+            logger.error('SNS+SQS publisher not connected');
             return Err('SNS+SQS publisher not connected');
         }
         const topicArn = this.topicArns[event.subject];
         if (!topicArn) {
+            logger.error('No SNS topic ARN configured for subject ${event.subject}', { topicArn });
             return Err(new Error(`No SNS topic ARN configured for subject "${event.subject}"`));
         }
         try {
@@ -116,6 +118,7 @@ export class SnsSqs implements Transport {
             );
             return Ok(undefined);
         } catch (err) {
+            logger.error('Failed to publish message to SNS for subject ${event.subject}', { error: err });
             return Err(new Error(`Failed to publish message to SNS for subject ${event.subject}`, { cause: err }));
         }
     }
@@ -124,11 +127,13 @@ export class SnsSqs implements Transport {
         const { consumerGroup, subject } = props;
         const key = subscriptionKey(consumerGroup, subject);
         if (!this.isConnected) {
+            logger.error('SNS+SQS consumer not connected, cannot subscribe to events', { consumerGroup, subject });
             report(new Error('SNS+SQS consumer not connected, cannot subscribe to events'), { consumerGroup, subject });
             return;
         }
         const queueUrl = this.queueUrls[key];
         if (!queueUrl) {
+            logger.error('No SQS queue URL configured for subscription ${key}', { queueUrl });
             report(new Error('SNS+SQS: no SQS queue URL for subscription'), { consumerGroup, subject, key });
             return;
         }
