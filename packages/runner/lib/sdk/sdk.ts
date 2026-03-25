@@ -639,6 +639,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {
+        this.throwIfAbortedOrKilled();
         const objects = new Map<K, T>();
 
         if (ids.length === 0) {
