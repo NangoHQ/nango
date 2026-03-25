@@ -9,6 +9,7 @@ import type {
     HTTP_METHOD,
     RunnerFlags,
     PostPublicTrigger,
+    NangoRecord,
     Checkpoint
 } from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
