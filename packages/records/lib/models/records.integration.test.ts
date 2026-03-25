@@ -8,6 +8,7 @@ import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
 import { formatRecords } from '../helpers/format.js';
 import * as Records from '../models/records.js';
+import { decryptRecordData } from '../utils/encryption.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
@@ -104,11 +105,14 @@ describe('Records service', () => {
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(556);
 
-        const after = await db.select<FormattedRecord[]>('*').from('nango_records.records').where({ connection_id: connectionId, model });
-        expect(after.find((r) => r.external_id === '1')?.sync_job_id).toBe(2);
-        expect(after.find((r) => r.external_id === '2')?.sync_job_id).toBe(2);
-        expect(after.find((r) => r.external_id === '3')?.sync_job_id).toBe(1);
-        expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
+        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({ external_id: '1', sync_job_id: 2, decrypted: { id: '1', name: 'John Doe' } });
+        await expect(fromDb(connectionId, model, '2')).resolves.toMatchObject({
+            external_id: '2',
+            sync_job_id: 2,
+            decrypted: { id: '2', name: 'Jane Much Longer Name Doe' }
+        });
+        await expect(fromDb(connectionId, model, '3')).resolves.toMatchObject({ external_id: '3', sync_job_id: 1, decrypted: { id: '3', name: 'Max Doe' } });
+        await expect(fromDb(connectionId, model, '4')).resolves.toMatchObject({ external_id: '4', sync_job_id: 1, decrypted: { id: '4', name: 'Mike Doe' } });
 
         const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, environmentId, model, syncId, syncJobId: 3 });
         expect(updated).toStrictEqual({
@@ -165,11 +169,26 @@ describe('Records service', () => {
                     nextMerging: { strategy: 'override' }
                 });
 
-                const after = await db.select<FormattedRecord[]>('*').from('nango_records.records').where({ connection_id: connectionId, model });
-                expect(after.find((r) => r.external_id === '1')?.sync_job_id).toBe(2);
-                expect(after.find((r) => r.external_id === '2')?.sync_job_id).toBe(2);
-                expect(after.find((r) => r.external_id === '3')?.sync_job_id).toBe(1);
-                expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
+                await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
+                    external_id: '1',
+                    sync_job_id: 2,
+                    decrypted: { id: '1', name: 'John Doe' }
+                });
+                await expect(fromDb(connectionId, model, '2')).resolves.toMatchObject({
+                    external_id: '2',
+                    sync_job_id: 2,
+                    decrypted: { id: '2', name: 'Jane Moe' }
+                });
+                await expect(fromDb(connectionId, model, '3')).resolves.toMatchObject({
+                    external_id: '3',
+                    sync_job_id: 1,
+                    decrypted: { id: '3', name: 'Max Doe' }
+                });
+                await expect(fromDb(connectionId, model, '4')).resolves.toMatchObject({
+                    external_id: '4',
+                    sync_job_id: 1,
+                    decrypted: { id: '4', name: 'Mike Doe' }
+                });
             });
             it('when strategy = ignore_if_modified_after_cursor', async () => {
                 const connectionId = rnd.number();
@@ -1723,6 +1742,25 @@ async function updateRecords({
         throw new Error(`Failed to update records: ${updateRes.error.message}`);
     }
     return updateRes.value;
+}
+async function fromDb(
+    connectionId: number,
+    model: string,
+    externalId: string
+): Promise<{ external_id: string; sync_job_id: number; decrypted: UnencryptedRecordData }> {
+    const row = await db
+        .select<FormattedRecord[]>('*')
+        .from('nango_records.records')
+        .where({ connection_id: connectionId, model, external_id: externalId })
+        .first();
+    if (!row) {
+        throw new Error(`Record with external_id ${externalId} not found`);
+    }
+    return {
+        external_id: row.external_id,
+        sync_job_id: row.sync_job_id,
+        decrypted: await decryptRecordData(row)
+    };
 }
 
 const rnd = {
