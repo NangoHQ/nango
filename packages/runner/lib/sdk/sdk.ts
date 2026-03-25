@@ -27,6 +27,7 @@ import type {
     MergingStrategy,
     MessageRowInsert,
     NangoProps,
+    NangoRecord,
     PostPublicTrigger,
     UserLogParameters
 } from '@nangohq/types';
@@ -613,9 +614,32 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
-    public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
-        this.throwIfAbortedOrKilled();
+    private async fetchRecordsPage<T extends Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+            externalIds?: string[];
+            limit?: number;
+        }
+    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
+        const res = await this.persistClient.getRecords({
+            model: this.modelFullName(model),
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            cursor: options?.cursor,
+            externalIds: options?.externalIds,
+            limit: options?.limit
+        });
 
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };
+    }
+
+    public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {
+        this.throwIfAbortedOrKilled();
         const objects = new Map<K, T>();
 
         if (ids.length === 0) {
@@ -624,33 +648,49 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
         let cursor: string | undefined = undefined;
         for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
+            this.throwIfAbortedOrKilled();
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
-            const res = await this.persistClient.getRecords({
-                model: this.modelFullName(model),
+            const pageOptions: { cursor?: string; externalIds: string[] } = {
                 externalIds: Array.from(externalIdMap.keys()),
-                environmentId: this.environmentId,
-                nangoConnectionId: this.nangoConnectionId!,
-                cursor
-            });
+                ...(cursor ? { cursor } : {})
+            };
 
-            if (res.isErr()) {
-                throw res.error;
-            }
-
-            const { nextCursor, records } = res.unwrap();
-            cursor = nextCursor;
+            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
+            cursor = next_cursor ?? undefined;
 
             for (const record of records) {
                 const stringId = String(record.id);
                 const realId = externalIdMap.get(stringId);
                 if (realId !== undefined) {
-                    objects.set(realId, record as T);
+                    objects.set(realId, record);
                 }
             }
         }
 
         return objects;
+    }
+
+    public async *listRecords<T extends Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>> {
+        let cursor: string | null | undefined = options?.cursor;
+        do {
+            this.throwIfAbortedOrKilled();
+            const pageOptions: { cursor?: string } = {
+                ...(cursor ? { cursor } : {})
+            };
+            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
+
+            for (const record of records) {
+                yield record;
+            }
+
+            cursor = next_cursor;
+        } while (cursor);
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
@@ -734,6 +774,7 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncRunner | keyof NangoActionRunne
     'batchUpdate',
     'batchSend',
     'getRecordsByIds',
+    'listRecords',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',
