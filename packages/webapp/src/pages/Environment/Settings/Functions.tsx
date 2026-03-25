@@ -7,7 +7,9 @@ import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 
@@ -16,7 +18,11 @@ export const Functions: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: postVariablesAsync, isPending } = usePostVariables(env);
+
+    const { can } = usePermissions();
+    const canEditEnvironmentVars = can(permissions.canWriteProdEnvironmentVariables) || !environment?.is_production;
 
     const [edit, setEdit] = useState(false);
     const [vars, setVars] = useState<Record<string, string>>(() => {
@@ -101,9 +107,13 @@ export const Functions: React.FC = () => {
                     </fieldset>
                     <div className="flex justify-start gap-2">
                         {!edit && (
-                            <Button variant="secondary" onClick={() => setEdit(true)}>
-                                Edit
-                            </Button>
+                            <PermissionGate asChild condition={canEditEnvironmentVars}>
+                                {(allowed) => (
+                                    <Button variant="secondary" onClick={() => setEdit(true)} disabled={!allowed}>
+                                        Edit
+                                    </Button>
+                                )}
+                            </PermissionGate>
                         )}
                         {edit && (
                             <>
