@@ -21,7 +21,7 @@ export const SecretInput: React.FC<SecretInputProps> = ({ copy, canRead = true, 
 
     return (
         <InputGroup>
-            <InputGroupInput {...props} value={value} defaultValue={defaultValue} type={isSecretVisible ? 'text' : 'password'} />
+            <InputGroupInput {...props} disabled value={value} defaultValue={defaultValue} type={isSecretVisible ? 'text' : 'password'} />
             <InputGroupAddon align="inline-end">
                 <PermissionGate condition={canRead}>
                     {(allowed) => (
@@ -30,7 +30,7 @@ export const SecretInput: React.FC<SecretInputProps> = ({ copy, canRead = true, 
                         </Button>
                     )}
                 </PermissionGate>
-                {copy && <CopyButton text={textToCopy} />}
+                {copy && <PermissionGate condition={canRead}>{(allowed) => <CopyButton text={textToCopy} disabled={!allowed} />}</PermissionGate>}
             </InputGroupAddon>
         </InputGroup>
     );
