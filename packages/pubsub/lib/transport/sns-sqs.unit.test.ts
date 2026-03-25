@@ -1,4 +1,4 @@
-import { PublishCommand } from '@aws-sdk/client-sns';
+import { CreateTopicCommand, PublishCommand } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -90,7 +90,7 @@ describe('SnsSqs transport', () => {
         expect(mockSnsSend).not.toHaveBeenCalled();
     });
 
-    it('publish fails when no topic ARN is configured for the subject', async () => {
+    it('publish returns Err when CreateTopic fails for subject not in topicArns', async () => {
         const t = new SnsSqs({
             topicArns: { team: 'arn:aws:sns:us-west-2:123:team-only' },
             queueUrls: {},
@@ -98,10 +98,50 @@ describe('SnsSqs transport', () => {
             sqsClient
         });
         await t.connect();
+        mockSnsSend.mockRejectedValueOnce(new Error('AccessDenied'));
         const res = await t.publish(usageEvent());
         assert(res.isErr());
-        expect(String(res.error)).toContain('No SNS topic ARN');
-        expect(mockSnsSend).not.toHaveBeenCalled();
+        expect(String(res.error)).toContain('Failed to create or resolve SNS topic');
+        expect(mockSnsSend).toHaveBeenCalledTimes(1);
+        expect(mockSnsSend.mock.calls[0]![0]).toBeInstanceOf(CreateTopicCommand);
+        expect(mockSnsSend.mock.calls[0]![0].input).toMatchObject({ Name: 'usage' });
+    });
+
+    it('publish creates topic using subject name when no ARN is configured', async () => {
+        const createdArn = 'arn:aws:sns:us-west-2:123456789012:usage';
+        const t = new SnsSqs({
+            topicArns: {},
+            queueUrls: {},
+            snsClient,
+            sqsClient
+        });
+        await t.connect();
+        mockSnsSend.mockResolvedValueOnce({ TopicArn: createdArn }).mockResolvedValueOnce(undefined);
+
+        const res = await t.publish(usageEvent());
+        assert(res.isOk());
+        expect(mockSnsSend).toHaveBeenCalledTimes(2);
+        expect(mockSnsSend.mock.calls[0]![0]).toBeInstanceOf(CreateTopicCommand);
+        expect(mockSnsSend.mock.calls[0]![0].input).toMatchObject({ Name: 'usage' });
+        const publishCmd = mockSnsSend.mock.calls[1]![0];
+        expect(publishCmd).toBeInstanceOf(PublishCommand);
+        expect(publishCmd.input).toMatchObject({ TopicArn: createdArn });
+    });
+
+    it('second publish for same subject reuses cached ARN without CreateTopic', async () => {
+        const createdArn = 'arn:aws:sns:us-west-2:123456789012:usage';
+        const t = new SnsSqs({
+            topicArns: {},
+            queueUrls: {},
+            snsClient,
+            sqsClient
+        });
+        await t.connect();
+        mockSnsSend.mockResolvedValueOnce({ TopicArn: createdArn }).mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined);
+
+        assert((await t.publish(usageEvent())).isOk());
+        assert((await t.publish(usageEvent())).isOk());
+        expect(mockSnsSend.mock.calls.filter((c) => c[0] instanceof CreateTopicCommand)).toHaveLength(1);
     });
 
     it('publish sends base64 v8 payload with subject message attribute', async () => {

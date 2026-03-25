@@ -1,4 +1,4 @@
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { CreateTopicCommand, PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
@@ -29,7 +29,10 @@ function unwrapSqsBody(body: string): string {
 }
 
 export interface SnsSqsProps {
-    /** Maps event subject (`user`, `team`, `usage`) to SNS topic ARN. */
+    /**
+     * Maps event subject (`user`, `team`, `usage`) to SNS topic ARN.
+     * Subjects not listed here get `CreateTopic({ Name: subject })` on first publish (idempotent if the topic exists).
+     */
     topicArns?: Record<string, string>;
     /** Maps `consumerGroup:subject` to SQS queue URL. */
     queueUrls?: Record<string, string>;
@@ -40,13 +43,14 @@ export interface SnsSqsProps {
 /**
  * Pub/sub transport backed by SNS (fan-out per event subject) and SQS (one queue per consumer group + subject).
  * Mirrors ActiveMQ virtual-topic semantics: publish to a topic per `event.subject`; each consumer uses a dedicated queue
- * subscribed to that topic. Pass `topicArns` and `queueUrls` in the constructor (e.g. from `NANGO_PUBSUB_SNS_SQS_CONFIG` via `DefaultTransport`).
+ * subscribed to that topic. Pass config in the constructor (e.g. from `NANGO_PUBSUB_SNS_SQS_CONFIG` via `DefaultTransport`).
  */
 export class SnsSqs implements Transport {
     private readonly sns: SNSClient;
     private readonly sqs: SQSClient;
-    private readonly topicArns: Record<string, string>;
     private readonly queueUrls: Record<string, string>;
+    /** Subject → SNS topic ARN (from config and/or lazy `CreateTopic`). */
+    private readonly topicArns = new Map<string, string>();
     private isConnected = false;
     private readonly activeSubscriptions = new Map<string, SubscribeProps<any>>();
     private readonly pollerAbort = new Map<string, AbortController>();
@@ -54,8 +58,11 @@ export class SnsSqs implements Transport {
     constructor(props?: SnsSqsProps) {
         this.sns = props?.snsClient ?? new SNSClient({});
         this.sqs = props?.sqsClient ?? new SQSClient({});
-        this.topicArns = props?.topicArns ?? {};
         this.queueUrls = props?.queueUrls ?? {};
+        const fromConfig = props?.topicArns ?? {};
+        for (const [subject, arn] of Object.entries(fromConfig)) {
+            this.topicArns.set(subject, arn);
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -91,15 +98,15 @@ export class SnsSqs implements Transport {
         return Ok(undefined);
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async publish(event: Event): Promise<Result<void>> {
         if (!this.isConnected) {
             return Err('SNS+SQS publisher not connected');
         }
-        const topicArn = this.topicArns[event.subject];
-        if (!topicArn) {
-            return Err(new Error(`No SNS topic ARN configured for subject "${event.subject}"`));
+        const topicArnRes = await this.resolveTopicArn(event.subject);
+        if (topicArnRes.isErr()) {
+            return Err(topicArnRes.error);
         }
+        const topicArn = topicArnRes.value;
         try {
             const encoded = serde.serialize(event);
             if (encoded.isErr()) {
@@ -118,6 +125,25 @@ export class SnsSqs implements Transport {
             return Ok(undefined);
         } catch (err) {
             return Err(new Error(`Failed to publish message to SNS for subject ${event.subject}`, { cause: err }));
+        }
+    }
+
+    private async resolveTopicArn(subject: Event['subject']): Promise<Result<string>> {
+        const existing = this.topicArns.get(subject);
+        if (existing) {
+            return Ok(existing);
+        }
+        const name = subject;
+        try {
+            const out = await this.sns.send(new CreateTopicCommand({ Name: name }));
+            if (!out.TopicArn) {
+                return Err(new Error(`CreateTopic returned no TopicArn for name "${name}"`));
+            }
+            this.topicArns.set(subject, out.TopicArn);
+            logger.info(`SNS+SQS: resolved topic for subject "${subject}" (${out.TopicArn})`);
+            return Ok(out.TopicArn);
+        } catch (err) {
+            return Err(new Error(`Failed to create or resolve SNS topic "${name}" for subject "${subject}"`, { cause: err }));
         }
     }
 
