@@ -1,18 +1,20 @@
 import { IconExternalLink, IconKey } from '@tabler/icons-react';
+import { Info } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import SecretInput from '../../../components/ui/input/SecretInput';
 import { useActivateKey, useEnvironment, usePatchEnvironment, useRevertKey, useRotateKey } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
+import { EditableInput } from '@/components-v2/EditableInput';
+import { SecretInput } from '@/components-v2/SecretInput';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { APIError } from '@/utils/api';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
@@ -24,6 +26,10 @@ export const BackendSettings: React.FC = () => {
     const { mutateAsync: rotateKeyAsync, isPending: isRotating } = useRotateKey(env);
     const { mutateAsync: revertKeyAsync, isPending: isReverting } = useRevertKey(env);
     const { mutateAsync: activateKeyAsync, isPending: isActivating } = useActivateKey(env);
+
+    const { confirm, DialogComponent } = useConfirmDialog();
+
+    const [isEditingCallbackUrl, setIsEditingCallbackUrl] = useState(false);
 
     const onGenerate = async () => {
         try {
@@ -65,14 +71,7 @@ export const BackendSettings: React.FC = () => {
                             </label>
                         )}
                         <div className="flex gap-2">
-                            <SecretInput
-                                view={false}
-                                inputSize={'lg'}
-                                copy={true}
-                                variant={'black'}
-                                name="secretKey"
-                                value={environmentAndAccount.environment.secret_key}
-                            />
+                            <SecretInput copy name="secretKey" value={environmentAndAccount.environment.secret_key} />
                         </div>
                     </div>
                     {!hasNewSecretKey && (
@@ -90,14 +89,7 @@ export const BackendSettings: React.FC = () => {
                             <label htmlFor="secretKey" className="text-sm">
                                 New secret
                             </label>
-                            <SecretInput
-                                view={false}
-                                inputSize={'lg'}
-                                copy={true}
-                                variant={'black'}
-                                name="pendingSecretKey"
-                                value={environmentAndAccount.environment.pending_secret_key!}
-                            />
+                            <SecretInput copy name="pendingSecretKey" value={environmentAndAccount.environment.pending_secret_key!} />
                         </div>
                     )}
                     {hasNewSecretKey && (
@@ -111,47 +103,41 @@ export const BackendSettings: React.FC = () => {
 
                     {hasNewSecretKey && (
                         <div className="flex gap-3 justify-start">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant={'tertiary'}>Cancel key rotation</Button>
-                                </DialogTrigger>
+                            <Button
+                                onClick={() =>
+                                    confirm({
+                                        title: 'Cancel key rotation?',
+                                        description:
+                                            'The new key will be deactivated. Only do this when the old key is used in production. This is not reversible.',
+                                        cancelButtonText: 'Dismiss',
+                                        confirmButtonText: 'Cancel key rotation',
+                                        confirmVariant: 'destructive',
+                                        onConfirm: onRevert
+                                    })
+                                }
+                                variant={'tertiary'}
+                                loading={isReverting}
+                            >
+                                Cancel key rotation
+                            </Button>
 
-                                <DialogContent>
-                                    <DialogTitle>Cancel key rotation?</DialogTitle>
-                                    <DialogDescription>
-                                        The new key will be deactivated. Only do this when the old key is used in production. This is not reversible.
-                                    </DialogDescription>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant="tertiary">Dismiss</Button>
-                                        </DialogClose>
-                                        <Button variant="destructive" onClick={onRevert} loading={isReverting}>
-                                            Cancel
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant={'primary'}>Confirm key rotation</Button>
-                                </DialogTrigger>
-
-                                <DialogContent>
-                                    <DialogTitle>Confirm key rotation?</DialogTitle>
-                                    <DialogDescription>
-                                        The old key will be deactivated. Only do this when the new key is used in production. This is not reversible.
-                                    </DialogDescription>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant={'tertiary'}>Dismiss</Button>
-                                        </DialogClose>
-                                        <Button variant="destructive" onClick={onRotate} loading={isActivating}>
-                                            Confirm key rotation
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                            <Button
+                                onClick={() =>
+                                    confirm({
+                                        title: 'Confirm key rotation?',
+                                        description:
+                                            'The old key will be deactivated. Only do this when the new key is used in production. This is not reversible.',
+                                        cancelButtonText: 'Dismiss',
+                                        confirmButtonText: 'Confirm key rotation',
+                                        confirmVariant: 'destructive',
+                                        onConfirm: onRotate
+                                    })
+                                }
+                                variant={'primary'}
+                                loading={isActivating}
+                            >
+                                Confirm key rotation
+                            </Button>
                         </div>
                     )}
                 </fieldset>
@@ -172,12 +158,30 @@ export const BackendSettings: React.FC = () => {
                     </>
                 }
             >
-                <EditableInput
-                    name="callback_url"
-                    placeholder="https://api.nango.dev/oauth/callback"
-                    originalValue={environmentAndAccount.environment.callback_url}
-                    editInfo={
+                <div className="flex flex-col gap-2">
+                    <EditableInput
+                        id="callback_url"
+                        placeholder="https://api.nango.dev/oauth/callback"
+                        initialValue={environmentAndAccount.environment.callback_url}
+                        onEditingChange={setIsEditingCallbackUrl}
+                        onSave={async (value) => {
+                            try {
+                                await patchEnvironmentAsync({ callback_url: value });
+                                toast({ title: 'Successfully updated', variant: 'success' });
+                            } catch (err) {
+                                if (err instanceof APIError) {
+                                    toast({ title: err.json.error?.message ?? 'Failed to update', variant: 'error' });
+                                } else {
+                                    toast({ title: 'Failed to update', variant: 'error' });
+                                }
+                                // Throw for EditableInput
+                                throw err;
+                            }
+                        }}
+                    />
+                    {isEditingCallbackUrl && (
                         <Alert variant="info">
+                            <Info />
                             <AlertDescription>
                                 <span>
                                     Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
@@ -193,19 +197,10 @@ export const BackendSettings: React.FC = () => {
                                 </span>
                             </AlertDescription>
                         </Alert>
-                    }
-                    apiCall={async (value) => {
-                        try {
-                            const res = await patchEnvironmentAsync({ callback_url: value });
-                            return { json: res };
-                        } catch (err) {
-                            if (err instanceof APIError) return { json: err.json };
-                            throw err;
-                        }
-                    }}
-                    onSuccess={() => {}}
-                />
+                    )}
+                </div>
             </SettingsGroup>
+            {DialogComponent}
         </SettingsContent>
     );
 };

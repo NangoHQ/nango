@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from './ui/Dialog';
-import { Button } from './ui/button/Button';
-import { Input } from './ui/input/Input';
+import { Button } from './ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Input } from './ui/input';
 
 interface DestructiveActionModalProps {
     title: string;
@@ -41,20 +41,14 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
                 <div className="mt-4 flex flex-col gap-4">
                     <p className="text-sm text-white break-words">{inputLabel}</p>
-                    <Input
-                        value={confirmText}
-                        onChange={(e) => setConfirmText(e.target.value)}
-                        placeholder="Enter confirmation text"
-                        variant="black"
-                        className="w-full"
-                    />
+                    <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" className="w-full" />
                 </div>
 
                 <DialogFooter className="mt-4">
                     <DialogClose asChild>
-                        <Button variant="zinc">{cancelButtonText}</Button>
+                        <Button variant="secondary">{cancelButtonText}</Button>
                     </DialogClose>
-                    <Button variant="danger" onClick={onConfirm} disabled={!isConfirmed}>
+                    <Button variant="destructive" onClick={onConfirm} disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

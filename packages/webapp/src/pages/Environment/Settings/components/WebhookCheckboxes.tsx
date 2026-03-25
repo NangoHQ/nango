@@ -1,8 +1,8 @@
+import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
-import Spinner from '@/components/ui/Spinner';
 import { Switch } from '@/components-v2/ui/switch';
 
 import type { ApiWebhooks } from '@nangohq/types';
@@ -83,7 +83,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
                     </label>
 
                     <div className="flex gap-2 items-center">
-                        {loading === stateKey && <Spinner size={1} />}
+                        {loading === stateKey && <Loader2 className="size-4 animate-spin" />}
                         <Switch
                             name="hmac_enabled"
                             checked={checkboxState[stateKey] as boolean}
