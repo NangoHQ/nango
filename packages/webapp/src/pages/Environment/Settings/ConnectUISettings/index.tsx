@@ -6,6 +6,7 @@ import { ConnectUIPreview } from './components/ConnectUIPreview';
 import SettingsContent from '../components/SettingsContent';
 import { ColorInput } from '@/components-v2/ColorInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
@@ -13,6 +14,7 @@ import { Switch } from '@/components-v2/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
 import { useEnvironment } from '@/hooks/useEnvironment';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -112,6 +114,9 @@ export const ConnectUISettings = () => {
     const { data: environmentData } = useEnvironment(env);
     const plan = environmentData?.plan;
 
+    const { can } = usePermissions();
+    const canManageConnectUI = can(permissions.canManageConnectUI);
+
     const { data: connectUISettings } = useConnectUISettings(env);
     const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
@@ -198,16 +203,20 @@ export const ConnectUISettings = () => {
 
                         <form.Subscribe selector={(state) => [state.canSubmit, state.isDirty, state.isSubmitting]}>
                             {([canSubmit, isDirty]) => (
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    size="sm"
-                                    className="self-start"
-                                    disabled={!canSubmit || !isDirty}
-                                    loading={isUpdatingConnectUISettings}
-                                >
-                                    Save
-                                </Button>
+                                <PermissionGate asChild condition={canManageConnectUI}>
+                                    {(allowed) => (
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            size="sm"
+                                            className="self-start"
+                                            disabled={!canSubmit || !isDirty || !allowed}
+                                            loading={isUpdatingConnectUISettings}
+                                        >
+                                            Save
+                                        </Button>
+                                    )}
+                                </PermissionGate>
                             )}
                         </form.Subscribe>
 
