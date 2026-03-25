@@ -1,0 +1,6 @@
+{
+    "success": false,
+    "step": "compilation",
+    "message": "smoke-error/actions/broken.ts:1:6\n  ';' expected.\nsmoke-error/actions/broken.ts:1:6\n  Cannot find name 'is'.\nsmoke-error/actions/broken.ts:1:9\n  Unexpected keyword or identifier.\nsmoke-error/actions/broken.ts:1:9\n  Cannot find name 'not'.\nsmoke-error/actions/broken.ts:1:13\n  Unexpected keyword or identifier.\nsmoke-error/actions/broken.ts:1:13\n  Cannot find name 'valid'.\nsmoke-error/actions/broken.ts:1:19\n  Cannot find name 'typescript'.",
+    "stack": "Error: smoke-error/actions/broken.ts:1:6\n  ';' expected.\nsmoke-error/actions/broken.ts:1:6\n  Cannot find name 'is'.\nsmoke-error/actions/broken.ts:1:9\n  Unexpected keyword or identifier.\nsmoke-error/actions/broken.ts:1:9\n  Cannot find name 'not'.\nsmoke-error/actions/broken.ts:1:13\n  Unexpected keyword or identifier.\nsmoke-error/actions/broken.ts:1:13\n  Cannot find name 'valid'.\nsmoke-error/actions/broken.ts:1:19\n  Cannot find name 'typescript'.\n    at compileAndBuildFlow (file:///var/task/packages/lambda-sf-compiler/dist/services/compile.js:66:15)\n    at handler (file:///var/task/packages/lambda-sf-compiler/dist/index.js:26:43)"
+}

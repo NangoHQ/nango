@@ -18,6 +18,7 @@ integration-templates
 assets/
 vite*.ts
 packages/cli/
+packages/lambda-sf-compiler/
 scripts/
 cliff.toml
 .DS_Store

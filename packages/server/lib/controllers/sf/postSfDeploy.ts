@@ -7,8 +7,7 @@ import { NANGO_VERSION, integrationFilesAreRemote, isCloud, requireEmptyQuery, z
 
 import { sendSfStepError } from './helpers.js';
 import { providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
-import { compileAndBuildFlow } from '../../services/sf/compile.service.js';
-import { cleanupSfWorkspace, createSfWorkspace } from '../../services/sf/workspace.service.js';
+import { SfCompilerError, invokeCompiler } from '../../services/sf/compiler-client.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
@@ -53,32 +52,31 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
         return;
     }
 
-    let workspacePath: string | null = null;
     let lock: Lock | undefined;
     let locking: Awaited<ReturnType<typeof getLocking>> | null = null;
-    let step: 'compilation' | 'deployment' = 'compilation';
 
     try {
-        const workspace = await createSfWorkspace({
-            integrationId: body.integration_id,
-            functionName: body.function_name,
-            functionType: body.function_type,
-            code: body.code
-        });
-        workspacePath = workspace.workspacePath;
+        // Offload the CPU-intensive compile + bundle step to the sf-compiler Lambda.
+        // The Lambda returns the bundled JS and the flow config; the server handles persistence and deployment.
+        let bundledJs: string;
+        let flow: Awaited<ReturnType<typeof invokeCompiler>>['flow'];
 
-        const { flow, bundledJs } = await compileAndBuildFlow({
-            workspacePath: workspace.workspacePath,
-            entryTsPath: workspace.entryTsPath,
-            virtualScriptPath: workspace.virtualScriptPath,
-            compiledScriptPath: workspace.compiledScriptPath,
-            functionType: body.function_type,
-            functionName: body.function_name,
-            integrationId: body.integration_id,
-            sourceCode: body.code
-        });
-
-        step = 'deployment';
+        try {
+            ({ bundledJs, flow } = await invokeCompiler({
+                integration_id: body.integration_id,
+                function_name: body.function_name,
+                function_type: body.function_type,
+                code: body.code
+            }));
+        } catch (err) {
+            sendSfStepError({
+                res,
+                step: 'compilation',
+                error: err,
+                status: err instanceof SfCompilerError ? 400 : 500
+            });
+            return;
+        }
 
         if (!isCloud && !integrationFilesAreRemote) {
             const localBuildFile = `build/${body.integration_id}_${body.function_type}s_${body.function_name}.cjs`;
@@ -138,22 +136,10 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
             deployment: deployed
         });
     } catch (err) {
-        const errorArgs: Parameters<typeof sendSfStepError>[0] = {
-            res,
-            step,
-            error: err,
-            ...(step === 'compilation' ? { status: 400 } : {})
-        };
-        if (workspacePath) {
-            errorArgs.workspacePath = workspacePath;
-        }
-        sendSfStepError(errorArgs);
+        sendSfStepError({ res, step: 'deployment', error: err });
     } finally {
         if (lock && locking) {
             await locking.release(lock);
-        }
-        if (workspacePath) {
-            await cleanupSfWorkspace(workspacePath);
         }
     }
 });
