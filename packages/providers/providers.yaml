@@ -7295,6 +7295,16 @@ google-calendar:
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
 
+google-contacts:
+    display_name: Google Contacts
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://people.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-contacts
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-contacts/how-to-register-your-own-google-contacts-api-oauth-app
+
 google-chat:
     display_name: Google Chat
     alias: google
