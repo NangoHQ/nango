@@ -676,7 +676,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             cursor?: string;
         }
     ): AsyncGenerator<NangoRecord<T>> {
-        let cursor: string | undefined = options?.cursor ?? undefined;
+        let cursor: string | null | undefined = options?.cursor;
         do {
             this.throwIfAbortedOrKilled();
             const pageOptions: { cursor?: string } = {
@@ -686,10 +686,6 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
             for (const record of records) {
                 yield record;
-            }
-
-            if (!next_cursor) {
-                break;
             }
 
             cursor = next_cursor;
