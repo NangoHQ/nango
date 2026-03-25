@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
@@ -20,6 +21,9 @@ export const ProfileDropdown: React.FC = () => {
     const signout = useSignout();
     const { user } = useUser();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
+
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageTeam);
 
     const items = useMemo(() => {
         const list = [
@@ -43,7 +47,7 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (globalEnv.features.plan) {
+        if (globalEnv.features.plan && canManageBilling) {
             list.push({
                 label: 'Billing & usage',
                 icon: CreditCard,
