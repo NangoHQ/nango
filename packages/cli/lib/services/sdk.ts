@@ -381,7 +381,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
             cursor?: string;
         }
     ): AsyncGenerator<NangoRecord<T>> {
-        let cursor: string | null | undefined = options?.cursor ?? null;
+        let cursor: string | null | undefined = options?.cursor;
         do {
             const props: ListRecordsRequestConfig = {
                 providerConfigKey: this.providerConfigKey,
@@ -396,9 +396,6 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
                 yield record;
             }
 
-            if (!next_cursor) {
-                break;
-            }
             cursor = next_cursor;
         } while (cursor);
     }
