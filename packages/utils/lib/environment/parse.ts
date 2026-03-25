@@ -380,7 +380,7 @@ export const ENVS = z.object({
 
     // ActiveMQ
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'none']).optional().default('none'),
-    /** JSON: `{"topicArns":{...},"queueUrls":{...}}` — subjects omitted from `topicArns` use `CreateTopic` with the subject string as the topic name. */
+    /** JSON: `{"topicArns":{"usage":"arn:aws:sns:...","team":"arn:...","user":"arn:..."},"queueUrls":{...}}` — every published `subject` needs a topic ARN. */
     NANGO_PUBSUB_SNS_SQS_CONFIG: z
         .string()
         .optional()
