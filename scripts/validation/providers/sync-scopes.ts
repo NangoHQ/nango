@@ -274,8 +274,12 @@ function loadProviderScopes(): ProviderScopesMap {
     const sanitized = sanitizeYamlContent(fs.readFileSync(providersScopesPath, 'utf-8'));
     const { content, duplicates } = removeDuplicateYamlKeys(sanitized);
     if (duplicates.length > 0) {
-        console.warn(`providers.scopes.yaml has duplicate keys (auto-fixing, keeping last occurrence): ${duplicates.sort().join(', ')}`);
-        fs.writeFileSync(providersScopesPath, content);
+        if (args.write) {
+            console.warn(`providers.scopes.yaml has duplicate keys (auto-fixing, keeping last occurrence): ${duplicates.sort().join(', ')}`);
+            fs.writeFileSync(providersScopesPath, content);
+        } else {
+            console.warn(`providers.scopes.yaml has duplicate keys: ${duplicates.sort().join(', ')}. Re-run with --write to auto-fix.`);
+        }
     }
     return (load(content) as ProviderScopesMap | null) ?? {};
 }
@@ -711,7 +715,7 @@ function buildAgentPrompt(params: { providerNames: string[]; baseRef: string; pr
 }
 
 async function waitForSessionCompletion(client: OpencodeClient, sessionId: string): Promise<void> {
-    const timeoutMinutes = args.force ? 0 : Number.isFinite(args.sessionTimeoutMinutes) ? args.sessionTimeoutMinutes : DEFAULT_SESSION_TIMEOUT_MINUTES;
+    const timeoutMinutes = Number.isFinite(args.sessionTimeoutMinutes) ? args.sessionTimeoutMinutes : DEFAULT_SESSION_TIMEOUT_MINUTES;
     const timeoutMs = timeoutMinutes <= 0 ? undefined : timeoutMinutes * 60 * 1000;
     const startedAt = Date.now();
 
@@ -750,9 +754,7 @@ async function waitForSessionCompletion(client: OpencodeClient, sessionId: strin
             if (lastAssistant?.error) {
                 throw new Error(JSON.stringify(lastAssistant.error));
             }
-            if (lastAssistant?.finish === 'stop' && lastAssistant.time.completed) {
-                return;
-            }
+            return;
         }
 
         await sleep(Math.max(250, args.pollIntervalMs));
