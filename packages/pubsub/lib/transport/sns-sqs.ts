@@ -78,7 +78,7 @@ export class SnsSqs implements Transport {
     public async publish(event: Event): Promise<Result<void>> {
         if (!this.isConnected) {
             logger.error('SNS+SQS publisher not connected');
-            return Err('SNS+SQS publisher not connected');
+            return Err(new Error('SNS+SQS publisher not connected'));
         }
         const topicArn = this.topicArns[event.subject];
         if (!topicArn) {
