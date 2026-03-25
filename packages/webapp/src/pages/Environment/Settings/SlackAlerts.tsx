@@ -7,8 +7,10 @@ import { apiFetch } from '../../../utils/api';
 import { globalEnv } from '../../../utils/env';
 import { connectSlack } from '../../../utils/slack-connection';
 import { SlackIcon } from '@/assets/SlackIcon';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useEnvironment, usePatchEnvironment } from '@/hooks/useEnvironment';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 
 export const SlackAlertsSettings: React.FC = () => {
@@ -16,8 +18,12 @@ export const SlackAlertsSettings: React.FC = () => {
     const { data, refetch: refetchEnvironment } = useEnvironment(env);
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const { toast } = useToast();
+
+    const { can } = usePermissions();
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     if (!environmentAndAccount) {
         return null;
@@ -65,15 +71,19 @@ export const SlackAlertsSettings: React.FC = () => {
         <SettingsContent title="Slack alerts">
             <SettingsGroup label="Slack alerts" className="items-center">
                 <div className="flex justify-end">
-                    <Button
-                        className="px-4"
-                        disabled={slackIsConnecting}
-                        variant={isConnected ? 'tertiary' : 'primary'}
-                        onClick={isConnected ? slackDisconnect : slackConnect}
-                    >
-                        <SlackIcon className="w-5 h-5" />
-                        {isConnected ? `Disconnect from Slack` : 'Connect to Slack'}
-                    </Button>
+                    <PermissionGate asChild condition={canEditEnvironment}>
+                        {(allowed) => (
+                            <Button
+                                className="px-4"
+                                disabled={slackIsConnecting || !allowed}
+                                variant={isConnected ? 'tertiary' : 'primary'}
+                                onClick={isConnected ? slackDisconnect : slackConnect}
+                            >
+                                <SlackIcon className="w-5 h-5" />
+                                {isConnected ? `Disconnect from Slack` : 'Connect to Slack'}
+                            </Button>
+                        )}
+                    </PermissionGate>
                 </div>
             </SettingsGroup>
         </SettingsContent>
