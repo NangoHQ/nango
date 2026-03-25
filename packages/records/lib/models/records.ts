@@ -36,8 +36,7 @@ interface UpsertResult {
     id: string;
     last_modified_at: string;
     previous_last_modified_at: string | null;
-    size_bytes: number;
-    previous_size_bytes: number | null;
+    delta_size_bytes: number;
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
@@ -374,7 +373,16 @@ export async function upsert({
                                         trx.raw('tableoid::regclass as partition')
                                     ])
                                     .onConflict(['connection_id', 'external_id', 'model'])
-                                    .merge();
+                                    .merge({
+                                        json: trx.raw(
+                                            `CASE WHEN ${RECORDS_TABLE}.data_hash IS NOT DISTINCT FROM EXCLUDED.data_hash THEN ${RECORDS_TABLE}.json ELSE EXCLUDED.json END`
+                                        ),
+                                        data_hash: trx.raw(`EXCLUDED.data_hash`),
+                                        sync_id: trx.raw(`EXCLUDED.sync_id`),
+                                        sync_job_id: trx.raw(`EXCLUDED.sync_job_id`),
+                                        deleted_at: trx.raw(`EXCLUDED.deleted_at`),
+                                        ...(softDelete ? { updated_at: trx.raw(`EXCLUDED.updated_at`) } : {})
+                                    });
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                     const cursor = Cursor.from(merging.cursor);
                                     if (cursor) {
@@ -388,8 +396,7 @@ export async function upsert({
                                     upsert.id as id,
                                     upsert.external_id as external_id,
                                     to_json(upsert.updated_at) as last_modified_at,
-                                    upsert.size_bytes as size_bytes,
-                                    existing.size_bytes as previous_size_bytes,
+                                    upsert.size_bytes - COALESCE(existing.size_bytes, 0) as delta_size_bytes,
                                     CASE
                                       WHEN existing.updated_at IS NULL THEN NULL
                                       ELSE to_json(existing.updated_at)
@@ -456,7 +463,7 @@ export async function upsert({
                                 };
                             }
                         }
-                        deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
+                        deltaSizeInBytes += res.reduce((acc, r) => acc + r.delta_size_bytes, 0);
 
                         // all records for the same connection/model are in the same partition
                         if (!partition && res[0]?.partition) {
