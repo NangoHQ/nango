@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, cleanIncomingFlow, deploy, localFileService } from '@nangohq/shared';
+import { NangoError, cleanIncomingFlow, deploy, localFileService, syncManager } from '@nangohq/shared';
 import { NANGO_VERSION, integrationFilesAreRemote, isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendSfStepError } from './helpers.js';
@@ -127,6 +127,16 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
                 error: new Error('Deployment finished but no deployment result was returned')
             });
             return;
+        }
+
+        if (body.function_type === 'sync') {
+            deployed.runs = flow.runs;
+            await syncManager.triggerIfConnectionsExist({
+                flows: [deployed],
+                environmentId: environment.id,
+                logContextGetter,
+                orchestrator
+            });
         }
 
         res.status(200).send({
