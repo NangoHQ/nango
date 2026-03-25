@@ -485,6 +485,7 @@
               "api-integrations/google-calendar",
               "integrations/all/google-chat",
               "integrations/all/google-cloud-storage",
+              "api-integrations/google-contacts",
               "api-integrations/google-docs",
               "api-integrations/google-drive",
               "api-integrations/google-forms",
