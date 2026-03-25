@@ -8,6 +8,7 @@ import { useStore } from '../../../store.js';
 import { EditableInput } from '@/components-v2/EditableInput.js';
 import { ButtonLink } from '@/components-v2/ui/button.js';
 import { Label } from '@/components-v2/ui/label.js';
+import { permissions, usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
 
@@ -19,6 +20,10 @@ export const Webhooks: React.FC = () => {
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const onSave = async (body: PatchWebhook['Body']) => {
         try {
@@ -55,6 +60,7 @@ export const Webhooks: React.FC = () => {
                             initialValue={environmentAndAccount.webhook_settings.primary_url || ''}
                             onSave={(value) => onSave({ primary_url: value })}
                             validate={validateUrl}
+                            canEdit={canEditEnvironment}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
@@ -65,6 +71,7 @@ export const Webhooks: React.FC = () => {
                             initialValue={environmentAndAccount.webhook_settings.secondary_url || ''}
                             onSave={(value) => onSave({ secondary_url: value })}
                             validate={validateUrl}
+                            canEdit={canEditEnvironment}
                         />
                     </div>
                 </div>
