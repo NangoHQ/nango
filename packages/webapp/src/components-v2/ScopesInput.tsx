@@ -92,7 +92,6 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
         const text = e.clipboardData.getData('text');
-        if (!text.includes(',')) return;
         e.preventDefault();
         await addScopesFromText(text);
     };

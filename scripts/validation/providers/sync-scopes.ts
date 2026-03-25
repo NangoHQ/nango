@@ -93,6 +93,27 @@ if (oauth2TargetProviders.length === 0) {
 
 if (args.mode === 'agent') {
     await runAgentMode();
+
+    // After the agent runs, apply default_scopes as a fallback for providers it couldn't resolve
+    const postAgentScopes = loadProviderScopes();
+    const stillEmpty = oauth2TargetProviders.filter((name) => !postAgentScopes[name] || postAgentScopes[name].length === 0);
+    if (stillEmpty.length > 0) {
+        const nextScopes = { ...postAgentScopes };
+        const fallbackChanged: string[] = [];
+        for (const providerName of stillEmpty) {
+            const inference = inferScopes(providerName, providers, postAgentScopes);
+            if (inference.source === 'default_scopes') {
+                nextScopes[providerName] = inference.scopes;
+                fallbackChanged.push(providerName);
+            }
+        }
+        if (fallbackChanged.length > 0 && args.write) {
+            const existingComments = extractYamlComments(fs.readFileSync(providersScopesPath, 'utf-8'));
+            fs.writeFileSync(providersScopesPath, renderScopesYaml(nextScopes, existingComments));
+            console.log(`Applied default_scopes fallback for: ${fallbackChanged.sort().join(', ')}`);
+        }
+    }
+
     process.exit(0);
 }
 
@@ -102,7 +123,7 @@ const unresolved: string[] = [];
 
 for (const providerName of oauth2TargetProviders) {
     const before = providerScopes[providerName] || [];
-    const inference = inferScopes(providerName, providers, nextScopes, providerScopes);
+    const inference = inferScopes(providerName, providers, providerScopes);
     const after = inference.scopes;
 
     if (!providerScopes[providerName] || !sameScopes(before, after)) {
@@ -129,8 +150,9 @@ if (staleKeys.length > 0) {
     changed.push(...staleKeys);
 }
 
-const nextContent = renderScopesYaml(filteredScopes);
 const previousContent = fs.readFileSync(providersScopesPath, 'utf-8');
+const existingComments = extractYamlComments(previousContent);
+const nextContent = renderScopesYaml(filteredScopes, existingComments);
 const hasContentChanges = previousContent !== nextContent;
 
 if (changed.length > 0) {
@@ -308,13 +330,7 @@ function isOAuth2Provider(providerName: string, providerMap: ProvidersMap, seen 
     return (entry as Provider).auth_mode === 'OAUTH2';
 }
 
-function inferScopes(
-    providerName: string,
-    providerMap: ProvidersMap,
-    resolvedScopes: ProviderScopesMap,
-    originalScopes: ProviderScopesMap,
-    seen = new Set<string>()
-): InferenceResult {
+function inferScopes(providerName: string, providerMap: ProvidersMap, originalScopes: ProviderScopesMap, seen = new Set<string>()): InferenceResult {
     if (seen.has(providerName)) {
         return { scopes: [], source: 'none' };
     }
@@ -331,17 +347,7 @@ function inferScopes(
     }
 
     if ('alias' in entry) {
-        const aliasName = entry.alias;
-        const aliasExisting = resolvedScopes[aliasName] || originalScopes[aliasName];
-        if (aliasExisting && aliasExisting.length > 0) {
-            return { scopes: dedupeAndSort(aliasExisting), source: 'alias' };
-        }
-
-        const inferredFromAlias = inferScopes(aliasName, providerMap, resolvedScopes, originalScopes, seen);
-        if (inferredFromAlias.scopes.length > 0) {
-            return { scopes: inferredFromAlias.scopes, source: 'alias' };
-        }
-
+        // Aliases must be looked up independently by the agent, never copy from the parent provider
         return { scopes: [], source: 'none' };
     }
 
@@ -586,6 +592,11 @@ async function runAgentBatch(client: OpencodeClient, providerNames: string[], ba
         if (!isTimeout) throw err;
         timedOut = true;
         console.error(`\n${err.message}`);
+        await client.session.abort({
+            throwOnError: false,
+            path: { id: session.id },
+            query: { directory: ROOT_DIR }
+        });
     }
 
     const rawAfterContent = fs.readFileSync(providersScopesPath, 'utf-8');
@@ -615,7 +626,12 @@ async function runAgentBatch(client: OpencodeClient, providerNames: string[], ba
     const missing = providerNames.filter((p) => !completed.includes(p));
 
     if (afterContent !== beforeContent) {
-        validateAgentEdits(beforeContent, afterContent, providers, oauth2Providers, providerNames);
+        try {
+            validateAgentEdits(beforeContent, afterContent, providers, oauth2Providers, providerNames);
+        } catch (err) {
+            fs.writeFileSync(providersScopesPath, beforeContent);
+            throw err;
+        }
         const oauth2OnlyScopes = Object.fromEntries(Object.entries(afterScopes).filter(([key]) => oauth2Providers.includes(key)));
         const afterComments = extractYamlComments(afterContent);
         const normalizedContent = renderScopesYaml(oauth2OnlyScopes, afterComments);
