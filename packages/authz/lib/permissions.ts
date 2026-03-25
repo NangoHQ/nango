@@ -1,4 +1,4 @@
-import type { Permission } from './types.js';
+import type { Permission } from '@nangohq/types';
 
 export const permissions = {
     // team management (global scope)
