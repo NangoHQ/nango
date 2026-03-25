@@ -7,12 +7,13 @@ export const CustomCredentialsComponent: React.FC<{
     connection: ApiConnectionFull;
     credentials: CustomCredentials | CombinedOauth2AppCredentials;
     providerConfigKey: string;
-}> = ({ connection, credentials, providerConfigKey }) => {
+    canRead: boolean;
+}> = ({ connection, credentials, providerConfigKey, canRead }) => {
     return (
         <>
-            {'app' in credentials && credentials.app && <AppCredentialsComponent credentials={credentials.app} />}
+            {'app' in credentials && credentials.app && <AppCredentialsComponent credentials={credentials.app} canRead={canRead} />}
             {'user' in credentials && credentials.user && (
-                <OAuth2CredentialsComponent connection={connection} credentials={credentials.user} providerConfigKey={providerConfigKey} />
+                <OAuth2CredentialsComponent connection={connection} credentials={credentials.user} providerConfigKey={providerConfigKey} canRead={canRead} />
             )}
         </>
     );

@@ -63,7 +63,7 @@ export const DeprecatedSettings: React.FC = () => {
                 }
             >
                 <fieldset className="flex flex-col gap-4">
-                    <SecretInput copy name="publicKey" value={environmentAndAccount.environment.public_key} canRead={canReadEnvironmentKey} />
+                    <SecretInput copy name="publicKey" value={environmentAndAccount.environment.public_key} canRead={canReadEnvironmentKey} disabled />
                 </fieldset>
             </SettingsGroup>
             <SettingsGroup

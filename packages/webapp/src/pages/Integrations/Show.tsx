@@ -105,7 +105,7 @@ export const IntegrationsList = () => {
             </Helmet>
             <header className="flex justify-between items-center">
                 <h2 className="text-text-primary text-title-subsection">Integrations</h2>
-                <PermissionGate asChild condition={canWriteIntegration}>
+                <PermissionGate condition={canWriteIntegration}>
                     {(allowed) => (
                         <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                             Set up new integration

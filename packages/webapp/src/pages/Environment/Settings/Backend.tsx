@@ -85,6 +85,7 @@ export const BackendSettings: React.FC = () => {
                                 value={environmentAndAccount.environment.secret_key}
                                 copy={canReadSecretKey}
                                 canRead={canReadSecretKey}
+                                disabled
                             />
                         </div>
                     </div>
@@ -110,6 +111,7 @@ export const BackendSettings: React.FC = () => {
                                 value={environmentAndAccount.environment.pending_secret_key!}
                                 copy={canReadSecretKey}
                                 canRead={canReadSecretKey}
+                                disabled
                             />
                         </div>
                     )}

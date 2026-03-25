@@ -11,26 +11,27 @@ export const SignatureCredentialsComponent: React.FC<{
     credentials: SignatureCredentials;
     connection: ApiConnectionFull;
     providerConfigKey: string;
-}> = ({ credentials, connection, providerConfigKey }) => {
+    canRead: boolean;
+}> = ({ credentials, connection, providerConfigKey, canRead }) => {
     const { forceRefresh, isRefreshing } = useRefreshConnectionWithToast(connection, providerConfigKey);
 
     return (
         <>
             <div className="flex flex-col gap-2">
                 <Label htmlFor="username">Username</Label>
-                <SecretInput id="username" value={credentials.username} disabled copy />
+                <SecretInput id="username" value={credentials.username} disabled copy canRead={canRead} />
             </div>
 
             <div className="flex flex-col gap-2">
                 <Label htmlFor="password">Password</Label>
-                <SecretInput id="password" value={credentials.password} disabled copy />
+                <SecretInput id="password" value={credentials.password} disabled copy canRead={canRead} />
             </div>
 
             {credentials.token && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="token">Token</Label>
                     <div className="flex gap-2 items-center">
-                        <SecretInput id="token" value={credentials.token} disabled copy />
+                        <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
                         <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing}>
                             <RefreshCwIcon />
                             Refresh
