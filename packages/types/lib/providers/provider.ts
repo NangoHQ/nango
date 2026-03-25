@@ -50,7 +50,7 @@ export interface BaseProvider {
         query?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
-        enable_header_forwarding?: boolean;
+        forward_headers_on_redirect?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;

@@ -1099,7 +1099,7 @@ export class Nango {
             baseUrlOverride,
             decompress,
             retryOn,
-            enableHeaderForwarding
+            forwardHeadersOnRedirect
         } = config;
 
         let url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
@@ -1136,8 +1136,8 @@ export class Nango {
             headers['Retry-On'] = retryOn.join(',');
         }
 
-        if (enableHeaderForwarding !== undefined) {
-            headers['Enable-Header-Forwarding'] = String(enableHeaderForwarding);
+        if (forwardHeadersOnRedirect !== undefined) {
+            headers['Forward-Headers-On-Redirect'] = forwardHeadersOnRedirect;
         }
 
         const options: AxiosRequestConfig = {

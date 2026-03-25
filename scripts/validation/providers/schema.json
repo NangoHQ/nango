@@ -217,7 +217,7 @@
                         "decompress": {
                             "type": "boolean"
                         },
-                        "enable_header_forwarding": {
+                        "forward_headers_on_redirect": {
                             "type": "boolean"
                         },
                         "headers": {

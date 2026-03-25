@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD, metrics } from '@nangohq/utils';
 
 import {
     connectionCopyWithParsedConnectionConfig,
@@ -74,19 +74,19 @@ export function getAxiosConfiguration({
         headers
     };
 
-    // Provider config takes precedence so integrations like Dayforce can enforce header forwarding
-    // regardless of what the caller passes. Falls back to the caller's header (default: false).
-    const shouldForward = proxyConfig.provider.proxy?.enable_header_forwarding ?? proxyConfig.enableHeaderForwarding;
-    if (shouldForward) {
-        axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+    // TODO: change default to false after removing the metric below
+    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
+    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName, forwardHeadersOnRedirect: String(shouldForward) });
+        if (shouldForward) {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
                     options['headers'][key] = headers[key];
                 }
             });
-        };
-    }
+        }
+    };
 
     if (proxyConfig.responseType) {
         axiosConfig.responseType = proxyConfig.responseType;
@@ -145,7 +145,7 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, enableHeaderForwarding } = externalConfig;
+    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, forwardHeadersOnRedirect } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -211,7 +211,7 @@ export function getProxyConfiguration({
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
-        enableHeaderForwarding: enableHeaderForwarding ?? false
+        ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {})
     };
 
     return Ok(configBody);
