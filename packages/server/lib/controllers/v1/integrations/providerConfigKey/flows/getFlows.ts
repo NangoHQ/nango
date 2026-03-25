@@ -70,13 +70,8 @@ function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
 }
 
 function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]): NangoSyncConfig | false {
-    const modelsName = new Set<string>(templateFlow.returns.map((model) => model));
-
     for (const flow of list) {
         if (flow.type === templateFlow.type && flow.name === templateFlow.name) {
-            return flow;
-        }
-        if (flow.type === 'sync' && templateFlow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
             return flow;
         }
         if (containsSameEndpoint(flow, templateFlow)) {
