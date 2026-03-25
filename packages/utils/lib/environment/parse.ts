@@ -379,7 +379,7 @@ export const ENVS = z.object({
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ActiveMQ
-    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'none']).optional().default('none'),
+    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
     /** JSON: `{"topicArns":{"usage":"arn:aws:sns:...","team":"arn:...","user":"arn:..."},"queueUrls":{...}}` — every published `subject` needs a topic ARN. */
     NANGO_PUBSUB_SNS_SQS_CONFIG: z
         .string()
