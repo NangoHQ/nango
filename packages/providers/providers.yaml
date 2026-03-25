@@ -4143,7 +4143,7 @@ conta-azul:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    scope_separator: '+'
+    scope_separator: ' '
     proxy:
         base_url: https://api-v2.contaazul.com
     disable_pkce: true
