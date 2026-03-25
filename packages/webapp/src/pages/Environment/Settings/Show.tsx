@@ -31,7 +31,8 @@ export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
     const { team } = useTeam(env);
 
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const [activeTab, setActiveTab] = useHashNavigation('general');
 
     if (!environmentAndAccount || !team) {

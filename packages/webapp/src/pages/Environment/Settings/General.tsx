@@ -6,12 +6,13 @@ import { EditableInput } from './components/EditableInput';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
-import { apiDeleteEnvironment, apiPatchEnvironment } from '../../../hooks/useEnvironment';
+import { useDeleteEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { AlertDescription } from '@/components/ui/Alert';
 import { Alert } from '@/components-v2/ui/alert';
 import { useToast } from '@/hooks/useToast';
+import { APIError } from '@/utils/api';
 
 export const General: React.FC = () => {
     const navigate = useNavigate();
@@ -19,19 +20,20 @@ export const General: React.FC = () => {
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
     const { refetch: refetchMeta } = useMeta();
+    const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
+    const { mutateAsync: deleteEnvironmentAsync } = useDeleteEnvironment(env);
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const { toast } = useToast();
 
     const handleDelete = async () => {
-        const { res } = await apiDeleteEnvironment(env);
-        if (res.status >= 200 && res.status < 300) {
+        try {
+            await deleteEnvironmentAsync();
             setShowDeleteAlert(false);
-            // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
             navigate(`/${PROD_ENVIRONMENT_NAME}/environment-settings`);
             await refetchMeta();
             setEnv(PROD_ENVIRONMENT_NAME);
-        } else {
+        } catch {
             toast({
                 title: 'Failed to delete environment',
                 variant: 'error'
@@ -45,7 +47,17 @@ export const General: React.FC = () => {
                 <EditableInput
                     name="environmentName"
                     originalValue={env}
-                    apiCall={(name) => apiPatchEnvironment(env, { name })}
+                    apiCall={async (name) => {
+                        try {
+                            const res = await patchEnvironmentAsync({ name });
+                            return { json: res };
+                        } catch (err) {
+                            if (err instanceof APIError) {
+                                return { json: err.json };
+                            }
+                            throw err;
+                        }
+                    }}
                     onSuccess={async (newName) => {
                         // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
                         navigate(`/${newName}/environment-settings`);

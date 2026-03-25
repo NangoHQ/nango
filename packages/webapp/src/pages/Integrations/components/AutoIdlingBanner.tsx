@@ -11,7 +11,8 @@ export const AutoIdlingBanner: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useEnvironment(env);
+    const plan = environmentData?.plan;
     const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
     const [trialLoading, setTrialLoading] = useState(false);
@@ -26,7 +27,7 @@ export const AutoIdlingBanner: React.FC = () => {
             return;
         }
 
-        void mutateEnv();
+        void refetchEnv();
 
         toast({ title: 'Auto idling was extended successfully!', variant: 'success' });
     };

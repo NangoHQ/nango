@@ -37,8 +37,8 @@ describe('Task', () => {
     });
 
     it('should be successfully created', async () => {
-        const task = (await tasks.create(db, props)).unwrap();
-        expect(task).toMatchObject({
+        const res = (await tasks.create(db, [props])).unwrap();
+        expect(res.tasks[0]).toMatchObject({
             id: expect.any(String),
             name: props.name,
             payload: props.payload,
@@ -60,15 +60,29 @@ describe('Task', () => {
             ownerKey: props.ownerKey
         });
     });
-    it('should fail to create if more than cap', async () => {
+    it('should create multiple tasks', async () => {
+        const n = 1200;
+        const taskProps = Array.from({ length: n }, (_, i) => ({ ...props, name: `n=${i}` }));
+        const res = (await tasks.create(db, taskProps)).unwrap();
+        expect(res.tasks).toHaveLength(n);
+    });
+    it('should not create tasks exceeding the cap', async () => {
         const groupTaskCap = 1;
-        // first task should be created successfully
-        const t1 = await tasks.create(db, { ...props, name: 'Not capped' }, { groupTaskCap });
-        expect(t1.isOk()).toBe(true);
-
-        // second task with the same group key should fail
-        const t2 = await tasks.create(db, { ...props, name: 'Capped' }, { groupTaskCap });
-        expect(t2.isErr()).toBe(true);
+        const res = (
+            await tasks.create(
+                db,
+                [
+                    { ...props, name: 'Not capped' },
+                    { ...props, name: 'Capped' },
+                    { ...props, groupKey: nanoid(), name: 'Also not capped' }
+                ],
+                { groupTaskCap }
+            )
+        ).unwrap();
+        expect(res.tasks).toHaveLength(2);
+        expect(res.tasks[0]?.name).toBe('Not capped');
+        expect(res.tasks[1]?.name).toBe('Also not capped');
+        expect(res.cappedGroupKeys).toEqual([props.groupKey]);
     });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);
@@ -341,25 +355,31 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
 
 async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     const now = new Date();
-    const task = await tasks.create(db, {
-        name: props?.name || nanoid(),
-        payload: props?.payload || {},
-        groupKey: props?.groupKey || nanoid(),
-        groupMaxConcurrency: props?.groupMaxConcurrency || 0,
-        retryMax: props?.retryMax || 3,
-        retryCount: props?.retryCount || 1,
-        startsAfter: props?.startsAfter || now,
-        createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
-        startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
-        heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
-        scheduleId: props?.scheduleId || null,
-        retryKey: props?.retryKey || null,
-        ownerKey: props?.ownerKey || null
-    });
-    if (task.isErr()) {
-        throw new Error(`Failed to create task: ${task.error.message}`);
+    const res = await tasks.create(db, [
+        {
+            name: props?.name || nanoid(),
+            payload: props?.payload || {},
+            groupKey: props?.groupKey || nanoid(),
+            groupMaxConcurrency: props?.groupMaxConcurrency || 0,
+            retryMax: props?.retryMax || 3,
+            retryCount: props?.retryCount || 1,
+            startsAfter: props?.startsAfter || now,
+            createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
+            startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
+            heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
+            scheduleId: props?.scheduleId || null,
+            retryKey: props?.retryKey || null,
+            ownerKey: props?.ownerKey || null
+        }
+    ]);
+    if (res.isErr()) {
+        throw new Error(`Failed to create task: ${res.error.message}`);
     }
-    return task.unwrap();
+    const task = res.value.tasks[0];
+    if (!task) {
+        throw new Error('No task created');
+    }
+    return task;
 }
 
 async function startTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {

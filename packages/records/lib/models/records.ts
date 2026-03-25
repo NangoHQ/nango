@@ -918,35 +918,33 @@ export async function deleteOutdatedRecords({
             const batchResult = await retry(
                 () => {
                     return db.transaction(async (trx) => {
-                        const now = trx.fn.now(6);
                         // Lock to prevent concurrent modifications with upserts and deletes
                         await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_outdated`, [newLockId(connectionId, model)]);
 
-                        const res: { external_id: string; size_bytes: number; partition: string }[] = await trx
-                            .from<FormattedRecord>(RECORDS_TABLE)
-                            .whereIn('id', function (sub) {
-                                sub.select('id')
-                                    .from(RECORDS_TABLE)
-                                    .where({
-                                        connection_id: connectionId,
-                                        model,
-                                        deleted_at: null
-                                    })
-                                    .where('sync_job_id', '<', generation)
-                                    .limit(batchSize);
-                            })
-                            .update({
-                                deleted_at: now,
-                                updated_at: now,
-                                sync_job_id: generation
-                            })
-                            // records table is partitioned by connection_id and model
-                            // to avoid table scan, we must always filter by connection_id and model
-                            .where({
-                                connection_id: connectionId,
-                                model
-                            })
-                            .returning(['external_id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
+                        const res: { external_id: string; size_bytes: number; partition: string }[] = (
+                            await trx.raw(
+                                `WITH to_delete AS MATERIALIZED (
+                                    SELECT ctid
+                                    FROM ${RECORDS_TABLE}
+                                    WHERE connection_id = ?
+                                      AND model = ?
+                                      AND sync_job_id < ?
+                                      AND deleted_at IS NULL
+                                    LIMIT ?
+                                )
+                                UPDATE ${RECORDS_TABLE} r
+                                SET
+                                    deleted_at = current_timestamp(6),
+                                    updated_at = current_timestamp(6),
+                                    sync_job_id = ?
+                                FROM to_delete
+                                WHERE r.ctid = to_delete.ctid
+                                  AND r.connection_id = ?
+                                  AND r.model = ?
+                                RETURNING external_id, pg_column_size(json) as size_bytes, tableoid::regclass as partition`,
+                                [connectionId, model, generation, batchSize, generation, connectionId, model]
+                            )
+                        ).rows;
 
                         // update records count and size
                         const deleted = res.length;
