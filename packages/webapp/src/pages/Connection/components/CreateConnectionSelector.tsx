@@ -21,7 +21,9 @@ import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { permissions, usePermissions } from '@/hooks/usePermissions';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -66,7 +68,11 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { data: listIntegrationData, isLoading: listIntegrationPending } = useListIntegrations(env);
+
+    const { can } = usePermissions();
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
@@ -292,9 +298,17 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span className="inline-block" tabIndex={0}>
-                                    <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields || !isFormValid}>
-                                        Authorize
-                                    </Button>
+                                    <PermissionGate condition={canCreateTestConnection}>
+                                        {(allowed) => (
+                                            <Button
+                                                onClick={onClickConnectUI}
+                                                size="lg"
+                                                disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
+                                            >
+                                                Authorize
+                                            </Button>
+                                        )}
+                                    </PermissionGate>
                                 </span>
                             </TooltipTrigger>
                             {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
@@ -304,16 +318,20 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span className="inline-block" tabIndex={0}>
-                                    <Button
-                                        onClick={onClickShareConnectionLink}
-                                        size="lg"
-                                        variant="secondary"
-                                        loading={isShareLinkLoading}
-                                        disabled={usageCapReached || integrationHasMissingFields || !isFormValid}
-                                    >
-                                        <Link2 />
-                                        Share connect link
-                                    </Button>
+                                    <PermissionGate condition={canCreateTestConnection}>
+                                        {(allowed) => (
+                                            <Button
+                                                onClick={onClickShareConnectionLink}
+                                                size="lg"
+                                                variant="secondary"
+                                                loading={isShareLinkLoading}
+                                                disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
+                                            >
+                                                <Link2 />
+                                                Share connect link
+                                            </Button>
+                                        )}
+                                    </PermissionGate>
                                 </span>
                             </TooltipTrigger>
                             {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
