@@ -460,6 +460,7 @@
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
+              "api-integrations/front-api-key",
               "api-integrations/fullenrich",
               "integrations/all/float",
               "integrations/all/gainsight-cc",
