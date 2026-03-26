@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
 import GoogleButton from '@/components/ui/button/Auth/Google';
@@ -34,8 +34,24 @@ export const Signin: React.FC = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
 
-    const [errorMessage, setServerErrorMessage] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const ssoError = searchParams.get('error');
+
+    const [errorMessage, setServerErrorMessage] = useState(() => {
+        if (ssoError === 'sso_session_expired') {
+            return 'Your SSO session has expired. Please try again.';
+        }
+        return '';
+    });
     const [showResendEmail, setShowResendEmail] = useState(false);
+
+    // Clear the error query param so it doesn't persist on refresh
+    useEffect(() => {
+        if (ssoError) {
+            searchParams.delete('error');
+            setSearchParams(searchParams, { replace: true });
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),

@@ -45,10 +45,23 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
     const workos = getWorkOSClient();
 
     // Check the request against WorkOS
-    const { user: authorizedUser, organizationId } = await workos.userManagement.authenticateWithCode({
-        clientId: process.env['WORKOS_CLIENT_ID'] || '',
-        code: query.code
-    });
+    let authorizedUser;
+    let organizationId;
+    try {
+        const authResponse = await workos.userManagement.authenticateWithCode({
+            clientId: process.env['WORKOS_CLIENT_ID'] || '',
+            code: query.code
+        });
+        authorizedUser = authResponse.user;
+        organizationId = authResponse.organizationId;
+    } catch (err) {
+        const isInvalidGrant = err instanceof Error && (err as { error?: string }).error === 'invalid_grant';
+        if (isInvalidGrant) {
+            res.redirect(`${basePublicUrl}/signin?error=sso_session_expired`);
+            return;
+        }
+        throw err;
+    }
 
     // Parse optional state that can contains invitation
     const state = parseState(query.state || '');
