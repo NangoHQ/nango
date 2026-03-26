@@ -12,7 +12,10 @@ import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../..
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { Switch } from '@/components-v2/ui/switch';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';
@@ -23,16 +26,17 @@ export const General: React.FC = () => {
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
     const { toast } = useToast();
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const { refetch: refetchMeta } = useMeta();
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
     const { mutateAsync: deleteEnvironmentAsync } = useDeleteEnvironment(env);
 
-    const isProdEnv = environmentAndAccount?.environment.is_production || false;
     const { can } = usePermissions();
-    const canEditEnvironment = !isProdEnv || can(permissions.canWriteProdEnvironment);
+    const canEditEnvironment = !environment?.is_production || can(permissions.canWriteProdEnvironment);
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
@@ -95,6 +99,36 @@ export const General: React.FC = () => {
                     )}
                 </div>
             </SettingsGroup>
+
+            <SettingsGroup
+                label={
+                    <div className="flex items-center gap-2">
+                        <span>Production environment</span>
+                        <InfoTooltip icon={<Info />}>Production environments are only accessible to administrators and support roles.</InfoTooltip>
+                    </div>
+                }
+            >
+                <Switch
+                    checked={environment?.is_production}
+                    onCheckedChange={(checked) =>
+                        confirm({
+                            title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
+                            description: 'This impacts which team members have access to this environment.',
+                            onConfirm: async () => {
+                                await patchEnvironmentAsync({ is_production: checked });
+                                await refetchMeta();
+                                toast({
+                                    title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
+                                    variant: 'success'
+                                });
+                            },
+                            confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
+                            confirmVariant: 'destructive'
+                        })
+                    }
+                />
+            </SettingsGroup>
+
             <SettingsGroup label="Environment suppression" className="items-center">
                 <div>
                     <DeleteButton
@@ -106,6 +140,8 @@ export const General: React.FC = () => {
                     />
                 </div>
             </SettingsGroup>
+
+            {DialogComponent}
         </SettingsContent>
     );
 };
