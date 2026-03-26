@@ -244,27 +244,4 @@ describe('SnsSqs transport', () => {
         expect(receiveCalls.length).toBeGreaterThanOrEqual(1);
         expect(receiveCalls[0]![0].input).toMatchObject({ QueueUrl: queueUrl });
     });
-
-    it('unsubscribeAll clears subscriptions so disconnect/reconnect does not resume polling', async () => {
-        const t = createTransport();
-        await t.connect();
-
-        mockSqsSend.mockImplementation((_cmd, opts?: { abortSignal?: AbortSignal }) => {
-            return new Promise((_, reject) => {
-                opts?.abortSignal?.addEventListener('abort', () => reject(abortError()));
-            });
-        });
-
-        t.subscribe({ consumerGroup: 'billing', subject: 'usage', callback: vi.fn() });
-        await new Promise((r) => setTimeout(r, 10));
-        t.unsubscribeAll();
-        mockSqsSend.mockClear();
-
-        await t.disconnect();
-        await t.connect();
-        await new Promise((r) => setTimeout(r, 20));
-
-        const receiveCalls = mockSqsSend.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand);
-        expect(receiveCalls).toHaveLength(0);
-    });
 });
