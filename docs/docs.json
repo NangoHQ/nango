@@ -292,6 +292,7 @@
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
+              "api-integrations/bliro",
               "integrations/all/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
