@@ -48,7 +48,7 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
         withError: queryString.withError
     });
 
-    const pausedConnectionIds = new Set<number>();
+    const pausedSyncsByConnection = new Map<number, string[]>();
     const connectionIds = connections.map((data) => data.connection.id);
     const syncs = await getSyncsByConnectionIds({ connectionIds });
     if (syncs.length > 0) {
@@ -59,7 +59,8 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
         }
         for (const sync of syncs) {
             if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
-                pausedConnectionIds.add(sync.nango_connection_id);
+                const existing = pausedSyncsByConnection.get(sync.nango_connection_id) ?? [];
+                pausedSyncsByConnection.set(sync.nango_connection_id, [...existing, sync.name]);
             }
         }
     }
@@ -71,7 +72,7 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
                 provider: data.provider,
                 activeLog: data.active_logs,
                 endUser: data.end_user,
-                hasPausedSyncs: pausedConnectionIds.has(data.connection.id)
+                pausedSyncs: pausedSyncsByConnection.get(data.connection.id) ?? []
             });
         })
     });

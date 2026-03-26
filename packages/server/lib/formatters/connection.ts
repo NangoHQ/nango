@@ -16,13 +16,13 @@ export function connectionSimpleToApi({
     provider,
     activeLog,
     endUser,
-    hasPausedSyncs
+    pausedSyncs
 }: {
     data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
-    hasPausedSyncs: boolean;
+    pausedSyncs: string[];
 }): ApiConnectionSimple {
     return {
         id: data.id,
@@ -32,7 +32,7 @@ export function connectionSimpleToApi({
         errors: activeLog,
         endUser: endUser ? endUserToApi(endUser) : null,
         tags: data.tags,
-        hasPausedSyncs,
+        pausedSyncs,
         created_at: String(data.created_at),
         updated_at: String(data.updated_at)
     };
