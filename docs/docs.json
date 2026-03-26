@@ -730,6 +730,7 @@
               "integrations/all/readwise-reader",
               "api-integrations/reapit",
               "api-integrations/recall-ai",
+              "api-integrations/reply-io",
               "api-integrations/researchdesk",
               "api-integrations/resend",
               "integrations/all/recharge",
