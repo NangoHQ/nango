@@ -1,6 +1,8 @@
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
@@ -9,15 +11,21 @@ import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
+
+    const { can } = usePermissions();
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);
@@ -104,6 +112,7 @@ export const Telemetry: React.FC = () => {
                                 }
                             }}
                             placeholder="https://my.otlp.commector:4318"
+                            canEdit={canEditEnvironment}
                         />
                     </div>
                     <fieldset className="flex flex-col gap-4">
@@ -132,9 +141,13 @@ export const Telemetry: React.FC = () => {
                         </div>
                         <div className="flex justify-start gap-3 mt-1.5">
                             {!editHeaders && (
-                                <Button variant={'secondary'} onClick={() => setEditHeaders(true)}>
-                                    Edit
-                                </Button>
+                                <PermissionGate asChild condition={canEditEnvironment}>
+                                    {(allowed) => (
+                                        <Button variant={'secondary'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
+                                            Edit
+                                        </Button>
+                                    )}
+                                </PermissionGate>
                             )}
                             {editHeaders && (
                                 <>

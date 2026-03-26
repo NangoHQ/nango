@@ -2,15 +2,18 @@ import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { DeleteButton } from './components/DeleteButton';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
-import { useDeleteEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';
 
@@ -22,8 +25,14 @@ export const General: React.FC = () => {
     const { toast } = useToast();
 
     const { refetch: refetchMeta } = useMeta();
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
     const { mutateAsync: deleteEnvironmentAsync } = useDeleteEnvironment(env);
+
+    const isProdEnv = environmentAndAccount?.environment.is_production || false;
+    const { can } = usePermissions();
+    const canEditEnvironment = !isProdEnv || can(permissions.canWriteProdEnvironment);
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
@@ -67,6 +76,7 @@ export const General: React.FC = () => {
                         }}
                         disabled={env === PROD_ENVIRONMENT_NAME ? `You cannot rename the ${PROD_ENVIRONMENT_NAME} environment` : false}
                         hintText="Must be lowercase letters, numbers, underscores and/or dashes."
+                        canEdit={canEditEnvironment}
                     />
 
                     {env !== PROD_ENVIRONMENT_NAME && (

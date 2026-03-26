@@ -13,6 +13,7 @@ import type { GetConnection } from '@nangohq/types';
 
 export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData: GetConnection['Success']['data']; providerConfigKey: string }) => {
     const env = useStore((state) => state.env);
+
     const { connection, errorLog } = connectionData;
     const { credentials } = connection;
 
