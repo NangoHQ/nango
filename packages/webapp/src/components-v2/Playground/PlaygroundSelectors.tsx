@@ -1,6 +1,7 @@
 import { ExternalLink, Plus } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDebounce } from 'react-use';
 
 import { IntegrationLogo } from '../IntegrationLogo';
 import { Badge } from '../ui/badge';
@@ -36,15 +37,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     const setPlaygroundRunning = usePlaygroundStore((s) => s.setRunning);
 
     const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
-
-    useEffect(() => {
-        if (!connectionSearch) {
-            setDebouncedConnectionSearch('');
-            return;
-        }
-        const t = window.setTimeout(() => setDebouncedConnectionSearch(connectionSearch), 250);
-        return () => window.clearTimeout(t);
-    }, [connectionSearch]);
+    useDebounce(() => setDebouncedConnectionSearch(connectionSearch || ''), 250, [connectionSearch]);
 
     const { data: integrations } = useListIntegrations(queryEnv);
     const { data: flowsData } = useGetIntegrationFlows(queryEnv, playgroundIntegration || '');

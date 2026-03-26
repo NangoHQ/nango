@@ -90,75 +90,76 @@ export const Playground: React.FC = () => {
                 <SheetContent
                     side="right"
                     overlayClassName="hidden"
-                    insetTop={108}
-                    insetBottom={44}
+                    insetTop={88}
+                    insetBottom={24}
                     insetRight={24}
                     onInteractOutside={(e) => e.preventDefault()}
                     onPointerDownOutside={(e) => e.preventDefault()}
                     onFocusOutside={(e) => e.preventDefault()}
                     className={cn(
-                        'dark:bg-bg-elevated text-text-primary rounded-lg border border-border-muted shadow-lg p-6',
-                        'flex flex-col items-start gap-[10px]',
+                        'text-text-primary rounded-lg border border-border-muted shadow-lg p-6',
+                        'flex flex-col items-start gap-2.5',
                         'w-[537px] max-w-none sm:max-w-none',
                         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
                         '[&>button]:hidden'
                     )}
                 >
-                    {/* Header */}
-                    <div className="flex w-full items-start justify-between pb-8">
-                        <div className="min-w-0">
-                            <h2 className="text-text-primary text-heading-medium font-medium text-[20px] pb-2">Playground</h2>
-                            <p className="text-body-regular-medium text-text-secondary text-body-medium-medium text-[14px] font-400 line-height-[160%]">
-                                Quickly run any function.
-                            </p>
-                        </div>
-                        <Button variant="ghost" size="icon" className="size-7 mt-0.5" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
-                            <X className="size-4" />
-                        </Button>
-                    </div>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-8">
+                            {/* Header */}
+                            <div className="flex w-full items-start justify-between">
+                                <div className="min-w-0 flex flex-col gap-2">
+                                    <h2 className="text-text-primary text-heading-medium">Playground</h2>
+                                    <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                                    <X />
+                                </Button>
+                            </div>
 
-                    {/* Content */}
-                    <div className="flex w-full flex-col gap-6">
-                        <PlaygroundSelectors env={env} queryEnv={queryEnv} />
+                            {/* Content */}
+                            <div className="flex w-full flex-col gap-6">
+                                <PlaygroundSelectors env={env} queryEnv={queryEnv} />
 
-                        {showInputs && (
-                            <PlaygroundInputs
-                                env={env}
-                                queryEnv={queryEnv}
-                                isSync={isSync}
-                                inputFields={inputFields}
-                                inputErrors={inputErrors}
-                                clearInputError={clearInputError}
-                            />
-                        )}
+                                {showInputs && (
+                                    <PlaygroundInputs
+                                        env={env}
+                                        queryEnv={queryEnv}
+                                        isSync={isSync}
+                                        inputFields={inputFields}
+                                        inputErrors={inputErrors}
+                                        clearInputError={clearInputError}
+                                    />
+                                )}
 
-                        {/* Run controls */}
-                        <div className="pt-1 flex gap-2">
-                            {running ? (
-                                <>
-                                    <Button variant="primary" disabled loading={true} size="sm">
-                                        Running
-                                    </Button>
-                                    {isSync && (
-                                        <Button variant="destructive" size="sm" onClick={handleCancel}>
-                                            <X className="size-4" />
-                                            Cancel run
+                                {/* Run controls */}
+                                <div className="flex gap-2">
+                                    {running ? (
+                                        <>
+                                            <Button variant="primary" disabled loading={true} size="sm">
+                                                Running
+                                            </Button>
+                                            {isSync && (
+                                                <Button variant="destructive" size="sm" onClick={handleCancel}>
+                                                    <X />
+                                                    Cancel run
+                                                </Button>
+                                            )}
+                                        </>
+                                    ) : result ? (
+                                        <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
+                                            <RotateCcw className="size-4" />
+                                            Run again
+                                        </Button>
+                                    ) : (
+                                        <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
+                                            <Play className="size-4" />
+                                            Run
                                         </Button>
                                     )}
-                                </>
-                            ) : result ? (
-                                <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
-                                    <RotateCcw className="size-4" />
-                                    Run again
-                                </Button>
-                            ) : (
-                                <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun}>
-                                    <Play className="size-4" />
-                                    Run
-                                </Button>
-                            )}
+                                </div>
+                            </div>
                         </div>
-
                         <PlaygroundResult env={env} isSync={isSync} />
                     </div>
                 </SheetContent>

@@ -583,6 +583,18 @@
     font-weight: 600;
 }
 
+@utility text-heading-medium {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 500;
+}
+
+@utility text-label-large {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
 @utility text-body-large-regular {
     font-size: 16px;
     line-height: 24px;

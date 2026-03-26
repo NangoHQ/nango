@@ -1,4 +1,5 @@
 import { Braces, CheckCircle2, ExternalLink, Info, XCircle } from 'lucide-react';
+import { useMemo } from 'react';
 
 import { CodeBlock } from '../CodeBlock';
 import { JSON_DISPLAY_LIMIT } from './types';
@@ -22,32 +23,26 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
     const playgroundFunction = usePlaygroundStore((s) => s.function);
     const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
 
-    if (!result) return null;
+    const resultJson = useMemo(() => {
+        if (!result) return '';
+        try {
+            const json = JSON.stringify(result.data, null, 2);
+            return json.length >= JSON_DISPLAY_LIMIT ? 'Result too large to display' : json;
+        } catch {
+            return String(result.data);
+        }
+    }, [result]);
 
-    let resultJson = '';
-    try {
-        resultJson = JSON.stringify(result.data, null, 2);
-    } catch {
-        resultJson = String(result.data);
-    }
-    if (resultJson.length >= JSON_DISPLAY_LIMIT) {
-        resultJson = 'Result too large to display';
-    }
+    if (!result) return null;
 
     return (
         <>
-            <Separator className="bg-border-muted" />
             <div className="flex flex-col gap-3">
+                <Separator className="bg-border-muted" />
                 <p className="text-text-primary text-body-small-semi">Results</p>
 
                 <Alert variant={result.state === 'waiting' || result.state === 'running' ? 'info' : result.success ? 'success' : 'error'} className="px-3 py-2">
-                    {result.state === 'waiting' || result.state === 'running' ? (
-                        <Info className="size-4" />
-                    ) : result.success ? (
-                        <CheckCircle2 className="size-4" />
-                    ) : (
-                        <XCircle className="size-4" />
-                    )}
+                    {result.state === 'waiting' || result.state === 'running' ? <Info /> : result.success ? <CheckCircle2 /> : <XCircle />}
                     <AlertDescription className="text-body-small-regular">
                         {result.state === 'invalid_input'
                             ? 'Invalid input (see details below)'

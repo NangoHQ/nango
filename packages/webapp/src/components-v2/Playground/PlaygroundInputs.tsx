@@ -3,9 +3,9 @@ import { Braces, ExternalLink, Info } from 'lucide-react';
 import { CodeBlock } from '../CodeBlock';
 import { JSON_DISPLAY_LIMIT } from './types';
 import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription } from '../ui/alert';
-import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { useConnection } from '@/hooks/useConnections';
+import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
 
 import type { InputField } from './types';
@@ -38,7 +38,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                 <label className="text-text-primary text-label-large">Metadata</label>
                 <div className="min-w-0 flex flex-col gap-3">
                     <Alert variant="info" className="px-3 py-2" actionsBelow>
-                        <Info className="size-4" />
+                        <Info />
                         <AlertDescription className="text-body-small-regular">
                             Sync inputs are read from the connection metadata, edited via the Nango API.
                         </AlertDescription>
@@ -78,9 +78,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                             {field.name}
                                             {field.required && <span className="text-feedback-error-fg text-body-medium-medium">*</span>}
                                         </span>
-                                        <Badge variant="gray" size="xs" className="capitalize text-system-label-small">
-                                            {field.type}
-                                        </Badge>
+                                        <CatalogBadge variant="light">{field.type}</CatalogBadge>
                                     </div>
                                     {isObjectValue ? (
                                         <CodeBlock
@@ -123,9 +121,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                 {field.name}
                                 {field.required && <span className="text-feedback-error-fg text-body-medium-medium">*</span>}
                             </span>
-                            <Badge variant="gray" size="xs" className="capitalize font-mono shrink-0">
-                                {field.type}
-                            </Badge>
+                            <CatalogBadge variant="light">{field.type}</CatalogBadge>
                         </div>
                         {field.description && <p className="text-text-tertiary text-body-small-regular">{field.description}</p>}
                         <Input

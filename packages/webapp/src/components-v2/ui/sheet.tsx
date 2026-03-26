@@ -84,7 +84,7 @@ function SheetContent({
                 data-slot="sheet-content"
                 style={insetStyle}
                 className={cn(
-                    'bg-white data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-70 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 dark:bg-neutral-950',
+                    'bg-bg-elevated data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-70 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500',
                     side === 'right' &&
                         (insetStyle
                             ? 'data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right min-h-0 w-3/4 border-l sm:max-w-sm'
