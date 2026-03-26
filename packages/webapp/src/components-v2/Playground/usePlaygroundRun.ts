@@ -9,6 +9,33 @@ import type { InputField } from './types';
 import type { SyncResponse } from '@/types';
 import type { GetOperation, SearchOperations } from '@nangohq/types';
 
+function validateConstraints(field: InputField, value: unknown): string | null {
+    if (field.enum !== undefined) {
+        if (!field.enum.includes(value)) {
+            return `Must be one of: ${field.enum.map(String).join(', ')}`;
+        }
+        return null;
+    }
+    if (field.type === 'string' && typeof value === 'string') {
+        if (field.minLength != null && value.length < field.minLength) {
+            return `Must be at least ${field.minLength} character${field.minLength === 1 ? '' : 's'}`;
+        }
+        if (field.maxLength != null && value.length > field.maxLength) {
+            return `Must be at most ${field.maxLength} character${field.maxLength === 1 ? '' : 's'}`;
+        }
+        if (field.pattern != null && !new RegExp(field.pattern).test(value)) {
+            return `Must match pattern: ${field.pattern}`;
+        }
+    }
+    if ((field.type === 'number' || field.type === 'integer') && typeof value === 'number') {
+        if (field.minimum != null && value < field.minimum) return `Must be ≥ ${field.minimum}`;
+        if (field.maximum != null && value > field.maximum) return `Must be ≤ ${field.maximum}`;
+        if (field.exclusiveMinimum != null && value <= field.exclusiveMinimum) return `Must be > ${field.exclusiveMinimum}`;
+        if (field.exclusiveMaximum != null && value >= field.exclusiveMaximum) return `Must be < ${field.exclusiveMaximum}`;
+    }
+    return null;
+}
+
 export function usePlaygroundRun(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
     const baseUrl = useStore((s) => s.baseUrl);
@@ -56,44 +83,54 @@ export function usePlaygroundRun(inputFields: InputField[]) {
                         continue;
                     }
 
+                    let parsed: unknown;
                     try {
                         switch (field.type) {
                             case 'number': {
                                 const n = Number(trimmed);
                                 if (!Number.isFinite(n)) throw new Error('Expected a number');
-                                parsedInput[field.name] = n;
+                                parsed = n;
                                 break;
                             }
                             case 'integer': {
                                 const n = Number(trimmed);
                                 if (!Number.isFinite(n) || !Number.isInteger(n)) throw new Error('Expected an integer');
-                                parsedInput[field.name] = n;
+                                parsed = n;
                                 break;
                             }
                             case 'boolean': {
                                 const v = trimmed.toLowerCase();
                                 if (v !== 'true' && v !== 'false') throw new Error('Expected true or false');
-                                parsedInput[field.name] = v === 'true';
+                                parsed = v === 'true';
                                 break;
                             }
                             case 'object': {
-                                const parsed = JSON.parse(trimmed);
-                                if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Expected a JSON object');
-                                parsedInput[field.name] = parsed;
+                                const p = JSON.parse(trimmed);
+                                if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('Expected a JSON object');
+                                parsed = p;
                                 break;
                             }
                             case 'array': {
-                                const parsed = JSON.parse(trimmed);
-                                if (!Array.isArray(parsed)) throw new Error('Expected a JSON array');
-                                parsedInput[field.name] = parsed;
+                                const p = JSON.parse(trimmed);
+                                if (!Array.isArray(p)) throw new Error('Expected a JSON array');
+                                parsed = p;
                                 break;
                             }
                             default:
-                                parsedInput[field.name] = raw;
+                                parsed = raw;
                         }
                     } catch (err) {
                         errors[field.name] = err instanceof Error ? err.message : 'Invalid value';
+                        continue;
                     }
+
+                    const constraintError = validateConstraints(field, parsed);
+                    if (constraintError) {
+                        errors[field.name] = constraintError;
+                        continue;
+                    }
+
+                    parsedInput[field.name] = parsed;
                 }
 
                 if (Object.keys(errors).length > 0) {

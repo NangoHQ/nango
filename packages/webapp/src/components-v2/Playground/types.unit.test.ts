@@ -117,4 +117,63 @@ describe('getInputFields', () => {
         } as any;
         expect(getInputFields(schema)[0]?.required).toBe(false);
     });
+
+    describe('scalar constraints', () => {
+        it('extracts string constraints', () => {
+            const schema: JSONSchema7 = {
+                properties: {
+                    token: { type: 'string', minLength: 3, maxLength: 50, pattern: '^[a-z]+$' }
+                }
+            };
+            const field = getInputFields(schema)[0];
+            expect(field?.minLength).toBe(3);
+            expect(field?.maxLength).toBe(50);
+            expect(field?.pattern).toBe('^[a-z]+$');
+        });
+
+        it('extracts number constraints', () => {
+            const schema: JSONSchema7 = {
+                properties: {
+                    count: { type: 'number', minimum: 0, maximum: 100 }
+                }
+            };
+            const field = getInputFields(schema)[0];
+            expect(field?.minimum).toBe(0);
+            expect(field?.maximum).toBe(100);
+        });
+
+        it('extracts exclusiveMinimum and exclusiveMaximum', () => {
+            const schema: JSONSchema7 = {
+                properties: {
+                    ratio: { type: 'number', exclusiveMinimum: 0, exclusiveMaximum: 1 }
+                }
+            };
+            const field = getInputFields(schema)[0];
+            expect(field?.exclusiveMinimum).toBe(0);
+            expect(field?.exclusiveMaximum).toBe(1);
+        });
+
+        it('extracts enum', () => {
+            const schema: JSONSchema7 = {
+                properties: {
+                    status: { type: 'string', enum: ['active', 'inactive'] }
+                }
+            };
+            const field = getInputFields(schema)[0];
+            expect(field?.enum).toEqual(['active', 'inactive']);
+        });
+
+        it('does not set constraint keys when absent', () => {
+            const schema: JSONSchema7 = {
+                properties: { name: { type: 'string' } }
+            };
+            const field = getInputFields(schema)[0];
+            expect('minLength' in field).toBe(false);
+            expect('maxLength' in field).toBe(false);
+            expect('pattern' in field).toBe(false);
+            expect('minimum' in field).toBe(false);
+            expect('maximum' in field).toBe(false);
+            expect('enum' in field).toBe(false);
+        });
+    });
 });

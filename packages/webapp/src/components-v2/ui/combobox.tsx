@@ -119,7 +119,7 @@ export function Combobox<T extends string = string>(props: ComboboxProps<T>) {
                 setOpen(false);
             }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         [props]
     );
 
