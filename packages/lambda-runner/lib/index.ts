@@ -9,7 +9,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { lambdaInvocationSchema } from './schemas.js';
 
-import type { LambdaInvocation, ReadinessCheckRequest, TaskRequest } from './schemas.js';
+import type { FunctionExecutionRequest, LambdaInvocation, ReadinessCheckRequest } from './schemas.js';
 import type { Lock, Locking } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 import type { Context } from 'aws-lambda';
@@ -56,7 +56,7 @@ function isReadinessCheckRequest(request: LambdaInvocation): request is Readines
     return 'type' in request && request.type === 'readiness_check';
 }
 
-async function getCode(request: TaskRequest): Promise<string> {
+async function getCode(request: FunctionExecutionRequest): Promise<string> {
     if ('code' in request && request.code) {
         return request.code;
     }
@@ -74,7 +74,7 @@ async function getCode(request: TaskRequest): Promise<string> {
     return '';
 }
 
-async function deleteCodeParams(request: TaskRequest): Promise<void> {
+async function deleteCodeParams(request: FunctionExecutionRequest): Promise<void> {
     try {
         if ('codeParamsRef' in request && request.codeParamsRef) {
             await s3.send(
@@ -90,7 +90,7 @@ async function deleteCodeParams(request: TaskRequest): Promise<void> {
     }
 }
 
-async function getCodeParams(request: TaskRequest): Promise<object> {
+async function getCodeParams(request: FunctionExecutionRequest): Promise<object> {
     if ('codeParams' in request && request.codeParams) {
         return request.codeParams;
     }
@@ -116,7 +116,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         logger.info('Readiness check invocation received');
         return { ok: true };
     }
-    const request: TaskRequest = parsedRequest;
+    const request: FunctionExecutionRequest = parsedRequest;
 
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
     const locking = await getLocking('customer');
