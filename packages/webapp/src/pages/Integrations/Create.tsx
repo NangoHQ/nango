@@ -7,13 +7,14 @@ import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Badge } from '@/components-v2/ui/badge';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { buttonVariants } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { usePostIntegration } from '@/hooks/useIntegration';
 import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { cn } from '@/utils/utils';
 
 import type { PostIntegration } from '@nangohq/types';
 
@@ -92,10 +93,10 @@ export const CreateIntegration = () => {
                                 ))}
                             </div>
                         </div>
-                        <ButtonLink to={provider.docs} variant="secondary">
+                        <a href={provider.docs} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'secondary' }))}>
                             <BookOpen />
                             Full setup guide
-                        </ButtonLink>
+                        </a>
                     </div>
                 </CardHeader>
                 <CardContent>
