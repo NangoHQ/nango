@@ -77,7 +77,7 @@ export function getAxiosConfiguration({
     // TODO: change default to false after removing the metric below
     const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
     axiosConfig.beforeRedirect = (options: Record<string, any>) => {
-        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName, forwardHeadersOnRedirect: String(shouldForward) });
+        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName });
         if (shouldForward) {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
