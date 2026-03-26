@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useMeta } from '../hooks/useMeta';
-import { permissions, usePermissions } from '../hooks/usePermissions';
+import { usePermissions } from '../hooks/usePermissions';
 import { useUser } from '../hooks/useUser';
 import PageEnvironmentUnauthorized from '../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../pages/PageNotFound';

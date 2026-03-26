@@ -1,13 +1,15 @@
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 

@@ -3,6 +3,8 @@ import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { useActivateKey, useEnvironment, usePatchEnvironment, useRevertKey, useRotateKey } from '../../../hooks/useEnvironment';
@@ -15,7 +17,7 @@ import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 
 export const BackendSettings: React.FC = () => {

@@ -6,6 +6,8 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { permissions } from '@nangohq/authz';
+
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Avatar } from '@/components-v2/Avatar';
@@ -22,7 +24,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useConnections } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';

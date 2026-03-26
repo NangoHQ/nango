@@ -2,6 +2,8 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
@@ -11,7 +13,7 @@ import { Label } from '@/components-v2/ui/label';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';

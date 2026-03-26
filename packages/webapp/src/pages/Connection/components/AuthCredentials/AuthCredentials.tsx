@@ -1,3 +1,5 @@
+import { permissions } from '@nangohq/authz';
+
 import { ApiKeyCredentialsComponent } from './ApiKeyCredentials';
 import { AppCredentialsComponent } from './AppCredentials';
 import { AppStoreCredentialsComponent } from './AppStoreCredentials';
@@ -12,7 +14,7 @@ import { SignatureCredentialsComponent } from './SignatureCredentials';
 import { TbaCredentialsComponent } from './TbaCredentials';
 import { TwoStepCredentialsComponent } from './TwoStepCredentials';
 import { useEnvironment } from '@/hooks/useEnvironment';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 
 import type { ApiConnectionFull, BasicApiCredentials } from '@nangohq/types';

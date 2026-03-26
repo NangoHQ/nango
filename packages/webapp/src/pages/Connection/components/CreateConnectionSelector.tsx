@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
+import { permissions } from '@nangohq/authz';
 import Nango from '@nangohq/frontend';
 
 import { IntegrationDropdown } from './IntegrationDropdown';
@@ -23,7 +24,7 @@ import { formatDateToPreciseUSFormat } from '../../../utils/utils';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';

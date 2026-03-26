@@ -2,10 +2,12 @@ import { ChevronsUpDown, CreditCard, LogOut, Sparkle, UserRoundCog, Users } from
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';

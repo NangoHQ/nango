@@ -1,5 +1,7 @@
 import { ExternalLink } from 'lucide-react';
 
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent.js';
 import SettingsGroup from './components/SettingsGroup.js';
 import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
@@ -8,7 +10,7 @@ import { useStore } from '../../../store.js';
 import { EditableInput } from '@/components-v2/EditableInput.js';
 import { ButtonLink } from '@/components-v2/ui/button.js';
 import { Label } from '@/components-v2/ui/label.js';
-import { permissions, usePermissions } from '@/hooks/usePermissions.js';
+import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
 

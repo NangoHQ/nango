@@ -2,6 +2,8 @@ import { useForm } from '@tanstack/react-form';
 import { Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { ConnectUIPreview } from './components/ConnectUIPreview';
 import SettingsContent from '../components/SettingsContent';
 import { ColorInput } from '@/components-v2/ColorInput';
@@ -14,7 +16,7 @@ import { Switch } from '@/components-v2/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
 import { useEnvironment } from '@/hooks/useEnvironment';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';

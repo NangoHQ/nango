@@ -1,11 +1,13 @@
 import { IconTrash } from '@tabler/icons-react';
 
+import { permissions } from '@nangohq/authz';
+
 import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useEnvironment } from '@/hooks/useEnvironment';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface DeleteButtonProps {
     environmentName: string;

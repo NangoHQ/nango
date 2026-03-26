@@ -1,6 +1,8 @@
 import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
@@ -12,7 +14,7 @@ import { KeyValueInput } from '@/components-v2/KeyValueInput';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);

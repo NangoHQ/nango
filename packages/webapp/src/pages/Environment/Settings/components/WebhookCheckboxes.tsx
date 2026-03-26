@@ -1,11 +1,13 @@
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Switch } from '@/components-v2/ui/switch';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiWebhooks } from '@nangohq/types';
 

@@ -1,6 +1,8 @@
 import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import Spinner from '../../../components/ui/Spinner';
@@ -13,7 +15,7 @@ import { SecretInput } from '@/components-v2/SecretInput';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
 import { Switch } from '@/components-v2/ui/switch';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();

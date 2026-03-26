@@ -2,6 +2,8 @@ import { Check, ChevronsUpDown, Lock } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { StyledLink } from '../StyledLink.js';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { ConditionalTooltip } from '../ConditionalTooltip.js';
@@ -12,7 +14,7 @@ import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
-import { permissions, usePermissions } from '@/hooks/usePermissions.js';
+import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 
 export const EnvironmentDropdown: React.FC = () => {

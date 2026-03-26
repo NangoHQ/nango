@@ -2,6 +2,8 @@ import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { DeleteButton } from './components/DeleteButton';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
@@ -11,7 +13,7 @@ import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';
 

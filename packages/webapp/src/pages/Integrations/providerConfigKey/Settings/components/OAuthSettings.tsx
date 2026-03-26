@@ -1,6 +1,8 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { ScopesInput } from '@/components-v2/ScopesInput';
@@ -9,7 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Label } from '@/components-v2/ui/label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
 import { validateNotEmpty } from '@/pages/Integrations/utils';

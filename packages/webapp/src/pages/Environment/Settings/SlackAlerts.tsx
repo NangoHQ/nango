@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 import { useToast } from '../../../hooks/useToast';
@@ -10,7 +12,7 @@ import { SlackIcon } from '@/assets/SlackIcon';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useEnvironment, usePatchEnvironment } from '@/hooks/useEnvironment';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 
 export const SlackAlertsSettings: React.FC = () => {

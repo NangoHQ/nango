@@ -1,5 +1,7 @@
 import { Loader2 } from 'lucide-react';
 
+import { permissions } from '@nangohq/authz';
+
 import { useEnvironment } from '../../../hooks/useEnvironment.js';
 import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
 import { useToast } from '../../../hooks/useToast.js';
@@ -8,7 +10,7 @@ import { APIError } from '../../../utils/api.js';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { permissions, usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiError, ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 

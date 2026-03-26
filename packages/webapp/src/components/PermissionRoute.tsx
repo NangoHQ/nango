@@ -4,7 +4,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 
-import type { Permission } from '../hooks/usePermissions';
+import type { Permission } from '@nangohq/types';
 
 export const PermissionRoute: React.FC<Permission> = (permission) => {
     const { can } = usePermissions();
