@@ -179,7 +179,7 @@ describe('SnsSqs transport', () => {
 
         mockSqsSend
             .mockResolvedValueOnce({
-                Messages: [{ Body: snsBody, ReceiptHandle: 'rh-1' }]
+                Messages: [{ Body: snsBody, ReceiptHandle: 'rh-1', MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } } }]
             })
             .mockResolvedValueOnce(undefined)
             .mockImplementation((_cmd, opts?: { abortSignal?: AbortSignal }) => {
@@ -210,7 +210,7 @@ describe('SnsSqs transport', () => {
 
         mockSqsSend
             .mockResolvedValueOnce({
-                Messages: [{ Body: payloadB64, ReceiptHandle: 'rh-raw' }]
+                Messages: [{ Body: payloadB64, ReceiptHandle: 'rh-raw', MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } } }]
             })
             .mockResolvedValueOnce(undefined)
             .mockImplementation((_cmd, opts?: { abortSignal?: AbortSignal }) => {
@@ -222,6 +222,64 @@ describe('SnsSqs transport', () => {
         t.subscribe({ consumerGroup: 'billing', subject: 'usage', callback });
 
         await vi.waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
+        await t.disconnect();
+    });
+
+    it('does not delete message when callback errors', async () => {
+        const t = createTransport();
+        await t.connect();
+        const eventRecord = usageEvent();
+        const payloadB64 = serde.serialize(eventRecord).unwrap().toString('base64');
+        const callback = vi.fn().mockRejectedValue(new Error('boom'));
+
+        mockSqsSend
+            .mockResolvedValueOnce({
+                Messages: [{ Body: payloadB64, ReceiptHandle: 'rh-err', MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } } }]
+            })
+            .mockImplementation((_cmd, opts?: { abortSignal?: AbortSignal }) => {
+                return new Promise((_, reject) => {
+                    opts?.abortSignal?.addEventListener('abort', () => reject(abortError()));
+                });
+            });
+
+        t.subscribe({ consumerGroup: 'billing', subject: 'usage', callback });
+        await vi.waitFor(() => expect(callback).toHaveBeenCalledTimes(1));
+        const deleteCalls = mockSqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        expect(deleteCalls).toHaveLength(0);
+        expect(vi.mocked(report)).toHaveBeenCalledWith(
+            expect.objectContaining({ message: expect.stringContaining('subscriber callback error') as string }),
+            expect.anything()
+        );
+        await t.disconnect();
+    });
+
+    it('does not delete message when subject attribute mismatches', async () => {
+        const t = createTransport();
+        await t.connect();
+        const eventRecord = usageEvent();
+        const payloadB64 = serde.serialize(eventRecord).unwrap().toString('base64');
+        const callback = vi.fn();
+
+        mockSqsSend
+            .mockResolvedValueOnce({
+                Messages: [{ Body: payloadB64, ReceiptHandle: 'rh-bad-subject', MessageAttributes: { subject: { DataType: 'String', StringValue: 'team' } } }]
+            })
+            .mockImplementation((_cmd, opts?: { abortSignal?: AbortSignal }) => {
+                return new Promise((_, reject) => {
+                    opts?.abortSignal?.addEventListener('abort', () => reject(abortError()));
+                });
+            });
+
+        t.subscribe({ consumerGroup: 'billing', subject: 'usage', callback });
+        await vi.waitFor(() =>
+            expect(vi.mocked(report)).toHaveBeenCalledWith(
+                expect.objectContaining({ message: expect.stringContaining('subject does not match') as string }),
+                expect.objectContaining({ expectedSubject: 'usage', messageSubject: 'team' })
+            )
+        );
+        expect(callback).not.toHaveBeenCalled();
+        const deleteCalls = mockSqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        expect(deleteCalls).toHaveLength(0);
         await t.disconnect();
     });
 

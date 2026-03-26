@@ -399,9 +399,9 @@ export const ENVS = z.object({
                 queueUrls: z.record(z.string(), z.string()).optional().default({})
             })
         ),
-    NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().optional().default(10),
+    NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS: z.coerce.number().optional().default(20),
-    NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().optional().default(60),
+    NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().optional().default(30),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),

@@ -29,6 +29,27 @@ function unwrapSqsBody(body: string): string {
     return body;
 }
 
+function getSubjectMessageAttribute(body: string, messageAttributes?: unknown): string | undefined {
+    const attrs = typeof messageAttributes === 'object' && messageAttributes != null ? (messageAttributes as Record<string, unknown>) : undefined;
+    const subjectAttr = attrs?.['subject'] as { StringValue?: string | undefined } | undefined;
+    const fromSqsAttr = subjectAttr?.StringValue;
+    if (typeof fromSqsAttr === 'string' && fromSqsAttr.length > 0) {
+        return fromSqsAttr;
+    }
+
+    try {
+        const parsed = JSON.parse(body) as { MessageAttributes?: { subject?: { Value?: string } } };
+        const fromEnvelope = parsed?.MessageAttributes?.['subject']?.Value;
+        if (typeof fromEnvelope === 'string' && fromEnvelope.length > 0) {
+            return fromEnvelope;
+        }
+    } catch {
+        // non-JSON payload has no SNS envelope attributes
+    }
+
+    return undefined;
+}
+
 export interface SnsSqsProps {
     /** Maps event subject (`user`, `team`, `usage`) to SNS topic ARN. Every published subject must have an entry. */
     topicArns?: Record<string, string>;
@@ -153,7 +174,8 @@ export class SnsSqs implements Transport {
                         QueueUrl: queueUrl,
                         MaxNumberOfMessages: envs.NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES,
                         WaitTimeSeconds: envs.NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS,
-                        VisibilityTimeout: envs.NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS
+                        VisibilityTimeout: envs.NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS,
+                        MessageAttributeNames: ['All']
                     }),
                     { abortSignal: signal }
                 );
@@ -165,28 +187,13 @@ export class SnsSqs implements Transport {
                     if (!msg.Body || !msg.ReceiptHandle) {
                         continue;
                     }
-                    const rawPayload = unwrapSqsBody(msg.Body);
-                    let buf: Buffer;
-                    try {
-                        buf = Buffer.from(rawPayload, 'base64');
-                    } catch (err) {
-                        report(new Error('SNS+SQS: invalid base64 message body'), { subject, error: err });
-                        continue;
-                    }
-                    const decoded = serde.deserialize<Extract<Event, { subject: TSubject }>>(buf);
-                    if (decoded.isErr()) {
-                        report(new Error('SNS+SQS: failed to deserialize message'), { subject, error: decoded.error });
-                    } else {
+                    const action = await this.processMessage(msg.Body, msg.MessageAttributes, subject, callback);
+                    if (action === 'delete') {
                         try {
-                            await Promise.resolve(callback(decoded.value));
+                            await this.sqs.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: msg.ReceiptHandle }), { abortSignal: signal });
                         } catch (err) {
-                            report(new Error('SNS+SQS: subscriber callback error'), { subject, error: err });
+                            report(new Error('SNS+SQS: delete message error'), { subject, error: err });
                         }
-                    }
-                    try {
-                        await this.sqs.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: msg.ReceiptHandle }), { abortSignal: signal });
-                    } catch (err) {
-                        report(new Error('SNS+SQS: delete message error'), { subject, error: err });
                     }
                 }
             } catch (err) {
@@ -196,6 +203,43 @@ export class SnsSqs implements Transport {
                 report(new Error('SNS+SQS: receive message error'), { subject, error: err });
                 await new Promise((r) => setTimeout(r, 1000));
             }
+        }
+    }
+
+    private async processMessage<TSubject extends Event['subject']>(
+        body: string,
+        messageAttributes: unknown,
+        expectedSubject: TSubject,
+        callback: SubscribeProps<TSubject>['callback']
+    ): Promise<'delete' | 'retry'> {
+        const messageSubject = getSubjectMessageAttribute(body, messageAttributes);
+        if (messageSubject !== expectedSubject) {
+            report(new Error('SNS+SQS: message subject does not match subscriber subject'), {
+                expectedSubject,
+                messageSubject
+            });
+            return 'retry';
+        }
+
+        const rawPayload = unwrapSqsBody(body);
+        let buf: Buffer;
+        try {
+            buf = Buffer.from(rawPayload, 'base64');
+        } catch (err) {
+            report(new Error('SNS+SQS: invalid base64 message body'), { subject: expectedSubject, error: err });
+            return 'retry';
+        }
+        const decoded = serde.deserialize<Extract<Event, { subject: TSubject }>>(buf);
+        if (decoded.isErr()) {
+            report(new Error('SNS+SQS: failed to deserialize message'), { subject: expectedSubject, error: decoded.error });
+            return 'retry';
+        }
+        try {
+            await Promise.resolve(callback(decoded.value));
+            return 'delete';
+        } catch (err) {
+            report(new Error('SNS+SQS: subscriber callback error'), { subject: expectedSubject, error: err });
+            return 'retry';
         }
     }
 }
