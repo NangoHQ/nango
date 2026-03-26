@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { connectionService, getSyncsByConnectionIds } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
 import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -11,6 +11,7 @@ import { getOrchestrator } from '../../../utils/utils.js';
 import type { GetConnections } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
+const logger = getLogger('connections.getConnections');
 
 const queryStringValidation = z
     .object({
@@ -54,13 +55,13 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
     if (syncs.length > 0) {
         const scheduleResult = await orchestrator.searchSchedules(syncs.map((s) => ({ syncId: s.id, environmentId: environment.id })));
         if (scheduleResult.isErr()) {
-            res.status(500).send({ error: { code: 'server_error' } });
-            return;
-        }
-        for (const sync of syncs) {
-            if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
-                const existing = pausedSyncsByConnection.get(sync.nango_connection_id) ?? [];
-                pausedSyncsByConnection.set(sync.nango_connection_id, [...existing, sync.name]);
+            logger.error(`Failed to retrieve sync states: ${scheduleResult.error}`);
+        } else {
+            for (const sync of syncs) {
+                if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
+                    const existing = pausedSyncsByConnection.get(sync.nango_connection_id) ?? [];
+                    pausedSyncsByConnection.set(sync.nango_connection_id, [...existing, sync.name]);
+                }
             }
         }
     }
