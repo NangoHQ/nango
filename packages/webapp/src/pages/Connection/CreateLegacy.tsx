@@ -68,7 +68,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
     const providerConfigKey = useSearchParam('providerConfigKey');
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
 
     useEffect(() => {
         setLoaded(false);

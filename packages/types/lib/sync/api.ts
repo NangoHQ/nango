@@ -19,7 +19,7 @@ export type PostPublicTrigger = Endpoint<{
         'connection-id'?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'missing_provider_config_key'>;
+    Error: ApiError<'missing_provider_config_key' | 'unknown_provider_config' | 'unknown_connection' | 'no_syncs_found'>;
 }>;
 
 export type PostSyncVariant = Endpoint<{
@@ -77,6 +77,7 @@ export type PostPublicSyncPause = Endpoint<{
         connection_id?: string | undefined;
     };
     Success: { success: boolean };
+    Error: ApiError<'no_syncs_found' | 'unknown_connection' | 'unknown_provider_config'>;
 }>;
 
 export type PostPublicSyncStart = Endpoint<{
@@ -88,6 +89,7 @@ export type PostPublicSyncStart = Endpoint<{
         connection_id?: string | undefined;
     };
     Success: { success: boolean };
+    Error: ApiError<'no_syncs_found' | 'unknown_connection' | 'unknown_provider_config'>;
 }>;
 
 export type GetPublicSyncStatus = Endpoint<{

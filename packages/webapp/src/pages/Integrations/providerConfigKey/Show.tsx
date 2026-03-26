@@ -22,7 +22,8 @@ export const ShowIntegration: React.FC = () => {
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
-    const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const environmentAndAccount = environmentData?.environmentAndAccount;
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 
@@ -83,12 +84,16 @@ export const ShowIntegration: React.FC = () => {
                             </Link>
                         </TabsTrigger>
                         <TabsTrigger value="logs" disabled asChild>
+                            <Link to={`/${env}/logs?integrations=${integration.integration.unique_key}`} className="w-fit inline-flex items-center gap-1.5">
+                                Logs <ExternalLink className="size-4" />
+                            </Link>
+                        </TabsTrigger>
+                        <TabsTrigger value="connections" disabled asChild>
                             <Link
-                                to={`/${env}/logs?integrations=${integration.integration.unique_key}`}
-                                target="_blank"
+                                to={`/${env}/connections?integrations=${integration.integration.unique_key}`}
                                 className="w-fit inline-flex items-center gap-1.5"
                             >
-                                Logs <ExternalLink className="size-4" />
+                                Connections <ExternalLink className="size-4" />
                             </Link>
                         </TabsTrigger>
                     </TabsList>

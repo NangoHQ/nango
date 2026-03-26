@@ -66,6 +66,13 @@ export abstract class NangoSyncBase<
         model: TModelName
     ): MaybePromise<Map<TKey, TModel>>;
 
+    public abstract listRecords<TModel extends RawModel = z.infer<TModels[TModelName]>>(
+        model: TModelName,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<TModel>;
+
     /**
      * @deprecated please use trackDeletesStart and trackDeletesEnd
      */

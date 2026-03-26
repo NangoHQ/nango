@@ -8,21 +8,25 @@ import { toNangoError } from './utils/errors.js';
 import type { CheckpointRange, FunctionRuntime, NangoProps, RunnerOutputError, TelemetryBag } from '@nangohq/types';
 import type { JsonValue } from 'type-fest';
 
-export async function handleSuccess({
-    taskId,
-    nangoProps,
-    output,
-    telemetryBag,
-    functionRuntime,
-    checkpoints
-}: {
+interface Payload {
     taskId: string;
     nangoProps: NangoProps;
-    output: JsonValue;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
     checkpoints: CheckpointRange;
-}): Promise<void> {
+}
+type SuccessPayload = Payload & { output: JsonValue };
+type ErrorPayload = Payload & { error: RunnerOutputError };
+
+export async function handle(payload: SuccessPayload | ErrorPayload): Promise<void> {
+    if ('error' in payload) {
+        await handleError(payload);
+    } else {
+        await handleSuccess(payload);
+    }
+}
+
+async function handleSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints }: SuccessPayload): Promise<void> {
     switch (nangoProps.scriptType) {
         case 'action':
             await handleActionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
@@ -39,21 +43,7 @@ export async function handleSuccess({
     }
 }
 
-export async function handleError({
-    taskId,
-    nangoProps,
-    error,
-    telemetryBag,
-    functionRuntime,
-    checkpoints
-}: {
-    taskId: string;
-    nangoProps: NangoProps;
-    error: RunnerOutputError;
-    telemetryBag: TelemetryBag;
-    functionRuntime: FunctionRuntime;
-    checkpoints: CheckpointRange;
-}): Promise<void> {
+async function handleError({ taskId, nangoProps, error, telemetryBag, functionRuntime, checkpoints }: ErrorPayload): Promise<void> {
     // If the function was aborted, we do nothing as the function's state has already been updated
     if (error.type === 'script_aborted') {
         logger.info(`Script was aborted. Ignoring output.`, {

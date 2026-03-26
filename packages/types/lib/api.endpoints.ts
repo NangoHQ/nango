@@ -78,7 +78,7 @@ import type {
     PostSharedCredentialsProvider
 } from './sharedCredentials/api.js';
 import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
-import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api.js';
+import type { DeleteTeamUser, GetTeam, PatchTeamUser, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
 
@@ -142,6 +142,7 @@ export type PrivateApiEndpoints =
     | PostInvite
     | DeleteInvite
     | DeleteTeamUser
+    | PatchTeamUser
     | PostInsights
     | PostForgotPassword
     | PutResetPassword

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { envs } from '../env.js';
 import { NoopEventListener } from '../events/noop.listener.js';
 import { SqsEventListener } from '../events/sqs.listener.js';
-import { handleError } from '../execution/operations/handler.js';
+import { handle } from '../execution/operations/handler.js';
 import { nangoPropsSchema } from '../schemas/nango-props.js';
 
 import type { EventListener, QueueMessage } from '../events/listener.js';
@@ -56,7 +56,7 @@ export class LambdaInvocationsProcessor {
 
         if (parsedMessage.responseContext.functionError === 'Unhandled') {
             const errorMessage = parsedMessage.responsePayload.errorMessage;
-            await handleError({
+            await handle({
                 taskId: parsedMessage.requestPayload.taskId,
                 nangoProps: parsedMessage.requestPayload.nangoProps as unknown as NangoProps,
                 error: {

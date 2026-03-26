@@ -38,7 +38,7 @@ import type {
     DBTeam,
     FunctionRuntime,
     NangoProps,
-    RuntimeContext,
+    RoutingContext,
     SdkLogger,
     TelemetryBag
 } from '@nangohq/types';
@@ -169,14 +169,15 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
-        const runtimeContext: RuntimeContext = {
-            plan: plan
+        const routingContext: RoutingContext = {
+            plan: plan,
+            features: []
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx,
             input: task.input
         });
@@ -314,7 +315,8 @@ export async function handleWebhookSuccess({
                         now: nangoProps.startedAt,
                         success: true,
                         responseResults: syncJob.result?.[model] || { added: 0, updated: 0, deleted: 0 },
-                        operation: 'WEBHOOK'
+                        operation: 'WEBHOOK',
+                        checkpoints
                     });
 
                     if (res.isErr()) {
@@ -493,7 +495,8 @@ async function onFailure({
                                 description: error.message
                             },
                             now: new Date(),
-                            operation: 'WEBHOOK'
+                            operation: 'WEBHOOK',
+                            checkpoints
                         });
 
                         if (res.isErr()) {

@@ -3,7 +3,7 @@ import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
-import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
+import { detectFeatures, getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
 import {
     DuplicateEndpointDefinitionError,
@@ -24,7 +24,7 @@ import type * as z from 'zod';
 
 const allowed = ['action', 'sync', 'onEvent'];
 
-export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
+export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     printDebug('Rebuilding parsed from js files', debug);
@@ -90,7 +90,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
                 break;
             }
             case 'action': {
-                const action = parseAction({ params: script, integrationIdClean, basename, basenameClean });
+                const action = parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
                 integration.actions.push(action);
 
                 const models = buildNangoModelsForAction(script, integrationIdClean, basenameClean);
@@ -147,20 +147,22 @@ export function parseSync({
     if (interval instanceof Error) {
         return Err(new InvalidIntervalDefinitionError(filePath, ['createSync', 'frequency']));
     }
-    if (Object.keys(params.models).length !== params.endpoints.length) {
+    if (params.endpoints && Object.keys(params.models).length !== params.endpoints.length) {
         return Err(new EndpointMismatchDefinitionError(filePath, ['createSync', 'endpoints']));
     }
     if (params.syncType === 'incremental' && params.trackDeletes) {
         return Err(new TrackDeletesDefinitionError(filePath, ['createSync', 'trackDeletes']));
     }
 
-    const seen = new Set();
-    for (const endpoint of params.endpoints) {
-        const key = `${endpoint.method} ${endpoint.path}`;
-        if (seen.has(key)) {
-            return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+    if (params.endpoints) {
+        const seen = new Set();
+        for (const endpoint of params.endpoints) {
+            const key = `${endpoint.method} ${endpoint.path}`;
+            if (seen.has(key)) {
+                return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+            }
+            seen.add(key);
         }
-        seen.add(key);
     }
 
     for (const modelName of Object.keys(params.models)) {
@@ -178,11 +180,13 @@ export function parseSync({
     const outputNames = Object.keys(params.models);
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
+    const features = detectFeatures({ entryPoint: filePath });
+
     const sync: ParsedNangoSync = {
         type: 'sync',
         description: params.description,
         auto_start: params.autoStart === true,
-        endpoints: params.endpoints,
+        endpoints: params.endpoints ?? [],
         input: metadataModelName,
         name: basename,
         output: outputNames,
@@ -193,18 +197,21 @@ export function parseSync({
         usedModels: Object.keys(allZodModels),
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
-        json_schema: jsonSchema
+        json_schema: jsonSchema,
+        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
     };
 
     return Ok(sync);
 }
 
 export function parseAction({
+    filePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
+    filePath: string;
     params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
@@ -220,17 +227,20 @@ export function parseAction({
 
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
+    const features = detectFeatures({ entryPoint: filePath });
+
     return {
         type: 'action' as const,
         description: params.description,
-        endpoint: params.endpoint,
+        endpoint: params.endpoint ?? null,
         input: inputName,
         name: basename,
         output: [outputName],
         scopes: params.scopes || [],
         usedModels: [inputName, outputName],
         version: params.version || '',
-        json_schema: jsonSchema
+        json_schema: jsonSchema,
+        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
     };
 }
 

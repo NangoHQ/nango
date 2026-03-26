@@ -4,8 +4,9 @@ import React, { useRef } from 'react';
 
 import { ConnectUIPreview } from './components/ConnectUIPreview';
 import SettingsContent from '../components/SettingsContent';
-import LinkWithIcon from '@/components/LinkWithIcon';
 import { ColorInput } from '@/components-v2/ColorInput';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { StyledLink } from '@/components-v2/StyledLink';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 import { Switch } from '@/components-v2/ui/switch';
@@ -34,7 +35,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                         Primary (Light theme)
                     </label>
                     <div className="flex items-center">
-                        <div className="flex flex-col gap-1 w-40">
+                        <div className="w-full flex flex-col gap-1">
                             <ColorInput
                                 value={field.state.value}
                                 onChange={(e) => field.handleChange(e.target.value)}
@@ -42,7 +43,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                                 disabled={disabled}
                             />
                             {!field.state.meta.isValid && (
-                                <em role="alert" className="text-sm text-red-500">
+                                <em role="alert" className="text-body-small-regular text-feedback-error-fg">
                                     {field.state.meta.errors.join(', ')}
                                 </em>
                             )}
@@ -62,7 +63,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                         Primary (Dark theme)
                     </label>
                     <div className="flex items-center">
-                        <div className="flex flex-col gap-1 w-40">
+                        <div className="w-full flex flex-col gap-1">
                             <ColorInput
                                 value={field.state.value}
                                 onChange={(e) => field.handleChange(e.target.value)}
@@ -86,23 +87,19 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
     <form.Field name="showWatermark">
         {(field: any) => (
             <div className="flex gap-5 items-center">
-                <label htmlFor={field.name} className={cn('text-sm text-body-medium-medium', disabled ? 'text-text-tertiary' : '')}>
+                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-tertiary' : '')}>
                     Show &quot;Secured by Nango&quot;
                 </label>
-                <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                        <div className="flex items-center">
-                            <Switch
-                                id={field.name}
-                                name={field.name}
-                                checked={field.state.value}
-                                onCheckedChange={(checked) => field.handleChange(checked)}
-                                onBlur={field.handleBlur}
-                                disabled={disabled}
-                            />
-                        </div>
-                    </TooltipTrigger>
-                </Tooltip>
+                <div className="flex items-center">
+                    <Switch
+                        id={field.name}
+                        name={field.name}
+                        checked={field.state.value}
+                        onCheckedChange={(checked) => field.handleChange(checked)}
+                        onBlur={field.handleBlur}
+                        disabled={disabled}
+                    />
+                </div>
             </div>
         )}
     </form.Field>
@@ -112,15 +109,16 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
 export const ConnectUISettings = () => {
     const toast = useToast();
     const env = useStore((state) => state.env);
-    const environment = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const plan = environmentData?.plan;
 
     const { data: connectUISettings } = useConnectUISettings(env);
     const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);
     const connectUIPreviewRef = useRef<ConnectUIPreviewRef>(null);
 
-    const noPlanAvailable = !globalEnv.features.plan || !environment.plan;
-    const canCustomizeTheme = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : environment.plan!.can_customize_connect_ui_theme;
-    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : environment.plan!.can_disable_connect_ui_watermark;
+    const noPlanAvailable = !globalEnv.features.plan || !plan;
+    const canCustomizeTheme = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (plan?.can_customize_connect_ui_theme ?? false);
+    const canDisableWatermark = noPlanAvailable ? globalEnv.isHosted || globalEnv.isEnterprise : (plan?.can_disable_connect_ui_watermark ?? false);
 
     const form = useForm({
         defaultValues: connectUISettings?.data,
@@ -163,25 +161,25 @@ export const ConnectUISettings = () => {
                         <form.Field name="defaultTheme">
                             {(field) => (
                                 <div className="w-full flex flex-col gap-2 justify-between">
-                                    <label htmlFor={field.name} className="text-sm text-body-medium-medium flex items-center gap-1">
-                                        Default theme{' '}
-                                        <Tooltip>
-                                            <TooltipTrigger>
-                                                <Info size="14" />
-                                            </TooltipTrigger>
-                                            <TooltipContent side="right">
-                                                <p>
-                                                    You can override the theme per session from the{' '}
-                                                    <LinkWithIcon to="https://nango.dev/docs/reference/sdks/frontend#param-theme-override" type="external">
-                                                        Frontend SDK
-                                                    </LinkWithIcon>
-                                                </p>
-                                            </TooltipContent>
-                                        </Tooltip>
+                                    <label htmlFor={field.name} className="text-body-medium-medium flex items-center gap-2">
+                                        Default theme
+                                        <InfoTooltip icon={<Info />} side="right">
+                                            <p>
+                                                You can override the theme per session from the{' '}
+                                                <StyledLink
+                                                    to="https://nango.dev/docs/reference/sdks/frontend#param-theme-override"
+                                                    icon
+                                                    type="external"
+                                                    className="text-s"
+                                                >
+                                                    Frontend SDK
+                                                </StyledLink>
+                                            </p>
+                                        </InfoTooltip>
                                     </label>
                                     <div className="flex">
                                         <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
-                                            <SelectTrigger className="w-48 text-sm px-2.5 gap-2">
+                                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
                                                 <SelectValue placeholder="Default theme" />
                                             </SelectTrigger>
                                             <SelectContent>

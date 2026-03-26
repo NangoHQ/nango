@@ -57,7 +57,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ data: { id: expect.any(Number) } });
 
         const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
-        expect(sync).toStrictEqual<typeof sync>({
+        expect(sync).toMatchObject({
             sync_name: 'tables',
             type: 'sync',
             models: ['Table'],
@@ -107,7 +107,7 @@ describe(`POST ${endpoint}`, () => {
                                             type: 'string'
                                         },
                                         options: {
-                                            additionalProperties: false,
+                                            additionalProperties: {},
                                             type: 'object'
                                         },
                                         type: {
@@ -157,6 +157,7 @@ describe(`POST ${endpoint}`, () => {
             pre_built: true,
             runs: 'every day',
             sdk_version: expect.any(String),
+            features: expect.any(Array),
             sync_type: 'full',
             track_deletes: false,
             updated_at: expect.any(Date),

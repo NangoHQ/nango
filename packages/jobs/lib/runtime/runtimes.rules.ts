@@ -2,7 +2,7 @@ import { Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
-import type { DBPlan, NangoProps, Result, RuntimeContext } from '@nangohq/types';
+import type { DBPlan, NangoProps, Result, RoutingContext } from '@nangohq/types';
 
 const runtimeSelectors = {
     sync: (plan: DBPlan) => plan.sync_function_runtime,
@@ -13,17 +13,22 @@ const runtimeSelectors = {
 
 export async function getFleetId({
     nangoProps,
-    runtimeContext
+    routingContext
 }: {
     nangoProps: NangoProps;
-    runtimeContext: RuntimeContext;
+    routingContext: RoutingContext;
 }): Promise<Result<string | undefined>> {
-    if (!runtimeContext.plan) {
+    if (!routingContext.plan) {
         return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));
     }
-    const runtime = runtimeSelectors[nangoProps.scriptType](runtimeContext.plan);
+    const runtime = runtimeSelectors[nangoProps.scriptType](routingContext.plan);
     switch (runtime) {
         case 'lambda':
+            // syncs that are not checkpointed are still run on runner fleet
+            // making sure that only syncs that can be safely interrupted/resumed are run on lambda fleet
+            if (nangoProps.scriptType === 'sync' && !routingContext.features.includes('checkpoints')) {
+                return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));
+            }
             return Promise.resolve(Ok(envs.RUNNER_LAMBDA_FLEET_ID));
         default:
             return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));

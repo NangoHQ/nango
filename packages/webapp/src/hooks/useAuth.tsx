@@ -21,8 +21,11 @@ export function useSigninAPI() {
               json: PostSignin['Success'];
           }
         | {
-              status: 401 | 400;
+              status: 400;
               json: PostSignin['Errors'];
+          }
+        | {
+              status: 401;
           },
         APIError,
         { email: string; password: string }
@@ -40,10 +43,16 @@ export function useSigninAPI() {
                 };
             }
 
-            if (res.status === 401 || res.status === 400) {
+            if (res.status === 400) {
                 return {
                     status: res.status,
                     json: (await res.json()) as PostSignin['Errors']
+                };
+            }
+
+            if (res.status === 401) {
+                return {
+                    status: res.status
                 };
             }
 

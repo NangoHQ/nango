@@ -51,7 +51,7 @@ import type {
     DBTeam,
     FunctionRuntime,
     NangoProps,
-    RuntimeContext,
+    RoutingContext,
     SdkLogger,
     SyncResult,
     SyncTypeLiteral,
@@ -215,8 +215,9 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 : {}) // non-lambda runtimes do not need interrupting/resuming long-running executions
         };
 
-        const runtimeContext: RuntimeContext = {
-            plan: plan
+        const routingContext: RoutingContext = {
+            plan: plan,
+            features: syncConfig.features
         };
 
         if (task.debug) {
@@ -226,7 +227,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         const res = await startScriptFn({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx
         });
 
@@ -463,7 +464,8 @@ export async function handleSyncSuccess({
                                     updated,
                                     deleted
                                 },
-                                operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
+                                operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL,
+                                checkpoints
                             });
 
                             if (res.isErr()) {
@@ -941,7 +943,8 @@ async function onFailure({
                             ...(error.additional_properties ? { additional_properties: error.additional_properties } : {})
                         },
                         now: lastSyncDate,
-                        operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
+                        operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL,
+                        checkpoints
                     });
 
                     if (res.isErr()) {

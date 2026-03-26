@@ -12,7 +12,7 @@ vi.mock('../events/sqs.listener.js', () => ({
 }));
 
 vi.mock('../execution/operations/handler.js', () => ({
-    handleError: vi.fn().mockResolvedValue(undefined)
+    handle: vi.fn().mockResolvedValue(undefined)
 }));
 
 let mockLambdaFailureDestination: string | undefined = 'https://sqs.us-west-2.amazonaws.com/123456789/lambda-failures';
@@ -23,7 +23,7 @@ vi.mock('../env.js', () => ({
 }));
 
 import { LambdaInvocationsProcessor } from './lambda.processor.js';
-import { handleError } from '../execution/operations/handler.js';
+import { handle } from '../execution/operations/handler.js';
 
 function minimalNangoProps() {
     return {
@@ -116,7 +116,7 @@ describe('LambdaInvocationsProcessor', () => {
         expect(mockListen).toHaveBeenCalledWith('https://sqs.us-west-2.amazonaws.com/123456789/lambda-failures', expect.any(Function));
     });
 
-    it('should process Unhandled failure and call handleError with function_runtime_other for generic error message', async () => {
+    it('should process Unhandled failure and call handle with function_runtime_other for generic error message', async () => {
         let onMessage: (message: { body: string }) => Promise<void> = undefined!;
         mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
             onMessage = cb;
@@ -129,8 +129,8 @@ describe('LambdaInvocationsProcessor', () => {
         const message = failureMessage({ errorMessage: 'Random error' });
         await onMessage(message);
 
-        expect(handleError).toHaveBeenCalledTimes(1);
-        expect(handleError).toHaveBeenCalledWith(
+        expect(handle).toHaveBeenCalledTimes(1);
+        expect(handle).toHaveBeenCalledWith(
             expect.objectContaining({
                 taskId: 'task-123',
                 error: expect.objectContaining({
@@ -155,7 +155,7 @@ describe('LambdaInvocationsProcessor', () => {
 
         await onMessage(failureMessage({ errorMessage: 'Process exited with signal: killed' }));
 
-        expect(handleError).toHaveBeenCalledWith(
+        expect(handle).toHaveBeenCalledWith(
             expect.objectContaining({
                 error: expect.objectContaining({
                     type: 'function_runtime_out_of_memory',
@@ -176,7 +176,7 @@ describe('LambdaInvocationsProcessor', () => {
 
         await onMessage(failureMessage({ errorMessage: 'Task timed out after 30.00 seconds' }));
 
-        expect(handleError).toHaveBeenCalledWith(
+        expect(handle).toHaveBeenCalledWith(
             expect.objectContaining({
                 error: expect.objectContaining({
                     type: 'function_runtime_timed_out',
@@ -186,7 +186,7 @@ describe('LambdaInvocationsProcessor', () => {
         );
     });
 
-    it('should not call handleError when functionError is not Unhandled', async () => {
+    it('should not call handle when functionError is not Unhandled', async () => {
         let onMessage: (message: { body: string }) => Promise<void> = undefined!;
         mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
             onMessage = cb;
@@ -197,7 +197,7 @@ describe('LambdaInvocationsProcessor', () => {
 
         await onMessage(failureMessage({ functionError: 'Handled', statusCode: 400, errorMessage: 'Validation failed', taskId: 'task-456' }));
 
-        expect(handleError).not.toHaveBeenCalled();
+        expect(handle).not.toHaveBeenCalled();
     });
 
     it('should not call listen when LAMBDA_FAILURE_DESTINATION is not set', async () => {

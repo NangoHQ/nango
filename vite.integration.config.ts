@@ -18,7 +18,8 @@ export default defineConfig({
             FLAG_PLAN_ENABLED: 'true',
             ORCHESTRATOR_SERVICE_URL: 'http://orchestrator',
             RUNNER_NODE_ID: '1',
-            FLAG_API_RATE_LIMIT_ENABLED: 'false'
+            FLAG_API_RATE_LIMIT_ENABLED: 'false',
+            FLAG_AUTH_ROLES_ENABLED: 'true'
         },
         fileParallelism: false,
         pool: 'forks',

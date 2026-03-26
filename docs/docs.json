@@ -78,6 +78,14 @@
     {
       "source": "/guides/use-cases/mcp-server",
       "destination": "/implementation-guides/use-cases/tool-calling/overview"
+    },
+    {
+      "source": "/guides/primitives/proxy",
+      "destination": "/implementation-guides/platform/proxy/implement-requests-proxy"
+    },
+    {
+      "source": "/guides/platform/ai-integration-builder",
+      "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
     }
   ],
   "navigation": {
@@ -89,37 +97,49 @@
             "group": "Getting Started",
             "pages": [
               "getting-started/intro-to-nango",
-              "getting-started/quickstart"
+              "getting-started/quickstart",
+              "getting-started/sample-app"
             ]
           },
           {
-            "group": "Integration Primitives",
+            "group": "Connect APIs",
             "pages": [
               "guides/primitives/auth",
-              "guides/primitives/proxy",
-              "guides/primitives/functions"
+              "implementation-guides/platform/auth/implement-api-auth",
+              {
+                "group": "Other guides",
+                "pages": [
+                  "implementation-guides/platform/auth/configure-integration",
+                  "implementation-guides/platform/auth/share-connect-link",
+                  "implementation-guides/platform/auth/connection-tags",
+                  "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/contribute-new-api"
+                ]
+              }
             ]
           },
           {
-            "group": "Platform",
+            "group": "Call APIs",
             "pages": [
-              "guides/platform/ai-integration-builder",
-              "guides/platform/observability",
-              "guides/platform/environments",
-              "guides/platform/limits",
-              "guides/platform/security",
-              "guides/platform/self-hosting"
+              "guides/primitives/functions",
+              "implementation-guides/platform/functions/leverage-ai-agents",
+              {
+                "group": "Other guides",
+                "pages": [
+                  "implementation-guides/platform/functions/functions-setup",
+                  "implementation-guides/platform/functions/customize-template",
+                  "implementation-guides/platform/functions/rate-limits",
+                  "implementation-guides/platform/functions/data-validation",
+                  "implementation-guides/platform/functions/testing",
+                  "implementation-guides/platform/functions/ci-cd",
+                  "implementation-guides/platform/proxy/implement-requests-proxy"
+                ]
+              }
             ]
-          }
-        ]
-      },
-      {
-        "tab": "Implementation Guides",
-        "groups": [
+          },
           {
             "group": "Use Cases",
             "pages": [
-              "implementation-guides/use-cases/sample-app",
               {
                 "group": "AI tool calling & MCP",
                 "pages": [
@@ -163,47 +183,28 @@
           {
             "group": "Platform",
             "pages": [
+              "guides/platform/observability",
+              "guides/platform/environments",
+              "guides/platform/limits",
+              "guides/platform/security",
+              "guides/platform/self-hosting",
               {
-                "group": "Auth",
+                "group": "Other guides",
                 "pages": [
-                  "implementation-guides/platform/auth/configure-integration",
-                  "implementation-guides/platform/auth/implement-api-auth",
-                  "implementation-guides/platform/auth/share-connect-link",
-                  "implementation-guides/platform/auth/connection-tags",
-                  "implementation-guides/platform/auth/customize-connect-ui",
-                  "implementation-guides/platform/auth/contribute-new-api"
+                  "implementation-guides/platform/webhooks-from-nango",
+                  "implementation-guides/platform/open-telemetry-export",
+                  {
+                    "group": "Migrations",
+                    "pages": [
+                      "implementation-guides/platform/migrations/migrate-to-checkpoints",
+                      "implementation-guides/platform/migrations/migrate-from-end-user",
+                      "implementation-guides/platform/migrations/migrate-from-public-key",
+                      "implementation-guides/platform/migrations/migrate-to-zero-yaml"
+                    ]
+                  },
+                  "implementation-guides/platform/common-issues"
                 ]
-              },
-              {
-                "group": "Proxy",
-                "pages": [
-                  "implementation-guides/platform/proxy/implement-requests-proxy"
-                ]
-              },
-              {
-                "group": "Functions",
-                "pages": [
-                  "implementation-guides/platform/functions/functions-setup",
-                  "implementation-guides/platform/functions/leverage-ai-agents",
-                  "implementation-guides/platform/functions/customize-template",
-                  "implementation-guides/platform/functions/rate-limits",
-                  "implementation-guides/platform/functions/data-validation",
-                  "implementation-guides/platform/functions/testing",
-                  "implementation-guides/platform/functions/ci-cd"
-                ]
-              },
-              "implementation-guides/platform/webhooks-from-nango",
-              "implementation-guides/platform/open-telemetry-export",
-              {
-                "group": "Migrations",
-                "pages": [
-                  "implementation-guides/platform/migrations/migrate-to-checkpoints",
-                  "implementation-guides/platform/migrations/migrate-from-end-user",
-                  "implementation-guides/platform/migrations/migrate-from-public-key",
-                  "implementation-guides/platform/migrations/migrate-to-zero-yaml"
-                ]
-              },
-              "implementation-guides/platform/common-issues"
+              }
             ]
           }
         ]
@@ -212,15 +213,10 @@
         "tab": "APIs & Integrations",
         "groups": [
           {
-            "group": "API Guides",
+            "group": "700+ APIs & Integrations",
             "pages": [
               "integrations/overview",
-              "integrations/google-security-review"
-            ]
-          },
-          {
-            "group": "APIs & Integrations",
-            "pages": [
+              "integrations/google-security-review",
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
@@ -249,8 +245,8 @@
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "api-integrations/amazon",
-              "integrations/all/amazon-selling-partner",
-              "integrations/all/amazon-selling-partner-beta",
+              "api-integrations/amazon-selling-partner",
+              "api-integrations/amazon-selling-partner-beta",
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "integrations/all/anrok",
@@ -346,10 +342,12 @@
               "integrations/all/circle-so",
               "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
+              "api-integrations/clay",
               "api-integrations/cleverreach",
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
+              "api-integrations/clio",
               "integrations/all/close",
               "api-integrations/cloudbeds",
               "api-integrations/cloudtalk",
@@ -368,6 +366,7 @@
               "integrations/all/connectwise-psa-staging",
               "api-integrations/connectwise-rmm",
               "api-integrations/constant-contact",
+              "api-integrations/conta-azul",
               "integrations/all/contactout",
               "integrations/all/contentful",
               "integrations/all/contentstack",
@@ -486,6 +485,7 @@
               "api-integrations/google-calendar",
               "integrations/all/google-chat",
               "integrations/all/google-cloud-storage",
+              "api-integrations/google-contacts",
               "api-integrations/google-docs",
               "api-integrations/google-drive",
               "api-integrations/google-forms",
@@ -531,6 +531,7 @@
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
               "api-integrations/heygen",
+              "api-integrations/heymarket",
               "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
@@ -583,6 +584,7 @@
               "integrations/all/lever-basic",
               "integrations/all/lever-basic-sandbox",
               "integrations/all/lever-sandbox",
+              "api-integrations/lightspeed-retail",
               "api-integrations/linear",
               "api-integrations/linkedin",
               "integrations/all/linkhut",
@@ -612,13 +614,15 @@
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
               "api-integrations/microsoft-planner",
+              "api-integrations/microsoft-powerpoint",
               "integrations/all/microsoft-power-bi",
               "api-integrations/microsoft-teams",
               "api-integrations/microsoft-teams-bot",
+              "api-integrations/microsoft-word",
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
               "integrations/all/microsoft-tenant-specific",
-              "integrations/all/microsoft-oauth2-cc",
+              "api-integrations/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
               "integrations/all/mindbody",
               "integrations/all/minimax",
@@ -701,6 +705,7 @@
               "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
+              "api-integrations/pleo",
               "integrations/all/podium",
               "api-integrations/posthog",
               "api-integrations/practicefusion",
@@ -790,16 +795,19 @@
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
+              "api-integrations/shopworks",
               "integrations/all/shortcut",
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/slack-mcp",
               "api-integrations/tally",
               "api-integrations/telegram",
               "api-integrations/timify",
               "api-integrations/trigify-io-mcp",
+              "api-integrations/triple-whale",
               "api-integrations/torii",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
@@ -864,6 +872,7 @@
               "api-integrations/twitter-v2",
               "integrations/all/typeform",
               "integrations/all/typefully",
+              "api-integrations/typefully-v2",
               "integrations/all/uber",
               "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
@@ -877,7 +886,8 @@
               "integrations/all/valley-api-key",
               "api-integrations/vanta",
               "api-integrations/veeva-vault",
-              "integrations/all/vercel",
+              "api-integrations/vercel",
+              "api-integrations/vercel-mcp",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",
@@ -937,15 +947,14 @@
         "tab": "Reference",
         "groups": [
           {
-            "group": "Reference",
+            "group": "Frontend",
             "pages": [
-              "reference/overview"
+              "reference/sdks/frontend"
             ]
           },
           {
-            "group": "Use Integrations - Reference",
+            "group": "Backend",
             "pages": [
-              "reference/sdks/frontend",
               {
                 "group": "HTTP API",
                 "icon": "cloud",
@@ -1058,10 +1067,15 @@
             ]
           },
           {
-            "group": "Build Integrations - Reference",
+            "group": "Functions",
             "pages": [
               "reference/cli",
-              "reference/functions",
+              "reference/functions"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
               "reference/api-configuration"
             ]
           }

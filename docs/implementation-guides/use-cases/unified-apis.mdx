@@ -73,9 +73,9 @@ export const UserUnified = z.object({
 });
 ```
 
-### 2. Define your unified endpoints
+### 2. Implement your unified actions
 
-In your script's configuration, standardize the configuration of endpoints across APIs for consistency: use the same method, path, and parameters across APIs.
+Implement the same action for each API you want to unify, using the same input and output models for consistency.
 
 <CodeGroup>
 ```ts jira/create-user.ts
@@ -83,11 +83,6 @@ import { createAction } from 'nango';
 import { UserUnified } from './models.js';
 
 export default createAction({
-  endpoint: {
-    method: 'POST',
-    path: '/users',
-    group: 'Users',
-  },
   input: UserUnified,
   output: UserUnified,
   exec: async (nango, input) => {
@@ -101,11 +96,6 @@ import { createAction } from 'nango';
 import { UserUnified } from './models.js';
 
 export default createAction({
-  endpoint: {
-    method: 'POST',
-    path: '/users',
-    group: 'Users',
-  },
   input: UserUnified,
   output: UserUnified,
   exec: async (nango, input) => {

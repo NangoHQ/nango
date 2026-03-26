@@ -75,8 +75,8 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     const onUpdate = (field: 'key' | 'value', value: string, index: number) => {
         setPairs((prev) => {
             const copy = prev.map((p) => ({ ...p }));
-            copy[index][field] = value;
-            if (copy.length === index + 1 && value !== '') {
+            copy[index][field] = field === 'key' ? value.replace(/\s/g, '') : value;
+            if (copy.length === index + 1 && copy[index][field] !== '') {
                 copy.push({ id: generateId(), key: '', value: '' });
             }
             return copy;

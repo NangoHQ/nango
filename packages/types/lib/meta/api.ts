@@ -8,7 +8,7 @@ export type GetMeta = Endpoint<{
     Error: ApiError<'user_not_found'>;
     Success: {
         data: {
-            environments: Pick<DBEnvironment, 'name'>[];
+            environments: Pick<DBEnvironment, 'name' | 'is_production'>[];
             version: string;
             baseUrl: string;
             debugMode: boolean;

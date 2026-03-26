@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
-import { buildDefinitions } from './definitions.js';
+import { parseIntegrationDefinitions } from './definitions.js';
 import { ReadableError } from './utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
@@ -26,7 +26,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode'>;
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
 
 export async function deploy({
     fullPath,
@@ -45,8 +45,7 @@ export async function deploy({
     let pkg: Package;
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
-        // Prepare retro-compat json
-        const def = await buildDefinitions({ fullPath, debug });
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinnerPackage.fail();
             console.log('');
@@ -54,8 +53,7 @@ export async function deploy({
             return Err(def.error);
         }
 
-        // Create deploy package
-        const postData = await createPackage({
+        const postData = await createDeployConfirmationPackage({
             parsed: def.value,
             fullPath,
             debug,
@@ -137,7 +135,12 @@ export async function deploy({
     }
 }
 
-async function createPackage({
+/**
+ * Maps NangoYamlParsed (which is a list of integrations and its function definitions) into the shape expected by the API,
+ * while also loading the content of the related script files.
+ * It also supports filtering by integration, sync or action name for single deploys.
+ */
+async function createDeployConfirmationPackage({
     parsed,
     fullPath,
     debug,
@@ -158,7 +161,8 @@ async function createPackage({
 
     const postData: CLIDeployFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
-    const singleDeployMode = Boolean(optionalSyncName || optionalActionName || optionalIntegrationId);
+    const hasSingleScript = Boolean(optionalSyncName || optionalActionName);
+    const deployMode: 'all' | 'single' | 'integration' = hasSingleScript ? 'single' : optionalIntegrationId ? 'integration' : 'all';
 
     for (const integration of parsed.integrations) {
         const { providerConfigKey, onEventScripts } = integration;
@@ -219,7 +223,8 @@ async function createPackage({
                     fileBody: files,
                     endpoints: sync.endpoints,
                     webhookSubscriptions: sync.webhookSubscriptions,
-                    models_json_schema: sync.json_schema
+                    models_json_schema: sync.json_schema,
+                    features: sync.features
                 };
 
                 postData.push(body);
@@ -257,7 +262,8 @@ async function createPackage({
                     fileBody: files,
                     endpoints: action.endpoint ? [action.endpoint] : [],
                     track_deletes: false,
-                    models_json_schema: action.json_schema
+                    models_json_schema: action.json_schema,
+                    features: action.features
                 };
 
                 postData.push(body);
@@ -272,7 +278,7 @@ async function createPackage({
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        singleDeployMode
+        deployMode
     });
 }
 

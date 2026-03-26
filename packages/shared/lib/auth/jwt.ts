@@ -73,7 +73,16 @@ export function createCredentials({
         const signingKey = stripCredential(provider.token.signing_key);
         const interpolatedSigningKey = typeof signingKey === 'string' ? interpolateString(signingKey, dynamicCredentials) : signingKey;
 
-        const pKey = provider.signature.protocol === 'RSA' ? formatPem(interpolatedSigningKey, 'PRIVATE KEY') : Buffer.from(interpolatedSigningKey, 'hex');
+        const pKey = (() => {
+            if (provider.signature.protocol === 'RSA') {
+                return formatPem(interpolatedSigningKey, 'PRIVATE KEY');
+            }
+            const hmacEncoding = provider.signature.hmac_secret_encoding ?? 'hex';
+            if (hmacEncoding === 'utf8') {
+                return interpolatedSigningKey;
+            }
+            return Buffer.from(interpolatedSigningKey, 'hex');
+        })();
         const token = signJWT({
             payload,
             secretOrPrivateKey: pKey,

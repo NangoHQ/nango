@@ -8,7 +8,7 @@ import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { buildDefinitions } from './definitions.js';
+import { parseIntegrationDefinitions } from './definitions.js';
 import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 import { generateAdditionalExports } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
@@ -16,7 +16,7 @@ import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
 
 // import type { BabelErrorType } from './constants.js';
-import type { Result } from '@nangohq/types';
+import type { Feature, Result } from '@nangohq/types';
 
 /**
  * This function is used to compile the code in the integration.
@@ -89,8 +89,8 @@ export async function compileAllFunctions({
         spinner.succeed();
 
         // Build and export the definitions
-        spinner = spinnerFactory.start('Exporting definitions');
-        const def = await buildDefinitions({ fullPath, debug });
+        spinner = spinnerFactory.start('Generating artifacts');
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
             console.log('');
@@ -406,6 +406,29 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
+/**
+ * Detects which features are used in function code
+ */
+export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
+    try {
+        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
+        const { plugin, bag } = nangoPlugin({ entryPoint });
+        babel.transformSync(source, {
+            filename: entryPoint,
+            plugins: [plugin],
+            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+            generatorOpts: { decoratorsBeforeExport: true }
+        });
+        const features: Feature[] = [];
+        if (bag.checkpointsLines.length > 0) {
+            features.push('checkpoints');
+        }
+        return Ok(features);
+    } catch (err) {
+        return Err(new Error('failed_to_detect_features', { cause: err }));
+    }
+}
+
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 
@@ -422,12 +445,14 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
+    const checkpointsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
         deleteRecordsFromPreviousExecutionsLines,
-        trackDeletesByModel
+        trackDeletesByModel,
+        checkpointsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -436,27 +461,27 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
     const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
     const needsAwait = [
-        'batchSend',
-        'batchSave',
         'batchDelete',
-        'log',
-        'getFieldMapping',
-        'setFieldMapping',
-        'getMetadata',
-        'setMetadata',
-        'proxy',
-        'get',
-        'post',
-        'put',
-        'patch',
+        'batchSave',
+        'batchSend',
         'delete',
+        'deleteRecordsFromPreviousExecutions',
+        'get',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction',
+        'getFieldMapping',
+        'getMetadata',
+        'log',
+        'patch',
+        'post',
+        'proxy',
+        'put',
+        'setFieldMapping',
         'setMergingStrategy',
-        'deleteRecordsFromPreviousExecutions',
+        'setMetadata',
+        'trackDeletesEnd',
         'trackDeletesStart',
-        'trackDeletesEnd'
+        'triggerAction'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -583,6 +608,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     }
                                 }
                             }
+                        }
+
+                        if (['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint'].includes(callee.property.name)) {
+                            checkpointsLines.push(lineNumber);
                         }
                     },
 

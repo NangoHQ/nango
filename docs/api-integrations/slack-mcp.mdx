@@ -1,0 +1,105 @@
+---
+title: 'Slack (MCP)'
+sidebarTitle: 'Slack (MCP)'
+description: 'Connect AI tools to Slack via the Model Context Protocol (MCP)'
+---
+
+## 🚀 Quickstart
+
+Connect to the Slack MCP server with Nango and call MCP tools in minutes. Slack MCP uses OAuth 2.0 with **static client registration**.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Slack (MCP)_.
+    </Step>
+    <Step title="Authorize Slack">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Slack and approve the requested scopes. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call a Slack MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/v2/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v2/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2025-06-18',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Slack (MCP) Integration Guides
+
+- [How to register your own Slack MCP OAuth app](/api-integrations/slack-mcp/how-to-register-your-own-slack-mcp-oauth-app)  
+  Create or reuse a Slack app and configure it for MCP (user tokens, redirect URL, scopes).
+
+Official docs: [Slack MCP server](https://slack.com/help/articles/17388188499099-Use-the-Slack-MCP-server) · [Slack API OAuth](https://api.slack.com/authentication/oauth-v2)
+
+## 🧩 Pre-built syncs & actions for Slack (MCP)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/slack-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

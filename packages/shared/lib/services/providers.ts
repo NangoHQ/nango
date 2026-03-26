@@ -17,6 +17,24 @@ const envs = parseEnvs(ENVS);
 let polling = false;
 let providersHash = '';
 
+async function loadAndCacheProviders(providersUrl: string): Promise<void> {
+    const providersRaw = await fetchProvidersRaw(providersUrl);
+    providersHash = createHash('sha1').update(providersRaw).digest('hex');
+
+    updateProviderCache(JSON.parse(providersRaw) as Record<string, Provider>);
+    logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
+}
+
+export async function loadProviders(): Promise<void> {
+    const providersUrl = envs.PROVIDERS_URL;
+
+    // fall back to standard disk loading if no URL is provided
+    if (!providersUrl) {
+        return;
+    }
+    return loadAndCacheProviders(providersUrl);
+}
+
 // Monitors for changes to providers over HTTP. Returns a function to clean up
 // the monitoring.
 export async function monitorProviders(): Promise<() => void> {
@@ -27,11 +45,7 @@ export async function monitorProviders(): Promise<() => void> {
         return () => null;
     }
 
-    const providersRaw = await fetchProvidersRaw(providersUrl);
-    providersHash = createHash('sha1').update(providersRaw).digest('hex');
-
-    updateProviderCache(JSON.parse(providersRaw) as Record<string, Provider>);
-    logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
+    await loadAndCacheProviders(providersUrl);
 
     void pollProviders(providersUrl);
 

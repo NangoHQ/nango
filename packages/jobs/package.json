@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-application-auto-scaling": "3.993.0",
+        "@aws-sdk/client-cloudwatch-logs": "3.993.0",
         "@aws-sdk/client-lambda": "3.993.0",
         "@aws-sdk/client-s3": "3.993.0",
         "@aws-sdk/client-sqs": "3.993.0",

@@ -44,12 +44,7 @@ If you are using a pre-built reference implementation sync, you can [skip to usi
 
 ### Checkpoints
 
-Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are the foundation for **incremental syncing**, the recommended approach for any non-trivial dataset.
-
-| Approach | Description | Best for |
-|----------|-------------|----------|
-| **With checkpoints** | Saves progress (e.g., last page, cursor, timestamp) and resumes from there | Large datasets; APIs that support filtering by date or cursor |
-| **Without checkpoints** | Fetches the entire dataset on each run | Small datasets; APIs without filtering support |
+Checkpoints allow syncs to save their progress and resume from where they left off. This enables syncs to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are what make syncs **resilient to failures** and enable **incremental syncing**, the recommended approach for any non-trivial dataset.
 
 Define a `checkpoint` schema in your sync to enable checkpoint support.
 
@@ -130,7 +125,6 @@ const MyObject = z.object({
 export default createSync({
     description: `<Description of your sync>`,
     version: '1.0.0', // Version, increment it when you release a new version
-    endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
     frequency: 'every hour', // Default sync interval
     autoStart: true, // Should the sync start immediately when a new connection is created?
     trackDeletes: true, // detect deletes? See separate implementation guide
@@ -180,7 +174,6 @@ const SalesforceContact = z.object({
 export default createSync({
   description: `Fetches contacts from Salesforce`,
   version: '1.0.0',
-  endpoints: [{ method: 'GET', path: '/salesforce/contacts', group: 'Contacts' }],
   frequency: 'every hour',
   autoStart: true,
   // Define checkpoint schema to track sync progress

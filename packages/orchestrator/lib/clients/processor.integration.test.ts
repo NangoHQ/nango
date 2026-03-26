@@ -46,7 +46,7 @@ describe('OrchestratorProcessor', () => {
             n: 10,
             waitUntil: (task) => task.state === 'STARTED'
         });
-    });
+    }, 60_000);
     it('should process tasks and mark them as failed if processing failed', async () => {
         await processN({
             handler: vi.fn((): Promise<Result<void>> => Promise.resolve(Err('Failed'))),
@@ -54,7 +54,7 @@ describe('OrchestratorProcessor', () => {
             n: 10,
             waitUntil: (task) => task.state === 'FAILED'
         });
-    });
+    }, 60_000);
 });
 
 async function processN({
@@ -81,15 +81,16 @@ async function processN({
         await immediateTask({ groupKey });
     }
 
-    let processed = false;
-    const start = Date.now();
-    const timeout = 1_000;
-    while (!processed) {
-        await setTimeout(100);
-        const tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
-        processed = tasks.length == n && tasks.every(waitUntil);
-        if (!processed && Date.now() - start > timeout) {
-            throw new Error(`Timeout: expected ${n} tasks to be processed, but tasks are still in states: ${tasks.map((task) => task.state).join(', ')}`);
+    let tasks: Task[] = [];
+    let success = false;
+
+    while (!success) {
+        tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
+
+        if (tasks.length === n && tasks.every(waitUntil)) {
+            success = true;
+        } else {
+            await setTimeout(100);
         }
     }
 

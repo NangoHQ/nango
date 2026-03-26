@@ -6,14 +6,13 @@ description: "Guide on how to detect deleted records with syncs"
 
 Sometimes you need to know when an object you are syncing has been deleted in the external system.
 
-Detecting deletes is not a universal switch.
-It differs significantly between syncs that use [checkpoints](/implementation-guides/use-cases/syncs/checkpoints) (fetching only changed data) and syncs that fetch all data on every run. Pick the strategy that matches your sync approach.
+Deletion detection works differently depending on whether your sync is incremental or full. Pick the strategy that matches your sync approach.
 
-## Detecting deletes in syncs with checkpoints
+## Detecting deletes in incremental syncs
 
-When using checkpoints to only fetch changed data since the previous run, Nango has no built-in way to know which records disappeared on the provider side.
+When your sync only fetches changed data since the previous run, Nango has no built-in way to know which records disappeared on the provider side.
 
-You must actively tell Nango which IDs have been removed by calling `nango.batchDelete()` ([full reference](/reference/functions#delete-records)) inside the sync functions.
+You must actively tell Nango which IDs have been removed by calling `nango.batchDelete()` ([full reference](/reference/functions#delete-records)) inside the sync function.
 
 ### When can you use this?
 
@@ -21,15 +20,11 @@ You can use `nango.batchDelete()` if the external API supports one of the follow
 
 - A dedicated "recently deleted" endpoint (e.g. `GET /entities/deleted?since=...`)
 - The ability to filter or sort by a deletion timestamp
-- The ability to filter or sort by last-modified timestamp _and_ records include a flag like `is_deleted`, `archived`, etc.
+- The ability to filter or sort by last-modified timestamp and records include a flag like `is_deleted`, `archived`, etc.
 
-If none of these are available, you cannot detect deletes with a checkpoint-based sync.
+If none of these are available, you cannot detect deletes in an incremental sync. You'll either need to switch to a full sync or skip deletion detection.
 
-You'll either need to switch to a sync that fetches all data or skip deletion detection.
-
-Switching to fetching all data should not be done lightly. Make sure you [understand the tradeoffs](/implementation-guides/use-cases/syncs/checkpoints#when-to-sync-without-checkpoints).
-
-### Example sync with checkpoint and deletion detection
+### Example
 
 ```ts
 import { createSync } from 'nango';
@@ -41,7 +36,7 @@ const AccountSchema = z.object({
 });
 
 export default createSync({
-  description: 'Sync Accounts with checkpoint & handle deletions',
+  description: 'Sync Accounts incrementally and handle deletions',
   frequency: 'every 2 hours',
   endpoints: [{ method: 'GET', path: '/accounts', group: 'Accounts' }],
   models: { Account: AccountSchema },
@@ -80,17 +75,19 @@ export default createSync({
 });
 ```
 
-## Detecting deletes in syncs without checkpoints
+## Detecting deletes in full syncs
 
 Syncs that fetch all records on every run can automatically detect deletions.
 
-Nango detects removals by computing the diff between what existed before `trackDeletesStart` and what was saved between `trackDeletesStart` and `trackDeletesEnd`. ([full reference](/reference/functions#detect-deletions-automatically)).
+Nango detects removals by computing the diff between what existed before `trackDeletesStart` and what was saved between `trackDeletesStart` and `trackDeletesEnd` ([full reference](/reference/functions#detect-deletions-automatically)).
 
-### Example sync with deletion detection
+This works whether your full sync uses checkpoints for resilience or not. If it does, `trackDeletesStart` should be called before fetching any data and `trackDeletesEnd` after all records are saved and the checkpoint is cleared.
+
+### Example
 
 ```ts
-import { createSync } from ‘nango’;
-import * as z from ‘zod’;
+import { createSync } from 'nango';
+import * as z from 'zod';
 
 const TicketSchema = z.object({
   id: z.string(),
@@ -99,26 +96,26 @@ const TicketSchema = z.object({
 });
 
 export default createSync({
-  description: ‘Fetch all help-desk tickets’,
-  frequency: ‘every day’,
-  endpoints: [{ method: ‘GET’, path: ‘/tickets’, group: ‘Tickets’ }],
+  description: 'Fetch all help-desk tickets',
+  frequency: 'every day',
+  endpoints: [{ method: 'GET', path: '/tickets', group: 'Tickets' }],
   models: { Ticket: TicketSchema },
 
   exec: async (nango) => {
     // Mark the start of deletion tracking
-    await nango.trackDeletesStart(‘Ticket’);
+    await nango.trackDeletesStart('Ticket');
 
     const tickets = await nango.paginate<{ id: string; subject: string; status: string }>({
-      endpoint: ‘/tickets’,
-      paginate: { type: ‘cursor’, cursorPathInResponse: ‘next’, cursorNameInRequest: ‘cursor’, responsePath: ‘tickets’ }
+      endpoint: '/tickets',
+      paginate: { type: 'cursor', cursorPathInResponse: 'next', cursorNameInRequest: 'cursor', responsePath: 'tickets' }
     });
 
     for await (const page of tickets) {
-      await nango.batchSave(page, ‘Ticket’);
+      await nango.batchSave(page, 'Ticket');
     }
 
     // Detect and mark deleted records
-    await nango.trackDeletesEnd(‘Ticket’);
+    await nango.trackDeletesEnd('Ticket');
   }
 });
 ```
@@ -133,17 +130,17 @@ export default createSync({
 <Warning>
 **Be careful with exception handling when using** `trackDeletesStart`/`trackDeletesEnd`
 
-Nango only performs deletion detection (the “diff”) if a sync run completes successfully without any uncaught exceptions.
+Nango only performs deletion detection (the "diff") if a sync run completes successfully without any uncaught exceptions.
 
 Exception handling is critical:
-- If your sync doesn’t fetch the full dataset between the two calls (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
+- If your sync doesn't fetch the full dataset between the two calls (e.g. you catch and swallow an exception), Nango will attempt the diff on an incomplete dataset.
 - This leads to false positives, where valid records are mistakenly considered deleted.
 
 **What You Should Do**
 
 If a failure prevents full data retrieval, make sure the sync run fails and `trackDeletesEnd` is not being called:
 - Let exceptions bubble up and interrupt the run.
-- If you’re using `try/catch`, re-throw exceptions that indicate incomplete data.
+- If you're using `try/catch`, re-throw exceptions that indicate incomplete data.
 </Warning>
 
 <Tip>
@@ -156,10 +153,10 @@ We strongly recommend not performing irreversible destructive actions (like hard
 
 ## Troubleshooting deletion detection issues
 
-| Symptom                                                                    | Likely cause                                                                             |
-| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Records that still exist in the source API are shown as `deleted` in Nango | sync didn’t save all records (silent failures) between `trackDeletesStart` and `trackDeletesEnd` |
-| You never see deleted records                                              | Check if deletion detection is implemented for the sync.                                 |
+| Symptom | Likely cause |
+| --- | --- |
+| Records that still exist in the source API are shown as `deleted` in Nango | Sync didn't save all records (silent failures) between `trackDeletesStart` and `trackDeletesEnd` |
+| You never see deleted records | Check if deletion detection is implemented for the sync. |
 
 <Tip>
   **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

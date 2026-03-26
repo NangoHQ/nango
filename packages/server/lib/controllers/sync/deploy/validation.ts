@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
-import type { NangoModelField, OnEventType } from '@nangohq/types';
+import type { Feature, NangoModelField, OnEventType } from '@nangohq/types';
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
@@ -86,7 +86,8 @@ export const flowConfig = z
             .object({
                 definitions: z.record(z.string(), z.looseObject({}))
             })
-            .optional()
+            .optional(),
+        features: z.array(z.enum(['checkpoints'] satisfies Feature[])).default([])
     })
     .refine(
         (data) => {
@@ -151,7 +152,9 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        singleDeployMode: z.boolean().optional().default(false),
+        deployMode: z.enum(['all', 'single', 'integration']).optional(),
+        // singleDeployMode is deprecated in favour of deployMode — kept for older CLI versions
+        singleDeployMode: z.boolean().optional(),
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
@@ -159,20 +162,17 @@ const commonValidation = z
     })
     .strict();
 
-export const validation = commonValidation.transform((data) => {
-    return {
-        ...data
-        // onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-    };
-});
+export const validation = commonValidation.transform((data) => ({
+    ...data,
+    deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all')
+}));
 
 export const validationWithNangoYaml = commonValidation
     .extend({
         nangoYamlBody: z.string()
     })
-    .transform((data) => {
-        return {
-            ...data,
-            onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-        };
-    });
+    .transform((data) => ({
+        ...data,
+        deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all'),
+        onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
+    }));

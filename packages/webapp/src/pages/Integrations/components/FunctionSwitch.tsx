@@ -16,7 +16,8 @@ export const FunctionSwitch: React.FC<{
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useEnvironment(env);
+    const plan = environmentData?.plan;
     const { confirm, DialogComponent } = useConfirmDialog();
 
     const { mutateAsync: enableFlow, isPending: isEnablePending } = useFlowEnable(env, integration.unique_key);
@@ -81,7 +82,7 @@ export const FunctionSwitch: React.FC<{
             }
             toast({ title: `Enabled successfully`, variant: 'success' });
             if (plan && plan.auto_idle && !plan.trial_end_at) {
-                void mutateEnv();
+                void refetchEnv();
             }
         } catch (err) {
             if (err instanceof APIError) {

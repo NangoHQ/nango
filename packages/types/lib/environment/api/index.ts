@@ -12,7 +12,7 @@ export type GetEnvironments = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/environments';
     Success: {
-        data: Pick<DBEnvironment, 'name'>[];
+        data: Pick<DBEnvironment, 'name' | 'is_production'>[];
     };
 }>;
 
@@ -47,6 +47,7 @@ export type PatchEnvironment = Endpoint<{
     Path: '/api/v1/environments';
     Body: {
         name?: string | undefined;
+        is_production?: boolean | undefined;
         callback_url?: string | undefined;
         hmac_key?: string | undefined;
         hmac_enabled?: boolean | undefined;
@@ -57,7 +58,7 @@ export type PatchEnvironment = Endpoint<{
     Success: {
         data: ApiEnvironment;
     };
-    Error: ApiError<'conflict'>;
+    Error: ApiError<'conflict' | 'cannot_toggle_prod_environment'>;
 }>;
 
 export type DeleteEnvironment = Endpoint<{

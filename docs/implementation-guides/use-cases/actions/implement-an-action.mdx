@@ -91,7 +91,6 @@ const MyObject = z.object({
 export default createAction({
     description: `<Description of your action>`,
     version: '1.0.0', // Version, increment it when you release a new version
-    endpoints: [{ method: 'GET', path: '/<integration>/<object-name>', group: '<Group>' }],
     input: z.void(),
     output: MyObject,
     exec: async (nango) => {

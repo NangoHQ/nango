@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
-import { handleError, handleSuccess } from '../../execution/operations/handler.js';
+import { handle } from '../../execution/operations/handler.js';
 import { nangoPropsSchema } from '../../schemas/nango-props.js';
 
 import type { PutTask } from '@nangohq/types';
@@ -46,25 +46,14 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;
     }
-    if (error) {
-        await handleError({
-            taskId,
-            nangoProps,
-            error,
-            telemetryBag,
-            functionRuntime,
-            checkpoints: checkpoints || null
-        });
-    } else {
-        await handleSuccess({
-            taskId,
-            nangoProps,
-            output: output || null,
-            telemetryBag,
-            functionRuntime,
-            checkpoints: checkpoints || null
-        });
-    }
+    await handle({
+        taskId,
+        nangoProps,
+        telemetryBag,
+        functionRuntime,
+        checkpoints: checkpoints || null,
+        ...(error ? { error } : { output: output || null })
+    });
     res.status(204).send();
     return;
 };

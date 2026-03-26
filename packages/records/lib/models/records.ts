@@ -32,12 +32,12 @@ dayjs.extend(utc);
 const BATCH_SIZE = envs.RECORDS_BATCH_SIZE;
 
 interface UpsertResult {
+    partition: string;
     external_id: string;
     id: string;
     last_modified_at: string;
     previous_last_modified_at: string | null;
-    size_bytes: number;
-    previous_size_bytes: number | null;
+    previous_size_bytes: number;
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
@@ -341,40 +341,49 @@ export async function upsert({
                         const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                         const encryptedRecords = encryptRecords(chunk);
 
-                        // we need to know which records were updated, deleted, undeleted or unchanged
-                        // we achieve this by comparing the records data_hash and deleted_at fields before and after the update
-                        const externalIds = chunk.map((r) => r.external_id);
                         const res = await trx
+                            .with(
+                                'incoming',
+                                trx.raw(
+                                    `SELECT * FROM (VALUES ${chunk.map(() => '(?, ?)').join(', ')}) AS t(external_id, data_hash)`,
+                                    chunk.flatMap((r) => [r.external_id, r.data_hash])
+                                )
+                            )
                             .with('existing', (qb) => {
                                 qb.select(
-                                    'external_id',
-                                    'data_hash',
-                                    'deleted_at',
-                                    'updated_at',
-                                    trx.raw('pg_column_size(json) as size_bytes'),
-                                    trx.raw('tableoid::regclass as partition')
+                                    `${RECORDS_TABLE}.external_id`,
+                                    `${RECORDS_TABLE}.deleted_at`,
+                                    `${RECORDS_TABLE}.updated_at`,
+                                    trx.raw(`
+                                        CASE
+                                            WHEN incoming.data_hash IS DISTINCT FROM ${RECORDS_TABLE}.data_hash THEN pg_column_size(json)
+                                            ELSE 0
+                                        END as previous_size_bytes
+                                    `),
+                                    trx.raw(`incoming.data_hash IS DISTINCT FROM ${RECORDS_TABLE}.data_hash as has_changed`)
                                 )
                                     .from(RECORDS_TABLE)
                                     .where({
                                         connection_id: connectionId,
                                         model
                                     })
-                                    .whereIn('external_id', externalIds);
+                                    .join('incoming', 'incoming.external_id', `${RECORDS_TABLE}.external_id`);
                             })
                             .with('upsert', (qb) => {
                                 qb.insert(encryptedRecords)
                                     .into(RECORDS_TABLE)
-                                    .returning([
-                                        'id',
-                                        'external_id',
-                                        'data_hash',
-                                        'deleted_at',
-                                        'updated_at',
-                                        trx.raw('pg_column_size(json) as size_bytes'),
-                                        trx.raw('tableoid::regclass as partition')
-                                    ])
                                     .onConflict(['connection_id', 'external_id', 'model'])
-                                    .merge();
+                                    .merge({
+                                        json: trx.raw(
+                                            `CASE WHEN ${RECORDS_TABLE}.data_hash IS NOT DISTINCT FROM EXCLUDED.data_hash THEN ${RECORDS_TABLE}.json ELSE EXCLUDED.json END`
+                                        ),
+                                        data_hash: trx.raw(`EXCLUDED.data_hash`),
+                                        sync_id: trx.raw(`EXCLUDED.sync_id`),
+                                        sync_job_id: trx.raw(`EXCLUDED.sync_job_id`),
+                                        deleted_at: trx.raw(`EXCLUDED.deleted_at`),
+                                        ...(softDelete ? { updated_at: trx.raw(`EXCLUDED.updated_at`) } : {})
+                                    })
+                                    .returning(['id', 'external_id', 'updated_at', 'deleted_at', trx.raw('tableoid::regclass as partition')]);
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                     const cursor = Cursor.from(merging.cursor);
                                     if (cursor) {
@@ -382,14 +391,13 @@ export async function upsert({
                                     }
                                 }
                             })
-                            .select<(UpsertResult & { partition: string })[]>(
+                            .select<UpsertResult[]>(
                                 trx.raw(`
-                                    coalesce(upsert.partition, existing.partition) as partition,
+                                    upsert.partition as partition,
                                     upsert.id as id,
                                     upsert.external_id as external_id,
                                     to_json(upsert.updated_at) as last_modified_at,
-                                    upsert.size_bytes as size_bytes,
-                                    existing.size_bytes as previous_size_bytes,
+                                    COALESCE(existing.previous_size_bytes, 0) as previous_size_bytes,
                                     CASE
                                       WHEN existing.updated_at IS NULL THEN NULL
                                       ELSE to_json(existing.updated_at)
@@ -400,17 +408,35 @@ export async function upsert({
                                             CASE
                                                 WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
                                                 WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
-                                                WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
+                                                WHEN existing.has_changed THEN 'changed'
                                                 ELSE 'unchanged'
                                             END
                                     END as status`)
                             )
                             .from('upsert')
-                            .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
+                            .leftJoin('existing', 'existing.external_id', 'upsert.external_id')
                             .orderBy([
                                 { column: 'upsert.updated_at', order: 'asc' },
                                 { column: 'upsert.id', order: 'asc' }
                             ]);
+
+                        // Fetch post-upsert json sizes for inserted/changed records to compute delta_size_bytes.
+                        // BUT only for records that have actually changed (based on data_hash comparison)
+                        // to avoid unnecessary pg_column_size calls since they can be costly on large json payloads.
+                        // This must be a separate query since data-modifying CTEs use snapshot isolation.
+                        // Returning the delta from 'upsert' would be possible with Postgres17 since it supports old/new syntax but we are currently using Postgres16.
+                        const toSize = res.filter((r) => r.status === 'inserted' || r.status === 'changed').map((r) => r.external_id);
+                        const newSize = new Map<string, number>();
+                        if (toSize.length > 0) {
+                            const sizeRows = await trx
+                                .select<{ external_id: string; size_bytes: number }[]>('external_id', trx.raw('pg_column_size(json) as size_bytes'))
+                                .from(RECORDS_TABLE)
+                                .where({ connection_id: connectionId, model })
+                                .whereIn('external_id', toSize);
+                            for (const row of sizeRows) {
+                                newSize.set(row.external_id, row.size_bytes);
+                            }
+                        }
 
                         // Billing:
                         // A record is billed only once per month. ie:
@@ -456,7 +482,9 @@ export async function upsert({
                                 };
                             }
                         }
-                        deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
+                        deltaSizeInBytes += res.reduce((acc, r) => {
+                            return acc + (newSize.get(r.external_id) ?? 0) - r.previous_size_bytes;
+                        }, 0);
 
                         // all records for the same connection/model are in the same partition
                         if (!partition && res[0]?.partition) {
@@ -891,7 +919,7 @@ export async function deleteOutdatedRecords({
     connectionId,
     model,
     generation,
-    batchSize = 5000
+    batchSize = 1000
 }: {
     environmentId: number;
     connectionId: number;
@@ -906,72 +934,97 @@ export async function deleteOutdatedRecords({
     });
     let partition: string | undefined = undefined;
     try {
-        const now = db.fn.now(6);
-        return await db.transaction(async (trx) => {
-            const deletedIds: string[] = [];
-            let hasMore = true;
-            while (hasMore) {
-                const res: { external_id: string; size_bytes: number; partition: string }[] = await trx
-                    .from<FormattedRecord>(RECORDS_TABLE)
-                    .whereIn('id', function (sub) {
-                        sub.select('id')
-                            .from(RECORDS_TABLE)
-                            .where({
-                                connection_id: connectionId,
+        const deletedIds: string[] = [];
+        let hasMore = true;
+        // NOTE: deletion is intentionally not atomic. Each batch is its own transaction so that
+        // long-running deletes (e.g. millions of records) don't hold a single DB connection and
+        // row locks for the entire duration, which was causing timeouts and stalling other queries.
+        // The tradeoff is that a failure mid-way leaves the dataset in a partially deleted state.
+        // This is acceptable because: (1) the sync fails and the user is notified, (2) the next
+        // sync run will call deleteOutdatedRecords again and clean up whatever was missed.
+        while (hasMore) {
+            const batchResult = await retry(
+                () => {
+                    return db.transaction(async (trx) => {
+                        // Lock to prevent concurrent modifications with upserts and deletes
+                        await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_outdated`, [newLockId(connectionId, model)]);
+
+                        const res: { external_id: string; size_bytes: number; partition: string }[] = (
+                            await trx.raw(
+                                `WITH to_delete AS MATERIALIZED (
+                                    SELECT ctid
+                                    FROM ${RECORDS_TABLE}
+                                    WHERE connection_id = ?
+                                      AND model = ?
+                                      AND sync_job_id < ?
+                                      AND deleted_at IS NULL
+                                    LIMIT ?
+                                )
+                                UPDATE ${RECORDS_TABLE} r
+                                SET
+                                    deleted_at = current_timestamp(6),
+                                    updated_at = current_timestamp(6),
+                                    sync_job_id = ?
+                                FROM to_delete
+                                WHERE r.ctid = to_delete.ctid
+                                  AND r.connection_id = ?
+                                  AND r.model = ?
+                                RETURNING external_id, pg_column_size(json) as size_bytes, tableoid::regclass as partition`,
+                                [connectionId, model, generation, batchSize, generation, connectionId, model]
+                            )
+                        ).rows;
+
+                        // update records count and size
+                        const deleted = res.length;
+                        const sizeInBytes = res.reduce((acc, r) => acc + r.size_bytes, 0);
+                        if (deleted > 0) {
+                            await incrCount(trx, {
+                                connectionId,
+                                environmentId,
                                 model,
-                                deleted_at: null
-                                // NOTE: not emptying the record payload so we don't introduce a breaking change
-                            })
-                            .where('sync_job_id', '<', generation)
-                            .limit(batchSize);
-                    })
-                    .update({
-                        deleted_at: now,
-                        updated_at: now,
-                        sync_job_id: generation
-                    })
-                    // records table is partitioned by connection_id and model
-                    // to avoid table scan, we must always filter by connection_id and model
-                    .where({
-                        connection_id: connectionId,
-                        model
-                    })
-                    .returning(['external_id', trx.raw('pg_column_size(json) as size_bytes'), trx.raw('tableoid::regclass as partition')]);
+                                delta: -deleted,
+                                deltaSizeInBytes: -sizeInBytes
+                            });
+                        }
 
-                if (res.length < batchSize) {
-                    hasMore = false;
-                }
-
-                if (!partition && res[0]?.partition) {
-                    partition = res[0].partition;
-                }
-
-                deletedIds.push(...res.map((r) => r.external_id));
-
-                // update records count and size
-                const deleted = res.length;
-                const sizeInBytes = res.reduce((acc, r) => acc + r.size_bytes, 0);
-                if (deleted > 0) {
-                    await incrCount(trx, {
-                        connectionId,
-                        environmentId,
-                        model,
-                        delta: -deleted,
-                        deltaSizeInBytes: -sizeInBytes
+                        return res;
                     });
+                },
+                // Retry if deadlock detected
+                // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
+                {
+                    maxAttempts: 3,
+                    delayMs: 500,
+                    retryOnError: (err) => {
+                        if (err !== null && typeof err === 'object' && 'code' in err) {
+                            const errorCode = (err as { code: string }).code;
+                            return errorCode === '40P01'; // deadlock_detected
+                        }
+                        return false;
+                    }
                 }
+            );
+
+            if (batchResult.length < batchSize) {
+                hasMore = false;
             }
 
-            if (partition) {
-                span.setTag('nango.partition', partition);
+            if (!partition && batchResult[0]?.partition) {
+                partition = batchResult[0].partition;
             }
-            return Ok(deletedIds);
-        });
+
+            deletedIds.push(...batchResult.map((r) => r.external_id));
+        }
+
+        if (partition) {
+            span.setTag('nango.partition', partition);
+        }
+        return Ok(deletedIds);
     } catch (err) {
         const e = new Error(`Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, generation ${generation}`, {
             cause: err
         });
-        span.setTag('error', err);
+        span.setTag('error', e);
         return Err(e);
     } finally {
         span.finish();
@@ -1182,7 +1235,6 @@ export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: nu
             .from(RECORD_COUNTS_TABLE)
             .select<RecordCount[]>('*')
             .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
-            .where('count', '>', 0)
             .orderByRaw('RANDOM()')
             .limit(1);
 

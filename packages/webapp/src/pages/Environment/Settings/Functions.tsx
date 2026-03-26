@@ -1,23 +1,24 @@
-import { IconExternalLink } from '@tabler/icons-react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import SettingsContent from './components/SettingsContent';
-import { apiPostVariables, useEnvironment } from '../../../hooks/useEnvironment';
+import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
-import { Button } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 
 export const Functions: React.FC = () => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const { environmentAndAccount, mutate } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const { mutateAsync: postVariablesAsync, isPending } = usePostVariables(env);
 
     const [edit, setEdit] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [vars, setVars] = useState<Record<string, string>>(() => {
         if (environmentAndAccount && environmentAndAccount.env_variables.length > 0) {
             return environmentAndAccount.env_variables.reduce<Record<string, string>>((acc, curr) => {
@@ -30,33 +31,24 @@ export const Functions: React.FC = () => {
     const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
 
     const onSave = async () => {
-        setLoading(true);
         const variables: ApiEnvironmentVariable[] = Object.entries(vars).map(([name, value]) => ({ name, value }));
-        const res = await apiPostVariables(env, {
-            variables
-        });
-
-        setLoading(false);
-
-        if ('error' in res.json) {
+        try {
+            await postVariablesAsync({ variables });
+            setEdit(false);
+            setErrors([]);
+        } catch (err) {
             toast({ title: 'There was an issue updating the environment variables', variant: 'error' });
-            if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
+            if (err instanceof APIError && 'error' in err.json && err.json.error.code === 'invalid_body' && err.json.error.errors) {
                 setErrors(
-                    res.json.error.errors.map((err) => {
-                        if (err.path[0] !== 'variables') {
+                    err.json.error.errors.map((e: any) => {
+                        if (e.path[0] !== 'variables') {
                             return null as any;
                         }
-                        return { index: err.path[1], key: err.path[2], error: err.message };
+                        return { index: e.path[1], key: e.path[2], error: e.message };
                     })
                 );
             }
-            return;
         }
-
-        void mutate();
-
-        setEdit(false);
-        setErrors([]);
     };
 
     const onCancel = () => {
@@ -80,11 +72,11 @@ export const Functions: React.FC = () => {
     return (
         <SettingsContent title="Functions">
             <div className="flex flex-col gap-2.5">
-                <div className="flex">
+                <div className="inline-flex items-center gap-2">
                     Environment variables
-                    <Link className="flex items-center px-1.5" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
-                        <IconExternalLink stroke={1} size={18} />
-                    </Link>
+                    <ButtonLink variant="ghost" size="icon" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
+                        <ExternalLink />
+                    </ButtonLink>
                 </div>
                 <div className="flex flex-col gap-5">
                     <fieldset className="flex flex-col gap-3">
@@ -93,14 +85,14 @@ export const Functions: React.FC = () => {
                             onChange={setVars}
                             placeholderKey="MY_ENV_VAR"
                             placeholderValue="value"
-                            disabled={!edit || loading}
+                            disabled={!edit || isPending}
                             isSecret={true}
                             alwaysShowEmptyRow={edit}
                         />
                         {errors.length > 0 && (
                             <div className="flex flex-col gap-1">
                                 {errors.map((err, i) => (
-                                    <div key={i} className="text-alert-400 text-s">
+                                    <div key={i} className="text-body-small-regular text-feedback-error-fg">
                                         Row {err.index + 1}, {err.key}: {err.error}
                                     </div>
                                 ))}
@@ -118,7 +110,7 @@ export const Functions: React.FC = () => {
                                 <Button variant="tertiary" onClick={onCancel}>
                                     Cancel
                                 </Button>
-                                <Button variant="primary" onClick={onSave} disabled={loading}>
+                                <Button variant="primary" onClick={onSave} disabled={isPending}>
                                     Save
                                 </Button>
                             </>

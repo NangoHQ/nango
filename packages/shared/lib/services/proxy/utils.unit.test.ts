@@ -765,6 +765,46 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://amplitude.com/api/test');
     });
 
+    it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'OAUTH2', access_token: 'token', raw: {} },
+                connection_config: { region: 'na' }
+            })
+        });
+
+        expect(url).toBe('https://sellingpartnerapi-na.amazon.com/api/test');
+    });
+
+    it('should use first base URL when subdomain connectionConfig param is present (e.g. amazon-selling-partner with subdomain)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'OAUTH2', access_token: 'token', raw: {} },
+                connection_config: { subdomain: 'sellingpartnerapi', region: 'eu' }
+            })
+        });
+
+        expect(url).toBe('https://sellingpartnerapi-eu.amazon.com/api/test');
+    });
+
     it('should construct url with a string query params with ?', () => {
         const url = buildProxyURL({
             config: getDefaultProxy({
