@@ -38,7 +38,7 @@ export const Signin: React.FC = () => {
     const error = searchParams.get('error');
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
-        if (ssoError === 'sso_session_expired') {
+        if (error === 'sso_session_expired') {
             return 'Your SSO session has expired or is invalid. Please try again.';
         }
         return '';
@@ -47,7 +47,7 @@ export const Signin: React.FC = () => {
 
     // Clear the error query param so it doesn't persist on refresh
     useEffect(() => {
-        if (ssoError) {
+        if (error) {
             searchParams.delete('error');
             setSearchParams(searchParams, { replace: true });
         }
