@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { connectionService, getSyncsByIds } from '@nangohq/shared';
+import { connectionService, getSyncsByConnectionIds } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
@@ -49,11 +49,18 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
     });
 
     const pausedConnectionIds = new Set<number>();
-    const pausedSyncsResult = await orchestrator.getPausedSyncsByEnvironment({ environmentId: environment.id });
-    if (pausedSyncsResult.isOk() && pausedSyncsResult.value.length > 0) {
-        const syncs = await getSyncsByIds({ syncIds: pausedSyncsResult.value });
+    const connectionIds = connections.map((data) => data.connection.id);
+    const syncs = await getSyncsByConnectionIds({ connectionIds });
+    if (syncs.length > 0) {
+        const scheduleResult = await orchestrator.searchSchedules(syncs.map((s) => ({ syncId: s.id, environmentId: environment.id })));
+        if (scheduleResult.isErr()) {
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        }
         for (const sync of syncs) {
-            pausedConnectionIds.add(sync.nango_connection_id);
+            if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
+                pausedConnectionIds.add(sync.nango_connection_id);
+            }
         }
     }
 
