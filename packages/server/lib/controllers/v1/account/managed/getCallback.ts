@@ -49,7 +49,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
     let organizationId;
     try {
         const authResponse = await workos.userManagement.authenticateWithCode({
-            clientId: process.env['WORKOS_CLIENT_ID'] || '',
+            clientId: envs.WORKOS_CLIENT_ID || '',
             code: query.code
         });
         authorizedUser = authResponse.user;
