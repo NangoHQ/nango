@@ -16962,6 +16962,35 @@ todoist:
         base_url: https://api.todoist.com
     docs: https://nango.dev/docs/integrations/all/todoist
 
+toggl:
+    display_name: Toggl Track
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.track.toggl.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v9/me
+        retry:
+            after:
+                - 'x-toggl-quota-resets-in'
+    docs: https://nango.dev/docs/api-integrations/toggl
+    docs_connect: https://nango.dev/docs/api-integrations/toggl/connect
+    credentials:
+        username:
+            type: string
+            title: Email or API token
+            description: Your Toggl Track account email, or your API token when using token-based Basic Auth.
+            doc_section: '#step-1-choose-emailpassword-or-api-token'
+        password:
+            type: string
+            title: Password or api_token
+            description: Your Toggl Track account password, or the literal text api_token when authenticating with an API token.
+            secret: true
+            doc_section: '#step-1-choose-emailpassword-or-api-token'
+
 torii:
     display_name: Torii
     categories:
