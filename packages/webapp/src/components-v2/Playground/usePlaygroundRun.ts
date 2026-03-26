@@ -49,7 +49,8 @@ export function usePlaygroundRun(inputFields: InputField[]) {
     const setPlaygroundRunning = usePlaygroundStore((s) => s.setRunning);
     const setPlaygroundInputErrors = usePlaygroundStore((s) => s.setInputErrors);
 
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const abortRef = useRef<AbortController | null>(null);
 
     const handleRun = useCallback(async () => {
