@@ -15,6 +15,12 @@
 | `list-comments` | List comments on a file | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-comments.ts) |
 | `update-comment` | Update a comment on a file | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/update-comment.ts) |
 
+### Documents
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `documents` | Sync file metadata for IDs in connection metadata files, or recursively for all files under folder IDs in folders. Supports shared drives. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/documents.ts) |
+
 ### Drive
 
 | Function name | Description | Type | Source code |
@@ -29,7 +35,7 @@
 | `create-shared-drive` | Create a shared drive | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/create-shared-drive.ts) |
 | `delete-shared-drive` | Delete a shared drive | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/delete-shared-drive.ts) |
 | `get-shared-drive` | Get a shared drive by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/get-shared-drive.ts) |
-| `list-shared-drives` | List shared drives the user can access, with cursor pagination and drive metadata like hidden, capabilities, and restrictions. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-shared-drives.ts) |
+| `list-drives` | List shared drives the user can access, with cursor pagination and drive metadata like hidden, capabilities, and restrictions. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-drives.ts) |
 
 ### Files
 
@@ -44,14 +50,13 @@
 | `move-file` | Move a file to a different folder | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/move-file.ts) |
 | `update-file` | Update a file's metadata | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/update-file.ts) |
 | `upload-document` | Upload plain text or base64 file content up to 5 MB, optionally into a folder with a description; defaults to root | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/upload-document.ts) |
-| `sync-files` | Sync file metadata for IDs in connection metadata files, or recursively for all files under folder IDs in folders. Supports shared drives. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/sync-files.ts) |
 
 ### Folders
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
 | `find-folder` | Search for a folder by name or query | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/find-folder.ts) |
-| `sync-folders` | Sync root-level Google Drive folders from My Drive and shared drives | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/sync-folders.ts) |
+| `folders` | Sync root-level Google Drive folders from My Drive and shared drives | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/folders.ts) |
 
 ### Permissions
 
@@ -61,7 +66,7 @@
 | `get-permission` | Get a permission by ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/get-permission.ts) |
 | `list-permissions` | List permissions on a file | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-permissions.ts) |
 | `update-permission` | Update a permission on a file | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/update-permission.ts) |
-| `sync-permissions` | Sync file permissions from Google Drive | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/sync-permissions.ts) |
+| `permissions` | Sync file permissions from Google Drive | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/permissions.ts) |
 
 ### Shared Drives
 
@@ -70,4 +75,4 @@
 | `hide-shared-drive` | Hide a shared drive from the default view | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/hide-shared-drive.ts) |
 | `unhide-shared-drive` | Restore a hidden shared drive to default view | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/unhide-shared-drive.ts) |
 | `update-shared-drive` | Update a shared drive's metadata | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/update-shared-drive.ts) |
-| `sync-shared-drives` | Sync shared drives from Google Drive | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/sync-shared-drives.ts) |
+| `shared-drives` | Sync shared drives from Google Drive | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/shared-drives.ts) |
