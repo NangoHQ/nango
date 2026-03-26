@@ -13,6 +13,7 @@ import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -37,6 +38,7 @@ export const General: React.FC = () => {
 
     const { can } = usePermissions();
     const canEditEnvironment = !environment?.is_production || can(permissions.canWriteProdEnvironment);
+    const canToggleIsProduction = can(permissions.canToggleIsProduction);
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
@@ -108,25 +110,30 @@ export const General: React.FC = () => {
                     </div>
                 }
             >
-                <Switch
-                    checked={environment?.is_production}
-                    onCheckedChange={(checked) =>
-                        confirm({
-                            title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
-                            description: 'This impacts which team members have access to this environment.',
-                            onConfirm: async () => {
-                                await patchEnvironmentAsync({ is_production: checked });
-                                await refetchMeta();
-                                toast({
-                                    title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
-                                    variant: 'success'
-                                });
-                            },
-                            confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
-                            confirmVariant: 'destructive'
-                        })
-                    }
-                />
+                <PermissionGate condition={canToggleIsProduction}>
+                    {(allowed) => (
+                        <Switch
+                            disabled={!allowed}
+                            checked={environment?.is_production}
+                            onCheckedChange={(checked) =>
+                                confirm({
+                                    title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
+                                    description: 'This impacts which team members have access to this environment.',
+                                    onConfirm: async () => {
+                                        await patchEnvironmentAsync({ is_production: checked });
+                                        await refetchMeta();
+                                        toast({
+                                            title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
+                                            variant: 'success'
+                                        });
+                                    },
+                                    confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
+                                    confirmVariant: 'destructive'
+                                })
+                            }
+                        />
+                    )}
+                </PermissionGate>
             </SettingsGroup>
 
             <SettingsGroup label="Environment suppression" className="items-center">
