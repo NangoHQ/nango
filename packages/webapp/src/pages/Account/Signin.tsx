@@ -39,7 +39,7 @@ export const Signin: React.FC = () => {
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (ssoError === 'sso_session_expired') {
-            return 'Your SSO session has expired. Please try again.';
+            return 'Your SSO session has expired or is invalid. Please try again.';
         }
         return '';
     });
