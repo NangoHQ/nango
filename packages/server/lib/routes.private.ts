@@ -8,6 +8,7 @@ import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, 
 
 import { can, envScope } from './authz/middleware.js';
 import { setupAuth } from './clients/auth.client.js';
+import { getAgentSessionEvents, postAgentBuild, postAgentSessionAnswer } from './controllers/agent/agentProxy.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
@@ -284,6 +285,10 @@ if (flagHasUsage) {
 web.route('/admin/impersonate').post(webAuth, postImpersonate);
 
 web.route('/api-status/:service').get(webAuth, getApiStatus);
+
+web.route('/agent/build').post(webAuth, postAgentBuild);
+web.route('/agent/session/:sid/events').get(webAuth, getAgentSessionEvents);
+web.route('/agent/session/:sid/answer').post(webAuth, postAgentSessionAnswer);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

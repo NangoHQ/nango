@@ -24,6 +24,7 @@ import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { ConnectionList } from './pages/Connection/List';
 import { ConnectionShow } from './pages/Connection/Show';
 import { EnvironmentSettings } from './pages/Environment/Settings/Show';
+import { FunctionBuilder as FunctionBuilderShow } from './pages/FunctionBuilder/Show';
 import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from './pages/GettingStarted/Show';
 import { Homepage } from './pages/Homepage/Show';
@@ -183,6 +184,11 @@ const router = sentryCreateBrowserRouter([
                         path: 'logs',
                         element: <LogsShow />,
                         handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'function-builder',
+                        element: <FunctionBuilderShow />,
+                        handle: { breadcrumb: 'Function Builder' } as BreadcrumbHandle
                     },
                     {
                         path: 'activity',
