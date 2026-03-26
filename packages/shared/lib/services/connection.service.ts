@@ -69,6 +69,7 @@ import type {
     DBEndUser,
     DBEnvironment,
     DBTeam,
+    IntegrationConfig,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -188,7 +189,7 @@ class ConnectionService {
         providerConfigKey: string;
         credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
         connectionConfig?: ConnectionConfig;
-        config: ProviderConfig;
+        config: IntegrationConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
         tags?: Tags | undefined;
@@ -215,7 +216,7 @@ class ConnectionService {
                 refresh_exhausted: false,
                 deleted: false,
                 deleted_at: null,
-                tags: tags ?? exists?.tags ?? {}
+                tags: tags && Object.keys(tags).length > 0 ? tags : (exists?.tags ?? {})
             });
 
             const [connection] = await db.knex
