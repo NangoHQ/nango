@@ -25,7 +25,7 @@ export const ProfileDropdown: React.FC = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     const { can } = usePermissions();
-    const canManageBilling = can(permissions.canManageTeam);
+    const canManageBilling = can(permissions.canManageBilling);
 
     const items = useMemo(() => {
         const list = [
