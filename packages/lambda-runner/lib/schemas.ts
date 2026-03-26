@@ -110,3 +110,13 @@ export const requestSchema = z
         nangoProps: nangoPropsSchema
     })
     .and(z.union([inlineCodeSchema, refCodeSchema]));
+
+export const readinessCheckSchema = z.object({
+    type: z.literal('readiness_check')
+});
+
+export const lambdaInvocationSchema = z.union([requestSchema, readinessCheckSchema]);
+
+export type TaskRequest = z.infer<typeof requestSchema>;
+export type ReadinessCheckRequest = z.infer<typeof readinessCheckSchema>;
+export type LambdaInvocation = z.infer<typeof lambdaInvocationSchema>;
