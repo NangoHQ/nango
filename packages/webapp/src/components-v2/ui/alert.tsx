@@ -21,7 +21,13 @@ const alertVariants = cva(
         'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-title"]]:self-end',
         'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-description"]]:self-start',
         'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-start-1',
-        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-span-2'
+        'has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-span-2',
+        // actionsBelow: override grid to place actions on a new row below the content
+        'data-[actions-below]:has-[>div[data-slot="alert-actions"]]:grid-cols-[0_1fr]',
+        'data-[actions-below]:has-[>svg]:has-[>div[data-slot="alert-actions"]]:grid-cols-[calc(var(--spacing)*4)_1fr]',
+        'data-[actions-below]:[&>[data-slot="alert-actions"]]:col-start-2 data-[actions-below]:[&>[data-slot="alert-actions"]]:row-start-auto',
+        'data-[actions-below]:has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-start-auto',
+        'data-[actions-below]:has-[>div[data-slot="alert-title"]]:has-[>div[data-slot="alert-description"]]:[&>[data-slot="alert-actions"]]:row-span-1'
     ].join(' '),
     {
         variants: {
@@ -38,8 +44,15 @@ const alertVariants = cva(
     }
 );
 
-function Alert({ className, variant, ...props }: React.ComponentProps<'div'> & VariantProps<typeof alertVariants>) {
-    return <div data-slot="alert" role="alert" className={cn(alertVariants({ variant }), className)} {...props} />;
+function Alert({
+    className,
+    variant,
+    actionsBelow = false,
+    ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof alertVariants> & { actionsBelow?: boolean }) {
+    return (
+        <div data-slot="alert" role="alert" data-actions-below={actionsBelow || undefined} className={cn(alertVariants({ variant }), className)} {...props} />
+    );
 }
 
 function AlertTitle({ className, ...props }: React.ComponentProps<'div'>) {

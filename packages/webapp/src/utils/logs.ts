@@ -3,31 +3,45 @@ import { addMilliseconds, startOfDay, subDays, subHours, subMinutes } from 'date
 import type { Period, PeriodPreset } from './dates';
 import type { SearchOperations, SearchPeriod } from '@nangohq/types';
 
-export function getLogsUrl(
-    options: Omit<
-        Partial<{
-            [P in keyof SearchOperations['Body']]?: string | undefined;
-        }>,
-        'period'
-    > & { operationId?: string | null | number; env: string; day?: Date | null }
-): string {
+type LogsUrlOptions = Omit<
+    Partial<{
+        [P in keyof SearchOperations['Body']]?: string | undefined;
+    }>,
+    'period'
+> & { operationId?: string | null | number; env: string; day?: Date | null; live?: boolean };
+
+function setParam(usp: URLSearchParams, key: string, value: string | number | string[] | undefined | null): void {
+    if (value === undefined || value === null || value === '') return;
+    if (Array.isArray(value)) {
+        const filtered = value.filter((v) => v !== '');
+        if (filtered.length > 0) usp.set(key, filtered.join(','));
+    } else {
+        usp.set(key, String(value));
+    }
+}
+
+export function getLogsUrl(options: LogsUrlOptions): string {
     const usp = new URLSearchParams();
-    for (const [key, val] of Object.entries(options)) {
-        if (!val || key === 'env') {
-            continue;
-        }
-        if (key === 'day' && val) {
-            const from = new Date(val);
-            from.setHours(0, 0);
-            const to = new Date(val);
-            to.setHours(23, 59);
-            usp.set('period', `${from.getTime()},${to.getTime()}`);
-            continue;
-        }
-        usp.set(key, val as any);
+
+    if (options.day) {
+        const from = new Date(options.day);
+        from.setHours(0, 0);
+        const to = new Date(options.day);
+        to.setHours(23, 59);
+        usp.set('period', `${from.getTime()},${to.getTime()}`);
     }
 
-    usp.set('live', 'false');
+    setParam(usp, 'operationId', options.operationId != null ? String(options.operationId) : undefined);
+    setParam(usp, 'search', options.search);
+    setParam(usp, 'limit', options.limit);
+    setParam(usp, 'states', options.states);
+    setParam(usp, 'types', options.types);
+    setParam(usp, 'integrations', options.integrations);
+    setParam(usp, 'connections', options.connections);
+    setParam(usp, 'syncs', options.syncs);
+    setParam(usp, 'cursor', options.cursor ?? undefined);
+
+    usp.set('live', options.live ? 'true' : 'false');
     usp.sort();
     return `/${options.env}/logs?${usp.toString()}`;
 }

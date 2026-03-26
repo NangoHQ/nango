@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
 import { PROD_ENVIRONMENT_NAME } from './constants';
+import { usePlaygroundStore } from './store/playground';
 import storage, { LocalStorageKeys } from './utils/local-storage';
 
 interface Env {
@@ -21,7 +22,7 @@ interface State {
     setDebugMode: (value: boolean) => void;
 }
 
-export const useStore = create<State>((set, get) => ({
+export const useStore = create<State>()((set, get) => ({
     env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
     envs: [{ name: 'dev' }, { name: PROD_ENVIRONMENT_NAME }],
     baseUrl: 'https://api.nango.dev',
@@ -29,28 +30,19 @@ export const useStore = create<State>((set, get) => ({
     debugMode: false,
 
     setEnv: (value) => {
+        if (get().env !== value) {
+            usePlaygroundStore.getState().reset();
+        }
         set({ env: value });
     },
 
-    setEnvs: (envs: Env[]) => {
-        set({ envs });
-    },
+    setEnvs: (envs) => set({ envs }),
 
-    getEnvs: () => {
-        return get().envs;
-    },
+    setBaseUrl: (value) => set({ baseUrl: value }),
 
-    setBaseUrl: (value) => {
-        set({ baseUrl: value });
-    },
+    setShowGettingStarted: (value) => set({ showGettingStarted: value }),
 
-    setShowGettingStarted: (value) => {
-        set({ showGettingStarted: value });
-    },
-
-    setDebugMode: (value) => {
-        set({ debugMode: value });
-    }
+    setDebugMode: (value) => set({ debugMode: value })
 }));
 
 export const queryClient = new QueryClient({
@@ -61,9 +53,7 @@ export const queryClient = new QueryClient({
             refetchOnMount: true,
             staleTime: 30 * 1000,
             retry: 0,
-            retryDelay: (attemptIndex) => {
-                return Math.min(2000 * 2 ** attemptIndex, 30000);
-            }
+            retryDelay: (attemptIndex) => Math.min(2000 * 2 ** attemptIndex, 30000)
         }
     }
 });
