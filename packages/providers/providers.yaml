@@ -15490,6 +15490,7 @@ shopworks:
         content-type: application/json
     token_response:
         token: id_token
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
