@@ -2240,6 +2240,33 @@ bettercontact:
             pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+bliro:
+    display_name: Bliro
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://accounts.bliro.io/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://api.bliro.io
+    proxy:
+        base_url: https://api.bliro.io
+    docs: https://nango.dev/docs/api-integrations/bliro
+    docs_connect: https://nango.dev/docs/api-integrations/bliro/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Bliro client application Client ID.
+            doc_section: '#step-1-creating-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Bliro client application Client Secret.
+            secret: true
+            doc_section: '#step-1-creating-a-client-application'
+
 bigcommerce:
     display_name: BigCommerce
     categories:
