@@ -2,8 +2,8 @@ import { flags } from '@nangohq/utils';
 
 import { evaluator } from './evaluator.js';
 
-import type { Permission, Scope } from './types.js';
 import type { RequestLocals } from '../utils/express.js';
+import type { Permission, Scope } from '@nangohq/types';
 import type { RequestHandler } from 'express';
 
 export const envScope = (l: RequestLocals): Scope => (l.environment?.is_production ? 'production' : 'non-production');

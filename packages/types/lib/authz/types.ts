@@ -1,4 +1,4 @@
-import type { Role } from '@nangohq/types';
+import type { Role } from '../user/db.js';
 
 export type Action = 'create' | 'read' | 'update' | 'delete' | '*';
 export type Resource =
