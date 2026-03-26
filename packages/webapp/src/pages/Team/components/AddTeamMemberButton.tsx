@@ -52,15 +52,15 @@ export const AddTeamMemberButton = () => {
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <PermissionGate asChild condition={canManageTeam}>
-                    {(allowed) => (
+            <PermissionGate condition={canManageTeam}>
+                {(allowed) => (
+                    <DialogTrigger asChild>
                         <Button size="lg" disabled={!allowed}>
                             <Plus /> Add Team Member
                         </Button>
-                    )}
-                </PermissionGate>
-            </DialogTrigger>
+                    </DialogTrigger>
+                )}
+            </PermissionGate>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Invite a team member</DialogTitle>
