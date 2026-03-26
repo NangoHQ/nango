@@ -35,7 +35,7 @@ export const Signin: React.FC = () => {
     const { toast } = useToast();
 
     const [searchParams, setSearchParams] = useSearchParams();
-    const ssoError = searchParams.get('error');
+    const error = searchParams.get('error');
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (ssoError === 'sso_session_expired') {
