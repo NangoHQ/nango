@@ -512,9 +512,6 @@
                         },
                         "refresh_token": {
                             "type": "string"
-                        },
-                        "refresh_token_introspect_expiry": {
-                            "type": "boolean"
                         }
                     }
                 },

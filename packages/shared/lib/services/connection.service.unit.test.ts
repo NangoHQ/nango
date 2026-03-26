@@ -32,8 +32,8 @@ describe('connection.service parseRawCredentials', () => {
         });
     });
 
-    describe('TWO_STEP refresh_token_introspect_expiry', () => {
-        it('flag not set: ignores refresh token JWT expiry and keeps access token expiry', () => {
+    describe('TWO_STEP refresh token JWT exp introspection', () => {
+        it('refresh token JWT expiry is sooner => uses refresh token expiry', () => {
             const accessTokenExp = Math.floor(Date.now() / 1000) + 3600; // 1h from now
             const refreshTokenExp = Math.floor(Date.now() / 1000) + 600; // 10min from now (sooner)
             const template: ProviderTwoStep = {
@@ -55,37 +55,10 @@ describe('connection.service parseRawCredentials', () => {
 
             const result = connectionService.parseRawCredentials(rawCreds, 'TWO_STEP', template) as TwoStepCredentials;
 
-            // expires_at should be based on the access token, not the sooner refresh token
-            expect(result.expires_at!.getTime()).toBeCloseTo(accessTokenExp * 1000, -3);
-        });
-
-        it('flag set: refresh token expiry is sooner => uses refresh token expiry', () => {
-            const accessTokenExp = Math.floor(Date.now() / 1000) + 3600; // 1h from now
-            const refreshTokenExp = Math.floor(Date.now() / 1000) + 600; // 10min from now (sooner)
-            const template: ProviderTwoStep = {
-                display_name: 'Test',
-                docs: 'https://example.com',
-                auth_mode: 'TWO_STEP',
-                token_response: {
-                    token: 'access_token',
-                    token_expiration: 'expires',
-                    token_expiration_strategy: 'expireAt',
-                    refresh_token: 'refresh_token',
-                    refresh_token_introspect_expiry: true
-                }
-            };
-            const rawCreds = {
-                access_token: 'at',
-                expires: new Date(accessTokenExp * 1000).toISOString(),
-                refresh_token: makeJwt({ exp: refreshTokenExp })
-            };
-
-            const result = connectionService.parseRawCredentials(rawCreds, 'TWO_STEP', template) as TwoStepCredentials;
-
             expect(result.expires_at).toEqual(new Date(refreshTokenExp * 1000 - REFRESH_MARGIN_MS));
         });
 
-        it('flag set: access token expiry is sooner => keeps access token expiry', () => {
+        it('access token expiry is sooner => keeps access token expiry', () => {
             const accessTokenExp = Math.floor(Date.now() / 1000) + 600; // 10min from now (sooner)
             const refreshTokenExp = Math.floor(Date.now() / 1000) + 86400; // 1 day from now
             const template: ProviderTwoStep = {
@@ -96,8 +69,7 @@ describe('connection.service parseRawCredentials', () => {
                     token: 'access_token',
                     token_expiration: 'expires',
                     token_expiration_strategy: 'expireAt',
-                    refresh_token: 'refresh_token',
-                    refresh_token_introspect_expiry: true
+                    refresh_token: 'refresh_token'
                 }
             };
             const rawCreds = {
@@ -111,7 +83,7 @@ describe('connection.service parseRawCredentials', () => {
             expect(result.expires_at!.getTime()).toBeCloseTo(accessTokenExp * 1000, -3);
         });
 
-        it('flag set: refresh token is not a JWT => falls back to access token expiry', () => {
+        it('refresh token is not a JWT => falls back to access token expiry', () => {
             const accessTokenExp = Math.floor(Date.now() / 1000) + 3600;
             const template: ProviderTwoStep = {
                 display_name: 'Test',
@@ -121,8 +93,7 @@ describe('connection.service parseRawCredentials', () => {
                     token: 'access_token',
                     token_expiration: 'expires',
                     token_expiration_strategy: 'expireAt',
-                    refresh_token: 'refresh_token',
-                    refresh_token_introspect_expiry: true
+                    refresh_token: 'refresh_token'
                 }
             };
             const rawCreds = {
@@ -136,7 +107,7 @@ describe('connection.service parseRawCredentials', () => {
             expect(result.expires_at!.getTime()).toBeCloseTo(accessTokenExp * 1000, -3);
         });
 
-        it('flag set: refresh token JWT has no exp claim => falls back to access token expiry', () => {
+        it('refresh token looks like a JWT but payload cannot be decoded => falls back to access token expiry', () => {
             const accessTokenExp = Math.floor(Date.now() / 1000) + 3600;
             const template: ProviderTwoStep = {
                 display_name: 'Test',
@@ -146,8 +117,31 @@ describe('connection.service parseRawCredentials', () => {
                     token: 'access_token',
                     token_expiration: 'expires',
                     token_expiration_strategy: 'expireAt',
-                    refresh_token: 'refresh_token',
-                    refresh_token_introspect_expiry: true
+                    refresh_token: 'refresh_token'
+                }
+            };
+            const rawCreds = {
+                access_token: 'at',
+                expires: new Date(accessTokenExp * 1000).toISOString(),
+                refresh_token: 'header.!!!invalid-base64!!!.sig' // JWT-shaped but corrupted payload
+            };
+
+            const result = connectionService.parseRawCredentials(rawCreds, 'TWO_STEP', template) as TwoStepCredentials;
+
+            expect(result.expires_at!.getTime()).toBeCloseTo(accessTokenExp * 1000, -3);
+        });
+
+        it('refresh token JWT has no exp claim => falls back to access token expiry', () => {
+            const accessTokenExp = Math.floor(Date.now() / 1000) + 3600;
+            const template: ProviderTwoStep = {
+                display_name: 'Test',
+                docs: 'https://example.com',
+                auth_mode: 'TWO_STEP',
+                token_response: {
+                    token: 'access_token',
+                    token_expiration: 'expires',
+                    token_expiration_strategy: 'expireAt',
+                    refresh_token: 'refresh_token'
                 }
             };
             const rawCreds = {

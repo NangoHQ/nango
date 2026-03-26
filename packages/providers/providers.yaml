@@ -16909,7 +16909,6 @@ timify:
         token_expiration: expires
         token_expiration_strategy: expireIn
         refresh_token: refreshToken
-        refresh_token_introspect_expiry: true
     proxy:
         base_url: https://${connectionConfig.subdomain}.timify.com
         headers:

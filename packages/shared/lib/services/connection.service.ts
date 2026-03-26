@@ -1048,7 +1048,7 @@ class ConnectionService {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
-                if (refreshToken && template.token_response.refresh_token_introspect_expiry) {
+                if (refreshToken) {
                     const decoded = jwtClient.decode(refreshToken);
                     if (decoded && typeof decoded['exp'] === 'number') {
                         const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
