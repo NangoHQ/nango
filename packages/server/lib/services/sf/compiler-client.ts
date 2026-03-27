@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
-import { envs } from '../../env.js';
-import { getDaytonaClient } from '../daytona/client.js';
-import { daytonaCompilerHarness } from './compiler-client.daytona.harness.js';
+import { CommandExitError, Sandbox } from 'e2b';
+
+import { e2bCompilerHarness } from './compiler-client.e2b.harness.js';
 
 import type { CLIDeployFlowConfig } from '@nangohq/types';
 
@@ -33,51 +33,67 @@ export class SfCompilerError extends Error {
 
 const compilerRequestPath = '/tmp/nango-sf-compile-request.json';
 const compilerHarnessPath = '/tmp/nango-sf-compile.mjs';
-const compilerProjectPath = '/home/daytona/nango-integrations';
-const compilerTimeoutSeconds = 180;
+const compilerProjectPath = '/home/user/nango-integrations';
+const compilerTimeoutMs = 3 * 60 * 1000;
 
-type DaytonaCompileResponse =
+type E2BCompileResponse =
     | { success: true; bundledJs: string; flow: CompileResult['flow'] }
     | { success: false; step: 'validation' | 'compilation'; message: string; stack?: string };
 
 export async function invokeCompiler(request: SfCompileRequest): Promise<CompileResult> {
-    const sandbox = await getDaytonaClient().create(
-        {
-            name: `sf-compiler-${randomUUID()}`,
-            snapshot: envs.DAYTONA_COMPILER_SNAPSHOT,
-            autoStopInterval: 0,
-            autoDeleteInterval: -1
-        },
-        { timeout: compilerTimeoutSeconds }
-    );
+    if (!process.env['E2B_API_KEY']) {
+        throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
+    }
+
+    const sandbox = await Sandbox.create(process.env['E2B_COMPILER_TEMPLATE'] || 'nango-sf-compiler', {
+        timeoutMs: compilerTimeoutMs,
+        allowInternetAccess: true,
+        metadata: {
+            purpose: 'nango-compiler',
+            requestId: randomUUID()
+        }
+    });
 
     try {
-        await sandbox.fs.uploadFile(Buffer.from(JSON.stringify(request)), compilerRequestPath);
-        await sandbox.fs.uploadFile(Buffer.from(daytonaCompilerHarness), compilerHarnessPath);
+        await sandbox.files.write(compilerRequestPath, JSON.stringify(request));
+        await sandbox.files.write(compilerHarnessPath, e2bCompilerHarness);
 
-        const response = await sandbox.process.executeCommand(`node ${compilerHarnessPath} ${compilerRequestPath}`, compilerProjectPath, undefined, compilerTimeoutSeconds);
-        const parsed = parseDaytonaCompileResponse(response.result);
-        if (!parsed.success) {
-            throw new SfCompilerError(parsed.message, parsed.step, parsed.stack);
+        try {
+            const response = await sandbox.commands.run(`node ${compilerHarnessPath} ${compilerRequestPath}`, {
+                cwd: compilerProjectPath,
+                timeoutMs: compilerTimeoutMs
+            });
+            const parsed = parseE2BCompileResponse(response.stdout);
+            if (!parsed.success) {
+                throw new SfCompilerError(parsed.message, parsed.step, parsed.stack);
+            }
+
+            return {
+                bundledJs: parsed.bundledJs,
+                flow: parsed.flow
+            };
+        } catch (error) {
+            if (error instanceof CommandExitError) {
+                const parsed = parseE2BCompileResponse(error.stdout || error.stderr);
+                if (!parsed.success) {
+                    throw new SfCompilerError(parsed.message, parsed.step, parsed.stack);
+                }
+            }
+            throw error;
         }
-
-        return {
-            bundledJs: parsed.bundledJs,
-            flow: parsed.flow
-        };
     } finally {
-        await sandbox.delete(compilerTimeoutSeconds).catch(() => {});
+        await sandbox.kill().catch(() => {});
     }
 }
 
-function parseDaytonaCompileResponse(raw: string): DaytonaCompileResponse {
+function parseE2BCompileResponse(raw: string): E2BCompileResponse {
     if (!raw) {
-        throw new Error('Daytona compiler returned an empty response');
+        throw new Error('E2B compiler returned an empty response');
     }
 
     try {
-        return JSON.parse(raw.trim()) as DaytonaCompileResponse;
+        return JSON.parse(raw.trim()) as E2BCompileResponse;
     } catch (error) {
-        throw new Error(`Failed to parse Daytona compiler response: ${error instanceof Error ? error.message : String(error)}\n${raw}`);
+        throw new Error(`Failed to parse E2B compiler response: ${error instanceof Error ? error.message : String(error)}\n${raw}`);
     }
 }

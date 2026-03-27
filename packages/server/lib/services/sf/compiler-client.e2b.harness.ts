@@ -1,9 +1,9 @@
-export const daytonaCompilerHarness = String.raw`
+export const e2bCompilerHarness = String.raw`
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const projectRoot = '/home/daytona/nango-integrations';
+const projectRoot = '/home/user/nango-integrations';
 const compileModuleUrl = pathToFileURL(path.join(projectRoot, 'node_modules/nango/dist/zeroYaml/compile.js')).href;
 const definitionsModuleUrl = pathToFileURL(path.join(projectRoot, 'node_modules/nango/dist/zeroYaml/definitions.js')).href;
 

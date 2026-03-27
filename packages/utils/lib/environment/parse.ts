@@ -33,12 +33,10 @@ export const ENVS = z.object({
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
 
-    // Daytona compiler prototype
-    DAYTONA_API_KEY: z.string().optional(),
-    DAYTONA_API_URL: z.url().optional(),
-    DAYTONA_TARGET: z.string().optional(),
-    DAYTONA_COMPILER_SNAPSHOT: z.string().optional().default('nango-sf-compiler'),
-    DAYTONA_AGENT_SNAPSHOT: z.string().optional().default('nango-opencode-agent'),
+    // E2B sandbox prototype
+    E2B_API_KEY: z.string().optional(),
+    E2B_COMPILER_TEMPLATE: z.string().optional().default('nango-sf-compiler'),
+    E2B_AGENT_TEMPLATE: z.string().optional().default('nango-opencode-agent'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

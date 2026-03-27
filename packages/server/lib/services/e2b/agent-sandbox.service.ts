@@ -2,27 +2,23 @@ import { randomUUID } from 'node:crypto';
 
 import { getLogger } from '@nangohq/utils';
 import { createOpencodeClient, type OpencodeClient } from '@opencode-ai/sdk';
+import { Sandbox } from 'e2b';
 
-import { getDaytonaClient } from './client.js';
+const logger = getLogger('e2b-agent-sandbox');
 
-import type { Sandbox } from '@daytonaio/sdk';
-
-const logger = getLogger('daytona-agent-sandbox');
-
-export const agentProjectPath = '/home/daytona/nango-integrations';
+export const agentProjectPath = '/home/user/nango-integrations';
 const opencodePort = 4096;
-const opencodeServerSessionId = 'opencode-server';
-const sandboxTimeoutSeconds = 180;
-const agentSnapshot = process.env['DAYTONA_AGENT_SNAPSHOT'] || 'nango-opencode-agent';
+const sandboxTimeoutMs = 30 * 60 * 1000;
+const agentTemplate = process.env['E2B_AGENT_TEMPLATE'] || 'nango-opencode-agent';
 const defaultAgentModel = 'opencode/kimi-k2.5';
 
 export interface AgentSandboxHandle {
     sandbox: Sandbox;
     client: OpencodeClient;
-    previewUrl: string;
-    previewToken: string;
-    serverCommandId: string;
-    serverSessionId: string;
+    baseUrl: string;
+    accessToken: string | undefined;
+    sandboxId: string;
+    serverPid: number;
     model: {
         full: string;
         providerID: string;
@@ -31,80 +27,75 @@ export interface AgentSandboxHandle {
 }
 
 export async function createAgentSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentSandboxHandle> {
-    const model = resolveModel(payload);
-    const sandbox = await getDaytonaClient().create(
-        {
-            name: `agent-${sessionId}`,
-            snapshot: agentSnapshot,
-            envVars: getSandboxEnvVars(payload, model),
-            autoStopInterval: 0,
-            autoDeleteInterval: 1440,
-            labels: {
-                purpose: 'nango-agent',
-                sessionId
-            }
-        },
-        { timeout: sandboxTimeoutSeconds }
-    );
-
-    try {
-        await sandbox.process.createSession(opencodeServerSessionId);
-        const command = await sandbox.process.executeSessionCommand(
-            opencodeServerSessionId,
-            {
-                command: `cd ${agentProjectPath} && opencode serve --hostname 0.0.0.0 --port ${opencodePort}`,
-                runAsync: true
-            },
-            sandboxTimeoutSeconds
-        );
-
-        if (!command.cmdId) {
-            throw new Error('Failed to start OpenCode server in Daytona sandbox');
-        }
-
-        const preview = await sandbox.getPreviewLink(opencodePort);
-        const previewHeaders = { 'x-daytona-preview-token': preview.token };
-        const client = createOpencodeClient({
-            baseUrl: preview.url,
-            directory: agentProjectPath,
-            headers: previewHeaders,
-            fetch: async (request) => {
-                const headers = new Headers(request.headers);
-                headers.set('x-daytona-preview-token', preview.token);
-                return fetch(new Request(request, { headers }));
-            }
-        });
-
-        await waitForOpenCodeServer(preview.url, preview.token, sandbox, command.cmdId);
-
-        return {
-            sandbox,
-            client,
-            previewUrl: preview.url,
-            previewToken: preview.token,
-            serverCommandId: command.cmdId,
-            serverSessionId: opencodeServerSessionId,
-            model
-        };
-    } catch (error) {
-        await sandbox.delete(sandboxTimeoutSeconds).catch(() => {});
-        throw error;
+    if (!process.env['E2B_API_KEY']) {
+        throw new Error('E2B_API_KEY is required for the E2B agent runtime');
     }
+
+    const model = resolveModel();
+    const sandboxEnv = getSandboxEnvVars(payload, model);
+    const sandbox = await Sandbox.create(agentTemplate, {
+        timeoutMs: sandboxTimeoutMs,
+        allowInternetAccess: true,
+        metadata: {
+            purpose: 'nango-agent',
+            sessionId,
+            createdBy: 'nango-server'
+        },
+        network: {
+            allowPublicTraffic: false
+        }
+    });
+
+    await sandbox.files.write(`${agentProjectPath}/opencode.json`, JSON.stringify(createRuntimeConfig(payload, model), null, 2));
+
+    const accessToken = sandbox.trafficAccessToken;
+    const baseUrl = `https://${sandbox.getHost(opencodePort)}`;
+    const headers = accessToken ? { 'e2b-traffic-access-token': accessToken } : undefined;
+    const serverHandle = await sandbox.commands.run(`opencode serve --hostname 0.0.0.0 --port ${opencodePort}`, {
+        cwd: agentProjectPath,
+        envs: sandboxEnv,
+        background: true,
+        timeoutMs: 0
+    });
+    const client = createOpencodeClient({
+        baseUrl,
+        directory: agentProjectPath,
+        headers,
+        fetch: async (request) => {
+            if (!accessToken) {
+                return fetch(request);
+            }
+            const merged = new Headers(request.headers);
+            merged.set('e2b-traffic-access-token', accessToken);
+            return fetch(new Request(request, { headers: merged }));
+        }
+    });
+
+    await waitForOpenCodeServer(baseUrl, accessToken, serverHandle);
+
+    return {
+        sandbox,
+        client,
+        baseUrl,
+        accessToken,
+        sandboxId: sandbox.sandboxId,
+        serverPid: serverHandle.pid,
+        model
+    };
 }
 
 export async function destroyAgentSandbox(handle: Pick<AgentSandboxHandle, 'sandbox'>): Promise<void> {
-    await handle.sandbox.delete(sandboxTimeoutSeconds).catch((error) => {
-        logger.warn('Failed to delete Daytona agent sandbox', { error });
+    await handle.sandbox.kill().catch((error) => {
+        logger.warn('Failed to kill E2B agent sandbox', { error });
     });
 }
 
-async function waitForOpenCodeServer(previewUrl: string, previewToken: string, sandbox: Sandbox, commandId: string): Promise<void> {
+async function waitForOpenCodeServer(baseUrl: string, accessToken: string | undefined, serverHandle: { stdout: string; stderr: string }): Promise<void> {
     const maxAttempts = 40;
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         try {
-            const response = await fetch(`${previewUrl}/global/health`, {
-                headers: { 'x-daytona-preview-token': previewToken }
-            });
+            const init = accessToken ? { headers: { 'e2b-traffic-access-token': accessToken } } : {};
+            const response = await fetch(`${baseUrl}/global/health`, init);
             if (response.ok) {
                 return;
             }
@@ -115,15 +106,8 @@ async function waitForOpenCodeServer(previewUrl: string, previewToken: string, s
         await new Promise((resolve) => setTimeout(resolve, 1500));
     }
 
-    let logs = '';
-    try {
-        const result = await sandbox.process.getSessionCommandLogs(opencodeServerSessionId, commandId);
-        logs = result.stderr || result.stdout || result.output || '';
-    } catch {
-        // Ignore log retrieval failures.
-    }
-
-    throw new Error(`Timed out waiting for OpenCode server to start${logs ? `: ${logs}` : ''}`);
+    const logs = [serverHandle.stdout, serverHandle.stderr].filter(Boolean).join('\n');
+    throw new Error(`Timed out waiting for OpenCode server to start in E2B sandbox${logs ? `: ${logs}` : ''}`);
 }
 
 function getSandboxEnvVars(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, string> {
@@ -160,10 +144,9 @@ function getSandboxEnvVars(payload: Record<string, unknown>, model: { providerID
     }
 
     if (model.providerID === 'opencode' && !envVars['OPENCODE_API_KEY']) {
-        throw new Error('OPENCODE_API_KEY is required for the Daytona agent runtime when using the OpenCode provider');
+        throw new Error('OPENCODE_API_KEY is required for the E2B agent runtime when using the OpenCode provider');
     }
 
-    envVars['OPENCODE_CONFIG_CONTENT'] = JSON.stringify(createRuntimeConfig(payload, model));
     return envVars;
 }
 
@@ -188,7 +171,7 @@ export function createSessionTitle(payload: Record<string, unknown>): string {
     return functionName ? `Build ${functionName}` : `Agent Run ${randomUUID().slice(0, 8)}`;
 }
 
-function resolveModel(_payload: Record<string, unknown>): { providerID: string; modelID: string; full: string } {
+function resolveModel(): { providerID: string; modelID: string; full: string } {
     const full = defaultAgentModel;
     const [providerID, ...rest] = full.split('/');
     if (!providerID || rest.length === 0) {
@@ -205,7 +188,12 @@ function resolveModel(_payload: Record<string, unknown>): { providerID: string; 
 function createRuntimeConfig(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, unknown> {
     const providerOptions: Record<string, unknown> = {};
     const apiBaseUrl = typeof payload['api_base_url'] === 'string' && payload['api_base_url'].trim().length > 0 ? payload['api_base_url'].trim() : null;
-    const apiKey = typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0 ? payload['api_key'].trim() : null;
+    const apiKey =
+        typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0
+            ? payload['api_key'].trim()
+            : model.providerID === 'opencode'
+              ? process.env['OPENCODE_API_KEY'] || null
+              : null;
 
     if (apiBaseUrl) {
         providerOptions['baseURL'] = apiBaseUrl;

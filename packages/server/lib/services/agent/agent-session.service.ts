@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto';
 
 import { getLogger } from '@nangohq/utils';
 
-import { createAgentPrompt, createAgentSandbox, createAnswerPrompt, createSessionTitle, destroyAgentSandbox } from '../daytona/agent-sandbox.service.js';
+import { createAgentPrompt, createAgentSandbox, createAnswerPrompt, createSessionTitle, destroyAgentSandbox } from '../e2b/agent-sandbox.service.js';
 
-import type { AgentSandboxHandle } from '../daytona/agent-sandbox.service.js';
+import type { AgentSandboxHandle } from '../e2b/agent-sandbox.service.js';
 import type { Event as OpenCodeEvent, Message, Permission } from '@opencode-ai/sdk';
 
 const logger = getLogger('agent-session-service');
@@ -62,9 +62,9 @@ class AgentSessionService {
 
             this.emit(record, 'agent.session.started', {
                 sid,
-                sandboxId: sandbox.sandbox.id,
+                sandboxId: sandbox.sandboxId,
                 sessionId: session.id,
-                previewUrl: sandbox.previewUrl
+                previewUrl: sandbox.baseUrl
             });
 
             await sandbox.client.session.promptAsync({
@@ -82,7 +82,7 @@ class AgentSessionService {
 
             return {
                 sid,
-                sandboxId: sandbox.sandbox.id,
+                sandboxId: sandbox.sandboxId,
                 sessionId: session.id,
                 eventsPath: `/api/v1/agent/session/${sid}/events`
             };
