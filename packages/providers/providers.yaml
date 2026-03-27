@@ -2240,6 +2240,33 @@ bettercontact:
             pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+bliro:
+    display_name: Bliro
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://accounts.bliro.io/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://api.bliro.io
+    proxy:
+        base_url: https://api.bliro.io
+    docs: https://nango.dev/docs/api-integrations/bliro
+    docs_connect: https://nango.dev/docs/api-integrations/bliro/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Bliro client application Client ID.
+            doc_section: '#step-1-creating-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Bliro client application Client Secret.
+            secret: true
+            doc_section: '#step-1-creating-a-client-application'
+
 bigcommerce:
     display_name: BigCommerce
     categories:
@@ -6507,6 +6534,33 @@ front:
             response_path: _results
             link_path_in_response_body: _pagination.next
     docs: https://nango.dev/docs/integrations/all/front
+
+front-api-key:
+    display_name: Front (API Key)
+    categories:
+        - support
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api2.frontapp.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/front-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/front-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Front API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.****
+            doc_section: '#step-1-finding-your-api-token'
 
 fullenrich:
     display_name: FullEnrich
@@ -13728,6 +13782,31 @@ replicate:
             title: API Key
             description: The API key for your Replicate account
 
+reply-io:
+    display_name: Reply.io
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.reply.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/campaigns
+    docs: https://nango.dev/docs/api-integrations/reply-io
+    docs_connect: https://nango.dev/docs/api-integrations/reply-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Reply.io account.
+            example: AKp2Bbuy****************
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 researchdesk:
     display_name: ResearchDesk
     categories:
@@ -16961,6 +17040,35 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://nango.dev/docs/integrations/all/todoist
+
+toggl:
+    display_name: Toggl Track
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.track.toggl.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v9/me
+        retry:
+            after:
+                - 'x-toggl-quota-resets-in'
+    docs: https://nango.dev/docs/api-integrations/toggl
+    docs_connect: https://nango.dev/docs/api-integrations/toggl/connect
+    credentials:
+        username:
+            type: string
+            title: Email or API token
+            description: Your Toggl Track account email, or your API token when using token-based Basic Auth.
+            doc_section: '#step-1-choose-emailpassword-or-api-token'
+        password:
+            type: string
+            title: Password or api_token
+            description: Your Toggl Track account password, or the literal text api_token when authenticating with an API token.
+            secret: true
+            doc_section: '#step-1-choose-emailpassword-or-api-token'
 
 torii:
     display_name: Torii

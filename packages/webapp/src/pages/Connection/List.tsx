@@ -6,12 +6,15 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { permissions } from '@nangohq/authz';
+
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Avatar } from '@/components-v2/Avatar';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { MultiSelect } from '@/components-v2/MultiSelect';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
@@ -19,7 +22,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { useConnections } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -142,6 +147,12 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
+    const { data: environmentData } = useEnvironment(env);
+    const environment = environmentData?.environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
+
     const navigate = useNavigate();
 
     const [search, setSearch] = useQueryState('search', parseSearch);
@@ -221,9 +232,13 @@ export const ConnectionList = () => {
                 <div className="flex items-center justify-between">
                     <h2 className="text-title-subsection text-text-primary">Connections</h2>
                     {(hasConnections || hasFiltered) && (
-                        <ButtonLink to={`/${env}/connections/create`} size="lg">
-                            Add Test Connection
-                        </ButtonLink>
+                        <PermissionGate condition={canCreateTestConnection}>
+                            {(allowed) => (
+                                <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed}>
+                                    Add test connection
+                                </ButtonLink>
+                            )}
+                        </PermissionGate>
                     )}
                 </div>
 

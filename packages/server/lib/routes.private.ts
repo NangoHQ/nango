@@ -3,10 +3,10 @@ import cors from 'cors';
 import express from 'express';
 import passport from 'passport';
 
+import { permissions as p } from '@nangohq/authz';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { can, envScope } from './authz/middleware.js';
-import { permissions as p } from './authz/permissions.js';
 import { setupAuth } from './clients/auth.client.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
