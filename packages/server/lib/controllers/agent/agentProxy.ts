@@ -1,4 +1,8 @@
+import { getLogger } from '@nangohq/utils';
+
 import type { Request, Response } from 'express';
+
+const logger = getLogger('agentProxy');
 
 const AGENT_URL = process.env['AGENT_URL'] || '';
 const AGENT_API_KEY = process.env['AGENT_API_KEY'] || '';
@@ -16,12 +20,14 @@ export async function postAgentBuild(req: Request, res: Response): Promise<void>
         return;
     }
 
+    logger.info(`[build] → ${AGENT_URL}/build`);
     const upstream = await fetch(`${AGENT_URL}/build`, {
         method: 'POST',
         headers: agentHeaders(),
         body: JSON.stringify(req.body)
     });
 
+    logger.info(`[build] ← ${upstream.status}`);
     const data = await upstream.json();
     res.status(upstream.status).json(data);
 }
