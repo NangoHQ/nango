@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
@@ -59,6 +60,18 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         if (isInvalidGrant) {
             res.redirect(`${basePublicUrl}/signin?error=sso_session_expired`);
             return;
+        }
+
+        const workosErr = err as { rawData?: { code?: string; message?: string }; requestID?: string };
+        const span = tracer.scope().active();
+        if (span) {
+            if (workosErr.requestID) {
+                span.setTag('workos.request_id', workosErr.requestID);
+            }
+            if (workosErr.rawData) {
+                span.setTag('workos.error_code', workosErr.rawData.code);
+                span.setTag('workos.error_message', workosErr.rawData.message);
+            }
         }
         throw err;
     }
