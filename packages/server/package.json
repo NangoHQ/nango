@@ -19,7 +19,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@aws-sdk/client-lambda": "3.993.0",
+        "@daytonaio/sdk": "0.158.0",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/authz": "file:../authz",
         "@nangohq/node": "file:../node-client",

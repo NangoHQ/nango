@@ -7,7 +7,7 @@ interface Args {
     host: string;
     secretKey: string;
     integrationId: string;
-    connectionId: string;
+    connectionId?: string;
     environment: string;
     functionType: FunctionType;
     functionName: string;
@@ -17,6 +17,7 @@ interface Args {
     checkpoint?: unknown;
     lastSyncDate?: string;
     skipDeploy: boolean;
+    skipRun: boolean;
 }
 
 const actionTemplate = `import { createAction } from 'nango';
@@ -62,10 +63,10 @@ async function main() {
     console.log(`host          : ${args.host}`);
     console.log(`environment   : ${args.environment}`);
     console.log(`integration   : ${args.integrationId}`);
-    console.log(`connection    : ${args.connectionId}`);
+    console.log(`connection    : ${args.connectionId || '[not used]'}`);
     console.log(`function type : ${args.functionType}`);
     console.log(`function name : ${args.functionName}`);
-    console.log(`mode          : ${args.skipDeploy ? 'run-only' : 'deploy+run'}`);
+    console.log(`mode          : ${getModeLabel(args)}`);
     console.log('');
 
     if (!args.skipDeploy) {
@@ -86,24 +87,36 @@ async function main() {
         console.log('');
     }
 
-    console.log('2) Running function via /sf-run...');
-    const runResponse = await postJson({
-        host: args.host,
-        secretKey: args.secretKey,
-        endpoint: '/sf-run',
-        body: {
-            integration_id: args.integrationId,
-            function_name: args.functionName,
-            function_type: args.functionType,
-            connection_id: args.connectionId,
-            environment: args.environment,
-            ...(args.functionType === 'action' ? { test_input: args.testInput ?? { value: 'hello-from-sf-run' } } : {}),
-            ...(args.functionType === 'sync' && args.metadata !== undefined ? { metadata: args.metadata } : {}),
-            ...(args.functionType === 'sync' && args.checkpoint !== undefined ? { checkpoint: args.checkpoint } : {}),
-            ...(args.functionType === 'sync' && args.lastSyncDate ? { last_sync_date: args.lastSyncDate } : {})
-        }
-    });
-    printResponse(runResponse);
+    if (!args.skipRun) {
+        console.log('2) Running function via /sf-run...');
+        const runResponse = await postJson({
+            host: args.host,
+            secretKey: args.secretKey,
+            endpoint: '/sf-run',
+            body: {
+                integration_id: args.integrationId,
+                function_name: args.functionName,
+                function_type: args.functionType,
+                connection_id: args.connectionId,
+                environment: args.environment,
+                ...(args.functionType === 'action' ? { test_input: args.testInput ?? { value: 'hello-from-sf-run' } } : {}),
+                ...(args.functionType === 'sync' && args.metadata !== undefined ? { metadata: args.metadata } : {}),
+                ...(args.functionType === 'sync' && args.checkpoint !== undefined ? { checkpoint: args.checkpoint } : {}),
+                ...(args.functionType === 'sync' && args.lastSyncDate ? { last_sync_date: args.lastSyncDate } : {})
+            }
+        });
+        printResponse(runResponse);
+    }
+}
+
+function getModeLabel(args: Pick<Args, 'skipDeploy' | 'skipRun'>): string {
+    if (args.skipDeploy) {
+        return 'run-only';
+    }
+    if (args.skipRun) {
+        return 'deploy-only';
+    }
+    return 'deploy+run';
 }
 
 async function postJson({ host, secretKey, endpoint, body }: { host: string; secretKey: string; endpoint: string; body: Record<string, unknown> }) {
@@ -173,6 +186,8 @@ function parseArgs(argv: string[]): Args | null {
     const connectionId = get('--connection-id') || process.env['SF_CONNECTION_ID'] || '';
     const environment = get('--environment') || process.env['SF_ENVIRONMENT'] || 'dev';
     const functionType = (get('--function-type') || 'action') as FunctionType;
+    const skipDeploy = argv.includes('--skip-deploy');
+    const skipRun = argv.includes('--skip-run') || argv.includes('--deploy-only');
     const functionName =
         get('--function-name') ||
         process.env['SF_FUNCTION_NAME'] ||
@@ -181,8 +196,20 @@ function parseArgs(argv: string[]): Args | null {
             .replaceAll(/[^0-9]/g, '')
             .slice(0, 14)}`;
 
-    if (!secretKey || !integrationId || !connectionId) {
+    if (!secretKey || !integrationId) {
         console.error('Missing required arguments.');
+        printHelp();
+        return null;
+    }
+
+    if (!skipRun && !connectionId) {
+        console.error('Missing required --connection-id for /sf-run.');
+        printHelp();
+        return null;
+    }
+
+    if (skipDeploy && skipRun) {
+        console.error('Cannot combine --skip-deploy and --skip-run.');
         printHelp();
         return null;
     }
@@ -202,7 +229,8 @@ function parseArgs(argv: string[]): Args | null {
             environment,
             functionType,
             functionName,
-            skipDeploy: argv.includes('--skip-deploy')
+            skipDeploy,
+            skipRun
         };
 
         const codeFile = get('--code-file');
@@ -249,7 +277,7 @@ Usage:
 Required:
   --secret-key       Nango secret key (or NANGO_SECRET_KEY)
   --integration-id   Integration id / provider config key (or SF_INTEGRATION_ID)
-  --connection-id    Connection id (or SF_CONNECTION_ID)
+  --connection-id    Connection id for /sf-run (or SF_CONNECTION_ID)
 
 Optional:
   --host             API host (default: NANGO_HOSTPORT or http://localhost:3003)
@@ -262,9 +290,13 @@ Optional:
   --checkpoint       JSON string for sync checkpoint
   --last-sync-date   ISO timestamp for sync dry-run mode
   --skip-deploy      Only call /sf-run using latest deployed version
+  --skip-run         Only call /sf-deploy to compile/deploy code
+  --deploy-only      Alias for --skip-run
 
 Examples:
   npx tsx scripts/one-off/sf-endpoints-smoke.ts --secret-key "$NANGO_SECRET_KEY" --integration-id github --connection-id demo --function-type action
+
+  npx tsx scripts/one-off/sf-endpoints-smoke.ts --secret-key "$NANGO_SECRET_KEY" --integration-id github --function-type action --deploy-only
 
   npx tsx scripts/one-off/sf-endpoints-smoke.ts --secret-key "$NANGO_SECRET_KEY" --integration-id github --connection-id demo --function-type sync --metadata '{"tenant":"acme"}'
 `);

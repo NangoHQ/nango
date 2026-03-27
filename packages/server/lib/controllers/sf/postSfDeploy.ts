@@ -56,8 +56,6 @@ export const postSfDeploy = asyncWrapper<PostSfDeploy>(async (req, res) => {
     let locking: Awaited<ReturnType<typeof getLocking>> | null = null;
 
     try {
-        // Offload the CPU-intensive compile + bundle step to the sf-compiler Lambda.
-        // The Lambda returns the bundled JS and the flow config; the server handles persistence and deployment.
         let bundledJs: string;
         let flow: Awaited<ReturnType<typeof invokeCompiler>>['flow'];
 
