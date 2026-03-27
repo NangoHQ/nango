@@ -11,9 +11,10 @@ import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
+import { globalEnv } from '../../utils/env';
 import { cn } from '@/utils/utils';
 
-const AGENT_BASE = '/api/agent';
+const AGENT_BASE = `${globalEnv.apiUrl}/api/v1/agent`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ export const FunctionBuilder: React.FC = () => {
     const [integrationId, setIntegrationId] = useState('');
 
     const { data: connectionsData } = useConnections({ env, integrationIds: integrationId ? [integrationId] : undefined });
-    const connections = useMemo(() => connectionsData?.pages.flatMap((p) => p.data) ?? [], [connectionsData]);
+    const connections = useMemo(() => (integrationId ? (connectionsData?.pages.flatMap((p) => p.data) ?? []) : []), [connectionsData, integrationId]);
 
     // Form state
     const [prompt, setPrompt] = useState('');
@@ -193,7 +194,8 @@ export const FunctionBuilder: React.FC = () => {
             abortRef.current = abort;
 
             try {
-                const res = await fetch(`${AGENT_BASE}/session/${sid}/events`, {
+                const res = await fetch(`${AGENT_BASE}/session/${sid}/events?env=${env}`, {
+                    credentials: 'include',
                     signal: abort.signal
                 });
 
@@ -259,8 +261,9 @@ export const FunctionBuilder: React.FC = () => {
         sessionIdRef.current = null;
 
         try {
-            const res = await fetch(`${AGENT_BASE}/build`, {
+            const res = await fetch(`${AGENT_BASE}/build?env=${env}`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     prompt: prompt.trim(),
@@ -276,9 +279,10 @@ export const FunctionBuilder: React.FC = () => {
             });
 
             if (!res.ok) {
-                const err = (await res.json()) as { error: string };
+                const err = (await res.json()) as { error: string | { message?: string } };
+                const msg = typeof err.error === 'string' ? err.error : (err.error?.message ?? 'Failed to start build');
                 setStatus('error');
-                addEntry({ type: 'error', message: err.error || 'Failed to start build' });
+                addEntry({ type: 'error', message: msg });
                 return;
             }
 
@@ -299,8 +303,9 @@ export const FunctionBuilder: React.FC = () => {
             setStatus('running');
             addEntry({ type: 'progress', message: `You: ${answer}` });
 
-            await fetch(`${AGENT_BASE}/session/${sessionIdRef.current}/answer`, {
+            await fetch(`${AGENT_BASE}/session/${sessionIdRef.current}/answer?env=${env}`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ answer })
             });
@@ -356,14 +361,14 @@ export const FunctionBuilder: React.FC = () => {
                         onChange={(e) => setPrompt(e.target.value)}
                         disabled={isActive}
                         rows={3}
-                        className="text-body-small-regular resize-none"
+                        className="!text-text-primary text-body-small-regular resize-none"
                     />
 
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
                             <label className="text-body-small-medium text-text-light-gray">Integration</label>
                             <Select value={integrationId} onValueChange={setIntegrationId} disabled={isActive}>
-                                <SelectTrigger className="w-full h-8 text-body-small-regular">
+                                <SelectTrigger className="w-full h-8 !text-text-secondary text-body-small-regular">
                                     <SelectValue placeholder="Select integration..." />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -378,7 +383,7 @@ export const FunctionBuilder: React.FC = () => {
                         <div className="flex flex-col gap-1">
                             <label className="text-body-small-medium text-text-light-gray">Connection</label>
                             <Select value={connectionId} onValueChange={setConnectionId} disabled={isActive || !integrationId}>
-                                <SelectTrigger className="w-full h-8 text-body-small-regular">
+                                <SelectTrigger className="w-full h-8 !text-text-secondary text-body-small-regular">
                                     <SelectValue placeholder={integrationId ? 'Select connection...' : 'Select integration first'} />
                                 </SelectTrigger>
                                 <SelectContent>
