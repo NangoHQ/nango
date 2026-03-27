@@ -37,7 +37,7 @@ interface UpsertResult {
     id: string;
     last_modified_at: string;
     previous_last_modified_at: string | null;
-    previous_size_bytes: number;
+    delta_size_bytes: number;
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
@@ -383,7 +383,14 @@ export async function upsert({
                                         deleted_at: trx.raw(`EXCLUDED.deleted_at`),
                                         ...(softDelete ? { updated_at: trx.raw(`EXCLUDED.updated_at`) } : {})
                                     })
-                                    .returning(['id', 'external_id', 'updated_at', 'deleted_at', trx.raw('tableoid::regclass as partition')]);
+                                    .returning([
+                                        'id',
+                                        'external_id',
+                                        'deleted_at',
+                                        'updated_at',
+                                        trx.raw('pg_column_size(json) as size_bytes'),
+                                        trx.raw('tableoid::regclass as partition')
+                                    ]);
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                     const cursor = Cursor.from(merging.cursor);
                                     if (cursor) {
@@ -397,7 +404,10 @@ export async function upsert({
                                     upsert.id as id,
                                     upsert.external_id as external_id,
                                     to_json(upsert.updated_at) as last_modified_at,
-                                    COALESCE(existing.previous_size_bytes, 0) as previous_size_bytes,
+                                    CASE
+                                        WHEN NOT existing.has_changed THEN 0
+                                        ELSE upsert.size_bytes - COALESCE(existing.previous_size_bytes, 0)
+                                    END as delta_size_bytes,
                                     CASE
                                       WHEN existing.updated_at IS NULL THEN NULL
                                       ELSE to_json(existing.updated_at)
@@ -419,24 +429,6 @@ export async function upsert({
                                 { column: 'upsert.updated_at', order: 'asc' },
                                 { column: 'upsert.id', order: 'asc' }
                             ]);
-
-                        // Fetch post-upsert json sizes for inserted/changed records to compute delta_size_bytes.
-                        // BUT only for records that have actually changed (based on data_hash comparison)
-                        // to avoid unnecessary pg_column_size calls since they can be costly on large json payloads.
-                        // This must be a separate query since data-modifying CTEs use snapshot isolation.
-                        // Returning the delta from 'upsert' would be possible with Postgres17 since it supports old/new syntax but we are currently using Postgres16.
-                        const toSize = res.filter((r) => r.status === 'inserted' || r.status === 'changed').map((r) => r.external_id);
-                        const newSize = new Map<string, number>();
-                        if (toSize.length > 0) {
-                            const sizeRows = await trx
-                                .select<{ external_id: string; size_bytes: number }[]>('external_id', trx.raw('pg_column_size(json) as size_bytes'))
-                                .from(RECORDS_TABLE)
-                                .where({ connection_id: connectionId, model })
-                                .whereIn('external_id', toSize);
-                            for (const row of sizeRows) {
-                                newSize.set(row.external_id, row.size_bytes);
-                            }
-                        }
 
                         // Billing:
                         // A record is billed only once per month. ie:
@@ -483,7 +475,7 @@ export async function upsert({
                             }
                         }
                         deltaSizeInBytes += res.reduce((acc, r) => {
-                            return acc + (newSize.get(r.external_id) ?? 0) - r.previous_size_bytes;
+                            return acc + r.delta_size_bytes;
                         }, 0);
 
                         // all records for the same connection/model are in the same partition
