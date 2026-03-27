@@ -14,6 +14,7 @@ const opencodePort = 4096;
 const opencodeServerSessionId = 'opencode-server';
 const sandboxTimeoutSeconds = 180;
 const agentSnapshot = process.env['DAYTONA_AGENT_SNAPSHOT'] || 'nango-opencode-agent';
+const defaultAgentModel = 'opencode/kimi-k2.5';
 
 export interface AgentSandboxHandle {
     sandbox: Sandbox;
@@ -22,14 +23,20 @@ export interface AgentSandboxHandle {
     previewToken: string;
     serverCommandId: string;
     serverSessionId: string;
+    model: {
+        full: string;
+        providerID: string;
+        modelID: string;
+    };
 }
 
-export async function createAgentSandbox(sessionId: string): Promise<AgentSandboxHandle> {
+export async function createAgentSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentSandboxHandle> {
+    const model = resolveModel(payload);
     const sandbox = await getDaytonaClient().create(
         {
             name: `agent-${sessionId}`,
             snapshot: agentSnapshot,
-            envVars: getSandboxEnvVars(),
+            envVars: getSandboxEnvVars(payload, model),
             autoStopInterval: 0,
             autoDeleteInterval: 1440,
             labels: {
@@ -74,7 +81,8 @@ export async function createAgentSandbox(sessionId: string): Promise<AgentSandbo
             previewUrl: preview.url,
             previewToken: preview.token,
             serverCommandId: command.cmdId,
-            serverSessionId: opencodeServerSessionId
+            serverSessionId: opencodeServerSessionId,
+            model
         };
     } catch (error) {
         await sandbox.delete(sandboxTimeoutSeconds).catch(() => {});
@@ -116,8 +124,12 @@ async function waitForOpenCodeServer(previewUrl: string, previewToken: string, s
     throw new Error(`Timed out waiting for OpenCode server to start${logs ? `: ${logs}` : ''}`);
 }
 
-function getSandboxEnvVars(): Record<string, string> {
+function getSandboxEnvVars(
+    payload: Record<string, unknown>,
+    model: { providerID: string; modelID: string; full: string }
+): Record<string, string> {
     const keys = [
+        'OPENCODE_API_KEY',
         'ANTHROPIC_API_KEY',
         'OPENAI_API_KEY',
         'OPENROUTER_API_KEY',
@@ -135,13 +147,25 @@ function getSandboxEnvVars(): Record<string, string> {
         'AZURE_OPENAI_ENDPOINT'
     ];
 
-    return keys.reduce<Record<string, string>>((acc, key) => {
+    const envVars = keys.reduce<Record<string, string>>((acc, key) => {
         const value = process.env[key];
         if (value) {
             acc[key] = value;
         }
         return acc;
     }, {});
+
+    const overrideApiKey = typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0 ? payload['api_key'].trim() : null;
+    if (overrideApiKey) {
+        envVars['OPENCODE_API_KEY'] = overrideApiKey;
+    }
+
+    if (model.providerID === 'opencode' && !envVars['OPENCODE_API_KEY']) {
+        throw new Error('OPENCODE_API_KEY is required for the Daytona agent runtime when using the OpenCode provider');
+    }
+
+    envVars['OPENCODE_CONFIG_CONTENT'] = JSON.stringify(createRuntimeConfig(payload, model));
+    return envVars;
 }
 
 export function createAgentPrompt(payload: Record<string, unknown>): string {
@@ -162,4 +186,50 @@ export function createAnswerPrompt(answer: string): string {
 export function createSessionTitle(payload: Record<string, unknown>): string {
     const functionName = typeof payload['functionName'] === 'string' ? payload['functionName'] : typeof payload['function_name'] === 'string' ? payload['function_name'] : null;
     return functionName ? `Build ${functionName}` : `Agent Run ${randomUUID().slice(0, 8)}`;
+}
+
+function resolveModel(_payload: Record<string, unknown>): { providerID: string; modelID: string; full: string } {
+    const full = defaultAgentModel;
+    const [providerID, ...rest] = full.split('/');
+    if (!providerID || rest.length === 0) {
+        throw new Error(`Invalid OpenCode model identifier: ${full}`);
+    }
+
+    return {
+        full,
+        providerID,
+        modelID: rest.join('/')
+    };
+}
+
+function createRuntimeConfig(
+    payload: Record<string, unknown>,
+    model: { providerID: string; modelID: string; full: string }
+): Record<string, unknown> {
+    const providerOptions: Record<string, unknown> = {};
+    const apiBaseUrl = typeof payload['api_base_url'] === 'string' && payload['api_base_url'].trim().length > 0 ? payload['api_base_url'].trim() : null;
+    const apiKey = typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0 ? payload['api_key'].trim() : null;
+
+    if (apiBaseUrl) {
+        providerOptions['baseURL'] = apiBaseUrl;
+    }
+    if (apiKey) {
+        providerOptions['apiKey'] = apiKey;
+    }
+
+    const config: Record<string, unknown> = {
+        model: model.full,
+        small_model: model.full,
+        enabled_providers: [model.providerID]
+    };
+
+    if (Object.keys(providerOptions).length > 0) {
+        config['provider'] = {
+            [model.providerID]: {
+                options: providerOptions
+            }
+        };
+    }
+
+    return config;
 }

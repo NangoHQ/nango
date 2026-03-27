@@ -6,7 +6,7 @@ let daytonaClient: Daytona | null = null;
 
 export function getDaytonaClient(): Daytona {
     if (!envs.DAYTONA_API_KEY) {
-        throw new Error('DAYTONA_API_KEY is required when using Daytona-backed compiler flows');
+        throw new Error('DAYTONA_API_KEY is required when using Daytona-backed runtimes');
     }
 
     if (!daytonaClient) {

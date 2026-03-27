@@ -20,6 +20,11 @@ interface AgentSessionRecord {
     sid: string;
     sandbox: AgentSandboxHandle;
     opencodeSessionId: string;
+    model: {
+        providerID: string;
+        modelID: string;
+        full: string;
+    };
     emitter: EventEmitter;
     backlog: AgentBrowserEvent[];
     nextEventId: number;
@@ -31,7 +36,7 @@ class AgentSessionService {
 
     public async createBuild(payload: Record<string, unknown>): Promise<{ sid: string; sandboxId: string; sessionId: string; eventsPath: string }> {
         const sid = randomUUID();
-        const sandbox = await createAgentSandbox(sid);
+        const sandbox = await createAgentSandbox(sid, payload);
 
         try {
             const created = await sandbox.client.session.create({ body: { title: createSessionTitle(payload) } });
@@ -43,6 +48,7 @@ class AgentSessionService {
                 sid,
                 sandbox,
                 opencodeSessionId: session.id,
+                model: sandbox.model,
                 emitter: new EventEmitter(),
                 backlog: [],
                 nextEventId: 1,
@@ -62,6 +68,10 @@ class AgentSessionService {
             await sandbox.client.session.promptAsync({
                 path: { id: session.id },
                 body: {
+                    model: {
+                        providerID: record.model.providerID,
+                        modelID: record.model.modelID
+                    },
                     parts: [{ type: 'text', text: createAgentPrompt(payload) }]
                 }
             });
@@ -126,6 +136,10 @@ class AgentSessionService {
         await record.sandbox.client.session.promptAsync({
             path: { id: record.opencodeSessionId },
             body: {
+                model: {
+                    providerID: record.model.providerID,
+                    modelID: record.model.modelID
+                },
                 parts: [{ type: 'text', text: createAnswerPrompt(text.trim()) }]
             }
         });

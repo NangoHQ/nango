@@ -157,7 +157,6 @@ export const FunctionBuilder: React.FC = () => {
     const [prompt, setPrompt] = useState('');
     const [connectionId, setConnectionId] = useState('');
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [model, setModel] = useState('');
     const [apiKey, setApiKey] = useState('');
     const [apiBaseUrl, setApiBaseUrl] = useState('');
 
@@ -272,7 +271,6 @@ export const FunctionBuilder: React.FC = () => {
                     environment: env,
                     connection_id: connectionId,
                     integration_id: integrationId || undefined,
-                    model: model.trim() || undefined,
                     api_key: apiKey.trim() || undefined,
                     api_base_url: apiBaseUrl.trim() || undefined
                 })
@@ -294,7 +292,7 @@ export const FunctionBuilder: React.FC = () => {
             setStatus('error');
             addEntry({ type: 'error', message: (err as Error).message });
         }
-    }, [prompt, connectionId, secretKey, integrationId, model, apiKey, apiBaseUrl, env, streamEvents, addEntry]);
+    }, [prompt, connectionId, secretKey, integrationId, apiKey, apiBaseUrl, env, streamEvents, addEntry]);
 
     const handleAnswer = useCallback(
         async (answer: string) => {
@@ -408,16 +406,6 @@ export const FunctionBuilder: React.FC = () => {
 
                     {showAdvanced && (
                         <div className="grid grid-cols-2 gap-2">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-body-small-medium text-text-light-gray">Model override</label>
-                                <Input
-                                    placeholder="moonshot/kimi-k2.5"
-                                    value={model}
-                                    onChange={(e) => setModel(e.target.value)}
-                                    disabled={isActive}
-                                    className="h-8 text-body-small-regular"
-                                />
-                            </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-body-small-medium text-text-light-gray">API Key override</label>
                                 <Input
