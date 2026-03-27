@@ -1,0 +1,93 @@
+---
+title: 'Team & Roles'
+sidebarTitle: 'Team & Roles'
+description: 'Manage team members and control access with role-based permissions'
+---
+
+Nango supports multiple team members per account with role-based access control (RBAC). Roles determine what each member can do and what data they can see, particularly in [production environments](/guides/platform/environments#production-environments).
+
+## Roles
+
+There are three roles available:
+
+| Role | Description |
+| - | - |
+| **Full Access** | Full read/write access to all environments. The only role that can manage the team, billing, and account settings. |
+| **Support** | Full access in non-production environments. Read-only access in production, with no visibility into sensitive credentials. |
+| **Contributor** | Full access in non-production environments. No access to production environments. |
+
+### Full Access
+
+Full Access members (administrators) can do everything in all environments:
+
+- Read and write integrations, connections, and functions in all environments
+- View all credentials, including production secret keys and connection credentials
+- Manage team members: invite, update roles, and remove members
+- Manage billing and change the account plan
+- Configure Connect UI settings
+- Create new environments and toggle the production flag on existing environments
+
+<Info>
+At least one Full Access member is required per account.
+</Info>
+
+### Support
+
+Support members are designed for team members who need to monitor production but should not be able to make changes to it.
+
+**Non-production environments:** Full read and write access — same as Full Access.
+
+**Production environments:**
+
+| Capability | Access |
+| - | - |
+| View integrations, connections, syncs, and logs | ✅ |
+| Write or delete integrations, connections, flows | ❌ |
+| View environment secret key | ❌ |
+| View integration credentials and secrets | ❌ |
+| View connection credentials | ❌ |
+
+<Note>
+Support members cannot see the production environment's secret key, integration credentials and secrets, or connection credentials. This protects sensitive data while still allowing them to observe production activity.
+</Note>
+
+**Account-level actions** (regardless of environment):
+
+- Cannot invite, update, or remove team members
+- Cannot manage billing or change the plan
+- Cannot configure Connect UI
+- Cannot create new environments or toggle the production flag
+
+### Contributor
+
+Contributor members are designed for developers who work only in non-production environments.
+
+**Non-production environments:** Full read and write access — same as Full Access.
+
+**Production environments:** No access of any kind.
+
+**Account-level actions** (regardless of environment):
+
+- Cannot invite, update, or remove team members
+- Cannot manage billing or change the plan
+- Cannot configure Connect UI
+- Cannot create new environments or toggle the production flag
+
+---
+
+## Inviting team members
+
+1. Go to **Team** from the profile dropdown menu
+2. Click **Add team member**
+3. Enter the email address and select a role
+4. The invited member will receive an email to accept the invitation
+
+Pending invitations are shown in the Team page until accepted or cancelled.
+
+---
+
+## Changing a member's role
+
+Full Access members can update the role of any team member from the **Team** page by clicking the role dropdown next to their name.
+
+---
