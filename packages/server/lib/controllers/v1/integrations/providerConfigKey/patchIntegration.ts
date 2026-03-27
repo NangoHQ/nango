@@ -81,7 +81,11 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             return;
         }
 
-        if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
+        if (body.authType === 'OAUTH2_CC') {
+            if (body.scopes !== undefined) {
+                integration.oauth_scopes = body.scopes || '';
+            }
+        } else if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
             if (body.clientId !== undefined) {
                 integration.oauth_client_id = body.clientId;
             }

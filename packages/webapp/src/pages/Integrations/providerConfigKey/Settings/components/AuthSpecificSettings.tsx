@@ -13,6 +13,7 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
     switch (authMode) {
         case 'OAUTH1':
         case 'OAUTH2':
+        case 'OAUTH2_CC':
         case 'TBA':
             return <OAuthSettings data={data} environment={environment} />;
 

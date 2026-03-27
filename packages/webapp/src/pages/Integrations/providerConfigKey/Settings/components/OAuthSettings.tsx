@@ -41,7 +41,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const onSave = async (field: Partial<PatchIntegration['Body']>, supressToast = false) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'OAUTH2_CC' | 'TBA'>,
                 ...field
             });
             if (!supressToast) {
@@ -97,61 +97,68 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
 
     return (
         <div className="flex flex-col gap-10">
-            {/* Callback URL */}
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="callback_url">Callback URL</Label>
-                <InputGroup>
-                    <InputGroupInput disabled value={callbackUrl} />
-                    <InputGroupAddon align="inline-end">
-                        <CopyButton text={callbackUrl} />
-                    </InputGroupAddon>
-                </InputGroup>
-            </div>
+            {/* Callback URL (not applicable for OAUTH2_CC) */}
+            {template.auth_mode !== 'OAUTH2_CC' && (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="callback_url">Callback URL</Label>
+                    <InputGroup>
+                        <InputGroupInput disabled value={callbackUrl} />
+                        <InputGroupAddon align="inline-end">
+                            <CopyButton text={callbackUrl} />
+                        </InputGroupAddon>
+                    </InputGroup>
+                </div>
+            )}
 
-            {/* Client ID */}
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="client_id">Client ID</Label>
-                {isSharedCredentials ? (
-                    <NangoProvidedInput fakeValueSize={24} />
-                ) : (
-                    <>
-                        <EditableInput
-                            initialValue={integration.oauth_client_id || ''}
-                            onSave={handleClientIdSave}
-                            onEditingChange={setIsEditingClientId}
-                            validate={validateNotEmpty}
-                            canEdit={canEdit}
-                            canRead={canEdit}
-                            secret={!canEdit}
-                        />
-                        {isEditingClientId && hasExistingClientId && (
-                            <Alert variant="warning">
-                                <AlertTriangle />
-                                <AlertDescription>
-                                    Updating the Client ID will invalidate token refreshes for all existing connections for this integration.
-                                </AlertDescription>
-                            </Alert>
+            {/* Client ID and Client Secret (not applicable for OAUTH2_CC) */}
+            {template.auth_mode !== 'OAUTH2_CC' && (
+                <>
+                    {/* Client ID */}
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="client_id">Client ID</Label>
+                        {isSharedCredentials ? (
+                            <NangoProvidedInput fakeValueSize={24} />
+                        ) : (
+                            <>
+                                <EditableInput
+                                    initialValue={integration.oauth_client_id || ''}
+                                    onSave={handleClientIdSave}
+                                    onEditingChange={setIsEditingClientId}
+                                    validate={validateNotEmpty}
+                                    canEdit={canEdit}
+                                    canRead={canEdit}
+                                    secret={!canEdit}
+                                />
+                                {isEditingClientId && hasExistingClientId && (
+                                    <Alert variant="warning">
+                                        <AlertTriangle />
+                                        <AlertDescription>
+                                            Updating the Client ID will invalidate token refreshes for all existing connections for this integration.
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+                            </>
                         )}
-                    </>
-                )}
-            </div>
+                    </div>
 
-            {/* Client Secret */}
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="client_secret">Client Secret</Label>
-                {isSharedCredentials ? (
-                    <NangoProvidedInput fakeValueSize={48} />
-                ) : (
-                    <EditableInput
-                        secret
-                        initialValue={integration.oauth_client_secret || ''}
-                        onSave={(value) => onSave({ clientSecret: value })}
-                        validate={validateNotEmpty}
-                        canEdit={canEdit}
-                        canRead={canEdit}
-                    />
-                )}
-            </div>
+                    {/* Client Secret */}
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="client_secret">Client Secret</Label>
+                        {isSharedCredentials ? (
+                            <NangoProvidedInput fakeValueSize={48} />
+                        ) : (
+                            <EditableInput
+                                secret
+                                initialValue={integration.oauth_client_secret || ''}
+                                onSave={(value) => onSave({ clientSecret: value })}
+                                validate={validateNotEmpty}
+                                canEdit={canEdit}
+                                canRead={canEdit}
+                            />
+                        )}
+                    </div>
+                </>
+            )}
 
             {/* Scopes */}
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
