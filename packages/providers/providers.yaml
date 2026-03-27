@@ -14266,7 +14266,6 @@ salesforce-cc:
             format: hostname
             example: acme.my.salesforce.com
             prefix: https://
-            optional: false
 
 salesforce-jwt:
     display_name: Salesforce (JWT)
