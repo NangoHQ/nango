@@ -140,7 +140,8 @@ const DoneCard: React.FC<{ message: string }> = ({ message }) => (
 
 export const FunctionBuilder: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const secretKey = environmentAndAccount?.environment.secret_key ?? '';
 
     const { data: integrationsData } = useListIntegrations(env);

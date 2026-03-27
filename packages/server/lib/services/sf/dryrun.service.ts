@@ -1,8 +1,8 @@
 import { Buffer } from 'node:buffer';
 import * as crypto from 'node:crypto';
 import { createRequire } from 'node:module';
-import * as vm from 'node:vm';
 import * as url from 'node:url';
+import * as vm from 'node:vm';
 
 import { AxiosError } from 'axios';
 import { serializeError } from 'serialize-error';
@@ -10,7 +10,7 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { Nango } from '@nangohq/node';
-import { BASE_VARIANT, ActionError, NangoActionBase, NangoSyncBase, SDKError } from '@nangohq/runner-sdk';
+import { ActionError, BASE_VARIANT, NangoActionBase, NangoSyncBase, SDKError } from '@nangohq/runner-sdk';
 import * as nangoScript from '@nangohq/runner-sdk';
 
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
@@ -193,7 +193,7 @@ export async function executeDryRun({ code, compiledScriptPath, nangoProps, test
                 success: false,
                 error: {
                     type: err.type,
-                    payload: (err.payload || {}) as Record<string, unknown>,
+                    payload: err.payload || {},
                     status: 500
                 }
             };
@@ -204,7 +204,7 @@ export async function executeDryRun({ code, compiledScriptPath, nangoProps, test
                 success: false,
                 error: {
                     type: err.code,
-                    payload: (err.payload || {}) as Record<string, unknown>,
+                    payload: err.payload || {},
                     status: 500
                 }
             };
@@ -317,28 +317,30 @@ class NangoActionDryRun extends NangoActionBase<never, ZodCheckpoint> {
         return Promise.resolve();
     }
 
-    public override async tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
-        return true;
+    public override tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    public override async releaseLock(_props: { key: string }): Promise<boolean> {
-        return true;
+    public override releaseLock(_props: { key: string }): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    public override async releaseAllLocks(): Promise<void> {
-        return;
+    public override releaseAllLocks(): Promise<void> {
+        return Promise.resolve();
     }
 
-    public override async getCheckpoint(): Promise<Checkpoint | null> {
-        return this.stubbedCheckpoint || null;
+    public override getCheckpoint(): Promise<Checkpoint | null> {
+        return Promise.resolve(this.stubbedCheckpoint || null);
     }
 
-    public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+    public override saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
         this.stubbedCheckpoint = checkpoint;
+        return Promise.resolve();
     }
 
-    public override async clearCheckpoint(): Promise<void> {
+    public override clearCheckpoint(): Promise<void> {
         this.stubbedCheckpoint = undefined;
+        return Promise.resolve();
     }
 }
 
@@ -368,24 +370,27 @@ class NangoSyncDryRun extends NangoSyncBase<never, never, ZodCheckpoint> {
         this.nango = new Nango({ isSync: true, dryRun: true, isScript: true, ...props }, getAxiosSettings(props));
     }
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     proxy = NangoActionDryRun.prototype.proxy;
-    log = NangoActionDryRun.prototype.log;
-    triggerSync = NangoActionDryRun.prototype.triggerSync;
-    startSync = NangoActionDryRun.prototype.startSync;
-    tryAcquireLock = NangoActionDryRun.prototype.tryAcquireLock;
-    releaseLock = NangoActionDryRun.prototype.releaseLock;
-    releaseAllLocks = NangoActionDryRun.prototype.releaseAllLocks;
+    log = (...args: Parameters<NangoActionDryRun['log']>) => NangoActionDryRun.prototype.log.call(this, ...args);
+    triggerSync = (...args: Parameters<NangoActionDryRun['triggerSync']>) => NangoActionDryRun.prototype.triggerSync.call(this, ...args);
+    startSync = (...args: Parameters<NangoActionDryRun['startSync']>) => NangoActionDryRun.prototype.startSync.call(this, ...args);
+    tryAcquireLock = (...args: Parameters<NangoActionDryRun['tryAcquireLock']>) => NangoActionDryRun.prototype.tryAcquireLock.call(this, ...args);
+    releaseLock = (...args: Parameters<NangoActionDryRun['releaseLock']>) => NangoActionDryRun.prototype.releaseLock.call(this, ...args);
+    releaseAllLocks = (...args: Parameters<NangoActionDryRun['releaseAllLocks']>) => NangoActionDryRun.prototype.releaseAllLocks.call(this, ...args);
 
-    public override async getCheckpoint(): Promise<Checkpoint | null> {
-        return this.stubbedCheckpoint || null;
+    public override getCheckpoint(): Promise<Checkpoint | null> {
+        return Promise.resolve(this.stubbedCheckpoint || null);
     }
 
-    public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
+    public override saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
         this.stubbedCheckpoint = checkpoint;
+        return Promise.resolve();
     }
 
-    public override async clearCheckpoint(): Promise<void> {
+    public override clearCheckpoint(): Promise<void> {
         this.stubbedCheckpoint = undefined;
+        return Promise.resolve();
     }
 
     public batchSave<T extends object>(results: T[], model: string): boolean {
@@ -522,6 +527,23 @@ class NangoSyncDryRun extends NangoSyncBase<never, never, ZodCheckpoint> {
         return objects;
     }
 
+    public override async *listRecords<T extends object = any>(model: string, options?: { cursor?: string }): AsyncGenerator<T> {
+        let cursor: string | null | undefined = options?.cursor;
+        do {
+            const props: ListRecordsRequestConfig = {
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                model: this.modelFullName(model),
+                ...(cursor ? { cursor } : {})
+            };
+            const response = await this.nango.listRecords<any>(props);
+            for (const record of response.records) {
+                yield record as T;
+            }
+            cursor = response.next_cursor;
+        } while (cursor);
+    }
+
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string): Promise<void> {
         return Promise.resolve();
     }
@@ -553,7 +575,7 @@ class ProxyCallCollector {
             this.calls.push(formatAxiosResponse(response));
         }
 
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(String(error)));
     }
 
     public getCalls(): SfProxyCall[] {

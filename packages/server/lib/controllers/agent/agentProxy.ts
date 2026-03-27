@@ -35,7 +35,7 @@ export async function getAgentSessionEvents(req: Request, res: Response): Promis
     const { sid } = req.params;
     const upstream = await fetch(`${AGENT_URL}/session/${sid}/events`, {
         headers: { Authorization: `Bearer ${AGENT_API_KEY}` },
-        signal: req.socket.destroyed ? AbortSignal.abort() : undefined
+        signal: req.socket.destroyed ? AbortSignal.abort() : null
     });
 
     if (!upstream.ok || !upstream.body) {
