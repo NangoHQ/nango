@@ -29,7 +29,8 @@ const EnvironmentSettingsContent: React.FC<{ value: string; children: ReactNode 
 };
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { team } = useTeam(env);
+    const { data: teamData } = useTeam(env);
+    const team = teamData?.data;
 
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
@@ -53,7 +54,7 @@ export const EnvironmentSettings: React.FC = () => {
             </DashboardLayout>
         );
     }
-    const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
+    const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
         <DashboardLayout fullWidth className="flex-col justify-center">

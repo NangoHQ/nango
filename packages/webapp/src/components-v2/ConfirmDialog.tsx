@@ -10,7 +10,7 @@ export interface ConfirmDialogOptions {
     cancelButtonText?: string;
     confirmVariant?: 'primary' | 'destructive' | 'secondary' | 'tertiary';
     icon?: React.ReactNode;
-    onConfirm: () => void | Promise<void>;
+    onConfirm: () => void | Promise<unknown>;
 }
 
 interface ConfirmDialogProps extends ConfirmDialogOptions {
