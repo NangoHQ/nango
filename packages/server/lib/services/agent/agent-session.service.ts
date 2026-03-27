@@ -29,6 +29,7 @@ interface AgentSessionRecord {
     backlog: AgentBrowserEvent[];
     nextEventId: number;
     pendingPermissions: Map<string, Permission>;
+    messageRoles: Map<string, Message['role']>;
 }
 
 class AgentSessionService {
@@ -52,7 +53,8 @@ class AgentSessionService {
                 emitter: new EventEmitter(),
                 backlog: [],
                 nextEventId: 1,
-                pendingPermissions: new Map()
+                pendingPermissions: new Map(),
+                messageRoles: new Map()
             };
 
             this.sessions.set(sid, record);
@@ -186,6 +188,11 @@ class AgentSessionService {
                 }
 
                 if (part.type === 'text') {
+                    const role = record.messageRoles.get(part.messageID);
+                    if (role && role !== 'assistant') {
+                        return;
+                    }
+
                     this.emit(record, 'agent.delta', {
                         sid: record.sid,
                         sessionId: record.opencodeSessionId,
@@ -211,6 +218,8 @@ class AgentSessionService {
                 if (info.sessionID !== record.opencodeSessionId) {
                     return;
                 }
+
+                record.messageRoles.set(info.id, info.role);
 
                 this.emit(record, 'agent.message.updated', {
                     sid: record.sid,

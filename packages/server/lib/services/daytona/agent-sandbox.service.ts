@@ -63,9 +63,11 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
         }
 
         const preview = await sandbox.getPreviewLink(opencodePort);
+        const previewHeaders = { 'x-daytona-preview-token': preview.token };
         const client = createOpencodeClient({
             baseUrl: preview.url,
             directory: agentProjectPath,
+            headers: previewHeaders,
             fetch: async (request) => {
                 const headers = new Headers(request.headers);
                 headers.set('x-daytona-preview-token', preview.token);
@@ -124,10 +126,7 @@ async function waitForOpenCodeServer(previewUrl: string, previewToken: string, s
     throw new Error(`Timed out waiting for OpenCode server to start${logs ? `: ${logs}` : ''}`);
 }
 
-function getSandboxEnvVars(
-    payload: Record<string, unknown>,
-    model: { providerID: string; modelID: string; full: string }
-): Record<string, string> {
+function getSandboxEnvVars(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, string> {
     const keys = [
         'OPENCODE_API_KEY',
         'ANTHROPIC_API_KEY',
@@ -184,7 +183,8 @@ export function createAnswerPrompt(answer: string): string {
 }
 
 export function createSessionTitle(payload: Record<string, unknown>): string {
-    const functionName = typeof payload['functionName'] === 'string' ? payload['functionName'] : typeof payload['function_name'] === 'string' ? payload['function_name'] : null;
+    const functionName =
+        typeof payload['functionName'] === 'string' ? payload['functionName'] : typeof payload['function_name'] === 'string' ? payload['function_name'] : null;
     return functionName ? `Build ${functionName}` : `Agent Run ${randomUUID().slice(0, 8)}`;
 }
 
@@ -202,10 +202,7 @@ function resolveModel(_payload: Record<string, unknown>): { providerID: string; 
     };
 }
 
-function createRuntimeConfig(
-    payload: Record<string, unknown>,
-    model: { providerID: string; modelID: string; full: string }
-): Record<string, unknown> {
+function createRuntimeConfig(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, unknown> {
     const providerOptions: Record<string, unknown> = {};
     const apiBaseUrl = typeof payload['api_base_url'] === 'string' && payload['api_base_url'].trim().length > 0 ? payload['api_base_url'].trim() : null;
     const apiKey = typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0 ? payload['api_key'].trim() : null;
@@ -220,7 +217,13 @@ function createRuntimeConfig(
     const config: Record<string, unknown> = {
         model: model.full,
         small_model: model.full,
-        enabled_providers: [model.providerID]
+        enabled_providers: [model.providerID],
+        permission: {
+            '*': 'allow',
+            external_directory: {
+                '/**': 'allow'
+            }
+        }
     };
 
     if (Object.keys(providerOptions).length > 0) {
