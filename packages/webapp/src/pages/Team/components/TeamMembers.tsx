@@ -78,10 +78,11 @@ export const TeamMembers: React.FC = () => {
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
     const allUsers: ((ApiUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
-        () => [
-            ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
-            ...(data?.data.invitedUsers || []).map((u) => ({ ...u, is_invitation: true as const }))
-        ],
+        () =>
+            [
+                ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
+                ...(data?.data.invitedUsers || []).map((u) => ({ ...u, is_invitation: true as const }))
+            ].sort((a, b) => a.name.localeCompare(b.email)),
         [data]
     );
 
