@@ -51,6 +51,7 @@ export interface BaseProvider {
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
+        refresh_token_on?: string[];
         verification?: {
             method: EndpointMethod;
             endpoints: string[];

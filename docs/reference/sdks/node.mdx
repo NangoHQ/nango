@@ -1979,6 +1979,9 @@ await nango.delete(config); // DELETE request
             <ResponseField name="retryOn" type="number[]">
                 Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
+            <ResponseField name="refreshTokenOn" type="number[]">
+                Array of status codes that trigger a token refresh before retrying (e.g. <code>[401, 403]</code>). When used with OAuth, Nango will refresh the access token and retry the request. Optional; can also be set per provider in providers.yaml as <code>proxy.refresh_token_on</code>.
+            </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
                 The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
             </ResponseField>

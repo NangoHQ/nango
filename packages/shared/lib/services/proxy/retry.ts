@@ -3,6 +3,8 @@ import get from 'lodash-es/get.js';
 
 import { networkError } from '@nangohq/utils';
 
+import { REFRESHABLE_AUTH_MODES } from '../../constants.js';
+
 import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
@@ -53,6 +55,11 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
             isRetryable = true;
             reason = `retry_on_${status}`;
         }
+    }
+
+    if (REFRESHABLE_AUTH_MODES.has(proxyConfig.provider.auth_mode) && proxyConfig.refreshTokenOn?.length && proxyConfig.refreshTokenOn.includes(status)) {
+        isRetryable = true;
+        reason = 'refresh_token';
     }
 
     if (!isRetryable && customHeaderConf?.remaining && err.response?.headers[customHeaderConf.remaining] === '0') {
