@@ -14,6 +14,8 @@ ENV NANGO_PROJECT_DIR=/home/daytona/nango-integrations
 RUN mkdir -p "$NANGO_PROJECT_DIR" \
     && chown -R daytona:daytona /home/daytona
 
+COPY --chown=daytona:daytona embedded-skills/nango-remote-function-builder /home/daytona/nango-integrations/.agents/skills/nango-remote-function-builder
+
 USER daytona
 WORKDIR $NANGO_PROJECT_DIR
 
