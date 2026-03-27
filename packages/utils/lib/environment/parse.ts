@@ -38,6 +38,7 @@ export const ENVS = z.object({
     DAYTONA_API_URL: z.url().optional(),
     DAYTONA_TARGET: z.string().optional(),
     DAYTONA_COMPILER_SNAPSHOT: z.string().optional().default('nango-sf-compiler'),
+    DAYTONA_AGENT_SNAPSHOT: z.string().optional().default('nango-opencode-agent'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
