@@ -98,15 +98,16 @@ function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unk
         }
         case 'agent.delta': {
             const delta = typeof event.data['delta'] === 'string' ? event.data['delta'] : null;
-            if (!delta || delta.trim().length === 0) {
+            const sanitized = delta ? sanitizeAssistantDelta(delta) : null;
+            if (!sanitized) {
                 return null;
             }
 
-            if (isDebugDelta(delta)) {
-                return { type: 'debug', message: delta.trim() };
+            if (isDebugDelta(sanitized)) {
+                return { type: 'debug', message: sanitized.trim() };
             }
 
-            return { type: 'progress', message: delta };
+            return { type: 'progress', message: sanitized };
         }
         case 'agent.tool.updated': {
             const tool = typeof event.data['tool'] === 'string' ? event.data['tool'] : 'tool';
@@ -202,4 +203,37 @@ function isDebugDelta(delta: string): boolean {
     }
 
     return /^[a-z0-9_-]+:\s+(pending|running|completed|error)$/i.test(trimmed);
+}
+
+function sanitizeAssistantDelta(delta: string): string | null {
+    const filtered = delta
+        .split('\n')
+        .filter((line) => {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                return false;
+            }
+
+            if (trimmed === '<system-reminder>' || trimmed === '</system-reminder>') {
+                return false;
+            }
+
+            if (trimmed.startsWith('Your operational mode has changed')) {
+                return false;
+            }
+
+            if (/^[a-z0-9_-]+:\s+(pending|running|completed|error)$/i.test(trimmed)) {
+                return false;
+            }
+
+            if (/^[a-z0-9_-]+:\s+(pending|running|completed|error)<system-reminder>$/i.test(trimmed)) {
+                return false;
+            }
+
+            return true;
+        })
+        .join('\n')
+        .trim();
+
+    return filtered.length > 0 ? filtered : null;
 }

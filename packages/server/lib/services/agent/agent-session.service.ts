@@ -220,6 +220,26 @@ class AgentSessionService {
                 }
 
                 if (part.type === 'tool') {
+                    if (part.tool === 'question') {
+                        const question = extractQuestionFromToolState(part.state);
+
+                        if (question && part.state.status !== 'completed' && part.state.status !== 'error') {
+                            if (!record.pendingQuestion || record.pendingQuestion.message !== question) {
+                                record.pendingQuestion = {
+                                    id: part.callID || part.id,
+                                    message: question
+                                };
+                                this.emit(record, 'agent.question', {
+                                    sid: record.sid,
+                                    sessionId: record.opencodeSessionId,
+                                    questionId: record.pendingQuestion.id,
+                                    message: question
+                                });
+                            }
+                            this.clearCleanup(record);
+                        }
+                    }
+
                     this.emit(record, 'agent.tool.updated', {
                         sid: record.sid,
                         sessionId: record.opencodeSessionId,
@@ -287,20 +307,22 @@ class AgentSessionService {
                     return;
                 }
 
+                if (record.pendingQuestion) {
+                    return;
+                }
+
                 const question = extractPendingQuestion(record);
                 if (question) {
-                    if (!record.pendingQuestion || record.pendingQuestion.message !== question) {
-                        record.pendingQuestion = {
-                            id: randomUUID(),
-                            message: question
-                        };
-                        this.emit(record, 'agent.question', {
-                            sid: record.sid,
-                            sessionId: record.opencodeSessionId,
-                            questionId: record.pendingQuestion.id,
-                            message: question
-                        });
-                    }
+                    record.pendingQuestion = {
+                        id: randomUUID(),
+                        message: question
+                    };
+                    this.emit(record, 'agent.question', {
+                        sid: record.sid,
+                        sessionId: record.opencodeSessionId,
+                        questionId: record.pendingQuestion.id,
+                        message: question
+                    });
                     this.clearCleanup(record);
                     return;
                 }
@@ -419,6 +441,77 @@ function looksLikeQuestion(text: string): boolean {
     return ['please provide', 'which ', 'what ', 'could you', 'can you', 'do you want', 'should i use', 'i need', 'which connection', 'which integration'].some(
         (phrase) => lower.includes(phrase)
     );
+}
+
+function extractQuestionFromToolState(state: unknown): string | null {
+    if (!state || typeof state !== 'object') {
+        return null;
+    }
+
+    const candidates: unknown[] = [];
+    const record = state as Record<string, unknown>;
+
+    if (typeof record['title'] === 'string') {
+        candidates.push(record['title']);
+    }
+    if (typeof record['raw'] === 'string') {
+        candidates.push(record['raw']);
+        try {
+            candidates.push(JSON.parse(record['raw']));
+        } catch {
+            // ignore parse errors
+        }
+    }
+    if (record['input']) {
+        candidates.push(record['input']);
+    }
+    if (typeof record['output'] === 'string') {
+        candidates.push(record['output']);
+    }
+
+    for (const candidate of candidates) {
+        const question = extractQuestionText(candidate);
+        if (question) {
+            return question;
+        }
+    }
+
+    return null;
+}
+
+function extractQuestionText(value: unknown): string | null {
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed) {
+            return null;
+        }
+
+        const explicit = trimmed.match(/(?:^|\n)QUESTION:\s*(.+)$/im);
+        if (explicit?.[1]) {
+            return explicit[1].trim();
+        }
+
+        if (looksLikeQuestion(trimmed)) {
+            return trimmed;
+        }
+
+        return null;
+    }
+
+    if (!value || typeof value !== 'object') {
+        return null;
+    }
+
+    const record = value as Record<string, unknown>;
+    for (const key of ['question', 'message', 'prompt', 'text', 'body', 'description']) {
+        const nested = record[key];
+        const extracted = extractQuestionText(nested);
+        if (extracted) {
+            return extracted;
+        }
+    }
+
+    return null;
 }
 
 function inferPermissionDecision(text: string | null): 'once' | 'always' | 'reject' | null {
