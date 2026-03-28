@@ -9,6 +9,8 @@ import type { AgentSandboxHandle } from '../e2b/agent-sandbox.service.js';
 import type { Event as OpenCodeEvent, Message, Permission } from '@opencode-ai/sdk';
 
 const logger = getLogger('agent-session-service');
+const idleSessionCleanupDelayMs = 5 * 60 * 1000;
+const errorSessionCleanupDelayMs = 15_000;
 
 type AgentBrowserEvent = {
     id: number;
@@ -35,6 +37,7 @@ interface AgentSessionRecord {
         id: string;
         message: string;
     } | null;
+    cleanupTimer: NodeJS.Timeout | null;
 }
 
 class AgentSessionService {
@@ -61,7 +64,8 @@ class AgentSessionService {
                 pendingPermissions: new Map(),
                 messageRoles: new Map(),
                 messageTexts: new Map(),
-                pendingQuestion: null
+                pendingQuestion: null,
+                cleanupTimer: null
             };
 
             this.sessions.set(sid, record);
@@ -143,6 +147,7 @@ class AgentSessionService {
         }
 
         record.pendingQuestion = null;
+        this.clearCleanup(record);
 
         await record.sandbox.client.session.promptAsync({
             path: { id: record.opencodeSessionId },
@@ -296,6 +301,7 @@ class AgentSessionService {
                             message: question
                         });
                     }
+                    this.clearCleanup(record);
                     return;
                 }
 
@@ -303,6 +309,7 @@ class AgentSessionService {
                     sid: record.sid,
                     sessionId: record.opencodeSessionId
                 });
+                this.scheduleCleanup(record, 'idle');
                 return;
             }
             case 'session.error': {
@@ -314,6 +321,7 @@ class AgentSessionService {
                     sessionId: record.opencodeSessionId,
                     error: event.properties.error
                 });
+                this.scheduleCleanup(record, 'error');
                 return;
             }
             default:
@@ -333,6 +341,43 @@ class AgentSessionService {
             record.backlog.shift();
         }
         record.emitter.emit('event', payload);
+    }
+
+    private clearCleanup(record: AgentSessionRecord): void {
+        if (record.cleanupTimer) {
+            clearTimeout(record.cleanupTimer);
+            record.cleanupTimer = null;
+        }
+    }
+
+    private scheduleCleanup(record: AgentSessionRecord, reason: 'idle' | 'error'): void {
+        if (record.pendingQuestion || record.pendingPermissions.size > 0 || record.cleanupTimer) {
+            return;
+        }
+
+        record.cleanupTimer = setTimeout(
+            () => {
+                void this.cleanupSession(record.sid, reason);
+            },
+            reason === 'idle' ? idleSessionCleanupDelayMs : errorSessionCleanupDelayMs
+        );
+    }
+
+    private async cleanupSession(sid: string, reason: 'idle' | 'error'): Promise<void> {
+        const record = this.sessions.get(sid);
+        if (!record) {
+            return;
+        }
+
+        this.clearCleanup(record);
+        this.sessions.delete(sid);
+
+        await destroyAgentSandbox(record.sandbox);
+        logger.info('Cleaned up agent sandbox', {
+            sid,
+            sandboxId: record.sandbox.sandboxId,
+            reason
+        });
     }
 }
 
