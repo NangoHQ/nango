@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { Button } from '../../components-v2/ui/button';
+import { Checkbox } from '../../components-v2/ui/checkbox';
 import { Input } from '../../components-v2/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components-v2/ui/select';
 import { Textarea } from '../../components-v2/ui/textarea';
@@ -21,6 +22,7 @@ const AGENT_BASE = `${globalEnv.apiUrl}/api/v1/agent`;
 type SseEvent =
     | { type: 'session'; session_id: string }
     | { type: 'progress'; message: string }
+    | { type: 'debug'; message: string }
     | { type: 'question'; question_id: string; message: string }
     | { type: 'code'; language: string; content: string }
     | { type: 'deploy_result'; status: 'success' | 'error'; data: unknown }
@@ -36,6 +38,13 @@ const ProgressLine: React.FC<{ message: string }> = ({ message }) => (
     <div className="flex gap-2 items-start text-body-small-regular text-text-light-gray py-0.5">
         <span className="text-text-tertiary mt-0.5 shrink-0">›</span>
         <span className="whitespace-pre-wrap break-all">{message}</span>
+    </div>
+);
+
+const DebugLine: React.FC<{ message: string }> = ({ message }) => (
+    <div className="flex gap-2 items-start text-body-small-regular text-text-tertiary py-0.5 opacity-80">
+        <span className="font-code text-[10px] mt-0.5 shrink-0">dbg</span>
+        <span className="whitespace-pre-wrap break-all font-code text-xs">{message}</span>
     </div>
 );
 
@@ -157,6 +166,7 @@ export const FunctionBuilder: React.FC = () => {
     const [prompt, setPrompt] = useState('');
     const [connectionId, setConnectionId] = useState('');
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [debugMode, setDebugMode] = useState(false);
     const [apiKey, setApiKey] = useState('');
     const [apiBaseUrl, setApiBaseUrl] = useState('');
 
@@ -175,6 +185,11 @@ export const FunctionBuilder: React.FC = () => {
     const entryId = useRef(0);
     const abortRef = useRef<AbortController | null>(null);
     const sessionIdRef = useRef<string | null>(null);
+    const debugModeRef = useRef(debugMode);
+
+    useEffect(() => {
+        debugModeRef.current = debugMode;
+    }, [debugMode]);
 
     // Auto-scroll feed
     useEffect(() => {
@@ -230,6 +245,10 @@ export const FunctionBuilder: React.FC = () => {
                             } else if (event.type === 'error') {
                                 setStatus('error');
                                 setPendingQuestion(null);
+                            }
+
+                            if (event.type === 'debug' && !debugModeRef.current) {
+                                continue;
                             }
 
                             if (event.type !== 'session') {
@@ -406,6 +425,12 @@ export const FunctionBuilder: React.FC = () => {
 
                     {showAdvanced && (
                         <div className="grid grid-cols-2 gap-2">
+                            <div className="col-span-2 flex items-center gap-2 rounded-md border border-border-gray px-3 py-2">
+                                <Checkbox id="function-builder-debug" checked={debugMode} onCheckedChange={(checked) => setDebugMode(checked === true)} />
+                                <label htmlFor="function-builder-debug" className="text-body-small-regular text-text-light-gray cursor-pointer">
+                                    Debug mode: show raw agent/tool events
+                                </label>
+                            </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-body-small-medium text-text-light-gray">API Key override</label>
                                 <Input
@@ -463,6 +488,9 @@ export const FunctionBuilder: React.FC = () => {
                             {feed.map((entry) => {
                                 if (entry.type === 'progress') {
                                     return <ProgressLine key={entry.id} message={entry.message} />;
+                                }
+                                if (entry.type === 'debug') {
+                                    return <DebugLine key={entry.id} message={entry.message} />;
                                 }
                                 if (entry.type === 'code') {
                                     return <CodeBlock key={entry.id} language={entry.language} content={entry.content} />;

@@ -107,7 +107,22 @@ function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unk
             const tool = typeof event.data['tool'] === 'string' ? event.data['tool'] : 'tool';
             const state = event.data['state'];
             const status = typeof state === 'object' && state && 'status' in state && typeof state.status === 'string' ? state.status : 'updated';
-            return { type: 'progress', message: `${tool}: ${status}` };
+            return { type: 'debug', message: `[tool] ${tool}: ${status}` };
+        }
+        case 'agent.message.updated': {
+            const message = event.data['message'];
+            if (!message || typeof message !== 'object') {
+                return null;
+            }
+
+            const role = 'role' in message && typeof message.role === 'string' ? message.role : 'unknown';
+            const id = 'id' in message && typeof message.id === 'string' ? message.id : 'unknown';
+            const parts = 'parts' in message && Array.isArray(message.parts) ? message.parts.length : 0;
+            return { type: 'debug', message: `[message] ${role} ${id} (${parts} part${parts === 1 ? '' : 's'})` };
+        }
+        case 'agent.session.status': {
+            const status = typeof event.data['status'] === 'string' ? event.data['status'] : 'updated';
+            return { type: 'debug', message: `[session] status: ${status}` };
         }
         case 'agent.permission.requested': {
             const permission = event.data['permission'];
@@ -130,7 +145,11 @@ function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unk
         }
         case 'agent.permission.submitted': {
             const response = typeof event.data['response'] === 'string' ? event.data['response'] : 'submitted';
-            return { type: 'progress', message: `Permission response sent: ${response}` };
+            return { type: 'debug', message: `[permission] response sent: ${response}` };
+        }
+        case 'agent.permission.replied': {
+            const response = typeof event.data['response'] === 'string' ? event.data['response'] : 'submitted';
+            return { type: 'debug', message: `[permission] replied: ${response}` };
         }
         case 'agent.session.idle':
             return { type: 'done', message: 'Agent finished its current run.' };
