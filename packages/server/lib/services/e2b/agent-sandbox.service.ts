@@ -158,7 +158,7 @@ export function createAgentPrompt(payload: Record<string, unknown>): string {
 
     const contextBlock = Object.keys(context).length > 0 ? `\n\nContext:\n${JSON.stringify(context, null, 2)}` : '';
 
-    return `${prompt}\n\nYou are working inside a prepared Nango project at ${agentProjectPath}. Use the installed skill named nango-remote-function-builder from .agents/skills when relevant.${contextBlock}`;
+    return `${prompt}\n\nYou are working inside a prepared Nango project at ${agentProjectPath}. Use the installed skill named nango-remote-function-builder from .agents/skills when relevant. If you need missing user input, reply with a single line that starts with QUESTION: followed by the exact question, then stop and wait for the user answer.${contextBlock}`;
 }
 
 export function createAnswerPrompt(answer: string): string {

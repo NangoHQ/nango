@@ -30,6 +30,11 @@ interface AgentSessionRecord {
     nextEventId: number;
     pendingPermissions: Map<string, Permission>;
     messageRoles: Map<string, Message['role']>;
+    messageTexts: Map<string, string>;
+    pendingQuestion: {
+        id: string;
+        message: string;
+    } | null;
 }
 
 class AgentSessionService {
@@ -54,7 +59,9 @@ class AgentSessionService {
                 backlog: [],
                 nextEventId: 1,
                 pendingPermissions: new Map(),
-                messageRoles: new Map()
+                messageRoles: new Map(),
+                messageTexts: new Map(),
+                pendingQuestion: null
             };
 
             this.sessions.set(sid, record);
@@ -117,7 +124,7 @@ class AgentSessionService {
 
         const decision = typeof body['decision'] === 'string' ? body['decision'] : typeof body['response'] === 'string' ? body['response'] : null;
         const text = typeof body['text'] === 'string' ? body['text'] : typeof body['answer'] === 'string' ? body['answer'] : null;
-        const inferredDecision = inferPermissionDecision(text);
+        const inferredDecision = record.pendingQuestion ? null : inferPermissionDecision(text);
         const effectiveDecision = decision === 'once' || decision === 'always' || decision === 'reject' ? decision : inferredDecision;
 
         if (effectiveDecision) {
@@ -134,6 +141,8 @@ class AgentSessionService {
         if (!text || text.trim().length === 0) {
             throw new Error('Expected either a permission decision or a non-empty text answer');
         }
+
+        record.pendingQuestion = null;
 
         await record.sandbox.client.session.promptAsync({
             path: { id: record.opencodeSessionId },
@@ -192,6 +201,9 @@ class AgentSessionService {
                     if (role && role !== 'assistant') {
                         return;
                     }
+
+                    const text = typeof part.text === 'string' ? part.text : (event.properties.delta ?? '');
+                    record.messageTexts.set(part.messageID, text);
 
                     this.emit(record, 'agent.delta', {
                         sid: record.sid,
@@ -269,6 +281,24 @@ class AgentSessionService {
                 if (event.properties.sessionID !== record.opencodeSessionId) {
                     return;
                 }
+
+                const question = extractPendingQuestion(record);
+                if (question) {
+                    if (!record.pendingQuestion || record.pendingQuestion.message !== question) {
+                        record.pendingQuestion = {
+                            id: randomUUID(),
+                            message: question
+                        };
+                        this.emit(record, 'agent.question', {
+                            sid: record.sid,
+                            sessionId: record.opencodeSessionId,
+                            questionId: record.pendingQuestion.id,
+                            message: question
+                        });
+                    }
+                    return;
+                }
+
                 this.emit(record, 'agent.session.idle', {
                     sid: record.sid,
                     sessionId: record.opencodeSessionId
@@ -307,6 +337,44 @@ class AgentSessionService {
 }
 
 export const agentSessionService = new AgentSessionService();
+
+function extractPendingQuestion(record: AgentSessionRecord): string | null {
+    for (const [messageId, role] of [...record.messageRoles.entries()].reverse()) {
+        if (role !== 'assistant') {
+            continue;
+        }
+
+        const text = record.messageTexts.get(messageId)?.trim();
+        if (!text) {
+            continue;
+        }
+
+        const explicit = text.match(/(?:^|\n)QUESTION:\s*(.+)$/im);
+        if (explicit?.[1]) {
+            return explicit[1].trim();
+        }
+
+        if (looksLikeQuestion(text)) {
+            return text;
+        }
+
+        break;
+    }
+
+    return null;
+}
+
+function looksLikeQuestion(text: string): boolean {
+    const normalized = text.trim();
+    if (!normalized.endsWith('?')) {
+        return false;
+    }
+
+    const lower = normalized.toLowerCase();
+    return ['please provide', 'which ', 'what ', 'could you', 'can you', 'do you want', 'should i use', 'i need', 'which connection', 'which integration'].some(
+        (phrase) => lower.includes(phrase)
+    );
+}
 
 function inferPermissionDecision(text: string | null): 'once' | 'always' | 'reject' | null {
     if (!text) {

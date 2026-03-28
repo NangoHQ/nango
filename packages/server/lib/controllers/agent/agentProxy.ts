@@ -98,9 +98,14 @@ function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unk
         }
         case 'agent.delta': {
             const delta = typeof event.data['delta'] === 'string' ? event.data['delta'] : null;
-            if (!delta || delta.length === 0) {
+            if (!delta || delta.trim().length === 0) {
                 return null;
             }
+
+            if (isDebugDelta(delta)) {
+                return { type: 'debug', message: delta.trim() };
+            }
+
             return { type: 'progress', message: delta };
         }
         case 'agent.tool.updated': {
@@ -143,6 +148,17 @@ function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unk
                   }
                 : null;
         }
+        case 'agent.question': {
+            const questionId = typeof event.data['questionId'] === 'string' ? event.data['questionId'] : null;
+            const message = typeof event.data['message'] === 'string' ? event.data['message'] : null;
+            return questionId && message
+                ? {
+                      type: 'question',
+                      question_id: questionId,
+                      message
+                  }
+                : null;
+        }
         case 'agent.permission.submitted': {
             const response = typeof event.data['response'] === 'string' ? event.data['response'] : 'submitted';
             return { type: 'debug', message: `[permission] response sent: ${response}` };
@@ -172,4 +188,18 @@ function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unk
         default:
             return null;
     }
+}
+
+function isDebugDelta(delta: string): boolean {
+    const trimmed = delta.trim();
+
+    if (trimmed.includes('<system-reminder>') || trimmed.includes('</system-reminder>')) {
+        return true;
+    }
+
+    if (trimmed.startsWith('Your operational mode has changed')) {
+        return true;
+    }
+
+    return /^[a-z0-9_-]+:\s+(pending|running|completed|error)$/i.test(trimmed);
 }
