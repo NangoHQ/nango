@@ -42,7 +42,7 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
             createdBy: 'nango-server'
         },
         network: {
-            allowPublicTraffic: false
+            allowPublicTraffic: true
         }
     });
 

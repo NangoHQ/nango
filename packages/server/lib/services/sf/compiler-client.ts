@@ -51,6 +51,9 @@ export async function invokeCompiler(request: SfCompileRequest): Promise<Compile
         metadata: {
             purpose: 'nango-compiler',
             requestId: randomUUID()
+        },
+        network: {
+            allowPublicTraffic: true
         }
     });
 
