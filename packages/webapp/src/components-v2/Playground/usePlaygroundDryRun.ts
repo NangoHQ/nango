@@ -130,11 +130,31 @@ export function usePlaygroundDryRun(inputFields: InputField[]) {
                 appendConsoleOutput('✅ Execution completed');
 
                 if (result.function_type === 'action') {
+                    if (result.logs?.length > 0) {
+                        appendConsoleOutput('\n📝 Logs:');
+                        for (const entry of result.logs) {
+                            const log = entry as { level?: string; message?: unknown; payload?: unknown };
+                            const level = log.level ?? 'info';
+                            const prefix = level === 'error' ? '  ❌' : level === 'warn' ? '  ⚠️' : '  ℹ️';
+                            const msg = typeof log.message === 'string' ? log.message : JSON.stringify(log.message);
+                            appendConsoleOutput(log.payload !== undefined ? `${prefix} ${msg} ${JSON.stringify(log.payload)}` : `${prefix} ${msg}`);
+                        }
+                    }
                     appendConsoleOutput('\n📤 Output:');
                     appendConsoleOutput(JSON.stringify(result.output, null, 2));
                 } else {
-                    appendConsoleOutput('\n📊 Changes:');
                     const changes = result.changes;
+                    if (changes?.logs?.length > 0) {
+                        appendConsoleOutput('\n📝 Logs:');
+                        for (const entry of changes.logs) {
+                            if (typeof entry === 'string') {
+                                appendConsoleOutput(`  ℹ️ ${entry}`);
+                            } else {
+                                appendConsoleOutput(`  ℹ️ ${JSON.stringify(entry)}`);
+                            }
+                        }
+                    }
+                    appendConsoleOutput('\n📊 Changes:');
                     appendConsoleOutput(
                         `  Added: ${changes?.counts?.added ?? 0}, Updated: ${changes?.counts?.updated ?? 0}, Deleted: ${changes?.counts?.deleted ?? 0}`
                     );

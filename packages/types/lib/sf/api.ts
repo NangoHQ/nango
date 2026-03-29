@@ -99,6 +99,7 @@ export type PostSfDryRun = Endpoint<{
               function_name: string;
               function_type: 'action';
               output: unknown;
+              logs: unknown[];
               proxy_calls: SfProxyCall[];
           }
         | {

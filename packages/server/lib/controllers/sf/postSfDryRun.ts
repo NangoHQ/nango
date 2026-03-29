@@ -185,6 +185,7 @@ export const postSfDryRun = asyncWrapper<PostSfDryRun>(async (req, res) => {
             function_name: body.function_name,
             function_type: 'action',
             output: execution.response.output,
+            logs: execution.response.logs,
             proxy_calls: execution.response.proxyCalls
         });
         return;
