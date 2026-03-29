@@ -86,13 +86,13 @@ export function getSandboxEnvVars(payload: Record<string, unknown>, model: { pro
 
 export function createRuntimeConfig(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, unknown> {
     const providerOptions: Record<string, unknown> = {};
-    const apiBaseUrl = typeof payload['api_base_url'] === 'string' && payload['api_base_url'].trim().length > 0 ? payload['api_base_url'].trim() : null;
-    const apiKey =
-        typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0
-            ? payload['api_key'].trim()
-            : model.providerID === 'opencode'
-              ? process.env['OPENCODE_API_KEY'] || null
-              : null;
+    const apiBaseUrl = getOptionalTrimmedString(payload['api_base_url']);
+    const overrideApiKey = getOptionalTrimmedString(payload['api_key']);
+    const apiKey = overrideApiKey || (model.providerID === 'opencode' ? getOptionalTrimmedString(process.env['OPENCODE_API_KEY']) : null);
+
+    if (model.providerID === 'opencode' && !apiKey) {
+        throw new Error('OPENCODE_API_KEY is required when using the OpenCode provider');
+    }
 
     if (apiBaseUrl) {
         providerOptions['baseURL'] = apiBaseUrl;
@@ -107,9 +107,7 @@ export function createRuntimeConfig(payload: Record<string, unknown>, model: { p
         enabled_providers: [model.providerID],
         permission: {
             '*': 'allow',
-            external_directory: {
-                '/**': 'allow'
-            }
+            external_directory: 'deny'
         }
     };
 
@@ -127,12 +125,11 @@ export function createRuntimeConfig(payload: Record<string, unknown>, model: { p
 export function createAgentPrompt(payload: Record<string, unknown>): string {
     const prompt = typeof payload['prompt'] === 'string' && payload['prompt'].trim().length > 0 ? payload['prompt'].trim() : 'Build a Nango function.';
 
-    const context = { ...payload };
-    delete context['prompt'];
+    const context = getSanitizedPromptContext(payload);
 
     const contextBlock = Object.keys(context).length > 0 ? `\n\nContext:\n${JSON.stringify(context, null, 2)}` : '';
 
-    return `${prompt}\n\nYou are working inside a prepared Nango project at ${agentProjectPath}. Use the installed skill named nango-remote-function-builder from .agents/skills when relevant.${contextBlock}`;
+    return `${prompt}\n\nYou are working inside a prepared Nango project at ${agentProjectPath}. Use the installed skill named nango-remote-function-builder from .agents/skills when relevant. If you need temporary files, create them inside a relative project folder such as ./.nango-agent-tmp/ instead of using /tmp, /var/tmp, or any other absolute temp directory.${contextBlock}`;
 }
 
 export function createAnswerPrompt(answer: string): string {
@@ -143,4 +140,54 @@ export function createSessionTitle(payload: Record<string, unknown>): string {
     const functionName =
         typeof payload['functionName'] === 'string' ? payload['functionName'] : typeof payload['function_name'] === 'string' ? payload['function_name'] : null;
     return functionName ? `Build ${functionName}` : `Agent Run ${randomUUID().slice(0, 8)}`;
+}
+
+function getOptionalTrimmedString(value: unknown): string | null {
+    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+function getSanitizedPromptContext(payload: Record<string, unknown>): Record<string, unknown> {
+    const sanitized = sanitizePromptContext(payload);
+    return sanitized && typeof sanitized === 'object' && !Array.isArray(sanitized) ? (sanitized as Record<string, unknown>) : {};
+}
+
+function sanitizePromptContext(value: unknown): unknown {
+    if (Array.isArray(value)) {
+        return value.map((entry) => sanitizePromptContext(entry)).filter((entry) => entry !== undefined);
+    }
+
+    if (!value || typeof value !== 'object') {
+        return value;
+    }
+
+    const entries = Object.entries(value).flatMap(([key, entryValue]) => {
+        if (isSensitivePromptContextKey(key)) {
+            return [];
+        }
+
+        const sanitizedValue = sanitizePromptContext(entryValue);
+        return sanitizedValue === undefined ? [] : [[key, sanitizedValue] as const];
+    });
+
+    return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+function isSensitivePromptContextKey(key: string): boolean {
+    const normalized = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    if (normalized === 'prompt') {
+        return true;
+    }
+
+    if (
+        normalized === 'apibaseurl' ||
+        normalized === 'authorization' ||
+        normalized === 'auth' ||
+        normalized === 'credential' ||
+        normalized === 'credentials' ||
+        normalized === 'clientsecret'
+    ) {
+        return true;
+    }
+
+    return normalized.endsWith('apikey') || normalized.endsWith('token') || normalized.endsWith('secret') || normalized.endsWith('password');
 }
