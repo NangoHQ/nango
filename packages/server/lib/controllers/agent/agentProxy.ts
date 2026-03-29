@@ -6,14 +6,12 @@ import type { Request, Response } from 'express';
 
 const logger = getLogger('agentProxy');
 
-export async function postAgentBuild(req: Request, res: Response): Promise<void> {
+export function postAgentBuild(req: Request, res: Response): void {
     try {
-        const session = await agentSessionService.createBuild(req.body as Record<string, unknown>);
+        const session = agentSessionService.createBuild(req.body as Record<string, unknown>);
         res.status(200).json({
             session_id: session.sid,
             sid: session.sid,
-            sandbox_id: session.sandboxId,
-            opencode_session_id: session.sessionId,
             events_path: session.eventsPath
         });
     } catch (error) {
@@ -92,6 +90,10 @@ export async function postAgentSessionAnswer(req: Request, res: Response): Promi
 
 function mapAgentEventToUiEvent(event: { event: string; data: Record<string, unknown> }): Record<string, unknown> | null {
     switch (event.event) {
+        case 'agent.lifecycle': {
+            const message = typeof event.data['message'] === 'string' ? event.data['message'] : null;
+            return message ? { type: 'progress', message } : null;
+        }
         case 'agent.session.started': {
             const sid = typeof event.data['sid'] === 'string' ? event.data['sid'] : null;
             return sid ? { type: 'session', session_id: sid } : null;

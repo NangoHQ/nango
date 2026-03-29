@@ -15,7 +15,7 @@ export const agentSandboxTimeoutMs = 5 * 60 * 1000;
 const timeoutRefreshThrottleMs = 60 * 1000;
 const agentTemplate = process.env['E2B_AGENT_TEMPLATE'] || 'nango-opencode-agent';
 
-export async function createAgentSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentRuntimeHandle> {
+export async function createAgentSandbox(sessionId: string, payload: Record<string, unknown>, onProgress?: (message: string) => void): Promise<AgentRuntimeHandle> {
     if (!process.env['E2B_API_KEY']) {
         throw new Error('E2B_API_KEY is required for the E2B agent runtime');
     }
@@ -23,6 +23,7 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
     const model = resolveModel();
     payload = resolvePayload(payload);
     const sandboxEnv = getSandboxEnvVars(payload, model);
+    onProgress?.('Creating sandbox...');
     const sandbox = await Sandbox.create(agentTemplate, {
         timeoutMs: agentSandboxTimeoutMs,
         allowInternetAccess: true,
@@ -40,6 +41,7 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
 
     const accessToken = sandbox.trafficAccessToken;
     const baseUrl = `https://${sandbox.getHost(opencodePort)}`;
+    onProgress?.('Starting OpenCode server...');
     const serverHandle = await sandbox.commands.run(`opencode serve --hostname 0.0.0.0 --port ${opencodePort}`, {
         cwd: agentProjectPath,
         envs: sandboxEnv,

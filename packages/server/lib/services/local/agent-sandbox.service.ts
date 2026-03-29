@@ -15,7 +15,7 @@ const logger = getLogger('local-agent-sandbox');
 const opencodePort = 4096;
 export const localAgentImageName = process.env['LOCAL_AGENT_IMAGE'] || 'nango-local-agent';
 
-export async function createLocalAgentSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentRuntimeHandle> {
+export async function createLocalAgentSandbox(sessionId: string, payload: Record<string, unknown>, onProgress?: (message: string) => void): Promise<AgentRuntimeHandle> {
     const model = resolveModel();
     const resolvedPayload = rewriteLocalhostUrls(resolvePayload(payload));
     const envVars = getSandboxEnvVars(resolvedPayload, model);
@@ -24,7 +24,7 @@ export async function createLocalAgentSandbox(sessionId: string, payload: Record
 
     const envArgs = Object.entries(envVars).flatMap(([k, v]) => ['-e', `${k}=${v}`]);
 
-
+    onProgress?.('Starting container...');
     await execFileAsync('docker', [
         'run', '-d',
         '--name', containerName,
@@ -35,6 +35,7 @@ export async function createLocalAgentSandbox(sessionId: string, payload: Record
 
     await writeFileToContainer(containerName, `${agentProjectPath}/opencode.json`, JSON.stringify(createRuntimeConfig(resolvedPayload, model), null, 2));
 
+    onProgress?.('Starting OpenCode server...');
     await execFileAsync('docker', [
         'exec', '-d',
         '-w', agentProjectPath,

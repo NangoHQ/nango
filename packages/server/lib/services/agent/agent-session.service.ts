@@ -22,13 +22,13 @@ type AgentBrowserEvent = {
 
 interface AgentSessionRecord {
     sid: string;
-    sandbox: AgentRuntimeHandle;
-    opencodeSessionId: string;
+    sandbox: AgentRuntimeHandle | null;
+    opencodeSessionId: string | null;
     model: {
         providerID: string;
         modelID: string;
         full: string;
-    };
+    } | null;
     emitter: EventEmitter;
     backlog: AgentBrowserEvent[];
     nextEventId: number;
@@ -43,43 +43,66 @@ interface AgentSessionRecord {
     lastSandboxRefreshAt: number;
 }
 
-function createSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentRuntimeHandle> {
+function createSandbox(sessionId: string, payload: Record<string, unknown>, onProgress: (message: string) => void): Promise<AgentRuntimeHandle> {
     if (process.env['AGENT_RUNTIME'] === 'local') {
-        return createLocalAgentSandbox(sessionId, payload);
+        return createLocalAgentSandbox(sessionId, payload, onProgress);
     }
-    return createAgentSandbox(sessionId, payload);
+    return createAgentSandbox(sessionId, payload, onProgress);
 }
 
 class AgentSessionService {
     private readonly sessions = new Map<string, AgentSessionRecord>();
 
-    public async createBuild(payload: Record<string, unknown>): Promise<{ sid: string; sandboxId: string; sessionId: string; eventsPath: string }> {
+    public createBuild(payload: Record<string, unknown>): { sid: string; eventsPath: string } {
         const sid = randomUUID();
-        const sandbox = await createSandbox(sid, payload);
+        const record: AgentSessionRecord = {
+            sid,
+            sandbox: null,
+            opencodeSessionId: null,
+            model: null,
+            emitter: new EventEmitter(),
+            backlog: [],
+            nextEventId: 1,
+            pendingPermissions: new Map(),
+            messageRoles: new Map(),
+            messageTexts: new Map(),
+            pendingQuestion: null,
+            cleanupTimer: null,
+            lastSandboxRefreshAt: 0
+        };
+
+        this.sessions.set(sid, record);
+
+        void this.setupSession(record, payload);
+
+        return { sid, eventsPath: `/api/v1/agent/session/${sid}/events` };
+    }
+
+    private async setupSession(record: AgentSessionRecord, payload: Record<string, unknown>): Promise<void> {
+        const { sid } = record;
 
         try {
+            this.emitLifecycle(record, 'workspace.creating', 'Spinning up workspace...');
+
+            const sandbox = await createSandbox(sid, payload, (message) => {
+                this.emitLifecycle(record, 'workspace.progress', message);
+            });
+
+            record.sandbox = sandbox;
+            record.model = sandbox.model;
+            record.lastSandboxRefreshAt = Date.now();
+
+            this.emitLifecycle(record, 'workspace.ready', 'Workspace ready');
+            this.emitLifecycle(record, 'agent.starting', 'Starting agent...');
+
             const created = await sandbox.client.session.create({ body: { title: createSessionTitle(sandbox.resolvedPayload) } });
             const session = created.data;
             if (!session) {
                 throw new Error('OpenCode did not return a session');
             }
-            const record: AgentSessionRecord = {
-                sid,
-                sandbox,
-                opencodeSessionId: session.id,
-                model: sandbox.model,
-                emitter: new EventEmitter(),
-                backlog: [],
-                nextEventId: 1,
-                pendingPermissions: new Map(),
-                messageRoles: new Map(),
-                messageTexts: new Map(),
-                pendingQuestion: null,
-                cleanupTimer: null,
-                lastSandboxRefreshAt: Date.now()
-            };
 
-            this.sessions.set(sid, record);
+            record.opencodeSessionId = session.id;
+
             await this.startEventPump(record);
 
             this.emit(record, 'agent.session.started', {
@@ -89,28 +112,30 @@ class AgentSessionService {
                 previewUrl: sandbox.baseUrl
             });
 
+            this.emitLifecycle(record, 'agent.ready', 'Agent ready, sending task...');
+
             await sandbox.client.session.promptAsync({
                 path: { id: session.id },
                 body: {
                     model: {
-                        providerID: record.model.providerID,
-                        modelID: record.model.modelID
+                        providerID: sandbox.model.providerID,
+                        modelID: sandbox.model.modelID
                     },
                     parts: [{ type: 'text', text: createAgentPrompt(sandbox.resolvedPayload) }]
                 }
             });
 
             this.emit(record, 'agent.prompt.accepted', { sid, sessionId: session.id });
-
-            return {
-                sid,
-                sandboxId: sandbox.sandboxId,
-                sessionId: session.id,
-                eventsPath: `/api/v1/agent/session/${sid}/events`
-            };
         } catch (error) {
-            await sandbox.destroy();
-            throw error;
+            logger.error('Failed to set up agent session', { sid, error });
+            if (record.sandbox) {
+                await record.sandbox.destroy();
+            }
+            this.emit(record, 'agent.error', {
+                sid,
+                message: error instanceof Error ? error.message : String(error)
+            });
+            this.sessions.delete(sid);
         }
     }
 
@@ -135,6 +160,9 @@ class AgentSessionService {
         const record = this.sessions.get(sid);
         if (!record) {
             throw new Error('Agent session not found');
+        }
+        if (!record.sandbox || !record.opencodeSessionId || !record.model) {
+            throw new Error('Agent session is still initializing');
         }
 
         const decision = typeof body['decision'] === 'string' ? body['decision'] : typeof body['response'] === 'string' ? body['response'] : null;
@@ -189,6 +217,9 @@ class AgentSessionService {
     }
 
     private async startEventPump(record: AgentSessionRecord): Promise<void> {
+        if (!record.sandbox) {
+            return;
+        }
         const subscription = await record.sandbox.client.event.subscribe();
         void (async () => {
             try {
@@ -206,12 +237,17 @@ class AgentSessionService {
     }
 
     private handleOpenCodeEvent(record: AgentSessionRecord, event: OpenCodeEvent): void {
+        const sessionId = record.opencodeSessionId;
+        if (!sessionId) {
+            return;
+        }
+
         this.touchSandbox(record);
 
         switch (event.type) {
             case 'message.part.updated': {
                 const part = event.properties.part;
-                if (part.sessionID !== record.opencodeSessionId) {
+                if (part.sessionID !== sessionId) {
                     return;
                 }
 
@@ -226,7 +262,7 @@ class AgentSessionService {
 
                     this.emit(record, 'agent.delta', {
                         sid: record.sid,
-                        sessionId: record.opencodeSessionId,
+                        sessionId,
                         messageId: part.messageID,
                         delta: event.properties.delta ?? part.text
                     });
@@ -245,7 +281,7 @@ class AgentSessionService {
                                 };
                                 this.emit(record, 'agent.question', {
                                     sid: record.sid,
-                                    sessionId: record.opencodeSessionId,
+                                    sessionId,
                                     questionId: record.pendingQuestion.id,
                                     message: question
                                 });
@@ -256,7 +292,7 @@ class AgentSessionService {
 
                     this.emit(record, 'agent.tool.updated', {
                         sid: record.sid,
-                        sessionId: record.opencodeSessionId,
+                        sessionId,
                         messageId: part.messageID,
                         tool: part.tool,
                         state: part.state
@@ -266,7 +302,7 @@ class AgentSessionService {
             }
             case 'message.updated': {
                 const info = event.properties.info as Message;
-                if (info.sessionID !== record.opencodeSessionId) {
+                if (info.sessionID !== sessionId) {
                     return;
                 }
 
@@ -274,50 +310,50 @@ class AgentSessionService {
 
                 this.emit(record, 'agent.message.updated', {
                     sid: record.sid,
-                    sessionId: record.opencodeSessionId,
+                    sessionId,
                     message: info
                 });
                 return;
             }
             case 'permission.updated': {
                 const permission = event.properties;
-                if (permission.sessionID !== record.opencodeSessionId) {
+                if (permission.sessionID !== sessionId) {
                     return;
                 }
                 record.pendingPermissions.set(permission.id, permission);
                 this.emit(record, 'agent.permission.requested', {
                     sid: record.sid,
-                    sessionId: record.opencodeSessionId,
+                    sessionId,
                     permission
                 });
                 return;
             }
             case 'permission.replied': {
-                if (event.properties.sessionID !== record.opencodeSessionId) {
+                if (event.properties.sessionID !== sessionId) {
                     return;
                 }
                 record.pendingPermissions.delete(event.properties.permissionID);
                 this.emit(record, 'agent.permission.replied', {
                     sid: record.sid,
-                    sessionId: record.opencodeSessionId,
+                    sessionId,
                     permissionId: event.properties.permissionID,
                     response: event.properties.response
                 });
                 return;
             }
             case 'session.status': {
-                if (event.properties.sessionID !== record.opencodeSessionId) {
+                if (event.properties.sessionID !== sessionId) {
                     return;
                 }
                 this.emit(record, 'agent.session.status', {
                     sid: record.sid,
-                    sessionId: record.opencodeSessionId,
+                    sessionId,
                     status: event.properties.status
                 });
                 return;
             }
             case 'session.idle': {
-                if (event.properties.sessionID !== record.opencodeSessionId) {
+                if (event.properties.sessionID !== sessionId) {
                     return;
                 }
 
@@ -333,7 +369,7 @@ class AgentSessionService {
                     };
                     this.emit(record, 'agent.question', {
                         sid: record.sid,
-                        sessionId: record.opencodeSessionId,
+                        sessionId,
                         questionId: record.pendingQuestion.id,
                         message: question
                     });
@@ -343,18 +379,18 @@ class AgentSessionService {
 
                 this.emit(record, 'agent.session.idle', {
                     sid: record.sid,
-                    sessionId: record.opencodeSessionId
+                    sessionId
                 });
                 this.scheduleCleanup(record, 'idle');
                 return;
             }
             case 'session.error': {
-                if (event.properties.sessionID && event.properties.sessionID !== record.opencodeSessionId) {
+                if (event.properties.sessionID && event.properties.sessionID !== sessionId) {
                     return;
                 }
                 this.emit(record, 'agent.error', {
                     sid: record.sid,
-                    sessionId: record.opencodeSessionId,
+                    sessionId,
                     error: event.properties.error
                 });
                 this.scheduleCleanup(record, 'error');
@@ -363,6 +399,10 @@ class AgentSessionService {
             default:
                 return;
         }
+    }
+
+    private emitLifecycle(record: AgentSessionRecord, stage: string, message: string): void {
+        this.emit(record, 'agent.lifecycle', { sid: record.sid, stage, message });
     }
 
     private emit(record: AgentSessionRecord, event: string, data: Record<string, unknown>): void {
@@ -410,15 +450,16 @@ class AgentSessionService {
         this.clearCleanup(record);
         this.sessions.delete(sid);
 
-        await record.sandbox.destroy();
-        logger.info('Cleaned up agent sandbox', {
-            sid,
-            sandboxId: record.sandbox.sandboxId,
-            reason
-        });
+        if (record.sandbox) {
+            await record.sandbox.destroy();
+            logger.info('Cleaned up agent sandbox', { sid, sandboxId: record.sandbox.sandboxId, reason });
+        }
     }
 
     private touchSandbox(record: AgentSessionRecord, force: boolean = false): void {
+        if (!record.sandbox) {
+            return;
+        }
         const now = Date.now();
         if (!force && !shouldRefreshAgentSandboxTimeout(record.lastSandboxRefreshAt, now)) {
             return;
