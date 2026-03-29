@@ -124,21 +124,6 @@ async function waitForOpenCodeServer(baseUrl: string, accessToken: string | unde
 function getSandboxEnvVars(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, string> {
     const keys = [
         'OPENCODE_API_KEY',
-        'ANTHROPIC_API_KEY',
-        'OPENAI_API_KEY',
-        'OPENROUTER_API_KEY',
-        'GOOGLE_API_KEY',
-        'GEMINI_API_KEY',
-        'XAI_API_KEY',
-        'MISTRAL_API_KEY',
-        'DEEPSEEK_API_KEY',
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
-        'AWS_SESSION_TOKEN',
-        'AWS_REGION',
-        'AWS_BEARER_TOKEN_BEDROCK',
-        'AZURE_OPENAI_API_KEY',
-        'AZURE_OPENAI_ENDPOINT'
     ];
 
     const envVars = keys.reduce<Record<string, string>>((acc, key) => {
