@@ -6,6 +6,8 @@ Build this template with:
 npx tsx packages/e2b-opencode-agent/build.ts
 ```
 
+The template is built with `4` vCPUs and `2048 MB` RAM.
+
 It creates an E2B template alias that contains:
 
 - a pre-initialized Nango project at `/home/user/nango-integrations`

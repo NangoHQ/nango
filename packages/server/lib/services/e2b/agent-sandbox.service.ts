@@ -8,7 +8,8 @@ const logger = getLogger('e2b-agent-sandbox');
 
 export const agentProjectPath = '/home/user/nango-integrations';
 const opencodePort = 4096;
-const sandboxTimeoutMs = 30 * 60 * 1000;
+export const agentSandboxTimeoutMs = 5 * 60 * 1000;
+const timeoutRefreshThrottleMs = 60 * 1000;
 const agentTemplate = process.env['E2B_AGENT_TEMPLATE'] || 'nango-opencode-agent';
 const defaultAgentModel = 'opencode/kimi-k2.5';
 
@@ -34,7 +35,7 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
     const model = resolveModel();
     const sandboxEnv = getSandboxEnvVars(payload, model);
     const sandbox = await Sandbox.create(agentTemplate, {
-        timeoutMs: sandboxTimeoutMs,
+        timeoutMs: agentSandboxTimeoutMs,
         allowInternetAccess: true,
         metadata: {
             purpose: 'nango-agent',
@@ -88,6 +89,16 @@ export async function destroyAgentSandbox(handle: Pick<AgentSandboxHandle, 'sand
     await handle.sandbox.kill().catch((error) => {
         logger.warn('Failed to kill E2B agent sandbox', { error });
     });
+}
+
+export async function refreshAgentSandboxTimeout(handle: Pick<AgentSandboxHandle, 'sandbox'>, timeoutMs: number = agentSandboxTimeoutMs): Promise<void> {
+    await handle.sandbox.setTimeout(timeoutMs).catch((error) => {
+        logger.warn('Failed to refresh E2B agent sandbox timeout', { error, sandboxId: handle.sandbox.sandboxId, timeoutMs });
+    });
+}
+
+export function shouldRefreshAgentSandboxTimeout(lastRefreshAt: number, now: number = Date.now()): boolean {
+    return now - lastRefreshAt >= timeoutRefreshThrottleMs;
 }
 
 async function waitForOpenCodeServer(baseUrl: string, accessToken: string | undefined, serverHandle: { stdout: string; stderr: string }): Promise<void> {

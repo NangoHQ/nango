@@ -3,7 +3,16 @@ import { randomUUID } from 'node:crypto';
 
 import { getLogger } from '@nangohq/utils';
 
-import { createAgentPrompt, createAgentSandbox, createAnswerPrompt, createSessionTitle, destroyAgentSandbox } from '../e2b/agent-sandbox.service.js';
+import {
+    agentSandboxTimeoutMs,
+    createAgentPrompt,
+    createAgentSandbox,
+    createAnswerPrompt,
+    createSessionTitle,
+    destroyAgentSandbox,
+    refreshAgentSandboxTimeout,
+    shouldRefreshAgentSandboxTimeout
+} from '../e2b/agent-sandbox.service.js';
 
 import type { AgentSandboxHandle } from '../e2b/agent-sandbox.service.js';
 import type { Event as OpenCodeEvent, Message, Permission } from '@opencode-ai/sdk';
@@ -38,6 +47,7 @@ interface AgentSessionRecord {
         message: string;
     } | null;
     cleanupTimer: NodeJS.Timeout | null;
+    lastSandboxRefreshAt: number;
 }
 
 class AgentSessionService {
@@ -65,7 +75,8 @@ class AgentSessionService {
                 messageRoles: new Map(),
                 messageTexts: new Map(),
                 pendingQuestion: null,
-                cleanupTimer: null
+                cleanupTimer: null,
+                lastSandboxRefreshAt: Date.now()
             };
 
             this.sessions.set(sid, record);
@@ -148,6 +159,7 @@ class AgentSessionService {
 
         record.pendingQuestion = null;
         this.clearCleanup(record);
+        this.touchSandbox(record, true);
 
         await record.sandbox.client.session.promptAsync({
             path: { id: record.opencodeSessionId },
@@ -194,6 +206,8 @@ class AgentSessionService {
     }
 
     private handleOpenCodeEvent(record: AgentSessionRecord, event: OpenCodeEvent): void {
+        this.touchSandbox(record);
+
         switch (event.type) {
             case 'message.part.updated': {
                 const part = event.properties.part;
@@ -377,6 +391,8 @@ class AgentSessionService {
             return;
         }
 
+        this.touchSandbox(record, true);
+
         record.cleanupTimer = setTimeout(
             () => {
                 void this.cleanupSession(record.sid, reason);
@@ -400,6 +416,16 @@ class AgentSessionService {
             sandboxId: record.sandbox.sandboxId,
             reason
         });
+    }
+
+    private touchSandbox(record: AgentSessionRecord, force: boolean = false): void {
+        const now = Date.now();
+        if (!force && !shouldRefreshAgentSandboxTimeout(record.lastSandboxRefreshAt, now)) {
+            return;
+        }
+
+        record.lastSandboxRefreshAt = now;
+        void refreshAgentSandboxTimeout(record.sandbox, agentSandboxTimeoutMs);
     }
 }
 

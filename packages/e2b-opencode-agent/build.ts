@@ -6,6 +6,8 @@ import { agentTemplateName, createAgentTemplate } from './template.js';
 
 async function main() {
     await Template.build(createAgentTemplate(), agentTemplateName, {
+        cpuCount: 4,
+        memoryMB: 2048,
         onBuildLogs: defaultBuildLogger()
     });
 }
