@@ -37,6 +37,9 @@ export const ENVS = z.object({
     E2B_API_KEY: z.string().optional(),
     E2B_COMPILER_TEMPLATE: z.string().optional().default('nango-sf-compiler'),
     E2B_AGENT_TEMPLATE: z.string().optional().default('nango-opencode-agent'),
+    AGENT_RUNTIME: z.enum(['e2b', 'local']).optional().default('local'),
+    LOCAL_AGENT_IMAGE: z.string().optional().default('nango-local-agent'),
+    LOCAL_COMPILER_IMAGE: z.string().optional().default('nango-local-compiler'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

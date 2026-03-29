@@ -118,6 +118,9 @@ Symptom of incorrect registration: the file compiles but you see `No entry point
 
 ## Non-Negotiable Rules
 
+### Be chatty
+Lets constantly report back to the user what we are doing and why. We want them to know what is going on.
+
 ### Shared platform constraints
 
 - Define functions with `createAction()` or `createSync()`.
@@ -193,13 +196,15 @@ const config: ProxyConfiguration = {
 
 ## Deploy
 
-The function must be deployed with `POST https://api-development.nango.dev/sf-deploy`, then dry-run with `POST https://api-development.nango.dev/sf-run`. Check `references/api.md`.
+Use the `nango_base_url` from context if provided, otherwise default to `https://api-development.nango.dev`.
+
+The function must be deployed with `POST {nango_base_url}/sf-deploy`, then dry-run with `POST {nango_base_url}/sf-run`. Check `references/api.md`.
 
 ## When API Docs Do Not Render
 
 If web fetching returns incomplete docs (JS-rendered):
 - Ask the user for a sample response
-- Do a best effort approach to `https://api-development.nango.dev/sf-deploy` and `https://api-development.nango.dev/sf-run` to test it
+- Use `{nango_base_url}/sf-deploy` and `{nango_base_url}/sf-run` to test it and iterate over it
 
 ## Final Checklists
 
@@ -209,8 +214,8 @@ Action:
 - [ ] `createAction()` includes endpoint, input, output, and scopes when required
 - [ ] Provider call includes an API doc link comment and intentional retries
 - [ ] `nango.ActionError` is used for expected failures
-- [ ] Deploy succeeds by using `https://api-development.nango.dev/sf-deploy`
-- [ ] Run succeeds and returns the expected result using `https://api-development.nango.dev/sf-run`
+- [ ] Deploy succeeds by using `{nango_base_url}/sf-deploy`
+- [ ] Run succeeds and returns the expected result using `{nango_base_url}/sf-run`
 
 Sync:
 - [ ] Nango root verified
@@ -224,5 +229,5 @@ Sync:
 - [ ] List sync logic uses `nango.paginate()` plus `nango.batchSave()` unless the API shape requires a manual loop
 - [ ] Deletion strategy matches the sync type: `batchDelete()` for incremental only when the provider returns explicit deletions; otherwise full-refresh fallback uses `trackDeletesStart()` before fetch/save and `trackDeletesEnd()` only after a successful full fetch plus save
 - [ ] Metadata handled if required
-- [ ] Deploy succeeds by using `https://api-development.nango.dev/sf-deploy`
-- [ ] Run succeeds and returns the expected result using `https://api-development.nango.dev/sf-run`
+- [ ] Deploy succeeds by using `{nango_base_url}/sf-deploy`
+- [ ] Run succeeds and returns the expected result using `{nango_base_url}/sf-run`

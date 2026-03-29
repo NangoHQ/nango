@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { CommandExitError, Sandbox } from 'e2b';
 
 import { e2bCompilerHarness } from './compiler-client.e2b.harness.js';
+import { invokeLocalCompiler } from '../local/compiler-client.js';
 
 import type { CLIDeployFlowConfig } from '@nangohq/types';
 
@@ -41,6 +42,10 @@ type E2BCompileResponse =
     | { success: false; step: 'validation' | 'compilation'; message: string; stack?: string };
 
 export async function invokeCompiler(request: SfCompileRequest): Promise<CompileResult> {
+    if (process.env['AGENT_RUNTIME'] === 'local') {
+        return invokeLocalCompiler(request);
+    }
+
     if (!process.env['E2B_API_KEY']) {
         throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
     }

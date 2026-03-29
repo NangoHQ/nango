@@ -285,7 +285,6 @@ export const FunctionBuilder: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     prompt: prompt.trim(),
-                    nango_base_url: `https://api-${env}.nango.dev`,
                     nango_secret_key: secretKey,
                     environment: env,
                     connection_id: connectionId,

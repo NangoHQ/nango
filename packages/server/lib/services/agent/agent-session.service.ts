@@ -3,18 +3,11 @@ import { randomUUID } from 'node:crypto';
 
 import { getLogger } from '@nangohq/utils';
 
-import {
-    agentSandboxTimeoutMs,
-    createAgentPrompt,
-    createAgentSandbox,
-    createAnswerPrompt,
-    createSessionTitle,
-    destroyAgentSandbox,
-    refreshAgentSandboxTimeout,
-    shouldRefreshAgentSandboxTimeout
-} from '../e2b/agent-sandbox.service.js';
+import { createAgentPrompt, createAnswerPrompt, createSessionTitle } from './agent-runtime.js';
+import { agentSandboxTimeoutMs, createAgentSandbox, refreshAgentSandboxTimeout, shouldRefreshAgentSandboxTimeout } from '../e2b/agent-sandbox.service.js';
+import { createLocalAgentSandbox } from '../local/agent-sandbox.service.js';
 
-import type { AgentSandboxHandle } from '../e2b/agent-sandbox.service.js';
+import type { AgentRuntimeHandle } from './agent-runtime.js';
 import type { Event as OpenCodeEvent, Message, Permission } from '@opencode-ai/sdk';
 
 const logger = getLogger('agent-session-service');
@@ -29,7 +22,7 @@ type AgentBrowserEvent = {
 
 interface AgentSessionRecord {
     sid: string;
-    sandbox: AgentSandboxHandle;
+    sandbox: AgentRuntimeHandle;
     opencodeSessionId: string;
     model: {
         providerID: string;
@@ -50,15 +43,22 @@ interface AgentSessionRecord {
     lastSandboxRefreshAt: number;
 }
 
+function createSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentRuntimeHandle> {
+    if (process.env['AGENT_RUNTIME'] === 'local') {
+        return createLocalAgentSandbox(sessionId, payload);
+    }
+    return createAgentSandbox(sessionId, payload);
+}
+
 class AgentSessionService {
     private readonly sessions = new Map<string, AgentSessionRecord>();
 
     public async createBuild(payload: Record<string, unknown>): Promise<{ sid: string; sandboxId: string; sessionId: string; eventsPath: string }> {
         const sid = randomUUID();
-        const sandbox = await createAgentSandbox(sid, payload);
+        const sandbox = await createSandbox(sid, payload);
 
         try {
-            const created = await sandbox.client.session.create({ body: { title: createSessionTitle(payload) } });
+            const created = await sandbox.client.session.create({ body: { title: createSessionTitle(sandbox.resolvedPayload) } });
             const session = created.data;
             if (!session) {
                 throw new Error('OpenCode did not return a session');
@@ -96,7 +96,7 @@ class AgentSessionService {
                         providerID: record.model.providerID,
                         modelID: record.model.modelID
                     },
-                    parts: [{ type: 'text', text: createAgentPrompt(payload) }]
+                    parts: [{ type: 'text', text: createAgentPrompt(sandbox.resolvedPayload) }]
                 }
             });
 
@@ -109,7 +109,7 @@ class AgentSessionService {
                 eventsPath: `/api/v1/agent/session/${sid}/events`
             };
         } catch (error) {
-            await destroyAgentSandbox(sandbox);
+            await sandbox.destroy();
             throw error;
         }
     }
@@ -410,7 +410,7 @@ class AgentSessionService {
         this.clearCleanup(record);
         this.sessions.delete(sid);
 
-        await destroyAgentSandbox(record.sandbox);
+        await record.sandbox.destroy();
         logger.info('Cleaned up agent sandbox', {
             sid,
             sandboxId: record.sandbox.sandboxId,

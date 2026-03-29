@@ -1,38 +1,27 @@
-import { randomUUID } from 'node:crypto';
-
 import { getLogger } from '@nangohq/utils';
-import { createOpencodeClient, type OpencodeClient } from '@opencode-ai/sdk';
+import { createOpencodeClient } from '@opencode-ai/sdk';
 import { Sandbox } from 'e2b';
+
+import { agentProjectPath, createRuntimeConfig, getSandboxEnvVars, resolveModel, resolvePayload } from '../agent/agent-runtime.js';
+
+import type { AgentRuntimeHandle } from '../agent/agent-runtime.js';
+
+export type { AgentRuntimeHandle };
 
 const logger = getLogger('e2b-agent-sandbox');
 
-export const agentProjectPath = '/home/user/nango-integrations';
 const opencodePort = 4096;
 export const agentSandboxTimeoutMs = 5 * 60 * 1000;
 const timeoutRefreshThrottleMs = 60 * 1000;
 const agentTemplate = process.env['E2B_AGENT_TEMPLATE'] || 'nango-opencode-agent';
-const defaultAgentModel = 'opencode/kimi-k2.5';
 
-export interface AgentSandboxHandle {
-    sandbox: Sandbox;
-    client: OpencodeClient;
-    baseUrl: string;
-    accessToken: string | undefined;
-    sandboxId: string;
-    serverPid: number;
-    model: {
-        full: string;
-        providerID: string;
-        modelID: string;
-    };
-}
-
-export async function createAgentSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentSandboxHandle> {
+export async function createAgentSandbox(sessionId: string, payload: Record<string, unknown>): Promise<AgentRuntimeHandle> {
     if (!process.env['E2B_API_KEY']) {
         throw new Error('E2B_API_KEY is required for the E2B agent runtime');
     }
 
     const model = resolveModel();
+    payload = resolvePayload(payload);
     const sandboxEnv = getSandboxEnvVars(payload, model);
     const sandbox = await Sandbox.create(agentTemplate, {
         timeoutMs: agentSandboxTimeoutMs,
@@ -51,7 +40,6 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
 
     const accessToken = sandbox.trafficAccessToken;
     const baseUrl = `https://${sandbox.getHost(opencodePort)}`;
-    const headers = accessToken ? { 'e2b-traffic-access-token': accessToken } : undefined;
     const serverHandle = await sandbox.commands.run(`opencode serve --hostname 0.0.0.0 --port ${opencodePort}`, {
         cwd: agentProjectPath,
         envs: sandboxEnv,
@@ -61,7 +49,7 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
     const client = createOpencodeClient({
         baseUrl,
         directory: agentProjectPath,
-        headers,
+        headers: accessToken ? { 'e2b-traffic-access-token': accessToken } : undefined,
         fetch: async (request) => {
             if (!accessToken) {
                 return fetch(request);
@@ -75,26 +63,28 @@ export async function createAgentSandbox(sessionId: string, payload: Record<stri
     await waitForOpenCodeServer(baseUrl, accessToken, serverHandle);
 
     return {
-        sandbox,
         client,
         baseUrl,
         accessToken,
         sandboxId: sandbox.sandboxId,
         serverPid: serverHandle.pid,
-        model
+        model,
+        resolvedPayload: payload,
+        refreshTimeout: async (timeoutMs: number) => {
+            await sandbox.setTimeout(timeoutMs).catch((error) => {
+                logger.warn('Failed to refresh E2B agent sandbox timeout', { error, sandboxId: sandbox.sandboxId, timeoutMs });
+            });
+        },
+        destroy: async () => {
+            await sandbox.kill().catch((error) => {
+                logger.warn('Failed to kill E2B agent sandbox', { error });
+            });
+        }
     };
 }
 
-export async function destroyAgentSandbox(handle: Pick<AgentSandboxHandle, 'sandbox'>): Promise<void> {
-    await handle.sandbox.kill().catch((error) => {
-        logger.warn('Failed to kill E2B agent sandbox', { error });
-    });
-}
-
-export async function refreshAgentSandboxTimeout(handle: Pick<AgentSandboxHandle, 'sandbox'>, timeoutMs: number = agentSandboxTimeoutMs): Promise<void> {
-    await handle.sandbox.setTimeout(timeoutMs).catch((error) => {
-        logger.warn('Failed to refresh E2B agent sandbox timeout', { error, sandboxId: handle.sandbox.sandboxId, timeoutMs });
-    });
+export async function refreshAgentSandboxTimeout(handle: AgentRuntimeHandle, timeoutMs: number = agentSandboxTimeoutMs): Promise<void> {
+    await handle.refreshTimeout?.(timeoutMs);
 }
 
 export function shouldRefreshAgentSandboxTimeout(lastRefreshAt: number, now: number = Date.now()): boolean {
@@ -119,104 +109,4 @@ async function waitForOpenCodeServer(baseUrl: string, accessToken: string | unde
 
     const logs = [serverHandle.stdout, serverHandle.stderr].filter(Boolean).join('\n');
     throw new Error(`Timed out waiting for OpenCode server to start in E2B sandbox${logs ? `: ${logs}` : ''}`);
-}
-
-function getSandboxEnvVars(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, string> {
-    const keys = [
-        'OPENCODE_API_KEY',
-    ];
-
-    const envVars = keys.reduce<Record<string, string>>((acc, key) => {
-        const value = process.env[key];
-        if (value) {
-            acc[key] = value;
-        }
-        return acc;
-    }, {});
-
-    const overrideApiKey = typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0 ? payload['api_key'].trim() : null;
-    if (overrideApiKey) {
-        envVars['OPENCODE_API_KEY'] = overrideApiKey;
-    }
-
-    if (model.providerID === 'opencode' && !envVars['OPENCODE_API_KEY']) {
-        throw new Error('OPENCODE_API_KEY is required for the E2B agent runtime when using the OpenCode provider');
-    }
-
-    return envVars;
-}
-
-export function createAgentPrompt(payload: Record<string, unknown>): string {
-    const prompt = typeof payload['prompt'] === 'string' && payload['prompt'].trim().length > 0 ? payload['prompt'].trim() : 'Build a Nango function.';
-
-    const context = { ...payload };
-    delete context['prompt'];
-
-    const contextBlock = Object.keys(context).length > 0 ? `\n\nContext:\n${JSON.stringify(context, null, 2)}` : '';
-
-    return `${prompt}\n\nYou are working inside a prepared Nango project at ${agentProjectPath}. Use the installed skill named nango-remote-function-builder from .agents/skills when relevant. If you need missing user input, reply with a single line that starts with QUESTION: followed by the exact question, then stop and wait for the user answer.${contextBlock}`;
-}
-
-export function createAnswerPrompt(answer: string): string {
-    return `User response: ${answer}\n\nContinue from the current session state.`;
-}
-
-export function createSessionTitle(payload: Record<string, unknown>): string {
-    const functionName =
-        typeof payload['functionName'] === 'string' ? payload['functionName'] : typeof payload['function_name'] === 'string' ? payload['function_name'] : null;
-    return functionName ? `Build ${functionName}` : `Agent Run ${randomUUID().slice(0, 8)}`;
-}
-
-function resolveModel(): { providerID: string; modelID: string; full: string } {
-    const full = defaultAgentModel;
-    const [providerID, ...rest] = full.split('/');
-    if (!providerID || rest.length === 0) {
-        throw new Error(`Invalid OpenCode model identifier: ${full}`);
-    }
-
-    return {
-        full,
-        providerID,
-        modelID: rest.join('/')
-    };
-}
-
-function createRuntimeConfig(payload: Record<string, unknown>, model: { providerID: string; modelID: string; full: string }): Record<string, unknown> {
-    const providerOptions: Record<string, unknown> = {};
-    const apiBaseUrl = typeof payload['api_base_url'] === 'string' && payload['api_base_url'].trim().length > 0 ? payload['api_base_url'].trim() : null;
-    const apiKey =
-        typeof payload['api_key'] === 'string' && payload['api_key'].trim().length > 0
-            ? payload['api_key'].trim()
-            : model.providerID === 'opencode'
-              ? process.env['OPENCODE_API_KEY'] || null
-              : null;
-
-    if (apiBaseUrl) {
-        providerOptions['baseURL'] = apiBaseUrl;
-    }
-    if (apiKey) {
-        providerOptions['apiKey'] = apiKey;
-    }
-
-    const config: Record<string, unknown> = {
-        model: model.full,
-        small_model: model.full,
-        enabled_providers: [model.providerID],
-        permission: {
-            '*': 'allow',
-            external_directory: {
-                '/**': 'allow'
-            }
-        }
-    };
-
-    if (Object.keys(providerOptions).length > 0) {
-        config['provider'] = {
-            [model.providerID]: {
-                options: providerOptions
-            }
-        };
-    }
-
-    return config;
 }
