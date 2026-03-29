@@ -47,6 +47,7 @@ import { getPublicRecords } from './controllers/records/getRecords.js';
 import { patchPublicPruneRecords } from './controllers/records/patchPruneRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
 import { postSfDeploy } from './controllers/sf/postSfDeploy.js';
+import { postSfDryRun } from './controllers/sf/postSfDryRun.js';
 import { postSfRun } from './controllers/sf/postSfRun.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
@@ -216,6 +217,9 @@ publicAPI.route('/sf-deploy').post(apiAuth, postSfDeploy);
 
 publicAPI.use('/sf-run', jsonContentTypeMiddleware);
 publicAPI.route('/sf-run').post(apiAuth, postSfRun);
+
+publicAPI.use('/sf-dryrun', jsonContentTypeMiddleware);
+publicAPI.route('/sf-dryrun').post(apiAuth, postSfDryRun);
 
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/mcp').post(apiAuth, postMcp);

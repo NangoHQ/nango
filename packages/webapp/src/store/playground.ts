@@ -27,6 +27,13 @@ export interface PlaygroundState {
     running: boolean;
     inputErrors: Record<string, string>;
     connectionSearch: string;
+    // Editor state (transient)
+    editorOpen: boolean;
+    editorCode: string | null;
+    editorOriginalCode: string | null;
+    editorConsoleOutput: string[];
+    editorDryRunning: boolean;
+    editorDeploying: boolean;
 }
 
 interface PlaygroundStore extends PlaygroundState {
@@ -45,6 +52,14 @@ interface PlaygroundStore extends PlaygroundState {
     setConnectionSearch: (search: string) => void;
     reset: (keepOpen?: boolean) => void;
     setState: (value: PlaygroundState) => void;
+    // Editor actions
+    setEditorOpen: (open: boolean) => void;
+    setEditorCode: (code: string | null) => void;
+    setEditorOriginalCode: (code: string | null) => void;
+    appendConsoleOutput: (line: string) => void;
+    clearConsoleOutput: () => void;
+    setEditorDryRunning: (running: boolean) => void;
+    setEditorDeploying: (deploying: boolean) => void;
 }
 
 export const defaultPlaygroundState: PlaygroundState = {
@@ -58,7 +73,13 @@ export const defaultPlaygroundState: PlaygroundState = {
     pendingOperationId: null,
     running: false,
     inputErrors: {},
-    connectionSearch: ''
+    connectionSearch: '',
+    editorOpen: false,
+    editorCode: null,
+    editorOriginalCode: null,
+    editorConsoleOutput: [],
+    editorDryRunning: false,
+    editorDeploying: false
 };
 
 export const usePlaygroundStore = create<PlaygroundStore>()(
@@ -98,7 +119,16 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
 
             reset: (keepOpen = true) => set((s) => ({ ...defaultPlaygroundState, isOpen: keepOpen ? s.isOpen : false })),
 
-            setState: (value) => set(value)
+            setState: (value) => set(value),
+
+            // Editor actions
+            setEditorOpen: (editorOpen) => set({ editorOpen }),
+            setEditorCode: (editorCode) => set({ editorCode }),
+            setEditorOriginalCode: (editorOriginalCode) => set({ editorOriginalCode }),
+            appendConsoleOutput: (line) => set((s) => ({ editorConsoleOutput: [...s.editorConsoleOutput, line] })),
+            clearConsoleOutput: () => set({ editorConsoleOutput: [] }),
+            setEditorDryRunning: (editorDryRunning) => set({ editorDryRunning }),
+            setEditorDeploying: (editorDeploying) => set({ editorDeploying })
         }),
         {
             name: LocalStorageKeys.Playground,
@@ -114,7 +144,13 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
                 pendingOperationId: s.pendingOperationId,
                 running: false,
                 inputErrors: {},
-                connectionSearch: ''
+                connectionSearch: '',
+                editorOpen: false,
+                editorCode: null,
+                editorOriginalCode: null,
+                editorConsoleOutput: [],
+                editorDryRunning: false,
+                editorDeploying: false
             })
         }
     )

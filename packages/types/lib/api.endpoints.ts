@@ -71,7 +71,7 @@ import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders }
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
-import type { PostSfDeploy, PostSfRun } from './sf/api.js';
+import type { PostSfDeploy, PostSfDryRun, PostSfRun } from './sf/api.js';
 import type {
     GetSharedCredentialsProvider,
     GetSharedCredentialsProviders,
@@ -130,6 +130,7 @@ export type PublicApiEndpoints =
     | PostPublicTriggerAction
     | AllPublicProxy
     | PostSfDeploy
+    | PostSfDryRun
     | PostSfRun;
 
 export type PrivateApiEndpoints =

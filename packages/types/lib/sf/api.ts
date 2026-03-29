@@ -77,3 +77,35 @@ export type PostSfRun = Endpoint<{
               proxy_calls: SfProxyCall[];
           };
 }>;
+
+export type PostSfDryRun = Endpoint<{
+    Method: 'POST';
+    Path: '/sf-dryrun';
+    Body: {
+        integration_id: string;
+        function_name: string;
+        function_type: SfFunctionType;
+        code: string;
+        connection_id: string;
+        environment: string;
+        input?: unknown;
+        test_input?: unknown;
+        metadata?: unknown;
+        checkpoint?: unknown;
+    };
+    Success:
+        | {
+              integration_id: string;
+              function_name: string;
+              function_type: 'action';
+              output: unknown;
+              proxy_calls: SfProxyCall[];
+          }
+        | {
+              integration_id: string;
+              function_name: string;
+              function_type: 'sync';
+              changes: SfSyncDryRunChanges;
+              proxy_calls: SfProxyCall[];
+          };
+}>;

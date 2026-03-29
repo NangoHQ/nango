@@ -1,4 +1,4 @@
-import { ExternalLink, Plus } from 'lucide-react';
+import { ExternalLink, Pencil, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
@@ -35,6 +35,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     const setPlaygroundConnectionSearch = usePlaygroundStore((s) => s.setConnectionSearch);
     const setPlaygroundPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
     const setPlaygroundRunning = usePlaygroundStore((s) => s.setRunning);
+    const editorOpen = usePlaygroundStore((s) => s.editorOpen);
+    const setEditorOpen = usePlaygroundStore((s) => s.setEditorOpen);
 
     const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
     useDebounce(() => setDebouncedConnectionSearch(connectionSearch || ''), 250, [connectionSearch]);
@@ -193,35 +195,46 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
             />
 
             <label className="text-text-primary text-label-large">Function</label>
-            <Combobox
-                value={playgroundFunction || ''}
-                onValueChange={handleFunctionChange}
-                placeholder="Select function"
-                disabled={!playgroundIntegration}
-                options={functionOptions}
-                searchPlaceholder="Search functions"
-                showCheckbox={false}
-                emptyText="No functions found"
-                footer={
-                    playgroundIntegration ? (
-                        <div className="flex items-center justify-between gap-3">
-                            <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">Activate more functions</span>
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
-                                onClick={() => {
-                                    setPlaygroundOpen(false);
-                                    navigate(`/${env}/integrations/${playgroundIntegration}`);
-                                }}
-                            >
-                                Activate <ExternalLink className="size-4" />
-                            </Button>
-                        </div>
-                    ) : undefined
-                }
-            />
+            <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                    <Combobox
+                        value={playgroundFunction || ''}
+                        onValueChange={handleFunctionChange}
+                        placeholder="Select function"
+                        disabled={!playgroundIntegration}
+                        options={functionOptions}
+                        searchPlaceholder="Search functions"
+                        showCheckbox={false}
+                        emptyText="No functions found"
+                        footer={
+                            playgroundIntegration ? (
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                        Activate more functions
+                                    </span>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
+                                        onClick={() => {
+                                            setPlaygroundOpen(false);
+                                            navigate(`/${env}/integrations/${playgroundIntegration}`);
+                                        }}
+                                    >
+                                        Activate <ExternalLink className="size-4" />
+                                    </Button>
+                                </div>
+                            ) : undefined
+                        }
+                    />
+                </div>
+                {playgroundFunction && !editorOpen && (
+                    <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => setEditorOpen(true)} title="Edit function code">
+                        <Pencil className="size-4" />
+                    </Button>
+                )}
+            </div>
         </div>
     );
 };

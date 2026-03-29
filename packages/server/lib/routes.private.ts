@@ -47,6 +47,7 @@ import { postEnvironment } from './controllers/v1/environment/postEnvironment.js
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
 import { getFlowDownload } from './controllers/v1/flow/getDownload.js';
+import { getFlowSource } from './controllers/v1/flow/getSource.js';
 import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
 import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
@@ -255,6 +256,7 @@ web.route('/flows/:id/disable').patch(webAuth, can({ action: 'update', resource:
 web.route('/flows/:id/enable').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowFrequency);
 web.route('/flows/:id/download').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowDownload);
+web.route('/flows/:id/source').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowSource);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
 // Getting Started

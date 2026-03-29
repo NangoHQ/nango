@@ -28,7 +28,13 @@ export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
         pendingOperationId: null,
         running: false,
         inputErrors: {},
-        connectionSearch: ''
+        connectionSearch: '',
+        editorOpen: false,
+        editorCode: null,
+        editorOriginalCode: null,
+        editorConsoleOutput: [],
+        editorDryRunning: false,
+        editorDeploying: false
     };
 
     usePlaygroundStore.getState().setState(next);
