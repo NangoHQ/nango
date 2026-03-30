@@ -108,7 +108,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         }
     };
 
-    const displayValue = !canRead && !value ? '•'.repeat(32) : value;
+    const displayValue = !canRead ? '•'.repeat(32) : value;
 
     return (
         <div className="flex flex-col gap-2">
