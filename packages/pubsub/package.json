@@ -17,7 +17,8 @@
         "@stomp/stompjs": "7.1.1",
         "dd-trace": "5.52.0",
         "uuid": "9.0.0",
-        "ws": "8.18.3"
+        "ws": "8.18.3",
+        "zod": "4.0.5"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",

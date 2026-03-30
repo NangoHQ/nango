@@ -2,8 +2,9 @@ import { assert, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { Combined, CombinedTransportError } from './combined.js';
+import { Migration } from './migration.js';
 
+import type { MigrationTransportError } from './migration.js';
 import type { Event } from '../event.js';
 import type { Transport } from './transport.js';
 
@@ -37,30 +38,35 @@ function usageEvent(): Event {
     };
 }
 
-describe('Combined transport', () => {
+function getMigrationTransportError(err: unknown): MigrationTransportError {
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).name).toBe('MigrationTransportError');
+    return err as MigrationTransportError;
+}
+
+describe('Migration transport', () => {
     it('connect returns Ok when all transports succeed', async () => {
         const connectA = vi.fn().mockResolvedValue(Ok(undefined));
         const connectB = vi.fn().mockResolvedValue(Ok(undefined));
         const a = mockTransport({ connect: connectA });
         const b = mockTransport({ connect: connectB });
-        const c = new Combined([a, b]);
+        const c = new Migration(a, [b]);
         const res = await c.connect();
         assert(res.isOk());
         expect(connectA).toHaveBeenCalledTimes(1);
         expect(connectB).toHaveBeenCalledTimes(1);
     });
 
-    it('connect returns CombinedTransportError with one cause when a single transport fails', async () => {
+    it('connect returns MigrationTransportError with one cause when a single transport fails', async () => {
         const inner = new Error('only one broke');
         const a = mockTransport({
             connect: vi.fn().mockResolvedValue(Err(inner))
         });
         const b = mockTransport();
-        const c = new Combined([a, b]);
+        const c = new Migration(a, [b]);
         const res = await c.connect();
         assert(res.isErr());
-        expect(res.error).toBeInstanceOf(CombinedTransportError);
-        const combinedErr = res.error as CombinedTransportError;
+        const combinedErr = getMigrationTransportError(res.error);
         expect(combinedErr.causes).toEqual([inner]);
         expect(combinedErr.message).toContain('connect failed');
         expect(combinedErr.message).toContain('only one broke');
@@ -75,11 +81,10 @@ describe('Combined transport', () => {
         const b = mockTransport({
             connect: vi.fn().mockResolvedValue(Err(e2))
         });
-        const c = new Combined([a, b]);
+        const c = new Migration(a, [b]);
         const res = await c.connect();
         assert(res.isErr());
-        expect(res.error).toBeInstanceOf(CombinedTransportError);
-        const combinedErr = res.error as CombinedTransportError;
+        const combinedErr = getMigrationTransportError(res.error);
         expect(combinedErr.causes).toEqual([e1, e2]);
         expect(combinedErr.message).toContain('(2 transports)');
         expect(combinedErr.message).toContain('first');
@@ -95,59 +100,56 @@ describe('Combined transport', () => {
         const b = mockTransport({
             disconnect: vi.fn().mockResolvedValue(Err(e2))
         });
-        const c = new Combined([a, b]);
+        const c = new Migration(a, [b]);
         const res = await c.disconnect();
         assert(res.isErr());
-        expect(res.error).toBeInstanceOf(CombinedTransportError);
-        expect((res.error as CombinedTransportError).causes).toEqual([e1, e2]);
-        expect((res.error as CombinedTransportError).message).toContain('disconnect failed');
+        const err = getMigrationTransportError(res.error);
+        expect(err.causes).toEqual([e1, e2]);
+        expect(err.message).toContain('disconnect failed');
     });
 
-    it('publish merges errors the same way as connect', async () => {
+    it('publish returns the publisher error without wrapping when publish fails', async () => {
         const e1 = new Error('p1');
-        const e2 = new Error('p2');
-        const publishA = vi.fn().mockResolvedValue(Err(e1));
-        const publishB = vi.fn().mockResolvedValue(Err(e2));
-        const a = mockTransport({ publish: publishA });
-        const b = mockTransport({ publish: publishB });
-        const c = new Combined([a, b]);
+        const publishPublisher = vi.fn().mockResolvedValue(Err(e1));
+        const publishSubscriber = vi.fn().mockResolvedValue(Ok(undefined));
+        const publisher = mockTransport({ publish: publishPublisher });
+        const subscriber = mockTransport({ publish: publishSubscriber });
+        const c = new Migration(publisher, [subscriber]);
         const event = usageEvent();
         const res = await c.publish(event);
         assert(res.isErr());
-        expect(res.error).toBeInstanceOf(CombinedTransportError);
-        expect((res.error as CombinedTransportError).causes).toEqual([e1, e2]);
-        expect((res.error as CombinedTransportError).message).toContain('publish failed');
-        expect(publishA).toHaveBeenCalledWith(event);
-        expect(publishB).toHaveBeenCalledWith(event);
+        expect(res.error).toBe(e1);
+        expect(publishPublisher).toHaveBeenCalledWith(event);
+        expect(publishSubscriber).not.toHaveBeenCalled();
     });
 
-    it('publish returns Ok when all transports succeed', async () => {
-        const publishA = vi.fn().mockResolvedValue(Ok(undefined));
-        const publishB = vi.fn().mockResolvedValue(Ok(undefined));
-        const a = mockTransport({ publish: publishA });
-        const b = mockTransport({ publish: publishB });
-        const c = new Combined([a, b]);
+    it('publish returns Ok when the publisher succeeds', async () => {
+        const publishPublisher = vi.fn().mockResolvedValue(Ok(undefined));
+        const publishSubscriber = vi.fn().mockResolvedValue(Ok(undefined));
+        const publisher = mockTransport({ publish: publishPublisher });
+        const subscriber = mockTransport({ publish: publishSubscriber });
+        const c = new Migration(publisher, [subscriber]);
         const event = usageEvent();
         const res = await c.publish(event);
         assert(res.isOk());
-        expect(publishA).toHaveBeenCalledWith(event);
-        expect(publishB).toHaveBeenCalledWith(event);
+        expect(publishPublisher).toHaveBeenCalledWith(event);
+        expect(publishSubscriber).not.toHaveBeenCalled();
     });
 
-    it('subscribe forwards to every transport', () => {
-        const subscribeA = vi.fn();
-        const subscribeB = vi.fn();
-        const a = mockTransport({ subscribe: subscribeA });
-        const b = mockTransport({ subscribe: subscribeB });
-        const c = new Combined([a, b]);
+    it('subscribe forwards only to subscriber transports, not the publisher', () => {
+        const subscribePublisher = vi.fn();
+        const subscribeSubscriber = vi.fn();
+        const publisher = mockTransport({ subscribe: subscribePublisher });
+        const subscriber = mockTransport({ subscribe: subscribeSubscriber });
+        const c = new Migration(publisher, [subscriber]);
         const params = { consumerGroup: 'g', subject: 'usage' as const, callback: vi.fn() };
         c.subscribe(params);
-        expect(subscribeA).toHaveBeenCalledWith(params);
-        expect(subscribeB).toHaveBeenCalledWith(params);
+        expect(subscribePublisher).not.toHaveBeenCalled();
+        expect(subscribeSubscriber).toHaveBeenCalledWith(params);
     });
 
     it('handles an empty transport list', async () => {
-        const c = new Combined([]);
+        const c = new Migration(mockTransport(), []);
         assert((await c.connect()).isOk());
         assert((await c.disconnect()).isOk());
         assert((await c.publish(usageEvent())).isOk());
@@ -171,7 +173,8 @@ describe('Combined transport', () => {
                 return Ok(undefined);
             })
         });
-        const c = new Combined([a, b]);
+        const publisher = mockTransport();
+        const c = new Migration(publisher, [a, b]);
         await c.connect();
         const bStart = events.indexOf('b-start');
         const aEnd = events.indexOf('a-end');

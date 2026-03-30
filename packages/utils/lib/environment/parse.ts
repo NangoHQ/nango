@@ -380,7 +380,10 @@ export const ENVS = z.object({
 
     // ActiveMQ
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
-    /** JSON: `{"topicArns":{"usage":"arn:aws:sns:...","team":"arn:...","user":"arn:..."},"queueUrls":{...}}` — every published `subject` needs a topic ARN. */
+    /**
+     * JSON: `{"topicArns":{"usage":"arn:...","team":"arn:...","user":"arn:..."},"queueUrls":{"myConsumer:usage":"https://..."}}`
+     * — `topicArns` keys must be event subjects and values valid AWS SNS topic ARNs; `queueUrls` keys must be `consumerGroup:subject` with the same subjects and values HTTPS URLs (see @nangohq/pubsub `Event` / `SnsSqs`).
+     */
     NANGO_PUBSUB_SNS_SQS_CONFIG: z
         .string()
         .optional()
@@ -395,8 +398,41 @@ export const ENVS = z.object({
         })
         .pipe(
             z.object({
-                topicArns: z.record(z.string(), z.string()).optional().default({}),
-                queueUrls: z.record(z.string(), z.string()).optional().default({})
+                topicArns: z
+                    .partialRecord(
+                        z.enum(['user', 'usage', 'team']),
+                        z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
+                    )
+                    .optional()
+                    .default({}),
+                queueUrls: z
+                    .record(z.string(), z.url())
+                    .check((payload) => {
+                        const record = payload.value;
+                        for (const key of Object.keys(record)) {
+                            const lastColon = key.lastIndexOf(':');
+                            if (lastColon < 0 || lastColon === key.length - 1) {
+                                payload.issues.push({
+                                    code: 'custom',
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be user, usage, or team)`,
+                                    path: [key],
+                                    input: record[key]
+                                });
+                                continue;
+                            }
+                            const subject = key.slice(lastColon + 1);
+                            if (!(subject === 'user' || subject === 'usage' || subject === 'team')) {
+                                payload.issues.push({
+                                    code: 'custom',
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be user, usage, or team`,
+                                    path: [key],
+                                    input: record[key]
+                                });
+                            }
+                        }
+                    })
+                    .optional()
+                    .default({})
             })
         ),
     NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),

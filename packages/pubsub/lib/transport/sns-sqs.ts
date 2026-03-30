@@ -1,5 +1,6 @@
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import * as z from 'zod';
 
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
@@ -12,65 +13,78 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('pubsub.sns-sqs');
 
-function subscriptionKey(consumerGroup: string, subject: string): string {
+/** SNS→SQS JSON body when raw message delivery is off — subset needed to unwrap inner Message. */
+const snsNotificationEnvelopeSchema = z.object({
+    Type: z.literal('Notification'),
+    Message: z.string()
+});
+
+/** Inner MessageAttributes on the SNS JSON envelope (subject forwarded from publish). */
+const snsEnvelopeSubjectSchema = z.looseObject({
+    MessageAttributes: z.record(z.string(), z.object({ Value: z.string().optional() })).optional()
+});
+
+/** SQS ReceiveMessage MessageAttributes map (subject from SNS subscription). */
+const sqsMessageAttributesSchema = z.record(z.string(), z.looseObject({ StringValue: z.string().optional() }));
+
+function subscriptionKey<TSubject extends Event['subject']>(consumerGroup: string, subject: TSubject): `${string}:${TSubject}` {
     return `${consumerGroup}:${subject}`;
 }
 
 /** SNS→SQS subscriptions wrap the published payload in a JSON envelope unless raw delivery is enabled. */
 function unwrapSqsBody(body: string): string {
+    let parsed: unknown;
     try {
-        const parsed = JSON.parse(body) as { Type?: string; Message?: string };
-        if (parsed?.Type === 'Notification' && typeof parsed.Message === 'string') {
-            return parsed.Message;
-        }
+        parsed = JSON.parse(body);
     } catch {
-        // treat as raw payload (e.g. tests or raw delivery)
+        return body;
+    }
+    const envelope = snsNotificationEnvelopeSchema.safeParse(parsed);
+    if (envelope.success) {
+        return envelope.data.Message;
     }
     return body;
 }
 
 function getSubjectMessageAttribute(body: string, messageAttributes?: unknown): string | undefined {
-    const attrs = typeof messageAttributes === 'object' && messageAttributes != null ? (messageAttributes as Record<string, unknown>) : undefined;
-    const subjectAttr = attrs?.['subject'] as { StringValue?: string | undefined } | undefined;
-    const fromSqsAttr = subjectAttr?.StringValue;
-    if (typeof fromSqsAttr === 'string' && fromSqsAttr.length > 0) {
-        return fromSqsAttr;
+    const attrs = sqsMessageAttributesSchema.safeParse(messageAttributes);
+    if (attrs.success) {
+        const fromSqsAttr = attrs.data['subject']?.StringValue;
+        if (typeof fromSqsAttr === 'string' && fromSqsAttr.length > 0) {
+            return fromSqsAttr;
+        }
     }
 
+    let parsedJson: unknown;
     try {
-        const parsed = JSON.parse(body) as { MessageAttributes?: { subject?: { Value?: string } } };
-        const fromEnvelope = parsed?.MessageAttributes?.['subject']?.Value;
+        parsedJson = JSON.parse(body);
+    } catch {
+        return undefined;
+    }
+    const envelope = snsEnvelopeSubjectSchema.safeParse(parsedJson);
+    if (envelope.success) {
+        const fromEnvelope = envelope.data.MessageAttributes?.['subject']?.Value;
         if (typeof fromEnvelope === 'string' && fromEnvelope.length > 0) {
             return fromEnvelope;
         }
-    } catch {
-        // non-JSON payload has no SNS envelope attributes
     }
 
     return undefined;
 }
 
 export interface SnsSqsProps {
-    /** Maps event subject (`user`, `team`, `usage`) to SNS topic ARN. Every published subject must have an entry. */
-    topicArns?: Record<string, string>;
-    /** Maps `consumerGroup:subject` to SQS queue URL. */
-    queueUrls?: Record<string, string>;
+    topicArns?: Record<Event['subject'], string>;
+    queueUrls?: Record<`${string}:${Event['subject']}`, string>;
     snsClient?: SNSClient;
     sqsClient?: SQSClient;
 }
 
-/**
- * Pub/sub transport backed by SNS (fan-out per event subject) and SQS (one queue per consumer group + subject).
- * Mirrors ActiveMQ virtual-topic semantics: publish to a topic per `event.subject`; each consumer uses a dedicated queue
- * subscribed to that topic. Pass config in the constructor (e.g. from `NANGO_PUBSUB_SNS_SQS_CONFIG` via `DefaultTransport`).
- */
 export class SnsSqs implements Transport {
     private readonly sns: SNSClient;
     private readonly sqs: SQSClient;
-    private readonly queueUrls: Record<string, string>;
-    private readonly topicArns: Record<string, string>;
+    private readonly queueUrls: Partial<Record<`${string}:${Event['subject']}`, string>>;
+    private readonly topicArns: Partial<Record<Event['subject'], string>>;
     private isConnected = false;
-    private readonly activeSubscriptions = new Map<string, SubscribeProps<any>>();
     private readonly pollerAbort = new Map<string, AbortController>();
 
     constructor(props?: SnsSqsProps) {
@@ -148,11 +162,10 @@ export class SnsSqs implements Transport {
             existing.abort();
             this.pollerAbort.delete(key);
         }
-        this.activeSubscriptions.set(key, props);
         this.startPoller(key, props);
     }
 
-    private startPoller<TSubject extends Event['subject']>(key: string, props: SubscribeProps<TSubject>): void {
+    private startPoller<TSubject extends Event['subject']>(key: `${string}:${TSubject}`, props: SubscribeProps<TSubject>): void {
         if (!this.isConnected) {
             return;
         }
@@ -222,13 +235,7 @@ export class SnsSqs implements Transport {
         }
 
         const rawPayload = unwrapSqsBody(body);
-        let buf: Buffer;
-        try {
-            buf = Buffer.from(rawPayload, 'base64');
-        } catch (err) {
-            report(new Error('SNS+SQS: invalid base64 message body'), { subject: expectedSubject, error: err });
-            return 'retry';
-        }
+        const buf = Buffer.from(rawPayload, 'base64');
         const decoded = serde.deserialize<Extract<Event, { subject: TSubject }>>(buf);
         if (decoded.isErr()) {
             report(new Error('SNS+SQS: failed to deserialize message'), { subject: expectedSubject, error: decoded.error });
