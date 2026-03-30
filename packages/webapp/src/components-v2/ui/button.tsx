@@ -65,7 +65,20 @@ const Button = React.forwardRef<
 });
 Button.displayName = 'Button';
 
-function ButtonLink({ className, variant, size, ...props }: LinkProps & VariantProps<typeof buttonVariants>) {
+type ButtonLinkProps = LinkProps &
+    VariantProps<typeof buttonVariants> & {
+        disabled?: boolean;
+    };
+
+function ButtonLink({ className, variant, size, disabled, ...props }: ButtonLinkProps) {
+    // react-router-dom links don't support disabled state
+    if (disabled) {
+        return (
+            <Button variant={variant} size={size} className={className} disabled>
+                {props.children}
+            </Button>
+        );
+    }
     return <Link data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
 }
 

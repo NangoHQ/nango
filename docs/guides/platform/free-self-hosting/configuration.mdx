@@ -4,6 +4,25 @@ sidebarTitle: 'Configuration'
 description: 'Instructions & configuration options for self-hosting Nango.'
 ---
 
+## Free self-hosted vs. Enterprise self-hosted feature availability
+
+| Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
+| --- | --- | --- |
+| Auth | Yes | Yes |
+| Proxy | Yes | Yes |
+| Observability | Auth + proxy only | Full |
+| OpenTelemetry (OTel) export | No | Yes |
+| Functions (syncs, actions, triggers) | No | Yes |
+| Webhooks | No | Yes |
+| MCP server | No | Yes |
+| Customize auth branding | No | Yes |
+| Role-based permissions | No | Yes |
+| SAML SSO | No | Yes |
+| Support SLA | No | Yes |
+
+For more details see our [pricing page for Nango Cloud](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the [Enterprise self-hosted](/guides/platform/self-hosting) version.
+
+
 ## Server URL, Callback URL & Custom Domains[](#custom-urls 'Direct link to Server URL, Callback URL & Custom Domains')
 
 Add server environment variables for the instance URL and port (in the `.env`

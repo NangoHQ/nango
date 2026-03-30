@@ -1,10 +1,9 @@
+import { permissions } from '@nangohq/authz';
 import { flags } from '@nangohq/utils';
 
 import { evaluator } from './evaluator.js';
-import { permissions } from './permissions.js';
 
-import type { Permission } from './types.js';
-import type { AllowedPermissions, Role } from '@nangohq/types';
+import type { AllowedPermissions, Permission, Role } from '@nangohq/types';
 
 /**
  * Resolve a permission for the current request.

@@ -1,7 +1,6 @@
-import { permissions as p } from './permissions.js';
+import { permissions as p } from '@nangohq/authz';
 
-import type { Permission } from './types.js';
-import type { Role } from '@nangohq/types';
+import type { Permission, Role } from '@nangohq/types';
 
 const ADMIN_ONLY: Permission[] = [
     p.canManageTeam,

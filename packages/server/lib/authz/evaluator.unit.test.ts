@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { StaticEvaluator } from './evaluator.js';
 
-import type { Permission } from './types.js';
+import type { Permission } from '@nangohq/types';
 
 const evaluator = new StaticEvaluator();
 

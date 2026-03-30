@@ -7,6 +7,7 @@ import { Ok, metrics } from '@nangohq/utils';
 import { deliver, shouldSend } from './utils.js';
 
 import type {
+    CheckpointRange,
     ConnectionJobs,
     DBAPISecret,
     DBEnvironment,
@@ -38,7 +39,8 @@ export const sendSync = async ({
     responseResults,
     success,
     operation,
-    error
+    error,
+    checkpoints
 }: {
     connection: ConnectionJobs;
     environment: Pick<DBEnvironment, 'id' | 'name'>;
@@ -54,6 +56,7 @@ export const sendSync = async ({
     error?: SyncErrorPayload;
     responseResults?: SyncResult;
     success: boolean;
+    checkpoints?: CheckpointRange | undefined;
 } & ({ success: true; responseResults: SyncResult } | { success: false; error: SyncErrorPayload })): Promise<Result<void>> => {
     if (!webhookSettings) {
         return Ok(undefined);
@@ -87,7 +90,8 @@ export const sendSync = async ({
         /** @deprecated.
         For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
         **/
-        syncType: operation === 'FULL' ? 'INITIAL' : operation
+        syncType: operation === 'FULL' ? 'INITIAL' : operation,
+        ...(checkpoints ? { checkpoints } : {})
     };
     let finalBody: NangoSyncWebhookBody;
 

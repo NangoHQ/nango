@@ -2,6 +2,8 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
@@ -11,6 +13,7 @@ import { Label } from '@/components-v2/ui/label';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
@@ -26,6 +29,9 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const navigate = useNavigate();
     const { confirm, DialogComponent } = useConfirmDialog();
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
+
+    const { can } = usePermissions();
+    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
 
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
 
@@ -78,6 +84,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     initialValue={integration.display_name || template.display_name}
                     onSave={(value) => onSave({ displayName: value })}
                     validate={validateNotEmpty}
+                    canEdit={canEdit}
                 />
             </div>
 
@@ -100,6 +107,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                         await onSave({ integrationId: value });
                         navigate(`/${env}/integrations/${value}/settings`);
                     }}
+                    canEdit={canEdit}
                 />
                 {isEditingIntegrationId && (
                     <Alert variant="info">
@@ -155,7 +163,13 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                                 <Label htmlFor="incoming_webhook_secret">Webhook Secret</Label>
                                 <InfoTooltip>Obtain the Webhook Secret from on the developer portal of the Integration Provider</InfoTooltip>
                             </div>
-                            <EditableInput secret initialValue={integration.custom?.webhookSecret || ''} onSave={(value) => onSave({ webhookSecret: value })} />
+                            <EditableInput
+                                secret
+                                initialValue={integration.custom?.webhookSecret || ''}
+                                onSave={(value) => onSave({ webhookSecret: value })}
+                                canEdit={canEdit}
+                                canRead={canEdit}
+                            />
                         </div>
                     )}
                 </>

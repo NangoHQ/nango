@@ -7,6 +7,7 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
+import { PermissionRoute } from './components/PermissionRoute';
 import { PrivateRoute } from './components/PrivateRoute';
 import { useMeta } from './hooks/useMeta';
 import { useUser } from './hooks/useUser';
@@ -36,7 +37,7 @@ import { NotFound } from './pages/NotFound';
 import { HearAboutUs } from './pages/Onboarding/HearAboutUs';
 import { Root } from './pages/Root';
 import { TeamBilling } from './pages/Team/Billing/Show';
-import { TeamSettings } from './pages/Team/Settings';
+import { TeamSettingsPage } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
 import { useStore } from './store';
 import { fetcher } from './utils/api';
@@ -203,18 +204,23 @@ const router = sentryCreateBrowserRouter([
                     },
                     {
                         path: 'team-settings',
-                        element: <TeamSettings />,
+                        element: <TeamSettingsPage />,
                         handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
-                    },
-                    {
-                        path: 'team/billing',
-                        element: <TeamBilling />,
-                        handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
                     },
                     {
                         path: 'user-settings',
                         element: <UserSettings />,
                         handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+                    },
+                    {
+                        element: <PermissionRoute action="*" scope="global" resource="billing" />,
+                        children: [
+                            {
+                                path: 'team/billing',
+                                element: <TeamBilling />,
+                                handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+                            }
+                        ]
                     }
                 ]
             }

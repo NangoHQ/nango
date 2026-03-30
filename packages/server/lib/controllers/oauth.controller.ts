@@ -335,7 +335,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        let connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -482,6 +482,10 @@ class OAuthController {
 
                 return;
             }
+
+            const tokenMetadata = getConnectionMetadata(credentials.raw, provider, 'token_response_metadata');
+
+            connectionConfig = { ...connectionConfig, ...tokenMetadata };
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
