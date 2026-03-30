@@ -102,6 +102,8 @@ export class SnsSqs implements Transport {
             ac.abort();
         }
         this.pollerAbort.clear();
+        this.sns.destroy();
+        this.sqs.destroy();
         logger.info('SNS+SQS transport disconnected');
         return Promise.resolve(Ok(undefined));
     }
