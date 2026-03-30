@@ -57,9 +57,11 @@ function usageEvent(): Event {
 describe('SnsSqs transport', () => {
     const mockSnsSend = vi.fn();
     const mockSqsSend = vi.fn();
+    const mockSnsDestroy = vi.fn();
+    const mockSqsDestroy = vi.fn();
 
-    const snsClient = { send: mockSnsSend } as unknown as SNSClient;
-    const sqsClient = { send: mockSqsSend } as unknown as SQSClient;
+    const snsClient = { send: mockSnsSend, destroy: mockSnsDestroy } as unknown as SNSClient;
+    const sqsClient = { send: mockSqsSend, destroy: mockSqsDestroy } as unknown as SQSClient;
 
     beforeEach(() => {
         vi.clearAllMocks();
