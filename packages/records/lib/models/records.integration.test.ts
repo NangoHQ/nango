@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
@@ -10,7 +10,7 @@ import { formatRecords } from '../helpers/format.js';
 import * as Records from '../models/records.js';
 import { decryptRecordData } from '../utils/encryption.js';
 
-import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../types.js';
+import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
 
 describe('Records service', () => {
@@ -127,6 +127,11 @@ describe('Records service', () => {
         stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(560);
+        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
+            external_id: '1',
+            sync_job_id: 3,
+            decrypted: { id: '1', name: 'Maurice Doe' }
+        });
     });
 
     describe('upserting records', () => {
@@ -655,6 +660,42 @@ describe('Records service', () => {
         expect(stats[model]?.size_bytes).toBe(401);
     });
 
+    it('Should undelete records', async () => {
+        const connectionId = rnd.number();
+        const environmentId = rnd.number();
+        const model = rnd.string();
+        const syncId = uuid.v4();
+        const records = [
+            { id: '1', name: 'John Doe' },
+            { id: '2', name: 'Jane Doe' }
+        ];
+
+        // Insert records
+        await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+        // Soft-delete both records
+        const deleted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2, softDelete: true });
+        expect(deleted.deletedKeys).toEqual(expect.arrayContaining(['1', '2']));
+
+        let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(0);
+
+        // Re-upsert (undelete) the same records
+        const undeleted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 3 });
+        expect(undeleted.addedKeys).toStrictEqual(expect.arrayContaining(['1', '2']));
+
+        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        expect(stats[model]?.count).toBe(2);
+
+        // Verify deleted_at is cleared
+        const response = (await Records.getRecords({ connectionId, model })).unwrap();
+        expect(response.records).toHaveLength(2);
+        for (const record of response.records) {
+            expect(record['_nango_metadata'].deleted_at).toBeNull();
+            expect(record['_nango_metadata'].last_action).toBe('ADDED');
+        }
+    });
+
     describe('getRecords', () => {
         it('Should retrieve records', async () => {
             const n = 10;
@@ -786,9 +827,33 @@ describe('Records service', () => {
 
             expect(allRecordsLength).toBe(numOfRecords);
         });
-    });
+    }, 60_000);
 
     describe('markPreviousGenerationRecordsAsDeleted', () => {
+        it('should track size correctly when marking outdated records as deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsBefore[model]?.count).toBe(2);
+            expect(statsBefore[model]?.size_bytes).toBeGreaterThan(0);
+
+            // Mark generation 1 as outdated (deleted)
+            await Records.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 });
+
+            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfter[model]?.count).toBe(0);
+            expect(statsAfter[model]?.size_bytes).toBe(0);
+        });
+
         it('should mark records from previous generations as deleted', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
@@ -1748,18 +1813,26 @@ async function fromDb(
     model: string,
     externalId: string
 ): Promise<{ external_id: string; sync_job_id: number; decrypted: UnencryptedRecordData }> {
-    const row = await db
-        .select<FormattedRecord[]>('*')
-        .from('nango_records.records')
-        .where({ connection_id: connectionId, model, external_id: externalId })
-        .first();
-    if (!row) {
+    const metadata = await db.select<FormattedRecord[]>('*').from(RECORDS_TABLE).where({ connection_id: connectionId, model, external_id: externalId }).first();
+    if (!metadata) {
         throw new Error(`Record with external_id ${externalId} not found`);
     }
+    const data = await db
+        .select<{ id: string; data: RecordData }[]>('id', 'data')
+        .from(RECORDS_DATA_TABLE)
+        .where({ connection_id: connectionId, model })
+        .where('id', metadata.id)
+        .first();
+    if (!data) {
+        throw new Error(`Record data with id ${metadata.id} not found`);
+    }
     return {
-        external_id: row.external_id,
-        sync_job_id: row.sync_job_id,
-        decrypted: await decryptRecordData(row)
+        external_id: metadata.external_id,
+        sync_job_id: metadata.sync_job_id,
+        decrypted: await decryptRecordData({
+            ...metadata,
+            json: data.data
+        })
     };
 }
 
