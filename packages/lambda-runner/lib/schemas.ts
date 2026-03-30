@@ -104,9 +104,19 @@ const refCodeSchema = z.object({
     codeParamsRef: s3RefSchema.optional()
 });
 
-export const requestSchema = z
+export const functionExecutionSchema = z
     .object({
         taskId: z.string(),
         nangoProps: nangoPropsSchema
     })
     .and(z.union([inlineCodeSchema, refCodeSchema]));
+
+export const readinessCheckSchema = z.object({
+    type: z.literal('readiness_check')
+});
+
+export const lambdaInvocationSchema = z.union([functionExecutionSchema, readinessCheckSchema]);
+
+export type FunctionExecutionRequest = z.infer<typeof functionExecutionSchema>;
+export type ReadinessCheckRequest = z.infer<typeof readinessCheckSchema>;
+export type LambdaInvocation = z.infer<typeof lambdaInvocationSchema>;

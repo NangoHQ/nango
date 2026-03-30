@@ -12,7 +12,8 @@ export const TwoStepCredentialsComponent: React.FC<{
     credentials: TwoStepCredentials;
     connection: ApiConnectionFull;
     providerConfigKey: string;
-}> = ({ credentials, connection, providerConfigKey }) => {
+    canRead: boolean;
+}> = ({ credentials, connection, providerConfigKey, canRead }) => {
     const { forceRefresh, isRefreshing } = useRefreshConnectionWithToast(connection, providerConfigKey);
 
     return (
@@ -21,7 +22,7 @@ export const TwoStepCredentialsComponent: React.FC<{
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="token">Token</Label>
                     <div className="flex gap-2 items-center">
-                        <SecretInput id="token" value={credentials.token} disabled copy />
+                        <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
                         <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing}>
                             <RefreshCwIcon />
                             Refresh
@@ -33,7 +34,7 @@ export const TwoStepCredentialsComponent: React.FC<{
             {credentials.refresh_token && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="refresh_token">Refresh token</Label>
-                    <SecretInput id="refresh_token" value={credentials.refresh_token} disabled copy />
+                    <SecretInput id="refresh_token" value={credentials.refresh_token} disabled copy canRead={canRead} />
                 </div>
             )}
 
@@ -48,7 +49,7 @@ export const TwoStepCredentialsComponent: React.FC<{
                 return (
                     <div className="flex flex-col gap-2" key={key}>
                         <Label htmlFor={key}>{label}</Label>
-                        <SecretInput id={key} value={value} disabled copy />
+                        <SecretInput id={key} value={value} disabled copy canRead={canRead} />
                     </div>
                 );
             })}

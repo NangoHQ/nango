@@ -10,6 +10,7 @@ import {
     CreateAliasCommand,
     CreateFunctionCommand,
     DeleteFunctionCommand,
+    InvokeCommand,
     LambdaClient,
     PublishVersionCommand,
     PutFunctionEventInvokeConfigCommand,
@@ -156,6 +157,22 @@ class Lambda {
                         }
                     })
                 );
+                const command = new InvokeCommand({
+                    FunctionName: aResult.AliasArn,
+                    Payload: JSON.stringify({
+                        type: 'readiness_check'
+                    }),
+                    InvocationType: 'RequestResponse'
+                });
+                const response = await lambdaClient.send(command);
+                if (response.FunctionError) {
+                    logger.error(`Error invoking readiness check function ${aResult.AliasArn}`, response.FunctionError);
+                    return;
+                }
+                if (response.StatusCode !== 200) {
+                    logger.error(`Readiness check function ${aResult.AliasArn} returned status code ${response.StatusCode}`, response);
+                    return;
+                }
                 const fleetId = node.fleetId || envs.RUNNER_LAMBDA_FLEET_ID;
                 const result = await registerWithFleet(fleetId, {
                     nodeId: node.id,

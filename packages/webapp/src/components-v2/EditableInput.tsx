@@ -1,12 +1,15 @@
 import { Check, Edit, Loader2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { ConditionalTooltip } from './ConditionalTooltip';
 import { CopyButton } from './CopyButton';
+import { PermissionGate } from './PermissionGate';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './ui/input-group';
 
 export interface EditableInputProps {
+    id?: string;
     initialValue: string;
-    onSave?: (value: string) => Promise<void>;
+    onSave?: (value: string) => Promise<unknown>;
     secret?: boolean;
     textArea?: boolean;
     placeholder?: string;
@@ -14,9 +17,13 @@ export interface EditableInputProps {
     validate?: (value: string) => string | null; // Returns error message or null
     onValidationChange?: (error: string | null) => void; // Called when validation state changes
     hintText?: string; // Hint text to display when editing (shown when no error, or as fallback)
+    disabled?: boolean | string;
+    canEdit?: boolean; // Permission to edit
+    canRead?: boolean; // Permission to read
 }
 
 export const EditableInput: React.FC<EditableInputProps> = ({
+    id,
     initialValue,
     onSave,
     secret,
@@ -25,7 +32,10 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     onEditingChange,
     validate,
     onValidationChange,
-    hintText
+    hintText,
+    disabled,
+    canEdit = true,
+    canRead = true
 }) => {
     const [editing, setEditing] = useState(false);
     const [referenceValue, setReferenceValue] = useState(initialValue);
@@ -103,6 +113,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 {textArea && (!secret || editing) ? (
                     <InputGroupTextarea
                         ref={textareaRef}
+                        id={id}
                         value={value}
                         onChange={handleChange}
                         className="h-36"
@@ -115,6 +126,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 ) : (
                     <InputGroupInput
                         ref={inputRef}
+                        id={id}
                         value={value}
                         placeholder={editing ? placeHolder : undefined}
                         onChange={handleChange}
@@ -133,11 +145,19 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     </InputGroupAddon>
                 ) : !editing ? (
                     <>
-                        <InputGroupButton onClick={onEditClicked} size="icon-sm">
-                            <Edit />
-                        </InputGroupButton>
+                        <ConditionalTooltip condition={!!disabled && typeof disabled === 'string'} content={disabled} side="bottom">
+                            <PermissionGate condition={canEdit} tooltipSide="bottom">
+                                {(allowed) => (
+                                    <InputGroupButton disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
+                                        <Edit />
+                                    </InputGroupButton>
+                                )}
+                            </PermissionGate>
+                        </ConditionalTooltip>
                         <InputGroupAddon align="inline-end">
-                            <CopyButton text={value} />
+                            <PermissionGate condition={canRead || !secret} tooltipSide="bottom">
+                                {(allowed) => <CopyButton disabled={!allowed} text={value} />}
+                            </PermissionGate>
                         </InputGroupAddon>
                     </>
                 ) : (

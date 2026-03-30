@@ -4,7 +4,7 @@ import { hashEmailAddress } from '../utils/pii.js';
 
 import type { WebhookHandler } from './types.js';
 
-const route: WebhookHandler = async (nango, headers, body) => {
+const route: WebhookHandler = async (nango, headers) => {
     // https://developers.google.com/workspace/calendar/api/guides/push
     // we will need to just forward the headers since the body is empty
 
@@ -21,7 +21,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
     }
 
     const baseArgs = {
-        body,
+        body: headers,
         ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] })
     };
 

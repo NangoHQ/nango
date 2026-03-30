@@ -37,16 +37,34 @@ export function stringifyError(err: unknown, opts?: { pretty?: boolean; stack?: 
     if (typeof err === 'object' && err != null) {
         const anyErr = err as any;
 
-        // handle axios response data - only extract error field if it exists
+        // handle axios response data - extract whitelisted fields from response.data
         if (anyErr.response?.data) {
             const responseData = anyErr.response.data;
 
-            // If error field exists, filter it to only include message-related fields
-            if (responseData.error && typeof responseData.error === 'object') {
+            // mip returns errors as string, i.e in a sentence format
+            if (typeof responseData === 'string') {
+                enriched['provider_error_payload'] = responseData;
+            } else if (typeof responseData === 'object' && responseData !== null) {
                 const filteredError: Record<string, unknown> = {};
+
+                if (responseData.error && typeof responseData.error === 'object') {
+                    for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
+                        if (field in responseData.error) {
+                            const value = (responseData.error as Record<string, unknown>)[field];
+                            if (typeof value !== 'object' || value === null) {
+                                filteredError[field] = value;
+                            }
+                        }
+                    }
+                }
+                // check top-level responseData for primitive whitelisted fields (overrides nested)
                 for (const field of PROVIDER_ERROR_MESSAGE_FIELDS) {
-                    if (field in responseData.error) {
-                        filteredError[field] = responseData.error[field];
+                    if (!(field in responseData)) {
+                        continue;
+                    }
+                    const value = (responseData as Record<string, unknown>)[field];
+                    if (typeof value !== 'object' || value === null) {
+                        filteredError[field] = value;
                     }
                 }
                 // Only set provider_error_payload if we found whitelisted fields
