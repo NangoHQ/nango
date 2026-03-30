@@ -20,7 +20,7 @@ export class DefaultTransport implements Transport {
         } else if (envs.NANGO_PUBSUB_TRANSPORT === 'sns-sqs') {
             const cfg = envs.NANGO_PUBSUB_SNS_SQS_CONFIG;
             this.transport = new SnsSqs({
-                topicArns: cfg.topicArns as Record<Event['subject'], string>,
+                topicArns: cfg.topicArns,
                 queueUrls: cfg.queueUrls
             });
         } else if (envs.NANGO_PUBSUB_TRANSPORT === 'migration') {
@@ -28,7 +28,7 @@ export class DefaultTransport implements Transport {
             this.transport = new Migration(new ActiveMQ(), [
                 new ActiveMQ(),
                 new SnsSqs({
-                    topicArns: cfg.topicArns as Record<Event['subject'], string>,
+                    topicArns: cfg.topicArns,
                     queueUrls: cfg.queueUrls
                 })
             ]);

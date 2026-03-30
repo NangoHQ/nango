@@ -73,8 +73,8 @@ function getSubjectMessageAttribute(body: string, messageAttributes?: unknown): 
 }
 
 export interface SnsSqsProps {
-    topicArns?: Record<Event['subject'], string>;
-    queueUrls?: Record<`${string}:${Event['subject']}`, string>;
+    topicArns?: Partial<Record<Event['subject'], string>>;
+    queueUrls?: Partial<Record<`${string}:${Event['subject']}`, string>>;
     snsClient?: SNSClient;
     sqsClient?: SQSClient;
 }

@@ -380,6 +380,9 @@ export const ENVS = z.object({
 
     // ActiveMQ
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
+    NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
+    NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
+    NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
     /**
      * JSON: `{"topicArns":{"usage":"arn:...","team":"arn:...","user":"arn:..."},"queueUrls":{"myConsumer:usage":"https://..."}}`
      * — `topicArns` keys must be event subjects and values valid AWS SNS topic ARNs; `queueUrls` keys must be `consumerGroup:subject` with the same subjects and values HTTPS URLs (see @nangohq/pubsub `Event` / `SnsSqs`).
@@ -435,9 +438,6 @@ export const ENVS = z.object({
                     .default({})
             })
         ),
-    NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
-    NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
-    NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
