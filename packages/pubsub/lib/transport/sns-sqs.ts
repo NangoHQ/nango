@@ -13,25 +13,21 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('pubsub.sns-sqs');
 
-/** SNS→SQS JSON body when raw message delivery is off — subset needed to unwrap inner Message. */
 const snsNotificationEnvelopeSchema = z.object({
     Type: z.literal('Notification'),
     Message: z.string()
 });
 
-/** Inner MessageAttributes on the SNS JSON envelope (subject forwarded from publish). */
 const snsEnvelopeSubjectSchema = z.looseObject({
     MessageAttributes: z.record(z.string(), z.object({ Value: z.string().optional() })).optional()
 });
 
-/** SQS ReceiveMessage MessageAttributes map (subject from SNS subscription). */
 const sqsMessageAttributesSchema = z.record(z.string(), z.looseObject({ StringValue: z.string().optional() }));
 
 function subscriptionKey<TSubject extends Event['subject']>(consumerGroup: string, subject: TSubject): `${string}:${TSubject}` {
     return `${consumerGroup}:${subject}`;
 }
 
-/** SNS→SQS subscriptions wrap the published payload in a JSON envelope unless raw delivery is enabled. */
 function unwrapSqsBody(body: string): string {
     let parsed: unknown;
     try {
