@@ -100,8 +100,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         try {
             await onSave?.(value);
             setReferenceValue(value);
-        } catch (err) {
-            console.log('onSaveClicked catch', value, referenceValue, err);
+        } catch {
             setEditing(true);
         } finally {
             setLoading(false);
