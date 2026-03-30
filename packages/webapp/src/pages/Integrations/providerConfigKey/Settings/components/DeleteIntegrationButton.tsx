@@ -23,7 +23,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
     const { data: environmentData } = useEnvironment(env);
     const environment = environmentData?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canDeleteIntegration = can(permissions.canWriteProdIntegrations) || !environment?.is_production;
+    const canDeleteIntegration = can(permissions.canDeleteProdIntegrations) || !environment?.is_production;
 
     const [open, setOpen] = useState(false);
     const { mutate, cache } = useSWRConfig();
