@@ -137,24 +137,6 @@ async function buildDocument(slug: string, provider: Provider): Promise<SanityDo
     };
 }
 
-async function listDatasetWebhooks(): Promise<{ id: string; name: string }[]> {
-    const res = await fetch(`https://api.sanity.io/${apiVersion}/hooks/projects/${projectId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error(`Failed to list webhooks: ${res.status} ${await res.text()}`);
-    const hooks = (await res.json()) as { id: string; name: string; dataset: string }[];
-    return hooks.filter((h) => h.dataset === dataset);
-}
-
-async function setWebhookEnabled(id: string, enabled: boolean): Promise<void> {
-    const res = await fetch(`https://api.sanity.io/${apiVersion}/hooks/projects/${projectId}/${id}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isDisabledByUser: !enabled })
-    });
-    if (!res.ok) throw new Error(`Failed to ${enabled ? 'enable' : 'disable'} webhook ${id}: ${res.status} ${await res.text()}`);
-}
-
 let created = 0;
 let updated = 0;
 let skipped = 0;
@@ -179,39 +161,19 @@ if (forceUpdate) {
     deleted = toDelete.length;
 
     if (!dryRun) {
-        const webhooks = await listDatasetWebhooks();
-
-        if (webhooks.length > 0) {
-            console.log(`Disabling ${webhooks.length} webhook(s)...`);
-            for (const wh of webhooks) {
-                await setWebhookEnabled(wh.id, false);
-                console.log(`  Disabled: ${wh.name}`);
-            }
+        const tx = sanity.transaction();
+        for (const doc of documents) {
+            tx.createOrReplace(doc);
         }
-
-        try {
-            const tx = sanity.transaction();
-            for (const doc of documents) {
-                tx.createOrReplace(doc);
-            }
-            for (const api of toDelete) {
-                tx.delete(api._id);
-            }
-            // remove all drafts — providers.yaml is the source of truth, draft content is discarded
-            for (const draft of draftApis) {
-                tx.delete(draft._id);
-            }
-            await tx.commit();
-            console.log(`Batch committed ${documents.length} upsert(s), ${toDelete.length} delete(s), ${draftApis.length} draft(s) removed`);
-        } finally {
-            if (webhooks.length > 0) {
-                console.log(`Re-enabling ${webhooks.length} webhook(s)...`);
-                for (const wh of webhooks) {
-                    await setWebhookEnabled(wh.id, true);
-                    console.log(`  Enabled: ${wh.name}`);
-                }
-            }
+        for (const api of toDelete) {
+            tx.delete(api._id);
         }
+        // remove all drafts — providers.yaml is the source of truth, draft content is discarded
+        for (const draft of draftApis) {
+            tx.delete(draft._id);
+        }
+        await tx.commit();
+        console.log(`Batch committed ${documents.length} upsert(s), ${toDelete.length} delete(s), ${draftApis.length} draft(s) removed`);
     } else {
         for (const doc of documents) {
             console.log(`${existingBySlug[doc.slug] ? 'Updated' : 'Created'} ${doc.slug} (dry run)`);
