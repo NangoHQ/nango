@@ -185,7 +185,6 @@
             "pages": [
               "guides/platform/observability",
               "guides/platform/environments",
-              "guides/platform/team",
               "guides/platform/limits",
               "guides/platform/security",
               "guides/platform/self-hosting",

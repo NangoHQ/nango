@@ -55,7 +55,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                         <Input type="email" value={user.email} disabled className="flex-1" />
                         <RoleSelect value={role} onChange={setRole} />
                     </div>
-                    <StyledLink to="https://docs.nango.dev/guides/platform/team" type="external" icon>
+                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" type="external" icon>
                         Learn more about roles and permissions
                     </StyledLink>
                 </div>
