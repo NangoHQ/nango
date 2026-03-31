@@ -795,6 +795,7 @@
               "integrations/all/sharepoint-online-oauth2-cc",
               "integrations/all/shipstation",
               "integrations/all/shipstation-v2",
+              "api-integrations/shipbob-pat",
               "api-integrations/shopify",
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",

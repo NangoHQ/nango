@@ -15395,6 +15395,43 @@ sharepoint-online-v1:
             secret: true
             doc_section: '#step-4-generating-your-client-assertion'
 
+shipbob-pat:
+    display_name: ShipBob (Personal Access Token)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.shipbob.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /2026-01/channel
+    docs: https://nango.dev/docs/api-integrations/shipbob-pat
+    docs_connect: https://nango.dev/docs/api-integrations/shipbob-pat/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The ShipBob API subdomain of the environment you want to connect to.
+            example: api
+            pattern: '^(api|sandbox-api)$'
+            prefix: https://
+            suffix: .shipbob.com
+            doc_section: '#step-2-identify-your-api-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your ShipBob Personal Access Token
+            example: 6E4647BB**************************806E464161FBB996DD8E87EEA86DB926-1
+            pattern: '^[A-F0-9]{64}-\d+$'
+            doc_section: '#step-1-generate-your-token'
+
 shipstation:
     display_name: Shipstation (v1)
     categories:
