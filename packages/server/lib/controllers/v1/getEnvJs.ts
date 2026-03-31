@@ -21,7 +21,6 @@ import type { WindowEnv } from '@nangohq/types';
 export const getEnvJs = asyncWrapper<any, any>((_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
-        apiDownWatchPublicKey: envs.API_DOWN_WATCH_PUBLIC_KEY || '',
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,

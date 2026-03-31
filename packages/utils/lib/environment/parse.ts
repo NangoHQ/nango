@@ -293,10 +293,6 @@ export const ENVS = z.object({
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
 
-    // API Down Watch
-    API_DOWN_WATCH_PUBLIC_KEY: z.string().optional(),
-    API_DOWN_WATCH_API_KEY: z.string().optional(),
-
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
 
