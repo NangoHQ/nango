@@ -4615,6 +4615,7 @@ dayforce:
     body_format: form
     proxy:
         base_url: https://${connectionConfig.clientHostname}/api || https://www.dayforcehcm.com/api
+        forward_headers_on_redirect: true
     token_url: https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token
     token_params:
         grant_type: password

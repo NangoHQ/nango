@@ -39,6 +39,7 @@ export enum Types {
     PROXY_FAILURE = 'nango.server.proxy.failure',
     PROXY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.incoming.payloadSizeBytes',
     PROXY_OUTGOING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.outgoing.payloadSizeBytes',
+    PROXY_REDIRECT = 'nango.server.proxy.redirect',
 
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
