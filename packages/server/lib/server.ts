@@ -106,6 +106,9 @@ const port = getServerPort();
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     logger.info(`Role-based authorization: ${flags.hasAuthRoles ? 'enabled' : 'disabled'}`);
+    const agentRuntime = process.env['AGENT_RUNTIME'] || 'local';
+    const agentRuntimeDetail = agentRuntime === 'e2b' ? (process.env['E2B_API_KEY'] ? 'configured' : 'not configured — E2B_API_KEY missing') : 'docker';
+    logger.info(`Agent runtime: ${agentRuntime} (${agentRuntimeDetail})`);
     logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );

@@ -23,7 +23,8 @@ export default tseslint.config(
             'docs/script.js',
             'docs/snippets/api-down-watch/status-widget.jsx',
             'packages/runner-sdk/models.d.ts',
-            'packages/cli/templates/'
+            'packages/cli/templates/',
+            'packages/lambda-sf-compiler/**'
         ]
     },
 

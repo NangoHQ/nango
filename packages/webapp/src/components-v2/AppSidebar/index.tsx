@@ -1,4 +1,4 @@
-import { AreaChart, Blocks, Logs, Plug, Settings2, Sparkle, X } from 'lucide-react';
+import { AreaChart, Blocks, Logs, Plug, Settings2, Sparkle, Wand2, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -58,6 +58,7 @@ export const AppSidebar: React.FC = () => {
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
             { title: 'Logs', url: `/${env}/logs`, icon: Logs },
             { title: 'Metrics', url: `/${env}`, icon: AreaChart },
+            { title: 'Function Builder', url: `/${env}/function-builder`, icon: Wand2 },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Settings2 }
         ].filter((item) => item !== null);
     }, [env, meta, refetchMeta, showGettingStarted]);

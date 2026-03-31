@@ -1,0 +1,93 @@
+# ------------------
+# Build stage
+# ------------------
+FROM public.ecr.aws/lambda/nodejs:22-arm64 AS build
+
+WORKDIR /app/tmp
+
+# Copy ALL package manifests so npm workspaces installs devDependencies correctly
+# (partial workspace setup causes @types/* to be missing at compile time)
+COPY packages/account-usage/package.json ./packages/account-usage/package.json
+COPY packages/billing/package.json ./packages/billing/package.json
+COPY packages/connect-ui/package.json ./packages/connect-ui/package.json
+COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
+COPY packages/database/package.json ./packages/database/package.json
+COPY packages/email/package.json ./packages/email/package.json
+COPY packages/fleet/package.json ./packages/fleet/package.json
+COPY packages/frontend/package.json ./packages/frontend/package.json
+COPY packages/jobs/package.json ./packages/jobs/package.json
+COPY packages/kvstore/package.json ./packages/kvstore/package.json
+COPY packages/lambda-runner/package.json ./packages/lambda-runner/package.json
+COPY packages/lambda-sf-compiler/package.json ./packages/lambda-sf-compiler/package.json
+COPY packages/logs/package.json ./packages/logs/package.json
+COPY packages/metering/package.json ./packages/metering/package.json
+COPY packages/nango-yaml/package.json ./packages/nango-yaml/package.json
+COPY packages/node-client/package.json ./packages/node-client/package.json
+COPY packages/orchestrator/package.json ./packages/orchestrator/package.json
+COPY packages/persist/package.json ./packages/persist/package.json
+COPY packages/providers/package.json ./packages/providers/package.json
+COPY packages/pubsub/package.json ./packages/pubsub/package.json
+COPY packages/records/package.json ./packages/records/package.json
+COPY packages/runner/package.json ./packages/runner/package.json
+COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
+COPY packages/scheduler/package.json ./packages/scheduler/package.json
+COPY packages/server/package.json ./packages/server/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
+COPY packages/types/package.json ./packages/types/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
+COPY packages/webapp/package.json ./packages/webapp/package.json
+COPY packages/webhooks/package.json ./packages/webhooks/package.json
+COPY package*.json ./
+
+RUN npm ci
+
+# Copy sources and build.
+# tsc -b follows project references transitively, so node-client and providers
+# are picked up automatically via runner-sdk's tsconfig references.
+COPY . /app/tmp
+RUN cp packages/lambda-sf-compiler/tsconfig.build.json tsconfig.sf-compiler.json \
+ && npx tsc -b tsconfig.sf-compiler.json
+
+# Clean dev dependencies
+# Keep optional deps: esbuild installs its platform binary (@esbuild/linux-arm64) as an optionalDependency
+RUN npm prune --omit=dev --omit=peer
+
+# ------------------
+# Pre-bake the nango template so the Lambda never runs npm install on cold start.
+# NANGO_SF_TEMPLATE_PROJECT_PATH is set to this directory in the final image.
+# ------------------
+ENV NANGO_SF_TEMPLATE_DIR=/opt/nango-sf-template
+
+# Copy the bundled template (package.json + tsconfig.json), pin the nango version, then install
+COPY packages/lambda-sf-compiler/nango-template ${NANGO_SF_TEMPLATE_DIR}
+RUN node -e "\
+  const fs = require('fs');\
+  const raw = fs.readFileSync('${NANGO_SF_TEMPLATE_DIR}/package.json', 'utf8');\
+  const pkg = JSON.parse(raw);\
+  pkg.devDependencies['nango'] = require('/app/tmp/packages/utils/dist/version.js').NANGO_VERSION;\
+  fs.writeFileSync('${NANGO_SF_TEMPLATE_DIR}/package.json', JSON.stringify(pkg, null, 2) + '\n');\
+" && \
+  cd ${NANGO_SF_TEMPLATE_DIR} && \
+  npm install --no-audit --no-fund --no-progress
+
+# ------------------
+# Final runtime image
+# ------------------
+FROM public.ecr.aws/lambda/nodejs:22-arm64
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Copy Datadog Lambda Extension
+COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
+
+# Copy application
+COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
+
+# Copy the pre-baked nango template (read-only; workspaces are created in /tmp at runtime)
+COPY --from=build /opt/nango-sf-template /opt/nango-sf-template
+
+ENV NANGO_SF_TEMPLATE_PROJECT_PATH=/opt/nango-sf-template
+ENV DD_LAMBDA_HANDLER="packages/lambda-sf-compiler/dist/index.handler"
+
+RUN rm node_modules/datadog-lambda-js/dist/handler.js
+CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]

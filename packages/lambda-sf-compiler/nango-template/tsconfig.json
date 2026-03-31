@@ -1,0 +1,30 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "$comment": "This file is managed by Nango, do not edit it manually.",
+    "include": ["index.ts", "**/*.ts"],
+    "exclude": ["node_modules", "dist", "build", ".nango"],
+    "compilerOptions": {
+        "module": "node16",
+        "target": "esnext",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node16",
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "declaration": false,
+        "sourceMap": true,
+        "composite": false,
+        "checkJs": false,
+        "noEmit": true
+    }
+}

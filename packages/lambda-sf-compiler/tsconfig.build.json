@@ -1,0 +1,23 @@
+{
+    "files": [],
+    "references": [
+        {
+            "path": "packages/utils"
+        },
+        {
+            "path": "packages/types"
+        },
+        {
+            "path": "packages/node-client"
+        },
+        {
+            "path": "packages/providers"
+        },
+        {
+            "path": "packages/runner-sdk"
+        },
+        {
+            "path": "packages/lambda-sf-compiler"
+        }
+    ]
+}

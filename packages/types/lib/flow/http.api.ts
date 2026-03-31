@@ -104,3 +104,12 @@ export type GetFlowDownload = Endpoint<{
     Success: never;
     Error: ApiError<'failed_to_download_flow'>;
 }>;
+
+export type GetFlowSource = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/flows/:id/source';
+    Querystring: { env: string };
+    Params: { id: number };
+    Success: { data: { code: string } };
+    Error: ApiError<'not_found'> | ApiError<'failed_to_get_source'>;
+}>;

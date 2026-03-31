@@ -1,0 +1,31 @@
+{
+    "name": "@nangohq/lambda-sf-compiler",
+    "version": "1.0.0",
+    "description": "Lambda function for compiling and bundling Nango SF functions",
+    "type": "module",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "private": true,
+    "scripts": {
+        "ts-build": "tsc"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "8.10.158",
+        "@types/node": "24.10.0",
+        "typescript": "5.9.3"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "3.993.0",
+        "@nangohq/runner-sdk": "file:../runner-sdk",
+        "@nangohq/types": "file:../types",
+        "@nangohq/utils": "file:../utils",
+        "esbuild": "0.25.2",
+        "nango": "0.69.46",
+        "zod": "4.1.12"
+    },
+    "optionalDependencies": {
+        "botbuilder": "*",
+        "soap": "*",
+        "unzipper": "*"
+    }
+}
