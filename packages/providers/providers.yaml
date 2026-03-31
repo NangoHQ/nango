@@ -4061,20 +4061,30 @@ connectwise-psa:
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
     proxy:
-        base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
+        base_url: https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
             accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
     docs: https://nango.dev/docs/integrations/all/connectwise-psa
     connection_config:
+        hostname:
+            type: string
+            title: Custom Hostname
+            description: Optional custom ConnectWise PSA hostname to use instead of the cloud subdomain. Enter the hostname only, without protocol or path.
+            example: psa.example.com
+            format: hostname
+            prefix: https://
+            suffix: /v4_6_release/apis/3.0
+            optional: true
         subdomain:
             type: string
-            title: ConnectWise PSA subdomain
-            description: The subdomain to connect to ConnectWise PSA
+            title: Cloud Subdomain
+            description: The standard ConnectWise PSA cloud subdomain to use when a custom hostname is not set
             pattern: '^api-(au|eu|na)$'
             example: api-au
             suffix: .myconnectwise.net
             prefix: https://
+            optional: true
         apiVersion:
             type: string
             title: Api version
