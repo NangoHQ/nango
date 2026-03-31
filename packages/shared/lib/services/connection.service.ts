@@ -1352,7 +1352,7 @@ class ConnectionService {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
-            const assertionType = provider.assertion.type ?? 'saml';
+            const assertionType = provider.assertion.type;
             const create =
                 assertionType === 'jwt'
                     ? assertionClient.generateJwtAssertion({

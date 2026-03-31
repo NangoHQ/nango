@@ -14743,6 +14743,7 @@ sap-success-factors:
         assertion: ${credentials.assertion}
         new_token: true
     assertion:
+        type: saml
         key: ${assertionOption.privateKey}
         issuer: www.successfactors.com
         lifetimeInSeconds: '315360000'
