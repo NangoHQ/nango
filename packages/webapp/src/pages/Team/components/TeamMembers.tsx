@@ -82,7 +82,7 @@ export const TeamMembers: React.FC = () => {
             [
                 ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
                 ...(data?.data.invitedUsers || []).map((u) => ({ ...u, is_invitation: true as const }))
-            ].sort((a, b) => a.name.localeCompare(b.email)),
+            ].sort((a, b) => a.email.localeCompare(b.email)),
         [data]
     );
 

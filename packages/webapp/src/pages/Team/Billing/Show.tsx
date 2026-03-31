@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { permissions } from '@nangohq/authz';
@@ -23,6 +23,12 @@ export const TeamBilling: React.FC = () => {
 
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
+
+    useEffect(() => {
+        if (!canManageBilling && activeTab === 'payment-and-invoices') {
+            setActiveTab('usage');
+        }
+    }, [canManageBilling, activeTab, setActiveTab]);
 
     return (
         <DashboardLayout className="flex flex-col gap-8">
