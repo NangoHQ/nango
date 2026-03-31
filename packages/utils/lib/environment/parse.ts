@@ -380,8 +380,62 @@ export const ENVS = z.object({
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
-    // ActiveMQ
-    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'none']).optional().default('none'),
+    // PubSub
+    NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
+    NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
+    NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
+    NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
+    NANGO_PUBSUB_SNS_SQS_CONFIG: z
+        .string()
+        .optional()
+        .default('{}')
+        .transform((s, ctx) => {
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in NANGO_PUBSUB_SNS_SQS_CONFIG`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z.object({
+                topicArns: z
+                    .partialRecord(
+                        z.enum(['user', 'usage', 'team']),
+                        z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
+                    )
+                    .optional()
+                    .default({}),
+                queueUrls: z
+                    .record(z.string(), z.url())
+                    .check((payload) => {
+                        const record = payload.value;
+                        for (const key of Object.keys(record)) {
+                            const lastColon = key.lastIndexOf(':');
+                            if (lastColon < 0 || lastColon === key.length - 1) {
+                                payload.issues.push({
+                                    code: 'custom',
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be user, usage, or team)`,
+                                    path: [key],
+                                    input: record[key]
+                                });
+                                continue;
+                            }
+                            const subject = key.slice(lastColon + 1);
+                            if (!(subject === 'user' || subject === 'usage' || subject === 'team')) {
+                                payload.issues.push({
+                                    code: 'custom',
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be user, usage, or team`,
+                                    path: [key],
+                                    input: record[key]
+                                });
+                            }
+                        }
+                    })
+                    .optional()
+                    .default({})
+            })
+        ),
     NANGO_ACTIVEMQ_URL: z.string().optional().default('ws://localhost:61614/ws'), // string to allow multiple commas separated URLs for active/replica brokers
     NANGO_ACTIVEMQ_USER: z.string().optional().default('admin'),
     NANGO_ACTIVEMQ_PASSWORD: z.string().optional().default('admin'),
