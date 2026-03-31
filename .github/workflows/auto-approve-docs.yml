@@ -23,6 +23,7 @@ jobs:
                       non_docs:
                           - '**'
                           - '!docs/**'
+                          - '!github/**'
 
             - name: Generate GitHub App token
               id: app-token
