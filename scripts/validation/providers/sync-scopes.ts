@@ -473,7 +473,7 @@ function getChangedProviderNames(baseRef: string): string[] {
             continue;
         }
 
-        const match = content.match(/^([a-z0-9][a-z0-9-]*):\s*$/);
+        const match = content.match(/^([a-z0-9][a-z0-9_-]*):\s*$/);
         if (match?.[1]) {
             names.add(match[1]);
         }
