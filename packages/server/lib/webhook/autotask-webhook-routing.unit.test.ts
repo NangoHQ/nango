@@ -10,7 +10,7 @@ import { InternalNango } from './internal-nango.js';
 import type { AutotaskWebhookPayload } from './types.js';
 
 describe('Autotask webhook routing', () => {
-    it('Should broadcast ticket create webhook to all connections with correct webhookType', async () => {
+    it('Should route ticket create webhook by Guid and EntityType', async () => {
         const integration = getTestConfig({ provider: 'autotask' });
 
         const mock = vi.fn();
@@ -45,11 +45,13 @@ describe('Autotask webhook routing', () => {
         expect(mock).toHaveBeenCalledOnce();
         expect(mock).toHaveBeenCalledWith({
             body,
-            webhookType: 'EntityType'
+            webhookType: 'EntityType',
+            connectionIdentifier: 'Guid',
+            propName: 'metadata.webhookGuid'
         });
     });
 
-    it('Should broadcast ticket update webhook with correct entity type', async () => {
+    it('Should route ticket update webhook by Guid and EntityType', async () => {
         const integration = getTestConfig({ provider: 'autotask' });
 
         const mock = vi.fn();
@@ -85,11 +87,13 @@ describe('Autotask webhook routing', () => {
         expect(mock).toHaveBeenCalledOnce();
         expect(mock).toHaveBeenCalledWith({
             body,
-            webhookType: 'EntityType'
+            webhookType: 'EntityType',
+            connectionIdentifier: 'Guid',
+            propName: 'metadata.webhookGuid'
         });
     });
 
-    it('Should broadcast ticket delete webhook', async () => {
+    it('Should route ticket delete webhook by Guid and EntityType', async () => {
         const integration = getTestConfig({ provider: 'autotask' });
 
         const mock = vi.fn();
@@ -122,7 +126,9 @@ describe('Autotask webhook routing', () => {
         expect(mock).toHaveBeenCalledOnce();
         expect(mock).toHaveBeenCalledWith({
             body,
-            webhookType: 'EntityType'
+            webhookType: 'EntityType',
+            connectionIdentifier: 'Guid',
+            propName: 'metadata.webhookGuid'
         });
     });
 
