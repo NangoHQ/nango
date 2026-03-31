@@ -4069,22 +4069,22 @@ connectwise-psa:
     connection_config:
         hostname:
             type: string
-            title: Custom Hostname
-            description: Optional custom ConnectWise PSA hostname to use instead of the cloud subdomain. Enter the hostname only, without protocol or path.
-            example: psa.example.com
+            title: Hostname
+            description: The full ConnectWise PSA hostname. Enter the hostname only, without protocol or path. For example, use api-na.myconnectwise.net for standard cloud tenants or your custom PSA hostname if applicable.
+            example: api-na.myconnectwise.net
             format: hostname
             prefix: https://
             suffix: /v4_6_release/apis/3.0
-            optional: true
         subdomain:
             type: string
             title: Cloud Subdomain
-            description: The standard ConnectWise PSA cloud subdomain to use when a custom hostname is not set
+            description: Deprecated fallback field for existing ConnectWise PSA connections that still use a cloud subdomain
             pattern: '^api-(au|eu|na)$'
             example: api-au
             suffix: .myconnectwise.net
             prefix: https://
             optional: true
+            hidden: true
         apiVersion:
             type: string
             title: Api version
