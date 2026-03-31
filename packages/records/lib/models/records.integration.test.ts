@@ -8,7 +8,7 @@ import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
 import { formatRecords } from '../helpers/format.js';
 import * as Records from '../models/records.js';
-import { decryptRecordData } from '../utils/encryption.js';
+import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
 
 import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
@@ -1733,6 +1733,169 @@ describe('Records service', () => {
             expect(candidates.size).toBeGreaterThan(1);
         });
     });
+    describe('payload migration', () => {
+        it('should read records stored in legacy json column', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const records = [
+                { id: '1', name: 'Alice' },
+                { id: '2', name: 'Bob' }
+            ];
+
+            await insertLegacyRecords({ records, connectionId, environmentId, model, syncId });
+
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(2);
+            expect(stats[model]?.size_bytes).toBe(255);
+
+            const fetched = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(fetched.records).toHaveLength(2);
+            expect(fetched.records).toEqual(
+                expect.arrayContaining([expect.objectContaining({ id: '1', name: 'Alice' }), expect.objectContaining({ id: '2', name: 'Bob' })])
+            );
+        });
+
+        it('should migrate data to records_data when upserting unchanged legacy records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const records = [{ id: '1', name: 'Alice' }];
+
+            await insertLegacyRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
+            const result = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2 });
+            expect(result.unchangedKeys).toContain('1');
+            expect(result.updatedKeys).toHaveLength(0);
+
+            const after = await fromDbLegacy(connectionId, model, '1');
+            expect(after.legacyData).toBeNull();
+            expect(after.data).toMatchObject({ id: '1', name: 'Alice' });
+
+            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfter[model]?.count).toBe(1);
+            expect(statsAfter[model]?.size_bytes).toBe(statsBefore[model]?.size_bytes);
+        });
+
+        it('should migrate data to records_data when upserting changed legacy records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await insertLegacyRecords({ records: [{ id: '1', name: 'Alice' }], connectionId, environmentId, model, syncId, syncJobId: 1 });
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
+            const result = await upsertRecords({ records: [{ id: '1', name: 'Alice Updated' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
+            expect(result.updatedKeys).toContain('1');
+
+            const after = await fromDbLegacy(connectionId, model, '1');
+            expect(after.legacyData).toBeNull();
+            expect(after.data).toMatchObject({ id: '1', name: 'Alice Updated' });
+
+            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfter[model]?.count).toBe(1);
+            expect(statsAfter[model]?.size_bytes).toBeGreaterThan(statsBefore[model]?.size_bytes ?? 0);
+        });
+
+        it('should update legacy records correctly', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await insertLegacyRecords({ records: [{ id: '1', name: 'Alice', role: 'admin' }], connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const result = await updateRecords({ records: [{ id: '1', role: 'user' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
+            expect(result.updatedKeys).toContain('1');
+
+            const after = await fromDbLegacy(connectionId, model, '1');
+            expect(after.legacyData).toBeNull();
+            expect(after.data).toMatchObject({ id: '1', name: 'Alice', role: 'user' });
+
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(1);
+            expect(stats[model]?.size_bytes).toBe(147);
+        });
+
+        it('should soft-delete legacy records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const records = [{ id: '1', name: 'Alice' }];
+
+            await insertLegacyRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+
+            const result = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2, softDelete: true });
+            expect(result.deletedKeys).toContain('1');
+
+            const after = await fromDbLegacy(connectionId, model, '1');
+            expect(after.legacyData).toBeNull();
+            expect(after.data).toStrictEqual({ id: '1', name: 'Alice' }); // soft-deleted records still have their data
+
+            const fetched = (await Records.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
+            expect(fetched.records).toHaveLength(1);
+            expect(fetched.records[0]).toMatchObject({ id: '1', name: 'Alice' });
+
+            // soft delete: count drops to 0 but size is preserved (data still stored in records_data)
+            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(statsAfter[model]?.count).toBe(0);
+            expect(statsAfter[model]?.size_bytes).toBe(statsBefore[model]?.size_bytes);
+        });
+
+        it('should mark legacy records as outdated', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await insertLegacyRecords({
+                records: [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId,
+                syncJobId: 1
+            });
+
+            const deletedIds = (await Records.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 })).unwrap();
+            expect(deletedIds).toEqual(expect.arrayContaining(['1', '2']));
+
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]?.count).toBe(0);
+            expect(stats[model]?.size_bytes).toBe(0);
+        });
+
+        it('should hard-delete legacy records and leave no orphan rows', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await insertLegacyRecords({ records: [{ id: '1', name: 'Alice' }], connectionId, environmentId, model, syncId });
+
+            const deleteResult = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
+            expect(deleteResult.count).toBe(1);
+
+            const recordsRow = await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).first();
+            expect(recordsRow).toBeUndefined();
+
+            const dataRow = await db(RECORDS_DATA_TABLE).where({ connection_id: connectionId, model }).first();
+            expect(dataRow).toBeUndefined();
+
+            // hard delete removes the count entry entirely when count reaches 0
+            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(stats[model]).toBeUndefined();
+        });
+    });
 });
 
 async function upsertNRecords(n: number): Promise<{ environmentId: number; connectionId: number; model: string; syncId: string; result: UpsertSummary }> {
@@ -1833,6 +1996,72 @@ async function fromDb(
             ...metadata,
             json: data.data
         })
+    };
+}
+
+async function insertLegacyRecords({
+    records,
+    connectionId,
+    environmentId,
+    model,
+    syncId,
+    syncJobId = rnd.number()
+}: {
+    records: UnencryptedRecordData[];
+    connectionId: number;
+    environmentId: number;
+    model: string;
+    syncId: string;
+    syncJobId?: number;
+}): Promise<void> {
+    const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId });
+    if (formatRes.isErr()) {
+        throw new Error(`Failed to format records: ${formatRes.error.message}`);
+    }
+    const encrypted = encryptRecords(formatRes.value);
+
+    await db(RECORDS_TABLE).insert(
+        encrypted.map((r) => ({
+            id: r.id,
+            connection_id: r.connection_id,
+            model: r.model,
+            external_id: r.external_id,
+            json: r.json, // legacy: payload stored directly in records table
+            data_hash: r.data_hash,
+            sync_id: r.sync_id,
+            sync_job_id: r.sync_job_id
+        }))
+    );
+
+    const [{ total_size }] = (
+        await db.raw(`SELECT SUM(pg_column_size(json)) as total_size FROM ${RECORDS_TABLE} WHERE connection_id = ? AND model = ?`, [connectionId, model])
+    ).rows as [{ total_size: string }];
+
+    await db(RECORD_COUNTS_TABLE)
+        .insert({ connection_id: connectionId, environment_id: environmentId, model, count: encrypted.length, size_bytes: parseInt(total_size) })
+        .onConflict(['environment_id', 'connection_id', 'model'])
+        .merge(['count', 'size_bytes']);
+}
+
+async function fromDbLegacy(
+    connectionId: number,
+    model: string,
+    externalId: string
+): Promise<{ externalId: string; legacyData: UnencryptedRecordData | null; data: UnencryptedRecordData | null }> {
+    const metadata = await db.select<FormattedRecord[]>('*').from(RECORDS_TABLE).where({ connection_id: connectionId, model, external_id: externalId }).first();
+    if (!metadata) {
+        throw new Error(`Record with external_id ${externalId} not found`);
+    }
+    const dataRow = await db
+        .select<{ id: string; data: RecordData }[]>('id', 'data')
+        .from(RECORDS_DATA_TABLE)
+        .where({ connection_id: connectionId, model })
+        .where('id', metadata.id)
+        .first();
+    return {
+        externalId: metadata.external_id,
+        legacyData: metadata.json ? await decryptRecordData({ ...metadata, json: metadata.json }) : null,
+        data: dataRow ? await decryptRecordData({ ...metadata, json: dataRow.data }) : null
     };
 }
 
