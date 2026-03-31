@@ -170,4 +170,37 @@ describe('Autotask webhook routing', () => {
             expect(value.content).toEqual({ status: 'success' });
         }
     });
+
+    it('Should return 400 when EntityType is missing', async () => {
+        const integration = getTestConfig({ provider: 'autotask' });
+
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const body: AutotaskWebhookPayload = {
+            Action: 'Create',
+            Guid: 'a1da62a4-2c49-40a8-8183-69994ce5b3eb',
+            Id: 351181,
+            Fields: {}
+        };
+
+        const rawBody = JSON.stringify(body);
+
+        const result = await AutotaskWebhookRouting.default(nangoMock as unknown as InternalNango, {}, body, rawBody);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            const value = result.value as { statusCode: number; content: unknown };
+            expect(value.statusCode).toBe(400);
+            expect(value.content).toEqual({ status: 'error', message: 'Missing EntityType field' });
+        }
+        expect(mock).not.toHaveBeenCalled();
+    });
 });

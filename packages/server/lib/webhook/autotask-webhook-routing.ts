@@ -16,6 +16,10 @@ import type { AutotaskWebhookPayload, WebhookHandler } from './types.js';
  * is used to match against webhook subscriptions defined in sync configs.
  */
 const route: WebhookHandler<AutotaskWebhookPayload> = async (nango, _headers, body, _rawBody) => {
+    if (!body.EntityType) {
+        return Ok({ content: { status: 'error', message: 'Missing EntityType field' }, statusCode: 400, connectionIds: [], toForward: body });
+    }
+
     const response = await nango.executeScriptForWebhooks({
         body,
         webhookType: 'EntityType', // Autotask webhook entity type field
