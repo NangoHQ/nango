@@ -236,6 +236,18 @@ export interface PagerDutyWebhookPayload {
     };
 }
 
+export interface AutotaskWebhookPayload {
+    Action?: string;
+    Guid?: string;
+    EntityType?: string;
+    Id?: number;
+    Fields?: Record<string, any>;
+    EventTime?: string;
+    SequenceNumber?: number;
+    PersonId?: number;
+    [key: string]: any;
+}
+
 export interface ConnectWisePsaWebhookPayload {
     MessageId?: string;
     FromUrl?: string;
