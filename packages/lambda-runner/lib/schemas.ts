@@ -85,6 +85,12 @@ export const nangoPropsSchema = z.object({
             killAfterMs: z.number(),
             interruptAfterMs: z.number()
         })
+        .optional(),
+    integrationConfig: z
+        .object({
+            oauth_client_id: z.string().nullable(),
+            oauth_client_secret: z.string().nullable()
+        })
         .optional()
 });
 
