@@ -26,7 +26,7 @@
 }
 
 /* Light mode navbar */
-:not(.dark) #navbar {
+html:not(.dark) #navbar {
   background-color: #ffffff !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
@@ -45,13 +45,13 @@
 }
 
 /* Sidebar right border — light */
-:not(.dark) :has(> #sidebar-content) {
+html:not(.dark) :has(> #sidebar-content) {
   border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Top spacer + padding */
 .dark #sidebar-content .pointer-events-none.sticky,
-:not(.dark) #sidebar-content .pointer-events-none.sticky {
+html:not(.dark) #sidebar-content .pointer-events-none.sticky {
   display: none !important;
 }
 #navigation-items {
@@ -93,7 +93,7 @@ a[href="https://www.nango.dev"] svg,
 }
 
 /* Separator — light */
-:not(.dark) #navigation-items > ul {
+html:not(.dark) #navigation-items > ul {
   padding-bottom: 20px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
   margin-bottom: 0 !important;
@@ -106,7 +106,7 @@ a[href="https://www.nango.dev"] svg,
 }
 
 /* Anchor icon squares — light */
-:not(.dark) a.nav-anchor > div[style*="background"] {
+html:not(.dark) a.nav-anchor > div[style*="background"] {
   background: rgba(0, 0, 0, 0.06) !important;
   border-radius: 4px !important;
 }
@@ -117,9 +117,9 @@ a[href="https://www.nango.dev"] svg,
 .dark a.nav-anchor:hover { color: #ffffff !important; }
 
 /* Anchor text — light */
-:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.5) !important; }
-:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.85) !important; }
-:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
+html:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.5) !important; }
+html:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.85) !important; }
+html:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
 
 /* ══ SIDEBAR NAV ITEMS ═══════════════════════════════════════════ */
 
@@ -131,7 +131,7 @@ a[href="https://www.nango.dev"] svg,
 }
 
 /* Active item — light */
-:not(.dark) li[data-active="true"] > a {
+html:not(.dark) li[data-active="true"] > a {
   background-color: rgba(0, 0, 0, 0.06) !important;
   color: #000000 !important;
   border-radius: 4px !important;
@@ -148,11 +148,11 @@ a[href="https://www.nango.dev"] svg,
 }
 
 /* Nav links — light */
-:not(.dark) #sidebar-group a, :not(.dark) #sidebar-group button {
+html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button {
   border-radius: 4px !important;
   color: rgba(0, 0, 0, 0.55) !important;
 }
-:not(.dark) #sidebar-group a:hover, :not(.dark) #sidebar-group button:hover {
+html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:hover {
   color: rgba(0, 0, 0, 0.85) !important;
   background-color: rgba(0, 0, 0, 0.04) !important;
 }
@@ -168,7 +168,7 @@ a[href="https://www.nango.dev"] svg,
 .dark .sidebar-group-header h5, .dark #sidebar-title {
   color: rgba(255, 255, 255, 0.45) !important;
 }
-:not(.dark) .sidebar-group-header h5, :not(.dark) #sidebar-title {
+html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
   color: rgba(0, 0, 0, 0.35) !important;
 }
 
@@ -192,7 +192,7 @@ a[href="https://www.nango.dev"] svg,
 }
 
 /* Log In — light mode */
-:not(.dark) #navbar a[href="https://app.nango.dev"] {
+html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
   padding: 7px 16px !important;
@@ -204,7 +204,7 @@ a[href="https://www.nango.dev"] svg,
   font-size: 0.875rem !important;
   text-decoration: none !important;
 }
-:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
+html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
   background-color: #e4e4e4 !important;
 }
 
@@ -224,9 +224,9 @@ a[href="https://www.nango.dev"] svg,
 }
 
 /* Sign Up — light mode */
-:not(.dark) #navbar a[href*="signup"],
-:not(.dark) #navbar [class*="primary"] a,
-:not(.dark) #navbar button[class*="primary"] {
+html:not(.dark) #navbar a[href*="signup"],
+html:not(.dark) #navbar [class*="primary"] a,
+html:not(.dark) #navbar button[class*="primary"] {
   background-color: #2aabe2 !important;
   color: #ffffff !important;
   border: none !important;
@@ -234,7 +234,7 @@ a[href="https://www.nango.dev"] svg,
   font-weight: 500 !important;
   padding: 7px 16px !important;
 }
-:not(.dark) #navbar a[href*="signup"]:hover {
+html:not(.dark) #navbar a[href*="signup"]:hover {
   background-color: #1e96cc !important;
 }
 
