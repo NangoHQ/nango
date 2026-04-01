@@ -22,8 +22,8 @@
   },
   "css": "custom.css",
   "logo": {
-    "light": "/logo/nango-light.svg",
-    "dark": "/logo/nango-dark.svg",
+    "light": "/images/Nango-Light-Mode.svg",
+    "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
