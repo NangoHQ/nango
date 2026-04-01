@@ -7,7 +7,7 @@
   pointer-events: none;
 }
 
-/* 2. Top nav — solid dark background + bottom border, dark mode only */
+/* 2. Top nav — solid dark background + bottom border */
 .dark #navbar {
   background-color: #0b0b0c !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -15,22 +15,20 @@
   z-index: 50;
 }
 
-/* 3. Sidebar — solid dark background, dark mode only */
+/* 3. Sidebar — solid dark background */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
   position: relative;
   z-index: 50;
 }
 
-/* 3b. Sidebar right border — box-shadow on aside only, no layout changes */
-.dark aside {
-  box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.08) !important;
+/* 3b. Sidebar right border — target the parent wrapper of #sidebar-content */
+.dark :has(> #sidebar-content) {
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* 3c. Logo — larger size */
+/* 3c. Logo — size */
 #navbar img,
-#navbar svg[class*="logo"],
-#navbar svg[class*="Logo"],
 a[href="https://www.nango.dev"] img,
 a[href="https://www.nango.dev"] svg,
 [class*="logo"] img,
@@ -39,96 +37,73 @@ a[href="https://www.nango.dev"] svg,
   width: auto !important;
 }
 
-/* 4. Content area — always above the grid */
+/* 4. Content area — above the grid */
 #content-area {
   position: relative;
   z-index: 1;
 }
 
-/* 5. Sidebar — remove blue from icons and active states, dark mode only */
-.dark #sidebar-content svg,
-.dark #sidebar-content [class*="icon"] {
-  color: rgba(255, 255, 255, 0.5) !important;
-  fill: rgba(255, 255, 255, 0.5) !important;
+/* ── Sidebar: anchors (Documentation, APIs, Reference, Updates) ── */
+
+/* Separator between anchor list and nav items below */
+.dark #navigation-items > ul {
+  padding-bottom: 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-bottom: 0 !important;
 }
 
-/* Active nav item — neutral highlight, sharp 4px corners */
-.dark #sidebar-content a[data-active="true"],
-.dark #sidebar-content [aria-current="page"],
-.dark #sidebar-content [class*="active"] {
-  background-color: rgba(255, 255, 255, 0.06) !important;
+/* Anchor icon squares — neutralise blue on active, keep others neutral */
+.dark a.nav-anchor > div[style*="background"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+/* Anchor text — muted, consistent with sidebar palette */
+.dark a.nav-anchor {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+.dark a.nav-anchor.text-primary,
+.dark a.nav-anchor[class*="text-primary"] {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.dark a.nav-anchor:hover {
+  color: #ffffff !important;
+}
+
+/* ── Sidebar: nav items (Getting Started, Introduction, etc.) ── */
+
+/* Active nav item — neutral highlight, 4px corners */
+.dark li[data-active="true"] > a {
+  background-color: rgba(255, 255, 255, 0.07) !important;
   color: #ffffff !important;
   border-radius: 4px !important;
 }
 
-.dark #sidebar-content a[data-active="true"] svg,
-.dark #sidebar-content [aria-current="page"] svg,
-.dark #sidebar-content [class*="active"] svg {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-}
-
-/* Anchor icon squares (Documentation, APIs, etc.) — neutralise blue bg */
-.dark #sidebar-content [class*="anchor"] [class*="icon"],
-.dark #sidebar-content [class*="AnchorIcon"],
-.dark #sidebar-content [class*="anchor-icon"],
-.dark #sidebar-content [class*="group-icon"],
-.dark #sidebar-content [class*="GroupIcon"] {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255, 255, 255, 0.6) !important;
+/* All nav item links and buttons — 4px corners */
+.dark #sidebar-group a,
+.dark #sidebar-group button {
   border-radius: 4px !important;
+  color: rgba(255, 255, 255, 0.55) !important;
 }
-
-/* All sidebar items — force 4px, override Mintlify's pill default */
-.dark #sidebar-content a,
-.dark #sidebar-content button,
-.dark #sidebar-content [role="link"] {
-  border-radius: 4px !important;
-}
-
-/* 6. Sidebar — nav text colors, dark mode only */
-.dark #sidebar-content a,
-.dark #sidebar-content span,
-.dark #sidebar-content p {
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-.dark #sidebar-content a:hover {
-  color: #ffffff !important;
+.dark #sidebar-group a:hover,
+.dark #sidebar-group button:hover {
+  color: rgba(255, 255, 255, 0.85) !important;
   background-color: rgba(255, 255, 255, 0.04) !important;
-  border-radius: 4px !important;
 }
 
-/* 7. Navbar — remove blue tint from non-CTA links, dark mode only */
-.dark #navbar a:not([href*="signup"]):not([href="https://app.nango.dev"]) {
-  color: rgba(255, 255, 255, 0.7) !important;
+/* Section headers (Getting Started, Connect APIs, etc.) */
+.dark .sidebar-group-header h5,
+.dark #sidebar-title {
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 0.7rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  font-weight: 600 !important;
 }
 
-.dark #navbar a:not([href*="signup"]):not([href="https://app.nango.dev"]):hover {
-  color: #ffffff !important;
-}
+/* ── Navbar buttons ── */
 
-/* 8. Sign Up CTA — white bg, dark text, 4px radius, dark mode only */
-.dark #navbar a[href*="signup"],
-.dark #navbar [class*="primary"] a,
-.dark #navbar button[class*="primary"],
-.dark #navbar [class*="NavbarCta"],
-.dark #navbar [class*="navbar-primary"] {
-  background-color: #ffffff !important;
-  color: #0b0b0c !important;
-  border: none !important;
-  border-radius: 4px !important;
-  font-weight: 500 !important;
-}
-
-.dark #navbar a[href*="signup"]:hover,
-.dark #navbar [class*="primary"] a:hover,
-.dark #navbar button[class*="primary"]:hover {
-  background-color: rgba(255, 255, 255, 0.88) !important;
-  color: #0b0b0c !important;
-}
-
-/* 9. Log In button — dark bg, white text, subtle border, 4px radius, dark mode only */
+/* Log In — dark with subtle border */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
@@ -140,59 +115,35 @@ a[href="https://www.nango.dev"] svg,
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
-  transition: background-color 0.15s ease !important;
 }
-
 .dark #navbar a[href="https://app.nango.dev"]:hover {
   background-color: rgba(255, 255, 255, 0.13) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* 10. Global corner radius clamp — max 4px everywhere */
-* {
-  --radius: 4px !important;
-  --border-radius: 4px !important;
+/* Sign Up — white bg, dark text */
+.dark #navbar a[href*="signup"],
+.dark #navbar [class*="primary"] a,
+.dark #navbar button[class*="primary"] {
+  background-color: #ffffff !important;
+  color: #0b0b0c !important;
+  border: none !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+}
+.dark #navbar a[href*="signup"]:hover {
+  background-color: rgba(255, 255, 255, 0.88) !important;
 }
 
-button,
-a[class*="btn"],
-[class*="button"],
-[class*="Button"],
-[class*="badge"],
-[class*="Badge"],
-[class*="tag"],
-[class*="Tag"],
-[class*="chip"],
-[class*="Chip"],
-input,
-select,
-textarea {
+/* ── Global border-radius clamp — max 4px ── */
+.dark #sidebar-content a,
+.dark #sidebar-content button {
   border-radius: 4px !important;
 }
 
-/* Cards and callouts */
-[class*="card"],
-[class*="Card"],
-[class*="callout"],
-[class*="Callout"],
-[class*="alert"],
-[class*="Alert"],
-[class*="step"],
-[class*="Step"],
-[class*="frame"],
-[class*="Frame"],
-[class*="code"],
-[class*="Code"],
-[class*="CodeBlock"],
-[class*="codeblock"] {
-  border-radius: 4px !important;
-}
-
-/* Nuke any inline rounded-full / pill shapes */
-[class*="rounded-full"],
-[class*="rounded-lg"],
 [class*="rounded-xl"],
+[class*="rounded-lg"],
 [class*="rounded-2xl"],
-[class*="rounded-3xl"] {
+[class*="rounded-full"] {
   border-radius: 4px !important;
 }
