@@ -37,7 +37,7 @@ export class KVLocks implements Locks {
         return `${LOCK_STORAGE_PREFIX}${this.createHash(logicalKey)}`;
     }
 
-    private validateTryAcquireInputs(owner: string, key: string, ttlMs: number): Result<boolean> | null {
+    private validateTryAcquireInputs(owner: string, key: string, ttlMs: number): Result<boolean> {
         if (!owner || owner.length === 0 || owner.length > 255) {
             return Err('Invalid lock owner (must be between 1 and 255 characters)');
         }
@@ -47,13 +47,13 @@ export class KVLocks implements Locks {
         if (ttlMs <= 0) {
             return Err('Invalid lock TTL (must be greater than 0)');
         }
-        return null;
+        return Ok(true);
     }
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
-        const invalid = this.validateTryAcquireInputs(owner, key, ttlMs);
-        if (invalid) {
-            return invalid;
+        const validation = this.validateTryAcquireInputs(owner, key, ttlMs);
+        if (validation.isErr()) {
+            return validation;
         }
 
         const sk = this.storageKey(key);
