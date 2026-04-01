@@ -125,7 +125,7 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://docs.nango.dev/guides/platform/team" size="icon" variant="ghost" target="_blank">
+                                <ButtonLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" size="icon" variant="ghost" target="_blank">
                                     <ExternalLink className="size-3" />
                                 </ButtonLink>
                             </div>
