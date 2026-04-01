@@ -253,7 +253,7 @@ function parseArgs(): CliArgs {
                     '  --provider=<id>  Process only specified provider (comma-separated or repeatable)',
                     '  --base=<ref>     Base git ref for --from-diff (default: origin/<HEAD branch>)',
                     '  --all            Process all OAuth2 providers',
-                    '  --force          Re-process providers even if already present in scopes file (only applies with --provider=)',
+                    '  --force          Re-process target providers even if already present in scopes file',
                     '  --check          Exit non-zero when output is outdated',
                     '  --write          Write changes to providers.scopes.yaml',
                     '  --verbose        Print debug details',
