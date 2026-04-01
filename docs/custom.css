@@ -192,6 +192,12 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
 .dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] {
   color: #0b0b0c !important;
 }
+.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] svg,
+.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] svg path {
+  color: #0b0b0c !important;
+  stroke: #0b0b0c !important;
+  fill: #0b0b0c !important;
+}
 .dark a[href="https://app.nango.dev/signup"]:hover span[class*="bg-primary"],
 .dark a[href="https://app.nango.dev/signup"]:hover span[class*="inset-0"] {
   background-color: rgba(255, 255, 255, 0.88) !important;
