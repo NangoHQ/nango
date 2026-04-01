@@ -185,34 +185,24 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
 }
 
 /* Sign Up — dark: white bg, dark text */
-.dark a[href*="app.nango.dev/signup"],
-.dark [class*="NavbarCta"],
-.dark [class*="navbar-cta"],
-.dark #navbar [class*="primary"] a,
-.dark #navbar [class*="primary"] button {
+.dark a[href="https://app.nango.dev/signup"] {
   background-color: #ffffff !important;
   color: #0b0b0c !important;
   border: none !important;
   font-weight: 500 !important;
-  padding: 7px 16px !important;
 }
-.dark a[href*="app.nango.dev/signup"]:hover {
+.dark a[href="https://app.nango.dev/signup"]:hover {
   background-color: rgba(255, 255, 255, 0.88) !important;
 }
 
 /* Sign Up — light: brand blue */
-html:not(.dark) a[href*="app.nango.dev/signup"],
-html:not(.dark) [class*="NavbarCta"],
-html:not(.dark) [class*="navbar-cta"],
-html:not(.dark) #navbar [class*="primary"] a,
-html:not(.dark) #navbar [class*="primary"] button {
+html:not(.dark) a[href="https://app.nango.dev/signup"] {
   background-color: #2aabe2 !important;
   color: #ffffff !important;
   border: none !important;
   font-weight: 500 !important;
-  padding: 7px 16px !important;
 }
-html:not(.dark) a[href*="app.nango.dev/signup"]:hover {
+html:not(.dark) a[href="https://app.nango.dev/signup"]:hover {
   background-color: #1e96cc !important;
 }
 
