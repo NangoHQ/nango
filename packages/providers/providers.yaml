@@ -7426,6 +7426,26 @@ google-mail:
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
 
+google-maps:
+    display_name: Google Maps
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://maps.googleapis.com
+        query:
+            key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/google-maps
+    docs_connect: https://nango.dev/docs/api-integrations/google-maps/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Google Maps API Key.
+            example: AIzaSyAY4P9A***************1YMSYBI
+            pattern: ^AIza[0-9A-Za-z\-_]+$
+            doc_section: '#step-3-obtain-your-google-maps-api-key'
+
 google-search-console:
     display_name: Google Search Console
     alias: google
