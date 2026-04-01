@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
+import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { createAgentSession } from '../../../../../services/agent/agent-session.service.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 
 import type { PostAgentSessionStart } from '@nangohq/types';
@@ -14,7 +16,7 @@ const bodySchema = z
     })
     .strict();
 
-export const postAgentSessionStart = asyncWrapper<PostAgentSessionStart>((req, res) => {
+export const postAgentSessionStart = asyncWrapper<PostAgentSessionStart>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -27,5 +29,23 @@ export const postAgentSessionStart = asyncWrapper<PostAgentSessionStart>((req, r
         return;
     }
 
-    res.status(501).send({ error: { code: 'server_error', message: 'Not implemented' } });
+    const body = valBody.data;
+    const { environment } = res.locals;
+
+    const providerConfig = await configService.getProviderConfig(body.integration_id, environment.id);
+    if (!providerConfig) {
+        res.status(404).send({ error: { code: 'not_found', message: `Integration '${body.integration_id}' was not found` } });
+        return;
+    }
+
+    const { token, executionTimeoutAt } = await createAgentSession(environment.id, {
+        prompt: body.prompt,
+        integration_id: body.integration_id,
+        ...(body.connection_id ? { connection_id: body.connection_id } : {})
+    });
+
+    res.status(201).send({
+        session_token: token,
+        execution_timeout_at: executionTimeoutAt.toISOString()
+    });
 });

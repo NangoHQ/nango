@@ -45,6 +45,7 @@ export type PostRemoteFunctionCompile = Endpoint<{
         function_name: string;
         function_type: FunctionType;
         bundle_size_bytes: number;
+        bundled_js: string;
         compiled_at: string;
     };
 }>;
@@ -52,34 +53,6 @@ export type PostRemoteFunctionCompile = Endpoint<{
 // -------
 // POST /remote-function/dryrun
 // -------
-
-export interface DryrunActionSuccess {
-    integration_id: string;
-    function_name: string;
-    function_type: 'action';
-    execution_timeout_at: string;
-    duration_ms: number;
-    output: unknown;
-    proxy_calls: ProxyCall[];
-}
-
-export interface DryrunSyncChanges {
-    counts: { added: number; updated: number; deleted: number };
-    batchSave: Record<string, unknown[]>;
-    batchUpdate: Record<string, unknown[]>;
-    batchDelete: Record<string, unknown[]>;
-    logs: string[];
-}
-
-export interface DryrunSyncSuccess {
-    integration_id: string;
-    function_name: string;
-    function_type: 'sync';
-    execution_timeout_at: string;
-    duration_ms: number;
-    changes: DryrunSyncChanges;
-    proxy_calls: ProxyCall[];
-}
 
 export type PostRemoteFunctionDryrun = Endpoint<{
     Method: 'POST';
@@ -98,21 +71,20 @@ export type PostRemoteFunctionDryrun = Endpoint<{
         last_sync_date?: string | undefined;
     };
     Error: ApiError<FunctionErrorCode>;
-    Success: DryrunActionSuccess | DryrunSyncSuccess;
+    Success: {
+        integration_id: string;
+        function_name: string;
+        function_type: FunctionType;
+        execution_timeout_at: string;
+        duration_ms: number;
+        /** Raw stdout from nango dryrun */
+        output: string;
+    };
 }>;
 
 // -------
 // POST /remote-function/deploy
 // -------
-
-export interface DeploymentInfo {
-    id: string;
-    created_at: string;
-    enabled: boolean;
-    provider: string;
-    name: string;
-    type: FunctionType;
-}
 
 export type PostRemoteFunctionDeploy = Endpoint<{
     Method: 'POST';
@@ -128,6 +100,7 @@ export type PostRemoteFunctionDeploy = Endpoint<{
         integration_id: string;
         function_name: string;
         function_type: FunctionType;
-        deployment: DeploymentInfo;
+        /** Raw stdout from nango deploy */
+        output: string;
     };
 }>;
