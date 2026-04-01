@@ -346,6 +346,7 @@
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
+              "api-integrations/clover",
               "integrations/all/close",
               "api-integrations/cloudbeds",
               "api-integrations/cloudtalk",

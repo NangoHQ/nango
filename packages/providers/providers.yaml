@@ -3652,6 +3652,42 @@ cloudflare:
             example: lGlHlGZN3iPR9z7CupZlMB3nzMpTCdfxeUPNj_pf
             pattern: '^[a-zA-Z0-9_-]+$'
 
+clover:
+    display_name: Clover
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    body_format: json
+    authorization_url: https://${connectionConfig.authorizeHost}/oauth/v2/authorize
+    token_url: https://${connectionConfig.apiHost}/oauth/v2/token
+    refresh_url: https://${connectionConfig.apiHost}/oauth/v2/refresh
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    redirect_uri_metadata:
+        - merchant_id
+        - employee_id
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/api-integrations/clover
+    setup_guide_url: https://nango.dev/docs/api-integrations/clover/how-to-register-your-own-clover-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/clover/connect
+    connection_config:
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The Clover authorization hostname for your region.
+            example: www.clover.com
+            pattern: '^(www\.clover\.com|www\.eu\.clover\.com|www\.la\.clover\.com|sandbox\.dev\.clover\.com)$'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Clover API hostname for your region.
+            example: api.clover.com
+            pattern: '^(api\.clover\.com|api\.eu\.clover\.com|api\.la\.clover\.com|apisandbox\.dev\.clover\.com)$'
+
 close:
     display_name: Close
     categories:
