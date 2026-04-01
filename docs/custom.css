@@ -1,0 +1,48 @@
+/* ── Nango Docs custom styles ──────────────────────────────────── */
+
+/* 1. Grid opacity — override Mintlify's default decoration strength */
+[class*="background-decoration"] {
+  opacity: 0.02; /* 2% — very subtle grid */
+}
+
+/* 2. Solid top nav — no grid bleed + left-aligned nav links (Vercel style) */
+#navbar {
+  background-color: #0c0c15 !important;
+}
+
+/* Move nav links to sit immediately after the logo on the left */
+#navbar .navbar-links {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+/* Push Sign Up CTA to the far right */
+#navbar .navbar-primary {
+  margin-left: auto;
+}
+
+/* 3. Solid sidebar — no grid bleed */
+#sidebar-content {
+  background-color: #0c0c15 !important;
+}
+
+/* 4. Vignette fade on content area edges */
+#content-area {
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      #0c0c15 0%,
+      transparent 5%,
+      transparent 95%,
+      #0c0c15 100%
+    ),
+    linear-gradient(
+      to bottom,
+      #0c0c15 0%,
+      transparent 4%,
+      transparent 96%,
+      #0c0c15 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
