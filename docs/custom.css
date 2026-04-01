@@ -186,7 +186,7 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
-  margin-right: 4px !important;
+  margin-right: -6px !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
   background-color: rgba(255, 255, 255, 0.06) !important;
@@ -205,7 +205,7 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
-  margin-right: 4px !important;
+  margin-right: -6px !important;
 }
 html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
