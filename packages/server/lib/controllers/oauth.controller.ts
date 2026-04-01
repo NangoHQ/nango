@@ -296,7 +296,16 @@ class OAuthController {
                 await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, req, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
-                await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpGenericRequest({
+                    provider: provider as ProviderMcpOAuth2Generic,
+                    config,
+                    session,
+                    req,
+                    res,
+                    connectionConfig,
+                    callbackUrl,
+                    logCtx
+                });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -957,6 +966,7 @@ class OAuthController {
     private async mcpGenericRequest({
         config,
         session,
+        req,
         res,
         connectionConfig,
         callbackUrl,
@@ -965,6 +975,7 @@ class OAuthController {
         provider: ProviderMcpOAuth2Generic;
         config: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
@@ -1048,6 +1059,12 @@ class OAuthController {
                 scopes: scopes || ''
             });
 
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
+            });
             res.redirect(authResult.authorizationUrl.href);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -1178,9 +1195,16 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (req.cookies[`oauth2-${session.id}`] !== '1') {
+            if (
+                (session.authMode === 'OAUTH2' ||
+                    session.authMode === 'CUSTOM' ||
+                    session.authMode === 'MCP_OAUTH2' ||
+                    session.authMode === 'MCP_OAUTH2_GENERIC') &&
+                req.cookies[`oauth2-${session.id}`] !== '1'
+            ) {
                 metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
-                    account_id: account.id
+                    account_id: account.id,
+                    auth_mode: session.authMode
                 });
             }
 
