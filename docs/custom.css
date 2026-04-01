@@ -236,6 +236,13 @@ html:not(.dark) a[href="https://app.nango.dev/signup"]:hover span[class*="inset-
   opacity: 1 !important;
 }
 
+/* ══ HIDE AI CHAT ASSISTANT ══════════════════════════════════════ */
+#chat-assistant-textarea,
+.chat-assistant-input,
+[id*="chat-assistant"],
+[class*="chat-assistant"] { display: none !important; }
+:has(> #chat-assistant-textarea) { display: none !important; }
+
 /* ══ CALLOUT RESET ═══════════════════════════════════════════════ */
 
 [data-component-part="callout-icon"] {
