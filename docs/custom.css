@@ -24,13 +24,27 @@
   align-self: stretch !important;
 }
 
-/* 3b. Sidebar right border — flush from top, full height */
-.dark aside {
-  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+/* 3b. Sidebar right border — box-shadow approach (layout-independent) */
+.dark aside,
+.dark #sidebar-content,
+.dark [id="sidebar"],
+.dark [class*="Sidebar"]:not([class*="Toggle"]):not([class*="Button"]),
+.dark [class*="sidebar"]:not([class*="toggle"]):not([class*="button"]) {
+  box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.08) !important;
   align-self: stretch !important;
-  min-height: 100% !important;
+  min-height: 100vh !important;
+}
+
+/* 3c. Logo — larger size */
+#navbar img,
+#navbar svg[class*="logo"],
+#navbar svg[class*="Logo"],
+a[href="https://www.nango.dev"] img,
+a[href="https://www.nango.dev"] svg,
+[class*="logo"] img,
+[class*="Logo"] img {
+  height: 28px !important;
+  width: auto !important;
 }
 
 /* 4. Content area — always above the grid */
