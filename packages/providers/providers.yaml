@@ -7367,7 +7367,8 @@ google-chat:
         - productivity
     proxy:
         base_url: https://chat.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-chat
+    docs: https://nango.dev/docs/api-integrations/google-chat
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-chat/how-to-register-your-own-google-chat-api-oauth-app
 
 google-docs:
     display_name: Google Docs
@@ -7419,7 +7420,8 @@ google-slides:
     alias: google
     proxy:
         base_url: https://slides.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-slides
+    docs: https://nango.dev/docs/api-integrations/google-slides
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-slides/how-to-register-your-own-google-slides-api-oauth-app
 
 google-drive:
     display_name: Google Drive
@@ -7503,7 +7505,8 @@ google-cloud-storage:
     alias: google
     categories:
         - storage
-    docs: https://nango.dev/docs/integrations/all/google-cloud-storage
+    docs: https://nango.dev/docs/api-integrations/google-cloud-storage
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-cloud-storage/how-to-register-your-own-google-cloud-storage-api-oauth-app
 
 google-workspace-admin:
     display_name: Google Workspace Admin
@@ -7512,7 +7515,8 @@ google-workspace-admin:
         - productivity
     proxy:
         base_url: https://admin.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-workspace-admin
+    docs: https://nango.dev/docs/api-integrations/google-workspace-admin
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-workspace-admin/how-to-register-your-own-google-workspace-admin-api-oauth-app
 
 google-service-account:
     display_name: Google Service Account

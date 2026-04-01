@@ -86,6 +86,30 @@
     {
       "source": "/guides/platform/ai-integration-builder",
       "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
+    },
+    {
+      "source": "/integrations/google-security-review",
+      "destination": "/api-integrations/google-shared/google-security-review"
+    },
+    {
+      "source": "/api-integrations/google/google-security-review",
+      "destination": "/api-integrations/google-shared/google-security-review"
+    },
+    {
+      "source": "/integrations/all/google-chat",
+      "destination": "/api-integrations/google-chat"
+    },
+    {
+      "source": "/integrations/all/google-slides",
+      "destination": "/api-integrations/google-slides"
+    },
+    {
+      "source": "/integrations/all/google-cloud-storage",
+      "destination": "/api-integrations/google-cloud-storage"
+    },
+    {
+      "source": "/integrations/all/google-workspace-admin",
+      "destination": "/api-integrations/google-workspace-admin"
     }
   ],
   "navigation": {
@@ -216,7 +240,6 @@
             "group": "700+ APIs & Integrations",
             "pages": [
               "integrations/overview",
-              "integrations/google-security-review",
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
@@ -485,8 +508,8 @@
               "api-integrations/google-analytics",
               "api-integrations/google-bigquery",
               "api-integrations/google-calendar",
-              "integrations/all/google-chat",
-              "integrations/all/google-cloud-storage",
+              "api-integrations/google-chat",
+              "api-integrations/google-cloud-storage",
               "api-integrations/google-contacts",
               "api-integrations/google-docs",
               "api-integrations/google-drive",
@@ -502,8 +525,8 @@
               "api-integrations/glyphic",
               "api-integrations/gamma",
               "api-integrations/grist",
-              "integrations/all/google-slides",
-              "integrations/all/google-workspace-admin",
+              "api-integrations/google-slides",
+              "api-integrations/google-workspace-admin",
               "integrations/all/google-service-account",
               "integrations/all/gorgias",
               "integrations/all/gorgias-basic",

@@ -1,32 +1,32 @@
 ---
-title: 'Google Calendar'
-sidebarTitle: 'Google Calendar'
-description: 'Integrate your application with the Google Calendar API'
+title: 'Google Chat'
+sidebarTitle: 'Google Chat'
+description: 'Integrate your application with the Google Chat API'
 ---
 
 ## 🚀 Quickstart
 
-Connect to Google Calendar with Nango and see data flow in 2 minutes.
+Connect to Google Chat with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Calendar_.
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Google Chat_. Nango doesn't provide a test OAuth app for Google Chat yet. You'll need to set up your own by following the setup guide linked below. After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
 
       <Note>
         Nango has credentials you can use for testing. Activate them in the dashboard.
       </Note>
 
     </Step>
-    <Step title="Authorize Google Calendar">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Calendar. Later, you'll let your users do the same directly from your app.
+    <Step title="Authorize Google Chat">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Google Chat. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Google Calendar API">
-        Let's make your first request to the Google Calendar API (fetch a list of calendars). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Step title="Call the Google Chat API">
+        Let's make your first request to the Google Chat API (fetch a list of spaces). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
-                curl "https://api.nango.dev/proxy/calendar/v3/users/me/calendarList?maxResults=10" \
+                curl "https://api.nango.dev/proxy/v1/spaces?pageSize=10" \
                   -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
@@ -44,8 +44,8 @@ Connect to Google Calendar with Nango and see data flow in 2 minutes.
             const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
             const res = await nango.get({
-                endpoint: '/calendar/v3/users/me/calendarList',
-                params: { maxResults: 10 },
+                endpoint: '/v1/spaces',
+                params: { pageSize: 10 },
                 providerConfigKey: '<INTEGRATION-ID>',
                 connectionId: '<CONNECTION-ID>'
             });
@@ -53,7 +53,6 @@ Connect to Google Calendar with Nango and see data flow in 2 minutes.
             console.log(res.data);
             ```
             </Tab>
-
 
         </Tabs>
 
@@ -69,26 +68,23 @@ Connect to Google Calendar with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-## 📚 Google Calendar Integration Guides
+## 📚 Google Chat Integration Guides
 
 Nango maintained guides for common use cases.
 
-- [How to register your own Google Calendar OAuth app](/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app)  
-Register an OAuth app with Google Calendar and obtain credentials to connect it to Nango
-
-- [How to setup webhooks with Google Calendar on Nango](/api-integrations/google-calendar/webhooks)
-Set up Google Calendar push notifications using notification channels to receive real-time calendar and event updates
+- [How to register your own Google Chat OAuth app](/api-integrations/google-chat/how-to-register-your-own-google-chat-api-oauth-app)
+Register an OAuth app with Google Chat and obtain credentials to connect it to Nango
 
 - [Google App & Security Review](/api-integrations/google-shared/google-security-review)
 Pass Google's OAuth app verification to go to production
 
-Official docs: [Google Calendar API documentation](https://developers.google.com/workspace/calendar/api/v3/reference)
+Official docs: [Google Chat API documentation](https://developers.google.com/workspace/chat/api/reference/rest)
 
-## 🧩 Pre-built syncs & actions for Google Calendar
+## 🧩 Pre-built syncs & actions for Google Chat
 
 Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
 
-import PreBuiltUseCases from "/snippets/generated/google-calendar/PreBuiltUseCases.mdx"
+import PreBuiltUseCases from "/snippets/generated/google-chat/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
 
