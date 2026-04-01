@@ -242,16 +242,48 @@ html:not(.dark) #navbar a[href*="signup"]:hover {
   background-color: #1e96cc !important;
 }
 
-/* ══ GLOBAL RADIUS CLAMP ═════════════════════════════════════════ */
+/* ══ RADIUS CLAMP — sidebar only, never bleed into content ══════ */
 
 #sidebar-content a,
-#sidebar-content button {
+#sidebar-content button,
+#sidebar-content [class*="rounded-xl"],
+#sidebar-content [class*="rounded-lg"],
+#sidebar-content [class*="rounded-2xl"],
+#sidebar-content [class*="rounded-full"] {
   border-radius: 4px !important;
 }
 
-[class*="rounded-xl"],
-[class*="rounded-lg"],
-[class*="rounded-2xl"],
-[class*="rounded-full"] {
-  border-radius: 4px !important;
+/* ══ CALLOUT RESET — undo any radius/color bleed from above ═════ */
+
+/* Restore callout container radius */
+[class*="callout"],
+[class*="Callout"],
+[class*="note"],
+[class*="Note"],
+[class*="tip"],
+[class*="Tip"],
+[class*="warning"],
+[class*="Warning"],
+[class*="info"],
+[class*="Info"] {
+  border-radius: 8px !important;
+}
+
+/* Restore callout icon — keep circular */
+[class*="callout"] [class*="rounded-full"],
+[class*="callout"] svg,
+[class*="note"] svg,
+[class*="tip"] svg,
+[class*="warning"] svg {
+  border-radius: 50% !important;
+}
+
+/* Callout title — restore natural color */
+.dark [class*="callout"] p:first-child,
+.dark [class*="callout"] [class*="title"] {
+  color: inherit !important;
+}
+html:not(.dark) [class*="callout"] p:first-child,
+html:not(.dark) [class*="callout"] [class*="title"] {
+  color: inherit !important;
 }
