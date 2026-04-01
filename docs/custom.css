@@ -1,5 +1,37 @@
 /* ── Nango Docs custom styles ──────────────────────────────────── */
 
+/* ══ BORDER RADIUS — 4px everywhere ═════════════════════════════ */
+/* Buttons */
+a[href="https://app.nango.dev/signup"],
+a[href="https://app.nango.dev/signup"] span[class*="inset-0"],
+a[href="https://app.nango.dev/signup"] span[class*="bg-primary"],
+#navbar a[href="https://app.nango.dev"],
+button { border-radius: 4px !important; }
+
+/* Code blocks & inline code */
+pre, code, kbd { border-radius: 4px !important; }
+
+/* Cards, panels, callouts */
+[data-callout-type],
+[class*="card"],
+[class*="Card"] { border-radius: 4px !important; }
+
+/* Input fields, selects */
+input, select, textarea { border-radius: 4px !important; }
+
+/* Badges / tags */
+[class*="badge"], [class*="Badge"],
+[class*="tag"], [class*="Tag"],
+[class*="chip"], [class*="Chip"] { border-radius: 4px !important; }
+
+/* Dropdown menus / popovers */
+[class*="dropdown"], [class*="Dropdown"],
+[class*="popover"], [class*="Popover"],
+[class*="menu"], [class*="Menu"] { border-radius: 4px !important; }
+
+/* Tooltips */
+[class*="tooltip"], [class*="Tooltip"] { border-radius: 4px !important; }
+
 /* 1. Grid — behind everything, dark mode only */
 .dark [class*="background-decoration"] {
   opacity: 0.02 !important;
