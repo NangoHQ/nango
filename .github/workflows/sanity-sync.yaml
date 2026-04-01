@@ -10,6 +10,19 @@ on:
             - docs/api-integrations/*.mdx
     workflow_dispatch:
         inputs:
+            environment:
+                type: choice
+                description: 'Docs environment to sync to, defaults to prod-docs'
+                required: true
+                default: 'prod-docs'
+                options:
+                    - prod-docs
+                    - dev-docs
+            dry_run:
+                description: 'Log changes without writing to Sanity'
+                required: false
+                default: 'false'
+                type: boolean
             force_update:
                 description: 'Force update all providers regardless of changes'
                 required: false
@@ -24,6 +37,7 @@ concurrency:
 jobs:
     sanity-sync-job:
         runs-on: ubuntu-latest
+        environment: ${{ inputs.environment || 'prod-docs' }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -42,3 +56,4 @@ jobs:
                   SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
                   SANITY_DATASET: ${{ vars.SANITY_DATASET }}
                   FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update == 'true' }}
+                  DRYRUN: ${{ inputs.dry_run == 'true' }}
