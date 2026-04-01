@@ -9,14 +9,14 @@
 
 /* 2. Top nav — solid dark background, dark mode only */
 .dark #navbar {
-  background-color: #0c0c15 !important;
+  background-color: #0b0b0c !important;
   position: relative;
   z-index: 50;
 }
 
 /* 3. Sidebar — solid dark background, dark mode only */
 .dark #sidebar-content {
-  background-color: #0c0c15 !important;
+  background-color: #0b0b0c !important;
   position: relative;
   z-index: 50;
 }
